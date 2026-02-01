@@ -3,7 +3,8 @@ from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
-    AgileBudget, AgileBudgetItem
+    AgileBudget, AgileBudgetItem,
+    DefinitionOfDone, DoDChecklistCompletion, IterationReview, ReviewFeedback
 )
 
 
@@ -92,3 +93,37 @@ class AgileBudgetAdmin(admin.ModelAdmin):
 class AgileBudgetItemAdmin(admin.ModelAdmin):
     list_display = ['description', 'budget', 'category', 'planned_amount', 'actual_amount', 'date']
     list_filter = ['category']
+
+
+# ============================================
+# DEFINITION OF DONE & REVIEWS
+# ============================================
+
+@admin.register(DefinitionOfDone)
+class DefinitionOfDoneAdmin(admin.ModelAdmin):
+    list_display = ['name', 'project', 'scope', 'is_active', 'created_at']
+    list_filter = ['scope', 'is_active', 'created_at']
+    search_fields = ['name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(DoDChecklistCompletion)
+class DoDChecklistCompletionAdmin(admin.ModelAdmin):
+    list_display = ['checklist_item', 'definition', 'is_completed', 'completed_by', 'completed_at']
+    list_filter = ['is_completed', 'completed_at']
+    search_fields = ['checklist_item']
+
+
+@admin.register(IterationReview)
+class IterationReviewAdmin(admin.ModelAdmin):
+    list_display = ['iteration', 'scheduled_date', 'status', 'facilitator', 'iteration_goal_achieved']
+    list_filter = ['status', 'iteration_goal_achieved', 'scheduled_date']
+    search_fields = ['iteration__name']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(ReviewFeedback)
+class ReviewFeedbackAdmin(admin.ModelAdmin):
+    list_display = ['review', 'feedback_type', 'priority', 'provided_by', 'created_at']
+    list_filter = ['feedback_type', 'priority', 'created_at']
+    search_fields = ['content']

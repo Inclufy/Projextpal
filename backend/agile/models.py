@@ -352,3 +352,118 @@ class AgileBudgetItem(models.Model):
     
     def __str__(self):
         return f"{self.category}: {self.description}"
+
+
+# ============================================
+# DEFINITION OF DONE & REVIEWS
+# ============================================
+
+class DefinitionOfDone(models.Model):
+    """Definition of Done criteria - shared across Agile methodologies"""
+    SCOPE_CHOICES = [
+        ('story', 'User Story'),
+        ('iteration', 'Iteration'),
+        ('release', 'Release'),
+        ('project', 'Project'),
+    ]
+    
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='agile_dod')
+    name = models.CharField(max_length=200, default='Definition of Done')
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default='story')
+    description = models.TextField(blank=True)
+    checklist = models.JSONField(default=list, blank=True)  # List of checklist items
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['scope', 'name']
+        verbose_name_plural = "Definitions of Done"
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_scope_display()})"
+
+
+class DoDChecklistCompletion(models.Model):
+    """Track DoD checklist completion for iterations/stories"""
+    definition = models.ForeignKey(DefinitionOfDone, on_delete=models.CASCADE, related_name='completions')
+    iteration = models.ForeignKey(AgileIteration, on_delete=models.CASCADE, null=True, blank=True, related_name='dod_completions')
+    backlog_item = models.ForeignKey(AgileBacklogItem, on_delete=models.CASCADE, null=True, blank=True, related_name='dod_completions')
+    checklist_item = models.CharField(max_length=500)
+    is_completed = models.BooleanField(default=False)
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['checklist_item']
+    
+    def __str__(self):
+        return f"{self.checklist_item} - {'✓' if self.is_completed else '✗'}"
+
+
+class IterationReview(models.Model):
+    """Iteration Review/Demo - feedback loop for continuous improvement"""
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    iteration = models.OneToOneField(AgileIteration, on_delete=models.CASCADE, related_name='review')
+    scheduled_date = models.DateTimeField()
+    duration_minutes = models.IntegerField(default=60)
+    facilitator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='facilitated_reviews')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    
+    # Attendees
+    attendees = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='attended_reviews')
+    stakeholders = models.TextField(blank=True, help_text="External stakeholders present")
+    
+    # Review content
+    demo_items = models.JSONField(default=list, blank=True)  # List of items demonstrated
+    feedback = models.TextField(blank=True)
+    action_items = models.JSONField(default=list, blank=True)  # Action items from feedback
+    
+    # Metrics
+    iteration_goal_achieved = models.BooleanField(default=False)
+    completed_story_points = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-scheduled_date']
+    
+    def __str__(self):
+        return f"Review: {self.iteration.name}"
+
+
+class ReviewFeedback(models.Model):
+    """Individual feedback items from iteration reviews"""
+    FEEDBACK_TYPE_CHOICES = [
+        ('positive', 'Positive'),
+        ('improvement', 'Improvement'),
+        ('question', 'Question'),
+        ('concern', 'Concern'),
+    ]
+    PRIORITY_CHOICES = [
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+    
+    review = models.ForeignKey(IterationReview, on_delete=models.CASCADE, related_name='feedback_items')
+    feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE_CHOICES, default='positive')
+    content = models.TextField()
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    provided_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-priority', 'created_at']
+    
+    def __str__(self):
+        return f"{self.get_feedback_type_display()}: {self.content[:50]}"

@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
+    DefinitionOfDoneViewSet, IterationReviewViewSet, ReviewFeedbackViewSet,
+
     AgileDashboardViewSet,
     AgileTeamViewSet,
     AgileProductVisionViewSet,
@@ -216,5 +218,50 @@ urlpatterns = [
         'projects/<int:project_id>/agile/budget/items/<int:pk>/',
         AgileBudgetItemViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='agile-budget-items-detail'
+    ),
+]
+
+# ============================================
+# DEFINITION OF DONE & REVIEWS
+# ============================================
+
+# Definition of Done
+urlpatterns += [
+    path(
+        'projects/<int:project_id>/agile/dod/',
+        DefinitionOfDoneViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='agile-dod-list'
+    ),
+    path(
+        'projects/<int:project_id>/agile/dod/initialize_defaults/',
+        DefinitionOfDoneViewSet.as_view({'post': 'initialize_defaults'}),
+        name='agile-dod-initialize'
+    ),
+    path(
+        'projects/<int:project_id>/agile/dod/<int:pk>/',
+        DefinitionOfDoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='agile-dod-detail'
+    ),
+    
+    # Iteration Reviews
+    path(
+        'projects/<int:project_id>/agile/reviews/',
+        IterationReviewViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='agile-reviews-list'
+    ),
+    path(
+        'projects/<int:project_id>/agile/reviews/<int:pk>/',
+        IterationReviewViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='agile-reviews-detail'
+    ),
+    path(
+        'projects/<int:project_id>/agile/reviews/<int:pk>/add_feedback/',
+        IterationReviewViewSet.as_view({'post': 'add_feedback'}),
+        name='agile-reviews-add-feedback'
+    ),
+    path(
+        'projects/<int:project_id>/agile/reviews/<int:pk>/complete_review/',
+        IterationReviewViewSet.as_view({'post': 'complete_review'}),
+        name='agile-reviews-complete'
     ),
 ]

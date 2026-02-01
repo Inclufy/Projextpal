@@ -9,6 +9,7 @@ from datetime import date
 
 from projects.models import Project
 from .models import (
+    DefinitionOfDone, DoDChecklistCompletion, IterationReview, ReviewFeedback,
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
@@ -16,6 +17,8 @@ from .models import (
 )
 from .serializers import (
     AgileTeamMemberSerializer, AgileTeamMemberCreateSerializer,
+    DefinitionOfDoneSerializer, DoDChecklistCompletionSerializer,
+    IterationReviewSerializer, ReviewFeedbackSerializer,
     AgileProductVisionSerializer, AgileProductGoalSerializer,
     AgileUserPersonaSerializer, AgileEpicSerializer,
     AgileBacklogItemSerializer, AgileIterationSerializer,
@@ -512,3 +515,142 @@ class AgileBudgetItemViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
+
+
+# ============================================
+# DEFINITION OF DONE & REVIEWS
+# ============================================
+
+class DefinitionOfDoneViewSet(AgileProjectMixin, viewsets.ModelViewSet):
+    serializer_class = DefinitionOfDoneSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        project = self.get_project()
+        return DefinitionOfDone.objects.filter(project=project)
+    
+    def perform_create(self, serializer):
+        project = self.get_project()
+        serializer.save(project=project, created_by=self.request.user)
+    
+    @action(detail=False, methods=['post'])
+    def initialize_defaults(self, request, project_id=None):
+        """Initialize default DoD items for different scopes"""
+        project = self.get_project()
+        
+        defaults = [
+            {
+                'name': 'Code Quality',
+                'scope': 'story',
+                'description': 'Code meets quality standards',
+                'checklist': [
+                    'Code is reviewed',
+                    'No critical bugs',
+                    'Code follows style guide',
+                    'Unit tests pass'
+                ]
+            },
+            {
+                'name': 'Testing',
+                'scope': 'story',
+                'description': 'All testing requirements met',
+                'checklist': [
+                    'Unit tests written',
+                    'Integration tests pass',
+                    'Manual testing complete',
+                    'Edge cases covered'
+                ]
+            },
+            {
+                'name': 'Documentation',
+                'scope': 'iteration',
+                'description': 'Documentation is complete',
+                'checklist': [
+                    'Code is documented',
+                    'User docs updated',
+                    'API docs updated',
+                    'Release notes prepared'
+                ]
+            },
+            {
+                'name': 'Deployment Ready',
+                'scope': 'iteration',
+                'description': 'Ready for production',
+                'checklist': [
+                    'Passes staging tests',
+                    'Performance validated',
+                    'Security reviewed',
+                    'Rollback plan exists'
+                ]
+            }
+        ]
+        
+        created = []
+        for item in defaults:
+            dod, created_flag = DefinitionOfDone.objects.get_or_create(
+                project=project,
+                name=item['name'],
+                scope=item['scope'],
+                defaults={
+                    'description': item['description'],
+                    'checklist': item['checklist'],
+                    'created_by': request.user
+                }
+            )
+            if created_flag:
+                created.append(dod)
+        
+        serializer = self.get_serializer(created, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class DoDChecklistCompletionViewSet(viewsets.ModelViewSet):
+    serializer_class = DoDChecklistCompletionSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = DoDChecklistCompletion.objects.all()
+
+
+class IterationReviewViewSet(AgileProjectMixin, viewsets.ModelViewSet):
+    serializer_class = IterationReviewSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        project = self.get_project()
+        return IterationReview.objects.filter(iteration__project=project)
+    
+    def perform_create(self, serializer):
+        serializer.save()
+    
+    @action(detail=True, methods=['post'])
+    def add_feedback(self, request, project_id=None, pk=None):
+        """Add feedback to a review"""
+        review = self.get_object()
+        
+        feedback = ReviewFeedback.objects.create(
+            review=review,
+            feedback_type=request.data.get('feedback_type', 'positive'),
+            content=request.data.get('content'),
+            priority=request.data.get('priority', 'medium'),
+            provided_by=request.user
+        )
+        
+        serializer = ReviewFeedbackSerializer(feedback)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'])
+    def complete_review(self, request, project_id=None, pk=None):
+        """Mark review as completed"""
+        review = self.get_object()
+        review.status = 'completed'
+        review.iteration_goal_achieved = request.data.get('iteration_goal_achieved', False)
+        review.completed_story_points = request.data.get('completed_story_points', 0)
+        review.save()
+        
+        serializer = self.get_serializer(review)
+        return Response(serializer.data)
+
+
+class ReviewFeedbackViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewFeedbackSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = ReviewFeedback.objects.all()

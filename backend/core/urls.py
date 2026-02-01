@@ -20,29 +20,28 @@ urlpatterns = [
     # Specific app paths - EACH NEEDS A UNIQUE PREFIX
     path("api/v1/projects/", include("projects.urls")),
     path("api/v1/programs/", include("programs.urls")),
-    path("api/v1/overview/", include("overview.urls")),
     path("api/v1/execution/", include("execution.urls")),
     path("api/v1/sixsigma/", include("sixsigma.urls")),
     path("api/v1/prince2/", include("prince2.urls")),
-    path("api/v1/scrum/", include("scrum.urls")),
-    path("api/v1/kanban/", include("kanban.urls")),
+    path("api/v1/", include("scrum.urls")),
+    path("api/v1/", include("kanban.urls")),
     
     # Other specific paths
     path("api/v1/charter/", include("charater.urls")),
     path("api/v1/subscriptions/", include("subscriptions.urls")),
-    path("api/v1/deploment/", include("deploment.urls")),
     path("api/v1/surveys/", include("surveys.urls")),
     path("api/v1/postproject/", include("postproject.urls")),
-    path("api/v1/communication/", include("communication.urls")),
     path("api/v1/newsletters/", include("newsletters.urls")),
+    path("api/v1/deployment/", include("deployment.urls")),
+    path("api/v1/communication/", include("communication.urls")),
     path("api/v1/bot/", include("bot.urls")),
     path("api/v1/workflow/", include("workflow.urls")),
     path("api/v1/academy/", include("academy.urls")),
     path("api/v1/admin/", include("admin_portal.urls")),
     
-    # Different API versions
-    path("api/agile/", include("agile.urls")),
-    path("api/waterfall/", include("waterfall.urls")),
+    # Methodologies
+    path("api/v1/", include("agile.urls")),
+    path("api/v1/", include("waterfall.urls")),
     
     # Single endpoint views
     path("api/v1/users/me/", CurrentUserView.as_view(), name="current-user"),
