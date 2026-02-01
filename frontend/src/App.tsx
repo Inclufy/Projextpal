@@ -151,8 +151,6 @@ import AgileReleasePlanning from './pages/agile/AgileReleasePlanning';
 import AgileDailyProgress from './pages/agile/AgileDailyProgress';
 import AgileRetrospective from './pages/agile/AgileRetrospective';
 import AgileVelocity from './pages/agile/AgileVelocity';
-import AgileDefinitionOfDone from './pages/agile/AgileDefinitionOfDone';
-import AgileReview from './pages/agile/AgileReview';
 
 // Waterfall imports
 import WaterfallOverview from './pages/waterfall/WaterfallOverview';
@@ -560,8 +558,6 @@ const App = () => (
               <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />
               <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><AgileRetrospective /></ProtectedPage>} />
               <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><AgileVelocity /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/dod" element={<ProtectedPage><AgileDefinitionOfDone /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/review" element={<ProtectedPage><AgileReview /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Waterfall Routes                             */}

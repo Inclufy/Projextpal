@@ -33,8 +33,6 @@ const AgileOverview = () => {
     { title: 'Iteration Board', icon: Zap, url: `/projects/${id}/agile/iteration-board`, color: 'bg-emerald-500' },
     { title: 'Daily Progress', icon: Users, url: `/projects/${id}/agile/daily-progress`, color: 'bg-purple-500' },
     { title: 'Release Planning', icon: Calendar, url: `/projects/${id}/agile/release-planning`, color: 'bg-orange-500' },
-    { title: 'Definition of Done', icon: CheckCircle, url: `/projects/${id}/agile/dod`, color: 'bg-green-500' },
-    { title: 'Iteration Review', icon: Target, url: `/projects/${id}/agile/review`, color: 'bg-pink-500' },
   ];
 
   const recentActivity = [
