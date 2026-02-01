@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
+    DefinitionOfDone, DoDChecklistCompletion, IterationReview, ReviewFeedback,
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
@@ -234,3 +235,70 @@ class AgileDashboardSerializer(serializers.Serializer):
     velocity_history = serializers.ListField(child=serializers.DictField())
     upcoming_releases = AgileReleaseSerializer(many=True)
     recent_activity = serializers.ListField(child=serializers.DictField())
+
+
+# ============================================
+# DEFINITION OF DONE & REVIEWS
+# ============================================
+
+class DefinitionOfDoneSerializer(serializers.ModelSerializer):
+    scope_display = serializers.CharField(source='get_scope_display', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    
+    class Meta:
+        model = DefinitionOfDone
+        fields = [
+            'id', 'project', 'name', 'scope', 'scope_display', 
+            'description', 'checklist', 'is_active',
+            'created_by', 'created_by_name', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class DoDChecklistCompletionSerializer(serializers.ModelSerializer):
+    completed_by_name = serializers.CharField(source='completed_by.get_full_name', read_only=True)
+    
+    class Meta:
+        model = DoDChecklistCompletion
+        fields = [
+            'id', 'definition', 'iteration', 'backlog_item',
+            'checklist_item', 'is_completed', 'completed_by', 'completed_by_name',
+            'completed_at', 'notes'
+        ]
+        read_only_fields = ['completed_at']
+
+
+class ReviewFeedbackSerializer(serializers.ModelSerializer):
+    provided_by_name = serializers.CharField(source='provided_by.get_full_name', read_only=True)
+    feedback_type_display = serializers.CharField(source='get_feedback_type_display', read_only=True)
+    
+    class Meta:
+        model = ReviewFeedback
+        fields = [
+            'id', 'review', 'feedback_type', 'feedback_type_display',
+            'content', 'priority', 'provided_by', 'provided_by_name', 'created_at'
+        ]
+        read_only_fields = ['created_at']
+
+
+class IterationReviewSerializer(serializers.ModelSerializer):
+    iteration_name = serializers.CharField(source='iteration.name', read_only=True)
+    facilitator_name = serializers.CharField(source='facilitator.get_full_name', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    feedback_items = ReviewFeedbackSerializer(many=True, read_only=True)
+    attendee_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = IterationReview
+        fields = [
+            'id', 'iteration', 'iteration_name', 'scheduled_date', 'duration_minutes',
+            'facilitator', 'facilitator_name', 'status', 'status_display',
+            'attendees', 'stakeholders', 'demo_items', 'feedback', 'action_items',
+            'iteration_goal_achieved', 'completed_story_points',
+            'feedback_items', 'attendee_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+    
+    def get_attendee_count(self, obj):
+        return obj.attendees.count()

@@ -25,7 +25,7 @@ from projects.models import (
 from execution.models import Stakeholder, ChangeRequest, Governance
 from workflow.models import WorkflowDiagram, WorkflowNode, WorkflowEdge
 from communication.models import StatusReport, Meeting, ReportingItem
-from deploment.models import DeploymentPlan, StrategyItem, RolloutPhase
+from deployment.models import DeploymentPlan, StrategyItem, RolloutPhase
 from surveys.models import Survey, SurveyResponse, SurveyAnswer
 
 logger = logging.getLogger("bot.ai.project_analysis")

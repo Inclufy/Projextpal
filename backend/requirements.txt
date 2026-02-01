@@ -71,3 +71,4 @@ urllib3==2.5.0
 xxhash==3.6.0
 zstandard==0.24.0
 python-dateutil
+psycopg2-binary==2.9.9
