@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice from Inclufy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        .invoice-details {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .invoice-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .invoice-details td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .invoice-details td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+        .total-amount {
+            font-size: 24px;
+            color: #6366f1;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #eef2ff;
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            background: #6366f1;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .button:hover {
+            background: #4f46e5;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .custom-message {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 Invoice from Inclufy</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{ invoice.customer_name }},</p>
+        
+        <p>Thank you for your business. Please find your invoice details below.</p>
+        
+        {% if custom_message %}
+        <div class="custom-message">
+            <strong>Note:</strong> {{ custom_message }}
+        </div>
+        {% endif %}
+        
+        <div class="invoice-details">
+            <table>
+                <tr>
+                    <td>Invoice Number:</td>
+                    <td>{{ invoice.invoice_number }}</td>
+                </tr>
+                <tr>
+                    <td>Invoice Date:</td>
+                    <td>{{ invoice.invoice_date|date:"d F Y" }}</td>
+                </tr>
+                <tr>
+                    <td>Due Date:</td>
+                    <td>{{ invoice.due_date|date:"d F Y" }}</td>
+                </tr>
+                <tr>
+                    <td>Billing Period:</td>
+                    <td>{{ invoice.period_start|date:"d M Y" }} - {{ invoice.period_end|date:"d M Y" }}</td>
+                </tr>
+                <tr>
+                    <td>Status:</td>
+                    <td><strong>{{ invoice.get_status_display }}</strong></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="total-amount">
+            Total Amount: {{ invoice.currency }} {{ invoice.total }}
+        </div>
+        
+        <p style="text-align: center;">
+            <a href="#" class="button">View Invoice (PDF Attached)</a>
+        </p>
+        
+        <p><strong>Payment Instructions:</strong></p>
+        <p>Please make payment within {{ invoice.due_date|timeuntil:invoice.invoice_date }} to avoid late fees.</p>
+        
+        <p>If you have any questions about this invoice, please don't hesitate to contact us.</p>
+        
+        <p>Best regards,<br>
+        <strong>Inclufy Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>Inclufy | WTC Almere | billing@inclufy.com</p>
+        <p style="font-size: 12px; color: #9ca3af;">
+            This is an automated message. Please do not reply to this email.
+        </p>
+    </div>
+</body>
+</html>

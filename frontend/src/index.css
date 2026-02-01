@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 270 20% 98%;
+    --foreground: 270 30% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 270 30% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 30% 20%;
+
+    --primary: 270 60% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 270 60% 42%;
+    --primary-light: 270 60% 95%;
+
+    --secondary: 270 15% 92%;
+    --secondary-foreground: 270 30% 20%;
+
+    --muted: 270 15% 94%;
+    --muted-foreground: 270 10% 48%;
+
+    --accent: 270 60% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 85% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 140 60% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 93% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 270 15% 87%;
+    --input: 270 15% 87%;
+    --ring: 270 60% 50%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 270 30% 25%;
+    --sidebar-primary: 270 60% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 270 60% 95%;
+    --sidebar-accent-foreground: 270 60% 50%;
+    --sidebar-border: 270 15% 87%;
+    --sidebar-ring: 270 60% 50%;
+
+    --chart-1: 270 60% 50%;
+    --chart-2: 280 55% 55%;
+    --chart-3: 290 50% 60%;
+    --chart-4: 300 50% 65%;
+    --chart-5: 310 45% 70%;
+  }
+
+  .dark {
+    --background: 270 25% 12%;
+    --foreground: 0 0% 95%;
+
+    --card: 270 20% 15%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 270 20% 15%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 270 60% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 270 60% 65%;
+    --primary-light: 270 60% 20%;
+
+    --secondary: 270 15% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 270 15% 20%;
+    --muted-foreground: 270 10% 58%;
+
+    --accent: 270 60% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 140 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 93% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 270 15% 25%;
+    --input: 270 15% 25%;
+    --ring: 270 60% 60%;
+
+    --sidebar-background: 270 20% 15%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 270 60% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 270 15% 20%;
+    --sidebar-accent-foreground: 270 60% 65%;
+    --sidebar-border: 270 15% 25%;
+    --sidebar-ring: 270 60% 60%;
+
+    --chart-1: 270 60% 60%;
+    --chart-2: 280 55% 62%;
+    --chart-3: 290 50% 64%;
+    --chart-4: 300 50% 66%;
+    --chart-5: 310 45% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Blob Animation for Login Background */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}

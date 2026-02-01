@@ -1,0 +1,447 @@
+from rest_framework import generics, status, viewsets
+from rest_framework.views import APIView
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
+import requests
+from accounts.serializers import (
+    MyTokenObtainPairSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
+    PublicAdminRegisterSerializer,
+    AdminCreateUserSerializer,
+    CustomUserSerializer,
+    AdminUpdateUserSerializer,
+    UpdateOwnProfileSerializer,
+    ChangePasswordSerializer,
+    CrmApiKeySerializer,
+    CrmApiKeyCreateSerializer,
+)
+from accounts.models import VerificationToken, CrmApiKey
+from accounts.permissions import HasRole
+from django.contrib.auth import get_user_model
+
+
+# Login view
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+
+# Logout view (unchanged)
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response(
+                    {"error": "Refresh token is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"message": "Successfully logged out"},
+                status=status.HTTP_205_RESET_CONTENT,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Email verification view
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+        try:
+            verification_token = VerificationToken.objects.get(token=token)
+            if not verification_token.is_valid():
+                return Response(
+                    {"error": "Token is invalid, expired, or already used"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            user = verification_token.user
+            if user.is_active:
+                return Response(
+                    {"message": "Email already verified"}, status=status.HTTP_200_OK
+                )
+            user.is_active = True
+            user.save()
+            verification_token.is_used = True  # Mark token as used
+            verification_token.save()
+            return Response(
+                {"message": "Email verified successfully"}, status=status.HTTP_200_OK
+            )
+        except VerificationToken.DoesNotExist:
+            return Response(
+                {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# Forgot password view
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password reset link sent to your email"},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Reset password view
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, token):
+        serializer = ResetPasswordSerializer(data={**request.data, "token": token})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password reset successfully"}, status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Current user view
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from subscriptions.models import CompanySubscription
+        
+        serializer = CustomUserSerializer(request.user)
+        data = serializer.data
+        
+        # Add subscription status information
+        company = getattr(request.user, "company", None)
+        data["has_active_subscription"] = False
+        data["subscription_status"] = None
+        
+        if company:
+            try:
+                active_subscription = CompanySubscription.objects.get(
+                    company=company,
+                    status__in=["active", "trialing", "past_due"]
+                )
+                data["has_active_subscription"] = True
+                data["subscription_status"] = active_subscription.status
+                data["subscription_plan"] = active_subscription.plan.name
+            except CompanySubscription.DoesNotExist:
+                data["has_active_subscription"] = False
+                data["subscription_status"] = "inactive"
+        
+        if getattr(request.user, "image", None):
+            try:
+                data["image"] = request.build_absolute_uri(request.user.image.url)
+            except Exception:
+                pass
+        return Response(data)
+
+
+# Public admin registration: creates company + admin user
+class PublicAdminRegisterView(generics.CreateAPIView):
+    serializer_class = PublicAdminRegisterSerializer
+    permission_classes = [AllowAny]
+
+
+# Admin creates users within same company
+class AdminCreateUserView(generics.CreateAPIView):
+    serializer_class = AdminCreateUserSerializer
+    permission_classes = [HasRole("admin")]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+
+# Admin updates/deletes users within same company
+class AdminUpdateUserView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AdminUpdateUserSerializer
+    permission_classes = [HasRole("admin")]
+
+    def get_queryset(self):
+        user_model = get_user_model()
+        request_user = self.request.user
+        if getattr(request_user, "company_id", None) is None:
+            return user_model.objects.none()
+        return user_model.objects.filter(company_id=request_user.company_id)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Prevent admin from deleting themselves
+        if instance.id == request.user.id:
+            return Response(
+                {"error": "You cannot delete your own account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
+
+# List users in the same company as the requester
+User = get_user_model()
+
+
+class CompanyUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        company = getattr(user, "company", None)
+        if company is None:
+            return Response([], status=status.HTTP_200_OK)
+        users = (
+            User.objects.filter(company=company)
+            .only(
+                "id", "first_name", "email", "role", "is_active", "image", "date_joined"
+            )
+            .order_by("first_name", "email")
+        )
+        data = []
+        for u in users:
+            image_url = None
+            if getattr(u, "image", None):
+                try:
+                    image_url = request.build_absolute_uri(u.image.url)
+                except Exception:
+                    image_url = u.image.url
+            data.append(
+                {
+                    "id": u.id,
+                    "name": (u.first_name or u.email or str(u.id)),
+                    "email": u.email,
+                    "role": getattr(u, "role", None),
+                    "is_active": getattr(u, "is_active", None),
+                    "image": image_url,
+                    "created_at": u.date_joined.isoformat() if u.date_joined else None,
+                }
+            )
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class UpdateOwnProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        serializer = UpdateOwnProfileSerializer(
+            instance=request.user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            # return the updated lightweight user data consistent with CustomUserSerializer
+            user = request.user
+            data = {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "image": (
+                    request.build_absolute_uri(user.image.url) if user.image else None
+                ),
+                "role": getattr(user, "role", None),
+                "is_superuser": getattr(user, "is_superuser", False),
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password changed successfully"}, status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CrmApiKeyViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing CRM API keys"""
+    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    
+    def get_queryset(self):
+        """Filter API keys by user's company"""
+        user = self.request.user
+        if not user.company:
+            return CrmApiKey.objects.none()
+        return CrmApiKey.objects.filter(company=user.company)
+    
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return CrmApiKeyCreateSerializer
+        return CrmApiKeySerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+    
+    def perform_create(self, serializer):
+        """Set created_by and company"""
+        serializer.save(
+            company=self.request.user.company,
+            created_by=self.request.user
+        )
+    
+    @action(detail=True, methods=["post"], url_path="test")
+    def test_api_key(self, request, pk=None):
+        """Test the API key by making a test request to the CRM API"""
+        api_key_obj = self.get_object()
+        
+        try:
+            # Construct the API endpoint URL
+            base_url = api_key_obj.api_base_url.rstrip('/')
+            api_url = f"{base_url}/api/accounts/tenant-users/"
+            
+            # Make request to CRM API
+            headers = {
+                "X-Tenant-API-Key": api_key_obj.api_key,
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.get(
+                api_url,
+                headers=headers,
+                params={"page": 1, "page_size": 1},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Update last_fetched_at on success
+                api_key_obj.last_fetched_at = timezone.now()
+                api_key_obj.save(update_fields=["last_fetched_at"])
+                
+                return Response({
+                    "success": True,
+                    "message": "API key is valid",
+                    "tenant_name": data.get("tenant_name"),
+                    "tenant_type": data.get("tenant_type"),
+                    "user_count": data.get("count", 0)
+                })
+            else:
+                error_data = response.json() if response.content else {}
+                return Response({
+                    "success": False,
+                    "message": error_data.get("message", f"API request failed with status {response.status_code}"),
+                    "status_code": response.status_code
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except requests.exceptions.Timeout:
+            return Response({
+                "success": False,
+                "message": "Request timed out. Please check the API URL and try again."
+            }, status=status.HTTP_408_REQUEST_TIMEOUT)
+        except requests.exceptions.RequestException as e:
+            return Response({
+                "success": False,
+                "message": f"Failed to connect to CRM API: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"An error occurred: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=True, methods=["post"], url_path="fetch-users")
+    def fetch_users(self, request, pk=None):
+        """Fetch users from the CRM API using the stored API key"""
+        api_key_obj = self.get_object()
+        
+        # Get pagination parameters
+        page = int(request.data.get("page", 1))
+        page_size = int(request.data.get("page_size", 100))
+        page_size = min(page_size, 100)  # Max 100 per page
+        
+        try:
+            # Construct the API endpoint URL
+            base_url = api_key_obj.api_base_url.rstrip('/')
+            api_url = f"{base_url}/api/accounts/tenant-users/"
+            
+            # Make request to CRM API
+            headers = {
+                "X-Tenant-API-Key": api_key_obj.api_key,
+                "Content-Type": "application/json"
+            }
+            
+            params = {
+                "page": page,
+                "page_size": page_size
+            }
+            
+            response = requests.get(
+                api_url,
+                headers=headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Update last_fetched_at on success
+                api_key_obj.last_fetched_at = timezone.now()
+                api_key_obj.save(update_fields=["last_fetched_at"])
+                
+                # Return the users and pagination info
+                return Response({
+                    "success": True,
+                    "users": data.get("users", []),
+                    "count": data.get("count", 0),
+                    "next": data.get("next"),
+                    "previous": data.get("previous"),
+                    "tenant_name": data.get("tenant_name"),
+                    "tenant_type": data.get("tenant_type"),
+                })
+            else:
+                error_data = response.json() if response.content else {}
+                return Response({
+                    "success": False,
+                    "message": error_data.get("message", f"API request failed with status {response.status_code}"),
+                    "status_code": response.status_code
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except requests.exceptions.Timeout:
+            return Response({
+                "success": False,
+                "message": "Request timed out. Please try again."
+            }, status=status.HTTP_408_REQUEST_TIMEOUT)
+        except requests.exceptions.RequestException as e:
+            return Response({
+                "success": False,
+                "message": f"Failed to connect to CRM API: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"An error occurred: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CompanyListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from accounts.models import Company
+        if not request.user.is_superuser:
+            return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+        companies = Company.objects.all().order_by('name')
+        data = [{'id': c.id, 'name': c.name} for c in companies]
+        return Response(data, status=status.HTTP_200_OK)    def post(self, request):        from accounts.models import Company        if not request.user.is_superuser:            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)                name = request.data.get("name", "").strip()        description = request.data.get("description", "").strip()                if not name:            return Response({"detail": "Company name is required"}, status=status.HTTP_400_BAD_REQUEST)                if Company.objects.filter(name__iexact=name).exists():            return Response({"detail": "Company with this name already exists"}, status=status.HTTP_400_BAD_REQUEST)                company = Company.objects.create(            name=name,            description=description,            is_subscribed=False        )        return Response({"id": company.id, "name": company.name, "description": company.description}, status=status.HTTP_201_CREATED)

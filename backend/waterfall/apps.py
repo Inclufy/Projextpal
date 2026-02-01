@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class WaterfallConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'waterfall'
+    verbose_name = 'Waterfall Methodology'

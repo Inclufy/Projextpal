@@ -1,0 +1,864 @@
+from django.db import models
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+
+class Project(models.Model):
+    PROJECT_TYPE_CHOICES = [
+        ("software", "Software"),
+        ("design", "Design"),
+        ("research", "Research"),
+        ("other", "Other"),
+    ]
+
+    METHODOLOGY_CHOICES = [
+        ("prince2", "PRINCE2"),
+        ("agile", "Agile"),
+        ("scrum", "Scrum"),
+        ("kanban", "Kanban"),
+        ("waterfall", "Waterfall"),
+        ("lean_six_sigma_green", "Lean Six Sigma (Green Belt)"),
+        ("lean_six_sigma_black", "Lean Six Sigma (Black Belt)"),
+        ("hybrid", "Hybrid"),
+    ]
+    OLD_METHODOLOGY_CHOICES = [
+        ("Scrum", "Scrum"),
+        ("Agile", "Agile"),
+        ("Waterfall", "Waterfall"),
+        ("Kanban", "Kanban"),
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("on_hold", "On Hold"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="projects"
+    )
+    name = models.CharField(max_length=255)
+    project_type = models.CharField(
+        max_length=50, choices=PROJECT_TYPE_CHOICES, null=True, blank=True
+    )
+    methodology = models.CharField(
+        max_length=50, choices=METHODOLOGY_CHOICES, null=True, blank=True
+    )
+    budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True)
+    project_goal = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_projects",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Health metrics (colors for dashboard display)
+    health_scope = models.CharField(max_length=7, default='#808080', blank=True)  # Gray default
+    health_time = models.CharField(max_length=7, default='#808080', blank=True)
+    health_cost = models.CharField(max_length=7, default='#808080', blank=True)
+    health_cash_flow = models.CharField(max_length=7, default='#808080', blank=True)
+    health_safety = models.CharField(max_length=7, default='#808080', blank=True)
+    health_risk = models.CharField(max_length=7, default='#808080', blank=True)
+    health_quality = models.CharField(max_length=7, default='#808080', blank=True)
+    last_analysis_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.company.name})"
+
+    def compute_progress_from_work(self) -> int:
+        from .models import Task, Milestone  # local import to avoid cycles
+
+        # Prefer task-based progress if tasks exist
+        task_qs = Task.objects.filter(milestone__project=self)
+        task_count = task_qs.count()
+        if task_count > 0:
+            # Calculate progress for each task based on subtasks, then average
+            total_progress = 0
+            for task in task_qs:
+                task_progress = task.compute_progress_from_subtasks()
+                total_progress += task_progress
+
+            avg = total_progress / task_count
+            return int(round(avg))
+
+        # Fallback to milestones if no tasks
+        milestone_qs = Milestone.objects.filter(project=self)
+        m_count = milestone_qs.count()
+        if m_count > 0:
+            completed = milestone_qs.filter(status="completed").count()
+            return int(round((completed / m_count) * 100))
+
+        # No tasks or milestones
+        return 0
+
+    # Stored progress is removed; progress is computed on the fly via serializer.
+
+
+class Milestone(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("on_hold", "On Hold"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="milestones"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    order_index = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["order_index", "id"]
+
+    def __str__(self):
+        return f"{self.name} - {self.project.name}"
+
+
+class Task(models.Model):
+    STATUS_CHOICES = [
+        ("todo", "To Do"),
+        ("in_progress", "In Progress"),
+        ("done", "Done"),
+        ("blocked", "Blocked"),
+    ]
+
+    PRIORITY_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+        ("urgent", "Urgent"),
+    ]
+
+    milestone = models.ForeignKey(
+        Milestone, on_delete=models.CASCADE, related_name="tasks"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+    )
+    start_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="todo")
+    priority = models.CharField(
+        max_length=10, choices=PRIORITY_CHOICES, default="medium"
+    )
+    progress = models.PositiveIntegerField(default=0)
+    order_index = models.PositiveIntegerField(default=0)
+    # RACI fields
+    raci_responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks_responsible",
+    )
+    raci_accountable = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks_accountable",
+    )
+    raci_consulted = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="tasks_consulted",
+    )
+    raci_informed = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="tasks_informed",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["order_index", "id"]
+
+    def __str__(self):
+        return f"{self.title} - {self.milestone.name}"
+
+    def compute_progress_from_subtasks(self):
+        """Calculate progress based on subtask completion"""
+        subtasks = self.subtasks.all()
+        if not subtasks.exists():
+            return self.progress  # Return current progress if no subtasks
+
+        completed_count = subtasks.filter(completed=True).count()
+        total_count = subtasks.count()
+
+        if total_count > 0:
+            return int(round((completed_count / total_count) * 100))
+        return 0
+
+    def update_progress_from_subtasks(self, save=True):
+        """Update task progress based on subtask completion"""
+        new_progress = self.compute_progress_from_subtasks()
+        self.progress = new_progress
+
+        # Update status based on progress
+        if new_progress == 100:
+            self.status = "done"
+        elif new_progress > 0 and self.status == "todo":
+            self.status = "in_progress"
+
+        if save:
+            self.save(update_fields=["progress", "status"])
+
+        return new_progress
+
+
+class Subtask(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtasks")
+    title = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.title} ({'Completed' if self.completed else 'Pending'})"
+
+
+class Expense(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Paid", "Paid"),
+    ]
+
+    CATEGORY_CHOICES = [
+        ("Labor Cost", "Labor Cost"),
+        ("Material Cost", "Material Cost"),
+        ("Software", "Software"),
+        ("Other", "Other"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="expenses"
+    )
+    description = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_expenses",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-id"]
+
+    def __str__(self):
+        return f"{self.project.name}: {self.description} - {self.amount}"
+
+
+class ProjectActivity(models.Model):
+    """Auditable activity log for project-related actions to power Recent Activities UI."""
+
+    ACTION_CHOICES = [
+        ("created", "Created"),
+        ("updated", "Updated"),
+        ("deleted", "Deleted"),
+        ("status_changed", "Status Changed"),
+        ("commented", "Commented"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="activities"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_activities",
+    )
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    message = models.CharField(max_length=512)
+
+    # Optional linkage to any object (Task, Milestone, Expense)
+    target_content_type = models.ForeignKey(
+        ContentType, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    target_object_id = models.PositiveIntegerField(null=True, blank=True)
+    target = GenericForeignKey("target_content_type", "target_object_id")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        subject = self.message or self.get_action_display()
+        return f"{self.project.name}: {subject}"
+
+
+class ApprovalStage(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in-review", "In Review"),
+        ("approve", "Approved"),
+        ("reject", "Rejected"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="approval_stages"
+    )
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    order_index = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
+    # Approver snapshot fields
+    approver_name = models.CharField(max_length=255, blank=True)
+    approver_role = models.CharField(max_length=255, blank=True)
+    approver_comments = models.TextField(blank=True)
+    reviewed_at = models.DateField(null=True, blank=True)
+    # Optional uploaded evidence
+    # Generic upload stored in Upload model
+    # Linked as foreign key for traceability
+    evidence = models.ForeignKey(
+        "projects.Upload",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approval_stages",
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_approval_stages",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["order_index", "id"]
+
+    def __str__(self):
+        return f"{self.project.name} - {self.name} ({self.status})"
+
+
+class Upload(models.Model):
+    """Generic file upload to be reused across features."""
+
+    file = models.FileField(upload_to="uploads/%Y/%m/%d/")
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploads",
+    )
+    company = models.ForeignKey(
+        "accounts.Company",
+        on_delete=models.CASCADE,
+        related_name="uploads",
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"Upload {self.id}: {getattr(self.file, 'name', '')}"
+
+
+class Risk(models.Model):
+    """Risk management for projects."""
+
+    CATEGORY_CHOICES = [
+        ("Technical", "Technical"),
+        ("Schedule", "Schedule"),
+        ("Financial", "Financial"),
+        ("Operational", "Operational"),
+        ("Strategic", "Strategic"),
+        ("Compliance", "Compliance"),
+    ]
+
+    IMPACT_CHOICES = [
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low"),
+    ]
+
+    LEVEL_CHOICES = [
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low"),
+    ]
+
+    STATUS_CHOICES = [
+        ("Open", "Open"),
+        ("Mitigated", "Mitigated"),
+        ("Closed", "Closed"),
+    ]
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="risks")
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    impact = models.CharField(max_length=20, choices=IMPACT_CHOICES)
+    # Probability stored as percentage integer [0-100]
+    probability = models.PositiveIntegerField(default=0)
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Open")
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_risks",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_risks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} - {self.project.name}"
+
+
+class AIMitigation(models.Model):
+    """AI-generated mitigation strategy for risks."""
+
+    COST_CHOICES = [
+        ("Low", "Low"),
+        ("Medium", "Medium"),
+        ("High", "High"),
+    ]
+
+    risk = models.OneToOneField(
+        Risk, on_delete=models.CASCADE, related_name="ai_mitigation"
+    )
+    strategy = models.TextField()
+    actions = models.JSONField(default=list)  # List of action items
+    timeline = models.CharField(max_length=100)
+    cost = models.CharField(max_length=20, choices=COST_CHOICES)
+    effectiveness = models.CharField(max_length=50)  # e.g., "85%"
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"AI Mitigation for {self.risk.name}"
+
+
+class ManualMitigation(models.Model):
+    """Manual mitigation plan for risks."""
+
+    COST_CHOICES = [
+        ("Low", "Low"),
+        ("Medium", "Medium"),
+        ("High", "High"),
+    ]
+
+    risk = models.OneToOneField(
+        Risk, on_delete=models.CASCADE, related_name="manual_mitigation"
+    )
+    strategy = models.TextField(blank=True)
+    actions = models.JSONField(default=list)  # List of action items
+    timeline = models.CharField(max_length=100, blank=True)
+    cost = models.CharField(max_length=20, choices=COST_CHOICES, blank=True)
+    effectiveness = models.PositiveIntegerField(
+        default=0, help_text="Effectiveness percentage (0-100)"
+    )
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_manual_mitigations",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Manual Mitigation for {self.risk.name}"
+
+
+class ProjectTeam(models.Model):
+    """Model to manage dedicated team members for each project"""
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="team_members"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="project_teams"
+    )
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="added_team_members",
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    hourly_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Hourly rate for this team member on this project"
+    )
+
+    class Meta:
+        unique_together = ["project", "user"]
+        ordering = ["-added_at"]
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.project.name} ({self.user.get_role_display()})"
+
+
+class TimeEntry(models.Model):
+    """Time tracking entries for project team members"""
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("submitted", "Submitted"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="time_entries"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="time_entries",
+    )
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="time_entries",
+        help_text="Optional: Link to a specific task"
+    )
+    milestone = models.ForeignKey(
+        Milestone,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="time_entries",
+        help_text="Optional: Link to a specific milestone"
+    )
+    date = models.DateField()
+    hours = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        help_text="Number of hours worked"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Description of work performed"
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="draft"
+    )
+    hourly_rate_snapshot = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Hourly rate at the time of entry (for historical accuracy)"
+    )
+    billable = models.BooleanField(
+        default=True,
+        help_text="Whether this time entry is billable"
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_time_entries",
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+        indexes = [
+            models.Index(fields=["project", "date"]),
+            models.Index(fields=["user", "date"]),
+            models.Index(fields=["project", "user", "date"]),
+            models.Index(fields=["project", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.project.name} - {self.date} ({self.hours}h)"
+
+    @property
+    def labor_cost(self):
+        """Calculate the labor cost for this entry"""
+        return self.hours * self.hourly_rate_snapshot
+
+    def save(self, *args, **kwargs):
+        # Auto-populate hourly rate from ProjectTeam if not set
+        if not self.hourly_rate_snapshot:
+            try:
+                team_member = ProjectTeam.objects.get(
+                    project=self.project, user=self.user
+                )
+                self.hourly_rate_snapshot = team_member.hourly_rate
+            except ProjectTeam.DoesNotExist:
+                self.hourly_rate_snapshot = 0
+        super().save(*args, **kwargs)
+
+
+class ProjectEvent(models.Model):
+    """Calendar events for projects"""
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="events"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_events",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["start_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["project", "start_date"]),
+            models.Index(fields=["project", "end_date"]),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.title} - {self.project.name} ({self.start_date} to {self.end_date})"
+        )
+
+
+class Document(models.Model):
+    """Project documents that can be linked to milestones and stages"""
+
+    CATEGORY_CHOICES = [
+        ("planning", "Planning"),
+        ("requirements", "Requirements"),
+        ("design", "Design"),
+        ("development", "Development"),
+        ("testing", "Testing"),
+        ("deployment", "Deployment"),
+        ("training", "Training"),
+        ("general", "General"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("in_review", "In Review"),
+        ("approved", "Approved"),
+        ("archived", "Archived"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="documents"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    category = models.CharField(
+        max_length=50, choices=CATEGORY_CHOICES, default="general"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+
+    # File upload using existing Upload model
+    file = models.ForeignKey(Upload, on_delete=models.CASCADE, related_name="documents")
+
+    # Links to milestones and stages
+    linked_milestones = models.ManyToManyField(
+        Milestone, blank=True, related_name="linked_documents"
+    )
+    linked_stages = models.JSONField(
+        default=list, help_text="List of stage names this document is linked to"
+    )
+
+    # Metadata
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_documents",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_documents",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "category"]),
+            models.Index(fields=["project", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.project.name}"
+
+    @property
+    def file_size(self):
+        """Get human readable file size"""
+        if self.file and self.file.file:
+            size = self.file.file.size
+            for unit in ["B", "KB", "MB", "GB"]:
+                if size < 1024.0:
+                    return f"{size:.1f} {unit}"
+                size /= 1024.0
+            return f"{size:.1f} TB"
+        return "0 B"
+
+    @property
+    def file_type(self):
+        """Get file extension"""
+        if self.file and self.file.file:
+            return self.file.file.name.split(".")[-1].upper()
+        return ""
+
+
+class TrainingMaterial(models.Model):
+    """Training materials for projects"""
+
+    AUDIENCE_CHOICES = [
+        ("end_users", "End Users"),
+        ("administrators", "Administrators"),
+        ("developers", "Developers"),
+        ("managers", "Managers"),
+        ("all", "All"),
+    ]
+
+    FORMAT_CHOICES = [
+        ("pdf", "PDF"),
+        ("docx", "DOCX"),
+        ("pptx", "PPTX"),
+        ("mp4", "MP4"),
+        ("mp3", "MP3"),
+        ("other", "Other"),
+    ]
+
+    STATUS_CHOICES = [
+        ("not_started", "Not Started"),
+        ("draft", "Draft"),
+        ("in_review", "In Review"),
+        ("completed", "Completed"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="training_materials"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    audience = models.CharField(
+        max_length=50, choices=AUDIENCE_CHOICES, default="end_users"
+    )
+    format_type = models.CharField(max_length=20, choices=FORMAT_CHOICES, default="pdf")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="not_started"
+    )
+
+    # Optional file upload
+    file = models.ForeignKey(
+        Upload,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="training_materials",
+    )
+
+    # Metadata
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_training_materials",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "audience"]),
+            models.Index(fields=["project", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.project.name}"
+
+    @property
+    def file_size(self):
+        """Get human readable file size"""
+        if self.file and self.file.file:
+            size = self.file.file.size
+            for unit in ["B", "KB", "MB", "GB"]:
+                if size < 1024.0:
+                    return f"{size:.1f} {unit}"
+                size /= 1024.0
+            return f"{size:.1f} TB"
+        return "0 B"

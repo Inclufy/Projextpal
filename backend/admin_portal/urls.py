@@ -1,0 +1,65 @@
+# ============================================================
+# ADMIN PORTAL - URLS
+# URL routing for admin portal API endpoints
+# ============================================================
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    CurrentUserView,
+    DashboardStatsView,
+    AdminUserViewSet,
+    AdminCompanyViewSet,
+    AdminPlanViewSet,
+    AuditLogViewSet,
+    SystemSettingsView,
+)
+
+# Import invoice views from invoices app
+from invoices.views import CompanyInvoiceViewSet, InvoiceSettingsViewSet
+
+# Import academy views
+from academy import views as academy_views
+
+# Create router for viewsets
+router = DefaultRouter()
+router.register('users', AdminUserViewSet, basename='admin-users')
+router.register('tenants', AdminCompanyViewSet, basename='admin-tenants')
+router.register('plans', AdminPlanViewSet, basename='admin-plans')
+router.register('logs', AuditLogViewSet, basename='admin-logs')
+router.register('invoices', CompanyInvoiceViewSet, basename='admin-invoices')
+router.register('invoice-settings', InvoiceSettingsViewSet, basename='admin-invoice-settings')
+
+urlpatterns = [
+    # Dashboard stats
+    path('stats/', DashboardStatsView.as_view(), name='admin-stats'),
+    
+    # System settings
+    path('settings/', SystemSettingsView.as_view(), name='admin-settings'),
+    
+    # ============================================
+    # ACADEMY / TRAINING MANAGEMENT
+    # ============================================
+    # Courses
+    path('training/courses/', academy_views.admin_get_courses, name='admin-training-courses'),
+    path('training/courses/<str:course_id>/', academy_views.admin_get_course, name='admin-training-course-detail'),
+    path('training/courses/<str:course_id>/update/', academy_views.admin_update_course, name='admin-training-course-update'),
+    
+    # Enrollments
+    path('training/enrollments/', academy_views.admin_get_enrollments, name='admin-training-enrollments'),
+    path('training/enrollments/<str:enrollment_id>/', academy_views.admin_get_enrollment, name='admin-training-enrollment-detail'),
+    path('training/enrollments/<str:enrollment_id>/update/', academy_views.admin_update_enrollment, name='admin-training-enrollment-update'),
+    
+    # Quotes
+    path('training/quotes/', academy_views.admin_get_quotes, name='admin-training-quotes'),
+    path('training/quotes/<str:quote_id>/', academy_views.admin_get_quote, name='admin-training-quote-detail'),
+    path('training/quotes/<str:quote_id>/update/', academy_views.admin_update_quote, name='admin-training-quote-update'),
+    path('training/quotes/<str:quote_id>/mark-contacted/', academy_views.admin_quote_mark_contacted, name='admin-training-quote-contacted'),
+    path('training/quotes/<str:quote_id>/send/', academy_views.admin_quote_send, name='admin-training-quote-send'),
+    
+    # Analytics
+    path('training/analytics/', academy_views.admin_get_analytics, name='admin-training-analytics'),
+    
+    # Include router URLs
+    path('', include(router.urls)),
+]

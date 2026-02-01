@@ -1,0 +1,121 @@
+/* RichTextEditor.css */
+
+.ProseMirror {
+  min-height: 200px;
+  padding: 1rem;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Headings */
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 1em 0 0.5em 0;
+  line-height: 1.2;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 1em 0 0.5em 0;
+  line-height: 1.3;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin: 1em 0 0.5em 0;
+  line-height: 1.4;
+}
+
+/* Paragraphs */
+.ProseMirror p {
+  margin: 0.5em 0;
+  line-height: 1.6;
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 2em;
+  margin: 0.5em 0;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+}
+
+/* Blockquotes */
+.ProseMirror blockquote {
+  border-left: 4px solid #8B5CF6;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Code */
+.ProseMirror code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.ProseMirror pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.ProseMirror pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Links */
+.ProseMirror a {
+  color: #8B5CF6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #7C3AED;
+}
+
+/* Images */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 1em 0;
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  background-color: #D946EF33;
+}
+
+/* Horizontal Rule */
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 2em 0;
+}

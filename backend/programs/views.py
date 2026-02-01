@@ -1,0 +1,358 @@
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Sum, Count, Q
+from .models import Program, ProgramBenefit, ProgramRisk, ProgramMilestone
+from .serializers import (
+    ProgramListSerializer,
+    ProgramDetailSerializer,
+    ProgramCreateUpdateSerializer,
+    ProgramBenefitSerializer,
+    ProgramRiskSerializer,
+    ProgramMilestoneSerializer,
+)
+
+
+class ProgramViewSet(viewsets.ModelViewSet):
+    """ViewSet for Program CRUD operations."""
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter programs by user's company."""
+        user = self.request.user
+        queryset = Program.objects.filter(company=user.company)
+        
+        # Optional filtering
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        methodology = self.request.query_params.get('methodology')
+        if methodology:
+            queryset = queryset.filter(methodology=methodology)
+        
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(description__icontains=search)
+            )
+        
+        return queryset.select_related('program_manager', 'executive_sponsor', 'created_by')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ProgramListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return ProgramCreateUpdateSerializer
+        return ProgramDetailSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(
+            company=self.request.user.company,
+            created_by=self.request.user
+        )
+
+    @action(detail=True, methods=['get'])
+    def projects(self, request, pk=None):
+        """Get all projects linked to this program."""
+        program = self.get_object()
+        from projects.serializers import ProjectSerializer
+        projects = program.projects.all()
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_project(self, request, pk=None):
+        """Add a project to this program."""
+        program = self.get_object()
+        project_id = request.data.get('project_id')
+        
+        if not project_id:
+            return Response(
+                {'error': 'project_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        from projects.models import Project
+        try:
+            project = Project.objects.get(id=project_id, company=program.company)
+            program.projects.add(project)
+            return Response({'status': 'project added'})
+        except Project.DoesNotExist:
+            return Response(
+                {'error': 'Project not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=['delete'], url_path='projects/(?P<project_id>[^/.]+)')
+    def remove_project(self, request, pk=None, project_id=None):
+        """Remove a project from this program."""
+        program = self.get_object()
+        from projects.models import Project
+        try:
+            project = Project.objects.get(id=project_id)
+            program.projects.remove(project)
+            return Response({'status': 'project removed'})
+        except Project.DoesNotExist:
+            return Response(
+                {'error': 'Project not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=['get'])
+    def metrics(self, request, pk=None):
+        """Get program metrics."""
+        program = self.get_object()
+        
+        projects = program.projects.all()
+        total_projects = projects.count()
+        
+        # Calculate project status distribution
+        status_distribution = projects.values('status').annotate(count=Count('id'))
+        
+        # Calculate total budget from projects
+        project_budget = projects.aggregate(total=Sum('budget'))['total'] or 0
+        
+        # Benefits metrics
+        benefits = program.benefits.all()
+        total_benefits = benefits.count()
+        realized_benefits = benefits.filter(status='realized').count()
+        
+        # Risk metrics
+        risks = program.risks.all()
+        open_risks = risks.filter(status='open').count()
+        high_risks = risks.filter(impact='high', status='open').count()
+        
+        return Response({
+            'total_projects': total_projects,
+            'status_distribution': list(status_distribution),
+            'program_budget': float(program.total_budget),
+            'spent_budget': float(program.spent_budget),
+            'project_budget_total': float(project_budget),
+            'progress': program.progress,
+            'total_benefits': total_benefits,
+            'realized_benefits': realized_benefits,
+            'open_risks': open_risks,
+            'high_risks': high_risks,
+        })
+
+    @action(detail=True, methods=['get'])
+    def dashboard(self, request, pk=None):
+        """Get dashboard data for program."""
+        program = self.get_object()
+        serializer = ProgramDetailSerializer(program)
+        
+        # Add additional dashboard data
+        data = serializer.data
+        data['metrics'] = self.metrics(request, pk).data
+        
+        return Response(data)
+
+
+class ProgramBenefitViewSet(viewsets.ModelViewSet):
+    """ViewSet for Program Benefits."""
+    serializer_class = ProgramBenefitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_pk')
+        return ProgramBenefit.objects.filter(
+            program_id=program_id,
+            program__company=self.request.user.company
+        )
+
+    def perform_create(self, serializer):
+        program_id = self.kwargs.get('program_pk')
+        program = Program.objects.get(id=program_id, company=self.request.user.company)
+        serializer.save(program=program)
+
+
+class ProgramRiskViewSet(viewsets.ModelViewSet):
+    """ViewSet for Program Risks."""
+    serializer_class = ProgramRiskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_pk')
+        return ProgramRisk.objects.filter(
+            program_id=program_id,
+            program__company=self.request.user.company
+        )
+
+    def perform_create(self, serializer):
+        program_id = self.kwargs.get('program_pk')
+        program = Program.objects.get(id=program_id, company=self.request.user.company)
+        serializer.save(program=program)
+
+
+class ProgramMilestoneViewSet(viewsets.ModelViewSet):
+    """ViewSet for Program Milestones."""
+    serializer_class = ProgramMilestoneSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_pk')
+        return ProgramMilestone.objects.filter(
+            program_id=program_id,
+            program__company=self.request.user.company
+        )
+
+    def perform_create(self, serializer):
+        program_id = self.kwargs.get('program_pk')
+        program = Program.objects.get(id=program_id, company=self.request.user.company)
+        serializer.save(program=program)
+# ========================================
+# ADD THESE TO programs/views.py
+# ========================================
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import (
+    ProgramBudget,
+    ProgramBudgetCategory,
+    ProgramBudgetItem
+)
+from .serializers import (
+    ProgramBudgetSerializer,
+    ProgramBudgetCategorySerializer,
+    ProgramBudgetItemSerializer,
+    ProgramBudgetOverviewSerializer
+)
+
+
+class ProgramBudgetViewSet(viewsets.ModelViewSet):
+    """ViewSet for program budgets"""
+    serializer_class = ProgramBudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ProgramBudget.objects.filter(
+            program__company=self.request.user.company
+        )
+
+
+class ProgramBudgetCategoryViewSet(viewsets.ModelViewSet):
+    """ViewSet for program budget categories"""
+    serializer_class = ProgramBudgetCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = ProgramBudgetCategory.objects.filter(
+            program__company=self.request.user.company
+        )
+        
+        # Filter by program
+        program_id = self.request.query_params.get('program_id')
+        if program_id:
+            queryset = queryset.filter(program_id=program_id)
+        
+        return queryset
+
+
+class ProgramBudgetItemViewSet(viewsets.ModelViewSet):
+    """ViewSet for program budget items"""
+    serializer_class = ProgramBudgetItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = ProgramBudgetItem.objects.filter(
+            program__company=self.request.user.company
+        )
+        
+        # Filter by program
+        program_id = self.request.query_params.get('program_id')
+        if program_id:
+            queryset = queryset.filter(program_id=program_id)
+        
+        # Filter by category
+        category_id = self.request.query_params.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)
+        
+        return queryset
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """Approve a program budget item"""
+        item = self.get_object()
+        item.status = 'approved'
+        item.approved_by = request.user
+        item.save()
+        
+        serializer = self.get_serializer(item)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """Reject a program budget item"""
+        item = self.get_object()
+        item.status = 'rejected'
+        item.rejection_reason = request.data.get('reason', '')
+        item.save()
+        
+        serializer = self.get_serializer(item)
+        return Response(serializer.data)
+
+
+class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
+    """Budget overview for a specific program"""
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, pk=None):
+        """GET /programs/{id}/budget/overview/"""
+        try:
+            from .models import Program
+            program = Program.objects.get(
+                id=pk,
+                company=request.user.company
+            )
+            
+            # Get or create budget
+            budget, created = ProgramBudget.objects.get_or_create(
+                program=program,
+                defaults={'total_budget': 0, 'currency': 'EUR'}
+            )
+            
+            # Get categories
+            categories = ProgramBudgetCategory.objects.filter(program=program)
+            
+            data = {
+                'program_id': program.id,
+                'program_name': program.name,
+                'total_budget': budget.total_budget,
+                'total_spent': budget.total_spent,
+                'total_remaining': budget.total_remaining,
+                'projects_budget': budget.projects_budget,
+                'currency': budget.currency,
+                'categories': ProgramBudgetCategorySerializer(categories, many=True).data
+            }
+            
+            serializer = ProgramBudgetOverviewSerializer(data)
+            return Response(serializer.data)
+            
+        except Program.DoesNotExist:
+            return Response(
+                {'error': 'Program not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
