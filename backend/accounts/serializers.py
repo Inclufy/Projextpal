@@ -15,7 +15,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "first_name",
-            "image",
+            "profile_image",
             "role",
             "is_superuser",
         ]
@@ -142,7 +142,7 @@ class PublicAdminRegisterSerializer(serializers.Serializer):
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
-            image=validated_data.get("image", None),
+            image=validated_data.get("profile_image", None),
             first_name=validated_data.get("first_name", ""),
             is_active=False,
             role="admin",
@@ -191,7 +191,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "password",
-            "image",
+            "profile_image",
             "first_name",
             "role",
         ]
@@ -220,7 +220,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
-            image=validated_data.get("image", None),
+            image=validated_data.get("profile_image", None),
             first_name=validated_data.get("first_name", ""),
             is_active=False,
             role=validated_data.get("role", "pm"),
@@ -250,7 +250,7 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "first_name",
-            "image",
+            "profile_image",
             "role",
             "is_active",
         ]
@@ -290,7 +290,7 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
                 )
 
         # Update allowed fields
-        for field in ["first_name", "image", "role", "is_active"]:
+        for field in ["first_name", "profile_image", "role", "is_active"]:
             if field in validated_data:
                 setattr(instance, field, validated_data[field])
 
@@ -304,7 +304,7 @@ class UpdateOwnProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             "first_name",
-            "image",
+            "profile_image",
         ]
         extra_kwargs = {
             "first_name": {"required": False, "allow_blank": True},

@@ -5,7 +5,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard } from "lucide-react";
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard,Package, Eye } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -279,42 +279,46 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
     case 'scrum':
       return [
         {
-          id: "foundation",
-          title: "Scrum Setup",
-          icon: Repeat,
-          items: [
-            { title: "Overview", url: `/projects/${projectId}/scrum/overview`, icon: LayoutDashboard },
-            { title: "Team", url: `/projects/${projectId}/scrum/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: DollarSign },
-            { title: "Definition of Done", url: `/projects/${projectId}/scrum/definition-of-done`, icon: CheckSquare },
-          ],
-        },
-        {
-          id: "backlog",
-          title: "Product Backlog",
-          icon: ListChecks,
-          items: [
-            { title: "Backlog", url: `/projects/${projectId}/scrum/backlog`, icon: ListChecks },
-          ],
-        },
-        {
-          id: "sprints",
-          title: "Sprint Management",
-          icon: Repeat,
-          items: [
-            { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
-            { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
-          ],
-        },
-        {
-          id: "ceremonies",
-          title: "Scrum Events",
-          icon: Users,
-          items: [
-            { title: "Daily Standup", url: `/projects/${projectId}/scrum/daily-standup`, icon: Users },
-            { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
-          ],
-        },
+  id: "foundation",
+  title: "Scrum Setup",
+  icon: Repeat,
+  items: [
+    { title: "Overview", url: `/projects/${projectId}/scrum/overview`, icon: LayoutDashboard },
+    { title: "Team", url: `/projects/${projectId}/scrum/team`, icon: Users },
+    { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: DollarSign },
+    { title: "Definition of Done", url: `/projects/${projectId}/scrum/definition-of-done`, icon: CheckSquare },
+  ],
+},
+{
+  id: "backlog",
+  title: "Product Backlog",
+  icon: ListChecks,
+  items: [
+    { title: "Backlog", url: `/projects/${projectId}/scrum/backlog`, icon: ListChecks },
+  ],
+},
+{
+  id: "sprints",
+  title: "Sprint Management",
+  icon: Repeat,
+  items: [
+    { title: "Sprint Planning", url: `/projects/${projectId}/scrum/sprint-planning`, icon: Calendar },  // ← NEW
+    { title: "Sprint Goal", url: `/projects/${projectId}/scrum/sprint-goal`, icon: Target },  // ← NEW
+    { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
+    { title: "Increment", url: `/projects/${projectId}/scrum/increment`, icon: Package },  // ← NEW
+    { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
+  ],
+},
+{
+  id: "ceremonies",
+  title: "Scrum Events",
+  icon: Users,
+  items: [
+    { title: "Daily Standup", url: `/projects/${projectId}/scrum/daily-standup`, icon: Users },
+    { title: "Sprint Review", url: `/projects/${projectId}/scrum/sprint-review`, icon: Eye },  // ← NEW
+    { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
+  ],
+},
       ];
 
     case 'kanban':

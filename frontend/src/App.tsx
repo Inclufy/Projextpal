@@ -125,6 +125,10 @@ import ScrumVelocity from './pages/scrum/ScrumVelocity';
 import ScrumDefinitionOfDone from './pages/scrum/ScrumDefinitionOfDone';
 import ScrumDailyStandup from './pages/scrum/ScrumDailyStandup';
 import ScrumRetrospective from './pages/scrum/ScrumRetrospective';
+import ScrumSprintPlanning from './pages/scrum/ScrumSprintPlanning';
+import ScrumSprintReview from './pages/scrum/ScrumSprintReview';
+import ScrumSprintGoal from './pages/scrum/ScrumSprintGoal';
+import ScrumIncrement from './pages/scrum/ScrumIncrement';
 
 // Kanban Pages
 import KanbanOverview from './pages/kanban/KanbanOverview';
@@ -528,6 +532,10 @@ const App = () => (
               <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><ScrumDailyStandup /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><ScrumRetrospective /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><ScrumDefinitionOfDone /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-goal" element={<ProtectedPage><ScrumSprintGoal /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/increment" element={<ProtectedPage><ScrumIncrement /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Kanban Methodology Routes                    */}

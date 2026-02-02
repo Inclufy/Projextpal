@@ -286,6 +286,18 @@ export const scrumApi = {
     delete: (projectId: string | number, id: number) => 
       api.delete<void>(`/projects/${projectId}/scrum/team/${id}/`),
   },
+
+  // Product Increments
+  increments: {
+    getAll: (projectId: string | number) => 
+      api.get<any[]>(`/projects/${projectId}/scrum/increments/`),
+    create: (projectId: string | number, data: any) => 
+      api.post<any>(`/projects/${projectId}/scrum/increments/`, data),
+    update: (projectId: string | number, id: number, data: any) => 
+      api.patch<any>(`/projects/${projectId}/scrum/increments/${id}/`, data),
+    deploy: (projectId: string | number, id: number) => 
+      api.post<any>(`/projects/${projectId}/scrum/increments/${id}/deploy/`),
+  },
 };
 
 export default scrumApi;

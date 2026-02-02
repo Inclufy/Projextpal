@@ -72,3 +72,4 @@ xxhash==3.6.0
 zstandard==0.24.0
 python-dateutil
 psycopg2-binary==2.9.9
+gunicorn==21.2.0

@@ -23,6 +23,7 @@ from accounts.serializers import (
 from accounts.models import VerificationToken, CrmApiKey
 from accounts.permissions import HasRole
 from django.contrib.auth import get_user_model
+from accounts.models import CustomUser
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -1190,10 +1191,12 @@ class PlanViewSet(viewsets.ModelViewSet):
         except SubscriptionPlan.DoesNotExist:
             return Response({'detail': 'Plan not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    @api_view(['GET'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_users_list(request):
     """Get all users for team management"""
+    from accounts.models import CustomUser
+    
     users = CustomUser.objects.all().order_by('first_name', 'email')
     
     data = []
