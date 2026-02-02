@@ -20,6 +20,7 @@ from accounts.views import (
     CompanyDetailView,
     CompanyUsersListView,
     AdminStatsView,
+    admin_users_list,
     PlanViewSet,
     upload_profile_image,  # ← Function-based view
 )
@@ -72,7 +73,8 @@ urlpatterns = [
     # Admin - User Management
     path("admin/create-user/", AdminCreateUserView.as_view(), name="admin_create_user"),
     path("admin/users/<int:pk>/", AdminUpdateUserView.as_view(), name="admin_update_user"),
-    
+    path("admin/users/", admin_users_list, name="admin_users"),
+
     # Admin - Company/Tenant Management
     path("admin/stats/", AdminStatsView.as_view(), name="admin_stats"),
     path("companies/", CompanyListView.as_view(), name="company_list"),
