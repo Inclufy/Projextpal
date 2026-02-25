@@ -55,3 +55,4 @@ backups/
 .DS_Store
 .env
 .DS_Store
+backend/.env.prod
