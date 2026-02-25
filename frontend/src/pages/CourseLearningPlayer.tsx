@@ -933,8 +933,8 @@ const renderGenericContent = (content: string, isNL: boolean, index: number) => 
   `;
 };
 // ============================================
-// MAIN CONTENT SECTIONS — API-driven + dynamic fallback
-// Uses VisualTemplateRenderer React components
+// MAIN CONTENT SECTIONS — split by **Header** markers
+// Uses renderMarkdownBlock for proper content rendering
 // ============================================
 const contentSections = useMemo(() => {
   const fullContent = currentLesson?.transcript || currentLesson?.content || '';
@@ -955,33 +955,15 @@ const contentSections = useMemo(() => {
     }];
   }
 
-  // Get visual config — merge API data with any fetched LessonVisual data
-  const apiVisualType = (currentLesson as any)?.visual_type || 'auto';
-  const lessonVisualData = (currentLesson as any)?.visual_data || null;
-  // approvedVisualData from LessonVisual fetch takes priority (has preview_image_url etc.)
-  const apiVisualData = approvedVisualData || lessonVisualData;
-
-  // Split content into sections (~500 chars each)
-  const rawSections: string[] = [];
-  const sentences = fullContent.split(/(?<=[.!?])\s+/);
-  let currentSection = '';
-
-  for (const sentence of sentences) {
-    currentSection += sentence + ' ';
-    if (currentSection.length > 500) {
-      rawSections.push(currentSection.trim());
-      currentSection = '';
-    }
-  }
-  if (currentSection.trim()) rawSections.push(currentSection.trim());
-
-  const sections = rawSections.slice(0, 4);
-
   const icons = [
     <Target className="w-8 h-8 text-white" />,
     <Triangle className="w-8 h-8 text-white" />,
     <GitCompare className="w-8 h-8 text-white" />,
     <Users className="w-8 h-8 text-white" />,
+    <BookOpen className="w-8 h-8 text-white" />,
+    <Lightbulb className="w-8 h-8 text-white" />,
+    <Star className="w-8 h-8 text-white" />,
+    <Rocket className="w-8 h-8 text-white" />,
   ];
 
   const colors = [
@@ -989,65 +971,80 @@ const contentSections = useMemo(() => {
     'bg-gradient-to-br from-orange-600 to-red-600 shadow-xl',
     'bg-gradient-to-br from-green-600 to-emerald-600 shadow-xl',
     'bg-gradient-to-br from-purple-600 to-pink-600 shadow-xl',
+    'bg-gradient-to-br from-indigo-600 to-blue-600 shadow-xl',
+    'bg-gradient-to-br from-teal-600 to-emerald-600 shadow-xl',
+    'bg-gradient-to-br from-rose-600 to-pink-600 shadow-xl',
+    'bg-gradient-to-br from-amber-600 to-orange-600 shadow-xl',
   ];
 
-  return sections.map((sectionText, index) => {
-    // Use API visual type for the first section, auto-detect for subsequent
-    const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
-    const visualData = index === 0 ? apiVisualData : null;
+  // Split content by **Header** section markers (lines that are ONLY **text**)
+  const headerRegex = /^\*\*(.+?)\*\*\s*$/gm;
+  const headers: { title: string; index: number; length: number }[] = [];
+  let match;
 
-    // Get topic type for title/subtitle (either from API or auto-detected)
-    const resolvedType = visualType !== 'auto' ? visualType : detectTopicType(sectionText);
+  while ((match = headerRegex.exec(fullContent)) !== null) {
+    headers.push({
+      title: match[1],
+      index: match.index,
+      length: match[0].length,
+    });
+  }
 
-    let title = '';
-    let subtitle = '';
+  const parsedSections: { title: string; content: string }[] = [];
 
-    if (resolvedType === 'project_def') {
-      title = isNL ? 'Wat is een Project?' : 'What is a Project?';
-      subtitle = isNL ? 'De 3 kernkenmerken' : 'The 3 core characteristics';
-    } else if (resolvedType === 'triple_constraint') {
-      title = isNL ? 'De Triple Constraint' : 'The Triple Constraint';
-      subtitle = isNL ? 'Tijd, Budget & Scope' : 'Time, Budget & Scope';
-    } else if (resolvedType === 'pm_role') {
-      title = isNL ? 'De Rol van de PM' : 'The Role of the PM';
-      subtitle = isNL ? 'Verantwoordelijkheden' : 'Responsibilities';
-    } else if (resolvedType === 'comparison') {
-      title = isNL ? 'Project vs. Operatie' : 'Project vs. Operation';
-      subtitle = isNL ? 'Ken het verschil' : 'Know the difference';
-    } else if (resolvedType === 'lifecycle') {
-      title = isNL ? 'Projectlevenscyclus' : 'Project Lifecycle';
-      subtitle = isNL ? 'De fasen van een project' : 'The phases of a project';
-    } else if (resolvedType === 'stakeholder') {
-      title = isNL ? 'Stakeholder Management' : 'Stakeholder Management';
-      subtitle = isNL ? 'Belanghebbenden in kaart' : 'Mapping stakeholders';
-    } else if (resolvedType === 'risk') {
-      title = isNL ? 'Risicomanagement' : 'Risk Management';
-      subtitle = isNL ? 'Identificeer & beheers risico\'s' : 'Identify & manage risks';
-    } else {
-      const firstSentence = sectionText.split(/[.!?]/)[0]?.trim() || '';
-      title = firstSentence.length > 60 ? firstSentence.substring(0, 60) + '...' : firstSentence;
-      subtitle = `${isNL ? 'Deel' : 'Part'} ${index + 1}`;
+  if (headers.length > 0) {
+    // Intro content before first header
+    const intro = fullContent.substring(0, headers[0].index).trim();
+    if (intro) {
+      parsedSections.push({
+        title: currentLesson?.title || (isNL ? 'Introductie' : 'Introduction'),
+        content: intro,
+      });
     }
 
-    return {
-      title,
-      subtitle,
-      icon: icons[index % 4],
-      color: colors[index % 4],
-      content: '', // No longer using HTML strings
-      reactContent: (
-        <VisualTemplateRenderer
-          visualType={visualType}
-          visualData={visualData}
-          content={sectionText}
-          isNL={isNL}
-          index={index}
-        />
-      ),
-      keyPoints: [] as string[],
-    };
-  });
-}, [currentLesson, isNL, approvedVisualData]);
+    // Each header starts a new section
+    for (let i = 0; i < headers.length; i++) {
+      const contentStart = headers[i].index + headers[i].length;
+      const contentEnd = i < headers.length - 1 ? headers[i + 1].index : fullContent.length;
+      const sectionContent = fullContent.substring(contentStart, contentEnd).trim();
+
+      if (sectionContent) {
+        parsedSections.push({
+          title: headers[i].title,
+          content: sectionContent,
+        });
+      }
+    }
+  } else {
+    // No **headers** found — fall back to paragraph-based splitting
+    const paragraphs = fullContent.split(/\n\n+/).filter(p => p.trim());
+    const chunkSize = Math.max(1, Math.ceil(paragraphs.length / 4));
+
+    for (let i = 0; i < paragraphs.length; i += chunkSize) {
+      const chunk = paragraphs.slice(i, i + chunkSize).join('\n\n');
+      const firstLine = chunk.split(/[.!?\n]/)[0]?.trim() || '';
+      parsedSections.push({
+        title: i === 0
+          ? (currentLesson?.title || (isNL ? 'Lesinhoud' : 'Lesson Content'))
+          : (firstLine.length > 60 ? firstLine.substring(0, 60) + '...' : firstLine),
+        content: chunk,
+      });
+    }
+  }
+
+  // Limit to 10 sections max
+  const finalSections = parsedSections.slice(0, 10);
+
+  return finalSections.map((section, index) => ({
+    title: section.title,
+    subtitle: `${isNL ? 'Deel' : 'Part'} ${index + 1} ${isNL ? 'van' : 'of'} ${finalSections.length}`,
+    icon: icons[index % icons.length],
+    color: colors[index % colors.length],
+    content: section.content,
+    reactContent: renderMarkdownBlock(section.content),
+    keyPoints: [] as string[],
+  }));
+}, [currentLesson, isNL]);
   // Get interactive slides
   const slides = generateInteractiveSlides(currentLesson, isNL);
   
