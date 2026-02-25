@@ -36,23 +36,16 @@ const CreatePortfolio: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("access_token");
-      
-      if (!user?.company) {
-        toast({
-          title: "❌ Missing Company",
-          description: "Your account is not associated with a company.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      
-      const payload = {
+            const token = localStorage.getItem("access_token");
+
+      const payload: any = {
         ...formData,
-        company: user.company,
-        owner: user.id,
+        owner: user?.id,
       };
+      if (user?.company) {
+        payload.company = user.company;
+      }
+
       
       const response = await fetch("/api/v1/governance/portfolios/", {
         method: "POST",
