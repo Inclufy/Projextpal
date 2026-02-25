@@ -131,7 +131,7 @@ interface TeamMember {
   name: string;
   email: string;
   phone?: string;
-  role: "ADMIN" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
+  role: "ADMIN" | "PROGRAM_MANAGER" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
   department?: string;
   status: "Active" | "Inactive" | "Pending";
   joinedDate: string;
@@ -542,8 +542,6 @@ if (!sendInviteEmail) {
   payload.password = memberData.password || "TempPass123!";
 }
 
-      console.log('Creating team member with payload:', payload);
-      
       const response = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
         method: 'POST',
         headers: {
@@ -554,8 +552,6 @@ if (!sendInviteEmail) {
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to create member:', response.status, errorData);
         throw new Error('Failed to create member');
       }
       
@@ -571,8 +567,7 @@ if (!sendInviteEmail) {
         description: "Het nieuwe teamlid is succesvol toegevoegd.",
       });
     },
-    onError: (error) => {
-      console.error('Create member error:', error);
+    onError: () => {
       toast({
         title: "Fout",
         description: "Kon teamlid niet aanmaken.",
@@ -651,8 +646,7 @@ if (!sendInviteEmail) {
         description: "Het teamlid is succesvol bijgewerkt.",
       });
     },
-    onError: (error) => {
-      console.error('Update member error:', error);
+    onError: () => {
       toast({
         title: "Fout",
         description: "Kon teamlid niet bijwerken.",

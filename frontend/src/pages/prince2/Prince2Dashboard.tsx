@@ -31,7 +31,7 @@ const Prince2Dashboard = () => {
       if (response.ok) {
         setDashboard(await response.json());
       } else {
-        toast.error("Dashboard laden mislukt");
+        toast.error(pt("Loading data..."));
       }
     } catch (err) {
       console.error("Failed to fetch dashboard", err);
@@ -50,14 +50,14 @@ const Prince2Dashboard = () => {
         headers: jsonHeaders,
       });
       if (response.ok) {
-        toast.success("Fasen geïnitialiseerd");
+        toast.success(pt("Saved"));
         fetchDashboard();
       } else {
         const err = await response.json().catch(() => ({}));
-        toast.error(err.error || err.detail || "Initialiseren mislukt");
+        toast.error(err.error || err.detail || pt("Action failed"));
       }
     } catch {
-      toast.error("Initialiseren mislukt");
+      toast.error(pt("Action failed"));
     } finally {
       setInitializing(false);
     }

@@ -61,7 +61,7 @@ const Prince2WorkPackages = () => {
   };
 
   const handleSave = async () => {
-    if (!form.title) { toast.error("Titel is verplicht"); return; }
+    if (!form.title) { toast.error(pt("Title is required")); return; }
     setSubmitting(true);
     try {
       const body: any = { title: form.title, description: form.description, priority: form.priority };
@@ -70,14 +70,14 @@ const Prince2WorkPackages = () => {
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
       if (response.ok) {
-        toast.success(editing ? "Werkpakket bijgewerkt" : "Werkpakket aangemaakt");
+        toast.success(editing ? pt("Updated") : pt("Created"));
         setDialogOpen(false);
         fetchData();
       } else {
         const err = await response.json().catch(() => ({}));
-        toast.error(err.error || "Opslaan mislukt");
+        toast.error(err.error || pt("Save failed"));
       }
-    } catch { toast.error("Opslaan mislukt"); }
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
@@ -86,18 +86,18 @@ const Prince2WorkPackages = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/work-packages/${wpId}/${action}/`, {
         method: "POST", headers: jsonHeaders,
       });
-      if (response.ok) { toast.success(`Werkpakket ${action}`); fetchData(); }
-      else toast.error("Actie mislukt");
-    } catch { toast.error("Actie mislukt"); }
+      if (response.ok) { toast.success(pt("Action completed")); fetchData(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const handleDelete = async (wpId: number) => {
-    if (!confirm("Werkpakket verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const response = await fetch(`/api/v1/projects/${id}/prince2/work-packages/${wpId}/`, { method: "DELETE", headers });
-      if (response.ok || response.status === 204) { toast.success("Verwijderd"); fetchData(); }
-      else toast.error("Verwijderen mislukt");
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (response.ok || response.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+      else toast.error(pt("Delete failed"));
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const statusColors: Record<string, string> = {

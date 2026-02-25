@@ -20,7 +20,7 @@ const KanbanOverview = () => {
   const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
   const fetchDashboard = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/dashboard/`, { headers }); if (r.ok) setDashboard(await r.json()); } catch (err) { console.error(err); } finally { setLoading(false); } };
-  const initialize = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/board/initialize/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Kanban board geïnitialiseerd"); fetchDashboard(); } else toast.error("Initialiseren mislukt"); } catch { toast.error("Initialiseren mislukt"); } };
+  const initialize = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/board/initialize/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Initialized")); fetchDashboard(); } else toast.error(pt("Initialize failed")); } catch { toast.error(pt("Initialize failed")); } };
 
   useEffect(() => { fetchDashboard(); }, [id]);
   const nav = (path: string) => navigate(`/projects/${id}/kanban/${path}`);

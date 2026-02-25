@@ -38,15 +38,15 @@ const ScrumDailyStandup = () => {
     setSubmitting(true);
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Standup aangemaakt"); setDialogOpen(false); fetchData(); }
-      else toast.error("Aanmaken mislukt");
-    } catch { toast.error("Aanmaken mislukt"); }
+      if (r.ok) { toast.success(pt("Created")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (sId: number) => {
-    if (!confirm("Verwijderen?")) return;
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/standups/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); }
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/standups/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); }
   };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);

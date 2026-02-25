@@ -59,9 +59,9 @@ const Prince2ProjectClosure = () => {
       const url = endReport ? `/api/v1/projects/${id}/prince2/end-project-report/${endReport.id}/` : `/api/v1/projects/${id}/prince2/end-project-report/`;
       const method = endReport ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(reportForm) });
-      if (r.ok) { setEndReport(await r.json()); toast.success("Eindrapport opgeslagen"); if (!endReport) fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (r.ok) { setEndReport(await r.json()); toast.success(pt("Saved")); if (!endReport) fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSaving(false); }
   };
 
@@ -69,30 +69,30 @@ const Prince2ProjectClosure = () => {
     if (!endReport) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/end-project-report/${endReport.id}/approve/`, { method: "POST", headers: jsonHeaders });
-      if (r.ok) { toast.success("Goedgekeurd"); fetchData(); }
-    } catch { toast.error("Goedkeuren mislukt"); }
+      if (r.ok) { toast.success(pt("Approved")); fetchData(); }
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const openCreateLesson = () => { setEditingLesson(null); setLessonForm({ title: "", description: "", category: "process", lesson_type: "positive", recommendations: "" }); setLessonDialog(true); };
   const openEditLesson = (l: any) => { setEditingLesson(l); setLessonForm({ title: l.title || "", description: l.description || "", category: l.category || "process", lesson_type: l.lesson_type || "positive", recommendations: l.recommendations || "" }); setLessonDialog(true); };
 
   const saveLesson = async () => {
-    if (!lessonForm.title) { toast.error("Titel is verplicht"); return; }
+    if (!lessonForm.title) { toast.error(pt("Title is required")); return; }
     try {
       const url = editingLesson ? `/api/v1/projects/${id}/prince2/lessons/${editingLesson.id}/` : `/api/v1/projects/${id}/prince2/lessons/`;
       const method = editingLesson ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(lessonForm) });
-      if (r.ok) { toast.success("Opgeslagen"); setLessonDialog(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (r.ok) { toast.success(pt("Saved")); setLessonDialog(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
   };
 
   const deleteLesson = async (lId: number) => {
-    if (!confirm("Geleerde les verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/lessons/${lId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const Field = ({ label, field }: { label: string; field: string }) => (

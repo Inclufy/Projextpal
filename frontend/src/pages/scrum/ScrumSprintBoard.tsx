@@ -44,29 +44,29 @@ const ScrumSprintBoard = () => {
   const columns = { todo: sprintItems.filter(i => i.status === "todo"), in_progress: sprintItems.filter(i => i.status === "in_progress"), done: sprintItems.filter(i => i.status === "done") };
 
   const createSprint = async () => {
-    if (!form.name) { toast.error("Naam is verplicht"); return; }
+    if (!form.name) { toast.error(pt("Name is required")); return; }
     setSubmitting(true);
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Sprint aangemaakt"); setDialogOpen(false); fetchData(); }
-      else { const err = await r.json().catch(() => ({})); toast.error(err.detail || "Aanmaken mislukt"); }
-    } catch { toast.error("Aanmaken mislukt"); }
+      if (r.ok) { toast.success(pt("Sprint created")); setDialogOpen(false); fetchData(); }
+      else { const err = await r.json().catch(() => ({})); toast.error(err.detail || pt("Create failed")); }
+    } catch { toast.error(pt("Create failed")); }
     finally { setSubmitting(false); }
   };
 
   const startSprint = async (sprintId: number) => {
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/start/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Sprint gestart"); fetchData(); } else toast.error("Starten mislukt"); } catch { toast.error("Starten mislukt"); }
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/start/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Sprint started")); fetchData(); } else toast.error(pt("Action failed")); } catch { toast.error(pt("Action failed")); }
   };
 
   const completeSprint = async (sprintId: number) => {
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/complete/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Sprint voltooid"); fetchData(); } else toast.error("Voltooien mislukt"); } catch { toast.error("Voltooien mislukt"); }
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/complete/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Sprint completed")); fetchData(); } else toast.error(pt("Action failed")); } catch { toast.error(pt("Action failed")); }
   };
 
   const updateItemStatus = async (itemId: number, status: string) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/update_status/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ status }) });
       if (r.ok) fetchData();
-    } catch { toast.error("Status update mislukt"); }
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const typeColors: Record<string, string> = { story: "bg-blue-100 text-blue-700", bug: "bg-red-100 text-red-700", task: "bg-gray-100 text-gray-700" };

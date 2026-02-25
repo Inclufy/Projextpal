@@ -65,9 +65,9 @@ const Prince2Governance = () => {
       const url = pid ? `/api/v1/projects/${id}/prince2/pid/${pid.id}/` : `/api/v1/projects/${id}/prince2/pid/`;
       const method = pid ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (response.ok) { setPid(await response.json()); toast.success("PID opgeslagen"); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (response.ok) { setPid(await response.json()); toast.success(pt("Saved")); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSaving(false); }
   };
 
@@ -75,9 +75,9 @@ const Prince2Governance = () => {
     if (!pid) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/pid/${pid.id}/baseline/`, { method: "POST", headers: jsonHeaders });
-      if (r.ok) { toast.success("PID baselined"); fetchData(); }
-      else toast.error("Baselinen mislukt");
-    } catch { toast.error("Baselinen mislukt"); }
+      if (r.ok) { toast.success(pt("Saved")); fetchData(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const Field = ({ label, field }: { label: string; field: string }) => (

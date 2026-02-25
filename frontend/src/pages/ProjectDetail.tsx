@@ -57,6 +57,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // API functions
 const fetchProgram = async (id: string) => {
@@ -117,6 +118,7 @@ const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: st
 
 const ProgramDetail = () => {
   const { pt } = usePageTranslations();
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -148,11 +150,11 @@ const ProgramDetail = () => {
     mutationFn: () => deleteProgram(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Program deleted successfully");
+      toast.success(t.common.programDeleted);
       navigate("/programs");
     },
     onError: () => {
-      toast.error("Failed to delete program");
+      toast.error(t.common.deleteFailed);
     },
   });
 
@@ -162,11 +164,11 @@ const ProgramDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["program", id] });
       queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Program updated successfully");
+      toast.success(t.common.programUpdated);
       setEditDialogOpen(false);
     },
     onError: () => {
-      toast.error("Failed to update program");
+      toast.error(t.common.updateFailed);
     },
   });
 

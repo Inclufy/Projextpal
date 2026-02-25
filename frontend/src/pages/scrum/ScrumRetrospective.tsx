@@ -44,15 +44,15 @@ const ScrumRetrospective = () => {
       const url = editing ? `/api/v1/projects/${id}/scrum/retrospectives/${editing.id}/` : `/api/v1/projects/${id}/scrum/retrospectives/`;
       const method = editing ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (rId: number) => {
-    if (!confirm("Verwijderen?")) return;
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/retrospectives/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); }
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/retrospectives/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); }
   };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);

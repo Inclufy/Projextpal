@@ -19,7 +19,7 @@ const KanbanBlockedItems = () => {
   const fetchData = async () => { try { const [crRes, cRes] = await Promise.all([fetch(`/api/v1/projects/${id}/kanban/cards/`, { headers }), fetch(`/api/v1/projects/${id}/kanban/columns/`, { headers })]); if (crRes.ok) { const d = await crRes.json(); setCards((Array.isArray(d) ? d : d.results || []).filter((c: any) => c.is_blocked)); } if (cRes.ok) { const d = await cRes.json(); setColumns(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
 
-  const unblock = async (cardId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/cards/${cardId}/toggle_blocked/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Gedeblokkeerd"); fetchData(); } } catch { toast.error("Deblokkeren mislukt"); } };
+  const unblock = async (cardId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/cards/${cardId}/toggle_blocked/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Unblocked")); fetchData(); } } catch { toast.error(pt("Unblock failed")); } };
 
   const colMap = Object.fromEntries(columns.map(c => [c.id, c.name]));
 

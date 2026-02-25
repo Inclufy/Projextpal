@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ const CATEGORIES = ["Labor Cost", "Material Cost", "Software", "Hardware", "Trav
 
 const FoundationBudget = () => {
   const { pt } = usePageTranslations();
+  const { t } = useLanguage();
   const { id: projectId } = useParams<{ id: string }>();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [projectData, setProjectData] = useState<any>(null);
@@ -91,7 +93,7 @@ const FoundationBudget = () => {
   };
 
   const handleSave = async () => {
-    if (!form.title || !form.amount) { toast.error("Titel en bedrag zijn verplicht"); return; }
+    if (!form.title || !form.amount) { toast.error(t.common.titleAmountRequired); return; }
     setSubmitting(true);
     try {
       const body = { ...form, amount: parseFloat(form.amount), project: parseInt(projectId!) };
@@ -99,26 +101,26 @@ const FoundationBudget = () => {
       const method = editingExpense ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
       if (response.ok) {
-        toast.success(editingExpense ? "Uitgave bijgewerkt" : "Uitgave toegevoegd");
+        toast.success(editingExpense ? t.common.projectUpdated : t.common.success);
         setDialogOpen(false);
         fetchData();
       } else {
         const err = await response.json().catch(() => ({}));
-        toast.error(err.error || err.detail || "Opslaan mislukt");
+        toast.error(err.error || err.detail || t.common.saveFailed);
       }
-    } catch { toast.error("Opslaan mislukt"); }
+    } catch { toast.error(t.common.saveFailed); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (expenseId: number) => {
-    if (!confirm("Weet je zeker dat je deze uitgave wilt verwijderen?")) return;
+    if (!confirm(pt("Are you sure?"))) return;
     try {
       const response = await fetch(`/api/v1/expenses/${expenseId}/`, { method: "DELETE", headers });
       if (response.ok || response.status === 204) {
-        toast.success("Uitgave verwijderd");
+        toast.success(t.common.expenseDeleted);
         fetchData();
-      } else { toast.error("Verwijderen mislukt"); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      } else { toast.error(t.common.deleteFailed); }
+    } catch { toast.error(t.common.deleteFailed); }
   };
 
   const groupedExpenses = expenses.reduce<Record<string, Expense[]>>((acc, exp) => {

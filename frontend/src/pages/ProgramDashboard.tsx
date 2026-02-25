@@ -32,6 +32,7 @@ import {
   Edit, Trash2, ArrowLeft
 } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -89,6 +90,7 @@ const deleteProgram = async (id: string) => {
 
 const ProgramDashboard = () => {
   const { pt } = usePageTranslations();
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -130,11 +132,11 @@ const ProgramDashboard = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program', id] });
       queryClient.invalidateQueries({ queryKey: ['programs'] });
-      toast.success("Program updated successfully");
+      toast.success(t.common.programUpdated);
       setEditDialogOpen(false);
     },
     onError: () => {
-      toast.error("Failed to update program");
+      toast.error(t.common.updateFailed);
     },
   });
 
@@ -143,11 +145,11 @@ const ProgramDashboard = () => {
     mutationFn: () => deleteProgram(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
-      toast.success("Program deleted successfully");
+      toast.success(t.common.programDeleted);
       navigate("/programs");
     },
     onError: () => {
-      toast.error("Failed to delete program");
+      toast.error(t.common.deleteFailed);
     },
   });
 

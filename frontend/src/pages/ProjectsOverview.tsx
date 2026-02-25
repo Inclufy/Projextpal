@@ -267,11 +267,11 @@ const ProjectsOverview = () => {
     mutationFn: deleteProject,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project deleted successfully");
+      toast.success(t.common.projectDeleted);
       setDeleteDialogOpen(false);
     },
     onError: () => {
-      toast.error("Failed to delete project");
+      toast.error(t.common.deleteFailed);
     },
   });
 
@@ -280,12 +280,12 @@ const ProjectsOverview = () => {
     mutationFn: createProject,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Project created successfully!");
+      toast.success(t.common.projectCreated);
       setAiGenerateOpen(false);
       navigate(`/projects/${data.id}/foundation/overview`);
     },
     onError: () => {
-      toast.error("Failed to create project");
+      toast.error(t.common.createFailed);
       setWizardStep('review');
     },
   });
@@ -293,7 +293,7 @@ const ProjectsOverview = () => {
   // Step 1: Analyze idea and recommend methodology
   const handleAnalyzeIdea = async () => {
     if (!projectIdea.trim()) {
-      toast.error("Please describe your project idea");
+      toast.error(t.common.describeFirst);
       return;
     }
 
@@ -344,7 +344,7 @@ Respond in this EXACT JSON format only, no other text:
         setWizardStep('methodology');
       }
     } catch (error) {
-      toast.error("AI analysis failed. Please try again.");
+      toast.error(t.common.aiAnalysisFailed);
     } finally {
       setAiLoading(false);
     }
@@ -359,7 +359,7 @@ Respond in this EXACT JSON format only, no other text:
   // Go to review
   const handleGoToReview = () => {
     if (!formData.name.trim()) {
-      toast.error("Project name is required");
+      toast.error(t.common.nameRequired);
       return;
     }
     setWizardStep('review');

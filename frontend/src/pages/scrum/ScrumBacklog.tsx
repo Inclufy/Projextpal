@@ -45,7 +45,7 @@ const ScrumBacklog = () => {
   const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title, description: item.description || "", item_type: item.item_type || "story", priority: item.priority || "medium", story_points: String(item.story_points || ""), acceptance_criteria: item.acceptance_criteria || "" }); setDialogOpen(true); };
 
   const handleSave = async () => {
-    if (!form.title) { toast.error("Titel is verplicht"); return; }
+    if (!form.title) { toast.error(pt("Title is required")); return; }
     setSubmitting(true);
     try {
       const body: any = { ...form };
@@ -54,18 +54,18 @@ const ScrumBacklog = () => {
       const url = editing ? `/api/v1/projects/${id}/scrum/items/${editing.id}/` : `/api/v1/projects/${id}/scrum/items/`;
       const method = editing ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (r.ok) { toast.success(editing ? "Bijgewerkt" : "Aangemaakt"); setDialogOpen(false); fetchData(); }
-      else { const err = await r.json().catch(() => ({})); toast.error(err.detail || "Opslaan mislukt"); }
-    } catch { toast.error("Opslaan mislukt"); }
+      if (r.ok) { toast.success(editing ? pt("Updated") : pt("Created")); setDialogOpen(false); fetchData(); }
+      else { const err = await r.json().catch(() => ({})); toast.error(err.detail || pt("Save failed")); }
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (itemId: number) => {
-    if (!confirm("Item verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const assignToSprint = async (itemId: number, sprintId: number) => {
@@ -73,9 +73,9 @@ const ScrumBacklog = () => {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/assign_to_sprint/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify({ sprint_id: sprintId }),
       });
-      if (r.ok) { toast.success("Toegewezen aan sprint"); fetchData(); }
-      else toast.error("Toewijzen mislukt");
-    } catch { toast.error("Toewijzen mislukt"); }
+      if (r.ok) { toast.success(pt("Assigned to sprint")); fetchData(); }
+      else toast.error(pt("Assignment failed"));
+    } catch { toast.error(pt("Assignment failed")); }
   };
 
   const updateStatus = async (itemId: number, status: string) => {
@@ -83,8 +83,8 @@ const ScrumBacklog = () => {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/update_status/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify({ status }),
       });
-      if (r.ok) { toast.success("Status bijgewerkt"); fetchData(); }
-    } catch { toast.error("Status update mislukt"); }
+      if (r.ok) { toast.success(pt("Updated")); fetchData(); }
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const priorityColors: Record<string, string> = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-yellow-100 text-yellow-700", low: "bg-green-100 text-green-700" };
