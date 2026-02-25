@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_DB=projextpal
       - POSTGRES_USER=projextpal
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

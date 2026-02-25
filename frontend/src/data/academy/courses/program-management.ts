@@ -673,6 +673,12 @@ In de volgende les verkennen we de programma levenscyclus in detail!`,
         'Program Managers focus on benefits realization and strategic change, not just project delivery',
         'Use programs when you have multiple related projects with shared benefits and extended timeframes',
       ],
+      keyTakeawaysEN: [
+        'Projects deliver outputs (deliverables), Programs deliver outcomes (benefits), Portfolios deliver strategy',
+        'Programs coordinate multiple related projects for benefits not available from managing individually',
+        'Program Managers focus on benefits realization and strategic change, not just project delivery',
+        'Use programs when you have multiple related projects with shared benefits and extended timeframes',
+      ],
       keyTakeawaysNL: [
         'Projecten leveren outputs (opleveringen), Programma\'s leveren outcomes (benefits), Portfolio\'s leveren strategie',
         'Programma\'s coördineren meerdere gerelateerde projecten voor benefits niet beschikbaar door individueel managen',
@@ -1325,6 +1331,12 @@ Volgende: Benefits Management beheersen!`,
         'Benefits often realize 6-12 months AFTER projects complete - programs continue beyond project delivery',
         'Program closure is gradual as benefits transition to operations, not quick like project closure',
       ],
+      keyTakeawaysEN: [
+        'Program lifecycle has 4 phases: Definition, Setup (Benefits Delivery), Execution, Closure',
+        'Execution phase is iterative and adaptive - programs continuously plan, execute, measure, and adapt',
+        'Benefits often realize 6-12 months AFTER projects complete - programs continue beyond project delivery',
+        'Program closure is gradual as benefits transition to operations, not quick like project closure',
+      ],
       keyTakeawaysNL: [
         'Programma levenscyclus heeft 4 fasen: Definitie, Setup (Benefits Levering), Uitvoering, Afsluiting',
         'Uitvoering fase is iteratief en adaptief - programma\'s plannen, voeren uit, meten en passen continu aan',
@@ -1360,6 +1372,7 @@ Volgende: Benefits Management beheersen!`,
       videoUrl: '',
       icon: 'TrendingUp',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1371,6 +1384,7 @@ Volgende: Benefits Management beheersen!`,
       videoUrl: '',
       icon: 'Shield',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1405,6 +1419,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Target',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1416,6 +1431,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Users',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1427,6 +1443,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Map',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1438,6 +1455,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Calculator',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1449,6 +1467,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'AlertTriangle',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
   ],
@@ -1474,6 +1493,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'GitBranch',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1485,6 +1505,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'CheckCircle',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1496,6 +1517,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'ArrowRightLeft',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1507,6 +1529,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'FolderCheck',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {

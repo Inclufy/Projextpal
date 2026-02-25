@@ -166,6 +166,12 @@ Lean Six Sigma:
         '8 verspillingen: TIMWOODS',
         'Six Sigma = 3.4 defecten per miljoen kansen',
       ],
+      keyTakeawaysEN: [
+        'Lean focuses on waste, Six Sigma on variation',
+        'DMAIC = Define, Measure, Analyze, Improve, Control',
+        '8 wastes: TIMWOODS',
+        'Six Sigma = 3.4 defects per million opportunities',
+      ],
       resources: [
         {
           name: 'DMAIC Overview Poster',
@@ -334,6 +340,12 @@ De Define fase:
         'VOC → Needs → CTQ\'s vormen de basis voor metingen',
         'SIPOC geeft high-level procesinzicht',
         'Define eindigt met een goedgekeurde Project Charter',
+      ],
+      keyTakeawaysEN: [
+        'A good problem statement contains no causes or solutions',
+        'VOC → Needs → CTQs form the basis for measurements',
+        'SIPOC provides high-level process insight',
+        'Define ends with an approved Project Charter',
       ],
       resources: [
         {
@@ -556,6 +568,12 @@ De Measure fase:
         'Value-add analysis onthult waar verspilling zit',
         'Baseline metrics geven het vertrekpunt voor verbetering',
       ],
+      keyTakeawaysEN: [
+        'Operational definitions are crucial for reliable data',
+        'Validate the measurement system with MSA before drawing conclusions',
+        'Value-add analysis reveals where waste exists',
+        'Baseline metrics provide the starting point for improvement',
+      ],
       resources: [
         {
           name: 'Data Collection Plan Template',
@@ -739,6 +757,12 @@ Root cause analysis:
         'Pareto identificeert de "vital few" oorzaken (80/20)',
         'Hypothesetesten verifieert of oorzaken statistisch significant zijn',
       ],
+      keyTakeawaysEN: [
+        '5 Whys repeatedly asks "why" until reaching the root cause',
+        'Fishbone organizes causes into categories (6Ms or 6Ps)',
+        'Pareto identifies the "vital few" causes (80/20)',
+        'Hypothesis testing verifies whether causes are statistically significant',
+      ],
       resources: [
         {
           name: 'Fishbone Template',
@@ -896,6 +920,12 @@ De Improve fase:
         'FMEA identificeert risico\'s van oplossingen',
         'Pilots testen oplossingen op kleine schaal',
         'Change management is essentieel voor adoptie',
+      ],
+      keyTakeawaysEN: [
+        'Brainstorming generates options; matrices select the best',
+        'FMEA identifies risks associated with solutions',
+        'Pilots test solutions on a small scale',
+        'Change management is essential for adoption',
       ],
       resources: [
         {
@@ -1061,6 +1091,12 @@ De Control fase:
         'Het Control Plan beschrijft wie wat meet en wat te doen bij afwijking',
         'Overdracht aan Process Owner borgt langetermijn succes',
       ],
+      keyTakeawaysEN: [
+        'Control charts detect out-of-control conditions early',
+        'Special cause variation requires investigation and correction',
+        'The Control Plan describes who measures what and what to do when deviations occur',
+        'Handover to the Process Owner ensures long-term success',
+      ],
       resources: [
         {
           name: 'Control Plan Template',
@@ -1178,6 +1214,12 @@ Project closure:
         'Finance validatie geeft credibiliteit aan besparingen',
         'Benefits tracking zorgt voor langdurige monitoring',
         'Knowledge sharing bouwt organisatorisch capability',
+      ],
+      keyTakeawaysEN: [
+        'Tollgate review confirms that all deliverables are complete',
+        'Financial validation gives credibility to savings',
+        'Benefits tracking ensures long-term monitoring',
+        'Knowledge sharing builds organizational capability',
       ],
       resources: [
         {

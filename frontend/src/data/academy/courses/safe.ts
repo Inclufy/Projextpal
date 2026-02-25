@@ -348,6 +348,12 @@ SAFe biedt een bewezen framework voor deze uitdaging.`,
         'Organizations report 20-50% productivity gains with SAFe',
         'Use SAFe when you need to coordinate multiple teams on shared objectives',
       ],
+      keyTakeawaysEN: [
+        'SAFe scales Agile practices for 50+ people working on complex products',
+        'Four core values: Alignment, Built-In Quality, Transparency, Program Execution',
+        'Organizations report 20-50% productivity gains with SAFe',
+        'Use SAFe when you need to coordinate multiple teams on shared objectives',
+      ],
       keyTakeawaysNL: [
         'SAFe schaalt Agile praktijken voor 50+ mensen die aan complexe producten werken',
         'Vier kernwaarden: Alignment, Built-In Quality, Transparency, Program Execution',
@@ -375,6 +381,7 @@ SAFe biedt een bewezen framework voor deze uitdaging.`,
       free: true,
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -385,6 +392,7 @@ SAFe biedt een bewezen framework voor deze uitdaging.`,
       duration: '14:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -395,6 +403,7 @@ SAFe biedt een bewezen framework voor deze uitdaging.`,
       duration: '12:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -425,6 +434,7 @@ const module2: Module = {
       duration: '14:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -435,6 +445,7 @@ const module2: Module = {
       duration: '18:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -445,6 +456,7 @@ const module2: Module = {
       duration: '10:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -455,6 +467,7 @@ const module2: Module = {
       duration: '12:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -465,6 +478,7 @@ const module2: Module = {
       duration: '10:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -495,6 +509,7 @@ const module3: Module = {
       duration: '16:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -505,6 +520,7 @@ const module3: Module = {
       duration: '14:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -515,6 +531,7 @@ const module3: Module = {
       duration: '12:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -525,6 +542,7 @@ const module3: Module = {
       duration: '10:00',
       videoUrl: '',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {

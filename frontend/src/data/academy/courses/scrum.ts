@@ -147,6 +147,12 @@ Scrum:
         'Vijf waarden: commitment, focus, openness, respect, courage',
         'Scrum is een framework, geen complete methodologie',
       ],
+      keyTakeawaysEN: [
+        'Scrum is based on empiricism: learning through experience',
+        'Three pillars: transparency, inspection, adaptation',
+        'Five values: commitment, focus, openness, respect, courage',
+        'Scrum is a framework, not a complete methodology',
+      ],
       resources: [
         {
           name: 'De Scrum Guide 2020 (NL)',
@@ -297,6 +303,12 @@ Samen vormen ze een cross-functional, self-managing team.`,
         'Product Owner maximaliseert waarde en beheert de backlog',
         'Scrum Master is servant-leader, coach en facilitator',
         'Developers zijn alle mensen die aan het product werken',
+      ],
+      keyTakeawaysEN: [
+        'Three accountabilities: Product Owner, Scrum Master, Developers',
+        'The Product Owner maximizes value and manages the backlog',
+        'The Scrum Master is a servant-leader, coach, and facilitator',
+        'Developers are all people who work on the product',
       ],
       resources: [
         {
@@ -477,6 +489,12 @@ Skip geen events - elk heeft een cruciale functie!`,
         'Daily Scrum is max 15 min voor dagelijkse synchronisatie',
         'Sprint Review toont het Increment; Retrospective verbetert het proces',
       ],
+      keyTakeawaysEN: [
+        'The Sprint is the container for all other events (max 4 weeks)',
+        'Sprint Planning defines the Sprint Goal and selects work',
+        'Daily Scrum is max 15 min for daily synchronization',
+        'Sprint Review showcases the Increment; Retrospective improves the process',
+      ],
       resources: [
         {
           name: 'Scrum Events Cheat Sheet',
@@ -638,6 +656,12 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
         'Product Backlog is geordend en eigendom van de Product Owner',
         'Sprint Backlog is eigendom van de Developers en evolueert',
         'Definition of Done bepaalt wanneer werk echt "Done" is',
+      ],
+      keyTakeawaysEN: [
+        'Each artifact has a commitment that provides focus',
+        'The Product Backlog is ordered and owned by the Product Owner',
+        'The Sprint Backlog is owned by the Developers and evolves',
+        'The Definition of Done determines when work is truly "Done"',
       ],
       resources: [
         {
@@ -813,6 +837,12 @@ De Scrum Master als servant-leader:
         'Luisteren, empathie en overtuigen zijn kernvaardigheden',
         'De SM is coach, facilitator en teacher',
       ],
+      keyTakeawaysEN: [
+        'Servant leadership inverts the traditional pyramid',
+        'The SM serves the team, not the other way around',
+        'Listening, empathy, and persuasion are core skills',
+        'The SM is a coach, facilitator, and teacher',
+      ],
     },
     {
       id: 'scrum-l7',
@@ -925,6 +955,12 @@ Impediments oplossen:
         'Niet alles is een impediment voor de SM',
         'Identificeer, prioriteer, onderzoek, actie, voorkom',
         'Escaleren is geen falen maar effectief werken',
+      ],
+      keyTakeawaysEN: [
+        'Impediments are obstacles that hinder the team',
+        'Not everything is an impediment for the SM',
+        'Identify, prioritize, investigate, act, prevent',
+        'Escalating is not failure but working effectively',
       ],
     },
     {
@@ -1055,6 +1091,12 @@ Events faciliteren:
         'Elk Scrum event heeft zijn eigen facilitatie-aanpak',
         'Timebox, betrokkenheid en focus zijn key',
       ],
+      keyTakeawaysEN: [
+        'Facilitation is helping the team collaborate effectively',
+        'The facilitator does not determine content but safeguards the process',
+        'Each Scrum event has its own facilitation approach',
+        'Timebox, engagement, and focus are key',
+      ],
       resources: [
         {
           name: 'Facilitatie Toolkit',
@@ -1167,6 +1209,12 @@ Goede metrics:
         'Burndown/burnup charts visualiseren voortgang',
         'Sprint Goal Success Rate meet voorspelbaarheid',
         'Metrics zijn voor het team, niet om te controleren',
+      ],
+      keyTakeawaysEN: [
+        'Velocity is for forecasting, not for comparing teams',
+        'Burndown/burnup charts visualize progress',
+        'Sprint Goal Success Rate measures predictability',
+        'Metrics are for the team, not for controlling them',
       ],
     },
     {
@@ -1287,6 +1335,12 @@ Bij uitdagingen:
         'Refinement lost veel planning problemen op',
         'Self-management vereist dat de SM terugstapt',
         'Experimenteer en leer, perfectie bestaat niet',
+      ],
+      keyTakeawaysEN: [
+        'Many challenges are symptoms of deeper problems',
+        'Refinement solves many planning problems',
+        'Self-management requires the SM to step back',
+        'Experiment and learn, perfection does not exist',
       ],
     },
     {

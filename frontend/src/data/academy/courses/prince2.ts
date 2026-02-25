@@ -118,6 +118,12 @@ Laten we beginnen met de 7 principes - de fundamenten van PRINCE2!`,
         'Wereldwijd de meest gebruikte PM-methode',
         'Twee certificeringsniveaus: Foundation en Practitioner',
       ],
+      keyTakeawaysEN: [
+        'PRINCE2 = PRojects IN Controlled Environments',
+        'Consists of 7 principles, 7 themes, 7 processes',
+        'The most widely used PM methodology worldwide',
+        'Two certification levels: Foundation and Practitioner',
+      ],
       resources: [
         {
           name: 'PRINCE2 Overview Poster',
@@ -271,6 +277,12 @@ Wat kun je NIET tailoren?
         'Business justification moet gedurende heel het project geldig blijven',
         'Manage by Exception geeft PM ruimte binnen toleranties',
         'Tailoring is essentieel maar de principes blijven intact',
+      ],
+      keyTakeawaysEN: [
+        'The 7 principles are mandatory - otherwise it is not PRINCE2',
+        'Business justification must remain valid throughout the entire project',
+        'Manage by Exception gives the PM room to operate within tolerances',
+        'Tailoring is essential but the principles remain intact',
       ],
       resources: [
         {
@@ -440,6 +452,12 @@ In de volgende lessen gaan we dieper in op elk thema.`,
         'Business Case beantwoordt "waarom", Organization "wie", etc.',
         'Alle thema\'s zijn geïntegreerd en beïnvloeden elkaar',
         'De diepgang van elk thema hangt af van tailoring',
+      ],
+      keyTakeawaysEN: [
+        'Themes are aspects that require continuous attention',
+        'Business Case answers "why", Organization answers "who", etc.',
+        'All themes are integrated and influence each other',
+        'The depth of each theme depends on tailoring',
       ],
       resources: [
         {
@@ -635,6 +653,12 @@ Het Business Case thema:
         'Benefits worden vaak pas na het project gerealiseerd',
         'De Business Case evolueert van outline naar detailed',
       ],
+      keyTakeawaysEN: [
+        'The Business Case must remain valid throughout the entire project',
+        'The Executive is the owner of the Business Case',
+        'Benefits are often only realized after the project ends',
+        'The Business Case evolves from outline to detailed',
+      ],
     },
     {
       id: 'p2-l6',
@@ -773,6 +797,12 @@ Het Organization thema:
         'De PM is geen lid van de Project Board',
         'Rollen kunnen gecombineerd worden maar niet geëlimineerd',
       ],
+      keyTakeawaysEN: [
+        'Three stakeholder interests: Business, User, Supplier',
+        'The Project Board directs, the Project Manager manages',
+        'The PM is not a member of the Project Board',
+        'Roles can be combined but not eliminated',
+      ],
     },
     {
       id: 'p2-l7',
@@ -879,6 +909,12 @@ Het Quality thema:
         'Quality Review Technique is de standaard controlemethode',
         'Quality Register logt alle kwaliteitsactiviteiten',
       ],
+      keyTakeawaysEN: [
+        'Quality = fit for purpose, not perfection',
+        'Product Descriptions define quality criteria upfront',
+        'Quality Review Technique is the standard control method',
+        'Quality Register logs all quality activities',
+      ],
     },
     {
       id: 'p2-l8',
@@ -979,6 +1015,12 @@ Het Plans thema:
         'Product-based planning focust op WAT, niet HOE',
         'PBS en Product Flow Diagram zijn kerntechnieken',
         'Exception Plans voor wanneer toleranties worden overschreden',
+      ],
+      keyTakeawaysEN: [
+        'Three planning levels: Project, Stage, Team',
+        'Product-based planning focuses on WHAT, not HOW',
+        'PBS and Product Flow Diagram are core techniques',
+        'Exception Plans for when tolerances are exceeded',
       ],
     },
     {
@@ -1095,6 +1137,12 @@ Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden
         'Drie issue types: Request for Change, Off-Spec, Problem/Concern',
         'Progress werkt met toleranties en management by exception',
         'Checkpoint, Highlight en Exception Reports informeren verschillende niveaus',
+      ],
+      keyTakeawaysEN: [
+        'Risk management: Identify → Assess → Plan → Implement → Communicate',
+        'Three issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Progress works with tolerances and management by exception',
+        'Checkpoint, Highlight, and Exception Reports inform different levels',
       ],
     },
   ],
@@ -1227,6 +1275,12 @@ Starting Up a Project:
         'De Project Board wordt samengesteld in SU',
         'SU voorkomt onnodige initiatie van niet-levensvatbare projecten',
       ],
+      keyTakeawaysEN: [
+        'SU is a short pre-project process',
+        'The Project Brief is the main deliverable',
+        'The Project Board is assembled during SU',
+        'SU prevents unnecessary initiation of non-viable projects',
+      ],
     },
     {
       id: 'p2-l11',
@@ -1349,6 +1403,12 @@ Initiating a Project:
         'Vier strategieën worden opgesteld: Risk, Quality, Config, Comms',
         'De Business Case wordt verfijnd met betere kostenschattingen',
       ],
+      keyTakeawaysEN: [
+        'IP creates the Project Initiation Documentation (PID)',
+        'The PID is the baseline for the project',
+        'Four strategies are established: Risk, Quality, Config, Comms',
+        'The Business Case is refined with better cost estimates',
+      ],
     },
     {
       id: 'p2-l12',
@@ -1447,6 +1507,12 @@ Directing a Project:
         'Loopt van begin tot eind van het project',
         'Focust op autorisaties en key decisions',
         'Management by Exception minimaliseert Board-tijd',
+      ],
+      keyTakeawaysEN: [
+        'DP is the process for the Project Board',
+        'Runs from the beginning to the end of the project',
+        'Focuses on authorizations and key decisions',
+        'Management by Exception minimizes Board time',
       ],
     },
     {
@@ -1563,6 +1629,12 @@ Controlling a Stage:
         'Highlight Reports gaan regelmatig naar de Board',
         'Exception Reports escaleren buiten toleranties',
       ],
+      keyTakeawaysEN: [
+        'CS is the day-to-day management process of the PM',
+        'Work Packages delegate work to Team Managers',
+        'Highlight Reports are sent regularly to the Board',
+        'Exception Reports escalate issues beyond tolerances',
+      ],
     },
     {
       id: 'p2-l14',
@@ -1659,6 +1731,12 @@ Managing Product Delivery:
         'Work Packages zijn de formele opdracht van PM naar Team Manager',
         'Checkpoint Reports rapporteren voortgang',
         'Kwaliteitscontrole gebeurt voordat producten worden opgeleverd',
+      ],
+      keyTakeawaysEN: [
+        'MP is the process for Team Managers',
+        'Work Packages are the formal assignment from PM to Team Manager',
+        'Checkpoint Reports report on progress',
+        'Quality control takes place before products are delivered',
       ],
     },
     {
@@ -1758,6 +1836,12 @@ Managing a Stage Boundary:
         'End Stage Report geeft de Board informatie voor beslissing',
         'Business Case wordt gevalideerd bij elke boundary',
         'Exception Plans worden hier gemaakt als nodig',
+      ],
+      keyTakeawaysEN: [
+        'SB takes place at the end of each stage',
+        'The End Stage Report provides the Board with information for decision-making',
+        'The Business Case is validated at each boundary',
+        'Exception Plans are created here when needed',
       ],
     },
     {
@@ -1876,6 +1960,12 @@ Closing a Project:
         'Benefits Review Plan zorgt voor post-project benefits meting',
         'Lessons Report documenteert geleerde lessen',
       ],
+      keyTakeawaysEN: [
+        'CP is mandatory, even when the project is stopped prematurely',
+        'The End Project Report evaluates the entire project',
+        'The Benefits Review Plan ensures post-project benefits measurement',
+        'The Lessons Report documents lessons learned',
+      ],
     },
   ],
 };
@@ -1992,6 +2082,12 @@ Tailoring:
         'Processen, thema\'s en rollen mogen worden aangepast',
         'De 7 principes zijn niet onderhandelbaar',
         'Documenteer en laat tailoring goedkeuren',
+      ],
+      keyTakeawaysEN: [
+        'Tailoring is a principle, not an option',
+        'Processes, themes, and roles may be adapted',
+        'The 7 principles are non-negotiable',
+        'Document and get tailoring decisions approved',
       ],
     },
     {

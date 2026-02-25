@@ -120,6 +120,12 @@ en wat maakt iemand een goede PM?`,
         'Projecten verschillen fundamenteel van operationele werkzaamheden',
         '70% van projecten faalt zonder goed projectmanagement',
       ],
+      keyTakeawaysEN: [
+        'A project is temporary, unique, and delivers a specific result',
+        'The Triple Constraint (scope, time, budget) defines project boundaries',
+        'Projects differ fundamentally from operational activities',
+        '70% of projects fail without proper project management',
+      ],
       resources: [
         {
           name: 'Infographic: Project vs. Operatie',
@@ -273,6 +279,12 @@ Dit geeft je een framework waarbinnen je deze PM-vaardigheden kunt toepassen.`,
         'Dienend leiderschap is effectiever dan command & control',
         'Er zijn meerdere carrièrepaden naar projectmanagement',
       ],
+      keyTakeawaysEN: [
+        'The PM is responsible for scope, time, budget, and quality',
+        'Both hard skills and soft skills are essential',
+        'Servant leadership is more effective than command & control',
+        'There are multiple career paths into project management',
+      ],
       resources: [
         {
           name: 'PM Competentie Framework',
@@ -425,6 +437,12 @@ De afgelopen jaren zien we een duidelijke trend:
         'Waterfall is sequentieel; Agile is iteratief en flexibel',
         'PRINCE2 focust op governance; Lean Six Sigma op procesverbetering',
         'Kies de methodologie die past bij je project en organisatie',
+      ],
+      keyTakeawaysEN: [
+        'Methodologies provide structure and a common language',
+        'Waterfall is sequential; Agile is iterative and flexible',
+        'PRINCE2 focuses on governance; Lean Six Sigma on process improvement',
+        'Choose the methodology that fits your project and organization',
       ],
       resources: [
         {
@@ -588,6 +606,12 @@ De vijf fasen van een project:
         'De planningsfase bepaalt grotendeels het projectsucces',
         'Monitoring loopt parallel aan uitvoering',
         'Afsluiting is cruciaal maar wordt vaak verwaarloosd',
+      ],
+      keyTakeawaysEN: [
+        'Every project has five phases: Initiation, Planning, Execution, Monitoring, Closure',
+        'The planning phase largely determines project success',
+        'Monitoring runs parallel to execution',
+        'Closure is crucial but is often neglected',
       ],
       resources: [
         {
@@ -870,6 +894,12 @@ Het projectcharter:
         'Out-of-scope definiëren is net zo belangrijk als in-scope',
         'Houd het kort: 2-5 pagina\'s is voldoende',
       ],
+      keyTakeawaysEN: [
+        'The project charter formally authorizes the project',
+        'Contains: objectives, scope, budget, schedule, stakeholders, risks',
+        'Defining out-of-scope is just as important as in-scope',
+        'Keep it concise: 2-5 pages is sufficient',
+      ],
       resources: [
         {
           name: 'Projectcharter Template',
@@ -1042,6 +1072,12 @@ Effectief stakeholder management:
         'De Power/Interest matrix helpt bij prioriteren',
         'Stakeholder analyse is dynamisch - update regelmatig',
       ],
+      keyTakeawaysEN: [
+        'Stakeholders can make or break your project',
+        'Analyze based on power, interest, and attitude',
+        'The Power/Interest matrix helps with prioritization',
+        'Stakeholder analysis is dynamic - update regularly',
+      ],
       resources: [
         {
           name: 'Stakeholder Register Template',
@@ -1192,6 +1228,12 @@ Een goede business case:
         'Gebruik financiële metrics: ROI, payback, NPV',
         'Wees realistisch over kosten en baten',
       ],
+      keyTakeawaysEN: [
+        'The business case justifies the investment',
+        'Always compare multiple options including "do nothing"',
+        'Use financial metrics: ROI, payback, NPV',
+        'Be realistic about costs and benefits',
+      ],
       resources: [
         {
           name: 'Business Case Template',
@@ -1334,6 +1376,12 @@ Goede scope definitie:
         'Out-of-scope expliciet benoemen voorkomt scope creep',
         'De scope statement is de formele vastlegging',
       ],
+      keyTakeawaysEN: [
+        'Scope = what is and is not part of the project',
+        'Distinguish product scope from project scope',
+        'Explicitly stating out-of-scope prevents scope creep',
+        'The scope statement is the formal documentation',
+      ],
       resources: [
         {
           name: 'Scope Statement Template',
@@ -1424,6 +1472,12 @@ const module3: Module = {
         'Gebruik deliverables (wat), geen activiteiten (hoe)',
         'Werkpakketten van 8-80 uur zijn ideaal',
       ],
+      keyTakeawaysEN: [
+        'The WBS is the foundation for all planning and control',
+        'Follow the 100% rule: all work must be included',
+        'Use deliverables (what), not activities (how)',
+        'Work packages of 8-80 hours are ideal',
+      ],
       resources: [
         { name: 'WBS Template Excel', type: 'XLSX', size: '125 KB', description: 'Template voor het maken van een WBS' },
         { name: 'WBS Voorbeelden', type: 'PDF', size: '1.8 MB', description: 'Voorbeelden voor IT, bouw en organisatie projecten' },
@@ -1441,6 +1495,12 @@ const module3: Module = {
         'Er zijn vier soorten afhankelijkheden: FS, SS, FF, SF',
         'Update de Gantt regelmatig voor actueel beeld',
       ],
+      keyTakeawaysEN: [
+        'Gantt charts visualize schedules and dependencies',
+        'The critical path determines the minimum project duration',
+        'There are four types of dependencies: FS, SS, FF, SF',
+        'Update the Gantt chart regularly for an up-to-date view',
+      ],
       resources: [
         { name: 'Gantt Chart Template Excel', type: 'XLSX', size: '245 KB', description: 'Excel template met automatische datumberekening' },
       ],
@@ -1456,6 +1516,12 @@ const module3: Module = {
         'Resource leveling lost overbelasting op',
         'De RACI matrix verduidelijkt verantwoordelijkheden',
         'Plan op 80% - houd buffer voor onverwachts',
+      ],
+      keyTakeawaysEN: [
+        'Resource planning matches required capacity with available capacity',
+        'Resource leveling resolves overallocation',
+        'The RACI matrix clarifies responsibilities',
+        'Plan at 80% - keep a buffer for the unexpected',
       ],
       resources: [
         { name: 'RACI Matrix Template', type: 'XLSX', size: '78 KB', description: 'Template voor verantwoordelijkheden' },
@@ -1473,6 +1539,12 @@ const module3: Module = {
         'Earned Value Management meet kosten én voortgang',
         'Documenteer altijd je aannames',
       ],
+      keyTakeawaysEN: [
+        'Bottom-up is the most accurate but time-consuming',
+        'Build in contingency and management reserve',
+        'Earned Value Management measures both costs and progress',
+        'Always document your assumptions',
+      ],
       resources: [
         { name: 'Kostenraming Template', type: 'XLSX', size: '189 KB', description: 'Template met formules voor bottom-up raming' },
       ],
@@ -1488,6 +1560,12 @@ const module3: Module = {
         'Vier response strategieën: vermijden, overdragen, mitigeren, accepteren',
         'Het risicoregister is het centrale document',
         'Risicomanagement is continu, niet eenmalig',
+      ],
+      keyTakeawaysEN: [
+        'Risks have both probability and impact - assess both',
+        'Four response strategies: avoid, transfer, mitigate, accept',
+        'The risk register is the central document',
+        'Risk management is continuous, not a one-time activity',
       ],
       resources: [
         { name: 'Risicoregister Template', type: 'XLSX', size: '145 KB', description: 'Compleet template met risk scoring' },
@@ -1660,6 +1738,12 @@ Effectief teamleiderschap:
         'Conflictstijlen moeten passen bij de situatie',
         'Virtuele teams vragen extra aandacht voor communicatie',
       ],
+      keyTakeawaysEN: [
+        'Teams go through phases: Forming, Storming, Norming, Performing',
+        'Intrinsic motivation (autonomy, purpose, recognition) works better than extrinsic',
+        'Conflict styles must match the situation',
+        'Virtual teams require extra attention to communication',
+      ],
       resources: [
         {
           name: 'Team Development Assessment',
@@ -1822,6 +1906,12 @@ Effectieve stakeholder communicatie:
         'Pas je stijl aan per stakeholder type',
         'Breng slecht nieuws eerlijk, met een plan',
       ],
+      keyTakeawaysEN: [
+        'PMs spend 90% of their time on communication',
+        'A communication plan defines who-what-when-how',
+        'Adapt your style to each stakeholder type',
+        'Deliver bad news honestly, with a plan',
+      ],
       resources: [
         {
           name: 'Communicatieplan Template',
@@ -1980,6 +2070,12 @@ Earned Value Management:
         'CPI < 1 betekent dat je meer uitgeeft dan gepland per eenheid werk',
         'EAC voorspelt de totale kosten als de trend doorzet',
       ],
+      keyTakeawaysEN: [
+        'EVM combines scope, time, and cost into one objective measurement',
+        'EV = what you have earned, not what you have spent',
+        'CPI < 1 means you are spending more than planned per unit of work',
+        'EAC forecasts total costs if the current trend continues',
+      ],
       resources: [
         {
           name: 'EVM Calculator',
@@ -2122,6 +2218,12 @@ Effectief change control:
         'Elke wijziging doorloopt: request, analyse, beslissing, implementatie, verificatie',
         'Het Change Control Board beslist over significante wijzigingen',
         'Gold plating (ongevraagde extras) is net zo schadelijk als scope creep',
+      ],
+      keyTakeawaysEN: [
+        'Change control is protection, not bureaucracy',
+        'Every change goes through: request, analysis, decision, implementation, verification',
+        'The Change Control Board decides on significant changes',
+        'Gold plating (unsolicited extras) is just as harmful as scope creep',
       ],
       resources: [
         {
@@ -2308,6 +2410,12 @@ Projectafsluiting:
         'Lessons learned voorkomen herhaling van fouten',
         'Ook gestopte projecten moeten goed worden afgesloten',
       ],
+      keyTakeawaysEN: [
+        'Closure is often neglected but is crucial',
+        'Zombie projects consume resources and cause confusion',
+        'Lessons learned prevent repeating mistakes',
+        'Even terminated projects must be properly closed',
+      ],
     },
     {
       id: 'pm-l22',
@@ -2416,6 +2524,12 @@ Formele acceptatie:
         'Acceptatie is formeel met handtekening van bevoegde persoon',
         'Overdracht omvat product, documentatie en kennis',
         'Plan acceptatie in - het kost tijd',
+      ],
+      keyTakeawaysEN: [
+        'Acceptance criteria must be defined in advance',
+        'Acceptance is formal with a signature from an authorized person',
+        'Handover includes the product, documentation, and knowledge',
+        'Schedule acceptance - it takes time',
       ],
       resources: [
         {
@@ -2565,6 +2679,12 @@ Lessons learned:
         'Goede lessons zijn specifiek met context, oorzaak en aanbeveling',
         'Lessons learned zijn waardeloos als ze niet worden gebruikt',
       ],
+      keyTakeawaysEN: [
+        'Collect lessons learned during and at the end of the project',
+        'Create a blame-free environment for honest feedback',
+        'Good lessons are specific with context, cause, and recommendation',
+        'Lessons learned are worthless if they are not used',
+      ],
       resources: [
         {
           name: 'Lessons Learned Template',
@@ -2694,6 +2814,12 @@ Administratieve afsluiting:
         'Resources (mensen, tools, faciliteiten) moeten formeel worden vrijgegeven',
         'Documentatie archiveren volgens organisatiebeleid',
         'Vergeet niet te vieren - het is goed voor team en cultuur',
+      ],
+      keyTakeawaysEN: [
+        'Financial closure prevents outstanding invoices and claims',
+        'Resources (people, tools, facilities) must be formally released',
+        'Archive documentation according to organizational policy',
+        'Do not forget to celebrate - it is good for team morale and culture',
       ],
       resources: [
         {

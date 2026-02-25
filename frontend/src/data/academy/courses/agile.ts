@@ -166,6 +166,12 @@ Het Agile Manifesto:
         'Agile vraagt een mindshift van voorspellen naar aanpassen',
         'Het Manifesto is een fundament, geen complete methode',
       ],
+      keyTakeawaysEN: [
+        'Four values: People, Working software, Customer collaboration, Responding to change',
+        'It is about prioritization, not elimination of the right-hand side',
+        'Agile requires a mindset shift from predicting to adapting',
+        'The Manifesto is a foundation, not a complete methodology',
+      ],
       resources: [
         {
           name: 'Agile Manifesto Poster (NL)',
@@ -386,6 +392,12 @@ De 12 principes:
         'Bouw rond gemotiveerde mensen met vertrouwen',
         'Continue reflectie en verbetering is essentieel',
       ],
+      keyTakeawaysEN: [
+        'The 12 principles give concrete form to the 4 values',
+        'Focus on frequent delivery of working software',
+        'Build around motivated people with trust',
+        'Continuous reflection and improvement is essential',
+      ],
       resources: [
         {
           name: '12 Principes Cheat Sheet',
@@ -529,6 +541,12 @@ Agile vs. Traditioneel:
         'Agile past bij onzekere, veranderlijke contexten',
         'Het Stacey diagram helpt bij het kiezen van de aanpak',
         'Hybride aanpakken combineren elementen van beide',
+      ],
+      keyTakeawaysEN: [
+        'Traditional approaches suit predictable, stable contexts',
+        'Agile suits uncertain, changing contexts',
+        'The Stacey diagram helps in choosing the right approach',
+        'Hybrid approaches combine elements of both',
       ],
       resources: [
         {
@@ -707,6 +725,12 @@ Agile frameworks:
         'SAFe, LeSS, Nexus schalen naar meerdere teams',
         'Begin pure, pas aan na ervaring (ShuHaRi)',
       ],
+      keyTakeawaysEN: [
+        'Frameworks are the HOW, the Manifesto is the WHY',
+        'Scrum, Kanban, XP are the most widely used team-level frameworks',
+        'SAFe, LeSS, Nexus scale to multiple teams',
+        'Start pure, adapt after gaining experience (ShuHaRi)',
+      ],
       resources: [
         {
           name: 'Agile Framework Comparison',
@@ -873,6 +897,12 @@ User Stories:
         'Acceptatiecriteria maken stories testbaar',
         'De Product Backlog is de enige bron van werk',
       ],
+      keyTakeawaysEN: [
+        'User Stories follow the "As a... I want... so that..." format',
+        'INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable',
+        'Acceptance criteria make stories testable',
+        'The Product Backlog is the single source of work',
+      ],
     },
     {
       id: 'ag-l7',
@@ -960,6 +990,12 @@ Agile schatten:
         'Planning Poker zorgt voor team consensus',
         'Velocity maakt forecasting mogelijk',
       ],
+      keyTakeawaysEN: [
+        'Relative estimation is more accurate than absolute estimation',
+        'Story Points measure complexity, not time',
+        'Planning Poker ensures team consensus',
+        'Velocity enables forecasting',
+      ],
     },
     {
       id: 'ag-l8',
@@ -1029,6 +1065,12 @@ Agile transformatie:
         'Executive sponsorship is cruciaal',
         'Start klein met pilots, schaal op na succes',
         'Pas op voor "Agile in name only"',
+      ],
+      keyTakeawaysEN: [
+        'Agile transformation is a cultural change',
+        'Executive sponsorship is crucial',
+        'Start small with pilots, scale up after success',
+        'Beware of "Agile in name only"',
       ],
     },
     {

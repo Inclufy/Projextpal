@@ -166,6 +166,12 @@ Waterfall:
         'Biedt voorspelbaarheid maar is inflexibel voor wijzigingen',
         'Nog steeds relevant in bouw, hardware, enterprise IT en gereguleerde sectoren',
       ],
+      keyTakeawaysEN: [
+        'Waterfall is sequential: each phase must be completed before the next one begins',
+        'Ideal for stable requirements and compliance-intensive projects',
+        'Offers predictability but is inflexible when it comes to changes',
+        'Still relevant in construction, hardware, enterprise IT, and regulated sectors',
+      ],
       resources: [
         {
           name: 'Waterfall vs Agile Comparison',
@@ -341,6 +347,12 @@ De Requirements fase:
         'Goede requirements zijn SMART en toetsbaar',
         'Formele sign-off activeert change control',
       ],
+      keyTakeawaysEN: [
+        'Requirements errors are the most expensive to fix',
+        'Use multiple techniques: interviews, workshops, observation',
+        'Good requirements are SMART and testable',
+        'Formal sign-off activates change control',
+      ],
       resources: [
         {
           name: 'Requirements Specification Template',
@@ -471,6 +483,12 @@ De Design fase:
         'High-level design voor het big picture, low-level voor detail',
         'Design reviews voorkomen dure fouten in development',
         'Vermijd over-engineering én under-engineering',
+      ],
+      keyTakeawaysEN: [
+        'Design translates WHAT (requirements) into HOW (technical)',
+        'High-level design for the big picture, low-level for detail',
+        'Design reviews prevent costly errors in development',
+        'Avoid both over-engineering and under-engineering',
       ],
       resources: [
         {
@@ -649,6 +667,12 @@ De uitvoerende fasen:
         'Testing gebeurt op meerdere niveaus met formele UAT sign-off',
         'Deployment vereist planning, procedures en rollback plan',
         'Maintenance omvat corrective, adaptive, perfective en preventive',
+      ],
+      keyTakeawaysEN: [
+        'Development follows the design specs meticulously',
+        'Testing occurs at multiple levels with formal UAT sign-off',
+        'Deployment requires planning, procedures, and a rollback plan',
+        'Maintenance encompasses corrective, adaptive, perfective, and preventive',
       ],
       resources: [
         {
@@ -873,6 +897,12 @@ Gate Reviews:
         'Go/No-Go/Conditional Go zijn de mogelijke uitkomsten',
         'Quality Gates focussen op technische metrics',
       ],
+      keyTakeawaysEN: [
+        'Gate Reviews are formal checkpoints between phases',
+        'Each gate has entrance and exit criteria',
+        'Go/No-Go/Conditional Go are the possible outcomes',
+        'Quality Gates focus on technical metrics',
+      ],
     },
     {
       id: 'wf-l7',
@@ -990,6 +1020,12 @@ Change Control:
         'De CCB beslist over significante wijzigingen',
         'Documentatie en traceability zijn cruciaal',
       ],
+      keyTakeawaysEN: [
+        'Change Control starts after requirements sign-off',
+        'Every change goes through a formal process',
+        'The CCB decides on significant changes',
+        'Documentation and traceability are crucial',
+      ],
     },
     {
       id: 'wf-l8',
@@ -1086,6 +1122,12 @@ Hybride aanpakken:
         'Water-Scrum-Fall combineert Waterfall voor planning en Agile voor development',
         'Governance (gates) kan behouden blijven met Agile elementen erin',
         'Kies bewust per fase/context wat het beste werkt',
+      ],
+      keyTakeawaysEN: [
+        'Pure Waterfall or Agile is rare - hybrid is the norm',
+        'Water-Scrum-Fall combines Waterfall for planning and Agile for development',
+        'Governance (gates) can be maintained with Agile elements within them',
+        'Deliberately choose what works best for each phase/context',
       ],
     },
     {

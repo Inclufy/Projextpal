@@ -143,6 +143,12 @@ Kanban:
         '6 core practices: visualize, limit WIP, manage flow, etc.',
         'Kanban is complementair aan Scrum, niet een vervanging',
       ],
+      keyTakeawaysEN: [
+        'Kanban = visual signal, focus on flow and pull',
+        'Start where you are - no major reorganization needed',
+        '6 core practices: visualize, limit WIP, manage flow, etc.',
+        'Kanban is complementary to Scrum, not a replacement',
+      ],
       resources: [
         {
           name: 'Kanban Principles Poster',
@@ -311,6 +317,12 @@ Een goed Kanban bord:
         'Maak blokkades expliciet zichtbaar',
         'Start simpel en evolueer het bord op basis van inzichten',
       ],
+      keyTakeawaysEN: [
+        'Start by mapping your actual workflow',
+        'Split columns into Doing/Done to reveal wait time',
+        'Make blockers explicitly visible',
+        'Start simple and evolve the board based on insights',
+      ],
       resources: [
         {
           name: 'Kanban Board Design Checklist',
@@ -467,6 +479,12 @@ WIP limieten:
         'Context switching kost 15-20 minuten per switch',
         'Stop starting, start finishing!',
         'De pijn van WIP limieten onthult problemen',
+      ],
+      keyTakeawaysEN: [
+        'Little\'s Law: Lead Time = WIP / Throughput',
+        'Context switching costs 15-20 minutes per switch',
+        'Stop starting, start finishing!',
+        'The pain of WIP limits reveals problems',
       ],
       resources: [
         {
@@ -640,6 +658,12 @@ Flow metrics:
         'Gebruik 85e percentiel voor betrouwbare voorspellingen',
         'Flow efficiency in kenniswerk is typisch 5-15%',
       ],
+      keyTakeawaysEN: [
+        'Lead Time = WIP / Throughput (Little\'s Law)',
+        'CFD visualizes WIP, lead time, throughput, and bottlenecks',
+        'Use the 85th percentile for reliable predictions',
+        'Flow efficiency in knowledge work is typically 5-15%',
+      ],
       resources: [
         {
           name: 'Flow Metrics Dashboard Template',
@@ -812,6 +836,12 @@ Kanban cadansen:
         'Start met standup en replenishment, voeg toe naar behoefte',
         'Cadansen zijn optioneel maar sterk aanbevolen',
       ],
+      keyTakeawaysEN: [
+        'Cadences are regular feedback moments',
+        'Walk the board from right to left in standups',
+        'Start with standup and replenishment, add more as needed',
+        'Cadences are optional but strongly recommended',
+      ],
     },
     {
       id: 'kb-l7',
@@ -906,6 +936,12 @@ Expliciete policies:
         'Definition of Done bepaalt wanneer werk af is',
         'Service Level Expectations geven voorspelbaarheid',
       ],
+      keyTakeawaysEN: [
+        'Policies make agreements explicit and visible',
+        'Definition of Ready determines when work may start',
+        'Definition of Done determines when work is complete',
+        'Service Level Expectations provide predictability',
+      ],
     },
     {
       id: 'kb-l8',
@@ -975,6 +1011,12 @@ Continue verbetering:
         'Kaizen = continue kleine verbeteringen',
         '5 Whys helpt root causes te vinden',
         'Experimenten hebben hypothese, meting en timebox',
+      ],
+      keyTakeawaysEN: [
+        'PDCA cycle: Plan, Do, Check, Act',
+        'Kaizen = continuous small improvements',
+        '5 Whys helps find root causes',
+        'Experiments require a hypothesis, measurement, and timebox',
       ],
     },
     {
