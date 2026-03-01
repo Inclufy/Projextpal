@@ -45,7 +45,18 @@ urlpatterns = [
     # Methodologies
     path("api/v1/", include("agile.urls")),
     path("api/v1/", include("waterfall.urls")),
-    
+
+    # New methodology modules
+    path("api/v1/lss-green/", include("lss_green.urls")),
+    path("api/v1/lss-black/", include("lss_black.urls")),
+    path("api/v1/hybrid/", include("hybrid.urls")),
+    path("api/v1/safe/", include("safe.urls")),
+    path("api/v1/msp/", include("msp.urls")),
+    path("api/v1/pmi/", include("pmi.urls")),
+    path("api/v1/p2-programme/", include("p2_programme.urls")),
+    path("api/v1/hybrid-programme/", include("hybrid_programme.urls")),
+    path("api/v1/cross-methodology/", include("cross_methodology.urls")),
+
     # Single endpoint views
     path("api/v1/users/me/", CurrentUserView.as_view(), name="current-user"),
     path("api/v1/public/plans/", PublicPlansView.as_view(), name="public-plans"),

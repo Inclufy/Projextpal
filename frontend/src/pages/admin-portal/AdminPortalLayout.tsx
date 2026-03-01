@@ -35,7 +35,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import InvoiceManagement from './InvoiceManagement';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

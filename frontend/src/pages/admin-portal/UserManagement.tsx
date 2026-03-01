@@ -56,6 +56,12 @@ import {
   ChevronLeft,
   ChevronRight,
   KeyRound,
+  Upload,
+  FileSpreadsheet,
+  Download,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -140,6 +146,12 @@ export default function UserManagement() {
   });
   
   const [sendInviteEmail, setSendInviteEmail] = useState(true);
+
+  // Import state
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResults, setImportResults] = useState<{ created: number; errors: string[] } | null>(null);
 
   // ============================================================
   // FETCH DATA
@@ -382,6 +394,106 @@ export default function UserManagement() {
     setSelectedUser(null);
   };
 
+  const handleImportUsers = async () => {
+    if (!importFile) {
+      toast.error(isNL ? 'Selecteer een bestand' : 'Select a file');
+      return;
+    }
+    setImportLoading(true);
+    setImportResults(null);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', importFile);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/admin/users/import/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formDataUpload,
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setImportResults({ created: data.created || data.count || 0, errors: data.errors || [] });
+        toast.success(isNL ? `${data.created || data.count || 0} gebruikers geïmporteerd` : `${data.created || data.count || 0} users imported`);
+        fetchUsers();
+      } else {
+        // If API doesn't support import yet, parse CSV locally and create users one by one
+        const text = await importFile.text();
+        const lines = text.trim().split('\n');
+        if (lines.length < 2) {
+          toast.error(isNL ? 'Bestand is leeg of ongeldig' : 'File is empty or invalid');
+          setImportLoading(false);
+          return;
+        }
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        const emailIdx = headers.findIndex(h => h === 'email' || h === 'e-mail');
+        const firstNameIdx = headers.findIndex(h => h === 'first_name' || h === 'voornaam' || h === 'firstname');
+        const lastNameIdx = headers.findIndex(h => h === 'last_name' || h === 'achternaam' || h === 'lastname');
+        const roleIdx = headers.findIndex(h => h === 'role' || h === 'rol');
+
+        if (emailIdx === -1) {
+          toast.error(isNL ? 'Kolom "email" niet gevonden in CSV' : 'Column "email" not found in CSV');
+          setImportLoading(false);
+          return;
+        }
+
+        let created = 0;
+        const errors: string[] = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.trim().replace(/"/g, ''));
+          const email = cols[emailIdx];
+          if (!email) continue;
+
+          try {
+            const payload: any = {
+              email,
+              first_name: firstNameIdx >= 0 ? cols[firstNameIdx] || '' : '',
+              last_name: lastNameIdx >= 0 ? cols[lastNameIdx] || '' : '',
+              role: roleIdx >= 0 ? cols[roleIdx] || 'pm' : 'pm',
+              send_invite: true,
+            };
+            const r = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify(payload),
+            });
+            if (r.ok) {
+              created++;
+            } else {
+              const errData = await r.json().catch(() => ({}));
+              errors.push(`${email}: ${errData.detail || errData.email?.[0] || 'Fout'}`);
+            }
+          } catch {
+            errors.push(`${email}: Netwerk fout`);
+          }
+        }
+        setImportResults({ created, errors });
+        if (created > 0) {
+          toast.success(isNL ? `${created} gebruikers geïmporteerd` : `${created} users imported`);
+          fetchUsers();
+        }
+        if (errors.length > 0) {
+          toast.error(isNL ? `${errors.length} fouten bij import` : `${errors.length} import errors`);
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.message || (isNL ? 'Import mislukt' : 'Import failed'));
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const csv = 'email,first_name,last_name,role\njohn@example.com,John,Doe,pm\njane@example.com,Jane,Smith,admin\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const openEditDialog = (user: User) => {
     setSelectedUser(user);
     setFormData({
@@ -441,10 +553,23 @@ export default function UserManagement() {
             {isNL ? 'Beheer alle gebruikers van het platform' : 'Manage all platform users'}
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          {isNL ? 'Nieuwe Gebruiker' : 'New User'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setImportFile(null);
+              setImportResults(null);
+              setIsImportDialogOpen(true);
+            }}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {isNL ? 'Importeren' : 'Import'}
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {isNL ? 'Nieuwe Gebruiker' : 'New User'}
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -878,7 +1003,7 @@ export default function UserManagement() {
           <DialogHeader>
             <DialogTitle>{isNL ? 'Gebruiker Verwijderen' : 'Delete User'}</DialogTitle>
             <DialogDescription>
-              {isNL 
+              {isNL
                 ? `Weet je zeker dat je ${selectedUser?.email} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.`
                 : `Are you sure you want to delete ${selectedUser?.email}? This action cannot be undone.`
               }
@@ -890,6 +1015,119 @@ export default function UserManagement() {
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
               {isNL ? 'Verwijderen' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Users Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-purple-600" />
+              {isNL ? 'Gebruikers Importeren' : 'Import Users'}
+            </DialogTitle>
+            <DialogDescription>
+              {isNL
+                ? 'Upload een CSV-bestand om meerdere gebruikers tegelijk aan te maken. Elke gebruiker ontvangt een uitnodigingsmail.'
+                : 'Upload a CSV file to create multiple users at once. Each user will receive an invitation email.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* Template download */}
+            <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <FileSpreadsheet className="h-5 w-5 text-blue-600 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">
+                  {isNL ? 'Download het CSV template' : 'Download the CSV template'}
+                </p>
+                <p className="text-xs text-blue-700">
+                  {isNL ? 'Kolommen: email, first_name, last_name, role' : 'Columns: email, first_name, last_name, role'}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={downloadTemplate} className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                <Download className="h-3.5 w-3.5 mr-1" />
+                Template
+              </Button>
+            </div>
+
+            {/* File upload */}
+            <div className="space-y-2">
+              <Label>{isNL ? 'CSV Bestand' : 'CSV File'}</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept=".csv,.txt"
+                  onChange={(e) => {
+                    setImportFile(e.target.files?.[0] || null);
+                    setImportResults(null);
+                  }}
+                  className="flex-1"
+                />
+              </div>
+              {importFile && (
+                <p className="text-xs text-muted-foreground">
+                  {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
+                </p>
+              )}
+            </div>
+
+            {/* Roles info */}
+            <div className="p-3 bg-gray-50 border rounded-lg text-xs space-y-1">
+              <p className="font-medium">{isNL ? 'Beschikbare rollen:' : 'Available roles:'}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {['pm', 'admin', 'program_manager', 'contributor', 'reviewer', 'guest'].map(role => (
+                  <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Import results */}
+            {importResults && (
+              <div className="space-y-2">
+                {importResults.created > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span>{importResults.created} {isNL ? 'gebruikers succesvol geïmporteerd' : 'users imported successfully'}</span>
+                  </div>
+                )}
+                {importResults.errors.length > 0 && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-4 w-4 shrink-0" />
+                      <span className="font-medium">{importResults.errors.length} {isNL ? 'fouten:' : 'errors:'}</span>
+                    </div>
+                    <ul className="ml-6 list-disc space-y-0.5 text-xs max-h-32 overflow-y-auto">
+                      {importResults.errors.map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+              {isNL ? 'Sluiten' : 'Close'}
+            </Button>
+            <Button
+              onClick={handleImportUsers}
+              disabled={!importFile || importLoading}
+            >
+              {importLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  {isNL ? 'Importeren...' : 'Importing...'}
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isNL ? 'Importeren' : 'Import'}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

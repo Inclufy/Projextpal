@@ -6,7 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("academy", "0010_courselesson_visual_data_courselesson_visual_type_and_more"),
         ("academy", "0011_lessonvisual_preview_image_url"),
     ]
 

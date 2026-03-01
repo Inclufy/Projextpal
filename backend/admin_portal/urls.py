@@ -13,6 +13,11 @@ from .views import (
     AdminPlanViewSet,
     AuditLogViewSet,
     SystemSettingsView,
+    ClientApiKeyListView,
+    ClientApiKeyDetailView,
+    CloudProviderConfigListView,
+    CloudProviderConfigDetailView,
+    CloudProviderTestConnectionView,
 )
 
 # Import registration views
@@ -39,6 +44,15 @@ urlpatterns = [
     
     # System settings
     path('settings/', SystemSettingsView.as_view(), name='admin-settings'),
+
+    # Client API keys (per company)
+    path('api-keys/', ClientApiKeyListView.as_view(), name='admin-api-keys'),
+    path('api-keys/<uuid:pk>/', ClientApiKeyDetailView.as_view(), name='admin-api-key-detail'),
+
+    # Cloud provider configuration (AWS, Azure, GCP, DigitalOcean)
+    path('cloud-providers/', CloudProviderConfigListView.as_view(), name='admin-cloud-providers'),
+    path('cloud-providers/<uuid:pk>/', CloudProviderConfigDetailView.as_view(), name='admin-cloud-provider-detail'),
+    path('cloud-providers/<uuid:pk>/test/', CloudProviderTestConnectionView.as_view(), name='admin-cloud-provider-test'),
     
     # ============================================
     # ACADEMY / TRAINING MANAGEMENT

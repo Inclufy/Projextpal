@@ -19,7 +19,17 @@ urlpatterns = [
     path('', include(router.urls)),
     path('skills/', include(skills_router.urls)),
     path('visuals/', include('academy.urls_visual')),
-    
+
+    # ===== EnhancedCourseBuilder CRUD endpoints =====
+    path('courses/<str:pk>/update/', api_views.course_update, name='course-update'),
+    path('courses/<str:pk>/delete/', api_views.course_delete, name='course-delete'),
+    path('courses/<str:pk>/modules/create/', api_views.course_create_module, name='course-create-module'),
+    path('modules/<int:pk>/update/', api_views.module_update, name='module-update'),
+    path('modules/<int:pk>/delete/', api_views.module_delete, name='module-delete'),
+    path('modules/<int:pk>/lessons/create/', api_views.module_create_lesson, name='module-create-lesson'),
+    path('lessons/<int:pk>/update/', api_views.lesson_update, name='lesson-update'),
+    path('lessons/<int:pk>/delete/', api_views.lesson_delete, name='lesson-delete'),
+
     # Visual Selection AI endpoint
     path('analyze-lesson/', api_views.analyze_lesson_for_visual, name='analyze-lesson-visual'),
     

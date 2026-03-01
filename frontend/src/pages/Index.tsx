@@ -410,8 +410,17 @@ const Index = () => {
     setAiLoading(true);
     setAiSummary("");
     try {
-      const langInst = language === 'nl' ? '**BELANGRIJK: Antwoord in het Nederlands.**' : '**Respond in English.**';
-      const prompt = `${langInst}\n\nAnalyze: ${selectedPrograms.length} programs, ${selectedProjects.length} projects.\n\n## Summary\nProvide analysis.`;
+      const isNL = language === 'nl';
+      const langStart = isNL
+        ? '[TAAL: NEDERLANDS] Antwoord VERPLICHT in het Nederlands, ongeacht de taal hieronder.'
+        : '[LANGUAGE: ENGLISH] You MUST respond in English.';
+      const langEnd = isNL
+        ? 'HERINNERING: Antwoord volledig in het NEDERLANDS.'
+        : 'REMINDER: Respond entirely in ENGLISH.';
+      const analyzeLabel = isNL ? 'Analyseer' : 'Analyze';
+      const summaryLabel = isNL ? 'Samenvatting' : 'Summary';
+      const provideLabel = isNL ? 'Geef een analyse.' : 'Provide analysis.';
+      const prompt = `${langStart}\n\n${analyzeLabel}: ${selectedPrograms.length} ${isNL ? "programma's" : 'programs'}, ${selectedProjects.length} ${isNL ? 'projecten' : 'projects'}.\n\n## ${summaryLabel}\n${provideLabel}\n\n${langEnd}`;
       const response = await callAI(prompt);
       setAiSummary(response);
     } catch (error) {

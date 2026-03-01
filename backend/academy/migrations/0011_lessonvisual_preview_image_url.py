@@ -6,44 +6,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("academy", "0009_alter_lessonvisual_ai_intent_and_more"),
+        ("academy", "0010_courselesson_visual_data_courselesson_visual_type_and_more"),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="courselesson",
-            name="visual_type",
-            field=models.CharField(
-                choices=[
-                    ("auto", "Auto-detect from content"),
-                    ("project_def", "Project Definition (3 DNA Cards)"),
-                    ("triple_constraint", "Triple Constraint (Triangle Diagram)"),
-                    ("pm_role", "PM Role (Role Cards)"),
-                    ("comparison", "Comparison (Table + Examples)"),
-                    ("lifecycle", "Lifecycle (Phase Diagram)"),
-                    ("stakeholder", "Stakeholder (Matrix)"),
-                    ("risk", "Risk Management (Heat Map)"),
-                    ("generic", "Generic (Rich Text + Icons)"),
-                ],
-                default="auto",
-                help_text='Visual template to use for this lesson. "auto" will detect from content.',
-                max_length=30,
-            ),
-        ),
-        migrations.AddField(
-            model_name="courselesson",
-            name="visual_data",
-            field=models.JSONField(
-                blank=True,
-                help_text="JSON config for the visual template (cards, labels, examples, colors)",
-                null=True,
-            ),
-        ),
-        migrations.AddField(
-            model_name="lessonvisual",
-            name="preview_image_url",
-            field=models.URLField(
-                blank=True, help_text="DALL-E generated preview image URL", null=True
-            ),
-        ),
+        # Fields already added in 0010 (was a parallel migration branch, now linearized)
     ]

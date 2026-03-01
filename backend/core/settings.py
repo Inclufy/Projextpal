@@ -56,6 +56,15 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'academy',
     'deployment',
+    'lss_green',
+    'lss_black',
+    'hybrid',
+    'safe',
+    'msp',
+    'pmi',
+    'p2_programme',
+    'hybrid_programme',
+    'cross_methodology',
 ]
 
 MIDDLEWARE = [
@@ -200,6 +209,54 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
     'SCHEMA_PATH_PREFIX': '/api/v1/',
 }
+
+# ============================================================
+# CLOUD STORAGE BACKEND CONFIGURATION
+# ============================================================
+# Default: local file storage. When a cloud provider is enabled via
+# admin settings, the storage backend can be switched dynamically.
+# Supported via django-storages: AWS S3, Azure Blob, GCS, DigitalOcean Spaces
+
+# AWS S3 settings (used when AWS storage is enabled)
+AWS_ACCESS_KEY_ID = decouple.config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = decouple.config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = decouple.config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = decouple.config('AWS_S3_REGION_NAME', default='eu-west-1')
+AWS_S3_CUSTOM_DOMAIN = decouple.config('AWS_S3_CUSTOM_DOMAIN', default='')
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+
+# Azure Blob Storage settings (used when Azure storage is enabled)
+AZURE_ACCOUNT_NAME = decouple.config('AZURE_ACCOUNT_NAME', default='')
+AZURE_ACCOUNT_KEY = decouple.config('AZURE_ACCOUNT_KEY', default='')
+AZURE_CONTAINER = decouple.config('AZURE_CONTAINER', default='media')
+
+# GCP Cloud Storage settings (used when GCP storage is enabled)
+GS_BUCKET_NAME = decouple.config('GS_BUCKET_NAME', default='')
+GS_PROJECT_ID = decouple.config('GS_PROJECT_ID', default='')
+
+# DigitalOcean Spaces settings (S3-compatible)
+DO_SPACES_ACCESS_KEY_ID = decouple.config('DO_SPACES_ACCESS_KEY_ID', default='')
+DO_SPACES_SECRET_ACCESS_KEY = decouple.config('DO_SPACES_SECRET_ACCESS_KEY', default='')
+DO_SPACES_BUCKET_NAME = decouple.config('DO_SPACES_BUCKET_NAME', default='')
+DO_SPACES_REGION = decouple.config('DO_SPACES_REGION', default='ams3')
+DO_SPACES_ENDPOINT_URL = decouple.config('DO_SPACES_ENDPOINT_URL', default='')
+
+# Storage backend selection (default = local filesystem)
+# Can be overridden to 'storages.backends.s3boto3.S3Boto3Storage',
+# 'storages.backends.azure_storage.AzureStorage',
+# 'storages.backends.gcloud.GoogleCloudStorage'
+CLOUD_STORAGE_BACKEND = decouple.config('CLOUD_STORAGE_BACKEND', default='')
+if CLOUD_STORAGE_BACKEND:
+    DEFAULT_FILE_STORAGE = CLOUD_STORAGE_BACKEND
+
+# AWS SES email backend (used when AWS email is enabled)
+AWS_SES_REGION_NAME = decouple.config('AWS_SES_REGION_NAME', default='eu-west-1')
+AWS_SES_REGION_ENDPOINT = decouple.config(
+    'AWS_SES_REGION_ENDPOINT',
+    default=f'email.{decouple.config("AWS_SES_REGION_NAME", default="eu-west-1")}.amazonaws.com'
+)
 
 MOBILE_DEEP_LINK = "projextpal://"
 # Use SQLite for testing (faster and no Docker needed)

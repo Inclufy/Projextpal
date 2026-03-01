@@ -1,7 +1,13 @@
 name: Mirror to GitLab
 on:
   push:
-    branches: [master]
+    branches:
+      - master
+      - main
+      - 'claude/**'
+  delete:
+    branches:
+      - 'claude/**'
 jobs:
   mirror:
     runs-on: ubuntu-latest
@@ -9,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: master
       - run: |
           git remote add gitlab https://sloukile:${{ secrets.GITLAB_TOKEN }}@gitlab.com/inclufy/projextpal.git
-          git push gitlab master --force
+          git push gitlab --all --force
+          git push gitlab --tags --force
