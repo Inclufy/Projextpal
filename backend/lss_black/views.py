@@ -21,6 +21,9 @@ class HypothesisTestViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -43,6 +46,9 @@ class DesignOfExperimentViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -65,6 +71,9 @@ class ControlPlanViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -86,6 +95,9 @@ class SPCChartViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):

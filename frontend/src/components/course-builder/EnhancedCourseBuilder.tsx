@@ -118,6 +118,12 @@ const EnhancedCourseBuilder = () => {
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
   const [generatedSimulation, setGeneratedSimulation] = useState<any>(null);
 
+  // Course import state
+  const [courseImportOpen, setCourseImportOpen] = useState(false);
+  const [courseImportFile, setCourseImportFile] = useState<File | null>(null);
+  const [courseImportLoading, setCourseImportLoading] = useState(false);
+  const [courseImportResults, setCourseImportResults] = useState<{ created: number; errors: string[] } | null>(null);
+
   // ===== API =====
   const api = {
     baseUrl: '/api/v1/academy',
@@ -438,6 +444,49 @@ const EnhancedCourseBuilder = () => {
     );
   };
 
+  // ===== COURSE IMPORT =====
+  const handleCourseImport = async () => {
+    if (!courseImportFile) return;
+    setCourseImportLoading(true);
+    setCourseImportResults(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', courseImportFile);
+      const token = localStorage.getItem('access_token');
+      const r = await fetch('/api/v1/admin/training/courses/import/', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setCourseImportResults({ created: data.created || 0, errors: data.errors || [] });
+        if (data.created > 0) {
+          showToast(`${data.created} cursussen geïmporteerd`);
+          fetchCourses();
+        }
+      } else {
+        const errData = await r.json().catch(() => ({}));
+        setCourseImportResults({ created: 0, errors: [errData.error || 'Import mislukt'] });
+      }
+    } catch (err: any) {
+      setCourseImportResults({ created: 0, errors: [err.message || 'Import mislukt'] });
+    } finally {
+      setCourseImportLoading(false);
+    }
+  };
+
+  const downloadCourseTemplate = () => {
+    const csv = 'title,title_nl,description,category,difficulty,price,duration_hours,status,language,has_certificate\nProject Management Basics,Projectmanagement Basis,Learn PM fundamentals,Project Management,beginner,99,20,draft,Nederlands & English,true\nAdvanced Scrum,Gevorderd Scrum,Master Scrum techniques,Agile,advanced,149,30,draft,Nederlands & English,true\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'courses_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
@@ -494,7 +543,102 @@ const EnhancedCourseBuilder = () => {
                   </h1>
                   <p className="text-muted-foreground">Complete cursus beheer met modules, lessen en content</p>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={() => { setCourseImportOpen(true); setCourseImportResults(null); setCourseImportFile(null); }}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Cursussen Importeren
+                </Button>
               </div>
+
+              {/* Course Import Dialog */}
+              <Dialog open={courseImportOpen} onOpenChange={setCourseImportOpen}>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Upload className="w-5 h-5" style={{ color: BRAND.purple }} />
+                      Cursussen Importeren
+                    </DialogTitle>
+                    <DialogDescription>
+                      Upload een CSV of JSON bestand om cursussen in bulk te importeren.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    {/* Template */}
+                    <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">CSV/JSON Template</p>
+                        <p className="text-xs text-blue-700 mt-0.5">title, category, difficulty, price, duration_hours, status</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={downloadCourseTemplate} className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        Template
+                      </Button>
+                    </div>
+
+                    {/* File upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Bestand (CSV of JSON)</label>
+                      <input
+                        type="file"
+                        accept=".csv,.json,.txt"
+                        onChange={(e) => { setCourseImportFile(e.target.files?.[0] || null); setCourseImportResults(null); }}
+                        className="w-full text-sm border rounded-md p-2"
+                      />
+                      {courseImportFile && (
+                        <p className="text-xs text-muted-foreground">{courseImportFile.name} ({(courseImportFile.size / 1024).toFixed(1)} KB)</p>
+                      )}
+                    </div>
+
+                    {/* Fields info */}
+                    <div className="p-3 bg-gray-50 border rounded-lg text-xs space-y-1">
+                      <p className="font-medium">Beschikbare velden:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['title*', 'title_nl', 'description', 'category', 'difficulty', 'price', 'duration_hours', 'status', 'language', 'has_certificate'].map(f => (
+                          <span key={f} className="px-1.5 py-0.5 bg-white border rounded text-xs">{f}</span>
+                        ))}
+                      </div>
+                      <p className="mt-1">Moeilijkheid: beginner, intermediate, advanced, expert</p>
+                      <p>JSON: kan ook 'modules' array bevatten met 'lessons'</p>
+                    </div>
+
+                    {/* Results */}
+                    {courseImportResults && (
+                      <div className="space-y-2">
+                        {courseImportResults.created > 0 && (
+                          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                            <CheckCircle2 className="h-4 w-4 shrink-0" />
+                            <span>{courseImportResults.created} cursussen succesvol geïmporteerd</span>
+                          </div>
+                        )}
+                        {courseImportResults.errors.length > 0 && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4 shrink-0" />
+                              <span className="font-medium">{courseImportResults.errors.length} fouten:</span>
+                            </div>
+                            <ul className="ml-6 list-disc space-y-0.5 text-xs max-h-32 overflow-y-auto">
+                              {courseImportResults.errors.map((err, i) => <li key={i}>{err}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setCourseImportOpen(false)}>Sluiten</Button>
+                    <Button onClick={handleCourseImport} disabled={!courseImportFile || courseImportLoading}>
+                      {courseImportLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin mr-2" />Importeren...</>
+                      ) : (
+                        <><Upload className="h-4 w-4 mr-2" />Importeren</>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {courses.map(course => (

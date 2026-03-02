@@ -9,8 +9,8 @@ router.register(r'governance-configs', HybridGovernanceConfigViewSet, basename='
 router.register(r'adaptations', HybridAdaptationViewSet, basename='adaptation')
 
 programme_router = DefaultRouter()
-programme_router.register(r'governance-configs', HybridGovernanceConfigViewSet, basename='governance-config')
-programme_router.register(r'adaptations', HybridAdaptationViewSet, basename='adaptation')
+programme_router.register(r'governance-configs', HybridGovernanceConfigViewSet, basename='programme-governance-config')
+programme_router.register(r'adaptations', HybridAdaptationViewSet, basename='programme-adaptation')
 
 urlpatterns = [
     path('', include(router.urls)),

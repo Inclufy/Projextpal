@@ -18,6 +18,9 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -38,6 +41,9 @@ class BenefitRealizationViewSet(viewsets.ModelViewSet):
         benefit_pk = self.kwargs.get('pk') or self.kwargs.get('benefit_pk')
         if benefit_pk:
             queryset = queryset.filter(benefit_id=benefit_pk)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(benefit__program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -60,6 +66,9 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):

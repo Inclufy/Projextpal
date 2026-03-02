@@ -10,9 +10,9 @@ router.register(r'configs', HybridConfigurationViewSet, basename='config')
 router.register(r'phase-methodologies', PhaseMethodologyViewSet, basename='phase-methodology')
 
 project_router = DefaultRouter()
-project_router.register(r'artifacts', HybridArtifactViewSet, basename='artifact')
-project_router.register(r'configs', HybridConfigurationViewSet, basename='config')
-project_router.register(r'phase-methodologies', PhaseMethodologyViewSet, basename='phase-methodology')
+project_router.register(r'artifacts', HybridArtifactViewSet, basename='project-artifact')
+project_router.register(r'configs', HybridConfigurationViewSet, basename='project-config')
+project_router.register(r'phase-methodologies', PhaseMethodologyViewSet, basename='project-phase-methodology')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -9,8 +9,8 @@ router.register(r'benefits', MSPBenefitViewSet, basename='benefit')
 router.register(r'tranches', MSPTrancheViewSet, basename='tranche')
 
 program_router = DefaultRouter()
-program_router.register(r'benefits', MSPBenefitViewSet, basename='benefit')
-program_router.register(r'tranches', MSPTrancheViewSet, basename='tranche')
+program_router.register(r'benefits', MSPBenefitViewSet, basename='program-benefit')
+program_router.register(r'tranches', MSPTrancheViewSet, basename='program-tranche')
 
 urlpatterns = [
     path('', include(router.urls)),

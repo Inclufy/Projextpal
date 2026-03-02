@@ -3,21 +3,27 @@
 # API views for admin portal endpoints
 # ============================================================
 
+import csv
+import io
+import json
+from datetime import timedelta, datetime
+from decimal import Decimal
+
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Sum, Q, F
 from django.db.models.functions import TruncMonth
+from django.http import HttpResponse
 from django.utils import timezone
-from datetime import timedelta
-from decimal import Decimal
 
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
-from projects.models import Project
+from projects.models import Project, TimeEntry
 from .models import AuditLog, SystemSetting, ClientApiKey, CloudProviderConfig, log_action, initialize_default_settings
 from .serializers import (
     UserListSerializer, UserDetailSerializer, UserCreateSerializer, UserUpdateSerializer,
@@ -26,7 +32,7 @@ from .serializers import (
     AuditLogSerializer, SystemSettingSerializer, ClientApiKeySerializer, CurrentUserSerializer, DashboardStatsSerializer,
     CloudProviderConfigListSerializer, CloudProviderConfigWriteSerializer,
 )
-from .permissions import IsSuperAdmin
+from .permissions import IsSuperAdmin, IsAdminOrSuperAdmin
 
 User = get_user_model()
 
@@ -250,9 +256,9 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     def resend_invite(self, request, pk=None):
         """Resend invitation email"""
         user = self.get_object()
-        
+
         # TODO: Implement actual email sending
-        
+
         log_action(
             user=request.user,
             action='user_invited',
@@ -263,8 +269,108 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             company=user.company,
             request=request
         )
-        
+
         return Response({'status': 'invite_sent', 'email': user.email})
+
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def import_users(self, request):
+        """
+        POST /api/v1/admin/users/import/
+        Import users from CSV file into a specific client/company environment.
+
+        CSV columns: email, first_name, last_name, role, company_id (or company_name)
+        """
+        file = request.FILES.get('file')
+        company_id = request.data.get('company_id')
+
+        if not file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Resolve target company
+        target_company = None
+        if company_id:
+            try:
+                target_company = Company.objects.get(id=company_id)
+            except Company.DoesNotExist:
+                return Response({'error': f'Company with id {company_id} not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = file.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(decoded))
+        except Exception as e:
+            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        created = 0
+        errors = []
+        valid_roles = ['admin', 'pm', 'program_manager', 'contibuter', 'reviewer', 'guest']
+
+        for i, row in enumerate(reader, start=2):
+            email = (row.get('email') or row.get('e-mail') or '').strip()
+            if not email:
+                errors.append(f'Row {i}: Missing email')
+                continue
+
+            if User.objects.filter(email=email).exists():
+                errors.append(f'Row {i}: {email} already exists')
+                continue
+
+            first_name = (row.get('first_name') or row.get('voornaam') or row.get('firstname') or '').strip()
+            last_name = (row.get('last_name') or row.get('achternaam') or row.get('lastname') or '').strip()
+            role = (row.get('role') or row.get('rol') or 'pm').strip().lower()
+
+            # Map contributor spelling
+            if role in ('contributor', 'medewerker'):
+                role = 'contibuter'
+            if role not in valid_roles:
+                role = 'pm'
+
+            # Resolve company per row (fallback to request-level company_id)
+            row_company = target_company
+            row_company_id = (row.get('company_id') or row.get('organisatie_id') or '').strip()
+            row_company_name = (row.get('company_name') or row.get('organisatie') or '').strip()
+
+            if row_company_id:
+                try:
+                    row_company = Company.objects.get(id=int(row_company_id))
+                except (Company.DoesNotExist, ValueError):
+                    errors.append(f'Row {i}: Company id {row_company_id} not found')
+                    continue
+            elif row_company_name:
+                row_company = Company.objects.filter(name__iexact=row_company_name).first()
+                if not row_company:
+                    errors.append(f'Row {i}: Company "{row_company_name}" not found')
+                    continue
+
+            try:
+                user = User(
+                    email=email,
+                    username=email.split('@')[0],
+                    first_name=first_name,
+                    last_name=last_name,
+                    role=role,
+                    company=row_company,
+                    is_active=False,
+                )
+                user.set_unusable_password()
+                user.save()
+                created += 1
+            except Exception as e:
+                errors.append(f'Row {i}: {email} - {str(e)}')
+
+        log_action(
+            user=request.user,
+            action='user_created',
+            category='user',
+            description=f"Bulk imported {created} users" + (f" into {target_company.name}" if target_company else ""),
+            metadata={'created': created, 'errors_count': len(errors)},
+            request=request,
+        )
+
+        return Response({
+            'created': created,
+            'errors': errors,
+            'total_rows': created + len(errors),
+        })
 
 
 # ============================================================
@@ -295,8 +401,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
         return CompanyDetailSerializer
     
     def create(self, request, *args, **kwargs):
-        print(f"=== DEBUG CREATE === request.data: {request.data}")
-        
         # Create company first
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -320,13 +424,11 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                     billing_cycle=billing_cycle or 'monthly',
                     payment_method=payment_method or 'stripe'
                 )
-                print(f"Created subscription: {status_value}, {billing_cycle}, {payment_method}")
-                
                 company.is_subscribed = True
                 company.save()
             except SubscriptionPlan.DoesNotExist:
-                print(f"Plan {subscription_plan_id} not found")
-        
+                pass
+
         # Log action
         log_action(
             user=self.request.user,
@@ -372,8 +474,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
 
     
     def partial_update(self, request, *args, **kwargs):
-        print(f"=== DEBUG PATCH === request.data: {request.data}")
-        
         instance = self.get_object()
         
         # Handle subscription update separately
@@ -398,7 +498,6 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                         if subscription_status and subscription_status != 'none':
                             existing_sub.status = subscription_status
                         existing_sub.save()
-                        print(f"Updated subscription: {existing_sub.status}, {existing_sub.billing_cycle}, {existing_sub.payment_method}")
                     else:
                         new_status = subscription_status if subscription_status and subscription_status != 'none' else 'active'
                         CompanySubscription.objects.create(
@@ -408,8 +507,7 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                             billing_cycle=billing_cycle or 'monthly',
                             payment_method=payment_method or 'stripe'
                         )
-                        print(f"Created new subscription")
-                    
+
                     instance.is_subscribed = True
                     instance.save()
                 except SubscriptionPlan.DoesNotExist:
@@ -421,8 +519,7 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
                 if payment_method:
                     existing_sub.payment_method = payment_method
                 existing_sub.save()
-                print(f"Updated status only: {existing_sub.status}")
-                
+
                 if subscription_status == 'canceled':
                     instance.is_subscribed = False
                     instance.save()
@@ -934,3 +1031,514 @@ class CloudProviderTestConnectionView(APIView):
         if cdn_cfg.get('domain') or cdn_cfg.get('distribution_id'):
             return {'status': 'ok', 'message': f'CDN configured: {cdn_cfg.get("domain", cdn_cfg.get("distribution_id", ""))}'}
         return {'status': 'warning', 'message': 'No CDN domain configured'}
+
+
+# ============================================================
+# PROJECT IMPORT VIEW
+# ============================================================
+
+class ProjectImportView(APIView):
+    """
+    POST /api/v1/admin/projects/import/
+    Import projects from CSV into a specific client/company.
+
+    CSV columns: name, project_type, methodology, budget, start_date, end_date, status, description
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file = request.FILES.get('file')
+        company_id = request.data.get('company_id')
+
+        if not file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        target_company = None
+        if company_id:
+            try:
+                target_company = Company.objects.get(id=company_id)
+            except Company.DoesNotExist:
+                return Response({'error': f'Company with id {company_id} not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = file.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(decoded))
+        except Exception as e:
+            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        valid_types = ['software', 'design', 'research', 'other']
+        valid_methodologies = ['prince2', 'agile', 'scrum', 'kanban', 'waterfall',
+                               'lean_six_sigma_green', 'lean_six_sigma_black', 'program', 'hybrid']
+        valid_statuses = ['planning', 'pending', 'in_progress', 'completed', 'on_hold', 'cancelled']
+
+        created = 0
+        errors = []
+
+        for i, row in enumerate(reader, start=2):
+            name = (row.get('name') or row.get('naam') or row.get('project_name') or '').strip()
+            if not name:
+                errors.append(f'Row {i}: Missing project name')
+                continue
+
+            # Resolve company per row or use target
+            row_company = target_company
+            row_company_id = (row.get('company_id') or row.get('organisatie_id') or '').strip()
+            row_company_name = (row.get('company_name') or row.get('organisatie') or '').strip()
+
+            if row_company_id:
+                try:
+                    row_company = Company.objects.get(id=int(row_company_id))
+                except (Company.DoesNotExist, ValueError):
+                    errors.append(f'Row {i}: Company id {row_company_id} not found')
+                    continue
+            elif row_company_name:
+                row_company = Company.objects.filter(name__iexact=row_company_name).first()
+                if not row_company:
+                    errors.append(f'Row {i}: Company "{row_company_name}" not found')
+                    continue
+
+            if not row_company:
+                errors.append(f'Row {i}: No company specified for project "{name}"')
+                continue
+
+            project_type = (row.get('project_type') or row.get('type') or '').strip().lower()
+            if project_type not in valid_types:
+                project_type = 'other'
+
+            methodology = (row.get('methodology') or row.get('methodologie') or '').strip().lower()
+            if methodology not in valid_methodologies:
+                methodology = None
+
+            status_val = (row.get('status') or '').strip().lower()
+            if status_val not in valid_statuses:
+                status_val = 'pending'
+
+            budget = 0
+            try:
+                budget_str = (row.get('budget') or '0').strip().replace(',', '.')
+                budget = Decimal(budget_str)
+            except Exception:
+                pass
+
+            start_date = None
+            end_date = None
+            try:
+                sd = (row.get('start_date') or row.get('startdatum') or '').strip()
+                if sd:
+                    start_date = datetime.strptime(sd, '%Y-%m-%d').date()
+            except Exception:
+                pass
+            try:
+                ed = (row.get('end_date') or row.get('einddatum') or '').strip()
+                if ed:
+                    end_date = datetime.strptime(ed, '%Y-%m-%d').date()
+            except Exception:
+                pass
+
+            description = (row.get('description') or row.get('beschrijving') or '').strip()
+
+            try:
+                Project.objects.create(
+                    name=name,
+                    company=row_company,
+                    project_type=project_type,
+                    methodology=methodology,
+                    budget=budget,
+                    start_date=start_date,
+                    end_date=end_date,
+                    status=status_val,
+                    description=description,
+                    created_by=request.user,
+                )
+                created += 1
+            except Exception as e:
+                errors.append(f'Row {i}: {name} - {str(e)}')
+
+        log_action(
+            user=request.user,
+            action='company_updated',
+            category='company',
+            description=f"Bulk imported {created} projects" + (f" into {target_company.name}" if target_company else ""),
+            metadata={'created': created, 'errors_count': len(errors)},
+            request=request,
+        )
+
+        return Response({
+            'created': created,
+            'errors': errors,
+            'total_rows': created + len(errors),
+        })
+
+
+# ============================================================
+# COURSE IMPORT VIEW
+# ============================================================
+
+class CourseImportView(APIView):
+    """
+    POST /api/v1/admin/training/courses/import/
+    Import courses from CSV or JSON file.
+
+    CSV columns: title, title_nl, description, category, difficulty, price, duration_hours, status, language
+    JSON: array of course objects with the same fields
+    """
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        from academy.models import Course, CourseCategory, CourseModule, CourseLesson
+
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        filename = file.name.lower()
+        created = 0
+        errors = []
+
+        try:
+            decoded = file.read().decode('utf-8-sig')
+
+            if filename.endswith('.json'):
+                rows = json.loads(decoded)
+                if not isinstance(rows, list):
+                    rows = [rows]
+            else:
+                reader = csv.DictReader(io.StringIO(decoded))
+                rows = list(reader)
+        except Exception as e:
+            return Response({'error': f'Failed to parse file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        valid_difficulties = ['beginner', 'intermediate', 'advanced', 'expert']
+        valid_statuses = ['draft', 'published', 'archived']
+
+        for i, row in enumerate(rows, start=1):
+            title = (row.get('title') or row.get('naam') or '').strip()
+            if not title:
+                errors.append(f'Row {i}: Missing title')
+                continue
+
+            # Check duplicate by slug
+            from django.utils.text import slugify
+            slug = slugify(title)
+            if Course.objects.filter(slug=slug).exists():
+                errors.append(f'Row {i}: Course "{title}" already exists')
+                continue
+
+            # Resolve or create category
+            category_name = (row.get('category') or row.get('categorie') or 'General').strip()
+            category, _ = CourseCategory.objects.get_or_create(
+                name__iexact=category_name,
+                defaults={'name': category_name, 'slug': slugify(category_name)}
+            )
+
+            difficulty = (row.get('difficulty') or row.get('niveau') or 'beginner').strip().lower()
+            if difficulty not in valid_difficulties:
+                difficulty = 'beginner'
+
+            course_status = (row.get('status') or 'draft').strip().lower()
+            if course_status not in valid_statuses:
+                course_status = 'draft'
+
+            price = Decimal('0')
+            try:
+                price_str = (row.get('price') or row.get('prijs') or '0').strip().replace(',', '.')
+                price = Decimal(price_str)
+            except Exception:
+                pass
+
+            duration_hours = 0
+            try:
+                duration_hours = int(row.get('duration_hours') or row.get('duur_uren') or 0)
+            except Exception:
+                pass
+
+            try:
+                course = Course.objects.create(
+                    title=title,
+                    title_nl=row.get('title_nl', '').strip() if row.get('title_nl') else '',
+                    slug=slug,
+                    description=row.get('description', '').strip() if row.get('description') else title,
+                    description_nl=row.get('description_nl', '').strip() if row.get('description_nl') else '',
+                    category=category,
+                    difficulty=difficulty,
+                    price=price,
+                    duration_hours=duration_hours,
+                    language=row.get('language', 'Nederlands & English').strip() if row.get('language') else 'Nederlands & English',
+                    status=course_status,
+                    has_certificate=str(row.get('has_certificate', 'true')).lower() in ('true', '1', 'yes', 'ja'),
+                )
+
+                # Create modules from JSON data if present
+                modules_data = row.get('modules')
+                if modules_data:
+                    if isinstance(modules_data, str):
+                        try:
+                            modules_data = json.loads(modules_data)
+                        except Exception:
+                            modules_data = None
+
+                    if isinstance(modules_data, list):
+                        for j, mod in enumerate(modules_data):
+                            module = CourseModule.objects.create(
+                                course=course,
+                                title=mod.get('title', f'Module {j + 1}'),
+                                title_nl=mod.get('title_nl', ''),
+                                description=mod.get('description', ''),
+                                order=j,
+                            )
+                            # Create lessons if present
+                            for k, lesson_data in enumerate(mod.get('lessons', [])):
+                                CourseLesson.objects.create(
+                                    module=module,
+                                    title=lesson_data.get('title', f'Lesson {k + 1}'),
+                                    title_nl=lesson_data.get('title_nl', ''),
+                                    lesson_type=lesson_data.get('type', 'text'),
+                                    duration_minutes=int(lesson_data.get('duration_minutes', 0)),
+                                    content=lesson_data.get('content', ''),
+                                    order=k,
+                                )
+
+                created += 1
+            except Exception as e:
+                errors.append(f'Row {i}: {title} - {str(e)}')
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='settings',
+            description=f"Bulk imported {created} courses",
+            metadata={'created': created, 'errors_count': len(errors)},
+            request=request,
+        )
+
+        return Response({
+            'created': created,
+            'errors': errors,
+            'total_rows': created + len(errors),
+        })
+
+
+# ============================================================
+# TIMESHEET EXPORT VIEW (Admin & SuperAdmin)
+# ============================================================
+
+class TimesheetExportView(APIView):
+    """
+    GET /api/v1/admin/timesheets/export/
+    Export timesheets as CSV or JSON.
+
+    Query params:
+      - format: csv (default) or json
+      - company_id: filter by company
+      - project_id: filter by project
+      - user_id: filter by user
+      - status: filter by status (draft/submitted/approved/rejected)
+      - start_date: filter from date (YYYY-MM-DD)
+      - end_date: filter to date (YYYY-MM-DD)
+      - billable: true/false
+    """
+    permission_classes = [IsAuthenticated, IsAdminOrSuperAdmin]
+
+    def get(self, request):
+        qs = TimeEntry.objects.select_related('project', 'user', 'task', 'milestone', 'approved_by').all()
+
+        # Apply filters
+        company_id = request.query_params.get('company_id')
+        if company_id:
+            qs = qs.filter(project__company_id=company_id)
+        elif request.user.role != 'superadmin' and request.user.company:
+            qs = qs.filter(project__company=request.user.company)
+
+        project_id = request.query_params.get('project_id')
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+
+        user_id = request.query_params.get('user_id')
+        if user_id:
+            qs = qs.filter(user_id=user_id)
+
+        entry_status = request.query_params.get('status')
+        if entry_status:
+            qs = qs.filter(status=entry_status)
+
+        start_date = request.query_params.get('start_date')
+        if start_date:
+            qs = qs.filter(date__gte=start_date)
+
+        end_date = request.query_params.get('end_date')
+        if end_date:
+            qs = qs.filter(date__lte=end_date)
+
+        billable = request.query_params.get('billable')
+        if billable is not None:
+            qs = qs.filter(billable=billable.lower() in ('true', '1'))
+
+        qs = qs.order_by('-date', '-created_at')
+
+        export_format = request.query_params.get('format', 'csv')
+
+        if export_format == 'json':
+            data = []
+            for entry in qs[:5000]:
+                data.append({
+                    'id': entry.id,
+                    'date': str(entry.date),
+                    'hours': float(entry.hours),
+                    'description': entry.description,
+                    'status': entry.status,
+                    'billable': entry.billable,
+                    'hourly_rate': float(entry.hourly_rate_snapshot),
+                    'labor_cost': float(entry.labor_cost),
+                    'project_id': entry.project_id,
+                    'project_name': entry.project.name,
+                    'company_name': entry.project.company.name if entry.project.company else '',
+                    'user_id': entry.user_id,
+                    'user_email': entry.user.email,
+                    'user_name': f"{entry.user.first_name} {entry.user.last_name}".strip(),
+                    'task': entry.task.title if entry.task else '',
+                    'milestone': entry.milestone.name if entry.milestone else '',
+                    'approved_by': entry.approved_by.email if entry.approved_by else '',
+                    'approved_at': str(entry.approved_at) if entry.approved_at else '',
+                    'created_at': str(entry.created_at),
+                })
+            return Response(data)
+
+        # CSV export
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="timesheets_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Date', 'Hours', 'Description', 'Status', 'Billable',
+            'Hourly Rate', 'Labor Cost', 'Project', 'Company',
+            'User Email', 'User Name', 'Task', 'Milestone',
+            'Approved By', 'Approved At',
+        ])
+
+        for entry in qs[:5000]:
+            writer.writerow([
+                entry.date,
+                entry.hours,
+                entry.description,
+                entry.status,
+                'Yes' if entry.billable else 'No',
+                entry.hourly_rate_snapshot,
+                entry.labor_cost,
+                entry.project.name,
+                entry.project.company.name if entry.project.company else '',
+                entry.user.email,
+                f"{entry.user.first_name} {entry.user.last_name}".strip(),
+                entry.task.title if entry.task else '',
+                entry.milestone.name if entry.milestone else '',
+                entry.approved_by.email if entry.approved_by else '',
+                entry.approved_at or '',
+            ])
+
+        return response
+
+
+# ============================================================
+# TIMESHEET API VIEW (Public API key access for integrations)
+# ============================================================
+
+class TimesheetApiView(APIView):
+    """
+    GET /api/v1/admin/timesheets/api/
+    Public API endpoint for timesheet data, accessible with API key.
+    Used by external integrations (configured in Integration Settings).
+
+    Headers:
+      - X-API-Key: <client_api_key>
+    OR
+      - Authorization: Bearer <token>
+
+    Query params: same as export view
+    """
+    permission_classes = []  # Custom auth via API key or token
+
+    def get(self, request):
+        # Authenticate via API key or Bearer token
+        api_key = request.META.get('HTTP_X_API_KEY') or request.query_params.get('api_key')
+        company = None
+
+        if api_key:
+            key_obj = ClientApiKey.objects.filter(
+                api_key=api_key,
+                is_active=True,
+                provider='timesheet',
+            ).select_related('company').first()
+
+            if not key_obj:
+                # Also check for general-purpose keys
+                key_obj = ClientApiKey.objects.filter(
+                    api_key=api_key,
+                    is_active=True,
+                ).select_related('company').first()
+
+            if not key_obj:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+            company = key_obj.company
+        elif request.user and request.user.is_authenticated:
+            if request.user.role not in ('superadmin', 'admin'):
+                return Response({'error': 'Insufficient permissions'}, status=status.HTTP_403_FORBIDDEN)
+            company = request.user.company if request.user.role == 'admin' else None
+        else:
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        qs = TimeEntry.objects.select_related('project', 'user', 'task', 'milestone').all()
+
+        if company:
+            qs = qs.filter(project__company=company)
+
+        # Apply same filters as export
+        project_id = request.query_params.get('project_id')
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+
+        entry_status = request.query_params.get('status')
+        if entry_status:
+            qs = qs.filter(status=entry_status)
+
+        start_date = request.query_params.get('start_date')
+        if start_date:
+            qs = qs.filter(date__gte=start_date)
+
+        end_date = request.query_params.get('end_date')
+        if end_date:
+            qs = qs.filter(date__lte=end_date)
+
+        # Pagination
+        page = int(request.query_params.get('page', 1))
+        page_size = min(int(request.query_params.get('page_size', 100)), 500)
+        offset = (page - 1) * page_size
+
+        total = qs.count()
+        entries = qs.order_by('-date', '-created_at')[offset:offset + page_size]
+
+        data = []
+        for entry in entries:
+            data.append({
+                'id': entry.id,
+                'date': str(entry.date),
+                'hours': float(entry.hours),
+                'description': entry.description,
+                'status': entry.status,
+                'billable': entry.billable,
+                'hourly_rate': float(entry.hourly_rate_snapshot),
+                'labor_cost': float(entry.labor_cost),
+                'project_id': entry.project_id,
+                'project_name': entry.project.name,
+                'user_email': entry.user.email,
+                'user_name': f"{entry.user.first_name} {entry.user.last_name}".strip(),
+                'task': entry.task.title if entry.task else None,
+                'milestone': entry.milestone.name if entry.milestone else None,
+            })
+
+        return Response({
+            'count': total,
+            'page': page,
+            'page_size': page_size,
+            'results': data,
+        })

@@ -23,6 +23,9 @@ class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -44,6 +47,9 @@ class ARTSyncViewSet(viewsets.ModelViewSet):
         art_pk = self.kwargs.get('pk') or self.kwargs.get('art_pk')
         if program_id and art_pk:
             queryset = queryset.filter(art__program_id=program_id, art_id=art_pk)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(art__program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -66,6 +72,9 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -87,6 +96,9 @@ class PIObjectiveViewSet(viewsets.ModelViewSet):
         pi_id = self.kwargs.get('pi_id')
         if pi_id:
             queryset = queryset.filter(pi_id=pi_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(pi__program__company=company)
         return queryset
 
     def perform_create(self, serializer):

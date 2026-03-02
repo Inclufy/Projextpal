@@ -9,8 +9,8 @@ router.register(r'components', PMIComponentViewSet, basename='component')
 router.register(r'governance-boards', PMIGovernanceBoardViewSet, basename='governance-board')
 
 program_router = DefaultRouter()
-program_router.register(r'components', PMIComponentViewSet, basename='component')
-program_router.register(r'governance-boards', PMIGovernanceBoardViewSet, basename='governance-board')
+program_router.register(r'components', PMIComponentViewSet, basename='program-component')
+program_router.register(r'governance-boards', PMIGovernanceBoardViewSet, basename='program-governance-board')
 
 urlpatterns = [
     path('', include(router.urls)),

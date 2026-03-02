@@ -9,8 +9,8 @@ router.register(r'blueprints', P2BlueprintViewSet, basename='blueprint')
 router.register(r'projects', P2ProgrammeProjectViewSet, basename='project')
 
 programme_router = DefaultRouter()
-programme_router.register(r'blueprints', P2BlueprintViewSet, basename='blueprint')
-programme_router.register(r'projects', P2ProgrammeProjectViewSet, basename='project')
+programme_router.register(r'blueprints', P2BlueprintViewSet, basename='programme-blueprint')
+programme_router.register(r'projects', P2ProgrammeProjectViewSet, basename='programme-project')
 
 urlpatterns = [
     path('', include(router.urls)),

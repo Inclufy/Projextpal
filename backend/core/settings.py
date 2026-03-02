@@ -76,8 +76,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware', 
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -269,8 +268,8 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
         }
     }
 
-# Frontend URL for invitation links
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://projextpal.com')
+# CORS allowed origins for frontend
+# Note: FRONTEND_URL is already set via decouple.config() above
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8083",
     "http://localhost:5173",

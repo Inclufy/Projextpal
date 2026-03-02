@@ -152,6 +152,7 @@ export default function UserManagement() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState<{ created: number; errors: string[] } | null>(null);
+  const [importCompanyId, setImportCompanyId] = useState<string>('');
 
   // ============================================================
   // FETCH DATA
@@ -404,77 +405,28 @@ export default function UserManagement() {
     try {
       const formDataUpload = new FormData();
       formDataUpload.append('file', importFile);
+      if (importCompanyId && importCompanyId !== 'all') {
+        formDataUpload.append('company_id', importCompanyId);
+      }
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_BASE_URL}/admin/users/import/`, {
+      const response = await fetch(`${API_BASE_URL}/admin/users/import_users/`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload,
       });
       if (response.ok) {
         const data = await response.json();
-        setImportResults({ created: data.created || data.count || 0, errors: data.errors || [] });
-        toast.success(isNL ? `${data.created || data.count || 0} gebruikers geïmporteerd` : `${data.created || data.count || 0} users imported`);
+        setImportResults({ created: data.created || 0, errors: data.errors || [] });
+        if (data.created > 0) {
+          toast.success(isNL ? `${data.created} gebruikers geïmporteerd` : `${data.created} users imported`);
+        }
+        if (data.errors?.length > 0) {
+          toast.error(isNL ? `${data.errors.length} fouten bij import` : `${data.errors.length} import errors`);
+        }
         fetchUsers();
       } else {
-        // If API doesn't support import yet, parse CSV locally and create users one by one
-        const text = await importFile.text();
-        const lines = text.trim().split('\n');
-        if (lines.length < 2) {
-          toast.error(isNL ? 'Bestand is leeg of ongeldig' : 'File is empty or invalid');
-          setImportLoading(false);
-          return;
-        }
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-        const emailIdx = headers.findIndex(h => h === 'email' || h === 'e-mail');
-        const firstNameIdx = headers.findIndex(h => h === 'first_name' || h === 'voornaam' || h === 'firstname');
-        const lastNameIdx = headers.findIndex(h => h === 'last_name' || h === 'achternaam' || h === 'lastname');
-        const roleIdx = headers.findIndex(h => h === 'role' || h === 'rol');
-
-        if (emailIdx === -1) {
-          toast.error(isNL ? 'Kolom "email" niet gevonden in CSV' : 'Column "email" not found in CSV');
-          setImportLoading(false);
-          return;
-        }
-
-        let created = 0;
-        const errors: string[] = [];
-
-        for (let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(',').map(c => c.trim().replace(/"/g, ''));
-          const email = cols[emailIdx];
-          if (!email) continue;
-
-          try {
-            const payload: any = {
-              email,
-              first_name: firstNameIdx >= 0 ? cols[firstNameIdx] || '' : '',
-              last_name: lastNameIdx >= 0 ? cols[lastNameIdx] || '' : '',
-              role: roleIdx >= 0 ? cols[roleIdx] || 'pm' : 'pm',
-              send_invite: true,
-            };
-            const r = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
-              method: 'POST',
-              headers: getAuthHeaders(),
-              body: JSON.stringify(payload),
-            });
-            if (r.ok) {
-              created++;
-            } else {
-              const errData = await r.json().catch(() => ({}));
-              errors.push(`${email}: ${errData.detail || errData.email?.[0] || 'Fout'}`);
-            }
-          } catch {
-            errors.push(`${email}: Netwerk fout`);
-          }
-        }
-        setImportResults({ created, errors });
-        if (created > 0) {
-          toast.success(isNL ? `${created} gebruikers geïmporteerd` : `${created} users imported`);
-          fetchUsers();
-        }
-        if (errors.length > 0) {
-          toast.error(isNL ? `${errors.length} fouten bij import` : `${errors.length} import errors`);
-        }
+        const errData = await response.json().catch(() => ({}));
+        toast.error(errData.error || (isNL ? 'Import mislukt' : 'Import failed'));
       }
     } catch (err: any) {
       toast.error(err.message || (isNL ? 'Import mislukt' : 'Import failed'));
@@ -484,7 +436,7 @@ export default function UserManagement() {
   };
 
   const downloadTemplate = () => {
-    const csv = 'email,first_name,last_name,role\njohn@example.com,John,Doe,pm\njane@example.com,Jane,Smith,admin\n';
+    const csv = 'email,first_name,last_name,role,company_id\njohn@example.com,John,Doe,pm,\njane@example.com,Jane,Smith,admin,\n';
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1072,6 +1024,27 @@ export default function UserManagement() {
                   {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
                 </p>
               )}
+            </div>
+
+            {/* Target Company/Client */}
+            <div className="space-y-2">
+              <Label>{isNL ? 'Importeer naar organisatie' : 'Import into organization'}</Label>
+              <Select value={importCompanyId} onValueChange={setImportCompanyId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={isNL ? 'Alle (per CSV kolom)' : 'All (per CSV column)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{isNL ? 'Per CSV kolom (company_id)' : 'Per CSV column (company_id)'}</SelectItem>
+                  {companies.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {isNL
+                  ? 'Selecteer een organisatie om alle gebruikers in te importeren, of laat leeg en gebruik de company_id kolom in de CSV.'
+                  : 'Select an organization to import all users into, or leave empty and use the company_id column in CSV.'}
+              </p>
             </div>
 
             {/* Roles info */}

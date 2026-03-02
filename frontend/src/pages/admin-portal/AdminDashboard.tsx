@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, RefreshCw, Users, Building2, CreditCard, Activity, TrendingUp } from "lucide-react";
+import ProjectImport from './ProjectImport';
+import TimesheetExport from './TimesheetExport';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState<any>(null);
@@ -73,6 +75,15 @@ const AdminDashboard = () => {
           ))}</div></CardContent>
         </Card>
       )}
+
+      {/* Import & Export Tools */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Import & Export</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ProjectImport />
+        </div>
+        <TimesheetExport />
+      </div>
     </div>
   );
 };

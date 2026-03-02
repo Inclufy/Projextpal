@@ -18,6 +18,9 @@ class PMIComponentViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -40,6 +43,9 @@ class PMIGovernanceBoardViewSet(viewsets.ModelViewSet):
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):

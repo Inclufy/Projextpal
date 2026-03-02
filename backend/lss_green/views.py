@@ -18,6 +18,9 @@ class DMAICPhaseViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -39,6 +42,9 @@ class LSSGreenMetricViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -60,6 +66,9 @@ class LSSGreenMeasurementViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):

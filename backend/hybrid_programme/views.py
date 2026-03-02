@@ -17,6 +17,9 @@ class HybridGovernanceConfigViewSet(viewsets.ModelViewSet):
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -39,6 +42,9 @@ class HybridAdaptationViewSet(viewsets.ModelViewSet):
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):

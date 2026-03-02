@@ -18,6 +18,9 @@ class HybridArtifactViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -39,6 +42,9 @@ class HybridConfigurationViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -61,6 +67,9 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+        company = getattr(self.request.user, 'company', None)
+        if company:
+            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
