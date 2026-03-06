@@ -10,10 +10,11 @@ import { useQuery } from "@tanstack/react-query";
 import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
-import { 
-  FolderKanban, 
-  TrendingUp, 
-  AlertTriangle, 
+import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import {
+  FolderKanban,
+  TrendingUp,
+  AlertTriangle,
   Sparkles,
   ArrowRight,
   Target,
@@ -429,6 +430,13 @@ const TeamMemberDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Certifications & Recommended Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <MethodologyBreakdown projects={projects} />
+          <CertificationsWidget />
+          <RecommendedCourses projects={projects} />
+        </div>
       </div>
     </div>
   );

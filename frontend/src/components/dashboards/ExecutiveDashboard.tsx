@@ -12,12 +12,13 @@ import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Building2, 
-  FolderKanban, 
-  TrendingUp, 
-  AlertTriangle, 
-  DollarSign, 
+import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import {
+  Building2,
+  FolderKanban,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
   Sparkles,
   ArrowRight,
   Target,
@@ -29,9 +30,9 @@ import {
   GitMerge,
   Layers,
   BarChart3,
-  CreditCard, 
-  ArrowUpRight, 
-  Settings 
+  CreditCard,
+  ArrowUpRight,
+  Settings
 } from "lucide-react";
 
 const fetchProjects = async () => {
@@ -75,17 +76,19 @@ const callAI = async (prompt: string): Promise<string> => {
   }
 };
 
-const methodologyIcons: Record<string, { icon: any; label: string; color: string }> = {
-  'prince2': { icon: Crown, label: 'PRINCE2', color: 'text-indigo-600' },
-  'agile': { icon: Zap, label: 'Agile', color: 'text-orange-600' },
-  'scrum': { icon: Target, label: 'Scrum', color: 'text-blue-600' },
-  'kanban': { icon: Trello, label: 'Kanban', color: 'text-cyan-600' },
-  'waterfall': { icon: Waves, label: 'Waterfall', color: 'text-teal-600' },
-  'hybrid': { icon: GitMerge, label: 'Hybrid', color: 'text-pink-600' },
-  'msp': { icon: Layers, label: 'MSP', color: 'text-purple-600' },
-  'safe': { icon: Sparkles, label: 'SAFe', color: 'text-amber-600' },
-  'pmi': { icon: BarChart3, label: 'PMI', color: 'text-emerald-600' },
-  'sixsigma': { icon: Sparkles, label: 'Six Sigma', color: 'text-green-600' },
+const methodologyIcons: Record<string, { icon: any; label: string; color: string; bg: string }> = {
+  'prince2': { icon: Crown, label: 'PRINCE2', color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20 ring-indigo-200 dark:ring-indigo-800' },
+  'agile': { icon: Zap, label: 'Agile', color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20 ring-orange-200 dark:ring-orange-800' },
+  'scrum': { icon: Target, label: 'Scrum', color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20 ring-blue-200 dark:ring-blue-800' },
+  'kanban': { icon: Trello, label: 'Kanban', color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/20 ring-cyan-200 dark:ring-cyan-800' },
+  'waterfall': { icon: Waves, label: 'Waterfall', color: 'text-teal-600', bg: 'bg-teal-50 dark:bg-teal-900/20 ring-teal-200 dark:ring-teal-800' },
+  'hybrid': { icon: GitMerge, label: 'Hybrid', color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20 ring-pink-200 dark:ring-pink-800' },
+  'msp': { icon: Layers, label: 'MSP', color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20 ring-purple-200 dark:ring-purple-800' },
+  'safe': { icon: Sparkles, label: 'SAFe', color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20 ring-amber-200 dark:ring-amber-800' },
+  'pmi': { icon: BarChart3, label: 'PMI', color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20 ring-emerald-200 dark:ring-emerald-800' },
+  'sixsigma': { icon: Sparkles, label: 'Six Sigma', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20 ring-green-200 dark:ring-green-800' },
+  'lean_six_sigma_green': { icon: Target, label: 'LSS Green', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20 ring-green-200 dark:ring-green-800' },
+  'lean_six_sigma_black': { icon: Target, label: 'LSS Black', color: 'text-gray-800 dark:text-gray-200', bg: 'bg-gray-100 dark:bg-gray-800/50 ring-gray-300 dark:ring-gray-700' },
 };
 
 interface DonutChartProps {
@@ -512,7 +515,7 @@ const ExecutiveDashboard: React.FC = () => {
                             <span className="font-bold text-gray-900 dark:text-gray-100">{program.name}</span>
                           </td>
                           <td className="py-4 px-6">
-                            <span className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-semibold ${methodInfo.color} bg-white dark:bg-gray-800 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-sm`}>
+                            <span className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-semibold ${methodInfo.color} ${methodInfo.bg} ring-1 ring-inset shadow-sm`}>
                               <IconComponent className="h-4 w-4" />
                               <span>{methodInfo.label}</span>
                             </span>
@@ -642,6 +645,13 @@ const ExecutiveDashboard: React.FC = () => {
             </TabsContent>
           </Tabs>
         </Card>
+
+        {/* Methodology Breakdown, Certifications & Recommended Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <MethodologyBreakdown projects={projects} />
+          <CertificationsWidget />
+          <RecommendedCourses projects={projects} />
+        </div>
       </div>
     </div>
   );

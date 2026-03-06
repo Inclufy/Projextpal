@@ -10,11 +10,12 @@ import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
 import {
-  FolderKanban, 
-  TrendingUp, 
-  AlertTriangle, 
-  DollarSign, 
+  FolderKanban,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
   Sparkles,
   ArrowRight,
   Target,
@@ -462,6 +463,13 @@ const ProjectManagerDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Methodology Breakdown, Certifications & Recommended Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <MethodologyBreakdown projects={projects} />
+          <CertificationsWidget />
+          <RecommendedCourses projects={projects} />
+        </div>
       </div>
     </div>
   );
