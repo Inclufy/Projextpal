@@ -1,5 +1,5 @@
 // src/pages/OnboardingWizard.tsx
-// First-time onboarding wizard - Marketing AI style
+// ProjeXtPal Onboarding Wizard — Purpose, Governance, Programs, Projects, Academy & Certifications
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,160 +8,139 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import {
   Building2,
-  Search,
-  Package,
-  Users,
-  Target,
-  Palette,
-  Swords,
-  FolderOpen,
+  Shield,
+  Layers,
+  FolderKanban,
+  GraduationCap,
+  Award,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  Globe,
   Sparkles,
-  Loader2,
   Rocket,
+  Target,
+  Users,
+  Briefcase,
+  BarChart3,
+  Crown,
+  Zap,
+  GitMerge,
+  Workflow,
+  Kanban,
+  Repeat,
+  Droplets,
+  BookOpen,
+  FileText,
+  Globe,
+  TrendingUp,
 } from 'lucide-react';
 
 // ============================================
 // Types
 // ============================================
 interface OnboardingData {
-  // Step 1: Bedrijf
-  companyName: string;
-  websiteUrl: string;
-  industry: string;
-  country: string;
-  language: string;
-  // Step 2: Scan
-  scanUrl: string;
-  scanComplete: boolean;
-  // Step 3: Product
-  productName: string;
-  productDescription: string;
-  productType: string;
-  priceRange: string;
-  // Step 4: Doelgroep
-  targetAudience: string;
-  ageRange: string;
-  audienceSize: string;
-  audienceInterests: string[];
-  // Step 5: Doelen
-  primaryGoal: string;
-  secondaryGoals: string[];
-  timeline: string;
-  // Step 6: Merk
-  brandTone: string;
-  brandValues: string[];
-  brandColors: string;
-  // Step 7: Concurrentie
-  competitors: string[];
-  competitorUrl1: string;
-  competitorUrl2: string;
-  competitorUrl3: string;
-  differentiator: string;
-  // Step 8: Portfolio
-  hasExistingContent: boolean;
-  contentTypes: string[];
-  socialChannels: string[];
+  // Step 1: Purpose
+  organizationName: string;
+  organizationSize: string;
+  primaryPurpose: string;
+  secondaryPurposes: string[];
+  maturityLevel: string;
+  // Step 2: Governance
+  governanceNeeds: string[];
+  portfolioManagement: boolean;
+  boardStructure: string;
+  stakeholderManagement: boolean;
+  reportingFrequency: string;
+  // Step 3: Programs (methodologies)
+  programMethodologies: string[];
+  programScale: string;
+  programGoals: string[];
+  // Step 4: Projects (methodologies)
+  projectMethodologies: string[];
+  projectTypes: string[];
+  teamSize: string;
+  // Step 5: Academy
+  learningInterests: string[];
+  learningFormat: string[];
+  learningGoal: string;
+  // Step 6: Certifications
+  certificationInterests: string[];
+  certificationTimeline: string;
+  currentCertifications: string[];
 }
 
 // ============================================
-// Translations
+// Bilingual translations
 // ============================================
 const translations = {
   nl: {
     steps: [
-      { label: 'Bedrijf', shortLabel: 'Bedrijf' },
-      { label: 'Scan', shortLabel: 'Scan' },
-      { label: 'Product', shortLabel: 'Product' },
-      { label: 'Doelgroep', shortLabel: 'Doelgroep' },
-      { label: 'Doelen', shortLabel: 'Doelen' },
-      { label: 'Merk', shortLabel: 'Merk' },
-      { label: 'Concurrentie', shortLabel: 'Concurrentie' },
-      { label: 'Portfolio', shortLabel: 'Portfolio' },
+      { label: 'Doel', shortLabel: 'Doel' },
+      { label: 'Governance', shortLabel: 'Governance' },
+      { label: "Programma's", shortLabel: "Programma's" },
+      { label: 'Projecten', shortLabel: 'Projecten' },
+      { label: 'Academy', shortLabel: 'Academy' },
+      { label: 'Certificeringen', shortLabel: 'Cert.' },
       { label: 'Klaar!', shortLabel: 'Klaar!' },
     ],
     step1: {
-      title: 'Vertel ons over je bedrijf',
-      subtitle: 'We gebruiken deze informatie om je marketing te personaliseren',
-      companyName: 'Bedrijfsnaam',
-      companyNamePlaceholder: 'bijv. Inclufy Marketing',
-      websiteUrl: 'Website URL',
-      websiteUrlPlaceholder: 'www.jouwbedrijf.nl',
-      industry: 'Branche / Sector',
-      country: 'Land',
-      language: 'Taal',
+      title: 'Wat is het doel van uw organisatie?',
+      subtitle: 'Help ons begrijpen waarom u ProjeXtPal wilt gebruiken, zodat we uw omgeving op maat kunnen inrichten',
+      organizationName: 'Organisatienaam',
+      organizationNamePlaceholder: 'bijv. Acme B.V.',
+      organizationSize: 'Organisatiegrootte',
+      primaryPurpose: 'Primair doel',
+      secondaryPurposes: 'Aanvullende doelen',
+      maturityLevel: 'Huidige volwassenheidsniveau',
     },
     step2: {
-      title: 'Website Scan',
-      subtitle: 'We analyseren je website om je marketingstrategie te optimaliseren',
-      scanButton: 'Start Website Scan',
-      scanning: 'Website wordt geanalyseerd...',
-      scanComplete: 'Scan voltooid!',
-      scanDescription: 'Voer je website URL in om een automatische analyse te starten. We bekijken je huidige content, SEO-prestaties en verbeterpunten.',
-      skipScan: 'Sla scan over',
+      title: 'Governance inrichten',
+      subtitle: 'Bepaal hoe uw organisatie projecten en programma\'s bestuurt en bewaakt',
+      governanceNeeds: 'Governance behoeften',
+      portfolioManagement: 'Portfolio management inschakelen?',
+      boardStructure: 'Bestuursstructuur',
+      stakeholderManagement: 'Stakeholder management inschakelen?',
+      reportingFrequency: 'Rapportagefrequentie',
     },
     step3: {
-      title: 'Vertel ons over je product',
-      subtitle: 'Beschrijf je belangrijkste product of dienst',
-      productName: 'Product / Dienst naam',
-      productNamePlaceholder: 'bijv. Marketing Automatisering Platform',
-      productDescription: 'Korte beschrijving',
-      productDescriptionPlaceholder: 'Beschrijf wat je product of dienst doet...',
-      productType: 'Type product',
-      priceRange: 'Prijsklasse',
+      title: 'Programma-methodologieën',
+      subtitle: 'Selecteer de methodologieën die u wilt gebruiken voor programmabeheer',
+      programMethodologies: 'Programma methodologieën',
+      programScale: 'Programma schaal',
+      programGoals: 'Programma doelen',
     },
     step4: {
-      title: 'Wie is je doelgroep?',
-      subtitle: 'Help ons begrijpen wie je klanten zijn',
-      targetAudience: 'Doelgroep beschrijving',
-      targetAudiencePlaceholder: 'bijv. MKB-eigenaren in de tech-sector',
-      ageRange: 'Leeftijdscategorie',
-      audienceSize: 'Geschatte doelgroep grootte',
-      interests: 'Interesses',
+      title: 'Project-methodologieën',
+      subtitle: 'Kies de methodologieën voor uw projectmanagement aanpak',
+      projectMethodologies: 'Project methodologieën',
+      projectTypes: 'Projecttypen',
+      teamSize: 'Gemiddelde teamgrootte',
     },
     step5: {
-      title: 'Wat zijn je doelen?',
-      subtitle: 'Kies je primaire marketingdoel',
-      primaryGoal: 'Primair doel',
-      secondaryGoals: 'Secundaire doelen',
-      timeline: 'Tijdlijn',
+      title: 'Academy & Leren',
+      subtitle: 'Configureer uw leertrajecten en trainingsprogramma\'s',
+      learningInterests: 'Leerinteresses',
+      learningFormat: 'Gewenst leerformaat',
+      learningGoal: 'Leerdoel',
     },
     step6: {
-      title: 'Je merkidentiteit',
-      subtitle: 'Definieer de stem en stijl van je merk',
-      brandTone: 'Toon van communicatie',
-      brandValues: 'Merkwaarden',
-      brandColors: 'Merk kleuren',
-      brandColorsPlaceholder: 'bijv. #7C3AED, #10B981',
+      title: 'Certificeringen',
+      subtitle: 'Selecteer de certificeringstrajecten die relevant zijn voor uw team',
+      certificationInterests: 'Certificeringsinteresses',
+      certificationTimeline: 'Wanneer wilt u beginnen?',
+      currentCertifications: 'Huidige certificeringen',
     },
     step7: {
-      title: 'Ken je concurrentie',
-      subtitle: 'Wie zijn je belangrijkste concurrenten?',
-      competitorUrl: 'Concurrent website',
-      competitorPlaceholder: 'www.concurrent.nl',
-      differentiator: 'Wat maakt jou uniek?',
-      differentiatorPlaceholder: 'Beschrijf je unieke verkooppunten...',
-    },
-    step8: {
-      title: 'Je content portfolio',
-      subtitle: 'Welke content maak je al?',
-      hasExisting: 'Heb je al bestaande marketing content?',
-      contentTypes: 'Content types',
-      socialChannels: 'Social media kanalen',
-    },
-    step9: {
-      title: 'Je bent klaar!',
-      subtitle: 'Je marketing AI is geconfigureerd en klaar om te starten',
+      title: 'U bent klaar!',
+      subtitle: 'Uw ProjeXtPal omgeving is geconfigureerd en klaar voor gebruik',
       summary: 'Samenvatting',
-      startButton: 'Start met Marketing AI',
+      startButton: 'Start met ProjeXtPal',
       features: [
-        'Gepersonaliseerde contentstrategieën',
-        'AI-gegenereerde marketingteksten',
-        'Concurrentie-analyse op maat',
-        'SEO-optimalisatie voor jouw sector',
+        'Governance dashboards op maat',
+        'Programma- en projectmethodologieën geconfigureerd',
+        'Academy leertrajecten geactiveerd',
+        'Certificeringstrajecten klaargezet',
+        'AI-gestuurde projectondersteuning',
       ],
     },
     required: 'verplicht',
@@ -169,98 +148,77 @@ const translations = {
     previous: 'Vorige',
     skip: 'Overslaan',
     stepOf: 'Stap {current} van {total}',
+    yes: 'Ja',
+    no: 'Nee',
   },
   en: {
     steps: [
-      { label: 'Company', shortLabel: 'Company' },
-      { label: 'Scan', shortLabel: 'Scan' },
-      { label: 'Product', shortLabel: 'Product' },
-      { label: 'Audience', shortLabel: 'Audience' },
-      { label: 'Goals', shortLabel: 'Goals' },
-      { label: 'Brand', shortLabel: 'Brand' },
-      { label: 'Competition', shortLabel: 'Competition' },
-      { label: 'Portfolio', shortLabel: 'Portfolio' },
+      { label: 'Purpose', shortLabel: 'Purpose' },
+      { label: 'Governance', shortLabel: 'Governance' },
+      { label: 'Programs', shortLabel: 'Programs' },
+      { label: 'Projects', shortLabel: 'Projects' },
+      { label: 'Academy', shortLabel: 'Academy' },
+      { label: 'Certifications', shortLabel: 'Cert.' },
       { label: 'Done!', shortLabel: 'Done!' },
     ],
     step1: {
-      title: 'Tell us about your company',
-      subtitle: 'We use this information to personalize your marketing',
-      companyName: 'Company Name',
-      companyNamePlaceholder: 'e.g. Inclufy Marketing',
-      websiteUrl: 'Website URL',
-      websiteUrlPlaceholder: 'www.yourcompany.com',
-      industry: 'Industry / Sector',
-      country: 'Country',
-      language: 'Language',
+      title: 'What is your organization\'s purpose?',
+      subtitle: 'Help us understand why you want to use ProjeXtPal so we can tailor your environment',
+      organizationName: 'Organization Name',
+      organizationNamePlaceholder: 'e.g. Acme Corp',
+      organizationSize: 'Organization Size',
+      primaryPurpose: 'Primary Purpose',
+      secondaryPurposes: 'Additional Purposes',
+      maturityLevel: 'Current Maturity Level',
     },
     step2: {
-      title: 'Website Scan',
-      subtitle: 'We analyze your website to optimize your marketing strategy',
-      scanButton: 'Start Website Scan',
-      scanning: 'Analyzing website...',
-      scanComplete: 'Scan complete!',
-      scanDescription: 'Enter your website URL to start an automatic analysis. We review your current content, SEO performance, and improvement opportunities.',
-      skipScan: 'Skip scan',
+      title: 'Set up Governance',
+      subtitle: 'Define how your organization governs and oversees projects and programs',
+      governanceNeeds: 'Governance Needs',
+      portfolioManagement: 'Enable portfolio management?',
+      boardStructure: 'Board Structure',
+      stakeholderManagement: 'Enable stakeholder management?',
+      reportingFrequency: 'Reporting Frequency',
     },
     step3: {
-      title: 'Tell us about your product',
-      subtitle: 'Describe your main product or service',
-      productName: 'Product / Service name',
-      productNamePlaceholder: 'e.g. Marketing Automation Platform',
-      productDescription: 'Short description',
-      productDescriptionPlaceholder: 'Describe what your product or service does...',
-      productType: 'Product type',
-      priceRange: 'Price range',
+      title: 'Program Methodologies',
+      subtitle: 'Select the methodologies you want to use for program management',
+      programMethodologies: 'Program Methodologies',
+      programScale: 'Program Scale',
+      programGoals: 'Program Goals',
     },
     step4: {
-      title: 'Who is your target audience?',
-      subtitle: 'Help us understand who your customers are',
-      targetAudience: 'Target audience description',
-      targetAudiencePlaceholder: 'e.g. SMB owners in the tech sector',
-      ageRange: 'Age category',
-      audienceSize: 'Estimated audience size',
-      interests: 'Interests',
+      title: 'Project Methodologies',
+      subtitle: 'Choose the methodologies for your project management approach',
+      projectMethodologies: 'Project Methodologies',
+      projectTypes: 'Project Types',
+      teamSize: 'Average Team Size',
     },
     step5: {
-      title: 'What are your goals?',
-      subtitle: 'Choose your primary marketing goal',
-      primaryGoal: 'Primary goal',
-      secondaryGoals: 'Secondary goals',
-      timeline: 'Timeline',
+      title: 'Academy & Learning',
+      subtitle: 'Configure your learning paths and training programs',
+      learningInterests: 'Learning Interests',
+      learningFormat: 'Preferred Learning Format',
+      learningGoal: 'Learning Goal',
     },
     step6: {
-      title: 'Your brand identity',
-      subtitle: 'Define the voice and style of your brand',
-      brandTone: 'Communication tone',
-      brandValues: 'Brand values',
-      brandColors: 'Brand colors',
-      brandColorsPlaceholder: 'e.g. #7C3AED, #10B981',
+      title: 'Certifications',
+      subtitle: 'Select the certification tracks that are relevant for your team',
+      certificationInterests: 'Certification Interests',
+      certificationTimeline: 'When do you want to start?',
+      currentCertifications: 'Current Certifications',
     },
     step7: {
-      title: 'Know your competition',
-      subtitle: 'Who are your main competitors?',
-      competitorUrl: 'Competitor website',
-      competitorPlaceholder: 'www.competitor.com',
-      differentiator: 'What makes you unique?',
-      differentiatorPlaceholder: 'Describe your unique selling points...',
-    },
-    step8: {
-      title: 'Your content portfolio',
-      subtitle: 'What content are you already creating?',
-      hasExisting: 'Do you already have existing marketing content?',
-      contentTypes: 'Content types',
-      socialChannels: 'Social media channels',
-    },
-    step9: {
       title: "You're all set!",
-      subtitle: 'Your marketing AI is configured and ready to go',
+      subtitle: 'Your ProjeXtPal environment is configured and ready to go',
       summary: 'Summary',
-      startButton: 'Start with Marketing AI',
+      startButton: 'Start with ProjeXtPal',
       features: [
-        'Personalized content strategies',
-        'AI-generated marketing copy',
-        'Tailored competition analysis',
-        'SEO optimization for your sector',
+        'Custom governance dashboards',
+        'Program & project methodologies configured',
+        'Academy learning paths activated',
+        'Certification tracks set up',
+        'AI-powered project support',
       ],
     },
     required: 'required',
@@ -268,81 +226,210 @@ const translations = {
     previous: 'Previous',
     skip: 'Skip',
     stepOf: 'Step {current} of {total}',
+    yes: 'Yes',
+    no: 'No',
   },
 };
 
 // ============================================
 // Option data
 // ============================================
-const industries = [
-  'E-commerce', 'SaaS / Technology', 'Consulting', 'Healthcare',
-  'Education', 'Real Estate', 'Finance', 'Marketing / Agency',
-  'Hospitality', 'Retail', 'Non-profit', 'Other',
+const organizationSizes: Record<string, string[]> = {
+  nl: ['1-10 medewerkers', '11-50 medewerkers', '51-200 medewerkers', '201-1000 medewerkers', '1000+ medewerkers'],
+  en: ['1-10 employees', '11-50 employees', '51-200 employees', '201-1,000 employees', '1,000+ employees'],
+};
+
+const primaryPurposes: Record<string, string[]> = {
+  nl: [
+    'Projectmanagement professionaliseren',
+    'Programma\'s en portfolio\'s centraal beheren',
+    'Governance en compliance verbeteren',
+    'Team vaardigheden ontwikkelen',
+    'Certificeringen behalen',
+    'Organisatie volwassenheid verhogen',
+    'Kosten en risico\'s beheersen',
+    'Digitale transformatie begeleiden',
+  ],
+  en: [
+    'Professionalize project management',
+    'Centrally manage programs & portfolios',
+    'Improve governance & compliance',
+    'Develop team capabilities',
+    'Achieve certifications',
+    'Increase organizational maturity',
+    'Control costs & risks',
+    'Guide digital transformation',
+  ],
+};
+
+const maturityLevels: Record<string, string[]> = {
+  nl: ['Beginnend — Weinig formele processen', 'Ontwikkelend — Enkele processen ingericht', 'Gedefinieerd — Processen gedocumenteerd', 'Beheerst — Processen gemeten en bewaakt', 'Geoptimaliseerd — Continue verbetering'],
+  en: ['Initial — Few formal processes', 'Developing — Some processes in place', 'Defined — Processes documented', 'Managed — Processes measured & controlled', 'Optimizing — Continuous improvement'],
+};
+
+const governanceNeedsOptions: Record<string, string[]> = {
+  nl: [
+    'Portfolio overzicht & prioritering',
+    'Stuurgroepen & besluitvorming',
+    'Stakeholder management',
+    'Risicomanagement op organisatieniveau',
+    'Compliance & audit trails',
+    'Resource allocatie',
+    'Strategische alignment',
+    'Prestatiemonitoring & KPI\'s',
+  ],
+  en: [
+    'Portfolio overview & prioritization',
+    'Steering committees & decision-making',
+    'Stakeholder management',
+    'Organization-level risk management',
+    'Compliance & audit trails',
+    'Resource allocation',
+    'Strategic alignment',
+    'Performance monitoring & KPIs',
+  ],
+};
+
+const boardStructureOptions: Record<string, string[]> = {
+  nl: ['Enkele stuurgroep', 'Meerdere stuurgroepen per domein', 'PMO-gestuurd', 'Portfoliobestuur met projectborden', 'Agile governance (Lean Portfolio)'],
+  en: ['Single steering committee', 'Multiple domain steering committees', 'PMO-driven', 'Portfolio board with project boards', 'Agile governance (Lean Portfolio)'],
+};
+
+const reportingFrequencyOptions: Record<string, string[]> = {
+  nl: ['Wekelijks', 'Tweewekelijks', 'Maandelijks', 'Per kwartaal', 'Op aanvraag'],
+  en: ['Weekly', 'Bi-weekly', 'Monthly', 'Quarterly', 'On demand'],
+};
+
+const programMethodologyOptions = [
+  { id: 'safe', name: 'SAFe', description: { en: 'Scaled Agile Framework for enterprise agility', nl: 'Scaled Agile Framework voor organisatiebrede agility' }, icon: Zap, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
+  { id: 'msp', name: 'MSP', description: { en: 'Managing Successful Programmes — structured program management', nl: 'Managing Successful Programmes — gestructureerd programmabeheer' }, icon: Crown, color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
+  { id: 'pmi', name: 'PMI / PgMP', description: { en: 'PMI Program Management — benefit-driven approach', nl: 'PMI Programma Management — batengestuurd aanpak' }, icon: BarChart3, color: 'text-green-400', bgColor: 'bg-green-500/20' },
+  { id: 'prince2_programme', name: 'PRINCE2 Programme', description: { en: 'PRINCE2 for programme-level governance', nl: 'PRINCE2 voor programmaniveau governance' }, icon: Shield, color: 'text-amber-400', bgColor: 'bg-amber-500/20' },
+  { id: 'hybrid_programme', name: 'Hybrid', description: { en: 'Combine elements from multiple frameworks', nl: 'Combineer elementen uit meerdere raamwerken' }, icon: GitMerge, color: 'text-pink-400', bgColor: 'bg-pink-500/20' },
 ];
 
-const countries: Record<string, string[]> = {
-  nl: ['Nederland', 'België', 'Duitsland', 'Verenigd Koninkrijk', 'Verenigde Staten', 'Frankrijk', 'Spanje', 'Anders'],
-  en: ['Netherlands', 'Belgium', 'Germany', 'United Kingdom', 'United States', 'France', 'Spain', 'Other'],
+const programScaleOptions: Record<string, string[]> = {
+  nl: ['Klein (2-5 projecten)', 'Middel (5-15 projecten)', 'Groot (15-50 projecten)', 'Enterprise (50+ projecten)'],
+  en: ['Small (2-5 projects)', 'Medium (5-15 projects)', 'Large (15-50 projects)', 'Enterprise (50+ projects)'],
 };
 
-const languageOptions: Record<string, string[]> = {
-  nl: ['Nederlands', 'English', 'Deutsch', 'Français', 'Español'],
-  en: ['Dutch', 'English', 'German', 'French', 'Spanish'],
+const programGoalOptions: Record<string, string[]> = {
+  nl: ['Strategische doelen realiseren', 'Batenbeheer en -realisatie', 'Resourceoptimalisatie', 'Risicospreiding', 'Time-to-market verbeteren', 'Organisatieverandering begeleiden'],
+  en: ['Achieve strategic objectives', 'Benefits management & realization', 'Resource optimization', 'Risk diversification', 'Improve time-to-market', 'Facilitate organizational change'],
 };
 
-const productTypes: Record<string, string[]> = {
-  nl: ['SaaS / Software', 'Fysiek product', 'Dienstverlening', 'Consultancy', 'E-learning / Cursus', 'Abonnement', 'Marketplace', 'Anders'],
-  en: ['SaaS / Software', 'Physical product', 'Service', 'Consultancy', 'E-learning / Course', 'Subscription', 'Marketplace', 'Other'],
+const projectMethodologyOptions = [
+  { id: 'prince2', name: 'PRINCE2', description: { en: 'Structured project management with defined stages', nl: 'Gestructureerd projectmanagement met gedefinieerde fasen' }, icon: Crown, color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
+  { id: 'agile', name: 'Agile', description: { en: 'Iterative, flexible delivery approach', nl: 'Iteratieve, flexibele leveringsaanpak' }, icon: Zap, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
+  { id: 'scrum', name: 'Scrum', description: { en: 'Sprint-based team collaboration framework', nl: 'Sprint-gebaseerd team samenwerkingsraamwerk' }, icon: Repeat, color: 'text-green-400', bgColor: 'bg-green-500/20' },
+  { id: 'kanban', name: 'Kanban', description: { en: 'Visual flow-based work management', nl: 'Visueel flow-gebaseerd werkbeheer' }, icon: Kanban, color: 'text-cyan-400', bgColor: 'bg-cyan-500/20' },
+  { id: 'waterfall', name: 'Waterfall', description: { en: 'Sequential phase-based approach', nl: 'Sequentiële fasegebaseerde aanpak' }, icon: Workflow, color: 'text-indigo-400', bgColor: 'bg-indigo-500/20' },
+  { id: 'lean_six_sigma', name: 'Lean Six Sigma', description: { en: 'Data-driven process improvement', nl: 'Datagestuurde procesverbetering' }, icon: Droplets, color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' },
+  { id: 'hybrid', name: 'Hybrid', description: { en: 'Combine methodologies to fit your needs', nl: 'Combineer methodologieën naar behoefte' }, icon: GitMerge, color: 'text-pink-400', bgColor: 'bg-pink-500/20' },
+];
+
+const projectTypeOptions: Record<string, string[]> = {
+  nl: ['IT / Software ontwikkeling', 'Infrastructuur', 'Organisatieverandering', 'Product ontwikkeling', 'Marketing & Communicatie', 'Bouw & Constructie', 'Onderzoek & Innovatie', 'Compliance & Regelgeving'],
+  en: ['IT / Software Development', 'Infrastructure', 'Organizational Change', 'Product Development', 'Marketing & Communications', 'Construction', 'Research & Innovation', 'Compliance & Regulatory'],
 };
 
-const priceRanges: Record<string, string[]> = {
-  nl: ['Gratis / Freemium', '€1 - €50', '€50 - €200', '€200 - €1.000', '€1.000 - €10.000', '€10.000+', 'Op maat'],
-  en: ['Free / Freemium', '€1 - €50', '€50 - €200', '€200 - €1,000', '€1,000 - €10,000', '€10,000+', 'Custom'],
+const teamSizeOptions: Record<string, string[]> = {
+  nl: ['Klein (2-5 personen)', 'Middel (6-15 personen)', 'Groot (16-50 personen)', 'Enterprise (50+ personen)'],
+  en: ['Small (2-5 people)', 'Medium (6-15 people)', 'Large (16-50 people)', 'Enterprise (50+ people)'],
 };
 
-const ageRanges = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
-
-const audienceSizes: Record<string, string[]> = {
-  nl: ['< 1.000', '1.000 - 10.000', '10.000 - 100.000', '100.000 - 1M', '1M+'],
-  en: ['< 1,000', '1,000 - 10,000', '10,000 - 100,000', '100,000 - 1M', '1M+'],
+const learningInterestOptions: Record<string, string[]> = {
+  nl: [
+    'Projectmanagement fundamenten',
+    'Agile & Scrum',
+    'PRINCE2 methodologie',
+    'Programmabeheer',
+    'Portfoliomanagement',
+    'Risicomanagement',
+    'Stakeholder management',
+    'Lean Six Sigma',
+    'Leiderschap & Soft Skills',
+    'AI in projectmanagement',
+  ],
+  en: [
+    'Project management fundamentals',
+    'Agile & Scrum',
+    'PRINCE2 methodology',
+    'Program management',
+    'Portfolio management',
+    'Risk management',
+    'Stakeholder management',
+    'Lean Six Sigma',
+    'Leadership & Soft Skills',
+    'AI in project management',
+  ],
 };
 
-const interestOptions: Record<string, string[]> = {
-  nl: ['Technologie', 'Business', 'Gezondheid', 'Financiën', 'Onderwijs', 'Lifestyle', 'Sport', 'Reizen', 'Eten & Drinken', 'Mode'],
-  en: ['Technology', 'Business', 'Health', 'Finance', 'Education', 'Lifestyle', 'Sports', 'Travel', 'Food & Drinks', 'Fashion'],
+const learningFormatOptions: Record<string, string[]> = {
+  nl: ['Online zelfgestuurd', 'Live virtuele training', 'Blended learning', 'Micro-learning modules', 'Coaching & Mentoring', 'Workshops'],
+  en: ['Self-paced online', 'Live virtual training', 'Blended learning', 'Micro-learning modules', 'Coaching & Mentoring', 'Workshops'],
 };
 
-const goalOptions: Record<string, string[]> = {
-  nl: ['Meer leads genereren', 'Meer verkoop', 'Merkbekendheid vergroten', 'Klantretentie verbeteren', 'Kosten verlagen', 'Nieuwe markten betreden', 'Content productie opschalen', 'Social media groei'],
-  en: ['Generate more leads', 'Increase sales', 'Increase brand awareness', 'Improve customer retention', 'Reduce costs', 'Enter new markets', 'Scale content production', 'Social media growth'],
+const learningGoalOptions: Record<string, string[]> = {
+  nl: ['Nieuwe vaardigheden leren', 'Certificering voorbereiden', 'Team versterken', 'Best practices toepassen', 'Carrière ontwikkeling'],
+  en: ['Learn new skills', 'Prepare for certification', 'Strengthen team', 'Apply best practices', 'Career development'],
 };
 
-const timelineOptions: Record<string, string[]> = {
-  nl: ['1-3 maanden', '3-6 maanden', '6-12 maanden', '12+ maanden'],
-  en: ['1-3 months', '3-6 months', '6-12 months', '12+ months'],
+const certificationOptions: Record<string, string[]> = {
+  nl: [
+    'PRINCE2 Foundation',
+    'PRINCE2 Practitioner',
+    'PRINCE2 Agile',
+    'PMP (Project Management Professional)',
+    'CAPM (Certified Associate in PM)',
+    'PMI-ACP (Agile Certified)',
+    'PgMP (Program Management)',
+    'SAFe Agilist',
+    'SAFe Scrum Master',
+    'Scrum Master (PSM I/II)',
+    'Product Owner (PSPO I/II)',
+    'Lean Six Sigma Green Belt',
+    'Lean Six Sigma Black Belt',
+    'MSP Foundation',
+    'MSP Practitioner',
+    'ITIL Foundation',
+    'MoP (Management of Portfolios)',
+  ],
+  en: [
+    'PRINCE2 Foundation',
+    'PRINCE2 Practitioner',
+    'PRINCE2 Agile',
+    'PMP (Project Management Professional)',
+    'CAPM (Certified Associate in PM)',
+    'PMI-ACP (Agile Certified)',
+    'PgMP (Program Management)',
+    'SAFe Agilist',
+    'SAFe Scrum Master',
+    'Scrum Master (PSM I/II)',
+    'Product Owner (PSPO I/II)',
+    'Lean Six Sigma Green Belt',
+    'Lean Six Sigma Black Belt',
+    'MSP Foundation',
+    'MSP Practitioner',
+    'ITIL Foundation',
+    'MoP (Management of Portfolios)',
+  ],
 };
 
-const toneOptions: Record<string, string[]> = {
-  nl: ['Professioneel', 'Informeel / Casual', 'Inspirerend', 'Educatief', 'Humoristisch', 'Luxe / Premium', 'Technisch', 'Empathisch'],
-  en: ['Professional', 'Informal / Casual', 'Inspirational', 'Educational', 'Humorous', 'Luxury / Premium', 'Technical', 'Empathetic'],
+const certificationTimelineOptions: Record<string, string[]> = {
+  nl: ['Binnen 1 maand', '1-3 maanden', '3-6 maanden', '6-12 maanden', 'Later — eerst verkennen'],
+  en: ['Within 1 month', '1-3 months', '3-6 months', '6-12 months', 'Later — explore first'],
 };
 
-const valueOptions: Record<string, string[]> = {
-  nl: ['Innovatie', 'Betrouwbaarheid', 'Duurzaamheid', 'Kwaliteit', 'Toegankelijkheid', 'Transparantie', 'Creativiteit', 'Klantgerichtheid'],
-  en: ['Innovation', 'Reliability', 'Sustainability', 'Quality', 'Accessibility', 'Transparency', 'Creativity', 'Customer focus'],
+const currentCertificationOptions: Record<string, string[]> = {
+  nl: ['Geen certificeringen', 'PRINCE2 Foundation', 'PRINCE2 Practitioner', 'PMP', 'Scrum Master', 'SAFe', 'Lean Six Sigma', 'ITIL', 'Anders'],
+  en: ['No certifications', 'PRINCE2 Foundation', 'PRINCE2 Practitioner', 'PMP', 'Scrum Master', 'SAFe', 'Lean Six Sigma', 'ITIL', 'Other'],
 };
-
-const contentTypeOptions: Record<string, string[]> = {
-  nl: ['Blogartikelen', 'Social media posts', 'E-mail nieuwsbrieven', 'Video content', 'Podcasts', 'Whitepapers', 'Casestudies', 'Infographics'],
-  en: ['Blog articles', 'Social media posts', 'Email newsletters', 'Video content', 'Podcasts', 'Whitepapers', 'Case studies', 'Infographics'],
-};
-
-const socialChannelOptions = ['LinkedIn', 'Instagram', 'Facebook', 'X / Twitter', 'TikTok', 'YouTube', 'Pinterest', 'Threads'];
 
 // ============================================
 // Step Icons
 // ============================================
-const stepIcons = [Building2, Search, Package, Users, Target, Palette, Swords, FolderOpen, CheckCircle2];
+const stepIcons = [Target, Shield, Layers, FolderKanban, GraduationCap, Award, CheckCircle2];
 
 // ============================================
 // Chip Selector Component
@@ -396,6 +483,62 @@ const ChipSelector = ({
 };
 
 // ============================================
+// Methodology Card Selector
+// ============================================
+const MethodologyCardSelector = ({
+  options,
+  selected,
+  onSelect,
+  lang,
+}: {
+  options: typeof programMethodologyOptions;
+  selected: string[];
+  onSelect: (ids: string[]) => void;
+  lang: 'en' | 'nl';
+}) => {
+  const toggle = (id: string) => {
+    if (selected.includes(id)) {
+      onSelect(selected.filter((s) => s !== id));
+    } else {
+      onSelect([...selected, id]);
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {options.map((opt) => {
+        const Icon = opt.icon;
+        const isActive = selected.includes(opt.id);
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => toggle(opt.id)}
+            className={cn(
+              'flex items-start gap-3 p-4 rounded-xl border text-left transition-all duration-200',
+              isActive
+                ? 'bg-purple-600/20 border-purple-500/50 shadow-lg shadow-purple-500/10'
+                : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-700/30 hover:border-slate-600'
+            )}
+          >
+            <div className={cn('p-2 rounded-lg flex-shrink-0', opt.bgColor)}>
+              <Icon className={cn('w-5 h-5', opt.color)} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white text-sm">{opt.name}</span>
+                {isActive && <CheckCircle2 className="w-4 h-4 text-purple-400 flex-shrink-0" />}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">{opt.description[lang]}</p>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// ============================================
 // Main Component
 // ============================================
 const OnboardingWizard = () => {
@@ -405,40 +548,32 @@ const OnboardingWizard = () => {
   const t = translations[lang];
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [isScanning, setIsScanning] = useState(false);
   const [data, setData] = useState<OnboardingData>({
-    companyName: '',
-    websiteUrl: '',
-    industry: '',
-    country: lang === 'nl' ? 'Nederland' : 'Netherlands',
-    language: lang === 'nl' ? 'Nederlands' : 'English',
-    scanUrl: '',
-    scanComplete: false,
-    productName: '',
-    productDescription: '',
-    productType: '',
-    priceRange: '',
-    targetAudience: '',
-    ageRange: '',
-    audienceSize: '',
-    audienceInterests: [],
-    primaryGoal: '',
-    secondaryGoals: [],
-    timeline: '',
-    brandTone: '',
-    brandValues: [],
-    brandColors: '',
-    competitors: [],
-    competitorUrl1: '',
-    competitorUrl2: '',
-    competitorUrl3: '',
-    differentiator: '',
-    hasExistingContent: false,
-    contentTypes: [],
-    socialChannels: [],
+    organizationName: '',
+    organizationSize: '',
+    primaryPurpose: '',
+    secondaryPurposes: [],
+    maturityLevel: '',
+    governanceNeeds: [],
+    portfolioManagement: true,
+    boardStructure: '',
+    stakeholderManagement: true,
+    reportingFrequency: '',
+    programMethodologies: [],
+    programScale: '',
+    programGoals: [],
+    projectMethodologies: [],
+    projectTypes: [],
+    teamSize: '',
+    learningInterests: [],
+    learningFormat: [],
+    learningGoal: '',
+    certificationInterests: [],
+    certificationTimeline: '',
+    currentCertifications: [],
   });
 
-  const totalSteps = 9;
+  const totalSteps = 7;
 
   const updateData = (field: keyof OnboardingData, value: any) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -462,15 +597,6 @@ const OnboardingWizard = () => {
     localStorage.setItem('onboarding_completed', 'true');
     localStorage.setItem('onboarding_skipped', 'true');
     navigate('/dashboard');
-  };
-
-  const simulateScan = () => {
-    if (!data.websiteUrl && !data.scanUrl) return;
-    setIsScanning(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      updateData('scanComplete', true);
-    }, 3000);
   };
 
   const stepOfText = t.stepOf
@@ -532,352 +658,116 @@ const OnboardingWizard = () => {
   );
 
   // ============================================
-  // Step Content Renderers
+  // Step 1: Purpose
   // ============================================
   const renderStep1 = () => (
     <div className="space-y-6">
+      {/* Purpose explanation banner */}
+      <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 rounded-xl p-5">
+        <div className="flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm text-slate-300">
+              {lang === 'nl'
+                ? 'ProjeXtPal is uw complete platform voor project-, programma- en portfoliomanagement. Door uw doel te delen, kunnen wij de juiste modules, methodologieën en leertrajecten voor u activeren.'
+                : 'ProjeXtPal is your complete platform for project, program & portfolio management. By sharing your purpose, we can activate the right modules, methodologies, and learning paths for you.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step1.companyName} <span className="text-purple-400">*</span>
+          {t.step1.organizationName} <span className="text-purple-400">*</span>
         </label>
         <Input
-          value={data.companyName}
-          onChange={(e) => updateData('companyName', e.target.value)}
-          placeholder={t.step1.companyNamePlaceholder}
+          value={data.organizationName}
+          onChange={(e) => updateData('organizationName', e.target.value)}
+          placeholder={t.step1.organizationNamePlaceholder}
           className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step1.websiteUrl}
-        </label>
-        <div className="relative">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-          <Input
-            value={data.websiteUrl}
-            onChange={(e) => updateData('websiteUrl', e.target.value)}
-            placeholder={t.step1.websiteUrlPlaceholder}
-            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12 pl-10"
-          />
-        </div>
-      </div>
-
-      <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step1.industry}
+          {t.step1.organizationSize}
         </label>
         <ChipSelector
-          options={industries}
-          selected={data.industry}
-          onSelect={(v) => updateData('industry', v as string)}
+          options={organizationSizes[lang]}
+          selected={data.organizationSize}
+          onSelect={(v) => updateData('organizationSize', v as string)}
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step1.country}
+          {t.step1.primaryPurpose} <span className="text-purple-400">*</span>
         </label>
         <ChipSelector
-          options={countries[lang]}
-          selected={data.country}
-          onSelect={(v) => updateData('country', v as string)}
+          options={primaryPurposes[lang]}
+          selected={data.primaryPurpose}
+          onSelect={(v) => updateData('primaryPurpose', v as string)}
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step1.language}
+          {t.step1.secondaryPurposes}
         </label>
         <ChipSelector
-          options={languageOptions[lang]}
-          selected={data.language}
-          onSelect={(v) => updateData('language', v as string)}
+          options={primaryPurposes[lang].filter((p) => p !== data.primaryPurpose)}
+          selected={data.secondaryPurposes}
+          onSelect={(v) => updateData('secondaryPurposes', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step1.maturityLevel}
+        </label>
+        <ChipSelector
+          options={maturityLevels[lang]}
+          selected={data.maturityLevel}
+          onSelect={(v) => updateData('maturityLevel', v as string)}
         />
       </div>
     </div>
   );
 
+  // ============================================
+  // Step 2: Governance
+  // ============================================
   const renderStep2 = () => (
     <div className="space-y-6">
-      <p className="text-slate-400">{t.step2.scanDescription}</p>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">URL</label>
-        <div className="relative">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-          <Input
-            value={data.scanUrl || data.websiteUrl}
-            onChange={(e) => updateData('scanUrl', e.target.value)}
-            placeholder="www.jouwbedrijf.nl"
-            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12 pl-10"
-          />
-        </div>
-      </div>
-
-      {!data.scanComplete ? (
-        <div className="flex flex-col items-center gap-4 py-8">
-          {isScanning ? (
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-purple-600/20 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
-              </div>
-              <p className="text-slate-300 font-medium">{t.step2.scanning}</p>
-              <div className="w-64 h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full animate-pulse" style={{ width: '60%' }} />
-              </div>
-            </div>
-          ) : (
-            <Button
-              onClick={simulateScan}
-              className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 px-8 gap-2"
-            >
-              <Search className="w-5 h-5" />
-              {t.step2.scanButton}
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4 py-8">
-          <div className="w-20 h-20 rounded-full bg-emerald-600/20 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
-          </div>
-          <p className="text-emerald-400 font-semibold text-lg">{t.step2.scanComplete}</p>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step3.productName} <span className="text-purple-400">*</span>
-        </label>
-        <Input
-          value={data.productName}
-          onChange={(e) => updateData('productName', e.target.value)}
-          placeholder={t.step3.productNamePlaceholder}
-          className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step3.productDescription}
-        </label>
-        <textarea
-          value={data.productDescription}
-          onChange={(e) => updateData('productDescription', e.target.value)}
-          placeholder={t.step3.productDescriptionPlaceholder}
-          rows={3}
-          className="w-full bg-slate-800/50 border border-slate-700 text-white placeholder:text-slate-500 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-      </div>
-
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step3.productType}
+          {t.step2.governanceNeeds}
         </label>
         <ChipSelector
-          options={productTypes[lang]}
-          selected={data.productType}
-          onSelect={(v) => updateData('productType', v as string)}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step3.priceRange}
-        </label>
-        <ChipSelector
-          options={priceRanges[lang]}
-          selected={data.priceRange}
-          onSelect={(v) => updateData('priceRange', v as string)}
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step4.targetAudience}
-        </label>
-        <Input
-          value={data.targetAudience}
-          onChange={(e) => updateData('targetAudience', e.target.value)}
-          placeholder={t.step4.targetAudiencePlaceholder}
-          className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step4.ageRange}
-        </label>
-        <ChipSelector
-          options={ageRanges}
-          selected={data.ageRange}
-          onSelect={(v) => updateData('ageRange', v as string)}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step4.audienceSize}
-        </label>
-        <ChipSelector
-          options={audienceSizes[lang]}
-          selected={data.audienceSize}
-          onSelect={(v) => updateData('audienceSize', v as string)}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step4.interests}
-        </label>
-        <ChipSelector
-          options={interestOptions[lang]}
-          selected={data.audienceInterests}
-          onSelect={(v) => updateData('audienceInterests', v as string[])}
-          multi
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep5 = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step5.primaryGoal} <span className="text-purple-400">*</span>
-        </label>
-        <ChipSelector
-          options={goalOptions[lang]}
-          selected={data.primaryGoal}
-          onSelect={(v) => updateData('primaryGoal', v as string)}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step5.secondaryGoals}
-        </label>
-        <ChipSelector
-          options={goalOptions[lang].filter((g) => g !== data.primaryGoal)}
-          selected={data.secondaryGoals}
-          onSelect={(v) => updateData('secondaryGoals', v as string[])}
+          options={governanceNeedsOptions[lang]}
+          selected={data.governanceNeeds}
+          onSelect={(v) => updateData('governanceNeeds', v as string[])}
           multi
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step5.timeline}
-        </label>
-        <ChipSelector
-          options={timelineOptions[lang]}
-          selected={data.timeline}
-          onSelect={(v) => updateData('timeline', v as string)}
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep6 = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step6.brandTone}
-        </label>
-        <ChipSelector
-          options={toneOptions[lang]}
-          selected={data.brandTone}
-          onSelect={(v) => updateData('brandTone', v as string)}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step6.brandValues}
-        </label>
-        <ChipSelector
-          options={valueOptions[lang]}
-          selected={data.brandValues}
-          onSelect={(v) => updateData('brandValues', v as string[])}
-          multi
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step6.brandColors}
-        </label>
-        <Input
-          value={data.brandColors}
-          onChange={(e) => updateData('brandColors', e.target.value)}
-          placeholder={t.step6.brandColorsPlaceholder}
-          className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12"
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep7 = () => (
-    <div className="space-y-6">
-      {[1, 2, 3].map((i) => (
-        <div key={i}>
-          <label className="block text-sm font-medium text-slate-200 mb-2">
-            {t.step7.competitorUrl} {i}
-          </label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-            <Input
-              value={data[`competitorUrl${i}` as keyof OnboardingData] as string}
-              onChange={(e) => updateData(`competitorUrl${i}` as keyof OnboardingData, e.target.value)}
-              placeholder={t.step7.competitorPlaceholder}
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl h-12 pl-10"
-            />
-          </div>
-        </div>
-      ))}
-
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-2">
-          {t.step7.differentiator}
-        </label>
-        <textarea
-          value={data.differentiator}
-          onChange={(e) => updateData('differentiator', e.target.value)}
-          placeholder={t.step7.differentiatorPlaceholder}
-          rows={3}
-          className="w-full bg-slate-800/50 border border-slate-700 text-white placeholder:text-slate-500 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep8 = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step8.hasExisting}
+          {t.step2.portfolioManagement}
         </label>
         <div className="flex gap-3">
           {[
-            { label: lang === 'nl' ? 'Ja' : 'Yes', value: true },
-            { label: lang === 'nl' ? 'Nee' : 'No', value: false },
+            { label: t.yes, value: true },
+            { label: t.no, value: false },
           ].map((option) => (
             <button
               key={String(option.value)}
               type="button"
-              onClick={() => updateData('hasExistingContent', option.value)}
+              onClick={() => updateData('portfolioManagement', option.value)}
               className={cn(
                 'px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border',
-                data.hasExistingContent === option.value
+                data.portfolioManagement === option.value
                   ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/25'
                   : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50'
               )}
@@ -890,31 +780,226 @@ const OnboardingWizard = () => {
 
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step8.contentTypes}
+          {t.step2.boardStructure}
         </label>
         <ChipSelector
-          options={contentTypeOptions[lang]}
-          selected={data.contentTypes}
-          onSelect={(v) => updateData('contentTypes', v as string[])}
-          multi
+          options={boardStructureOptions[lang]}
+          selected={data.boardStructure}
+          onSelect={(v) => updateData('boardStructure', v as string)}
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-3">
-          {t.step8.socialChannels}
+          {t.step2.stakeholderManagement}
+        </label>
+        <div className="flex gap-3">
+          {[
+            { label: t.yes, value: true },
+            { label: t.no, value: false },
+          ].map((option) => (
+            <button
+              key={String(option.value)}
+              type="button"
+              onClick={() => updateData('stakeholderManagement', option.value)}
+              className={cn(
+                'px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border',
+                data.stakeholderManagement === option.value
+                  ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/25'
+                  : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step2.reportingFrequency}
         </label>
         <ChipSelector
-          options={socialChannelOptions}
-          selected={data.socialChannels}
-          onSelect={(v) => updateData('socialChannels', v as string[])}
+          options={reportingFrequencyOptions[lang]}
+          selected={data.reportingFrequency}
+          onSelect={(v) => updateData('reportingFrequency', v as string)}
+        />
+      </div>
+    </div>
+  );
+
+  // ============================================
+  // Step 3: Programs (Methodologies)
+  // ============================================
+  const renderStep3 = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step3.programMethodologies}
+        </label>
+        <MethodologyCardSelector
+          options={programMethodologyOptions}
+          selected={data.programMethodologies}
+          onSelect={(ids) => updateData('programMethodologies', ids)}
+          lang={lang}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step3.programScale}
+        </label>
+        <ChipSelector
+          options={programScaleOptions[lang]}
+          selected={data.programScale}
+          onSelect={(v) => updateData('programScale', v as string)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step3.programGoals}
+        </label>
+        <ChipSelector
+          options={programGoalOptions[lang]}
+          selected={data.programGoals}
+          onSelect={(v) => updateData('programGoals', v as string[])}
           multi
         />
       </div>
     </div>
   );
 
-  const renderStep9 = () => (
+  // ============================================
+  // Step 4: Projects (Methodologies)
+  // ============================================
+  const renderStep4 = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step4.projectMethodologies}
+        </label>
+        <MethodologyCardSelector
+          options={projectMethodologyOptions}
+          selected={data.projectMethodologies}
+          onSelect={(ids) => updateData('projectMethodologies', ids)}
+          lang={lang}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step4.projectTypes}
+        </label>
+        <ChipSelector
+          options={projectTypeOptions[lang]}
+          selected={data.projectTypes}
+          onSelect={(v) => updateData('projectTypes', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step4.teamSize}
+        </label>
+        <ChipSelector
+          options={teamSizeOptions[lang]}
+          selected={data.teamSize}
+          onSelect={(v) => updateData('teamSize', v as string)}
+        />
+      </div>
+    </div>
+  );
+
+  // ============================================
+  // Step 5: Academy
+  // ============================================
+  const renderStep5 = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step5.learningInterests}
+        </label>
+        <ChipSelector
+          options={learningInterestOptions[lang]}
+          selected={data.learningInterests}
+          onSelect={(v) => updateData('learningInterests', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step5.learningFormat}
+        </label>
+        <ChipSelector
+          options={learningFormatOptions[lang]}
+          selected={data.learningFormat}
+          onSelect={(v) => updateData('learningFormat', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step5.learningGoal}
+        </label>
+        <ChipSelector
+          options={learningGoalOptions[lang]}
+          selected={data.learningGoal}
+          onSelect={(v) => updateData('learningGoal', v as string)}
+        />
+      </div>
+    </div>
+  );
+
+  // ============================================
+  // Step 6: Certifications
+  // ============================================
+  const renderStep6 = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step6.currentCertifications}
+        </label>
+        <ChipSelector
+          options={currentCertificationOptions[lang]}
+          selected={data.currentCertifications}
+          onSelect={(v) => updateData('currentCertifications', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step6.certificationInterests}
+        </label>
+        <ChipSelector
+          options={certificationOptions[lang]}
+          selected={data.certificationInterests}
+          onSelect={(v) => updateData('certificationInterests', v as string[])}
+          multi
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-3">
+          {t.step6.certificationTimeline}
+        </label>
+        <ChipSelector
+          options={certificationTimelineOptions[lang]}
+          selected={data.certificationTimeline}
+          onSelect={(v) => updateData('certificationTimeline', v as string)}
+        />
+      </div>
+    </div>
+  );
+
+  // ============================================
+  // Step 7: Summary / Done
+  // ============================================
+  const renderStep7 = () => (
     <div className="space-y-8">
       <div className="flex flex-col items-center gap-4 py-4">
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center shadow-xl shadow-purple-500/30">
@@ -924,46 +1009,78 @@ const OnboardingWizard = () => {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {data.companyName && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Building2 className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-400">{t.steps[0].label}</span>
-            </div>
-            <p className="text-white font-semibold">{data.companyName}</p>
-            {data.industry && <p className="text-slate-400 text-sm">{data.industry}</p>}
-          </div>
-        )}
-        {data.productName && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Package className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-400">{t.steps[2].label}</span>
-            </div>
-            <p className="text-white font-semibold">{data.productName}</p>
-            {data.productType && <p className="text-slate-400 text-sm">{data.productType}</p>}
-          </div>
-        )}
-        {data.primaryGoal && (
+        {data.organizationName && (
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-400">{t.steps[4].label}</span>
+              <span className="text-sm font-medium text-purple-400">{t.steps[0].label}</span>
             </div>
-            <p className="text-white font-semibold">{data.primaryGoal}</p>
-            {data.timeline && <p className="text-slate-400 text-sm">{data.timeline}</p>}
+            <p className="text-white font-semibold">{data.organizationName}</p>
+            {data.primaryPurpose && <p className="text-slate-400 text-sm mt-1">{data.primaryPurpose}</p>}
           </div>
         )}
-        {data.brandTone && (
+        {data.governanceNeeds.length > 0 && (
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Palette className="w-4 h-4 text-purple-400" />
+              <Shield className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-400">{t.steps[1].label}</span>
+            </div>
+            <p className="text-white font-semibold">
+              {data.governanceNeeds.length} {lang === 'nl' ? 'governance gebieden' : 'governance areas'}
+            </p>
+            {data.boardStructure && <p className="text-slate-400 text-sm mt-1">{data.boardStructure}</p>}
+          </div>
+        )}
+        {data.programMethodologies.length > 0 && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Layers className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-400">{t.steps[2].label}</span>
+            </div>
+            <p className="text-white font-semibold">
+              {data.programMethodologies.map((id) =>
+                programMethodologyOptions.find((o) => o.id === id)?.name
+              ).filter(Boolean).join(', ')}
+            </p>
+            {data.programScale && <p className="text-slate-400 text-sm mt-1">{data.programScale}</p>}
+          </div>
+        )}
+        {data.projectMethodologies.length > 0 && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <FolderKanban className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-400">{t.steps[3].label}</span>
+            </div>
+            <p className="text-white font-semibold">
+              {data.projectMethodologies.map((id) =>
+                projectMethodologyOptions.find((o) => o.id === id)?.name
+              ).filter(Boolean).join(', ')}
+            </p>
+            {data.teamSize && <p className="text-slate-400 text-sm mt-1">{data.teamSize}</p>}
+          </div>
+        )}
+        {data.learningInterests.length > 0 && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <GraduationCap className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-400">{t.steps[4].label}</span>
+            </div>
+            <p className="text-white font-semibold">
+              {data.learningInterests.length} {lang === 'nl' ? 'leeronderwerpen' : 'learning topics'}
+            </p>
+            {data.learningGoal && <p className="text-slate-400 text-sm mt-1">{data.learningGoal}</p>}
+          </div>
+        )}
+        {data.certificationInterests.length > 0 && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Award className="w-4 h-4 text-purple-400" />
               <span className="text-sm font-medium text-purple-400">{t.steps[5].label}</span>
             </div>
-            <p className="text-white font-semibold">{data.brandTone}</p>
-            {data.brandValues.length > 0 && (
-              <p className="text-slate-400 text-sm">{data.brandValues.join(', ')}</p>
-            )}
+            <p className="text-white font-semibold">
+              {data.certificationInterests.length} {lang === 'nl' ? 'certificeringen' : 'certifications'}
+            </p>
+            {data.certificationTimeline && <p className="text-slate-400 text-sm mt-1">{data.certificationTimeline}</p>}
           </div>
         )}
       </div>
@@ -973,11 +1090,11 @@ const OnboardingWizard = () => {
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-5 h-5 text-purple-400" />
           <span className="text-white font-semibold">
-            {lang === 'nl' ? 'Wat je kunt verwachten' : 'What to expect'}
+            {lang === 'nl' ? 'Wat we voor u hebben klaargezet' : 'What we\'ve set up for you'}
           </span>
         </div>
         <ul className="space-y-3">
-          {t.step9.features.map((feature, i) => (
+          {t.step7.features.map((feature, i) => (
             <li key={i} className="flex items-center gap-3 text-slate-300">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
               {feature}
@@ -991,19 +1108,19 @@ const OnboardingWizard = () => {
         className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl h-14 text-lg font-semibold gap-3 shadow-xl shadow-purple-500/25"
       >
         <Rocket className="w-5 h-5" />
-        {t.step9.startButton}
+        {t.step7.startButton}
       </Button>
     </div>
   );
 
   const stepRenderers = [
     renderStep1, renderStep2, renderStep3, renderStep4,
-    renderStep5, renderStep6, renderStep7, renderStep8, renderStep9,
+    renderStep5, renderStep6, renderStep7,
   ];
 
   const stepTitles = [
     t.step1, t.step2, t.step3, t.step4,
-    t.step5, t.step6, t.step7, t.step8, t.step9,
+    t.step5, t.step6, t.step7,
   ];
 
   const currentStepData = stepTitles[currentStep];
@@ -1019,9 +1136,9 @@ const OnboardingWizard = () => {
               <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="text-lg font-bold text-white">Inclufy.</span>
+              <span className="text-lg font-bold text-white">ProjeXtPal</span>
               <span className="text-xs block text-purple-400 font-semibold -mt-0.5 tracking-wider uppercase">
-                Marketing AI
+                {lang === 'nl' ? 'Omgeving instellen' : 'Setup Wizard'}
               </span>
             </div>
           </div>
