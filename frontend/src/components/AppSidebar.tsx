@@ -40,6 +40,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserFeatures, hasFeature, getTierName, getTierColor } from "@/hooks/useUserFeatures";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useCopilot } from "@/contexts/CopilotContext";
 
 // [All the getProgramPhases, getMethodologyPhases, getMethodologyBadge, and ProjeXtPalLogo functions stay the same]
 // I'll include them for completeness...
@@ -736,6 +737,7 @@ export function AppSidebar() {
   const { data: userFeatures, isLoading: featuresLoading } = useUserFeatures();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { open: openCopilot, isOpen: copilotOpen } = useCopilot();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
   
@@ -796,11 +798,12 @@ export function AppSidebar() {
         icon: LayoutDashboard,
         feature: null,
       },
-      { 
-        title: ts.aiAssistant, 
-        url: "/ai-assistant", 
+      {
+        title: ts.aiAssistant,
+        url: "#copilot",
         icon: MessageSquare,
         feature: 'ai_assistant',
+        isCopilot: true,
       },
     ];
 
@@ -899,7 +902,8 @@ export function AppSidebar() {
   // Color mapping for menu icons
   const iconColors: Record<string, string> = {
     "Dashboard": "text-violet-500",
-    "AI Chat": "text-fuchsia-500",
+    "AI Chat": "text-emerald-500",
+    "AI Copilot": "text-emerald-500",
     "Governance": "text-indigo-500",
     "Programs": "text-orange-500",
     "Reports": "text-emerald-500",
@@ -979,9 +983,55 @@ export function AppSidebar() {
                   );
                 }
 
+                // Copilot item - opens sidebar instead of navigating
+                if (item.isCopilot) {
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
+                        className={cn(
+                          "rounded-lg transition-all duration-200 cursor-pointer",
+                          copilotOpen
+                            ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 text-emerald-700 dark:text-emerald-300 font-semibold shadow-sm"
+                            : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300",
+                          isLocked && "opacity-60 hover:opacity-80"
+                        )}
+                        onClick={() => {
+                          if (isLocked) {
+                            toast({
+                              title: "🔒 Upgrade Required",
+                              description: `${item.title} is available with a paid subscription.`,
+                              action: (
+                                <Button variant="outline" size="sm" onClick={() => navigate('/profile?tab=subscription')}>View Plans</Button>
+                              ),
+                            });
+                            return;
+                          }
+                          openCopilot();
+                        }}
+                      >
+                        <div className={cn(
+                          "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
+                          copilotOpen
+                            ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm"
+                            : "bg-gray-100 dark:bg-gray-800"
+                        )}>
+                          <item.icon className={cn("h-4 w-4", copilotOpen ? "text-white" : "text-emerald-500")} />
+                        </div>
+                        {!isCollapsed && (
+                          <span className="text-sm">{item.title}</span>
+                        )}
+                        {isLocked && !isCollapsed && (
+                          <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
+
                 return (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       asChild
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
@@ -999,8 +1049,8 @@ export function AppSidebar() {
                               title: "🔒 Upgrade Required",
                               description: `${item.title} is available with a paid subscription.`,
                               action: (
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => navigate('/profile?tab=subscription')}
                                 >

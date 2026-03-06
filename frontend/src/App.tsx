@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2 } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +21,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider, useLanguage, languages } from "./contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FeatureGuard from '@/components/FeatureGuard';
+import { CopilotProvider, useCopilot } from "@/contexts/CopilotContext";
+import AICopilotSidebar from "@/components/AICopilotSidebar";
 
 import Registrations from '@/pages/admin-portal/Registrations';
 
@@ -256,8 +258,9 @@ const LanguageSelector = () => {
 // ============================================
 const AppHeader = () => {
   const { logout, user } = useAuth();
-  const { t } = useLanguage(); // Now t is a function!
+  const { t } = useLanguage();
   const navigate = useNavigate();
+  const { toggle: toggleCopilot, isOpen: copilotOpen } = useCopilot();
   const toggleTheme = () => document.documentElement.classList.toggle("dark");
 
   return (
@@ -265,27 +268,38 @@ const AppHeader = () => {
       <SidebarTrigger />
       <div className="flex items-center gap-2">
         {user && <span className="text-sm text-muted-foreground mr-2">{user.email}</span>}
-        
+
         {/* Website Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => navigate('/landing')}
           className="gap-2"
         >
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
         </Button>
-        
+
         {/* Language Selector */}
         <LanguageSelector />
-        
+
         {/* Theme Toggle */}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
-        
+
+        {/* AI Copilot Toggle */}
+        <Button
+          variant={copilotOpen ? "default" : "ghost"}
+          size="icon"
+          onClick={toggleCopilot}
+          title="AI Copilot"
+          className={copilotOpen ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700" : ""}
+        >
+          <Sparkles className="h-5 w-5" />
+        </Button>
+
         {/* Logout */}
         <Button variant="ghost" size="icon" onClick={logout} title={t.nav?.logout || 'Logout'}>
           <LogOut className="h-5 w-5" />
@@ -299,15 +313,20 @@ const AppHeader = () => {
 // App Layout Component
 // ============================================
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider>
-    <div className="min-h-screen flex w-full">
-      <AppSidebar />
-      <div className="flex-1 flex flex-col">
-        <AppHeader />
-        <main className="flex-1 overflow-auto">{children}</main>
+  <CopilotProvider>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AppHeader />
+          <div className="flex-1 flex overflow-hidden">
+            <main className="flex-1 overflow-auto">{children}</main>
+            <AICopilotSidebar />
+          </div>
+        </div>
       </div>
-    </div>
-  </SidebarProvider>
+    </SidebarProvider>
+  </CopilotProvider>
 );
 
 // ============================================
