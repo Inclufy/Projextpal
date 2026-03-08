@@ -605,6 +605,38 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Biometric Login Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{language === 'nl' ? 'Biometrische Login' : 'Biometric Login'}</CardTitle>
+                <CardDescription>
+                  {language === 'nl'
+                    ? 'Log in met Face ID of vingerafdruk'
+                    : 'Sign in with Face ID or fingerprint'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      {language === 'nl' ? 'Snel en veilig inloggen' : 'Quick and secure login'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'nl'
+                        ? 'Gebruik je gezicht of vingerafdruk om in te loggen op je apparaat'
+                        : 'Use your face or fingerprint to sign in on your device'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/settings/biometric')}
+                  >
+                    {language === 'nl' ? 'Beheer Biometrisch' : 'Manage Biometric'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 

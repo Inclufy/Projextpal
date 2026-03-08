@@ -30,12 +30,20 @@ from accounts.views import (
     CompanyApiKeysView,
 )
 from .two_factor import (
-    Setup2FAView, 
-    Verify2FASetupView, 
-    Validate2FAView, 
+    Setup2FAView,
+    Verify2FASetupView,
+    Validate2FAView,
     Disable2FAView,
     Check2FAStatusView,
     LoginWith2FAView,
+)
+from .biometric import (
+    BiometricRegisterOptionsView,
+    BiometricRegisterCompleteView,
+    BiometricLoginOptionsView,
+    BiometricLoginCompleteView,
+    BiometricCredentialListView,
+    BiometricStatusView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from accounts.views import save_registration_intent
@@ -70,6 +78,14 @@ urlpatterns = [
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
     path('2fa/status/', Check2FAStatusView.as_view(), name='2fa-status'),
     path('login-2fa/', LoginWith2FAView.as_view(), name='login-2fa'),
+
+    # Biometric Authentication (Face ID / Fingerprint)
+    path('biometric/register/options/', BiometricRegisterOptionsView.as_view(), name='biometric-register-options'),
+    path('biometric/register/complete/', BiometricRegisterCompleteView.as_view(), name='biometric-register-complete'),
+    path('biometric/login/options/', BiometricLoginOptionsView.as_view(), name='biometric-login-options'),
+    path('biometric/login/complete/', BiometricLoginCompleteView.as_view(), name='biometric-login-complete'),
+    path('biometric/credentials/', BiometricCredentialListView.as_view(), name='biometric-credentials'),
+    path('biometric/status/', BiometricStatusView.as_view(), name='biometric-status'),
     path('registration-intent/', save_registration_intent, name='registration-intent'),
     
     # Admin endpoints

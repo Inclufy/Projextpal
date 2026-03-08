@@ -210,6 +210,7 @@ import AuditLogs from './pages/admin-portal/AuditLogs';
 import SystemSettings from './pages/admin-portal/SystemSettings';
 import PlanManagement from '@/pages/admin/PlanManagement';
 import TwoFactorAuth from "./pages/settings/TwoFactorAuth";
+import BiometricAuth from "./pages/settings/BiometricAuth";
 import AdminTrainingManagement from '@/pages/admin-portal/AdminTrainingManagement';
 import InvoiceManagement from '@/pages/admin-portal/InvoiceManagement';
 import SubscriptionManagement from '@/pages/admin-portal/SubscriptionManagement';
@@ -829,6 +830,7 @@ const App = () => (
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
+              <Route path="/settings/biometric" element={<ProtectedRoute><BiometricAuth /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
               {/* Governance */}
