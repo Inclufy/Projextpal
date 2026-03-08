@@ -11,6 +11,7 @@ import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import HomeAIVoiceCards from "./HomeAIVoiceCards";
 import {
   FolderKanban,
   TrendingUp,
@@ -301,17 +302,19 @@ const ProjectManagerDashboard: React.FC = () => {
           />
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
-            {language === 'nl' 
-              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI' 
+            {language === 'nl'
+              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI'
               : '⌘K to search • Navigate, create, analyze and report with AI'}
           </p>
         </div>
 
-        <AISummaryModal 
-          isOpen={aiSummaryOpen} 
-          onClose={() => setAiSummaryOpen(false)} 
-          onGenerate={handleAIGenerate} 
-          programs={[]} 
+        <HomeAIVoiceCards />
+
+        <AISummaryModal
+          isOpen={aiSummaryOpen}
+          onClose={() => setAiSummaryOpen(false)}
+          onGenerate={handleAIGenerate}
+          programs={[]}
           projects={formattedProjects} 
           isLoading={aiLoading} 
           content={aiSummary} 

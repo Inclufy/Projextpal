@@ -13,6 +13,7 @@ import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useAuth } from '@/contexts/AuthContext';
 import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import HomeAIVoiceCards from "./HomeAIVoiceCards";
 import {
   Building2,
   FolderKanban,
@@ -380,11 +381,13 @@ const ExecutiveDashboard: React.FC = () => {
           />
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
-            {language === 'nl' 
-              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI' 
+            {language === 'nl'
+              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI'
               : '⌘K to search • Navigate, create, analyze and report with AI'}
           </p>
         </div>
+
+        <HomeAIVoiceCards />
 
         <AISummaryModal 
           isOpen={aiSummaryOpen} 

@@ -11,6 +11,7 @@ import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import HomeAIVoiceCards from "./HomeAIVoiceCards";
 import {
   FolderKanban,
   TrendingUp,
@@ -299,11 +300,13 @@ const TeamMemberDashboard: React.FC = () => {
           />
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
-            {language === 'nl' 
-              ? '⌘K om te zoeken • Navigeer en bekijk met AI' 
+            {language === 'nl'
+              ? '⌘K om te zoeken • Navigeer en bekijk met AI'
               : '⌘K to search • Navigate and view with AI'}
           </p>
         </div>
+
+        <HomeAIVoiceCards />
 
         <AISummaryModal 
           isOpen={aiSummaryOpen} 
