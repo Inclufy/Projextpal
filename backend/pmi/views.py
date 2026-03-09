@@ -14,13 +14,13 @@ class PMIComponentViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        queryset = PMIComponent.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return PMIComponent.objects.none()
+        queryset = PMIComponent.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -39,13 +39,13 @@ class PMIGovernanceBoardViewSet(viewsets.ModelViewSet):
     ordering_fields = ['meeting_date']
 
     def get_queryset(self):
-        queryset = PMIGovernanceBoard.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return PMIGovernanceBoard.objects.none()
+        queryset = PMIGovernanceBoard.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):

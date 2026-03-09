@@ -13,13 +13,13 @@ class HybridGovernanceConfigViewSet(viewsets.ModelViewSet):
     filterset_fields = ['programme', 'primary_framework', 'is_active']
 
     def get_queryset(self):
-        queryset = HybridGovernanceConfig.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return HybridGovernanceConfig.objects.none()
+        queryset = HybridGovernanceConfig.objects.filter(programme__company=company)
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -38,13 +38,13 @@ class HybridAdaptationViewSet(viewsets.ModelViewSet):
     ordering_fields = ['effective_date', 'created_at']
 
     def get_queryset(self):
-        queryset = HybridAdaptation.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return HybridAdaptation.objects.none()
+        queryset = HybridAdaptation.objects.filter(programme__company=company)
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):

@@ -14,13 +14,13 @@ class DMAICPhaseViewSet(viewsets.ModelViewSet):
     ordering_fields = ['order', 'created_at']
 
     def get_queryset(self):
-        queryset = DMAICPhase.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return DMAICPhase.objects.none()
+        queryset = DMAICPhase.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -38,13 +38,13 @@ class LSSGreenMetricViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'metric_type']
 
     def get_queryset(self):
-        queryset = LSSGreenMetric.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return LSSGreenMetric.objects.none()
+        queryset = LSSGreenMetric.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -62,13 +62,13 @@ class LSSGreenMeasurementViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'phase', 'metric']
 
     def get_queryset(self):
-        queryset = LSSGreenMeasurement.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return LSSGreenMeasurement.objects.none()
+        queryset = LSSGreenMeasurement.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):

@@ -1765,11 +1765,7 @@ const markAsComplete = async () => {
                 {/* Tab Content Based on URL Param */}
                 {(() => {
                   const activeTab = searchParams.get('tab') || 'content';
-// 🚨 DEBUG: Check what tab is active
-console.log('🚨🚨🚨 ACTIVE TAB:', activeTab);
-console.log('🚨🚨🚨 SEARCH PARAMS:', searchParams.toString());
-console.log('🚨🚨🚨 ENTERING SWITCH');
-switch (activeTab) {
+                  switch (activeTab) {
                     
                     case 'content':
                       // ============================================
@@ -1789,8 +1785,6 @@ switch (activeTab) {
                       const isPRINCE2 = courseMethodology === 'prince2' || courseSlug.includes('prince2');
                       const isWaterfall = courseMethodology === 'waterfall' || courseSlug.includes('waterfall');
                       const isLean = courseMethodology === 'lean' || courseSlug.includes('lean');
-                      
-                      console.log('📚 Methodology:', courseMethodology);
                       
                       // LAYER 2: Module Context
                       const moduleTitle = (currentModule?.title || '').toLowerCase();

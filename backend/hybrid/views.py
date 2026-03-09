@@ -14,13 +14,13 @@ class HybridArtifactViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        queryset = HybridArtifact.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return HybridArtifact.objects.none()
+        queryset = HybridArtifact.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -38,13 +38,13 @@ class HybridConfigurationViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'primary_methodology', 'is_active']
 
     def get_queryset(self):
-        queryset = HybridConfiguration.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return HybridConfiguration.objects.none()
+        queryset = HybridConfiguration.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -63,13 +63,13 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
     ordering_fields = ['order']
 
     def get_queryset(self):
-        queryset = PhaseMethodology.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return PhaseMethodology.objects.none()
+        queryset = PhaseMethodology.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):

@@ -14,13 +14,13 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        queryset = MSPBenefit.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return MSPBenefit.objects.none()
+        queryset = MSPBenefit.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -37,13 +37,13 @@ class BenefitRealizationViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
-        queryset = BenefitRealization.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return BenefitRealization.objects.none()
+        queryset = BenefitRealization.objects.filter(benefit__program__company=company)
         benefit_pk = self.kwargs.get('pk') or self.kwargs.get('benefit_pk')
         if benefit_pk:
             queryset = queryset.filter(benefit_id=benefit_pk)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(benefit__program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -62,13 +62,13 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
     ordering_fields = ['sequence', 'start_date']
 
     def get_queryset(self):
-        queryset = MSPTranche.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return MSPTranche.objects.none()
+        queryset = MSPTranche.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):

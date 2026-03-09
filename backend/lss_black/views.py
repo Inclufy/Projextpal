@@ -17,13 +17,13 @@ class HypothesisTestViewSet(viewsets.ModelViewSet):
     search_fields = ['null_hypothesis', 'alternative_hypothesis']
 
     def get_queryset(self):
-        queryset = HypothesisTest.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return HypothesisTest.objects.none()
+        queryset = HypothesisTest.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -42,13 +42,13 @@ class DesignOfExperimentViewSet(viewsets.ModelViewSet):
     search_fields = ['experiment_name']
 
     def get_queryset(self):
-        queryset = DesignOfExperiment.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return DesignOfExperiment.objects.none()
+        queryset = DesignOfExperiment.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -67,13 +67,13 @@ class ControlPlanViewSet(viewsets.ModelViewSet):
     search_fields = ['process_step', 'control_method']
 
     def get_queryset(self):
-        queryset = ControlPlan.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return ControlPlan.objects.none()
+        queryset = ControlPlan.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -91,13 +91,13 @@ class SPCChartViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'chart_type']
 
     def get_queryset(self):
-        queryset = SPCChart.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return SPCChart.objects.none()
+        queryset = SPCChart.objects.filter(project__company=company)
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(project__company=company)
         return queryset
 
     def perform_create(self, serializer):

@@ -19,13 +19,13 @@ class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        queryset = AgileReleaseTrain.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return AgileReleaseTrain.objects.none()
+        queryset = AgileReleaseTrain.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -42,14 +42,14 @@ class ARTSyncViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
-        queryset = ARTSync.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return ARTSync.objects.none()
+        queryset = ARTSync.objects.filter(art__program__company=company)
         program_id = self.kwargs.get('program_id')
         art_pk = self.kwargs.get('pk') or self.kwargs.get('art_pk')
         if program_id and art_pk:
             queryset = queryset.filter(art__program_id=program_id, art_id=art_pk)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(art__program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -68,13 +68,13 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
     ordering_fields = ['start_date', 'created_at']
 
     def get_queryset(self):
-        queryset = ProgramIncrement.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return ProgramIncrement.objects.none()
+        queryset = ProgramIncrement.objects.filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(program__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -92,13 +92,13 @@ class PIObjectiveViewSet(viewsets.ModelViewSet):
     filterset_fields = ['committed', 'achieved']
 
     def get_queryset(self):
-        queryset = PIObjective.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return PIObjective.objects.none()
+        queryset = PIObjective.objects.filter(pi__program__company=company)
         pi_id = self.kwargs.get('pi_id')
         if pi_id:
             queryset = queryset.filter(pi_id=pi_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(pi__program__company=company)
         return queryset
 
     def perform_create(self, serializer):

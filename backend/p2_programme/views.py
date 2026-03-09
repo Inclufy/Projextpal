@@ -14,13 +14,13 @@ class P2BlueprintViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
 
     def get_queryset(self):
-        queryset = P2Blueprint.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return P2Blueprint.objects.none()
+        queryset = P2Blueprint.objects.filter(programme__company=company)
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):
@@ -40,13 +40,13 @@ class P2ProgrammeProjectViewSet(viewsets.ModelViewSet):
     ordering_fields = ['start_date', 'name']
 
     def get_queryset(self):
-        queryset = P2ProgrammeProject.objects.all()
+        company = getattr(self.request.user, 'company', None)
+        if not company:
+            return P2ProgrammeProject.objects.none()
+        queryset = P2ProgrammeProject.objects.filter(programme__company=company)
         programme_id = self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
-        company = getattr(self.request.user, 'company', None)
-        if company:
-            queryset = queryset.filter(programme__company=company)
         return queryset
 
     def perform_create(self, serializer):
