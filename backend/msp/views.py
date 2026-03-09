@@ -30,7 +30,7 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return MSPBenefit.objects.none()
-        queryset = MSPBenefit.objects.select_related('program', 'owner').filter(program__company=company)
+        queryset = MSPBenefit.objects.select_related('program', 'owner').prefetch_related('realizations').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)

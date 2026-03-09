@@ -33,7 +33,7 @@ class AgileReleaseTrainViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return AgileReleaseTrain.objects.none()
-        queryset = AgileReleaseTrain.objects.select_related('program', 'rte').filter(program__company=company)
+        queryset = AgileReleaseTrain.objects.select_related('program', 'rte').prefetch_related('syncs').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -83,7 +83,7 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return ProgramIncrement.objects.none()
-        queryset = ProgramIncrement.objects.select_related('program').filter(program__company=company)
+        queryset = ProgramIncrement.objects.select_related('program').prefetch_related('objectives').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
