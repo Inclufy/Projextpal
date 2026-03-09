@@ -21,7 +21,8 @@ class HybridGovernanceConfig(models.Model):
         verbose_name = 'Hybrid Governance Configuration'
 
     def __str__(self):
-        return f"{self.primary_framework} + {', '.join(self.secondary_frameworks)} - {self.programme.name}"
+        frameworks = ', '.join(str(f) for f in (self.secondary_frameworks or []))
+        return f"{self.primary_framework} + {frameworks} - {self.programme.name}"
 
 
 class HybridAdaptation(models.Model):

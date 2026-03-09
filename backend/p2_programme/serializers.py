@@ -8,7 +8,7 @@ class P2BlueprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = P2Blueprint
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
 
     def get_project_count(self, obj):
         return obj.projects.count()
