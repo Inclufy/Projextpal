@@ -1346,10 +1346,13 @@ class TimesheetExportView(APIView):
 
         # Apply filters
         company_id = request.query_params.get('company_id')
-        if company_id:
-            qs = qs.filter(project__company_id=company_id)
-        elif request.user.role != 'superadmin' and request.user.company:
+        if request.user.role == 'superadmin':
+            if company_id:
+                qs = qs.filter(project__company_id=company_id)
+        elif request.user.company:
             qs = qs.filter(project__company=request.user.company)
+        else:
+            qs = qs.none()
 
         project_id = request.query_params.get('project_id')
         if project_id:
@@ -1491,6 +1494,9 @@ class TimesheetApiView(APIView):
 
         if company:
             qs = qs.filter(project__company=company)
+        elif request.user and request.user.is_authenticated and request.user.role != 'superadmin':
+            # Non-superadmin without a company should see nothing
+            qs = qs.none()
 
         # Apply same filters as export
         project_id = request.query_params.get('project_id')
@@ -1510,8 +1516,12 @@ class TimesheetApiView(APIView):
             qs = qs.filter(date__lte=end_date)
 
         # Pagination
-        page = int(request.query_params.get('page', 1))
-        page_size = min(int(request.query_params.get('page_size', 100)), 500)
+        try:
+            page = max(1, int(request.query_params.get('page', 1)))
+            page_size = min(max(1, int(request.query_params.get('page_size', 100))), 500)
+        except (ValueError, TypeError):
+            page = 1
+            page_size = 100
         offset = (page - 1) * page_size
 
         total = qs.count()
