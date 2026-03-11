@@ -54,6 +54,9 @@ urlpatterns = [
     # AI Coach endpoint
     path('ai/coach/message/', ai_views.ai_coach_message, name='ai-coach-message'),
 
+    # AI Practice Assignment generator (personalized by sector & role)
+    path('ai/generate-practice/', ai_views.ai_generate_practice, name='ai-generate-practice'),
+
     # Certificate Generation
     path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
     path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),

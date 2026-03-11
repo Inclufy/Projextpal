@@ -4,7 +4,10 @@
 // Complete course structure with key lessons fully developed
 // ============================================
 
+import { Rocket } from 'lucide-react';
 import { Course, Module } from '../types';
+import { BRAND } from '../brand';
+import { instructors } from '../instructors';
 
 // Module definitions
 const module1: Module = {
@@ -552,41 +555,33 @@ export const safeCourse: Course = {
   id: 'safe-scaling-agile',
   title: 'SAFe & Scaling Agile',
   titleNL: 'SAFe & Agile Schalen',
-  subtitle: 'Scale Agile practices across the enterprise',
-  subtitleNL: 'Schaal Agile praktijken over de hele organisatie',
   description: 'Learn the Scaled Agile Framework (SAFe) to implement Agile at enterprise scale with ARTs, PI Planning, and Value Streams.',
   descriptionNL: 'Leer het Scaled Agile Framework (SAFe) om Agile op enterprise-schaal te implementeren met ARTs, PI Planning en Value Streams.',
+  icon: Rocket,
+  color: BRAND.pink,
+  gradient: `linear-gradient(135deg, ${BRAND.pink}, ${BRAND.pinkLight})`,
   category: 'agile',
   methodology: 'safe',
-  difficulty: 'advanced',
+  levels: 4,
+  modules: safeModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 28,
-  price: 0,
-  originalPrice: 299,
   rating: 4.6,
-  reviewCount: 1123,
   students: 5678,
-  language: 'Nederlands & English',
+  tags: ['SAFe', 'Scaling', 'ART', 'PI Planning', 'Value Streams', 'DevOps'],
+  tagsNL: ['SAFe', 'Schalen', 'ART', 'PI Planning', 'Waardestromen', 'DevOps'],
+  instructor: instructors.martijn,
   featured: true,
   bestseller: false,
   new: true,
-  hasCertificate: true,
-  icon: 'Rocket',
-  color: '#EC4899',
-  gradient: 'linear-gradient(135deg, #EC4899 0%, #F472B6 100%)',
-  instructor: {
-    name: 'Jan-Willem Bakker, SPC',
-    title: 'SAFe Program Consultant',
-    avatar: '',
-    bio: 'Jan-Willem is a certified SAFe Program Consultant (SPC) with 10+ SAFe transformations.',
-    bioNL: 'Jan-Willem is een gecertificeerde SAFe Program Consultant (SPC) met 10+ SAFe transformaties.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Implement SAFe in your organization',
     'Run PI Planning events',
     'Manage Agile Release Trains',
     'Apply Lean Portfolio Management',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'SAFe implementeren in je organisatie',
     'PI Planning events uitvoeren',
     'Agile Release Trains managen',
@@ -594,6 +589,16 @@ export const safeCourse: Course = {
   ],
   requirements: ['Agile/Scrum experience', 'Understanding of enterprise context'],
   requirementsNL: ['Agile/Scrum ervaring', 'Begrip van enterprise context'],
+  targetAudience: [
+    'Agile Coaches scaling beyond team level',
+    'Release Train Engineers',
+    'Enterprise leaders driving Agile transformation',
+  ],
+  targetAudienceNL: [
+    'Agile Coaches die voorbij teamniveau schalen',
+    'Release Train Engineers',
+    'Enterprise leiders die Agile transformatie aansturen',
+  ],
   courseModules: safeModules,
 };
 

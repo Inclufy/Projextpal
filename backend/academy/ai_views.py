@@ -204,3 +204,135 @@ def ai_coach_message(request):
         return Response({'error': f'AI service error: {str(e)}'}, status=502)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+
+# ============================================================================
+# AI PRACTICE ASSIGNMENT - Personalized by sector & role
+# ============================================================================
+
+PRACTICE_SYSTEM_PROMPTS = {
+    'nl': """Je bent een expert AI Coach die praktijkopdrachten maakt voor projectmanagement onderwijs.
+Je genereert realistische, sector-specifieke opdrachten die studenten helpen de lesstof direct toe te passen.
+De opdracht moet relevant zijn voor de sector en functie van de student.
+Antwoord ALLEEN in geldig JSON formaat. Antwoord in het Nederlands.""",
+    'en': """You are an expert AI Coach creating practice assignments for project management education.
+You generate realistic, sector-specific assignments that help students directly apply lesson material.
+The assignment must be relevant to the student's sector and role.
+Answer ONLY in valid JSON format. Answer in English."""
+}
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def ai_generate_practice(request):
+    """Generate a personalized practice assignment based on sector and role"""
+    try:
+        lesson_title = request.data.get('lessonTitle', '')
+        course_title = request.data.get('courseTitle', '')
+        lesson_content = request.data.get('lessonContent', '')
+        sector = request.data.get('sector', '')
+        role = request.data.get('role', '')
+        methodology = request.data.get('methodology', '')
+        language = request.data.get('language', 'nl')
+
+        if not lesson_title:
+            return Response({'error': 'lessonTitle is required'}, status=400)
+
+        api_key = OPENAI_API_KEY
+        if not api_key:
+            return Response({'error': 'AI service not configured'}, status=503)
+
+        lang_key = 'nl' if language == 'nl' else 'en'
+        system_prompt = PRACTICE_SYSTEM_PROMPTS[lang_key]
+
+        sector_context = f"\nSector: {sector}" if sector else ""
+        role_context = f"\nFunctie/Rol: {role}" if role else ""
+        methodology_context = f"\nMethodologie: {methodology}" if methodology else ""
+        content_snippet = f"\nLesinhoud (samenvatting): {lesson_content[:1500]}" if lesson_content else ""
+
+        if lang_key == 'nl':
+            user_prompt = f"""Maak een praktijkopdracht voor deze les:
+
+Cursus: {course_title}
+Les: {lesson_title}{sector_context}{role_context}{methodology_context}{content_snippet}
+
+De opdracht moet:
+- Direct toepasbaar zijn in de sector van de student{f' ({sector})' if sector else ''}
+- Relevant zijn voor de rol{f' van {role}' if role else ''}
+- De kernconcepten uit de les toetsen
+- Realistisch en uitdagend zijn
+
+Return JSON:
+{{
+  "assignment": {{
+    "title": "Titel van de opdracht",
+    "scenario": "Beschrijving van een realistisch scenario uit de sector van de student (3-4 zinnen)",
+    "instructions": ["Stap 1: ...", "Stap 2: ...", "Stap 3: ...", "Stap 4: ..."],
+    "deliverables": ["Oplevering 1", "Oplevering 2"],
+    "rubric": [
+      {{"criteria": "Criterium", "points": 10, "description": "Wat wordt beoordeeld"}},
+      {{"criteria": "Criterium", "points": 10, "description": "Wat wordt beoordeeld"}}
+    ],
+    "tips": ["Praktische tip 1", "Praktische tip 2"],
+    "estimatedTime": 45
+  }}
+}}"""
+        else:
+            user_prompt = f"""Create a practice assignment for this lesson:
+
+Course: {course_title}
+Lesson: {lesson_title}{sector_context}{role_context}{methodology_context}{content_snippet}
+
+The assignment must:
+- Be directly applicable in the student's sector{f' ({sector})' if sector else ''}
+- Be relevant for the role{f' of {role}' if role else ''}
+- Test the core concepts from the lesson
+- Be realistic and challenging
+
+Return JSON:
+{{
+  "assignment": {{
+    "title": "Assignment title",
+    "scenario": "Description of a realistic scenario from the student's sector (3-4 sentences)",
+    "instructions": ["Step 1: ...", "Step 2: ...", "Step 3: ...", "Step 4: ..."],
+    "deliverables": ["Deliverable 1", "Deliverable 2"],
+    "rubric": [
+      {{"criteria": "Criterion", "points": 10, "description": "What is evaluated"}},
+      {{"criteria": "Criterion", "points": 10, "description": "What is evaluated"}}
+    ],
+    "tips": ["Practical tip 1", "Practical tip 2"],
+    "estimatedTime": 45
+  }}
+}}"""
+
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'gpt-4o-mini',
+                'messages': [
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': user_prompt}
+                ],
+                'response_format': {'type': 'json_object'},
+                'temperature': 0.8,
+                'max_tokens': 1000
+            },
+            timeout=30
+        )
+
+        response.raise_for_status()
+        data = response.json()
+        result = json.loads(data['choices'][0]['message']['content'])
+
+        return Response(result)
+
+    except requests.exceptions.Timeout:
+        return Response({'error': 'AI service timeout, please try again'}, status=504)
+    except requests.exceptions.RequestException as e:
+        return Response({'error': f'AI service error: {str(e)}'}, status=502)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

@@ -6,7 +6,10 @@
 // All lessons have icons, key takeaways, and resources
 // ============================================
 
+import { Layers } from 'lucide-react';
 import { Course, Module } from '../types';
+import { BRAND } from '../brand';
+import { instructors } from '../instructors';
 
 // ============================================
 // MODULE 1: PROGRAM MANAGEMENT BASICS
@@ -1536,42 +1539,34 @@ export const programManagementCourse: Course = {
   id: 'program-management-pro',
   title: 'Program Management Professional',
   titleNL: 'Programma Management Professional',
-  subtitle: 'Lead complex programs that deliver strategic value',
-  subtitleNL: 'Leid complexe programma\'s die strategische waarde leveren',
   description: 'Master program lifecycle, benefits management, governance and strategic alignment for enterprise-level initiatives.',
   descriptionNL: 'Beheers de programmalevenscyclus, benefits management, governance en strategische afstemming voor enterprise-initiatieven.',
+  icon: Layers,
+  color: BRAND.purple,
+  gradient: `linear-gradient(135deg, ${BRAND.purple}, #818CF8)`,
   category: 'program',
   methodology: 'program-management',
-  difficulty: 'advanced',
+  levels: 4,
+  modules: programManagementModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 28,
-  price: 0,
-  originalPrice: 249,
   rating: 4.7,
-  reviewCount: 892,
   students: 4567,
-  language: 'Nederlands & English',
+  tags: ['Program Management', 'Benefits', 'Governance', 'Portfolio', 'Strategic Alignment'],
+  tagsNL: ['Programmamanagement', 'Benefits', 'Governance', 'Portfolio', 'Strategische Afstemming'],
+  instructor: instructors.erik,
   featured: false,
   bestseller: false,
   new: true,
-  hasCertificate: true,
-  icon: 'Layers',
-  color: '#6366F1',
-  gradient: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-  instructor: {
-    name: 'Marc de Vries, PgMP',
-    title: 'Program Director & Consultant',
-    avatar: '',
-    bio: 'Marc has led enterprise transformation programs for Fortune 500 companies and holds the PMI Program Management Professional (PgMP) certification.',
-    bioNL: 'Marc heeft enterprise transformatie programma\'s geleid voor Fortune 500 bedrijven en heeft de PMI Program Management Professional (PgMP) certificering.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Lead complex multi-project programs',
     'Manage benefits across project lifecycles',
     'Align programs to organizational strategy',
     'Implement effective governance structures',
     'Navigate stakeholder politics at scale',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Leid complexe multi-project programma\'s',
     'Manage benefits over project levenscycli',
     'Stem programma\'s af op organisatiestrategie',

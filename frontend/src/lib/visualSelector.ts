@@ -48,7 +48,51 @@ const VISUAL_RULES: { keywords: string[]; visualId: string; weight: number }[] =
   { keywords: ['manifesto', 'agile waarden', 'agile values'], visualId: 'manifesto', weight: 9 },
   { keywords: ['agile vs', 'traditioneel vs', 'waterfall vs', 'vergelijking'], visualId: 'comparison', weight: 7 },
   { keywords: ['principes', 'principles', '12 principes'], visualId: 'principles', weight: 7 },
-  { keywords: ['methodolog', 'framework', 'prince2', 'pmbok'], visualId: 'methodologies', weight: 6 },
+  { keywords: ['methodolog', 'framework', 'pmbok'], visualId: 'methodologies', weight: 6 },
+
+  // ===== KANBAN =====
+  { keywords: ['kanban board', 'kanban bord', 'wip limit', 'werk in uitvoering', 'kolommen'], visualId: 'kanban-board', weight: 9 },
+  { keywords: ['flow metric', 'doorstroom', 'bottleneck', 'knelpunt', 'throughput'], visualId: 'flow-metrics', weight: 8 },
+  { keywords: ['cycle time', 'doorlooptijd', 'lead time', 'kanban metric'], visualId: 'kanban-metrics', weight: 8 },
+
+  // ===== LEAN SIX SIGMA =====
+  { keywords: ['dmaic', 'define measure analyze', 'verbetercyclus'], visualId: 'dmaic-cycle', weight: 10 },
+  { keywords: ['control chart', 'regelkaart', 'spc', 'ucl', 'lcl', 'variatie'], visualId: 'control-chart', weight: 9 },
+  { keywords: ['fishbone', 'visgraat', 'ishikawa', 'oorzaak gevolg', 'root cause'], visualId: 'fishbone-diagram', weight: 9 },
+  { keywords: ['pareto', '80 20', 'prioritering'], visualId: 'pareto-chart', weight: 8 },
+  { keywords: ['sipoc', 'supplier input process output', 'procesflow'], visualId: 'sipoc-diagram', weight: 9 },
+  { keywords: ['value stream', 'waardestroom', 'vsm', 'verspilling'], visualId: 'value-stream-map', weight: 8 },
+  { keywords: ['waste', 'verspilling', 'muda', 'timwoods', '8 wastes'], visualId: 'waste-types', weight: 8 },
+  { keywords: ['capability', 'cpk', 'procesvermogen', 'sigma level', 'bell curve'], visualId: 'capability-curve', weight: 8 },
+
+  // ===== SAFe =====
+  { keywords: ['agile release train', 'art', 'release train'], visualId: 'agile-release-train', weight: 9 },
+  { keywords: ['pi planning', 'program increment', 'big room'], visualId: 'pi-planning-board', weight: 9 },
+  { keywords: ['safe level', 'team program portfolio', 'safe hiërarchie', 'safe structuur'], visualId: 'safe-levels', weight: 8 },
+  { keywords: ['devops', 'ci cd', 'pipeline', 'continuous delivery', 'deployment'], visualId: 'devops-pipeline', weight: 7 },
+
+  // ===== LEADERSHIP =====
+  { keywords: ['conflict', 'conflictoplossing', 'mediatie', 'onderhandeling'], visualId: 'conflict-resolution', weight: 8 },
+  { keywords: ['emotionele intelligentie', 'emotional intelligence', 'eq', 'zelfbewustzijn', 'self-awareness'], visualId: 'emotional-intelligence', weight: 8 },
+  { keywords: ['besluitvorming', 'decision matrix', 'beslissingsmatrix', 'criteria'], visualId: 'decision-matrix', weight: 7 },
+
+  // ===== PROGRAM MANAGEMENT =====
+  { keywords: ['portfolio', 'programma', 'programme', 'project hiërarchie', 'strategic alignment'], visualId: 'portfolio-layer', weight: 8 },
+  { keywords: ['benefits management', 'benefits realisatie', 'batenmanagement'], visualId: 'benefits-map', weight: 8 },
+  { keywords: ['program governance', 'programma governance', 'stuurgroep', 'steering committee'], visualId: 'program-governance', weight: 7 },
+
+  // ===== PRINCE2 =====
+  { keywords: ['prince2 proces', 'prince2 process', 'starting up', 'directing', 'initiating', 'controlling a stage'], visualId: 'prince2-processes', weight: 9 },
+  { keywords: ['prince2 thema', 'prince2 theme', 'business case thema', 'organisation theme', 'quality theme'], visualId: 'prince2-themes', weight: 9 },
+  { keywords: ['prince2 princip', 'continued business justification', 'manage by exception', 'learn from experience'], visualId: 'prince2-principles', weight: 9 },
+  { keywords: ['product-based planning', 'productbeschrijving', 'product breakdown', 'product flow'], visualId: 'prince2-product-planning', weight: 8 },
+
+  // ===== MS PROJECT =====
+  { keywords: ['ms project', 'microsoft project', 'project plan software'], visualId: 'ms-project-gantt', weight: 9 },
+  { keywords: ['resource allocatie', 'resource allocation', 'resource leveling', 'overallocatie'], visualId: 'ms-project-resources', weight: 8 },
+  { keywords: ['critical path', 'kritieke pad', 'langste pad', 'float', 'slack'], visualId: 'ms-project-critical-path', weight: 8 },
+  { keywords: ['baseline', 'voortgang tracking', 'progress tracking'], visualId: 'ms-project-tracking', weight: 8 },
+  { keywords: ['project dashboard', 'rapportage', 'reporting', 'status report'], visualId: 'ms-project-dashboard', weight: 7 },
 ];
 
 export async function buildVisualContext(

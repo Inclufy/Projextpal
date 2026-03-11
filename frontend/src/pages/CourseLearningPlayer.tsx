@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { visualService } from "@/services/visualService";
 import QuizEngine from "@/components/academy/QuizEngine";
 import AiCoachPanel from "@/components/academy/AiCoachPanel";
+import PracticeAssignmentSection from "@/components/academy/PracticeAssignmentSection";
 import { getCourseById, getModulesByCourseId } from "@/data/academy/courses";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
@@ -1568,40 +1569,22 @@ const markAsComplete = async () => {
           {currentLesson.type === 'assignment' && (
             <ScrollArea className="flex-1">
               <div className="max-w-7xl mx-auto px-4 py-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Briefcase className="w-5 h-5 text-orange-600" />
-                      {isNL ? 'Praktijkopdracht' : 'Practice Assignment'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-orange-50 dark:bg-orange-950/20 rounded-lg p-4 mb-6">
-                      <h3 className="font-bold mb-2">{isNL ? 'Opdracht' : 'Assignment'}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {currentLesson.content || (isNL 
-                          ? 'Pas je kennis toe in een echte case. Lees de instructies en werk je opdracht uit.'
-                          : 'Apply your knowledge to a real case. Read the instructions and work on your assignment.')}
-                      </p>
-                    </div>
-                    <Textarea 
-                      placeholder={isNL ? 'Schrijf je antwoord hier...' : 'Write your answer here...'}
-                      className="min-h-[400px] mb-4"
-                    />
-                    <Button 
-                      onClick={() => {
-                        completeLesson(course.id, currentLessonId, allLessons.length);
-                        toast({
-                          title: isNL ? 'Opdracht ingediend!' : 'Assignment submitted!',
-                          description: isNL ? 'Je antwoord is opgeslagen.' : 'Your answer has been saved.',
-                        });
-                      }}
-                      className="bg-gradient-to-r from-orange-600 to-red-600 text-white"
-                    >
-                      {isNL ? 'Indienen' : 'Submit'}
-                    </Button>
-                  </CardContent>
-                </Card>
+                <PracticeAssignmentSection
+                  lessonTitle={currentLesson.title}
+                  lessonContent={currentLesson.content || currentLesson.transcript || ''}
+                  courseTitle={course.title}
+                  sector={user?.sector}
+                  role={user?.role}
+                  methodology={course.methodology}
+                  isNL={isNL}
+                  onComplete={() => {
+                    completeLesson(course.id, currentLessonId, allLessons.length);
+                    toast({
+                      title: isNL ? 'Opdracht ingediend!' : 'Assignment submitted!',
+                      description: isNL ? 'Je antwoord is opgeslagen.' : 'Your answer has been saved.',
+                    });
+                  }}
+                />
               </div>
             </ScrollArea>
           )}
