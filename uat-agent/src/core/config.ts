@@ -7,8 +7,8 @@ dotenvConfig({ path: resolve(process.cwd(), '.env') });
 const APP_CONFIGS: Record<string, () => AppConfig> = {
   projectpal: () => ({
     name: 'ProjeXtPal',
-    baseUrl: process.env.PROJECTPAL_BASE_URL || 'http://localhost:5173',
-    apiUrl: process.env.PROJECTPAL_API_URL || 'http://localhost:8000',
+    baseUrl: process.env.PROJECTPAL_BASE_URL || 'http://localhost:8083',
+    apiUrl: process.env.PROJECTPAL_API_URL || 'http://localhost:8083',
     credentials: {
       email: process.env.PROJECTPAL_TEST_EMAIL || 'test@example.com',
       password: process.env.PROJECTPAL_TEST_PASSWORD || 'password123',
