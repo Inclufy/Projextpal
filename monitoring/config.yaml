@@ -1,0 +1,115 @@
+global:
+  check_interval: 30            # seconds between checks
+  alert_cooldown: 300           # seconds between repeat alerts for same issue
+  max_response_time: 2000       # ms — alert if exceeded
+  log_level: INFO
+  data_retention_days: 30       # keep detailed metrics for 30 days
+  daily_summary_hour: 8         # send daily summary at 8:00 AM
+
+  email:
+    enabled: false              # Disable until Gmail App Password is configured
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    use_tls: true
+    username: ${MONITOR_EMAIL_USER}
+    password: ${MONITOR_EMAIL_PASSWORD}
+    from_address: monitoring@inclufy.com
+    recipients:
+      - team@inclufy.com
+
+  system_thresholds:
+    cpu_warning: 80             # percent
+    cpu_critical: 95
+    memory_warning: 85
+    memory_critical: 95
+    disk_warning: 80
+    disk_critical: 95
+
+  recovery:
+    max_restart_attempts: 3     # max container restarts before escalating
+    restart_cooldown: 60        # seconds between restart attempts
+    auto_recovery_enabled: true
+
+applications:
+  # ──────────────────────────────────────────────
+  # ProjeXtPal — Project Management Platform
+  # Deployed at: ~/Documents/Software/ProjextPal/
+  # Docker Compose: docker-compose.production.yml
+  #
+  # NOTE: URLs use Docker service names, not localhost,
+  # because the monitor runs inside the same Docker network.
+  # ──────────────────────────────────────────────
+
+  - name: ProjeXtPal API
+    type: web
+    url: http://backend:8001
+    health_endpoint: /health/
+    container: projextpal-backend-prod
+    max_response_time: 1500
+    recovery: auto
+    enabled: true
+
+  - name: ProjeXtPal Nginx
+    type: web
+    url: http://nginx:80
+    health_endpoint: /
+    container: projextpal-nginx-prod
+    recovery: restart
+    enabled: true
+
+  - name: ProjeXtPal Database
+    type: database
+    container: projextpal-postgres-prod
+    health_command: pg_isready -U projextpal
+    recovery: restart
+    enabled: true
+
+  - name: ProjeXtPal Redis
+    type: cache
+    url: redis://redis:6379
+    container: projextpal-redis-prod
+    health_command: redis-cli ping
+    recovery: restart
+    enabled: true
+
+  # Frontend is served through Nginx — no separate health check needed.
+  # Nginx check covers frontend availability.
+
+  # ──────────────────────────────────────────────
+  # Inclufy Finance — AI-Powered Financial Platform
+  # Deployed at: localhost:8080
+  # ──────────────────────────────────────────────
+
+  - name: Inclufy Finance
+    type: web
+    url: http://host.docker.internal:8080
+    health_endpoint: /
+    max_response_time: 2000
+    recovery: notify
+    enabled: true
+
+  # ──────────────────────────────────────────────
+  # Inclufy Marketing — AI Marketing Platform
+  # Deployed at: localhost:8081
+  # ──────────────────────────────────────────────
+
+  - name: Inclufy Marketing
+    type: web
+    url: http://host.docker.internal:8081
+    health_endpoint: /
+    max_response_time: 2000
+    recovery: notify
+    enabled: true
+
+  # ──────────────────────────────────────────────
+  # IQ Helix — Leadership Intelligence Platform
+  # Deployed at: iq-helix.inclufy.com
+  # ──────────────────────────────────────────────
+
+  - name: IQ Helix
+    type: web
+    url: https://iq-helix.inclufy.com
+    health_endpoint: /
+    max_response_time: 3000
+    recovery: notify
+    enabled: true

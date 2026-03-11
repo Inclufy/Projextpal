@@ -75,6 +75,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8090:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_files:/app/staticfiles:ro
@@ -85,6 +86,28 @@ services:
     networks:
       - projextpal-network
 
+  monitoring:
+    build: ./monitoring
+    container_name: inclufai-monitoring
+    restart: unless-stopped
+    ports:
+      - "8555:8555"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - monitoring_data:/app/data
+    environment:
+      - MONITOR_EMAIL_USER=${MONITOR_EMAIL_USER}
+      - MONITOR_EMAIL_PASSWORD=${MONITOR_EMAIL_PASSWORD}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - backend
+      - frontend
+      - nginx
+    networks:
+      - projextpal-network
+    # Uses CMD from Dockerfile: python -m monitoring.agent --daemon
+
 networks:
   projextpal-network:
     driver: bridge
@@ -94,3 +117,4 @@ volumes:
   redis_data:
   static_files:
   media_files:
+  monitoring_data:

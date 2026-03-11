@@ -31,6 +31,7 @@ import {
 import { visualService, type LessonVisual } from '@/services/visualService';
 import axios from 'axios';
 import VisualPreviewModal from './VisualPreviewModal';
+import { coursesWithContent } from '@/data/academy/courses';
 
 interface Course {
   id: string;
@@ -48,17 +49,23 @@ const VisualManagement = () => {
   const [rejectKeywords, setRejectKeywords] = useState<{ [key: number]: string }>({});
   const [previewVisual, setPreviewVisual] = useState<any>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  
-  // Load courses on mount
+
+  // Load courses on mount — try API first, fall back to local data
   useEffect(() => {
     const loadCourses = async () => {
       setLoadingCourses(true);
       try {
         const response = await axios.get('/api/v1/academy/courses/');
-        console.log('Courses loaded:', response.data);
-        setCourses(response.data.results || response.data || []);
+        const apiCourses = response.data.results || response.data || [];
+        if (apiCourses.length > 0) {
+          setCourses(apiCourses);
+        } else {
+          // Use local course data as fallback
+          setCourses(coursesWithContent.map(c => ({ id: c.id, title: c.title })));
+        }
       } catch (error) {
-        console.error('Failed to load courses:', error);
+        console.error('API unavailable, using local course data:', error);
+        setCourses(coursesWithContent.map(c => ({ id: c.id, title: c.title })));
       } finally {
         setLoadingCourses(false);
       }

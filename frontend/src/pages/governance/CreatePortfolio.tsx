@@ -36,7 +36,11 @@ const CreatePortfolio: React.FC = () => {
     setLoading(true);
 
     try {
+<<<<<<< HEAD
             const token = localStorage.getItem("access_token");
+=======
+      const token = localStorage.getItem("access_token");
+>>>>>>> claude/create-test-agent-uat-KR36j
 
       const payload: any = {
         ...formData,
@@ -45,7 +49,10 @@ const CreatePortfolio: React.FC = () => {
       if (user?.company) {
         payload.company = user.company;
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> claude/create-test-agent-uat-KR36j
       
       const response = await fetch("/api/v1/governance/portfolios/", {
         method: "POST",

@@ -150,8 +150,72 @@ class ProgramViewSet(viewsets.ModelViewSet):
         # Add additional dashboard data
         data = serializer.data
         data['metrics'] = self.metrics(request, pk).data
-        
+
         return Response(data)
+
+    @action(detail=True, methods=['get'])
+    def roadmap(self, request, pk=None):
+        """Get program roadmap with milestones and project timelines."""
+        program = self.get_object()
+        milestones = program.milestones.all().order_by('target_date')
+        milestone_data = ProgramMilestoneSerializer(milestones, many=True).data
+
+        projects_data = []
+        for project in program.projects.all():
+            projects_data.append({
+                'id': project.id,
+                'name': project.name,
+                'status': project.status,
+                'start_date': str(project.start_date) if project.start_date else None,
+                'end_date': str(project.end_date) if project.end_date else None,
+                'progress': project.progress if hasattr(project, 'progress') else 0,
+            })
+
+        return Response({
+            'milestones': milestone_data,
+            'projects': projects_data,
+            'start_date': str(program.start_date) if program.start_date else None,
+            'target_end_date': str(program.target_end_date) if program.target_end_date else None,
+        })
+
+    @action(detail=True, methods=['get'])
+    def governance(self, request, pk=None):
+        """Get program governance data."""
+        program = self.get_object()
+        return Response({
+            'program_manager': {
+                'id': program.program_manager.id,
+                'name': program.program_manager.get_full_name() or program.program_manager.email,
+            } if program.program_manager else None,
+            'executive_sponsor': {
+                'id': program.executive_sponsor.id,
+                'name': program.executive_sponsor.get_full_name() or program.executive_sponsor.email,
+            } if program.executive_sponsor else None,
+            'methodology': program.methodology,
+            'health_status': program.health_status,
+            'status': program.status,
+        })
+
+    @action(detail=True, methods=['get'])
+    def resources(self, request, pk=None):
+        """Get program resource allocation across projects."""
+        program = self.get_object()
+        resources = []
+        for project in program.projects.all():
+            try:
+                from projects.models import ProjectTeam
+                team_members = ProjectTeam.objects.filter(project=project)
+                for member in team_members:
+                    resources.append({
+                        'user_id': member.user.id,
+                        'user_name': member.user.get_full_name() or member.user.email,
+                        'project_id': project.id,
+                        'project_name': project.name,
+                        'role': member.role,
+                    })
+            except Exception:
+                pass
+        return Response(resources)
 
 
 class ProgramBenefitViewSet(viewsets.ModelViewSet):

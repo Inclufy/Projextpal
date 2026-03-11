@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -90,7 +91,7 @@ const deleteProgram = async (id: string) => {
 
 const ProgramDashboard = () => {
   const { pt } = usePageTranslations();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -192,8 +193,8 @@ const ProgramDashboard = () => {
 
   // Filter upcoming milestones
   const upcomingMilestones = milestones
-    .filter((m: any) => new Date(m.due_date) >= new Date())
-    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .filter((m: any) => new Date(m.target_date || m.due_date) >= new Date())
+    .sort((a: any, b: any) => new Date(a.target_date || a.due_date).getTime() - new Date(b.target_date || b.due_date).getTime())
     .slice(0, 5);
 
   const getHealthColor = (health: string) => {
@@ -215,13 +216,7 @@ const ProgramDashboard = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(amount || 0);
-  };
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -468,7 +463,7 @@ const ProgramDashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm">{formatDate(ms.due_date)}</span>
+                      <span className="text-sm">{formatDate(ms.target_date || ms.due_date)}</span>
                       <Badge className={
                         ms.status === 'completed' ? 'bg-green-500' : 
                         ms.status === 'at_risk' ? 'bg-yellow-500' : 'bg-blue-500'

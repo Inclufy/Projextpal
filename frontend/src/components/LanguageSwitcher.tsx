@@ -28,6 +28,17 @@ export const LanguageSwitcher: React.FC = () => {
       >
         NL
       </button>
+      <button
+        onClick={() => setLanguage('fr')}
+        className={`px-3 py-1 rounded transition-colors ${
+          language === 'fr'
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`}
+        aria-label="Passer en Français"
+      >
+        FR
+      </button>
     </div>
   );
 };

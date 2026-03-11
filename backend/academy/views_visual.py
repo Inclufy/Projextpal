@@ -3,13 +3,17 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
+from django.db import OperationalError, ProgrammingError
 import requests
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import LessonVisual, Course, CourseLesson
 from .serializers_visual import (
-    LessonVisualSerializer, 
+    LessonVisualSerializer,
     GenerateVisualsSerializer,
     ApproveVisualSerializer,
     RejectVisualSerializer
@@ -47,24 +51,29 @@ class LessonVisualViewSet(viewsets.ModelViewSet):
         lesson_id = request.query_params.get('lesson_id')
         if not lesson_id:
             return Response({'error': 'lesson_id required'}, status=400)
-        
+
         try:
             # Only support numeric ID
             lesson = CourseLesson.objects.get(id=lesson_id)
-            
+
             # Get approved visual for this lesson
             visual = LessonVisual.objects.get(lesson=lesson, status='approved')
             serializer = self.get_serializer(visual)
             return Response(serializer.data)
-            
+
         except CourseLesson.DoesNotExist:
             return Response({'error': f'Lesson not found: {lesson_id}'}, status=404)
         except LessonVisual.DoesNotExist:
-            # Visual is optional - return null instead of error
-            return Response(None, status=200)
+            # Visual is optional - return empty object instead of error
+            return Response({}, status=200)
         except ValueError:
             return Response({'error': f'Invalid lesson_id: {lesson_id}'}, status=400)
+        except (OperationalError, ProgrammingError) as e:
+            # Table may not exist yet (migration not applied)
+            logger.warning(f'LessonVisual table error for lesson {lesson_id}: {e}')
+            return Response({}, status=200)
         except Exception as e:
+            logger.error(f'Unexpected error in by_lesson for lesson_id={lesson_id}: {e}', exc_info=True)
             return Response({'error': str(e)}, status=500)
     
     @action(detail=False, methods=['post'], permission_classes=[IsAdminUser])

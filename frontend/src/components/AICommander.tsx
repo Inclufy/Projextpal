@@ -119,7 +119,7 @@ const callAI = async (prompt: string): Promise<string> => {
   
   if (!messageResponse.ok) throw new Error("AI service unavailable");
   const data = await messageResponse.json();
-  return data.ai_response?.content || "Geen antwoord ontvangen.";
+  return data.ai_response?.content || "";
 };
 
 // ============================================
@@ -147,40 +147,52 @@ const exampleQuestions = {
 // BUILD CONTEXT PROMPT
 // ============================================
 const buildContextPrompt = (query: string, programs: Program[], projects: Project[], isNL: boolean): string => {
-  const lang = isNL 
-    ? "**BELANGRIJK: Antwoord ALTIJD in het Nederlands. Gebruik GEEN ** voor bold tekst, gebruik gewoon normale tekst. Gebruik - voor bullets.**"
-    : "**IMPORTANT: Always respond in English. Do NOT use ** for bold text, use plain text. Use - for bullets.**";
+  const noneLabel = isNL ? 'Geen' : 'None';
 
-  const programSummary = programs.length > 0 
+  const programSummary = programs.length > 0
     ? programs.map(p => `- ${p.name}: Status=${p.status}, Health=${p.health_status}, Progress=${p.progress}%`).join('\n')
-    : 'Geen programma\'s';
+    : noneLabel;
 
   const projectSummary = projects.length > 0
     ? projects.map(p => `- ${p.name}: Status=${p.status}, Health=${p.health_status}, Progress=${p.progress}%`).join('\n')
-    : 'Geen projecten';
+    : noneLabel;
 
-  return `${lang}
+  const programsLabel = isNL ? "programma's" : 'programs';
+  const projectsLabel = isNL ? 'projecten' : 'projects';
+
+  // Language instruction — placed at START and END to override backend system prompt
+  // The backend says "respond in the same language as the user" but the user's UI language
+  // should take priority, even if they type the query in a different language.
+  const langStart = isNL
+    ? "[TAAL: NEDERLANDS] Antwoord VERPLICHT in het Nederlands, ongeacht de taal van de vraag hieronder."
+    : "[LANGUAGE: ENGLISH] You MUST respond in English, regardless of the query language below.";
+  const langEnd = isNL
+    ? "HERINNERING: Antwoord volledig in het NEDERLANDS. Gebruik Nederlandse headers, bullets en tekst."
+    : "REMINDER: Respond entirely in ENGLISH. Use English headers, bullets and text.";
+
+  return `${langStart}
 
 ## Context
-- ${programs.length} programma's, ${projects.length} projecten
+- ${programs.length} ${programsLabel}, ${projects.length} ${projectsLabel}
 - At-risk: ${projects.filter(p => p.health_status === 'at_risk').length}
 
-### Programma's
+### ${isNL ? "Programma's" : 'Programs'}
 ${programSummary}
 
-### Projecten
+### ${isNL ? 'Projecten' : 'Projects'}
 ${projectSummary}
 
-## Vraag
+## ${isNL ? 'Vraag van de gebruiker' : 'User question'}
 ${query}
 
-## Instructies
-- Geef specifiek, actionable advies
-- Gebruik headers met ## en bullets met -
-- GEEN ** gebruiken, gewoon normale tekst
-- Max 250 woorden
-- Eindig met concrete volgende stappen
-`;
+## ${isNL ? 'Instructies' : 'Instructions'}
+- ${isNL ? 'Geef specifiek, actionable advies' : 'Give specific, actionable advice'}
+- ${isNL ? 'Gebruik headers met ## en bullets met -' : 'Use headers with ## and bullets with -'}
+- ${isNL ? 'GEEN ** gebruiken, gewoon normale tekst' : 'Do NOT use ** for bold, use plain text'}
+- Max 250 ${isNL ? 'woorden' : 'words'}
+- ${isNL ? 'Eindig met concrete volgende stappen' : 'End with concrete next steps'}
+
+${langEnd}`;
 };
 
 // ============================================
@@ -542,7 +554,7 @@ const AICommander = ({
                     <Brain className="h-4 w-4 text-white" />
                   </div>
                   <span className="font-bold text-gray-900 dark:text-white text-sm">AI Advisor</span>
-                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Gepersonaliseerd</Badge>
+                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">{isNL ? 'Gepersonaliseerd' : 'Personalized'}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={copyResponse} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-white dark:bg-gray-800 rounded-lg ring-1 ring-purple-100 hover:ring-purple-200 transition-all">
@@ -763,9 +775,9 @@ const AICommander = ({
           {/* Footer */}
           <div className="px-5 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t border-purple-50 dark:border-purple-900/30 flex items-center justify-between">
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5 font-medium"><Building2 className="h-3.5 w-3.5 text-purple-500" />{programs.length} programma's</span>
-              <span className="flex items-center gap-1.5 font-medium"><FolderKanban className="h-3.5 w-3.5 text-blue-500" />{projects.length} projecten</span>
-              {atRiskCount > 0 && <span className="flex items-center gap-1.5 font-medium text-orange-600"><AlertTriangle className="h-3.5 w-3.5" />{atRiskCount} at-risk</span>}
+              <span className="flex items-center gap-1.5 font-medium"><Building2 className="h-3.5 w-3.5 text-purple-500" />{programs.length} {isNL ? "programma's" : 'programs'}</span>
+              <span className="flex items-center gap-1.5 font-medium"><FolderKanban className="h-3.5 w-3.5 text-blue-500" />{projects.length} {isNL ? 'projecten' : 'projects'}</span>
+              {atRiskCount > 0 && <span className="flex items-center gap-1.5 font-medium text-orange-600"><AlertTriangle className="h-3.5 w-3.5" />{atRiskCount} {isNL ? 'risico' : 'at-risk'}</span>}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
               <Sparkles className="h-3 w-3 text-purple-500" /><span>AI Advisor</span>

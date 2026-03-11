@@ -47,16 +47,24 @@ class CourseSerializer(serializers.ModelSerializer):
             'rating', 'student_count', 'modules',
         ]
 
-class CourseViewSet(viewsets.ReadOnlyModelViewSet):
+class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [AllowAny]
 
-class CourseModuleViewSet(viewsets.ReadOnlyModelViewSet):
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+class CourseModuleViewSet(viewsets.ModelViewSet):
     queryset = CourseModule.objects.all()
     serializer_class = CourseModuleSerializer
-    permission_classes = [AllowAny]
-    
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def get_queryset(self):
         queryset = CourseModule.objects.all()
         course_id = self.request.query_params.get('course')
@@ -105,6 +113,115 @@ class CourseLessonViewSet(viewsets.ModelViewSet):
             "questions": data,
             "total_points": sum(q.points for q in questions),
         })
+
+
+# ===== CRUD endpoints for EnhancedCourseBuilder =====
+
+@api_view(['PATCH'])
+def course_update(request, pk):
+    """PATCH /api/v1/academy/courses/{id}/update/"""
+    try:
+        course = Course.objects.get(pk=pk)
+    except Course.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=404)
+    serializer = CourseSerializer(course, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+def course_delete(request, pk):
+    """DELETE /api/v1/academy/courses/{id}/delete/"""
+    try:
+        course = Course.objects.get(pk=pk)
+    except Course.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=404)
+    course.delete()
+    return Response({'status': 'deleted'})
+
+
+@api_view(['POST'])
+def course_create_module(request, pk):
+    """POST /api/v1/academy/courses/{id}/modules/create/"""
+    try:
+        course = Course.objects.get(pk=pk)
+    except Course.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=404)
+    data = request.data.copy()
+    data['course'] = course.id
+    serializer = CourseModuleSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['PATCH'])
+def module_update(request, pk):
+    """PATCH /api/v1/academy/modules/{id}/update/"""
+    try:
+        module = CourseModule.objects.get(pk=pk)
+    except CourseModule.DoesNotExist:
+        return Response({'error': 'Module not found'}, status=404)
+    serializer = CourseModuleSerializer(module, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+def module_delete(request, pk):
+    """DELETE /api/v1/academy/modules/{id}/delete/"""
+    try:
+        module = CourseModule.objects.get(pk=pk)
+    except CourseModule.DoesNotExist:
+        return Response({'error': 'Module not found'}, status=404)
+    module.delete()
+    return Response({'status': 'deleted'})
+
+
+@api_view(['POST'])
+def module_create_lesson(request, pk):
+    """POST /api/v1/academy/modules/{id}/lessons/create/"""
+    try:
+        module = CourseModule.objects.get(pk=pk)
+    except CourseModule.DoesNotExist:
+        return Response({'error': 'Module not found'}, status=404)
+    data = request.data.copy()
+    data['module'] = module.id
+    serializer = CourseLessonSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['PATCH'])
+def lesson_update(request, pk):
+    """PATCH /api/v1/academy/lessons/{id}/update/"""
+    try:
+        lesson = CourseLesson.objects.get(pk=pk)
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Lesson not found'}, status=404)
+    serializer = CourseLessonSerializer(lesson, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(['DELETE'])
+def lesson_delete(request, pk):
+    """DELETE /api/v1/academy/lessons/{id}/delete/"""
+    try:
+        lesson = CourseLesson.objects.get(pk=pk)
+    except CourseLesson.DoesNotExist:
+        return Response({'error': 'Lesson not found'}, status=404)
+    lesson.delete()
+    return Response({'status': 'deleted'})
 
 
 @api_view(['POST'])

@@ -4,13 +4,21 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
+  build: {
+    target: "es2020",
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2020",
+    },
+  },
   server: {
     allowedHosts: ["projextpal.com", "www.projextpal.com"],
     host: "::",
     port: 8083,
     proxy: {
       "/api": {
-        target: "http://localhost:8090",
+        target: "http://localhost:8001",
         changeOrigin: true,
         secure: false,
       },

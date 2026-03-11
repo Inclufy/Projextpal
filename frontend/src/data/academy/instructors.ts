@@ -91,9 +91,33 @@ export const instructors = {
     courses: 5,
     rating: 4.7,
   } as Instructor,
+
+  // PM Fundamentals & General PM Instructor
+  sarah: {
+    name: 'Dr. Sarah van den Berg',
+    title: 'PMP, PRINCE2 Practitioner, Senior PM Consultant',
+    avatar: 'SB',
+    bio: 'Dr. Sarah van den Berg is Senior PM Consultant met meer dan 20 jaar ervaring in projectmanagement bij overheid, financiële sector en IT. Zij heeft duizenden professionals opgeleid en is expert in PM fundamentals, stakeholder management en hybride aanpakken.',
+    expertise: ['Project Management', 'PMP', 'PRINCE2', 'Stakeholder Management', 'Hybrid PM'],
+    students: 45000,
+    courses: 12,
+    rating: 4.9,
+  } as Instructor,
+
+  // PRINCE2 & Programme Management Instructor
+  erik: {
+    name: 'Erik van der Meer',
+    title: 'PRINCE2 Trainer, Accredited Training Organization',
+    avatar: 'EM',
+    bio: 'Erik van der Meer is PRINCE2 Trainer bij een Accredited Training Organization met meer dan 15 jaar ervaring in het opleiden van project- en programmamanagers. Hij is specialist in PRINCE2, MSP en governance frameworks.',
+    expertise: ['PRINCE2', 'MSP', 'Programme Management', 'Governance', 'Risk Management'],
+    students: 28000,
+    courses: 8,
+    rating: 4.8,
+  } as Instructor,
 };
 
 // Export individual instructors for convenience
-export const { jan, peter, lisa, anna, martijn, mark } = instructors;
+export const { jan, peter, lisa, anna, martijn, mark, sarah, erik } = instructors;
 
 export default instructors;

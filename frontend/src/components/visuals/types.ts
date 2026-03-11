@@ -11,6 +11,7 @@ export type VisualType =
   | 'lifecycle'
   | 'stakeholder'
   | 'risk'
+  | 'methodology'
   | 'generic';
 
 export interface VisualCard {

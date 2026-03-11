@@ -38,7 +38,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 // Use relative path - proxy handles the rest
 const API_BASE_URL = '/api/v1';

@@ -77,6 +77,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatBudget, getCurrencyFromLanguage } from '@/lib/currencies';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // API functions
@@ -169,8 +170,8 @@ const ProjectsOverview = () => {
   const { pt } = usePageTranslations();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
-  
+  const { t, language } = useLanguage();
+
   // Translations using pt() for consistent Dutch support
   const tp = {
     title: pt('Projects'),
@@ -426,12 +427,7 @@ Respond in this EXACT JSON format only, no other text:
     return <CheckCircle2 className={cn("h-5 w-5", color)} />;
   };
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000) {
-      return `${Math.round(amount / 1000)}k`;
-    }
-    return amount.toString();
-  };
+  const formatCurrency = (amount: number) => formatBudget(amount, getCurrencyFromLanguage(language));
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -888,7 +884,7 @@ Respond in this EXACT JSON format only, no other text:
                         {formData.budget && (
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">€{parseInt(formData.budget).toLocaleString()}</span>
+                            <span className="text-sm">{formatCurrency(parseInt(formData.budget))}</span>
                           </div>
                         )}
                         {formData.duration && (

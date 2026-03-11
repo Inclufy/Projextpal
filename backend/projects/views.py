@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from .methodology_service import apply_methodology_template
+from datetime import datetime
 from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
@@ -161,13 +161,23 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        project = serializer.save(company=self.request.user.company, created_by=self.request.user)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
+            )
+        project = serializer.save(company=user.company, created_by=user)
         # Apply methodology template if set
         if project.methodology:
             apply_methodology_template(project)
 
     def perform_update(self, serializer):
-        serializer.save(company=self.request.user.company)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
+            )
+        serializer.save(company=user.company)
 
     def destroy(self, request, *args, **kwargs):
         """Delete a project with proper handling of related records."""
@@ -1679,22 +1689,6 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     serializer_class = TimeEntrySerializer
     permission_classes = [IsAuthenticated]
 
-    # ADD THIS METHOD:
-    def list(self, request, *args, **kwargs):
-        print("🎯 TimeEntryViewSet.list() CALLED!")
-        print(f"User: {request.user}")
-        print(f"Company: {getattr(request.user, 'company', None)}")
-        print(f"Query params: {request.query_params}")
-        return super().list(request, *args, **kwargs)
-    
-    # ADD THIS:
-    def create(self, request, *args, **kwargs):
-        print("🎯 TimeEntryViewSet.create() CALLED!")
-        print(f"User: {request.user}")
-        print(f"Company: {getattr(request.user, 'company', None)}")
-        print(f"Data: {request.data}")
-        return super().create(request, *args, **kwargs)
-
     def get_permissions(self):
         if self.action in ["list", "retrieve", "summary", "my_entries"]:
             return [IsAuthenticated()]
@@ -1996,17 +1990,8 @@ class ProjectTeamRateViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(team_member)
         return Response(serializer.data)
 
-# Add to imports at top of file
 from .methodology_service import apply_methodology_template
-
-# ========================================
-# ADD THESE TO projects/views.py
-# ========================================
-
-from rest_framework import viewsets
 from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from .models import BudgetCategory, BudgetItem, ProjectBudget
 from .serializers import (
     BudgetCategorySerializer,
@@ -2105,6 +2090,5 @@ class BudgetOverviewViewSet(viewsets.ViewSet):
 # ============================================
 
 from rest_framework.decorators import api_view
-from datetime import datetime
 
 

@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, ArrowLeft, Eye, EyeOff, Mail, Lock, KeyRound } from 'lucide-react';
+import { Loader2, Shield, ArrowLeft, Eye, EyeOff, Mail, Lock, KeyRound, Fingerprint, ScanFace } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  isBiometricSupported,
+  isPlatformAuthenticatorAvailable,
+  authenticateBiometric,
+  getSavedBiometricEmail,
+  saveBiometricEmail,
+} from '@/lib/biometric';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -17,11 +24,30 @@ const Login = () => {
   const [requires2FA, setRequires2FA] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEmail, setBiometricEmail] = useState<string | null>(null);
+  const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
 
   const isNL = language === 'nl';
+
+  // Check biometric availability on mount
+  useEffect(() => {
+    const checkBiometric = async () => {
+      const supported = isBiometricSupported();
+      if (supported) {
+        const available = await isPlatformAuthenticatorAvailable();
+        setBiometricAvailable(available);
+        if (available) {
+          const savedEmail = getSavedBiometricEmail();
+          setBiometricEmail(savedEmail);
+        }
+      }
+    };
+    checkBiometric();
+  }, []);
   const txt = {
     welcomeBack: isNL ? 'Welkom Terug' : 'Welcome Back',
     twoFA: isNL ? 'Twee-Factor Authenticatie' : 'Two-Factor Authentication',
@@ -53,6 +79,10 @@ const Login = () => {
     settingUpPlan: isNL ? 'Instellen van' : 'Setting up',
     plan: isNL ? 'plan' : 'plan',
     copyright: isNL ? 'Enterprise Projectmanagement Platform.' : 'Enterprise Project Management Platform.',
+    biometricLogin: isNL ? 'Inloggen met Face ID / Vingerafdruk' : 'Sign in with Face ID / Fingerprint',
+    biometricLoading: isNL ? 'Biometrische verificatie...' : 'Biometric verification...',
+    biometricFailed: isNL ? 'Biometrische login mislukt' : 'Biometric login failed',
+    orDivider: isNL ? 'of' : 'or',
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,10 +93,10 @@ const Login = () => {
       const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
+        body: JSON.stringify({
+          email,
           password,
-          totp_code: requires2FA ? totpCode : undefined 
+          totp_code: requires2FA ? totpCode : undefined
         }),
       });
 
@@ -100,14 +130,14 @@ const Login = () => {
       const redirect = searchParams.get('redirect');
       const plan = searchParams.get('plan');
       const billing = searchParams.get('billing');
-      
+
       if (redirect === 'checkout' && plan) {
         // User came from pricing page - redirect back to pricing with auto-checkout
         toast({
           title: `🚀 ${txt.redirecting}`,
           description: `${txt.settingUpPlan} ${plan.charAt(0).toUpperCase() + plan.slice(1)} ${txt.plan}`,
         });
-        
+
         // Small delay to show toast
         setTimeout(() => {
           window.location.href = `/pricing?auto_checkout=${plan}&billing=${billing || 'monthly'}`;
@@ -126,6 +156,51 @@ const Login = () => {
     }
   };
 
+  const handleBiometricLogin = async () => {
+    const loginEmail = biometricEmail || email;
+    if (!loginEmail) {
+      toast({
+        title: isNL ? 'E-mail vereist' : 'Email required',
+        description: isNL ? 'Vul je e-mailadres in voor biometrische login' : 'Enter your email for biometric login',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsBiometricLoading(true);
+    try {
+      const result = await authenticateBiometric(loginEmail);
+
+      if (result.success && result.data) {
+        localStorage.setItem('access_token', result.data.access);
+        localStorage.setItem('refresh_token', result.data.refresh);
+        localStorage.setItem('user_data', JSON.stringify(result.data.user));
+        saveBiometricEmail(loginEmail);
+
+        toast({
+          title: txt.welcomeBackMsg,
+          description: txt.authSuccess,
+        });
+
+        window.location.href = '/dashboard';
+      } else {
+        toast({
+          title: txt.biometricFailed,
+          description: result.error || txt.biometricFailed,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: txt.biometricFailed,
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBiometricLoading(false);
+    }
+  };
+
   const handleBack = () => {
     setRequires2FA(false);
     setTotpCode('');
@@ -139,7 +214,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Refined gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20" />
-      
+
       {/* Refined animated blobs */}
       <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
       <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
@@ -177,7 +252,7 @@ const Login = () => {
             </CardDescription>
           </div>
         </CardHeader>
-        
+
         <CardContent className="px-10 pb-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {!requires2FA ? (
@@ -244,8 +319,8 @@ const Login = () => {
 
                 {/* Remember Me */}
                 <div className="flex items-center pt-1">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="remember"
                     className="w-4 h-4 rounded-md border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                   />
@@ -285,10 +360,10 @@ const Login = () => {
                     {txt.enterAuthCode}
                   </p>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold" 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold"
                   onClick={handleBack}
                   disabled={isLoading}
                 >
@@ -298,9 +373,45 @@ const Login = () => {
               </div>
             )}
 
+            {/* Biometric Login Button */}
+            {biometricAvailable && !requires2FA && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-13 rounded-xl font-bold text-base gap-3 ring-1 ring-purple-200 dark:ring-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-300 group"
+                  onClick={handleBiometricLogin}
+                  disabled={isBiometricLoading || isLoading}
+                >
+                  {isBiometricLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {txt.biometricLoading}
+                    </>
+                  ) : (
+                    <>
+                      <ScanFace className="h-5 w-5 text-purple-500 group-hover:scale-110 transition-transform" />
+                      {txt.biometricLogin}
+                    </>
+                  )}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-purple-100 dark:border-purple-900/50" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-gray-900 px-3 text-gray-500 font-medium">
+                      {txt.orDivider}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Submit Button */}
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-13 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-base font-bold shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 rounded-xl border-0 group"
               disabled={isLoading}
             >

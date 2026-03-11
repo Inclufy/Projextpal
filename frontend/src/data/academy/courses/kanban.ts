@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'kb-m1',
-  title: 'Module 1: Kanban Fundamenten',
+  title: 'Module 1: Kanban Fundamentals',
   titleNL: 'Module 1: Kanban Fundamenten',
   description: 'The foundation: principles, practices, and the Kanban board.',
   descriptionNL: 'De basis van Kanban: oorsprong, principes en het Kanban systeem.',
   lessons: [
     {
       id: 'kb-l1',
-      title: 'Wat is Kanban?',
+      title: 'What is Kanban?',
       titleNL: 'Wat is Kanban?',
       duration: '15:00',
       type: 'video',
@@ -138,6 +138,12 @@ Kanban:
 - Werkt voor alle soorten kenniswerk
 - Kan gecombineerd worden met andere methoden`,
       keyTakeaways: [
+        'Kanban = visual signal, focus on flow and pull',
+        'Start where you are - no major reorganization needed',
+        '6 core practices: visualize, limit WIP, manage flow, etc.',
+        'Kanban is complementary to Scrum, not a replacement',
+      ],
+      keyTakeawaysNL: [
         'Kanban = visueel signaal, focus op flow en pull',
         'Start waar je bent - geen grote reorganisatie nodig',
         '6 core practices: visualize, limit WIP, manage flow, etc.',
@@ -160,7 +166,7 @@ Kanban:
     },
     {
       id: 'kb-l2',
-      title: 'Het Kanban Bord Ontwerpen',
+      title: 'Designing the Kanban Board',
       titleNL: 'Het Kanban Bord Ontwerpen',
       duration: '20:00',
       type: 'video',
@@ -312,6 +318,12 @@ Een goed Kanban bord:
 - Laat blokkades schreeuwen
 - Evolueert met je inzichten`,
       keyTakeaways: [
+        'Start by mapping your actual workflow',
+        'Split columns into Doing/Done to reveal wait time',
+        'Make blockers explicitly visible',
+        'Start simple and evolve the board based on insights',
+      ],
+      keyTakeawaysNL: [
         'Begin met je werkelijke workflow te mappen',
         'Split kolommen in Doing/Done om wachttijd te onthullen',
         'Maak blokkades expliciet zichtbaar',
@@ -334,7 +346,7 @@ Een goed Kanban bord:
     },
     {
       id: 'kb-l3',
-      title: 'WIP Limieten',
+      title: 'WIP Limits',
       titleNL: 'WIP Limieten',
       duration: '18:00',
       type: 'video',
@@ -475,6 +487,12 @@ WIP limieten:
 - Moeten evolutionair worden bepaald
 - Zijn bedoeld om te knellen`,
       keyTakeaways: [
+        'Little\'s Law: Lead Time = WIP / Throughput',
+        'Context switching costs 15-20 minutes per switch',
+        'Stop starting, start finishing!',
+        'The pain of WIP limits reveals problems',
+      ],
+      keyTakeawaysNL: [
         'Little\'s Law: Lead Time = WIP / Throughput',
         'Context switching kost 15-20 minuten per switch',
         'Stop starting, start finishing!',
@@ -654,6 +672,12 @@ Flow metrics:
 - Flow efficiency toont waar waarde verloren gaat`,
       keyTakeaways: [
         'Lead Time = WIP / Throughput (Little\'s Law)',
+        'CFD visualizes WIP, lead time, throughput, and bottlenecks',
+        'Use the 85th percentile for reliable predictions',
+        'Flow efficiency in knowledge work is typically 5-15%',
+      ],
+      keyTakeawaysNL: [
+        'Lead Time = WIP / Throughput (Little\'s Law)',
         'CFD visualiseert WIP, lead time, throughput en bottlenecks',
         'Gebruik 85e percentiel voor betrouwbare voorspellingen',
         'Flow efficiency in kenniswerk is typisch 5-15%',
@@ -681,7 +705,7 @@ Flow metrics:
     },
     {
       id: 'kb-l5',
-      title: 'Quiz: Kanban Fundamenten',
+      title: 'Quiz: Kanban Fundamentals',
       titleNL: 'Quiz: Kanban Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -751,14 +775,14 @@ Flow metrics:
 // ============================================
 const module2: Module = {
   id: 'kb-m2',
-  title: 'Module 2: Kanban in de Praktijk',
+  title: 'Module 2: Kanban in Practice',
   titleNL: 'Module 2: Kanban in de Praktijk',
   description: 'Practical application: cadences, policies, and continuous improvement.',
   descriptionNL: 'Praktische toepassing: cadansen, policies en continue verbetering.',
   lessons: [
     {
       id: 'kb-l6',
-      title: 'Kanban Cadansen',
+      title: 'Kanban Cadences',
       titleNL: 'Kanban Cadansen',
       duration: '18:00',
       type: 'video',
@@ -831,6 +855,12 @@ Kanban cadansen:
 - Beginnen met dagelijkse standup en replenishment
 - Worden toegevoegd naar behoefte`,
       keyTakeaways: [
+        'Cadences are regular feedback moments',
+        'Walk the board from right to left in standups',
+        'Start with standup and replenishment, add more as needed',
+        'Cadences are optional but strongly recommended',
+      ],
+      keyTakeawaysNL: [
         'Cadansen zijn regelmatige feedbackmomenten',
         'Walk the board van rechts naar links in standups',
         'Start met standup en replenishment, voeg toe naar behoefte',
@@ -845,7 +875,7 @@ Kanban cadansen:
     },
     {
       id: 'kb-l7',
-      title: 'Policies en Service Level Expectations',
+      title: 'Policies and Service Level Expectations',
       titleNL: 'Policies en Service Level Expectations',
       duration: '16:00',
       type: 'video',
@@ -931,6 +961,12 @@ Expliciete policies:
 - Differentiëren werk met classes of service
 - Communiceren expectations via SLE's`,
       keyTakeaways: [
+        'Policies make agreements explicit and visible',
+        'Definition of Ready determines when work may start',
+        'Definition of Done determines when work is complete',
+        'Service Level Expectations provide predictability',
+      ],
+      keyTakeawaysNL: [
         'Policies maken afspraken expliciet en zichtbaar',
         'Definition of Ready bepaalt wanneer werk mag starten',
         'Definition of Done bepaalt wanneer werk af is',
@@ -945,7 +981,7 @@ Expliciete policies:
     },
     {
       id: 'kb-l8',
-      title: 'Continue Verbetering',
+      title: 'Continuous Improvement',
       titleNL: 'Continue Verbetering',
       duration: '18:00',
       type: 'video',
@@ -1007,6 +1043,12 @@ Continue verbetering:
 - Analyseert root causes met 5 Whys
 - Ontwerpt experimenten met duidelijke hypotheses`,
       keyTakeaways: [
+        'PDCA cycle: Plan, Do, Check, Act',
+        'Kaizen = continuous small improvements',
+        '5 Whys helps find root causes',
+        'Experiments need a hypothesis, measurement, and timebox',
+      ],
+      keyTakeawaysNL: [
         'PDCA cyclus: Plan, Do, Check, Act',
         'Kaizen = continue kleine verbeteringen',
         '5 Whys helpt root causes te vinden',
@@ -1021,7 +1063,7 @@ Continue verbetering:
     },
     {
       id: 'kb-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',
@@ -1046,7 +1088,7 @@ Succes!`,
     },
     {
       id: 'kb-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Sparkles, Wand2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -29,34 +30,76 @@ const stakeholderSuggestions = [
   { name: "Lisa van der Berg", email: "lisa.vdberg@example.com", role: "business_change_manager", organization: "HR & Change Management", interest_level: "medium", influence_level: "high" },
 ];
 
+const callAI = async (prompt: string): Promise<string | null> => {
+  const token = localStorage.getItem("access_token");
+  try {
+    const response = await fetch("/api/v1/governance/ai/generate/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.response || null;
+  } catch {
+    return null;
+  }
+};
+
 const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, context }) => {
   const [generating, setGenerating] = useState(false);
   const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [customPrompt, setCustomPrompt] = useState("");
   const { toast } = useToast();
   const { pt } = usePageTranslations();
 
-  const generateSmartSuggestions = async () => {
+  const getFallbackSuggestions = () => {
+    switch (type) {
+      case "portfolio": return portfolioSuggestions;
+      case "board": return boardSuggestions;
+      case "stakeholder": return stakeholderSuggestions;
+    }
+  };
+
+  const generateWithAI = async (promptText: string) => {
+    const typeLabel = type === "portfolio" ? "portfolio" : type === "board" ? "governance board" : "stakeholder";
+    const aiPrompt = `Generate a ${typeLabel} based on this description: "${promptText}". Respond in JSON format with "name" and "description" fields only. Be professional and specific.`;
+
+    const aiResponse = await callAI(aiPrompt);
+    if (aiResponse) {
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      } catch { /* fall through to fallback */ }
+    }
+    return null;
+  };
+
+  const generateSmartSuggestions = async (promptText?: string) => {
     setGenerating(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      let suggestion: any = null;
 
-      let suggestion: any = {};
-
-      switch (type) {
-        case "portfolio":
-          suggestion = portfolioSuggestions[suggestionIndex % portfolioSuggestions.length];
-          break;
-        case "board":
-          suggestion = boardSuggestions[suggestionIndex % boardSuggestions.length];
-          break;
-        case "stakeholder":
-          suggestion = stakeholderSuggestions[suggestionIndex % stakeholderSuggestions.length];
-          break;
+      // Try AI generation first if there's a prompt
+      if (promptText) {
+        suggestion = await generateWithAI(promptText);
       }
 
-      setSuggestionIndex(prev => prev + 1);
+      // Fallback to predefined suggestions
+      if (!suggestion) {
+        const suggestions = getFallbackSuggestions();
+        suggestion = suggestions[suggestionIndex % suggestions.length];
+        setSuggestionIndex(prev => prev + 1);
+      }
+
       onSuggestion({ ...suggestion });
+      setCustomPrompt("");
 
       toast({
         title: pt("AI Suggestions Generated"),
@@ -113,7 +156,33 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
               {pt("Let AI help you get started with intelligent suggestions")}
             </p>
 
-            <div className="space-y-2 mb-4">
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder={pt("Describe what you want to create...")}
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customPrompt.trim()) {
+                    generateSmartSuggestions(customPrompt.trim());
+                  }
+                }}
+                disabled={generating}
+                className="flex-1"
+              />
+              <Button
+                onClick={() => generateSmartSuggestions(customPrompt.trim() || undefined)}
+                disabled={generating}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+              >
+                {generating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="space-y-2">
               <p className="text-xs font-semibold text-gray-500 uppercase">{pt("Quick Prompts")}:</p>
               <div className="flex flex-wrap gap-2">
                 {getPromptExamples().map((example, idx) => (
@@ -121,7 +190,7 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
                     key={idx}
                     variant="outline"
                     size="sm"
-                    onClick={generateSmartSuggestions}
+                    onClick={() => generateSmartSuggestions(example)}
                     disabled={generating}
                     className="text-xs h-8 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                   >
@@ -130,24 +199,6 @@ const AISmartHelper: React.FC<AISmartHelperProps> = ({ type, onSuggestion, conte
                 ))}
               </div>
             </div>
-
-            <Button
-              onClick={generateSmartSuggestions}
-              disabled={generating}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {pt("Generating...")}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  {pt("Generate with AI")}
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </CardContent>

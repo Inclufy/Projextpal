@@ -8,6 +8,7 @@ import ComparisonVisual from './ComparisonVisual';
 import LifecycleVisual from './LifecycleVisual';
 import StakeholderVisual from './StakeholderVisual';
 import RiskVisual from './RiskVisual';
+import MethodologyVisual from './MethodologyVisual';
 import GenericContentVisual from './GenericContentVisual';
 import { CheckCircle2, Sparkles, Tag } from 'lucide-react';
 
@@ -148,6 +149,8 @@ const TemplateVisual: React.FC<VisualTemplateRendererProps> = ({
       return <StakeholderVisual {...props} />;
     case 'risk':
       return <RiskVisual {...props} />;
+    case 'methodology':
+      return <MethodologyVisual {...props} />;
     default:
       return <GenericContentVisual {...props} />;
   }
@@ -156,6 +159,6 @@ const TemplateVisual: React.FC<VisualTemplateRendererProps> = ({
 export default VisualTemplateRenderer;
 
 // Re-export for convenience
-export { detectTopicType } from './detectTopicType';
+export { detectTopicType, detectTopicFromTitle } from './detectTopicType';
 export { getTopicMeta } from './detectTopicType';
 export type { VisualType, VisualData, ContentSection } from './types';

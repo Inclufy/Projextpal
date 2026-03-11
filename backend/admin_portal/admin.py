@@ -4,7 +4,7 @@
 # ============================================================
 
 from django.contrib import admin
-from .models import AuditLog, SystemSetting
+from .models import AuditLog, SystemSetting, CloudProviderConfig
 
 
 @admin.register(AuditLog)
@@ -35,3 +35,10 @@ class SystemSettingAdmin(admin.ModelAdmin):
     list_filter = ['category', 'is_sensitive']
     search_fields = ['key', 'description']
     ordering = ['category', 'key']
+
+
+@admin.register(CloudProviderConfig)
+class CloudProviderConfigAdmin(admin.ModelAdmin):
+    list_display = ['provider', 'is_active', 'storage_enabled', 'email_enabled', 'database_enabled', 'cdn_enabled', 'updated_at']
+    list_filter = ['provider', 'is_active']
+    readonly_fields = ['id', 'created_at', 'updated_at']

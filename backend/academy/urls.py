@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api
+from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views
 from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGoalViewSet, SkillActivityViewSet
 
 router = DefaultRouter()
@@ -19,7 +19,17 @@ urlpatterns = [
     path('', include(router.urls)),
     path('skills/', include(skills_router.urls)),
     path('visuals/', include('academy.urls_visual')),
-    
+
+    # ===== EnhancedCourseBuilder CRUD endpoints =====
+    path('courses/<str:pk>/update/', api_views.course_update, name='course-update'),
+    path('courses/<str:pk>/delete/', api_views.course_delete, name='course-delete'),
+    path('courses/<str:pk>/modules/create/', api_views.course_create_module, name='course-create-module'),
+    path('modules/<int:pk>/update/', api_views.module_update, name='module-update'),
+    path('modules/<int:pk>/delete/', api_views.module_delete, name='module-delete'),
+    path('modules/<int:pk>/lessons/create/', api_views.module_create_lesson, name='module-create-lesson'),
+    path('lessons/<int:pk>/update/', api_views.lesson_update, name='lesson-update'),
+    path('lessons/<int:pk>/delete/', api_views.lesson_delete, name='lesson-delete'),
+
     # Visual Selection AI endpoint
     path('analyze-lesson/', api_views.analyze_lesson_for_visual, name='analyze-lesson-visual'),
     
@@ -41,6 +51,12 @@ urlpatterns = [
     path('ai/generate-exam/', ai_content_api.generate_exam, name='ai-generate-exam'),
     path('ai/extract-skills/', ai_content_api.extract_skills, name='ai-extract-skills'),
     
+    # AI Coach endpoint
+    path('ai/coach/message/', ai_views.ai_coach_message, name='ai-coach-message'),
+
+    # AI Practice Assignment generator (personalized by sector & role)
+    path('ai/generate-practice/', ai_views.ai_generate_practice, name='ai-generate-practice'),
+
     # Certificate Generation
     path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
     path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),

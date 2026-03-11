@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Briefcase, TrendingUp, Users, DollarSign, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 interface Portfolio {
   id: string;
@@ -26,6 +28,8 @@ interface Portfolio {
 
 export default function Portfolios() {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
+  const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -104,7 +108,7 @@ export default function Portfolios() {
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Portfolios")}</p><p className="text-2xl font-bold mt-1">{portfolios.length}</p></div><Briefcase className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Active")}</p><p className="text-2xl font-bold mt-1">{portfolios.filter(p => p.status === "active").length}</p></div><TrendingUp className="h-8 w-8 text-green-600" /></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Boards")}</p><p className="text-2xl font-bold mt-1">{portfolios.reduce((sum, p) => sum + p.total_boards, 0)}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">€{portfolios.reduce((sum, p) => sum + (p.budget_allocated || 0), 0).toLocaleString()}</p></div><DollarSign className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">{formatCurrency(portfolios.reduce((sum, p) => sum + (Number(p.budget_allocated) || 0), 0))}</p></div><DollarSign className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,7 +129,7 @@ export default function Portfolios() {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Owner")}</span><span className="font-medium">{portfolio.owner_name || portfolio.owner_email}</span></div>
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Governance Boards")}</span><span className="font-medium">{portfolio.total_boards}</span></div>
-                {portfolio.budget_allocated > 0 && <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Budget")}</span><span className="font-medium">€{portfolio.budget_allocated.toLocaleString()}</span></div>}
+                {portfolio.budget_allocated > 0 && <div className="flex items-center justify-between"><span className="text-muted-foreground">{pt("Budget")}</span><span className="font-medium">{formatCurrency(portfolio.budget_allocated)}</span></div>}
               </div>
             </CardContent>
           </Card>
@@ -138,7 +142,7 @@ export default function Portfolios() {
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{pt("Edit Portfolio")}: {editingPortfolio?.name}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{pt("Edit Portfolio")}: {editingPortfolio?.name}</DialogTitle><DialogDescription>{pt("Update portfolio details")}</DialogDescription></DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="grid gap-2"><Label>{pt("Name")}</Label><Input value={editForm.name} onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))} /></div>
             <div className="grid gap-2"><Label>{pt("Description")}</Label><Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} /></div>

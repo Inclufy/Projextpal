@@ -20,9 +20,12 @@ urlpatterns = [
 from .views import generate_ai_report
 urlpatterns += [
     path('reports/generate/', generate_ai_report, name='generate-ai-report'),
+<<<<<<< HEAD
 ]
 
 from .views import ai_generate_text
 urlpatterns += [
+=======
+>>>>>>> claude/create-test-agent-uat-KR36j
     path('ai/generate/', ai_generate_text, name='ai-generate-text'),
 ]

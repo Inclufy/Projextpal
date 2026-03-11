@@ -43,11 +43,11 @@ services:
       - ./backend/.env
     environment:
       - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
       - REDIS_HOST=redis
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com,api.projextpal.com
       - FRONTEND_URL=https://projextpal.com
       - BASE_URL=https://projextpal.com
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, RotateCcw, Trash2, Pencil } from "lucide-react";
@@ -88,7 +88,7 @@ const ScrumRetrospective = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New")} {pt("Retrospective")}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New")} {pt("Retrospective")}</DialogTitle><DialogDescription>{editing ? pt("Edit retrospective") : pt("Create a new retrospective")}</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>✅ {pt("What went well")}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background" value={form.what_went_well} onChange={(e) => setForm({ ...form, what_went_well: e.target.value })} /></div>
             <div className="space-y-2"><Label>❌ {pt("What went wrong")}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background" value={form.what_went_wrong} onChange={(e) => setForm({ ...form, what_went_wrong: e.target.value })} /></div>

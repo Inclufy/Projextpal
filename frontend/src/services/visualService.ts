@@ -371,14 +371,22 @@ const TEMPLATE_KEY_TO_VISUAL_TYPE: Record<string, VisualType> = {
   backlog: 'lifecycle',
   scrum_events: 'lifecycle',
   velocity: 'triple_constraint',
-  manifesto: 'comparison',
-  principles: 'comparison',
-  methodologies: 'comparison',
+  manifesto: 'methodology',
+  principles: 'methodology',
+  methodologies: 'methodology',
+  methodology: 'methodology',
+  agile: 'methodology',
+  scrum: 'methodology',
+  waterfall: 'methodology',
+  kanban: 'methodology',
+  prince2: 'methodology',
+  safe: 'methodology',
+  lean: 'methodology',
 };
 
 export function resolveVisualType(templateKeyOrVisualId: string): VisualType {
   // 1. Direct VisualType match (already a valid type)
-  const validTypes: VisualType[] = ['project_def', 'triple_constraint', 'pm_role', 'comparison', 'lifecycle', 'stakeholder', 'risk', 'generic'];
+  const validTypes: VisualType[] = ['project_def', 'triple_constraint', 'pm_role', 'comparison', 'lifecycle', 'stakeholder', 'risk', 'methodology', 'generic'];
   if (validTypes.includes(templateKeyOrVisualId as VisualType)) {
     return templateKeyOrVisualId as VisualType;
   }
