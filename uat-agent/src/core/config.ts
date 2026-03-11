@@ -14,6 +14,24 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
       password: process.env.PROJECTPAL_TEST_PASSWORD || 'password123',
     },
   }),
+  finance: () => ({
+    name: 'Inclufy Finance',
+    baseUrl: process.env.FINANCE_BASE_URL || 'http://localhost:3000',
+    apiUrl: process.env.FINANCE_API_URL || 'http://localhost:8000',
+    credentials: {
+      email: process.env.FINANCE_TEST_EMAIL || 'test@example.com',
+      password: process.env.FINANCE_TEST_PASSWORD || 'password123',
+    },
+  }),
+  marketing: () => ({
+    name: 'Inclufy Marketing',
+    baseUrl: process.env.MARKETING_BASE_URL || 'http://localhost:3001',
+    apiUrl: process.env.MARKETING_API_URL || 'http://localhost:8001',
+    credentials: {
+      email: process.env.MARKETING_TEST_EMAIL || 'test@example.com',
+      password: process.env.MARKETING_TEST_PASSWORD || 'password123',
+    },
+  }),
   generic: () => ({
     name: process.env.APP_NAME || 'GenericApp',
     baseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
