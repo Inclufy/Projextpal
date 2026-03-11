@@ -8,10 +8,9 @@ from django.utils import timezone
 
 # Registration serializer with verification token
 class CustomUserSerializer(serializers.ModelSerializer):
-    company_name = serializers.CharField(source='company.name', read_only=True, default=None)
-
     class Meta:
         model = CustomUser
+        # Include role and is_superuser so the frontend can authorize securely
         fields = [
             "id",
             "email",
@@ -19,10 +18,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "image",
             "role",
             "is_superuser",
-            "company",
-            "company_name",
         ]
-
 
 
 # Login serializer with email and is_active check
@@ -79,15 +75,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             "id": user.id,
             "email": user.email,
             "first_name": user.first_name,
-<<<<<<< HEAD
-            "company": user.company_id,                                              # <-- NIEUW
-            "company_name": user.company.name if getattr(user, "company", None) else None,  # <-- NIEUW
-=======
-            "company": user.company_id,
-            "company_name": user.company.name if getattr(user, "company", None) else None,
->>>>>>> claude/create-test-agent-uat-KR36j
             "is_subscribed": (
-
+                user.company.is_subscribed if getattr(user, "company", None) else False
             ),
             "theme": user.theme,
             "image": image_url,
@@ -318,10 +307,10 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         send_invite = validated_data.pop('send_invite', True)
         password = validated_data.pop('password', None)
-
+        
         request = self.context.get("request")
         admin_user: CustomUser = request.user  # type: ignore
-
+        
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
@@ -331,34 +320,31 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             role=validated_data.get("role", "pm"),
             company=admin_user.company,
         )
-
+        
         if password:
             user.set_password(password)
         else:
             # Set unusable password - user will set via invite
             user.set_unusable_password()
-
+        
         user.save()
 
         # Send invite email if send_invite is True
         if send_invite:
-            try:
-                from django.core.mail import EmailMultiAlternatives
-                from django.template.loader import render_to_string
-                import logging
-                logger = logging.getLogger(__name__)
-
-                verification_token = VerificationToken.objects.create(user=user)
-                verification_url = f"{settings.FRONTEND_URL}/verify-email/{verification_token.token}/"
-
-                # Render HTML template
-                html_content = render_to_string("emails/verify_email.html", {
-                    "first_name": user.first_name or user.email.split('@')[0],
-                    "verification_url": verification_url,
-                })
-
-                # Plain text fallback
-                text_content = f"""Hi {user.first_name or user.email.split('@')[0]},
+            from django.core.mail import EmailMultiAlternatives
+            from django.template.loader import render_to_string
+            
+            verification_token = VerificationToken.objects.create(user=user)
+            verification_url = f"{settings.FRONTEND_URL}/verify-email/{verification_token.token}/"
+            
+            # Render HTML template
+            html_content = render_to_string("emails/verify_email.html", {
+                "first_name": user.first_name or user.email.split('@')[0],
+                "verification_url": verification_url,
+            })
+            
+            # Plain text fallback
+            text_content = f"""Hi {user.first_name or user.email.split('@')[0]},
 
 You've been invited to join ProjeXtPal!
 
@@ -368,21 +354,17 @@ This link expires in 24 hours.
 
 Best regards,
 The ProjeXtPal Team"""
-
-                # Send email with both HTML and text
-                email = EmailMultiAlternatives(
-                    subject="Welcome to ProjeXtPal - Set Your Password",
-                    body=text_content,
-                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
-                    to=[user.email],
-                )
-                email.attach_alternative(html_content, "text/html")
-                email.send()
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f"Failed to send invite email to {user.email}: {e}")
-
+            
+            # Send email with both HTML and text
+            email = EmailMultiAlternatives(
+                subject="Welcome to ProjeXtPal - Set Your Password",
+                body=text_content,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
+                to=[user.email],
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+        
         return user
 
 

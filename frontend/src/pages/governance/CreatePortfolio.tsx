@@ -36,23 +36,23 @@ const CreatePortfolio: React.FC = () => {
     setLoading(true);
 
     try {
-<<<<<<< HEAD
-            const token = localStorage.getItem("access_token");
-=======
       const token = localStorage.getItem("access_token");
->>>>>>> claude/create-test-agent-uat-KR36j
-
-      const payload: any = {
-        ...formData,
-        owner: user?.id,
-      };
-      if (user?.company) {
-        payload.company = user.company;
+      
+      if (!user?.company) {
+        toast({
+          title: "❌ Missing Company",
+          description: "Your account is not associated with a company.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
-<<<<<<< HEAD
-
-=======
->>>>>>> claude/create-test-agent-uat-KR36j
+      
+      const payload = {
+        ...formData,
+        company: user.company,
+        owner: user.id,
+      };
       
       const response = await fetch("/api/v1/governance/portfolios/", {
         method: "POST",

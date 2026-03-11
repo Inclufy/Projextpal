@@ -40,7 +40,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserFeatures, hasFeature, getTierName, getTierColor } from "@/hooks/useUserFeatures";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useCopilot } from "@/contexts/CopilotContext";
 
 // [All the getProgramPhases, getMethodologyPhases, getMethodologyBadge, and ProjeXtPalLogo functions stay the same]
 // I'll include them for completeness...
@@ -737,7 +736,6 @@ export function AppSidebar() {
   const { data: userFeatures, isLoading: featuresLoading } = useUserFeatures();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { open: openCopilot, isOpen: copilotOpen } = useCopilot();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
   
@@ -789,88 +787,94 @@ export function AppSidebar() {
   // Get user role for menu filtering
   const userRole = user?.role || 'guest';
 
-  // Role display labels
-  const roleLabels: Record<string, { label: string; color: string }> = {
-    'superadmin': { label: 'Super Admin', color: 'bg-red-500' },
-    'admin': { label: 'Admin', color: 'bg-purple-600' },
-    'program_manager': { label: isNL ? 'Programmamanager' : 'Program Manager', color: 'bg-indigo-500' },
-    'pm': { label: isNL ? 'Projectmanager' : 'Project Manager', color: 'bg-blue-500' },
-    'member': { label: isNL ? 'Teamlid' : 'Team Member', color: 'bg-emerald-500' },
-    'reviewer': { label: 'Reviewer', color: 'bg-amber-500' },
-    'guest': { label: isNL ? 'Gast' : 'Guest', color: 'bg-gray-500' },
-  };
-
-  const currentRoleInfo = roleLabels[userRole] || roleLabels['guest'];
-
-  // Role-based menu items - ordered by relevance per role
+  // Role-based menu items
   const getMenuItemsForRole = () => {
-    const items: any[] = [];
+    const baseItems = [
+      { 
+        title: ts.dashboard, 
+        url: "/dashboard", 
+        icon: LayoutDashboard,
+        feature: null,
+      },
+      { 
+        title: ts.aiAssistant, 
+        url: "/ai-assistant", 
+        icon: MessageSquare,
+        feature: 'ai_assistant',
+      },
+    ];
 
-    // Dashboard - always first
-    items.push({
-      title: ts.dashboard,
-      url: "/dashboard",
-      icon: LayoutDashboard,
+    // Governance - only for program managers and admins
+    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.governance, 
+        url: "/governance/portfolios", 
+        icon: Briefcase,
+        feature: null,
+        children: [
+          { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
+          { title: ts.boards, url: "/governance/boards", icon: Shield },
+          { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
+        ],
+      });
+    }
+
+    // Programs - only for program managers and admins
+    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.programs, 
+        url: "/programs", 
+        icon: Layers, 
+        isProgramLink: true,
+        feature: 'program_management',
+      });
+    }
+
+    // Reports - everyone can see
+    baseItems.push({ 
+      title: ts.reports, 
+      url: "/reports", 
+      icon: FileBarChart,
       feature: null,
     });
 
-    // AI Assistant - always second
-    items.push({
-      title: ts.aiAssistant,
-      url: "#copilot",
-      icon: MessageSquare,
-      feature: 'ai_assistant',
-      isCopilot: true,
+    // Projects - everyone can see
+    baseItems.push({ 
+      title: ts.allProjects, 
+      url: "/projects", 
+      icon: FolderKanban,
+      feature: null,
     });
 
-    // Role-specific ordering: each role sees items most relevant to them first
-    if (['admin', 'superadmin'].includes(userRole)) {
-      // Admin/SuperAdmin: Governance > Programs > Projects > Reports > Team > Time > Post Project
-      items.push({
-        title: ts.governance, url: "/governance/portfolios", icon: Briefcase, feature: null,
-        children: [
-          { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
-          { title: ts.boards, url: "/governance/boards", icon: Shield },
-          { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
-        ],
+    // Team - PM and above
+    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.team, 
+        url: "/team", 
+        icon: Users,
+        feature: 'teams',
       });
-      items.push({ title: ts.programs, url: "/programs", icon: Layers, isProgramLink: true, feature: 'program_management' });
-      items.push({ title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null });
-      items.push({ title: ts.reports, url: "/reports", icon: FileBarChart, feature: null });
-      items.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
-      items.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
-      items.push({ title: ts.postProject, url: "/post-project", icon: FileCheck, feature: 'post_project' });
-    } else if (userRole === 'program_manager') {
-      // Program Manager: Programs > Governance > Projects > Reports > Team > Time > Post Project
-      items.push({ title: ts.programs, url: "/programs", icon: Layers, isProgramLink: true, feature: 'program_management' });
-      items.push({
-        title: ts.governance, url: "/governance/portfolios", icon: Briefcase, feature: null,
-        children: [
-          { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
-          { title: ts.boards, url: "/governance/boards", icon: Shield },
-          { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
-        ],
-      });
-      items.push({ title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null });
-      items.push({ title: ts.reports, url: "/reports", icon: FileBarChart, feature: null });
-      items.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
-      items.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
-      items.push({ title: ts.postProject, url: "/post-project", icon: FileCheck, feature: 'post_project' });
-    } else if (userRole === 'pm') {
-      // Project Manager: Projects > Reports > Team > Time Tracking > Post Project
-      items.push({ title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null });
-      items.push({ title: ts.reports, url: "/reports", icon: FileBarChart, feature: null });
-      items.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
-      items.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
-      items.push({ title: ts.postProject, url: "/post-project", icon: FileCheck, feature: 'post_project' });
-    } else {
-      // Team Member / Reviewer / Guest: Projects > Time Tracking > Reports
-      items.push({ title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null });
-      items.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
-      items.push({ title: ts.reports, url: "/reports", icon: FileBarChart, feature: null });
     }
 
-    return items;
+    // Time Tracking - everyone
+    baseItems.push({ 
+      title: ts.timeTracking, 
+      url: "/time-tracking", 
+      icon: Clock,
+      feature: 'time_tracking',
+    });
+
+    // Post Project - PM and above
+    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
+      baseItems.push({ 
+        title: ts.postProject, 
+        url: "/post-project", 
+        icon: FileCheck,
+        feature: 'post_project',
+      });
+    }
+
+    return baseItems;
   };
 
   const menuItems = getMenuItemsForRole();
@@ -895,12 +899,7 @@ export function AppSidebar() {
   // Color mapping for menu icons
   const iconColors: Record<string, string> = {
     "Dashboard": "text-violet-500",
-<<<<<<< HEAD
     "AI Chat": "text-fuchsia-500",
-=======
-    "AI Chat": "text-emerald-500",
-    "AI Copilot": "text-emerald-500",
->>>>>>> claude/create-test-agent-uat-KR36j
     "Governance": "text-indigo-500",
     "Programs": "text-orange-500",
     "Reports": "text-emerald-500",
@@ -922,15 +921,6 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent>
-        {/* Role indicator */}
-        {!isCollapsed && (
-          <div className="px-4 pt-3 pb-1">
-            <Badge className={`${currentRoleInfo.color} text-white text-[10px] font-semibold`}>
-              {currentRoleInfo.label}
-            </Badge>
-          </div>
-        )}
-
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-0.5 px-1">
@@ -989,55 +979,9 @@ export function AppSidebar() {
                   );
                 }
 
-                // Copilot item - opens sidebar instead of navigating
-                if (item.isCopilot) {
-                  return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
-                        className={cn(
-                          "rounded-lg transition-all duration-200 cursor-pointer",
-                          copilotOpen
-                            ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 text-emerald-700 dark:text-emerald-300 font-semibold shadow-sm"
-                            : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300",
-                          isLocked && "opacity-60 hover:opacity-80"
-                        )}
-                        onClick={() => {
-                          if (isLocked) {
-                            toast({
-                              title: "🔒 Upgrade Required",
-                              description: `${item.title} is available with a paid subscription.`,
-                              action: (
-                                <Button variant="outline" size="sm" onClick={() => navigate('/profile?tab=subscription')}>View Plans</Button>
-                              ),
-                            });
-                            return;
-                          }
-                          openCopilot();
-                        }}
-                      >
-                        <div className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
-                          copilotOpen
-                            ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm"
-                            : "bg-gray-100 dark:bg-gray-800"
-                        )}>
-                          <item.icon className={cn("h-4 w-4", copilotOpen ? "text-white" : "text-emerald-500")} />
-                        </div>
-                        {!isCollapsed && (
-                          <span className="text-sm">{item.title}</span>
-                        )}
-                        {isLocked && !isCollapsed && (
-                          <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                }
-
                 return (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
+                    <SidebarMenuButton 
                       asChild
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
@@ -1316,14 +1260,10 @@ export function AppSidebar() {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <NavLink to="/academy">
+            <a href="/academy">
               <GraduationCap className="h-4 w-4" />
               <span>Academy</span>
-<<<<<<< HEAD
             </a>
-=======
-            </NavLink>
->>>>>>> claude/create-test-agent-uat-KR36j
           </SidebarMenuButton>
         </SidebarMenuItem>
       );

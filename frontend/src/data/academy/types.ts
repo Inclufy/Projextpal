@@ -52,11 +52,6 @@ export interface Lesson {
   videoUrl?: string;
   transcript?: string;
   keyTakeaways?: string[];
-<<<<<<< HEAD
-  keyTakeawaysEN?: string[];
-=======
-  keyTakeawaysNL?: string[];
->>>>>>> claude/create-test-agent-uat-KR36j
   resources?: Resource[];
   quiz?: QuizQuestion[];
   completed?: boolean;
