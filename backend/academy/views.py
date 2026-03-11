@@ -15,7 +15,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from admin_portal.permissions import IsSuperAdmin
 from rest_framework.response import Response
 from rest_framework import status
 from .models import CourseLesson, Enrollment
@@ -103,7 +104,7 @@ COUPON_CODES = {
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def create_checkout_session(request):
     """
     Create a Stripe Checkout Session for course purchase
@@ -339,7 +340,7 @@ def send_enrollment_confirmation(email, first_name, course_title):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def request_quote(request):
     """
     Handle enterprise/team quote requests
@@ -454,7 +455,7 @@ def send_quote_confirmation(quote_request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def verify_payment(request):
     """
     Verify payment status after redirect from Stripe
@@ -485,7 +486,7 @@ def verify_payment(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def validate_coupon(request):
     """
     Validate a coupon code
@@ -511,7 +512,7 @@ def validate_coupon(request):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_courses(request):
     """
     Get all courses for admin panel - FROM DATABASE
@@ -539,7 +540,7 @@ def admin_get_courses(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_course(request, course_id):
     """
     Get single course details for admin
@@ -565,7 +566,7 @@ def admin_get_course(request, course_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_course(request, course_id):
     """
     Update course details
@@ -606,7 +607,7 @@ def admin_update_course(request, course_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_enrollments(request):
     """
     Get all enrollments for admin panel
@@ -615,7 +616,7 @@ def admin_get_enrollments(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_enrollment(request, enrollment_id):
     """
     Get single enrollment details
@@ -628,7 +629,7 @@ def admin_get_enrollment(request, enrollment_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_enrollment(request, enrollment_id):
     """
     Update enrollment status/progress
@@ -650,7 +651,7 @@ def admin_update_enrollment(request, enrollment_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_quotes(request):
     """
     Get all quote requests for admin panel
@@ -659,7 +660,7 @@ def admin_get_quotes(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_quote(request, quote_id):
     """
     Get single quote details
@@ -672,7 +673,7 @@ def admin_get_quote(request, quote_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_quote(request, quote_id):
     """
     Update quote status
@@ -690,7 +691,7 @@ def admin_update_quote(request, quote_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_quote_mark_contacted(request, quote_id):
     """
     Mark quote as contacted
@@ -704,7 +705,7 @@ def admin_quote_mark_contacted(request, quote_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_quote_send(request, quote_id):
     """
     Mark quote as sent
@@ -722,7 +723,7 @@ def admin_quote_send(request, quote_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_analytics(request):
     """
     Get analytics for admin panel - FROM DATABASE
@@ -756,7 +757,7 @@ def admin_get_analytics(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_dashboard_summary(request):
     """
     Get dashboard summary for admin
@@ -786,7 +787,7 @@ def admin_dashboard_summary(request):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_modules(request, course_id):
     """Get all modules for a course"""
     from .models import CourseModule
@@ -808,7 +809,7 @@ def admin_get_modules(request, course_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_create_module(request, course_id):
     """Create a new module"""
     from .models import CourseModule, Course
@@ -842,7 +843,7 @@ def admin_create_module(request, course_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_module(request, module_id):
     """Update a module"""
     from .models import CourseModule
@@ -869,7 +870,7 @@ def admin_update_module(request, module_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_delete_module(request, module_id):
     """Delete a module"""
     from .models import CourseModule
@@ -888,7 +889,7 @@ def admin_delete_module(request, module_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_lessons(request, module_id):
     """Get all lessons for a module"""
     from .models import CourseLesson
@@ -912,7 +913,7 @@ def admin_get_lessons(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_create_lesson(request, module_id):
     """Create a new lesson"""
     from .models import CourseLesson, CourseModule
@@ -958,7 +959,7 @@ def admin_create_lesson(request, module_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_get_lesson(request, lesson_id):
     """Get lesson details"""
     from .models import CourseLesson
@@ -984,7 +985,7 @@ def admin_get_lesson(request, lesson_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_lesson(request, lesson_id):
     """Update a lesson"""
     from .models import CourseLesson
@@ -1025,7 +1026,7 @@ def admin_update_lesson(request, lesson_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_update_lesson_visual(request, lesson_id):
     """Update visual template config for a lesson"""
     from .models import CourseLesson
@@ -1052,7 +1053,7 @@ def admin_update_lesson_visual(request, lesson_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_delete_lesson(request, lesson_id):
     """Delete a lesson"""
     from .models import CourseLesson
@@ -1075,7 +1076,7 @@ def admin_delete_lesson(request, lesson_id):
 # ============================================
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def api_content_courses(request):
     """Get all published courses for content consumption"""
     from .models import Course
@@ -1098,7 +1099,7 @@ def api_content_courses(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def api_content_course_structure(request, course_id):
     """Get complete course structure with modules and lessons"""
     from .models import Course
@@ -1142,7 +1143,7 @@ def api_content_course_structure(request, course_id):
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def upload_lesson_content(request, lesson_id):
     """Upload content file for a lesson"""
     from .models import CourseLesson  # LessonContent removed
@@ -1186,7 +1187,7 @@ def upload_lesson_content(request, lesson_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def delete_lesson_content(request, content_id):
     """Delete a content block"""
     # # from .models import LessonContent
@@ -1203,7 +1204,7 @@ def delete_lesson_content(request, content_id):
 # ============================================
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_create_course(request):
     """Create a new course"""
     from .models import Course
@@ -1237,7 +1238,7 @@ def admin_create_course(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def admin_delete_course(request, course_id):
     """Delete a course"""
     from .models import Course
@@ -1261,7 +1262,7 @@ def admin_delete_course(request, course_id):
         }, status=400)
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdmin])
 def get_lesson_content(request, lesson_id):
     """Get all content blocks for a lesson"""
     # # from .models import LessonContent

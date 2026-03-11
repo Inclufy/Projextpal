@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Target, Pencil, Trash2, Play, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,9 +26,9 @@ const ScrumSprintPlanning = () => {
   const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/`, { headers }); if (r.ok) { const d = await r.json(); setPlannings(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
 
-  const handleCreate = async () => { setSubmitting(true); try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Planning aangemaakt"); setDialogOpen(false); fetchData(); } else toast.error("Aanmaken mislukt"); } catch { toast.error("Aanmaken mislukt"); } finally { setSubmitting(false); } };
-  const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Actie uitgevoerd"); fetchData(); } } catch { toast.error("Actie mislukt"); } };
-  const handleDelete = async (pId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const handleCreate = async () => { setSubmitting(true); try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success(pt("Created")); setDialogOpen(false); fetchData(); } else toast.error(pt("Create failed")); } catch { toast.error(pt("Create failed")); } finally { setSubmitting(false); } };
+  const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Action completed")); fetchData(); } } catch { toast.error(pt("Action failed")); } };
+  const handleDelete = async (pId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/sprint-planning/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
@@ -58,7 +58,7 @@ const ScrumSprintPlanning = () => {
           ))}</div>
         )}
       </div>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Planning")}</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Planning")}</DialogTitle><DialogDescription>{pt("Create a new sprint planning")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Sprint Goal")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.sprint_goal} onChange={(e) => setForm({ ...form, sprint_goal: e.target.value })} /></div>
           <div className="space-y-2"><Label>{pt("Notes")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "sami@inclufy.com",
+        "ascAppId": "6741438847",
+        "appleTeamId": "KFCZ84R69A"
+      }
+    }
+  }
+}

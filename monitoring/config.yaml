@@ -76,13 +76,40 @@ applications:
   # Nginx check covers frontend availability.
 
   # ──────────────────────────────────────────────
-  # Future applications — uncomment when deployed
+  # Inclufy Finance — AI-Powered Financial Platform
+  # Deployed at: localhost:8080
   # ──────────────────────────────────────────────
 
-  # - name: App2 API
-  #   type: web
-  #   url: http://app2-backend:8002
-  #   health_endpoint: /api/health/
-  #   container: app2-backend-prod
-  #   recovery: auto
-  #   enabled: false
+  - name: Inclufy Finance
+    type: web
+    url: http://host.docker.internal:8080
+    health_endpoint: /
+    max_response_time: 2000
+    recovery: notify
+    enabled: true
+
+  # ──────────────────────────────────────────────
+  # Inclufy Marketing — AI Marketing Platform
+  # Deployed at: localhost:8081
+  # ──────────────────────────────────────────────
+
+  - name: Inclufy Marketing
+    type: web
+    url: http://host.docker.internal:8081
+    health_endpoint: /
+    max_response_time: 2000
+    recovery: notify
+    enabled: true
+
+  # ──────────────────────────────────────────────
+  # IQ Helix — Leadership Intelligence Platform
+  # Deployed at: iq-helix.inclufy.com
+  # ──────────────────────────────────────────────
+
+  - name: IQ Helix
+    type: web
+    url: https://iq-helix.inclufy.com
+    health_endpoint: /
+    max_response_time: 3000
+    recovery: notify
+    enabled: true

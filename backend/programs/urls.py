@@ -19,8 +19,16 @@ router.register(r'budget-categories', ProgramBudgetCategoryViewSet, basename='pr
 router.register(r'budget-items', ProgramBudgetItemViewSet, basename='program-budget-item')
 
 urlpatterns = [
+    # Explicit URL patterns for custom actions (before router to ensure priority)
+    path('<int:pk>/add_project/',
+         ProgramViewSet.as_view({'post': 'add_project'}),
+         name='program-add-project-explicit'),
+    path('<int:pk>/projects/',
+         ProgramViewSet.as_view({'get': 'projects'}),
+         name='program-projects-explicit'),
+
     path('', include(router.urls)),
-    
+
     # Budget overview (custom route)
     path('programs/<int:pk>/budget/overview/', 
          ProgramBudgetOverviewViewSet.as_view({'get': 'retrieve'}), 

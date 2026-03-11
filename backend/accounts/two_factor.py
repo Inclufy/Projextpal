@@ -120,33 +120,48 @@ class Check2FAStatusView(APIView):
 class LoginWith2FAView(APIView):
     """Login with optional 2FA support"""
     permission_classes = []
-    
+    authentication_classes = []
+
     def post(self, request):
-        from django.contrib.auth import authenticate
+        from django.contrib.auth import get_user_model
         from rest_framework_simplejwt.tokens import RefreshToken
-        
+
+        User = get_user_model()
+
         email = request.data.get('email')
         password = request.data.get('password')
         totp_code = request.data.get('totp_code')
-        
+
         if not email or not password:
             return Response(
                 {'error': 'Email and password are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Authenticate user
-        user = authenticate(request, username=email, password=password)
-        
-        if not user:
+
+        # Authenticate user directly by email (bypass AUTHENTICATION_BACKENDS)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             return Response(
                 {'error': 'Invalid email or password'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        
+
+        if not user.check_password(password):
+            return Response(
+                {'error': 'Invalid email or password'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            return Response(
+                {'error': 'Account not verified. Please check your email.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         # Check if user has 2FA enabled
         device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
-        
+
         if device:
             # 2FA is enabled - check if code was provided
             if not totp_code:
@@ -154,17 +169,17 @@ class LoginWith2FAView(APIView):
                     'requires_2fa': True,
                     'message': '2FA code required'
                 }, status=status.HTTP_200_OK)
-            
+
             # Verify the TOTP code
             if not device.verify_token(totp_code):
                 return Response(
                     {'error': 'Invalid 2FA code'},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-        
+
         # Generate tokens
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),

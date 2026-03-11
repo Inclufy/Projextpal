@@ -27,14 +27,23 @@ from accounts.views import (
     AdminStatsView,
     admin_users_list,
     update_subscription_status,  # ← ADD THIS
+    CompanyApiKeysView,
 )
 from .two_factor import (
-    Setup2FAView, 
-    Verify2FASetupView, 
-    Validate2FAView, 
+    Setup2FAView,
+    Verify2FASetupView,
+    Validate2FAView,
     Disable2FAView,
     Check2FAStatusView,
     LoginWith2FAView,
+)
+from .biometric import (
+    BiometricRegisterOptionsView,
+    BiometricRegisterCompleteView,
+    BiometricLoginOptionsView,
+    BiometricLoginCompleteView,
+    BiometricCredentialListView,
+    BiometricStatusView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from accounts.views import save_registration_intent
@@ -56,6 +65,7 @@ urlpatterns = [
     path("reset-password/<str:token>/", ResetPasswordView.as_view(), name="reset_password"),
     path("user/", CurrentUserView.as_view(), name="current_user"),
     path("company-users/", CompanyUsersView.as_view(), name="company_users"),
+    path("company-users/members/", CompanyUsersView.as_view(), name="company_users_members"),
     path("user/update/", UpdateOwnProfileView.as_view(), name="update_own_profile"),
     path("user/change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("register/", PublicAdminRegisterView.as_view(), name="register"),
@@ -68,6 +78,14 @@ urlpatterns = [
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
     path('2fa/status/', Check2FAStatusView.as_view(), name='2fa-status'),
     path('login-2fa/', LoginWith2FAView.as_view(), name='login-2fa'),
+
+    # Biometric Authentication (Face ID / Fingerprint)
+    path('biometric/register/options/', BiometricRegisterOptionsView.as_view(), name='biometric-register-options'),
+    path('biometric/register/complete/', BiometricRegisterCompleteView.as_view(), name='biometric-register-complete'),
+    path('biometric/login/options/', BiometricLoginOptionsView.as_view(), name='biometric-login-options'),
+    path('biometric/login/complete/', BiometricLoginCompleteView.as_view(), name='biometric-login-complete'),
+    path('biometric/credentials/', BiometricCredentialListView.as_view(), name='biometric-credentials'),
+    path('biometric/status/', BiometricStatusView.as_view(), name='biometric-status'),
     path('registration-intent/', save_registration_intent, name='registration-intent'),
     
     # Admin endpoints
@@ -81,9 +99,13 @@ urlpatterns = [
     path("subscriptions/tiers/", SubscriptionTiersView.as_view(), name="subscription_tiers"),
     
     # Subscription Status Update (NEW)
-    path("registrations/<int:user_id>/subscription/", 
-         update_subscription_status, 
+    path("registrations/<int:user_id>/subscription/",
+         update_subscription_status,
          name="update_subscription_status"),  # ← ADD THIS
+
+    # Company API Keys (client-facing, admin roles)
+    path("company-api-keys/", CompanyApiKeysView.as_view(), name="company_api_keys"),
+    path("company-api-keys/<str:provider>/", CompanyApiKeysView.as_view(), name="company_api_key_detail"),
 ]
 
 urlpatterns += router.urls

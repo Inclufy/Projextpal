@@ -24,7 +24,26 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'superadmin':
             return Portfolio.objects.all()
-        return Portfolio.objects.filter(company=user.company)
+        company = getattr(user, 'company', None)
+        if not company:
+            return Portfolio.objects.none()
+        return Portfolio.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        if company:
+            serializer.save(company=company)
+        else:
+            serializer.save()
 
 
 class GovernanceBoardViewSet(viewsets.ModelViewSet):
@@ -120,7 +139,8 @@ def generate_ai_report(request):
 def ai_generate_text(request):
     """Simple AI text generation endpoint."""
     import logging
-    from langchain_openai import ChatOpenAI
+    import os
+    import requests as http_requests
     from django.conf import settings
 
     logger = logging.getLogger(__name__)
@@ -129,22 +149,47 @@ def ai_generate_text(request):
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
-    api_key = getattr(settings, 'OPENAI_API_KEY', None)
-    if not api_key:
-        logger.error("OPENAI_API_KEY is not configured in settings")
+    api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.getenv('OPENAI_API_KEY')
+    if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
+        logger.warning(f"OPENAI_API_KEY is not configured or is a test/placeholder key: {api_key[:10] if api_key else 'None'}...")
         return Response(
-            {"error": "AI service is not configured. Please set OPENAI_API_KEY."},
-            status=http_status.HTTP_503_SERVICE_UNAVAILABLE
+            {"error": "AI service is not configured. Please set a valid OPENAI_API_KEY."},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
     try:
-        llm = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-4o",
-            openai_api_key=api_key,
+        # Use direct OpenAI API call for reliability
+        api_response = http_requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'gpt-4o-mini',
+                'messages': [
+                    {'role': 'system', 'content': 'You are a helpful project management expert. Respond concisely and professionally.'},
+                    {'role': 'user', 'content': prompt}
+                ],
+                'temperature': 0.7,
+                'max_tokens': 1500
+            },
+            timeout=60
         )
-        response = llm.invoke(prompt)
-        return Response({"response": response.content.strip()})
+
+        api_response.raise_for_status()
+        data = api_response.json()
+        content = data['choices'][0]['message']['content'].strip()
+        return Response({"response": content})
+    except http_requests.exceptions.Timeout:
+        logger.error("OpenAI API timeout")
+        return Response({"error": "AI service timeout, please try again"}, status=http_status.HTTP_504_GATEWAY_TIMEOUT)
+    except http_requests.exceptions.RequestException as e:
+        logger.error(f"OpenAI API error: {e}")
+        return Response({"error": f"AI service error: {str(e)}"}, status=http_status.HTTP_502_BAD_GATEWAY)
     except Exception as e:
         logger.error(f"AI generate failed: {type(e).__name__}: {e}")
-        return Response({"error": str(e)}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            {"error": f"AI service unavailable: {type(e).__name__}"},
+            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+        )

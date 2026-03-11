@@ -4,9 +4,9 @@ services:
     container_name: projextpal-postgres-prod
     restart: unless-stopped
     environment:
-      POSTGRES_DB: projextpal
-      POSTGRES_USER: projextpal
-      POSTGRES_PASSWORD: "ZinedineLoukile2026!"
+      POSTGRES_DB: ${POSTGRES_DB:-projextpal}
+      POSTGRES_USER: ${POSTGRES_USER:-projextpal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
@@ -34,15 +34,15 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    image: registry.gitlab.com/inclufy/projextpal/backend:latest
     container_name: projextpal-backend-prod
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      POSTGRES_DB: projextpal
-      POSTGRES_USER: projextpal
-      POSTGRES_PASSWORD: "ZinedineLoukile2026!"
+      POSTGRES_DB: ${POSTGRES_DB:-projextpal}
+      POSTGRES_USER: ${POSTGRES_USER:-projextpal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -75,6 +75,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8090:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_files:/app/staticfiles:ro
@@ -88,9 +89,9 @@ services:
   monitoring:
     build: ./monitoring
     container_name: inclufai-monitoring
+    restart: unless-stopped
     ports:
       - "8555:8555"
-    restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - monitoring_data:/app/data

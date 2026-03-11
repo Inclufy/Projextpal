@@ -812,9 +812,10 @@ class TrainingMaterialListSerializer(serializers.ModelSerializer):
 
 class TimeEntrySerializer(serializers.ModelSerializer):
     """Serializer for time tracking entries"""
-    
+
     user_name = serializers.SerializerMethodField()
     user_email = serializers.ReadOnlyField(source="user.email")
+    project_name = serializers.ReadOnlyField(source="project.name")
     task_title = serializers.ReadOnlyField(source="task.title")
     milestone_name = serializers.ReadOnlyField(source="milestone.name")
     labor_cost = serializers.ReadOnlyField()
@@ -825,6 +826,7 @@ class TimeEntrySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "project",
+            "project_name",
             "user",
             "user_name",
             "user_email",

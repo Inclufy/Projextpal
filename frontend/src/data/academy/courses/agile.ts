@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'ag-m1',
-  title: 'Module 1: De Agile Mindset',
+  title: 'Module 1: The Agile Mindset',
   titleNL: 'Module 1: De Agile Mindset',
   description: 'The foundation: values, principles, and the fundamental mindshift.',
   descriptionNL: 'Het fundament: waarden, principes en de mindset achter Agile.',
   lessons: [
     {
       id: 'ag-l1',
-      title: 'Het Agile Manifesto',
+      title: 'The Agile Manifesto',
       titleNL: 'Het Agile Manifesto',
       duration: '18:00',
       type: 'video',
@@ -161,6 +161,12 @@ Het Agile Manifesto:
 - Is universeel toepasbaar, niet alleen software
 - Is een fundament, niet een complete methode`,
       keyTakeaways: [
+        'Four values: People, Working software, Customer collaboration, Responding to change',
+        'It is about prioritization, not elimination of the right-hand side',
+        'Agile requires a mindshift from predicting to adapting',
+        'The Manifesto is a foundation, not a complete method',
+      ],
+      keyTakeawaysNL: [
         'Vier waarden: Mensen, Werkende software, Klantcollaboratie, Inspelen op verandering',
         'Het gaat om prioritering, niet eliminatie van de rechterkant',
         'Agile vraagt een mindshift van voorspellen naar aanpassen',
@@ -177,7 +183,7 @@ Het Agile Manifesto:
     },
     {
       id: 'ag-l2',
-      title: 'De 12 Principes',
+      title: 'The 12 Principles',
       titleNL: 'De 12 Principes',
       duration: '25:00',
       type: 'video',
@@ -381,6 +387,12 @@ De 12 principes:
 - Zijn een kompas, geen checklist
 - Focussen op waarde, mensen, kwaliteit en leren`,
       keyTakeaways: [
+        'The 12 principles concretize the 4 values',
+        'Focus on frequent delivery of working software',
+        'Build around motivated people with trust',
+        'Continuous reflection and improvement is essential',
+      ],
+      keyTakeawaysNL: [
         'De 12 principes concretiseren de 4 waarden',
         'Focus op frequente levering van werkende software',
         'Bouw rond gemotiveerde mensen met vertrouwen',
@@ -397,7 +409,7 @@ De 12 principes:
     },
     {
       id: 'ag-l3',
-      title: 'Agile vs. Traditioneel',
+      title: 'Agile vs. Traditional',
       titleNL: 'Agile vs. Traditioneel',
       duration: '20:00',
       type: 'video',
@@ -525,6 +537,12 @@ Agile vs. Traditioneel:
 - Hybride aanpakken zijn vaak de realiteit
 - Kies de aanpak die past bij je context`,
       keyTakeaways: [
+        'Traditional fits predictable, stable contexts',
+        'Agile fits uncertain, changing contexts',
+        'The Stacey diagram helps in choosing the approach',
+        'Hybrid approaches combine elements of both',
+      ],
+      keyTakeawaysNL: [
         'Traditioneel past bij voorspelbare, stabiele contexten',
         'Agile past bij onzekere, veranderlijke contexten',
         'Het Stacey diagram helpt bij het kiezen van de aanpak',
@@ -541,7 +559,7 @@ Agile vs. Traditioneel:
     },
     {
       id: 'ag-l4',
-      title: 'Agile Frameworks Overzicht',
+      title: 'Agile Frameworks Overview',
       titleNL: 'Agile Frameworks Overzicht',
       duration: '22:00',
       type: 'video',
@@ -702,6 +720,12 @@ Agile frameworks:
 - Moeten passen bij je context
 - Zijn startpunt, niet eindpunt`,
       keyTakeaways: [
+        'Frameworks are the HOW, the Manifesto is the WHY',
+        'Scrum, Kanban, XP are the most used team-level frameworks',
+        'SAFe, LeSS, Nexus scale to multiple teams',
+        'Start pure, adapt after experience (ShuHaRi)',
+      ],
+      keyTakeawaysNL: [
         'Frameworks zijn de HOW, het Manifesto is de WHY',
         'Scrum, Kanban, XP zijn de meest gebruikte team-frameworks',
         'SAFe, LeSS, Nexus schalen naar meerdere teams',
@@ -783,14 +807,14 @@ Agile frameworks:
 // ============================================
 const module2: Module = {
   id: 'ag-m2',
-  title: 'Module 2: Agile in de Praktijk',
+  title: 'Module 2: Agile in Practice',
   titleNL: 'Module 2: Agile in de Praktijk',
   description: 'Practical application: user stories, estimation, and Agile transformation.',
   descriptionNL: 'Praktische toepassing: user stories, schattingen en Agile transformatie.',
   lessons: [
     {
       id: 'ag-l6',
-      title: 'User Stories en Backlog Management',
+      title: 'User Stories and Backlog Management',
       titleNL: 'User Stories en Backlog Management',
       duration: '18:00',
       type: 'video',
@@ -868,6 +892,12 @@ User Stories:
 - Hebben duidelijke acceptatiecriteria
 - Worden beheerd in een geordende Product Backlog`,
       keyTakeaways: [
+        'User Stories follow the "As a... I want... so that..." format',
+        'INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable',
+        'Acceptance criteria make stories testable',
+        'The Product Backlog is the single source of work',
+      ],
+      keyTakeawaysNL: [
         'User Stories volgen het "Als... wil ik... zodat..." format',
         'INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable',
         'Acceptatiecriteria maken stories testbaar',
@@ -876,7 +906,7 @@ User Stories:
     },
     {
       id: 'ag-l7',
-      title: 'Agile Schatten',
+      title: 'Agile Estimation',
       titleNL: 'Agile Schatten',
       duration: '16:00',
       type: 'video',
@@ -955,6 +985,12 @@ Agile schatten:
 - Is collaboratief (Planning Poker)
 - Leidt tot voorspelbaarheid via Velocity`,
       keyTakeaways: [
+        'Relative estimation is more accurate than absolute',
+        'Story Points measure complexity, not time',
+        'Planning Poker ensures team consensus',
+        'Velocity enables forecasting',
+      ],
+      keyTakeawaysNL: [
         'Relatief schatten is nauwkeuriger dan absoluut',
         'Story Points meten complexiteit, niet tijd',
         'Planning Poker zorgt voor team consensus',
@@ -963,7 +999,7 @@ Agile schatten:
     },
     {
       id: 'ag-l8',
-      title: 'Agile Transformatie',
+      title: 'Agile Transformation',
       titleNL: 'Agile Transformatie',
       duration: '20:00',
       type: 'video',
@@ -1025,6 +1061,12 @@ Agile transformatie:
 - Gaat in fases van pilot naar opschaling
 - Duurt jaren, niet maanden`,
       keyTakeaways: [
+        'Agile transformation is a culture change',
+        'Executive sponsorship is crucial',
+        'Start small with pilots, scale up after success',
+        'Watch out for "Agile in name only"',
+      ],
+      keyTakeawaysNL: [
         'Agile transformatie is cultuurverandering',
         'Executive sponsorship is cruciaal',
         'Start klein met pilots, schaal op na succes',
@@ -1033,7 +1075,7 @@ Agile transformatie:
     },
     {
       id: 'ag-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',
@@ -1058,7 +1100,7 @@ Succes!`,
     },
     {
       id: 'ag-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

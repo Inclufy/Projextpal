@@ -4,6 +4,7 @@
 // Complete course with full transcripts, quizzes, and resources
 // ============================================
 
+import { Crown } from 'lucide-react';
 import { Course, Module } from '../types';
 import { BRAND } from '../brand';
 import { instructors } from '../instructors';
@@ -7828,42 +7829,34 @@ export const leadershipCourse: Course = {
   id: 'leadership-pm',
   title: 'Leadership for Project Managers',
   titleNL: 'Leiderschap voor Projectmanagers',
-  subtitle: 'Develop your leadership skills to lead teams effectively',
-  subtitleNL: 'Ontwikkel je leiderschapsvaardigheden om teams effectief te leiden',
   description: 'Master leadership styles, emotional intelligence, team dynamics and communication to become an inspiring project leader.',
   descriptionNL: 'Beheers leiderschapsstijlen, emotionele intelligentie, teamdynamiek en communicatie om een inspirerende projectleider te worden.',
+  icon: Crown,
+  color: BRAND.amber,
+  gradient: `linear-gradient(135deg, ${BRAND.amber}, #D97706)`,
   category: 'leadership',
   methodology: 'leadership',
-  difficulty: 'intermediate',
+  levels: 3,
+  modules: leadershipModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 30,
-  price: 0,
-  originalPrice: 199,
   rating: 4.8,
-  reviewCount: 1847,
   students: 9234,
-  language: 'Nederlands & English',
+  tags: ['Leadership', 'EQ', 'Team Dynamics', 'Communication', 'Conflict Resolution'],
+  tagsNL: ['Leiderschap', 'EQ', 'Teamdynamiek', 'Communicatie', 'Conflictoplossing'],
+  instructor: instructors.sarah,
   featured: false,
   bestseller: false,
   new: true,
-  hasCertificate: true,
-  icon: 'Crown',
-  color: '#F59E0B',
-  gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-  instructor: { 
-    name: 'Dr. Lisa van den Berg', 
-    title: 'Leadership Coach & PMP', 
-    avatar: '',
-    bio: 'Dr. Lisa is an executive coach and leadership development specialist with 15+ years of experience.',
-    bioNL: 'Dr. Lisa is executive coach en specialist in leiderschapsontwikkeling met 15+ jaar ervaring.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Develop your personal leadership style',
     'Build and lead high-performance teams',
     'Master conflict resolution techniques',
     'Improve stakeholder communication',
     'Lead effectively without formal authority',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Je persoonlijke leiderschapsstijl ontwikkelen',
     'High-performance teams bouwen en leiden',
     'Conflictoplossingstechnieken beheersen',

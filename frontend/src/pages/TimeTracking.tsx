@@ -38,7 +38,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 // Use relative path - proxy handles the rest
 const API_BASE_URL = '/api/v1';
@@ -53,21 +53,16 @@ const fetchProjects = async () => {
   const data = await response.json();
   const projectList = Array.isArray(data) ? data : data.results || [];
   
-  console.log('Fetched projects:', projectList);
-  
   // Fetch tasks for each project
   const projectsWithTasks = await Promise.all(
     projectList.map(async (project: any) => {
       try {
         const taskUrl = `${API_BASE_URL}/projects/tasks/?project=${project.id}`;
-        console.log('Fetching tasks from:', taskUrl);
-        
         const tasksResponse = await fetch(taskUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
         if (!tasksResponse.ok) {
-          console.log(`No tasks endpoint for project ${project.id}, status: ${tasksResponse.status}`);
           return {
             id: String(project.id),
             name: project.name || project.title,
@@ -77,9 +72,6 @@ const fetchProjects = async () => {
         
         const tasksData = await tasksResponse.json();
         const tasks = Array.isArray(tasksData) ? tasksData : tasksData.results || [];
-        
-        console.log(`Tasks for project ${project.id}:`, tasks);
-        
         return {
           id: String(project.id),
           name: project.name || project.title,
@@ -88,8 +80,7 @@ const fetchProjects = async () => {
             title: t.title || t.name,
           })),
         };
-      } catch (error) {
-        console.error(`Error fetching tasks for project ${project.id}:`, error);
+      } catch {
         return {
           id: String(project.id),
           name: project.name || project.title,
@@ -148,7 +139,6 @@ const fetchTimeEntries = async () => {
 };
 
 const formatDurationFromMinutes = (mins: number) => {
-  const { pt } = usePageTranslations();
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${h}h ${m.toString().padStart(2, "0")}m`;
@@ -170,7 +160,6 @@ const callAI = async (prompt: string): Promise<string> => {
     const data = await response.json();
     return data.response || "";
   } catch (error) {
-    console.error("AI call failed:", error);
     throw error;
   }
 };
@@ -211,6 +200,7 @@ interface TeamMember {
 
 const TimeTracking = () => {
   const { t } = useLanguage();
+  const { pt } = usePageTranslations();
   const queryClient = useQueryClient();
   
   const tt = t.timeTracking || {
@@ -377,8 +367,6 @@ const TimeTracking = () => {
         description: entryData.description || '',
       };
       
-      console.log('Creating time entry with payload:', payload);
-      
       const response = await fetch(`${API_BASE_URL}/projects/time-entries/`, {
         method: 'POST',
         headers: {
@@ -390,8 +378,6 @@ const TimeTracking = () => {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Time entry creation failed:', response.status, errorData);
-        // Show more detailed error
         const errorMsg = errorData?.detail || errorData?.message || 
           (errorData ? JSON.stringify(errorData) : 'Unknown error');
         throw new Error(errorMsg || 'Failed to create entry');
@@ -400,11 +386,10 @@ const TimeTracking = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
-      toast.success("Time entry added successfully!");
+      toast.success(pt("Created"));
     },
     onError: (error: Error) => {
-      console.error('Mutation error:', error);
-      toast.error(error.message || "Failed to add time entry");
+      toast.error(error.message || pt("Create failed"));
     },
   });
 
@@ -528,13 +513,13 @@ const TimeTracking = () => {
 
   const handleAddEntry = () => {
     if (!selectedProject || !selectedTask) {
-      toast.error("Please select a project and task");
+      toast.error(pt("Please select a project and task"));
       return;
     }
 
     const totalMinutes = (parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0);
     if (totalMinutes === 0) {
-      toast.error("Please enter a duration");
+      toast.error(pt("Please enter a duration"));
       return;
     }
 
@@ -561,7 +546,7 @@ const TimeTracking = () => {
 
   const handleStartTimer = () => {
     if (!timerProject || !timerTask) {
-      toast.error("Please select a project and task");
+      toast.error(pt("Please select a project and task"));
       return;
     }
     setIsTimerRunning(true);
@@ -616,7 +601,7 @@ Provide:
       const response = await callAI(prompt);
       setAiResponse(response);
     } catch (error) {
-      toast.error("AI insights temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -624,7 +609,7 @@ Provide:
 
   const handleAISmartEntry = async () => {
     if (!aiPrompt.trim()) {
-      toast.error("Please describe what you worked on");
+      toast.error(t.common.describeFirst);
       return;
     }
 
@@ -671,10 +656,10 @@ Respond in JSON format only, no other text:
           description: parsed.description || aiPrompt,
         });
       } else {
-        toast.error("Could not parse AI suggestion");
+        toast.error(t.common.generateFailed);
       }
     } catch (error) {
-      toast.error("AI smart entry temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -727,7 +712,7 @@ Generate a report with:
       const response = await callAI(prompt);
       setAiResponse(response);
     } catch (error) {
-      toast.error("AI report generation temporarily unavailable");
+      toast.error(t.common.aiUnavailable);
     } finally {
       setAiLoading(false);
     }
@@ -954,7 +939,7 @@ Generate a report with:
                   <>
                     <Button variant="outline" onClick={() => {
                       navigator.clipboard.writeText(aiResponse);
-                      toast.success("Report copied to clipboard!");
+                      toast.success(pt("Copied to clipboard"));
                     }}>
                       {tt.copyReport}
                     </Button>

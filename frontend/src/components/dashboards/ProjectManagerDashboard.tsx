@@ -10,11 +10,13 @@ import { AISummaryModal } from "@/components/AISummaryModal";
 import AICommander from "@/components/AICommander";
 import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
+import HomeAIVoiceCards from "./HomeAIVoiceCards";
 import {
-  FolderKanban, 
-  TrendingUp, 
-  AlertTriangle, 
-  DollarSign, 
+  FolderKanban,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
   Sparkles,
   ArrowRight,
   Target,
@@ -71,44 +73,46 @@ const DonutChart = ({ total, segments, centerLabel }: DonutChartProps) => {
   let currentOffset = 0;
   
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
-        <circle
-          stroke="currentColor"
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-          className="text-purple-100 dark:text-purple-900/30"
-        />
-        {segments.map((segment, index) => {
-          const percentage = total > 0 ? (segment.value / total) * 100 : 0;
-          const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
-          const strokeDashoffset = -currentOffset;
-          currentOffset += (percentage / 100) * circumference;
-          
-          return (
-            <circle
-              key={index}
-              stroke={segment.color}
-              fill="transparent"
-              strokeWidth={strokeWidth}
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              r={normalizedRadius}
-              cx={radius}
-              cy={radius}
-              className="transition-all duration-700 ease-out drop-shadow-sm"
-            />
-          );
-        })}
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-5xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">{total}</span>
-        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">{centerLabel}</span>
+    <div className="inline-flex flex-col items-center justify-center">
+      <div className="relative">
+        <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+          <circle
+            stroke="currentColor"
+            fill="transparent"
+            strokeWidth={strokeWidth}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+            className="text-purple-100 dark:text-purple-900/30"
+          />
+          {segments.map((segment, index) => {
+            const percentage = total > 0 ? (segment.value / total) * 100 : 0;
+            const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+            const strokeDashoffset = -currentOffset;
+            currentOffset += (percentage / 100) * circumference;
+
+            return (
+              <circle
+                key={index}
+                stroke={segment.color}
+                fill="transparent"
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                r={normalizedRadius}
+                cx={radius}
+                cy={radius}
+                className="transition-all duration-700 ease-out drop-shadow-sm"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-5xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">{total}</span>
+        </div>
       </div>
+      <span className="text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-2">{centerLabel}</span>
     </div>
   );
 };
@@ -298,17 +302,19 @@ const ProjectManagerDashboard: React.FC = () => {
           />
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
-            {language === 'nl' 
-              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI' 
+            {language === 'nl'
+              ? '⌘K om te zoeken • Navigeer, creëer, analyseer en rapporteer met AI'
               : '⌘K to search • Navigate, create, analyze and report with AI'}
           </p>
         </div>
 
-        <AISummaryModal 
-          isOpen={aiSummaryOpen} 
-          onClose={() => setAiSummaryOpen(false)} 
-          onGenerate={handleAIGenerate} 
-          programs={[]} 
+        <HomeAIVoiceCards />
+
+        <AISummaryModal
+          isOpen={aiSummaryOpen}
+          onClose={() => setAiSummaryOpen(false)}
+          onGenerate={handleAIGenerate}
+          programs={[]}
           projects={formattedProjects} 
           isLoading={aiLoading} 
           content={aiSummary} 
@@ -460,6 +466,13 @@ const ProjectManagerDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Methodology Breakdown, Certifications & Recommended Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <MethodologyBreakdown projects={projects} />
+          <CertificationsWidget />
+          <RecommendedCourses projects={projects} />
+        </div>
       </div>
     </div>
   );

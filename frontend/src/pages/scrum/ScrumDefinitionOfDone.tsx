@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,13 +29,13 @@ const ScrumDefinitionOfDone = () => {
   const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/dod/`, { headers }); if (r.ok) { const d = await r.json(); setItems(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
 
-  const initDefaults = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/dod/initialize_defaults/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Defaults geïnitialiseerd"); fetchData(); } else toast.error("Initialiseren mislukt"); } catch { toast.error("Initialiseren mislukt"); } };
+  const initDefaults = async () => { try { const r = await fetch(`/api/v1/projects/${id}/scrum/dod/initialize_defaults/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Initialized")); fetchData(); } else toast.error(pt("Initialize failed")); } catch { toast.error(pt("Initialize failed")); } };
 
   const openCreate = () => { setEditing(null); setForm({ title: "", description: "", category: "development", is_mandatory: true }); setDialogOpen(true); };
   const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title || "", description: item.description || "", category: item.category || "development", is_mandatory: item.is_mandatory !== false }); setDialogOpen(true); };
 
-  const handleSave = async () => { if (!form.title) { toast.error("Titel verplicht"); return; } setSubmitting(true); try { const url = editing ? `/api/v1/projects/${id}/scrum/dod/${editing.id}/` : `/api/v1/projects/${id}/scrum/dod/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
-  const handleDelete = async (dId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/dod/${dId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const handleSave = async () => { if (!form.title) { toast.error(pt("Title is required")); return; } setSubmitting(true); try { const url = editing ? `/api/v1/projects/${id}/scrum/dod/${editing.id}/` : `/api/v1/projects/${id}/scrum/dod/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
+  const handleDelete = async (dId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/${id}/scrum/dod/${dId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
 
   const categories = [...new Set(items.map(i => i.category || "general"))];
 
@@ -63,7 +63,7 @@ const ScrumDefinitionOfDone = () => {
           ))}</div>
         )}
       </div>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} DoD Item</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} DoD Item</DialogTitle><DialogDescription>{editing ? pt("Edit definition of done item") : pt("Add a new definition of done item")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
           <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>

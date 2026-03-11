@@ -6,7 +6,10 @@
 // All lessons have icons, key takeaways, and resources
 // ============================================
 
+import { MonitorSmartphone } from 'lucide-react';
 import { Course, Module } from '../types';
+import { BRAND } from '../brand';
+import { instructors } from '../instructors';
 
 // ============================================
 // MODULE 1: GETTING STARTED
@@ -2978,42 +2981,34 @@ export const msProjectCourse: Course = {
   id: 'ms-project-masterclass',
   title: 'Microsoft Project Masterclass',
   titleNL: 'Microsoft Project Masterclass',
-  subtitle: 'Master MS Project for professional project planning',
-  subtitleNL: 'Beheers MS Project voor professionele projectplanning',
   description: 'From basics to advanced: create professional project plans, track progress, manage resources and generate reports.',
   descriptionNL: 'Van basis tot gevorderd: maak professionele projectplannen, volg voortgang, beheer resources en genereer rapporten.',
+  icon: MonitorSmartphone,
+  color: BRAND.blue,
+  gradient: `linear-gradient(135deg, ${BRAND.blue}, #106EBE)`,
   category: 'tools',
   methodology: 'tools',
-  difficulty: 'intermediate',
+  levels: 3,
+  modules: msProjectModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 22,
-  price: 0,
-  originalPrice: 149,
   rating: 4.5,
-  reviewCount: 2134,
   students: 12456,
-  language: 'Nederlands & English',
+  tags: ['MS Project', 'Gantt Chart', 'Resource Management', 'Critical Path', 'Baseline'],
+  tagsNL: ['MS Project', 'Gantt Chart', 'Resource Management', 'Kritieke Pad', 'Baseline'],
+  instructor: instructors.peter,
   featured: false,
   bestseller: true,
   new: false,
-  hasCertificate: true,
-  icon: 'MonitorSmartphone',
-  color: '#0078D4',
-  gradient: 'linear-gradient(135deg, #0078D4 0%, #106EBE 100%)',
-  instructor: {
-    name: 'Peter Jansen, MPM',
-    title: 'MS Project Specialist',
-    avatar: '',
-    bio: 'Peter has 20+ years of experience training project managers on Microsoft Project and has certified thousands of professionals worldwide.',
-    bioNL: 'Peter heeft 20+ jaar ervaring met het trainen van projectmanagers in Microsoft Project en heeft duizenden professionals wereldwijd gecertificeerd.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Create professional project plans with proper task hierarchy',
     'Track progress with baselines and earned value analysis',
     'Manage resources and resolve allocation conflicts',
     'Generate executive reports and dashboards',
     'Master the critical path method for schedule optimization',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Professionele projectplannen maken met juiste taak hiërarchie',
     'Voortgang bijhouden met baselines en earned value analyse',
     'Resources beheren en allocatie conflicten oplossen',

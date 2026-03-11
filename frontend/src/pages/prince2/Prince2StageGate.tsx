@@ -52,26 +52,26 @@ const Prince2StageGate = () => {
       const url = editing ? `/api/v1/projects/${id}/prince2/stage-gates/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-gates/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (response.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleAction = async (gateId: number, action: "approve" | "reject") => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/stage-gates/${gateId}/${action}/`, { method: "POST", headers: jsonHeaders });
-      if (r.ok) { toast.success(action === "approve" ? "Goedgekeurd" : "Afgekeurd"); fetchData(); }
-      else toast.error("Actie mislukt");
-    } catch { toast.error("Actie mislukt"); }
+      if (r.ok) { toast.success(action === "approve" ? pt("Approved") : pt("Action completed")); fetchData(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const handleDelete = async (gateId: number) => {
-    if (!confirm("Fasepoort verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/stage-gates/${gateId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const statusColors: Record<string, string> = { pending: "bg-gray-100 text-gray-700", approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700", conditional: "bg-amber-100 text-amber-700" };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +21,7 @@ const AgileBacklog = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", item_type: "story", priority: "medium", story_points: "", acceptance_criteria: "" });
+  const [form, setForm] = useState({ title: "", description: "", item_type: "story", priority: "should_have", story_points: "", acceptance_criteria: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,8 +41,8 @@ const AgileBacklog = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", item_type: "story", priority: "medium", story_points: "", acceptance_criteria: "" }); setDialogOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title, description: item.description || "", item_type: item.item_type || "story", priority: item.priority || "medium", story_points: String(item.story_points || ""), acceptance_criteria: item.acceptance_criteria || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", item_type: "story", priority: "should_have", story_points: "", acceptance_criteria: "" }); setDialogOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title, description: item.description || "", item_type: item.item_type || "story", priority: item.priority || "should_have", story_points: String(item.story_points || ""), acceptance_criteria: item.acceptance_criteria || "" }); setDialogOpen(true); };
 
   const handleSave = async () => {
     if (!form.title) { toast.error("Titel verplicht"); return; }
@@ -69,7 +69,7 @@ const AgileBacklog = () => {
     } catch { toast.error("Verplaatsen mislukt"); }
   };
 
-  const priorityColors: Record<string, string> = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-yellow-100 text-yellow-700", low: "bg-green-100 text-green-700" };
+  const priorityColors: Record<string, string> = { must_have: "bg-red-100 text-red-700", should_have: "bg-orange-100 text-orange-700", could_have: "bg-yellow-100 text-yellow-700", wont_have: "bg-green-100 text-green-700" };
   const typeColors: Record<string, string> = { story: "bg-blue-100 text-blue-700", bug: "bg-red-100 text-red-700", task: "bg-gray-100 text-gray-700", spike: "bg-purple-100 text-purple-700" };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
@@ -93,7 +93,7 @@ const AgileBacklog = () => {
                 <div className="flex items-center gap-3 flex-1">
                   <Badge className={`text-xs ${typeColors[item.item_type] || ""}`}>{item.item_type}</Badge>
                   <span className="font-medium text-sm">{item.title}</span>
-                  <Badge className={`text-xs ${priorityColors[item.priority] || ""}`}>{item.priority}</Badge>
+                  <Badge className={`text-xs ${priorityColors[item.priority] || ""}`}>{item.priority_display || item.priority?.replace("_", " ")}</Badge>
                   {item.story_points && <Badge variant="outline" className="text-xs">{item.story_points} pts</Badge>}
                 </div>
                 <div className="flex items-center gap-1">
@@ -125,13 +125,13 @@ const AgileBacklog = () => {
         })}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Item</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Item</DialogTitle><DialogDescription>{editing ? pt("Edit backlog item") : pt("Add a new backlog item")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
           <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2"><Label>Type</Label><Select value={form.item_type} onValueChange={(v) => setForm({ ...form, item_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="story">Story</SelectItem><SelectItem value="bug">Bug</SelectItem><SelectItem value="task">Task</SelectItem><SelectItem value="spike">Spike</SelectItem></SelectContent></Select></div>
-            <div className="space-y-2"><Label>{pt("Priority")}</Label><Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="critical">Critical</SelectItem></SelectContent></Select></div>
+            <div className="space-y-2"><Label>{pt("Priority")}</Label><Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="must_have">Must Have</SelectItem><SelectItem value="should_have">Should Have</SelectItem><SelectItem value="could_have">Could Have</SelectItem><SelectItem value="wont_have">Won't Have</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Story Points</Label><Input type="number" value={form.story_points} onChange={(e) => setForm({ ...form, story_points: e.target.value })} /></div>
           </div>
           <div className="space-y-2"><Label>{pt("Acceptance Criteria")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} /></div>

@@ -22,10 +22,13 @@ export const getCurrencyFromLanguage = (language: string): CurrencyCode => {
   switch (language.toLowerCase()) {
     case 'nl':
     case 'nl-nl':
+    case 'en':
       return 'EUR';
     case 'en-gb':
     case 'gb':
       return 'GBP';
+    case 'en-us':
+      return 'USD';
     case 'ar':
     case 'ar-ae':
       return 'AED';
@@ -34,7 +37,7 @@ export const getCurrencyFromLanguage = (language: string): CurrencyCode => {
     case 'ar-ma':
       return 'MAD';
     default:
-      return 'USD'; // Default fallback
+      return 'EUR';
   }
 };
 

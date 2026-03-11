@@ -59,10 +59,10 @@ const AgileOverview = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Active Iteration")}</p><p className="text-2xl font-bold">{d.active_iteration?.name || "None"}</p>{d.active_iteration && <Progress value={d.active_iteration.progress || 0} className="h-2 mt-2" />}</CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Backlog Items")}</p><p className="text-2xl font-bold">{d.backlog_count || 0}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Team Members")}</p><p className="text-2xl font-bold">{d.team_count || 0}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Iterations")}</p><p className="text-2xl font-bold">{d.total_iterations || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Active Iteration")}</p><p className="text-2xl font-bold">{d.current_iteration?.name || "None"}</p>{d.current_iteration && <Progress value={d.current_iteration.progress || 0} className="h-2 mt-2" />}</CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Backlog Items")}</p><p className="text-2xl font-bold">{d.total_backlog_items || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Team Members")}</p><p className="text-2xl font-bold">{d.team_size || 0}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Story Points")}</p><p className="text-2xl font-bold">{d.total_story_points || 0}</p></CardContent></Card>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

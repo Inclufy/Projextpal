@@ -9,6 +9,8 @@ import { ProjectHeader } from '@/components/ProjectHeader';
 import { Award, TrendingUp, DollarSign, Target, CheckCircle2, Loader2, Plus, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -23,6 +25,8 @@ const fetchProgramBenefits = async (programId: string) => {
 
 const ProgramBenefits = () => {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
+  const fmtCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
@@ -84,13 +88,13 @@ const ProgramBenefits = () => {
           <Card className="border-l-4 border-l-green-500">
             <CardContent className="pt-4">
               <p className="text-sm text-muted-foreground">Target Financial Benefits</p>
-              <p className="text-2xl font-bold">€{summary.totalFinancial.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmtCurrency(summary.totalFinancial)}</p>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-blue-500">
             <CardContent className="pt-4">
               <p className="text-sm text-muted-foreground">Realized to Date</p>
-              <p className="text-2xl font-bold text-blue-600">€{summary.realizedFinancial.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-blue-600">{fmtCurrency(summary.realizedFinancial)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -152,10 +156,10 @@ const ProgramBenefits = () => {
                         </td>
                         <td className="py-3 text-sm text-muted-foreground">{benefit.owner || '-'}</td>
                         <td className="py-3">
-                          {benefit.type === 'financial' ? `€${target.toLocaleString()}` : `${target}%`}
+                          {benefit.type === 'financial' ? fmtCurrency(target) : `${target}%`}
                         </td>
                         <td className="py-3 text-green-600">
-                          {benefit.type === 'financial' ? `€${realized.toLocaleString()}` : `${realized}%`}
+                          {benefit.type === 'financial' ? fmtCurrency(realized) : `${realized}%`}
                         </td>
                         <td className="py-3">
                           <div className="flex items-center gap-2">

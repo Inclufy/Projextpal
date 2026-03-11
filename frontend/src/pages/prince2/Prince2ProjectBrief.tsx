@@ -67,11 +67,11 @@ const Prince2ProjectBrief = () => {
       if (response.ok) {
         const data = await response.json();
         setBrief(data);
-        toast.success(brief ? "Project Brief bijgewerkt" : "Project Brief aangemaakt");
+        toast.success(brief ? pt("Updated") : pt("Created"));
       } else {
-        toast.error("Opslaan mislukt");
+        toast.error(pt("Save failed"));
       }
-    } catch { toast.error("Opslaan mislukt"); }
+    } catch { toast.error(pt("Save failed")); }
     finally { setSaving(false); }
   };
 
@@ -81,9 +81,9 @@ const Prince2ProjectBrief = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/brief/${brief.id}/submit_for_review/`, {
         method: "POST", headers: jsonHeaders,
       });
-      if (response.ok) { toast.success("Ter beoordeling ingediend"); fetchBrief(); }
-      else toast.error("Indienen mislukt");
-    } catch { toast.error("Indienen mislukt"); }
+      if (response.ok) { toast.success(pt("Submitted for review")); fetchBrief(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const handleApprove = async () => {
@@ -92,9 +92,9 @@ const Prince2ProjectBrief = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/brief/${brief.id}/approve/`, {
         method: "POST", headers: jsonHeaders,
       });
-      if (response.ok) { toast.success("Goedgekeurd"); fetchBrief(); }
-      else toast.error("Goedkeuren mislukt");
-    } catch { toast.error("Goedkeuren mislukt"); }
+      if (response.ok) { toast.success(pt("Approved")); fetchBrief(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const Field = ({ label, field, multiline = false }: { label: string; field: string; multiline?: boolean }) => (

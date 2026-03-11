@@ -493,7 +493,6 @@ def program(db, user, company):
         methodology='program',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date()
     )
 
@@ -569,7 +568,6 @@ def safe_program(db, user, company):
         methodology='safe',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date()
     )
 
@@ -586,7 +584,6 @@ def msp_program(db, user, company):
         methodology='msp',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date(),
         end_date=(datetime.now() + timedelta(days=730)).date()
     )
@@ -604,7 +601,6 @@ def pmi_program(db, user, company):
         methodology='pmi',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date()
     )
 
@@ -621,7 +617,6 @@ def p2_programme(db, user, company):
         methodology='p2_programme',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date(),
         end_date=(datetime.now() + timedelta(days=365)).date()
     )
@@ -639,7 +634,6 @@ def hybrid_programme(db, user, company):
         methodology='hybrid_programme',
         created_by=user,
         company=company,
-        is_program=True,
         start_date=datetime.now().date()
     )
 

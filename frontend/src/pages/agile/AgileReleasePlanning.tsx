@@ -19,7 +19,7 @@ const AgileReleasePlanning = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", version: "", target_date: "", description: "", status: "planned" });
+  const [form, setForm] = useState({ name: "", version: "", target_date: "", description: "", status: "planning" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -28,7 +28,7 @@ const AgileReleasePlanning = () => {
   const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/agile/releases/`, { headers }); if (r.ok) { const d = await r.json(); setReleases(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ name: "", version: "", target_date: "", description: "", status: "planned" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ name: "", version: "", target_date: "", description: "", status: "planning" }); setDialogOpen(true); };
   const openEdit = (r: any) => { setEditing(r); setForm({ name: r.name || "", version: r.version || "", target_date: r.target_date?.split("T")[0] || "", description: r.description || "", status: r.status || "planned" }); setDialogOpen(true); };
   const handleSave = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const url = editing ? `/api/v1/projects/${id}/agile/releases/${editing.id}/` : `/api/v1/projects/${id}/agile/releases/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
   const handleDelete = async (rId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/releases/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
@@ -42,7 +42,7 @@ const AgileReleasePlanning = () => {
         {releases.length === 0 ? <Card className="p-8 text-center"><Rocket className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No releases planned yet")}</h3></Card> : (
           <div className="space-y-3">{releases.map(r => (
             <Card key={r.id}><CardContent className="p-4 flex items-center justify-between">
-              <div><div className="flex items-center gap-2 mb-1"><p className="font-semibold">{r.name}</p>{r.version && <Badge variant="outline">{r.version}</Badge>}<Badge variant={r.status === "released" ? "default" : "secondary"}>{r.status}</Badge></div>{r.description && <p className="text-sm text-muted-foreground">{r.description}</p>}{r.target_date && <p className="text-xs text-muted-foreground mt-1">Target: {r.target_date}</p>}</div>
+              <div><div className="flex items-center gap-2 mb-1"><p className="font-semibold">{r.name}</p>{r.version && <Badge variant="outline">{r.version}</Badge>}<Badge variant={r.status === "completed" ? "default" : "secondary"}>{r.status}</Badge></div>{r.description && <p className="text-sm text-muted-foreground">{r.description}</p>}{r.target_date && <p className="text-xs text-muted-foreground mt-1">Target: {r.target_date}</p>}</div>
               <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>
             </CardContent></Card>
           ))}</div>

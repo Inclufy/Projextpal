@@ -848,7 +848,7 @@ const Hero = () => {
     setIsTyping(true);
     
     try {
-      const response = await fetch('http://localhost:8001/api/v1/bot/public/', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1'}/bot/public/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

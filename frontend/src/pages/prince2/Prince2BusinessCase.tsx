@@ -60,9 +60,9 @@ const Prince2BusinessCase = () => {
       const url = bc ? `/api/v1/projects/${id}/prince2/business-case/${bc.id}/` : `/api/v1/projects/${id}/prince2/business-case/`;
       const method = bc ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (response.ok) { setBc(await response.json()); toast.success("Business Case opgeslagen"); if (!bc) fetchBC(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (response.ok) { setBc(await response.json()); toast.success(pt("Saved")); if (!bc) fetchBC(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSaving(false); }
   };
 
@@ -70,9 +70,9 @@ const Prince2BusinessCase = () => {
     if (!bc) return;
     try {
       const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/approve/`, { method: "POST", headers: jsonHeaders });
-      if (response.ok) { toast.success("Goedgekeurd"); fetchBC(); }
-      else toast.error("Goedkeuren mislukt");
-    } catch { toast.error("Goedkeuren mislukt"); }
+      if (response.ok) { toast.success(pt("Approved")); fetchBC(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const addBenefit = async () => {
@@ -81,9 +81,9 @@ const Prince2BusinessCase = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_benefit/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(benefitForm),
       });
-      if (response.ok) { toast.success("Baat toegevoegd"); setBenefitDialog(false); setBenefitForm({ description: "", category: "financial", expected_value: "" }); fetchBC(); }
-      else toast.error("Toevoegen mislukt");
-    } catch { toast.error("Toevoegen mislukt"); }
+      if (response.ok) { toast.success(pt("Created")); setBenefitDialog(false); setBenefitForm({ description: "", category: "financial", expected_value: "" }); fetchBC(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
   };
 
   const addRisk = async () => {
@@ -92,23 +92,23 @@ const Prince2BusinessCase = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_risk/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(riskForm),
       });
-      if (response.ok) { toast.success("Risico toegevoegd"); setRiskDialog(false); setRiskForm({ description: "", probability: "medium", impact: "medium", mitigation: "" }); fetchBC(); }
-      else toast.error("Toevoegen mislukt");
-    } catch { toast.error("Toevoegen mislukt"); }
+      if (response.ok) { toast.success(pt("Created")); setRiskDialog(false); setRiskForm({ description: "", probability: "medium", impact: "medium", mitigation: "" }); fetchBC(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
   };
 
   const deleteBenefit = async (bId: number) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/benefits/${bId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchBC(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchBC(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const deleteRisk = async (rId: number) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/bc-risks/${rId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchBC(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchBC(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const Field = ({ label, field, multiline = false }: { label: string; field: string; multiline?: boolean }) => (

@@ -1,5 +1,7 @@
 stages:
   - test
+  - build
+  - deploy
 
 variables:
   POSTGRES_DB: projextpal_test
@@ -32,3 +34,57 @@ test:backend:
     - master
     - main
     - merge_requests
+
+build:backend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/backend:latest -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA ./backend
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+  only:
+    - master
+    - main
+  when: manual
+
+build:frontend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/frontend:latest -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA ./frontend
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+  only:
+    - master
+    - main
+  when: manual
+
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+  script:
+    - ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && docker compose pull backend frontend && docker compose up -d --no-deps backend frontend && docker image prune -f"
+  only:
+    - master
+    - main
+  when: manual
+  environment:
+    name: production

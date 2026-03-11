@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, RotateCcw, Trash2, Pencil } from "lucide-react";
@@ -44,15 +44,15 @@ const ScrumRetrospective = () => {
       const url = editing ? `/api/v1/projects/${id}/scrum/retrospectives/${editing.id}/` : `/api/v1/projects/${id}/scrum/retrospectives/`;
       const method = editing ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (rId: number) => {
-    if (!confirm("Verwijderen?")) return;
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/retrospectives/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); }
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/retrospectives/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); }
   };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
@@ -88,7 +88,7 @@ const ScrumRetrospective = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New")} {pt("Retrospective")}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New")} {pt("Retrospective")}</DialogTitle><DialogDescription>{editing ? pt("Edit retrospective") : pt("Create a new retrospective")}</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>✅ {pt("What went well")}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background" value={form.what_went_well} onChange={(e) => setForm({ ...form, what_went_well: e.target.value })} /></div>
             <div className="space-y-2"><Label>❌ {pt("What went wrong")}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background" value={form.what_went_wrong} onChange={(e) => setForm({ ...form, what_went_wrong: e.target.value })} /></div>

@@ -7,7 +7,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from accounts.models import Company
 from subscriptions.models import SubscriptionPlan, CompanySubscription
-from .models import AuditLog, SystemSetting
+from .models import AuditLog, SystemSetting, ClientApiKey, CloudProviderConfig
 from accounts.models import Registration
 
 User = get_user_model()
@@ -417,17 +417,69 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 class SystemSettingSerializer(serializers.ModelSerializer):
     """Serializer for system settings"""
-    
+
     class Meta:
         model = SystemSetting
         fields = ['id', 'key', 'value', 'category', 'description', 'is_sensitive', 'updated_at']
-    
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # Hide sensitive values
         if instance.is_sensitive:
             data['value'] = '********'
         return data
+
+
+class CloudProviderConfigListSerializer(serializers.ModelSerializer):
+    """Serializer for listing cloud provider configs (masks credentials)"""
+
+    provider_display = serializers.CharField(source='get_provider_display', read_only=True)
+    masked_credentials = serializers.DictField(read_only=True)
+    active_services = serializers.ListField(read_only=True)
+
+    class Meta:
+        model = CloudProviderConfig
+        fields = [
+            'id', 'provider', 'provider_display', 'is_active',
+            'storage_enabled', 'storage_config',
+            'email_enabled', 'email_config',
+            'database_enabled', 'database_config',
+            'cdn_enabled', 'cdn_config',
+            'masked_credentials', 'active_services',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CloudProviderConfigWriteSerializer(serializers.ModelSerializer):
+    """Serializer for creating/updating cloud provider configs"""
+
+    class Meta:
+        model = CloudProviderConfig
+        fields = [
+            'provider', 'is_active',
+            'storage_enabled', 'storage_config',
+            'email_enabled', 'email_config',
+            'database_enabled', 'database_config',
+            'cdn_enabled', 'cdn_config',
+            'credentials',
+        ]
+
+
+class ClientApiKeySerializer(serializers.ModelSerializer):
+    """Serializer for per-client AI API keys"""
+
+    company_name = serializers.CharField(source='company.name', read_only=True)
+    masked_key = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ClientApiKey
+        fields = [
+            'id', 'company', 'company_name', 'provider',
+            'masked_key', 'is_active',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 # ============================================================

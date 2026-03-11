@@ -274,6 +274,7 @@ class MonitoringAgent:
             except Exception as e:
                 self.logger.error("Check cycle error: %s", e, exc_info=True)
             time.sleep(self.check_interval)
+
         self.logger.info("Agent stopped")
 
     def _run_with_dashboard(self):

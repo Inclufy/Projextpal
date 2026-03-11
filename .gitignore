@@ -11,11 +11,11 @@ dist/
 build/
 *.log
 
-# Environment
+# Environment - NEVER commit these
 .env
-.env.local
-.env.production
-.env.development
+.env.*
+**/.env
+**/.env.*
 
 # IDE
 .vscode/
@@ -55,3 +55,4 @@ backups/
 .DS_Store
 .env
 .DS_Store
+frontend/test-results/

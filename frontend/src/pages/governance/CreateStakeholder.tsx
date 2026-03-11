@@ -12,9 +12,9 @@ import AISmartHelper from "@/components/governance/AISmartHelper";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const CreateStakeholder: React.FC = () => {
+  const { pt: t } = usePageTranslations();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { pt: t } = usePageTranslations();
   const [loading, setLoading] = useState(false);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [formData, setFormData] = useState({

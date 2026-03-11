@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Briefcase, Users, Euro, Calendar, Trash2, Plus, Shield, Pencil } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 interface Portfolio {
   id: string;
@@ -37,6 +39,8 @@ const PortfolioDetail: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
+  const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
@@ -108,7 +112,7 @@ const PortfolioDetail: React.FC = () => {
           {portfolio.description && <div><h3 className="font-semibold text-sm text-gray-500 mb-1">{pt("Description")}</h3><p className="text-gray-700">{portfolio.description}</p></div>}
           {portfolio.strategic_objectives && <div><h3 className="font-semibold text-sm text-gray-500 mb-1">{pt("Strategic Objectives")}</h3><p className="text-gray-700">{portfolio.strategic_objectives}</p></div>}
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-            <div className="text-center"><Euro className="w-5 h-5 mx-auto text-green-600 mb-1" /><p className="text-sm text-gray-500">{pt("Budget")}</p><p className="font-semibold">€{Number(portfolio.budget_allocated || 0).toLocaleString()}</p></div>
+            <div className="text-center"><Euro className="w-5 h-5 mx-auto text-green-600 mb-1" /><p className="text-sm text-gray-500">{pt("Budget")}</p><p className="font-semibold">{formatCurrency(Number(portfolio.budget_allocated || 0))}</p></div>
             <div className="text-center"><Shield className="w-5 h-5 mx-auto text-blue-600 mb-1" /><p className="text-sm text-gray-500">{pt("Boards")}</p><p className="font-semibold">{boards.length}</p></div>
             <div className="text-center"><Users className="w-5 h-5 mx-auto text-purple-600 mb-1" /><p className="text-sm text-gray-500">{pt("Stakeholders")}</p><p className="font-semibold">{stakeholders.length}</p></div>
           </div>

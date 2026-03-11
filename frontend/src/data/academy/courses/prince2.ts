@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'p2-m1',
-  title: 'Module 1: PRINCE2 Introductie & Principes',
+  title: 'Module 1: PRINCE2 Introduction & Principles',
   titleNL: 'Module 1: PRINCE2 Introductie & Principes',
   description: 'Introduction to PRINCE2 and the 7 non-negotiable principles.',
   descriptionNL: 'Kennismaking met PRINCE2 en de 7 ononderhandelbare principes.',
   lessons: [
     {
       id: 'p2-l1',
-      title: 'Wat is PRINCE2?',
+      title: 'What is PRINCE2?',
       titleNL: 'Wat is PRINCE2?',
       duration: '15:00',
       type: 'video',
@@ -114,6 +114,12 @@ We behandelen:
 Laten we beginnen met de 7 principes - de fundamenten van PRINCE2!`,
       keyTakeaways: [
         'PRINCE2 = PRojects IN Controlled Environments',
+        'Consists of 7 principles, 7 themes, 7 processes',
+        'The most widely used PM methodology worldwide',
+        'Two certification levels: Foundation and Practitioner',
+      ],
+      keyTakeawaysNL: [
+        'PRINCE2 = PRojects IN Controlled Environments',
         'Bestaat uit 7 principes, 7 thema\'s, 7 processen',
         'Wereldwijd de meest gebruikte PM-methode',
         'Twee certificeringsniveaus: Foundation en Practitioner',
@@ -129,7 +135,7 @@ Laten we beginnen met de 7 principes - de fundamenten van PRINCE2!`,
     },
     {
       id: 'p2-l2',
-      title: 'De 7 Principes van PRINCE2',
+      title: 'The 7 Principles of PRINCE2',
       titleNL: 'De 7 Principes van PRINCE2',
       duration: '25:00',
       type: 'video',
@@ -267,6 +273,12 @@ Wat kun je NIET tailoren?
 6. Focus on Products - Focus op producten
 7. Tailor to Suit the Project Environment - Aanpassen aan de context`,
       keyTakeaways: [
+        'The 7 principles are mandatory - otherwise it is not PRINCE2',
+        'Business justification must remain valid throughout the entire project',
+        'Manage by Exception gives the PM freedom within tolerances',
+        'Tailoring is essential but the principles remain intact',
+      ],
+      keyTakeawaysNL: [
         'De 7 principes zijn verplicht - anders is het geen PRINCE2',
         'Business justification moet gedurende heel het project geldig blijven',
         'Manage by Exception geeft PM ruimte binnen toleranties',
@@ -283,7 +295,7 @@ Wat kun je NIET tailoren?
     },
     {
       id: 'p2-l3',
-      title: 'De 7 Thema\'s - Overzicht',
+      title: 'The 7 Themes - Overview',
       titleNL: 'De 7 Thema\'s - Overzicht',
       duration: '20:00',
       type: 'video',
@@ -436,6 +448,12 @@ De thema's zijn geïntegreerd:
 
 In de volgende lessen gaan we dieper in op elk thema.`,
       keyTakeaways: [
+        'Themes are aspects that require continuous attention',
+        'Business Case answers "why", Organization answers "who", etc.',
+        'All themes are integrated and influence each other',
+        'The depth of each theme depends on tailoring',
+      ],
+      keyTakeawaysNL: [
         'Thema\'s zijn aspecten die continu aandacht nodig hebben',
         'Business Case beantwoordt "waarom", Organization "wie", etc.',
         'Alle thema\'s zijn geïntegreerd en beïnvloeden elkaar',
@@ -452,7 +470,7 @@ In de volgende lessen gaan we dieper in op elk thema.`,
     },
     {
       id: 'p2-l4',
-      title: 'Quiz: Principes & Thema\'s',
+      title: 'Quiz: Principles & Themes',
       titleNL: 'Quiz: Principes & Thema\'s',
       duration: '15:00',
       type: 'quiz',
@@ -507,14 +525,14 @@ In de volgende lessen gaan we dieper in op elk thema.`,
 // ============================================
 const module2: Module = {
   id: 'p2-m2',
-  title: 'Module 2: De 7 Thema\'s in Detail',
+  title: 'Module 2: The 7 Themes in Detail',
   titleNL: 'Module 2: De 7 Thema\'s in Detail',
   description: 'Deep dive into each PRINCE2 theme with practical examples.',
   descriptionNL: 'Diepgaande behandeling van elk PRINCE2 thema met praktijkvoorbeelden.',
   lessons: [
     {
       id: 'p2-l5',
-      title: 'Business Case Thema',
+      title: 'Business Case Theme',
       titleNL: 'Business Case Thema',
       duration: '18:00',
       type: 'video',
@@ -630,6 +648,12 @@ Het Business Case thema:
 - Is eigendom van de Executive
 - Koppelt aan benefits realization`,
       keyTakeaways: [
+        'The Business Case must remain valid throughout the entire project',
+        'The Executive is the owner of the Business Case',
+        'Benefits are often only realized after the project',
+        'The Business Case evolves from outline to detailed',
+      ],
+      keyTakeawaysNL: [
         'De Business Case moet gedurende het hele project geldig blijven',
         'Executive is eigenaar van de Business Case',
         'Benefits worden vaak pas na het project gerealiseerd',
@@ -638,7 +662,7 @@ Het Business Case thema:
     },
     {
       id: 'p2-l6',
-      title: 'Organization Thema',
+      title: 'Organization Theme',
       titleNL: 'Organization Thema',
       duration: '20:00',
       type: 'video',
@@ -768,6 +792,12 @@ Het Organization thema:
 - Scheidt directing van managing
 - Staat aanpassing toe voor projectgrootte`,
       keyTakeaways: [
+        'Three stakeholder interests: Business, User, Supplier',
+        'The Project Board directs, the Project Manager manages',
+        'The PM is not a member of the Project Board',
+        'Roles can be combined but not eliminated',
+      ],
+      keyTakeawaysNL: [
         'Drie stakeholder belangen: Business, User, Supplier',
         'Project Board bestuurt, Project Manager managed',
         'De PM is geen lid van de Project Board',
@@ -776,7 +806,7 @@ Het Organization thema:
     },
     {
       id: 'p2-l7',
-      title: 'Quality Thema',
+      title: 'Quality Theme',
       titleNL: 'Quality Thema',
       duration: '16:00',
       type: 'video',
@@ -874,6 +904,12 @@ Het Quality thema:
 - Houdt Quality Register bij
 - Is gericht op vooraf gedefinieerde criteria`,
       keyTakeaways: [
+        'Quality = fit for purpose, not perfection',
+        'Product Descriptions define quality criteria upfront',
+        'Quality Review Technique is the standard control method',
+        'Quality Register logs all quality activities',
+      ],
+      keyTakeawaysNL: [
         'Quality = fit for purpose, niet perfectie',
         'Product Descriptions definiëren kwaliteitscriteria vooraf',
         'Quality Review Technique is de standaard controlemethode',
@@ -882,7 +918,7 @@ Het Quality thema:
     },
     {
       id: 'p2-l8',
-      title: 'Plans Thema',
+      title: 'Plans Theme',
       titleNL: 'Plans Thema',
       duration: '18:00',
       type: 'video',
@@ -975,6 +1011,12 @@ Het Plans thema:
 - Past rolling wave planning toe
 - Heeft Exception Plans voor afwijkingen`,
       keyTakeaways: [
+        'Three planning levels: Project, Stage, Team',
+        'Product-based planning focuses on WHAT, not HOW',
+        'PBS and Product Flow Diagram are core techniques',
+        'Exception Plans for when tolerances are exceeded',
+      ],
+      keyTakeawaysNL: [
         'Drie planningsniveaus: Project, Stage, Team',
         'Product-based planning focust op WAT, niet HOE',
         'PBS en Product Flow Diagram zijn kerntechnieken',
@@ -983,7 +1025,7 @@ Het Plans thema:
     },
     {
       id: 'p2-l9',
-      title: 'Risk, Change & Progress Thema\'s',
+      title: 'Risk, Change & Progress Themes',
       titleNL: 'Risk, Change & Progress Thema\'s',
       duration: '20:00',
       type: 'video',
@@ -1092,6 +1134,12 @@ De drie thema's werken samen:
 Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden.`,
       keyTakeaways: [
         'Risk management: Identify → Assess → Plan → Implement → Communicate',
+        'Three issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Progress works with tolerances and management by exception',
+        'Checkpoint, Highlight, and Exception Reports inform different levels',
+      ],
+      keyTakeawaysNL: [
+        'Risk management: Identify → Assess → Plan → Implement → Communicate',
         'Drie issue types: Request for Change, Off-Spec, Problem/Concern',
         'Progress werkt met toleranties en management by exception',
         'Checkpoint, Highlight en Exception Reports informeren verschillende niveaus',
@@ -1105,7 +1153,7 @@ Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden
 // ============================================
 const module3: Module = {
   id: 'p2-m3',
-  title: 'Module 3: De 7 Processen',
+  title: 'Module 3: The 7 Processes',
   titleNL: 'Module 3: De 7 Processen',
   description: 'The complete PRINCE2 processes from start to finish.',
   descriptionNL: 'De complete PRINCE2 processen van start tot finish.',
@@ -1222,6 +1270,12 @@ Starting Up a Project:
 - Levert het Project Brief op
 - Eindigt met een beslissing: Initiëren of niet?`,
       keyTakeaways: [
+        'SU is a short pre-project process',
+        'The Project Brief is the main product',
+        'The Project Board is assembled during SU',
+        'SU prevents unnecessary initiation of non-viable projects',
+      ],
+      keyTakeawaysNL: [
         'SU is een kort pre-project proces',
         'Het Project Brief is het hoofdproduct',
         'De Project Board wordt samengesteld in SU',
@@ -1344,6 +1398,12 @@ Initiating a Project:
 - Creëert het Project Plan
 - Eindigt met een go/no-go beslissing`,
       keyTakeaways: [
+        'IP creates the Project Initiation Documentation (PID)',
+        'The PID is the baseline for the project',
+        'Four strategies are prepared: Risk, Quality, Config, Comms',
+        'The Business Case is refined with better cost estimates',
+      ],
+      keyTakeawaysNL: [
         'IP creëert de Project Initiation Documentation (PID)',
         'De PID is de baseline voor het project',
         'Vier strategieën worden opgesteld: Risk, Quality, Config, Comms',
@@ -1443,6 +1503,12 @@ Directing a Project:
 - Past Management by Exception toe
 - Vereist minimale maar cruciale betrokkenheid`,
       keyTakeaways: [
+        'DP is the process for the Project Board',
+        'Runs from start to end of the project',
+        'Focuses on authorizations and key decisions',
+        'Management by Exception minimizes Board time',
+      ],
+      keyTakeawaysNL: [
         'DP is het proces voor de Project Board',
         'Loopt van begin tot eind van het project',
         'Focust op autorisaties en key decisions',
@@ -1558,6 +1624,12 @@ Controlling a Stage:
 - Past management by exception toe
 - Produceert Highlight en Exception Reports`,
       keyTakeaways: [
+        'CS is the daily management process of the PM',
+        'Work Packages delegate work to Team Managers',
+        'Highlight Reports go regularly to the Board',
+        'Exception Reports escalate beyond tolerances',
+      ],
+      keyTakeawaysNL: [
         'CS is het dagelijkse management proces van de PM',
         'Work Packages delegeren werk aan Team Managers',
         'Highlight Reports gaan regelmatig naar de Board',
@@ -1655,6 +1727,12 @@ Managing Product Delivery:
 - Rapporteert via Checkpoint Reports
 - Zorgt voor kwaliteitscontrole op producten`,
       keyTakeaways: [
+        'MP is the process for Team Managers',
+        'Work Packages are the formal assignment from PM to Team Manager',
+        'Checkpoint Reports report on progress',
+        'Quality control takes place before products are delivered',
+      ],
+      keyTakeawaysNL: [
         'MP is het proces voor Team Managers',
         'Work Packages zijn de formele opdracht van PM naar Team Manager',
         'Checkpoint Reports rapporteren voortgang',
@@ -1754,6 +1832,12 @@ Managing a Stage Boundary:
 - Produceert End Stage Report
 - Is het beslismoment voor de Board`,
       keyTakeaways: [
+        'SB takes place at the end of each stage',
+        'End Stage Report provides the Board with information for decision-making',
+        'The Business Case is validated at each boundary',
+        'Exception Plans are created here when needed',
+      ],
+      keyTakeawaysNL: [
         'SB vindt plaats aan het einde van elke stage',
         'End Stage Report geeft de Board informatie voor beslissing',
         'Business Case wordt gevalideerd bij elke boundary',
@@ -1871,6 +1955,12 @@ Closing a Project:
 - Stelt benefits review plan op
 - Vraagt Board om formele sluiting`,
       keyTakeaways: [
+        'CP is mandatory, even when stopping prematurely',
+        'End Project Report evaluates the entire project',
+        'Benefits Review Plan ensures post-project benefits measurement',
+        'Lessons Report documents lessons learned',
+      ],
+      keyTakeawaysNL: [
         'CP is verplicht, ook bij voortijdig stoppen',
         'End Project Report evalueert het hele project',
         'Benefits Review Plan zorgt voor post-project benefits meting',
@@ -1885,7 +1975,7 @@ Closing a Project:
 // ============================================
 const module4: Module = {
   id: 'p2-m4',
-  title: 'Module 4: Tailoring & Examen Voorbereiding',
+  title: 'Module 4: Tailoring & Exam Preparation',
   titleNL: 'Module 4: Tailoring & Examen Voorbereiding',
   description: 'Tailoring PRINCE2 and exam preparation.',
   descriptionNL: 'PRINCE2 aanpassen en examenvoorbereiding.',
@@ -1988,6 +2078,12 @@ Tailoring:
 - Wordt gedocumenteerd en goedgekeurd
 - Maakt PRINCE2 toepasbaar voor elk project`,
       keyTakeaways: [
+        'Tailoring is a principle, not an option',
+        'Processes, themes, and roles may be adapted',
+        'The 7 principles are non-negotiable',
+        'Document and get tailoring approved',
+      ],
+      keyTakeawaysNL: [
         'Tailoring is een principe, geen optie',
         'Processen, thema\'s en rollen mogen worden aangepast',
         'De 7 principes zijn niet onderhandelbaar',
@@ -1996,7 +2092,7 @@ Tailoring:
     },
     {
       id: 'p2-l18',
-      title: 'Quiz: Processen',
+      title: 'Quiz: Processes',
       titleNL: 'Quiz: Processen',
       duration: '15:00',
       type: 'quiz',
@@ -2045,7 +2141,7 @@ Tailoring:
     },
     {
       id: 'p2-l19',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '60:00',
       type: 'exam',
@@ -2075,7 +2171,7 @@ Succes!`,
     },
     {
       id: 'p2-l20',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

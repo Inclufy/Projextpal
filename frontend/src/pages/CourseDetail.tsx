@@ -164,7 +164,7 @@ const ModuleAccordion = ({
             {moduleIndex + 1}
           </div>
           <div className="text-left">
-            <h3 className="font-bold text-gray-900 dark:text-white">{module.title}</h3>
+            <h3 className="font-bold text-gray-900 dark:text-white">{isNL && module.titleNL ? module.titleNL : module.title}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {lessonsCount} {isNL ? 'lessen' : 'lessons'} • {totalDuration} min
               {completedCount > 0 && (
@@ -220,11 +220,11 @@ const ModuleAccordion = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-medium truncate ${
-                        isCompleted 
-                          ? 'text-gray-500 dark:text-gray-400' 
+                        isCompleted
+                          ? 'text-gray-500 dark:text-gray-400'
                           : 'text-gray-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-400'
                       }`}>
-                        {lesson.title}
+                        {isNL && lesson.titleNL ? lesson.titleNL : lesson.title}
                       </span>
                       {isPreview && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs shrink-0">
@@ -348,7 +348,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle, isNL }: PreviewMod
   ];
 
   const isMethodologyLesson = lesson.title?.toLowerCase().includes('methodologie');
-  const keyTakeaways = lesson.keyTakeaways || [];
+  const keyTakeaways = (isNL && lesson.keyTakeawaysNL?.length ? lesson.keyTakeawaysNL : lesson.keyTakeaways) || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -362,7 +362,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle, isNL }: PreviewMod
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <p className="text-purple-100 text-sm font-medium mb-1">{courseTitle}</p>
-              <h2 className="text-white text-2xl font-bold">{lesson.title}</h2>
+              <h2 className="text-white text-2xl font-bold">{isNL && lesson.titleNL ? lesson.titleNL : lesson.title}</h2>
               <div className="flex items-center gap-3 mt-3">
                 <Badge className="bg-white/20 text-white border-0 hover:bg-white/30">
                   <Clock className="w-3 h-3 mr-1" />

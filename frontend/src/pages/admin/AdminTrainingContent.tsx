@@ -141,12 +141,12 @@ const AdminTrainingContent = () => {
     },
   };
 
-  const API_BASE = 'http://localhost:8001/api/v1/academy/admin';
+  const API_BASE = `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1'}/academy/admin`;
 
   // Fetch all data
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/v1/academy/courses/', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1'}/academy/courses/`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -236,7 +236,7 @@ const AdminTrainingContent = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8001/api/v1/academy/admin/courses/${courseId}/`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1'}/academy/admin/courses/${courseId}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,

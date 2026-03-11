@@ -19,11 +19,11 @@ const AgileVelocity = () => {
   useEffect(() => { fetchData(); }, [id]);
 
   const completed = iterations.filter(i => i.status === "completed");
-  const avgVelocity = completed.length > 0 ? Math.round(completed.reduce((s, i) => s + (i.completed_points || i.velocity || 0), 0) / completed.length) : 0;
+  const avgVelocity = completed.length > 0 ? Math.round(completed.reduce((s, i) => s + (i.velocity_completed || i.completed_points || 0), 0) / completed.length) : 0;
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
-  const maxPts = Math.max(...completed.map(i => i.completed_points || i.velocity || 0), 1);
+  const maxPts = Math.max(...completed.map(i => i.velocity_completed || i.completed_points || 0), 1);
 
   return (
     <div className="min-h-full bg-background"><ProjectHeader />
@@ -33,7 +33,7 @@ const AgileVelocity = () => {
         {completed.length === 0 ? <Card className="p-8 text-center"><BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No velocity data yet")}</h3><p className="text-muted-foreground">{pt("Complete iterations to see velocity")}</p></Card> : (
           <Card><CardHeader><CardTitle>{pt("Iteration Velocity")}</CardTitle></CardHeader>
             <CardContent><div className="space-y-3">{completed.map((i) => {
-              const pts = i.completed_points || i.velocity || 0;
+              const pts = i.velocity_completed || i.completed_points || 0;
               return (<div key={i.id} className="flex items-center gap-4"><span className="text-sm w-28 text-muted-foreground">{i.name}</span><div className="flex-1 bg-muted rounded-full h-6 overflow-hidden"><div className="bg-emerald-500 h-full rounded-full flex items-center justify-end pr-2 transition-all" style={{ width: `${(pts / maxPts) * 100}%` }}><span className="text-xs text-white font-bold">{pts}</span></div></div><Badge variant="outline" className="text-xs w-14 justify-center">{pts} pts</Badge></div>);
             })}</div></CardContent>
           </Card>

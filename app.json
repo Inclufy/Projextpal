@@ -14,10 +14,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
-        "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents"
+        "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
+        "NSFaceIDUsageDescription": "ProjeXtPal uses Face ID for secure and quick login"
       }
     },
     "android": {
@@ -30,14 +31,8 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
     "scheme": "projextpal",
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
         "projectId": "32ea53c3-3559-4d16-b207-b0fed685edb7"
       }

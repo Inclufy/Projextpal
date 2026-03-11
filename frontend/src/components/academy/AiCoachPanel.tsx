@@ -91,33 +91,59 @@ const AiCoachPanel = ({ lessonId, courseId, userContext }: AiCoachPanelProps) =>
     setIsLoading(true);
 
     try {
-      // TODO: Connect to backend AI endpoint
-      // const response = await fetch('/api/v1/academy/ai/coach/message', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     lessonId,
-      //     courseId,
-      //     message: input,
-      //     mode: activeMode,
-      //     context: userContext
-      //   })
-      // });
+      const token = localStorage.getItem('access_token');
+      const history = messages.filter(m => m.id !== '1').map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
-      // Placeholder response
-      setTimeout(() => {
+      const response = await fetch('/api/v1/academy/ai/coach/message/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          lessonId,
+          courseId,
+          message: input,
+          mode: activeMode,
+          context: userContext,
+          history,
+          language: 'nl'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `Dat is een goede vraag over "${input}". ${userContext?.sector ? `In de ${userContext.sector}` : 'In de praktijk'}, zou je dit kunnen toepassen door...`,
+          content: data.message,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, aiMessage]);
-        setIsLoading(false);
-      }, 1000);
-
+      } else {
+        // Fallback to placeholder if API fails
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Dat is een goede vraag over "${input}". ${userContext?.sector ? `In de ${userContext.sector}` : 'In de praktijk'}, zou je dit kunnen toepassen door de kernconcepten te verbinden met je dagelijkse werkpraktijk.`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      }
     } catch (error) {
       console.error('AI Coach error:', error);
+      // Graceful fallback
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, ik kan momenteel geen verbinding maken. Probeer het later opnieuw.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+    } finally {
       setIsLoading(false);
     }
   };

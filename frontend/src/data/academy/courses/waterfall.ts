@@ -10,18 +10,18 @@ import { BRAND } from '../brand';
 import { instructors } from '../instructors';
 
 // ============================================
-// MODULE 1: WATERFALL FUNDAMENTEN
+// MODULE 1: WATERFALL FUNDAMENTALS
 // ============================================
 const module1: Module = {
   id: 'wf-m1',
-  title: 'Module 1: Waterfall Fundamenten',
+  title: 'Module 1: Waterfall Fundamentals',
   titleNL: 'Module 1: Waterfall Fundamenten',
   description: 'The foundation of Waterfall: phases, when to use, and trade-offs.',
   descriptionNL: 'De basis van Waterfall: oorsprong, principes en wanneer te gebruiken.',
   lessons: [
     {
       id: 'wf-l1',
-      title: 'Wat is Waterfall?',
+      title: 'What is Waterfall?',
       titleNL: 'Wat is Waterfall?',
       duration: '15:00',
       type: 'video',
@@ -161,6 +161,12 @@ Waterfall:
 - Is minder geschikt voor innovatieve of onzekere projecten
 - Wordt nog steeds breed toegepast in specifieke industrieën`,
       keyTakeaways: [
+        'Waterfall is sequential: each phase must be completed before the next one starts',
+        'Ideal for stable requirements and compliance-intensive projects',
+        'Offers predictability but is inflexible for changes',
+        'Still relevant in construction, hardware, enterprise IT, and regulated industries',
+      ],
+      keyTakeawaysNL: [
         'Waterfall is sequentieel: elke fase moet af voor de volgende start',
         'Ideaal voor stabiele requirements en compliance-intensieve projecten',
         'Biedt voorspelbaarheid maar is inflexibel voor wijzigingen',
@@ -177,7 +183,7 @@ Waterfall:
     },
     {
       id: 'wf-l2',
-      title: 'Requirements Fase',
+      title: 'Requirements Phase',
       titleNL: 'Requirements Fase',
       duration: '22:00',
       type: 'video',
@@ -336,6 +342,12 @@ De Requirements fase:
 - Eindigt met formele review en sign-off
 - Activeert change control voor alle toekomstige wijzigingen`,
       keyTakeaways: [
+        'Requirements errors are the most expensive to fix',
+        'Use multiple techniques: interviews, workshops, observation',
+        'Good requirements are SMART and testable',
+        'Formal sign-off activates change control',
+      ],
+      keyTakeawaysNL: [
         'Requirements fouten zijn de duurste om te fixen',
         'Gebruik meerdere technieken: interviews, workshops, observatie',
         'Goede requirements zijn SMART en toetsbaar',
@@ -358,7 +370,7 @@ De Requirements fase:
     },
     {
       id: 'wf-l3',
-      title: 'Design Fase',
+      title: 'Design Phase',
       titleNL: 'Design Fase',
       duration: '20:00',
       type: 'video',
@@ -467,6 +479,12 @@ De Design fase:
 - Produceert documenten die developers kunnen implementeren
 - Eindigt met formele review en goedkeuring`,
       keyTakeaways: [
+        'Design translates WHAT (requirements) into HOW (technical)',
+        'High-level design for the big picture, low-level for detail',
+        'Design reviews prevent costly errors in development',
+        'Avoid both over-engineering and under-engineering',
+      ],
+      keyTakeawaysNL: [
         'Design vertaalt WAT (requirements) naar HOE (technisch)',
         'High-level design voor het big picture, low-level voor detail',
         'Design reviews voorkomen dure fouten in development',
@@ -645,6 +663,12 @@ De uitvoerende fasen:
 - **Deployment**: Zorgvuldige uitrol met rollback plan
 - **Maintenance**: Ongoing support en doorontwikkeling`,
       keyTakeaways: [
+        'Development follows the design specs meticulously',
+        'Testing occurs at multiple levels with formal UAT sign-off',
+        'Deployment requires planning, procedures, and a rollback plan',
+        'Maintenance includes corrective, adaptive, perfective, and preventive',
+      ],
+      keyTakeawaysNL: [
         'Development volgt de design specs nauwgezet',
         'Testing gebeurt op meerdere niveaus met formele UAT sign-off',
         'Deployment vereist planning, procedures en rollback plan',
@@ -667,7 +691,7 @@ De uitvoerende fasen:
     },
     {
       id: 'wf-l5',
-      title: 'Quiz: Waterfall Fundamenten',
+      title: 'Quiz: Waterfall Fundamentals',
       titleNL: 'Quiz: Waterfall Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -733,18 +757,18 @@ De uitvoerende fasen:
 };
 
 // ============================================
-// MODULE 2: WATERFALL IN DE PRAKTIJK
+// MODULE 2: WATERFALL IN PRACTICE
 // ============================================
 const module2: Module = {
   id: 'wf-m2',
-  title: 'Module 2: Waterfall in de Praktijk',
+  title: 'Module 2: Waterfall in Practice',
   titleNL: 'Module 2: Waterfall in de Praktijk',
   description: 'Practical application of Waterfall: gate reviews, change control, and hybrid approaches.',
   descriptionNL: 'Praktische toepassing van Waterfall: gate reviews, change control en hybride aanpakken.',
   lessons: [
     {
       id: 'wf-l6',
-      title: 'Gate Reviews en Quality Gates',
+      title: 'Gate Reviews and Quality Gates',
       titleNL: 'Gate Reviews en Quality Gates',
       duration: '18:00',
       type: 'video',
@@ -868,6 +892,12 @@ Gate Reviews:
 - Vereisen duidelijke criteria en objectieve evaluatie
 - Resulteren in go/no-go beslissingen`,
       keyTakeaways: [
+        'Gate Reviews are formal checkpoints between phases',
+        'Each gate has entrance and exit criteria',
+        'Go/No-Go/Conditional Go are the possible outcomes',
+        'Quality Gates focus on technical metrics',
+      ],
+      keyTakeawaysNL: [
         'Gate Reviews zijn formele checkpoints tussen fasen',
         'Elke gate heeft entrance en exit criteria',
         'Go/No-Go/Conditional Go zijn de mogelijke uitkomsten',
@@ -985,6 +1015,12 @@ Change Control:
 - Wordt beslist door het Change Control Board
 - Zorgt dat wijzigingen bewust en gecontroleerd worden doorgevoerd`,
       keyTakeaways: [
+        'Change Control starts after requirements sign-off',
+        'Every change goes through a formal process',
+        'The CCB decides on significant changes',
+        'Documentation and traceability are crucial',
+      ],
+      keyTakeawaysNL: [
         'Change Control start na requirements sign-off',
         'Elke wijziging doorloopt een formeel proces',
         'De CCB beslist over significante wijzigingen',
@@ -993,7 +1029,7 @@ Change Control:
     },
     {
       id: 'wf-l8',
-      title: 'Waterfall en Agile Combineren',
+      title: 'Combining Waterfall and Agile',
       titleNL: 'Waterfall en Agile Combineren',
       duration: '18:00',
       type: 'video',
@@ -1082,6 +1118,12 @@ Hybride aanpakken:
 - Vereisen bewuste keuzes per fase/context
 - Moeten consistent worden toegepast`,
       keyTakeaways: [
+        'Pure Waterfall or Agile is rare - hybrid is the norm',
+        'Water-Scrum-Fall combines Waterfall for planning and Agile for development',
+        'Governance (gates) can be maintained with Agile elements within',
+        'Consciously choose what works best per phase/context',
+      ],
+      keyTakeawaysNL: [
         'Zuivere Waterfall of Agile is zeldzaam - hybride is de norm',
         'Water-Scrum-Fall combineert Waterfall voor planning en Agile voor development',
         'Governance (gates) kan behouden blijven met Agile elementen erin',
@@ -1090,7 +1132,7 @@ Hybride aanpakken:
     },
     {
       id: 'wf-l9',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '30:00',
       type: 'exam',
@@ -1115,7 +1157,7 @@ Succes!`,
     },
     {
       id: 'wf-l10',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

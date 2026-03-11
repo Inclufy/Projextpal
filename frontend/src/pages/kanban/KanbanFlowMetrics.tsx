@@ -17,7 +17,7 @@ const KanbanFlowMetrics = () => {
   const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
   const fetchData = async () => { try { const [mRes, tRes] = await Promise.all([fetch(`/api/v1/projects/${id}/kanban/metrics/`, { headers }), fetch(`/api/v1/projects/${id}/kanban/metrics/throughput/`, { headers })]); if (mRes.ok) { const d = await mRes.json(); setMetrics(Array.isArray(d) ? d : d.results || []); } if (tRes.ok) setThroughput(await tRes.json()); } catch (err) { console.error(err); } finally { setLoading(false); } };
-  const recordDaily = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/metrics/record_daily/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Dagelijkse metrics vastgelegd"); fetchData(); } else toast.error("Vastleggen mislukt"); } catch { toast.error("Vastleggen mislukt"); } };
+  const recordDaily = async () => { try { const r = await fetch(`/api/v1/projects/${id}/kanban/metrics/record_daily/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Saved")); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } };
 
   useEffect(() => { fetchData(); }, [id]);
 

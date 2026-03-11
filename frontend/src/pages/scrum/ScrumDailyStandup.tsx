@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Users, MessageSquare, Trash2 } from "lucide-react";
@@ -38,15 +38,15 @@ const ScrumDailyStandup = () => {
     setSubmitting(true);
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Standup aangemaakt"); setDialogOpen(false); fetchData(); }
-      else toast.error("Aanmaken mislukt");
-    } catch { toast.error("Aanmaken mislukt"); }
+      if (r.ok) { toast.success(pt("Created")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (sId: number) => {
-    if (!confirm("Verwijderen?")) return;
-    try { const r = await fetch(`/api/v1/projects/${id}/scrum/standups/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); }
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
+    try { const r = await fetch(`/api/v1/projects/${id}/scrum/standups/${sId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); }
   };
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
@@ -75,7 +75,7 @@ const ScrumDailyStandup = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent><DialogHeader><DialogTitle>{pt("New Standup")}</DialogTitle></DialogHeader>
+        <DialogContent><DialogHeader><DialogTitle>{pt("New Standup")}</DialogTitle><DialogDescription>{pt("Add a new daily standup entry")}</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Notes")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

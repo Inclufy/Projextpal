@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { visualService } from "@/services/visualService";
 import QuizEngine from "@/components/academy/QuizEngine";
 import AiCoachPanel from "@/components/academy/AiCoachPanel";
+import PracticeAssignmentSection from "@/components/academy/PracticeAssignmentSection";
 import { getCourseById, getModulesByCourseId } from "@/data/academy/courses";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
@@ -47,6 +48,7 @@ import { useAcademyUser } from "@/hooks/useAcademyUser";
 import { useSkills } from '@/hooks/useSkills';
 import { SkillsTab } from '@/components/academy/SkillsTab';
 import VisualTemplateRenderer from '@/components/visuals/VisualTemplateRenderer';
+import { detectTopicFromTitle, detectTopicType } from '@/components/visuals/detectTopicType';
 
 // ============================================
 // BRAND COLORS
@@ -220,7 +222,7 @@ const getCourseData = (id: string, isNL: boolean): CourseData => {
           type: les.type as any,
           transcript: les.transcript,
           content: les.content,
-          keyTakeaways: les.keyTakeaways,
+          keyTakeaways: isNL && les.keyTakeawaysNL?.length ? les.keyTakeawaysNL : les.keyTakeaways,
           videoUrl: les.videoUrl || undefined,
           resources: les.type === 'video' ? [
             { name: isNL ? 'Presentatie Slides' : 'Presentation Slides', type: 'PDF', size: '2.4 MB' },
@@ -431,7 +433,65 @@ const CourseLearningPlayer = () => {
   
   // Feature 2: Practice Work Storage
   const [practiceWork, setPracticeWork] = useState<PracticeWork[]>([]);
-  const [currentPracticeContent, setCurrentPracticeContent] = useState(''); 
+  const [currentPracticeContent, setCurrentPracticeContent] = useState('');
+
+  // NEW: Achievement System State
+  const [achievements, setAchievements] = useState<Achievement[]>([
+    {
+      id: 'first-lesson',
+      title: language === 'nl' ? '🎓 Eerste Les' : '🎓 First Lesson',
+      description: language === 'nl' ? 'Voltooi je eerste les' : 'Complete your first lesson',
+      icon: GraduationCap,
+      color: 'from-blue-500 to-cyan-500',
+      unlocked: false,
+    },
+    {
+      id: 'perfect-score',
+      title: language === 'nl' ? '💯 Perfect Score' : '💯 Perfect Score',
+      description: language === 'nl' ? '3 simulaties perfect beantwoord' : '3 simulations answered perfectly',
+      icon: Trophy,
+      color: 'from-yellow-500 to-orange-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 3,
+    },
+    {
+      id: 'practice-master',
+      title: language === 'nl' ? '📝 Practice Master' : '📝 Practice Master',
+      description: language === 'nl' ? '5 praktijkopdrachten ingediend' : '5 practice assignments submitted',
+      icon: Award,
+      color: 'from-purple-500 to-pink-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 5,
+    },
+    {
+      id: 'speed-learner',
+      title: language === 'nl' ? '⚡ Speed Learner' : '⚡ Speed Learner',
+      description: language === 'nl' ? 'Voltooi 5 lessen in één dag' : 'Complete 5 lessons in one day',
+      icon: Zap,
+      color: 'from-green-500 to-emerald-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 5,
+    },
+    {
+      id: 'streak-week',
+      title: language === 'nl' ? '🔥 Week Streak' : '🔥 Week Streak',
+      description: language === 'nl' ? '7 dagen achtereen geleerd' : 'Learned 7 days in a row',
+      icon: Flame,
+      color: 'from-red-500 to-orange-500',
+      unlocked: false,
+      progress: 0,
+      maxProgress: 7,
+    },
+  ]);
+  const [showAchievementDialog, setShowAchievementDialog] = useState(false);
+  const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null);
+  const [savingPractice, setSavingPractice] = useState(false);
+  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [currentFeedback, setCurrentFeedback] = useState('');
 
   // ============================================
   // VISUAL RENDERING — Unified in VisualTemplateRenderer
@@ -873,8 +933,8 @@ const renderGenericContent = (content: string, isNL: boolean, index: number) => 
   `;
 };
 // ============================================
-// MAIN CONTENT SECTIONS — API-driven + dynamic fallback
-// Uses VisualTemplateRenderer React components
+// MAIN CONTENT SECTIONS — split by **Header** markers
+// Uses VisualTemplateRenderer for visual rendering
 // ============================================
 const contentSections = useMemo(() => {
   const fullContent = currentLesson?.transcript || currentLesson?.content || '';
@@ -898,30 +958,24 @@ const contentSections = useMemo(() => {
   // Get visual config — merge API data with any fetched LessonVisual data
   const apiVisualType = (currentLesson as any)?.visual_type || 'auto';
   const lessonVisualData = (currentLesson as any)?.visual_data || null;
-  // approvedVisualData from LessonVisual fetch takes priority (has preview_image_url etc.)
+  // approvedVisualData from LessonVisual fetch takes priority
   const apiVisualData = approvedVisualData || lessonVisualData;
 
-  // Split content into sections (~500 chars each)
-  const rawSections: string[] = [];
-  const sentences = fullContent.split(/(?<=[.!?])\s+/);
-  let currentSection = '';
-
-  for (const sentence of sentences) {
-    currentSection += sentence + ' ';
-    if (currentSection.length > 500) {
-      rawSections.push(currentSection.trim());
-      currentSection = '';
-    }
-  }
-  if (currentSection.trim()) rawSections.push(currentSection.trim());
-
-  const sections = rawSections.slice(0, 4);
+  // Resolve lesson-level visual type: DB value → title-based → content-based
+  // This ensures each lesson gets a UNIQUE visual, not the same one for every lesson.
+  const resolvedLessonVisualType = apiVisualType !== 'auto'
+    ? apiVisualType
+    : detectTopicFromTitle(currentLesson?.title || '') || detectTopicType(fullContent);
 
   const icons = [
     <Target className="w-8 h-8 text-white" />,
     <Triangle className="w-8 h-8 text-white" />,
     <GitCompare className="w-8 h-8 text-white" />,
     <Users className="w-8 h-8 text-white" />,
+    <BookOpen className="w-8 h-8 text-white" />,
+    <Lightbulb className="w-8 h-8 text-white" />,
+    <Star className="w-8 h-8 text-white" />,
+    <Rocket className="w-8 h-8 text-white" />,
   ];
 
   const colors = [
@@ -929,57 +983,87 @@ const contentSections = useMemo(() => {
     'bg-gradient-to-br from-orange-600 to-red-600 shadow-xl',
     'bg-gradient-to-br from-green-600 to-emerald-600 shadow-xl',
     'bg-gradient-to-br from-purple-600 to-pink-600 shadow-xl',
+    'bg-gradient-to-br from-indigo-600 to-blue-600 shadow-xl',
+    'bg-gradient-to-br from-teal-600 to-emerald-600 shadow-xl',
+    'bg-gradient-to-br from-rose-600 to-pink-600 shadow-xl',
+    'bg-gradient-to-br from-amber-600 to-orange-600 shadow-xl',
   ];
 
-  return sections.map((sectionText, index) => {
-    // Use API visual type for the first section, auto-detect for subsequent
-    const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
-    const visualData = index === 0 ? apiVisualData : null;
+  // Split content by **Header** section markers (lines that are ONLY **text**)
+  const headerRegex = /^\*\*(.+?)\*\*\s*$/gm;
+  const headers: { title: string; index: number; length: number }[] = [];
+  let match;
 
-    // Get topic type for title/subtitle (either from API or auto-detected)
-    const resolvedType = visualType !== 'auto' ? visualType : detectTopicType(sectionText);
+  while ((match = headerRegex.exec(fullContent)) !== null) {
+    headers.push({
+      title: match[1],
+      index: match.index,
+      length: match[0].length,
+    });
+  }
 
-    let title = '';
-    let subtitle = '';
+  const parsedSections: { title: string; content: string }[] = [];
 
-    if (resolvedType === 'project_def') {
-      title = isNL ? 'Wat is een Project?' : 'What is a Project?';
-      subtitle = isNL ? 'De 3 kernkenmerken' : 'The 3 core characteristics';
-    } else if (resolvedType === 'triple_constraint') {
-      title = isNL ? 'De Triple Constraint' : 'The Triple Constraint';
-      subtitle = isNL ? 'Tijd, Budget & Scope' : 'Time, Budget & Scope';
-    } else if (resolvedType === 'pm_role') {
-      title = isNL ? 'De Rol van de PM' : 'The Role of the PM';
-      subtitle = isNL ? 'Verantwoordelijkheden' : 'Responsibilities';
-    } else if (resolvedType === 'comparison') {
-      title = isNL ? 'Project vs. Operatie' : 'Project vs. Operation';
-      subtitle = isNL ? 'Ken het verschil' : 'Know the difference';
-    } else if (resolvedType === 'lifecycle') {
-      title = isNL ? 'Projectlevenscyclus' : 'Project Lifecycle';
-      subtitle = isNL ? 'De fasen van een project' : 'The phases of a project';
-    } else if (resolvedType === 'stakeholder') {
-      title = isNL ? 'Stakeholder Management' : 'Stakeholder Management';
-      subtitle = isNL ? 'Belanghebbenden in kaart' : 'Mapping stakeholders';
-    } else if (resolvedType === 'risk') {
-      title = isNL ? 'Risicomanagement' : 'Risk Management';
-      subtitle = isNL ? 'Identificeer & beheers risico\'s' : 'Identify & manage risks';
-    } else {
-      const firstSentence = sectionText.split(/[.!?]/)[0]?.trim() || '';
-      title = firstSentence.length > 60 ? firstSentence.substring(0, 60) + '...' : firstSentence;
-      subtitle = `${isNL ? 'Deel' : 'Part'} ${index + 1}`;
+  if (headers.length > 0) {
+    // Intro content before first header
+    const intro = fullContent.substring(0, headers[0].index).trim();
+    if (intro) {
+      parsedSections.push({
+        title: currentLesson?.title || (isNL ? 'Introductie' : 'Introduction'),
+        content: intro,
+      });
     }
 
+    // Each header starts a new section
+    for (let i = 0; i < headers.length; i++) {
+      const contentStart = headers[i].index + headers[i].length;
+      const contentEnd = i < headers.length - 1 ? headers[i + 1].index : fullContent.length;
+      const sectionContent = fullContent.substring(contentStart, contentEnd).trim();
+
+      if (sectionContent) {
+        parsedSections.push({
+          title: headers[i].title,
+          content: sectionContent,
+        });
+      }
+    }
+  } else {
+    // No **headers** found — fall back to paragraph-based splitting
+    const paragraphs = fullContent.split(/\n\n+/).filter(p => p.trim());
+    const chunkSize = Math.max(1, Math.ceil(paragraphs.length / 4));
+
+    for (let i = 0; i < paragraphs.length; i += chunkSize) {
+      const chunk = paragraphs.slice(i, i + chunkSize).join('\n\n');
+      const firstLine = chunk.split(/[.!?\n]/)[0]?.trim() || '';
+      parsedSections.push({
+        title: i === 0
+          ? (currentLesson?.title || (isNL ? 'Lesinhoud' : 'Lesson Content'))
+          : (firstLine.length > 60 ? firstLine.substring(0, 60) + '...' : firstLine),
+        content: chunk,
+      });
+    }
+  }
+
+  // Limit to 10 sections max
+  const finalSections = parsedSections.slice(0, 10);
+
+  return finalSections.map((section, index) => {
+    // Section 0: lesson-level visual (specialized template)
+    // Sections 1+: generic rich markdown (prevents repeating the same visual)
+    const visualType = index === 0 ? resolvedLessonVisualType : 'generic';
+    const visualData = index === 0 ? apiVisualData : null;
+
     return {
-      title,
-      subtitle,
-      icon: icons[index % 4],
-      color: colors[index % 4],
-      content: '', // No longer using HTML strings
+      title: section.title,
+      subtitle: `${isNL ? 'Deel' : 'Part'} ${index + 1} ${isNL ? 'van' : 'of'} ${finalSections.length}`,
+      icon: icons[index % icons.length],
+      color: colors[index % colors.length],
+      content: section.content,
       reactContent: (
         <VisualTemplateRenderer
           visualType={visualType}
           visualData={visualData}
-          content={sectionText}
+          content={section.content}
           isNL={isNL}
           index={index}
         />
@@ -1485,37 +1569,156 @@ const markAsComplete = async () => {
           {currentLesson.type === 'assignment' && (
             <ScrollArea className="flex-1">
               <div className="max-w-7xl mx-auto px-4 py-6">
+                <PracticeAssignmentSection
+                  lessonTitle={currentLesson.title}
+                  lessonContent={currentLesson.content || currentLesson.transcript || ''}
+                  courseTitle={course.title}
+                  sector={user?.sector}
+                  role={user?.role}
+                  methodology={course.methodology}
+                  isNL={isNL}
+                  onComplete={() => {
+                    completeLesson(course.id, currentLessonId, allLessons.length);
+                    toast({
+                      title: isNL ? 'Opdracht ingediend!' : 'Assignment submitted!',
+                      description: isNL ? 'Je antwoord is opgeslagen.' : 'Your answer has been saved.',
+                    });
+                  }}
+                />
+              </div>
+            </ScrollArea>
+          )}
+          {/* Exam (full width) */}
+          {currentLesson.type === 'exam' && (
+            <ScrollArea className="flex-1">
+              <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{currentLesson.title}</h1>
+                  <p className="text-muted-foreground">
+                    {currentModule?.title} • {isNL ? 'Les' : 'Lesson'} {getLessonGlobalIndex(course.modules, currentLessonId)} {isNL ? 'van' : 'of'} {allLessons.length}
+                  </p>
+                </div>
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Briefcase className="w-5 h-5 text-orange-600" />
-                      {isNL ? 'Praktijkopdracht' : 'Practice Assignment'}
+                      <GraduationCap className="w-5 h-5 text-purple-600" />
+                      {currentLesson.title.toLowerCase().includes('final') || currentLesson.title.toLowerCase().includes('eind')
+                        ? (isNL ? 'Eindexamen' : 'Final Exam')
+                        : (isNL ? 'Module Examen' : 'Module Exam')}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="bg-orange-50 dark:bg-orange-950/20 rounded-lg p-4 mb-6">
-                      <h3 className="font-bold mb-2">{isNL ? 'Opdracht' : 'Assignment'}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {currentLesson.content || (isNL 
-                          ? 'Pas je kennis toe in een echte case. Lees de instructies en werk je opdracht uit.'
-                          : 'Apply your knowledge to a real case. Read the instructions and work on your assignment.')}
+                  <CardContent className="space-y-4">
+                    {currentLesson.transcript && (
+                      <div className="prose dark:prose-invert max-w-none text-sm mb-4">
+                        {currentLesson.transcript.split('\n\n').map((p: string, i: number) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                    )}
+                    <QuizEngine
+                      lessonId={currentLesson.id}
+                      courseSlug={slug || ''}
+                      apiBase="/api/v1"
+                      language={isNL ? 'nl' : 'en'}
+                      timeLimit={currentLesson.title.toLowerCase().includes('final') || currentLesson.title.toLowerCase().includes('eind') ? 60 : 30}
+                      onComplete={(passed) => {
+                        if (passed) {
+                          completeLesson(course.id, currentLessonId, allLessons.length);
+                          awardSkillPoints(currentLessonId, 'exam_pass', 2.0);
+                          toast({ title: isNL ? 'Examen gehaald!' : 'Exam passed!' });
+                        }
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          )}
+          {/* Certificate */}
+          {currentLesson.type === 'certificate' && (
+            <ScrollArea className="flex-1">
+              <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{currentLesson.title}</h1>
+                  <p className="text-muted-foreground">
+                    {currentModule?.title} • {isNL ? 'Les' : 'Lesson'} {getLessonGlobalIndex(course.modules, currentLessonId)} {isNL ? 'van' : 'of'} {allLessons.length}
+                  </p>
+                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-yellow-600" />
+                      {isNL ? 'Cursus Certificaat' : 'Course Certificate'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {currentLesson.transcript && (
+                      <div className="prose dark:prose-invert max-w-none text-sm mb-4">
+                        {currentLesson.transcript.split('\n\n').map((p: string, i: number) => (
+                          <p key={i}>{p}</p>
+                        ))}
+                      </div>
+                    )}
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Progress value={progress} className="flex-1 h-3" />
+                        <span className="text-sm font-bold">{progress}%</span>
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        {progress === 100
+                          ? (isNL ? 'Je hebt de cursus voltooid! Download je certificaat hieronder.' : 'You have completed the course! Download your certificate below.')
+                          : (isNL ? 'Voltooi de cursus en slaag voor het examen om je certificaat te ontvangen.' : 'Complete the course and pass the exam to receive your certificate.')}
                       </p>
                     </div>
-                    <Textarea 
-                      placeholder={isNL ? 'Schrijf je antwoord hier...' : 'Write your answer here...'}
-                      className="min-h-[400px] mb-4"
-                    />
-                    <Button 
+                    {progress === 100 && (
+                      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 p-6 rounded-lg border-2 border-yellow-300 text-center">
+                        <Award className="w-16 h-16 text-yellow-500 mx-auto mb-3" />
+                        <h3 className="font-bold text-lg mb-1">{isNL ? 'Gefeliciteerd!' : 'Congratulations!'}</h3>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {isNL ? `Je hebt "${course.titleNL || course.title}" voltooid` : `You completed "${course.title}"`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{user?.name || user?.email || 'Student'}</p>
+                      </div>
+                    )}
+                    <Button
+                      disabled={progress < 100}
+                      className={progress === 100 ? "w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white" : "w-full"}
                       onClick={() => {
-                        completeLesson(course.id, currentLessonId, allLessons.length);
-                        toast({
-                          title: isNL ? 'Opdracht ingediend!' : 'Assignment submitted!',
-                          description: isNL ? 'Je antwoord is opgeslagen.' : 'Your answer has been saved.',
-                        });
+                        if (progress < 100) return;
+                        try {
+                          const token = localStorage.getItem('access_token');
+                          const certUrl = `${import.meta.env.VITE_BACKEND_URL || '/api/v1'}/academy/certificates/generate/?course_id=${course.id}`;
+                          fetch(certUrl, {
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                          })
+                            .then(res => {
+                              if (res.ok) return res.blob();
+                              throw new Error('Certificate not available');
+                            })
+                            .then(blob => {
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `certificate-${course.id}.pdf`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            })
+                            .catch(() => {
+                              toast({
+                                title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                                description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                              });
+                            });
+                        } catch {
+                          toast({
+                            title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
+                            description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                          });
+                        }
                       }}
-                      className="bg-gradient-to-r from-orange-600 to-red-600 text-white"
                     >
-                      {isNL ? 'Indienen' : 'Submit'}
+                      <Download className="w-4 h-4 mr-2" />
+                      {isNL ? 'Certificaat Downloaden' : 'Download Certificate'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -1545,11 +1748,7 @@ const markAsComplete = async () => {
                 {/* Tab Content Based on URL Param */}
                 {(() => {
                   const activeTab = searchParams.get('tab') || 'content';
-// 🚨 DEBUG: Check what tab is active
-console.log('🚨🚨🚨 ACTIVE TAB:', activeTab);
-console.log('🚨🚨🚨 SEARCH PARAMS:', searchParams.toString());
-console.log('🚨🚨🚨 ENTERING SWITCH');
-switch (activeTab) {
+                  switch (activeTab) {
                     
                     case 'content':
                       // ============================================
@@ -1569,8 +1768,6 @@ switch (activeTab) {
                       const isPRINCE2 = courseMethodology === 'prince2' || courseSlug.includes('prince2');
                       const isWaterfall = courseMethodology === 'waterfall' || courseSlug.includes('waterfall');
                       const isLean = courseMethodology === 'lean' || courseSlug.includes('lean');
-                      
-                      console.log('📚 Methodology:', courseMethodology);
                       
                       // LAYER 2: Module Context
                       const moduleTitle = (currentModule?.title || '').toLowerCase();
@@ -1903,7 +2100,9 @@ switch (activeTab) {
                               description: isNL
                                 ? `Analyseer een scenario voor: ${currentLesson.title}`
                                 : `Analyze a scenario for: ${currentLesson.title}`,
-                              template: '# Analyse\n\n## Situatie\n\n## Aanpak\n\n## Risico\'s\n'
+                              template: isNL
+                                ? '# Analyse\n\n## Situatie\n\n## Aanpak\n\n## Risico\'s\n'
+                                : '# Analysis\n\n## Situation\n\n## Approach\n\n## Risks\n'
                             }
                           }
                         };
@@ -2594,7 +2793,7 @@ return (
           </DialogHeader>
           <div className="py-4">
             <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-6 mb-4 border-2 border-blue-200">
-              <h3 className="font-bold mb-2">{currentScenario?.simulation.title || 'Loading...'}</h3>
+              <h3 className="font-bold mb-2">{currentScenario?.simulation.title || (isNL ? 'Laden...' : 'Loading...')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {currentScenario?.simulation.description || ''}
               </p>
@@ -2698,7 +2897,7 @@ return (
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-orange-600" />
-              {currentScenario?.practice.title || 'Practice Assignment'}
+              {currentScenario?.practice.title || (isNL ? 'Praktijkopdracht' : 'Practice Assignment')}
             </DialogTitle>
             <DialogDescription>
               {isNL ? 'Pas je kennis toe in een realistische case' : 'Apply your knowledge to a realistic case'}

@@ -4,7 +4,9 @@ from .views import (
     PortfolioViewSet,
     GovernanceBoardViewSet,
     BoardMemberViewSet,
-    GovernanceStakeholderViewSet
+    GovernanceStakeholderViewSet,
+    generate_ai_report,
+    ai_generate_text,
 )
 
 router = DefaultRouter()
@@ -15,14 +17,6 @@ router.register(r'stakeholders', GovernanceStakeholderViewSet, basename='governa
 
 urlpatterns = [
     path('', include(router.urls)),
-]
-
-from .views import generate_ai_report
-urlpatterns += [
     path('reports/generate/', generate_ai_report, name='generate-ai-report'),
-]
-
-from .views import ai_generate_text
-urlpatterns += [
     path('ai/generate/', ai_generate_text, name='ai-generate-text'),
 ]

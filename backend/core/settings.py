@@ -9,9 +9,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = decouple.config("SECRET_KEY")
 
-DEBUG = True  # Temporary debug
+DEBUG = decouple.config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = decouple.config(
+    "ALLOWED_HOSTS",
+    default="localhost,127.0.0.1",
+    cast=lambda v: [s.strip() for s in v.split(",")]
+)
 
 
 # Application definition
@@ -56,6 +60,15 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'academy',
     'deployment',
+    'lss_green',
+    'lss_black',
+    'hybrid',
+    'safe',
+    'msp',
+    'pmi',
+    'p2_programme',
+    'hybrid_programme',
+    'cross_methodology',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +80,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_otp.middleware.OTPMiddleware',
     "core.middleware.performance.PerformanceLoggingMiddleware",
 ]
@@ -97,7 +109,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.getenv("REDIS_URL", "redis://:redis_password_2024@redis:6379/0")],
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
@@ -111,6 +123,10 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 LOGIN_FIELD = "email"
+
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailBackend",
+]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -202,6 +218,54 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api/v1/',
 }
 
+# ============================================================
+# CLOUD STORAGE BACKEND CONFIGURATION
+# ============================================================
+# Default: local file storage. When a cloud provider is enabled via
+# admin settings, the storage backend can be switched dynamically.
+# Supported via django-storages: AWS S3, Azure Blob, GCS, DigitalOcean Spaces
+
+# AWS S3 settings (used when AWS storage is enabled)
+AWS_ACCESS_KEY_ID = decouple.config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = decouple.config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = decouple.config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = decouple.config('AWS_S3_REGION_NAME', default='eu-west-1')
+AWS_S3_CUSTOM_DOMAIN = decouple.config('AWS_S3_CUSTOM_DOMAIN', default='')
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+
+# Azure Blob Storage settings (used when Azure storage is enabled)
+AZURE_ACCOUNT_NAME = decouple.config('AZURE_ACCOUNT_NAME', default='')
+AZURE_ACCOUNT_KEY = decouple.config('AZURE_ACCOUNT_KEY', default='')
+AZURE_CONTAINER = decouple.config('AZURE_CONTAINER', default='media')
+
+# GCP Cloud Storage settings (used when GCP storage is enabled)
+GS_BUCKET_NAME = decouple.config('GS_BUCKET_NAME', default='')
+GS_PROJECT_ID = decouple.config('GS_PROJECT_ID', default='')
+
+# DigitalOcean Spaces settings (S3-compatible)
+DO_SPACES_ACCESS_KEY_ID = decouple.config('DO_SPACES_ACCESS_KEY_ID', default='')
+DO_SPACES_SECRET_ACCESS_KEY = decouple.config('DO_SPACES_SECRET_ACCESS_KEY', default='')
+DO_SPACES_BUCKET_NAME = decouple.config('DO_SPACES_BUCKET_NAME', default='')
+DO_SPACES_REGION = decouple.config('DO_SPACES_REGION', default='ams3')
+DO_SPACES_ENDPOINT_URL = decouple.config('DO_SPACES_ENDPOINT_URL', default='')
+
+# Storage backend selection (default = local filesystem)
+# Can be overridden to 'storages.backends.s3boto3.S3Boto3Storage',
+# 'storages.backends.azure_storage.AzureStorage',
+# 'storages.backends.gcloud.GoogleCloudStorage'
+CLOUD_STORAGE_BACKEND = decouple.config('CLOUD_STORAGE_BACKEND', default='')
+if CLOUD_STORAGE_BACKEND:
+    DEFAULT_FILE_STORAGE = CLOUD_STORAGE_BACKEND
+
+# AWS SES email backend (used when AWS email is enabled)
+AWS_SES_REGION_NAME = decouple.config('AWS_SES_REGION_NAME', default='eu-west-1')
+AWS_SES_REGION_ENDPOINT = decouple.config(
+    'AWS_SES_REGION_ENDPOINT',
+    default=f'email.{decouple.config("AWS_SES_REGION_NAME", default="eu-west-1")}.amazonaws.com'
+)
+
 MOBILE_DEEP_LINK = "projextpal://"
 # Use SQLite for testing (faster and no Docker needed)
 import sys
@@ -213,8 +277,8 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
         }
     }
 
-# Frontend URL for invitation links
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://projextpal.com')
+# CORS allowed origins for frontend
+# Note: FRONTEND_URL is already set via decouple.config() above
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8083",
     "http://localhost:5173",
@@ -222,6 +286,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://projextpal.com",
     "http://www.projextpal.com",
     "https://www.projextpal.com",
+    "http://inclufy.co",
+    "https://inclufy.co",
+    "http://app.inclufy.co",
+    "https://app.inclufy.co",
 ]
 CORS_ALLOW_CREDENTIALS = True
 

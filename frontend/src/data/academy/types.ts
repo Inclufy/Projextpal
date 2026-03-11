@@ -52,6 +52,7 @@ export interface Lesson {
   videoUrl?: string;
   transcript?: string;
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
   resources?: Resource[];
   quiz?: QuizQuestion[];
   completed?: boolean;

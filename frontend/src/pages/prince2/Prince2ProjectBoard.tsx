@@ -53,9 +53,9 @@ const Prince2ProjectBoard = () => {
       const r = await fetch(`/api/v1/projects/${id}/prince2/board/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify({ name: "Project Board" }),
       });
-      if (r.ok) { toast.success("Projectbestuur aangemaakt"); fetchData(); }
-      else toast.error("Aanmaken mislukt");
-    } catch { toast.error("Aanmaken mislukt"); }
+      if (r.ok) { toast.success(pt("Created")); fetchData(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
     finally { setCreating(false); }
   };
 
@@ -65,16 +65,16 @@ const Prince2ProjectBoard = () => {
       const r = await fetch(`/api/v1/projects/${id}/prince2/board/${board.id}/add_member/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(memberForm),
       });
-      if (r.ok) { toast.success("Lid toegevoegd"); setMemberDialog(false); setMemberForm({ name: "", role: "senior_user", email: "" }); fetchData(); }
-      else toast.error("Toevoegen mislukt");
-    } catch { toast.error("Toevoegen mislukt"); }
+      if (r.ok) { toast.success(pt("Created")); setMemberDialog(false); setMemberForm({ name: "", role: "senior_user", email: "" }); fetchData(); }
+      else toast.error(pt("Create failed"));
+    } catch { toast.error(pt("Create failed")); }
   };
 
   const removeMember = async (mId: number) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/board-members/${mId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const roleLabels: Record<string, string> = {

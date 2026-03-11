@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers as drf_serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +11,7 @@ from .serializers import (
     GovernanceSerializer,
     ChangeRequestSerializer,
 )
+from projects.models import TimeEntry
 
 
 IsAdminOrPM = HasRole("admin", "pm")
@@ -56,10 +57,20 @@ class StakeholderViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(company=self.request.user.company, created_by=self.request.user)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise drf_serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf."}
+            )
+        serializer.save(company=user.company, created_by=user)
 
     def perform_update(self, serializer):
-        serializer.save(company=self.request.user.company)
+        user = self.request.user
+        if not getattr(user, "company", None):
+            raise drf_serializers.ValidationError(
+                {"company": "Je account is niet gekoppeld aan een bedrijf."}
+            )
+        serializer.save(company=user.company)
 
 
 class GovernanceViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):

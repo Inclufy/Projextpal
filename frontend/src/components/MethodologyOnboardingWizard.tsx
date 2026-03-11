@@ -1,5 +1,5 @@
 // src/components/MethodologyOnboardingWizard.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -1148,6 +1148,13 @@ export const MethodologyOnboardingWizard = ({
   const config = getMethodologyConfig(methodology, language);
   const Icon = config.icon;
 
+  // Reset step when dialog opens or methodology changes
+  useEffect(() => {
+    if (open) {
+      setCurrentStep(0);
+    }
+  }, [open, methodology]);
+
   const totalSteps = 4; // Overview, Roles, Steps, Get Started
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
@@ -1173,7 +1180,7 @@ export const MethodologyOnboardingWizard = ({
             </div>
             <div>
               <DialogTitle className="text-xl">
-                {currentStep === 0 ? `${pt("Welcome to")} ${config.name}` : config.steps[currentStep - 1]?.title || pt('Get Started')}
+                {currentStep === 0 ? `${pt("Welcome to")} ${config.name}` : (config.steps && config.steps[currentStep - 1]?.title) || pt('Get Started')}
               </DialogTitle>
               <DialogDescription>
                 {projectName ? `${pt("Setting up")}: ${projectName}` : config.tagline}
@@ -1238,10 +1245,10 @@ export const MethodologyOnboardingWizard = ({
           )}
 
           {/* Steps 1-3: Methodology Steps */}
-          {currentStep >= 1 && currentStep <= 3 && (
+          {currentStep >= 1 && currentStep <= 3 && config.steps && (
             <div className="space-y-4">
-              {config.steps.slice((currentStep - 1) * 2, currentStep * 2).map((step, i) => {
-                const StepIcon = step.icon;
+              {config.steps.slice((currentStep - 1) * 2, currentStep * 2).filter(Boolean).map((step, i) => {
+                const StepIcon = step.icon || Lightbulb;
                 return (
                   <div key={i} className="border rounded-lg p-4">
                     <div className="flex items-start gap-3 mb-3">
