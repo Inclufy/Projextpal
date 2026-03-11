@@ -58,6 +58,8 @@ export class TestRunner {
 
     this.browser = await chromium.launch({
       headless: this.agentConfig.headless,
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
+      args: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? ['--no-sandbox', '--disable-gpu'] : [],
     });
 
     let scenariosToRun = this.scenarios;
