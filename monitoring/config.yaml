@@ -7,7 +7,7 @@ global:
   daily_summary_hour: 8         # send daily summary at 8:00 AM
 
   email:
-    enabled: true
+    enabled: false              # Disable until Gmail App Password is configured
     smtp_host: smtp.gmail.com
     smtp_port: 587
     use_tls: true
@@ -33,31 +33,25 @@ global:
 applications:
   # ──────────────────────────────────────────────
   # ProjeXtPal — Project Management Platform
-  # Deployed at: ~/Documents/ProjeXtPal/
+  # Deployed at: ~/Documents/Software/ProjextPal/
   # Docker Compose: docker-compose.production.yml
+  #
+  # NOTE: URLs use Docker service names, not localhost,
+  # because the monitor runs inside the same Docker network.
   # ──────────────────────────────────────────────
 
   - name: ProjeXtPal API
     type: web
-    url: http://localhost:8001
+    url: http://backend:8001
     health_endpoint: /api/health/
     container: projextpal-backend-prod
-    log_path: /var/log/projextpal/backend.log
     max_response_time: 1500
-    recovery: auto
-    enabled: true
-
-  - name: ProjeXtPal Frontend
-    type: web
-    url: http://localhost:80
-    health_endpoint: /
-    container: projextpal-frontend-prod
     recovery: auto
     enabled: true
 
   - name: ProjeXtPal Nginx
     type: web
-    url: http://localhost:80
+    url: http://nginx:80
     health_endpoint: /
     container: projextpal-nginx-prod
     recovery: restart
@@ -72,11 +66,14 @@ applications:
 
   - name: ProjeXtPal Redis
     type: cache
-    url: redis://localhost:6379
+    url: redis://redis:6379
     container: projextpal-redis-prod
     health_command: redis-cli ping
     recovery: restart
     enabled: true
+
+  # Frontend is served through Nginx — no separate health check needed.
+  # Nginx check covers frontend availability.
 
   # ──────────────────────────────────────────────
   # Future applications — uncomment when deployed
@@ -84,16 +81,8 @@ applications:
 
   # - name: App2 API
   #   type: web
-  #   url: http://localhost:8002
+  #   url: http://app2-backend:8002
   #   health_endpoint: /api/health/
   #   container: app2-backend-prod
-  #   recovery: auto
-  #   enabled: false
-
-  # - name: App2 Frontend
-  #   type: web
-  #   url: http://localhost:8082
-  #   health_endpoint: /
-  #   container: app2-frontend-prod
   #   recovery: auto
   #   enabled: false
