@@ -1,0 +1,14 @@
+frontend/
+backend/
+docs/
+load-tests/
+nginx/
+ssl/
+*.sql
+*.sh
+*.tar.gz
+docker-compose*.yml
+Dockerfile*
+Caddyfile
+*.md
+app-store-screenshots/

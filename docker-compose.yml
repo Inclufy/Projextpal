@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_DB=projextpal
       - POSTGRES_USER=projextpal
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -43,8 +43,9 @@ services:
       - ./backend/.env
     environment:
       - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=ZinedineLoukile2013
       - REDIS_HOST=redis
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,projectpal-backend,projextpal.com,www.projextpal.com,api.projextpal.com
       - FRONTEND_URL=https://projextpal.com
       - BASE_URL=https://projextpal.com
     depends_on:

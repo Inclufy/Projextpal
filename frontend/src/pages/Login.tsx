@@ -93,10 +93,10 @@ const Login = () => {
       const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
+        body: JSON.stringify({
+          email,
           password,
-          totp_code: requires2FA ? totpCode : undefined 
+          totp_code: requires2FA ? totpCode : undefined
         }),
       });
 
@@ -130,14 +130,14 @@ const Login = () => {
       const redirect = searchParams.get('redirect');
       const plan = searchParams.get('plan');
       const billing = searchParams.get('billing');
-      
+
       if (redirect === 'checkout' && plan) {
         // User came from pricing page - redirect back to pricing with auto-checkout
         toast({
           title: `🚀 ${txt.redirecting}`,
           description: `${txt.settingUpPlan} ${plan.charAt(0).toUpperCase() + plan.slice(1)} ${txt.plan}`,
         });
-        
+
         // Small delay to show toast
         setTimeout(() => {
           window.location.href = `/pricing?auto_checkout=${plan}&billing=${billing || 'monthly'}`;
@@ -214,7 +214,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Refined gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20" />
-      
+
       {/* Refined animated blobs */}
       <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
       <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
@@ -252,7 +252,7 @@ const Login = () => {
             </CardDescription>
           </div>
         </CardHeader>
-        
+
         <CardContent className="px-10 pb-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {!requires2FA ? (
@@ -319,8 +319,8 @@ const Login = () => {
 
                 {/* Remember Me */}
                 <div className="flex items-center pt-1">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="remember"
                     className="w-4 h-4 rounded-md border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                   />
@@ -360,10 +360,10 @@ const Login = () => {
                     {txt.enterAuthCode}
                   </p>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold" 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-semibold"
                   onClick={handleBack}
                   disabled={isLoading}
                 >

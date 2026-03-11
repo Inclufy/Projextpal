@@ -124,6 +124,10 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = "accounts.CustomUser"
 LOGIN_FIELD = "email"
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailBackend",
+]
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -282,6 +286,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://projextpal.com",
     "http://www.projextpal.com",
     "https://www.projextpal.com",
+    "http://inclufy.co",
+    "https://inclufy.co",
+    "http://app.inclufy.co",
+    "https://app.inclufy.co",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
