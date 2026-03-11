@@ -4,9 +4,9 @@ services:
     container_name: projextpal-postgres-prod
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-projextpal}
-      POSTGRES_USER: ${POSTGRES_USER:-projextpal}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: projextpal
+      POSTGRES_USER: projextpal
+      POSTGRES_PASSWORD: "ZinedineLoukile2026!"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
@@ -34,15 +34,15 @@ services:
       retries: 5
 
   backend:
-    image: registry.gitlab.com/inclufy/projextpal/backend:latest
+    build: ./backend
     container_name: projextpal-backend-prod
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-projextpal}
-      POSTGRES_USER: ${POSTGRES_USER:-projextpal}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: projextpal
+      POSTGRES_USER: projextpal
+      POSTGRES_PASSWORD: "ZinedineLoukile2026!"
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -85,6 +85,28 @@ services:
     networks:
       - projextpal-network
 
+  monitoring:
+    build: ./monitoring
+    container_name: inclufai-monitoring
+    ports:
+      - "8555:8555"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - monitoring_data:/app/data
+    environment:
+      - MONITOR_EMAIL_USER=${MONITOR_EMAIL_USER}
+      - MONITOR_EMAIL_PASSWORD=${MONITOR_EMAIL_PASSWORD}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - backend
+      - frontend
+      - nginx
+    networks:
+      - projextpal-network
+    # Uses CMD from Dockerfile: python -m monitoring.agent --daemon
+
 networks:
   projextpal-network:
     driver: bridge
@@ -94,3 +116,4 @@ volumes:
   redis_data:
   static_files:
   media_files:
+  monitoring_data:

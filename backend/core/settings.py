@@ -68,7 +68,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware', 
+    'django_otp.middleware.OTPMiddleware',
+    "core.middleware.performance.PerformanceLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -96,7 +97,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [os.getenv("REDIS_URL", "redis://:redis_password_2024@redis:6379/0")],
         },
     },
 }
@@ -223,3 +224,93 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.projextpal.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# Logging configuration
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s (%(module)s:%(lineno)d): %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "json": {
+            "format": '{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","module":"%(module)s","line":%(lineno)d,"message":"%(message)s"}',
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "application.log"),
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 5,
+            "formatter": "json",
+        },
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "error.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "json",
+            "level": "ERROR",
+        },
+        "security_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "security.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "json",
+        },
+        "performance_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "performance.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "json",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "app_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "error_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console", "security_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "core.middleware.performance": {
+            "handlers": ["performance_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "bot": {
+            "handlers": ["console", "app_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "subscriptions": {
+            "handlers": ["console", "app_file", "error_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+    "root": {
+        "handlers": ["console", "app_file", "error_file"],
+        "level": "INFO",
+    },
+}
