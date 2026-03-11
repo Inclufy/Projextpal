@@ -43,7 +43,7 @@ applications:
   - name: ProjeXtPal API
     type: web
     url: http://backend:8001
-    health_endpoint: /api/health/
+    health_endpoint: /health/
     container: projextpal-backend-prod
     max_response_time: 1500
     recovery: auto
