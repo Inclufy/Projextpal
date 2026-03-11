@@ -155,6 +155,12 @@ const navigation: NavSection[] = [
     titleNL: 'Systeem',
     items: [
       {
+        title: 'Monitoring',
+        titleNL: 'Monitoring',
+        href: '/admin/monitoring',
+        icon: Activity,
+      },
+      {
         title: 'Settings',
         titleNL: 'Instellingen',
         href: '/admin/settings',

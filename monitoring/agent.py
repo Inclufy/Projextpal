@@ -40,6 +40,7 @@ from monitoring.alerts.manager import AlertManager
 from monitoring.alerts.email_alert import send_daily_summary_email
 from monitoring.recovery.actions import RecoveryManager
 from monitoring.dashboard.terminal import TerminalDashboard
+from monitoring.dashboard.api import start_api_server
 
 
 def load_config(config_path=None):
@@ -257,6 +258,15 @@ class MonitoringAgent:
     def _run_daemon(self):
         """Run in daemon mode (no dashboard)."""
         self.logger.info("Running in daemon mode")
+
+        # Start the dashboard API server in a background thread
+        api_port = self.global_config.get("dashboard_api_port", 8555)
+        try:
+            start_api_server(port=api_port)
+            self.logger.info("Dashboard API available on port %d", api_port)
+        except Exception as e:
+            self.logger.warning("Could not start dashboard API: %s", e)
+
         while self._running:
             try:
                 self.run_check_cycle()

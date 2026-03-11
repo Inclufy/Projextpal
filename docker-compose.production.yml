@@ -89,6 +89,8 @@ services:
     build: ./monitoring
     container_name: inclufai-monitoring
     restart: unless-stopped
+    ports:
+      - "8555:8555"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - monitoring_data:/app/data
