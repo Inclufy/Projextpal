@@ -82,7 +82,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inclufy Monitoring Dashboard</title>
+<title>Inclufy Platform Monitoring</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -93,12 +93,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     --border:#1e1e3a;
   }
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* Header */
   .header{background:linear-gradient(135deg,var(--bg2),var(--bg3));border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
   .logo-area{display:flex;align-items:center;gap:14px}
-  .logo-area svg{height:40px;width:40px}
+  .logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:white;letter-spacing:-1px}
   .logo-text{font-size:22px;font-weight:700;letter-spacing:-0.5px}
-  .logo-text .x{color:var(--pink)}
-  .logo-text .sub{font-size:12px;color:var(--text2);font-weight:400;letter-spacing:1px;display:block;margin-top:2px}
+  .logo-text .highlight{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .logo-text .sub{font-size:11px;color:var(--text3);font-weight:400;letter-spacing:2px;display:block;margin-top:2px;text-transform:uppercase}
+  .header-right{display:flex;align-items:center;gap:16px}
   .overall-badge{display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:12px;font-weight:600;font-size:14px}
   .overall-badge.healthy{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
   .overall-badge.degraded{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
@@ -110,32 +113,67 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .pulse.critical{background:var(--red);box-shadow:0 0 8px var(--red)}
   .pulse.unknown{background:var(--text3)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  .header-right{display:flex;align-items:center;gap:16px}
+  .server-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);padding:4px 12px 4px 8px;border-radius:8px;font-size:11px;color:var(--text2);border:1px solid var(--border)}
+  .server-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
   .last-update{font-size:12px;color:var(--text3)}
-  .container{max-width:1400px;margin:0 auto;padding:24px 32px}
+
+  /* Layout */
+  .main{max-width:1400px;margin:0 auto;padding:24px 32px}
   .grid{display:grid;gap:20px}
   .grid-4{grid-template-columns:repeat(4,1fr)}
   .grid-2{grid-template-columns:repeat(2,1fr)}
   .grid-3{grid-template-columns:repeat(3,1fr)}
+
+  /* Tabs */
+  .tab-bar{display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:12px;border:1px solid var(--border);margin-bottom:24px;width:fit-content}
+  .tab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all 0.2s;border:none;background:none}
+  .tab.active{background:var(--purple);color:white}
+  .tab:hover:not(.active){color:var(--text);background:var(--bg3)}
+
+  /* Cards */
   .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color 0.2s}
   .card:hover{border-color:var(--bg4)}
   .card-title{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
   .card-title svg{width:16px;height:16px;opacity:0.6}
   .stat-value{font-size:32px;font-weight:700;letter-spacing:-1px}
   .stat-label{font-size:12px;color:var(--text3);margin-top:4px}
-  .app-grid{display:grid;gap:12px}
-  .app-row{display:grid;grid-template-columns:2fr 120px 100px 100px 100px;align-items:center;padding:14px 18px;background:var(--bg3);border-radius:12px;border:1px solid transparent;transition:all 0.2s}
-  .app-row:hover{border-color:var(--purple);background:rgba(139,92,246,0.05)}
-  .app-name{font-weight:600;font-size:15px}
-  .app-type{font-size:11px;color:var(--text3);margin-top:2px}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+
+  /* App Cards */
+  .app-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .app-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:0;overflow:hidden;transition:all 0.2s}
+  .app-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+  .app-card-header{padding:20px 24px 16px;display:flex;align-items:flex-start;justify-content:space-between}
+  .app-card-info{flex:1}
+  .app-card-name{font-size:18px;font-weight:700;margin-bottom:4px}
+  .app-card-type{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+  .app-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 24px 16px}
+  .app-metric{text-align:center}
+  .app-metric-value{font-size:20px;font-weight:700}
+  .app-metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+
+  /* Status pills */
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
   .status-pill.healthy{background:rgba(34,197,94,0.12);color:var(--green)}
   .status-pill.unhealthy,.status-pill.down,.status-pill.dead,.status-pill.error{background:rgba(239,68,68,0.12);color:var(--red)}
   .status-pill.slow,.status-pill.degraded,.status-pill.warning{background:rgba(245,158,11,0.12);color:var(--amber)}
   .status-pill.unknown{background:rgba(100,116,139,0.12);color:var(--text3)}
   .status-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
-  .metric-val{font-weight:600;font-size:14px;text-align:right}
-  .metric-label{font-size:11px;color:var(--text3);text-align:right}
+
+  /* Container list inside app card */
+  .container-list{border-top:1px solid var(--border);padding:12px 24px;background:var(--bg3)}
+  .container-list-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .container-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px}
+  .container-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,0.04)}
+  .container-name{color:var(--text2);display:flex;align-items:center;gap:8px}
+  .container-role{font-size:10px;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:4px}
+  .container-status{display:flex;align-items:center;gap:6px}
+  .container-dot{width:6px;height:6px;border-radius:50%}
+  .container-dot.healthy{background:var(--green)}
+  .container-dot.down,.container-dot.dead,.container-dot.error,.container-dot.not_found{background:var(--red)}
+  .container-dot.unknown{background:var(--text3)}
+  .container-dot.restarting{background:var(--amber)}
+
+  /* Progress bars */
   .progress-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:8px}
   .progress-fill{height:100%;border-radius:4px;transition:width 0.5s}
   .progress-fill.green{background:linear-gradient(90deg,var(--green),var(--green2))}
@@ -144,6 +182,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .sys-metric{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
   .sys-metric-label{font-size:13px;color:var(--text2)}
   .sys-metric-value{font-size:13px;font-weight:600}
+
+  /* Alerts & Recovery */
   .alert-row{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-radius:10px;background:var(--bg3);margin-bottom:8px}
   .alert-sev{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;min-width:70px;text-align:center}
   .alert-sev.CRITICAL,.alert-sev.EMERGENCY{background:rgba(239,68,68,0.15);color:var(--red)}
@@ -158,39 +198,39 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .recovery-info{flex:1}
   .recovery-action{font-size:13px;font-weight:500}
   .recovery-app{font-size:11px;color:var(--text3)}
+
+  /* Section titles */
   .section-title{font-size:18px;font-weight:700;margin:28px 0 16px;display:flex;align-items:center;gap:10px}
   .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
   .empty-state{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+
+  /* Footer */
   .footer{text-align:center;padding:24px;color:var(--text3);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
   .footer a{color:var(--purple);text-decoration:none}
-  .inclufy-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);padding:4px 12px 4px 8px;border-radius:8px;font-size:11px;color:var(--text2);border:1px solid var(--border)}
-  .inclufy-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-  .tab-bar{display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:12px;border:1px solid var(--border);margin-bottom:24px;width:fit-content}
-  .tab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all 0.2s;border:none;background:none}
-  .tab.active{background:var(--purple);color:white}
-  .tab:hover:not(.active){color:var(--text);background:var(--bg3)}
-  @media(max-width:1024px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}}
-  @media(max-width:768px){.grid-4,.grid-2,.grid-3{grid-template-columns:1fr}.app-row{grid-template-columns:1fr;gap:8px}.header{flex-direction:column;gap:12px;text-align:center}}
+
+  /* App color accents */
+  .app-accent-projextpal{border-top:3px solid var(--purple)}
+  .app-accent-finance{border-top:3px solid var(--green)}
+  .app-accent-marketing{border-top:3px solid var(--pink)}
+  .app-accent-iqhelix{border-top:3px solid var(--cyan)}
+  .app-accent-default{border-top:3px solid var(--blue)}
+
+  @media(max-width:1024px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3,.app-cards{grid-template-columns:1fr}}
+  @media(max-width:768px){.grid-4,.grid-2,.grid-3,.app-cards{grid-template-columns:1fr}.header{flex-direction:column;gap:12px;text-align:center}}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo-area">
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 6h12c7.732 0 14 6.268 14 14s-6.268 14-14 14h-4v8H6V6z" fill="#8B5CF6"/>
-      <path d="M14 14h4c3.314 0 6 2.686 6 6s-2.686 6-6 6h-4V14z" fill="#0a0a14"/>
-      <path d="M28 12L42 24L28 36V12z" fill="#D946EF"/>
-      <rect x="2" y="36" width="16" height="10" rx="2" fill="#22C55E"/>
-      <text x="10" y="43.5" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="system-ui">AI</text>
-    </svg>
+    <div class="logo-icon">I</div>
     <div class="logo-text">
-      Proje<span class="x">X</span>tPal
-      <span class="sub">INCLUFY MONITORING</span>
+      <span class="highlight">Inclufy</span> Monitoring
+      <span class="sub">Platform Health Dashboard</span>
     </div>
   </div>
   <div class="header-right">
-    <div class="inclufy-badge"><span class="dot"></span> Mac Studio</div>
+    <div class="server-badge"><span class="dot"></span> Mac Studio</div>
     <div id="overallBadge" class="overall-badge unknown">
       <span class="pulse unknown" id="pulseIndicator"></span>
       <span id="overallText">Loading...</span>
@@ -199,7 +239,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   </div>
 </div>
 
-<div class="container">
+<div class="main">
   <div class="tab-bar">
     <button class="tab active" onclick="showTab('overview')">Overview</button>
     <button class="tab" onclick="showTab('alerts')">Alerts</button>
@@ -211,13 +251,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <div id="tab-overview">
     <div class="grid grid-4" id="statsCards"></div>
     <div class="section-title">Applications</div>
-    <div class="card">
-      <div class="app-grid" id="appsList">
-        <div class="app-row" style="font-size:13px;color:var(--text3)">
-          <div>Application</div><div>Status</div><div style="text-align:right">Response</div><div style="text-align:right">Uptime 24h</div><div style="text-align:right">Avg 1h</div>
-        </div>
-      </div>
-    </div>
+    <div class="app-cards" id="appCards"></div>
     <div class="section-title">System Resources</div>
     <div class="grid grid-3" id="systemMetrics"></div>
   </div>
@@ -246,7 +280,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 </div>
 
 <div class="footer">
-  <p>&copy; 2026 ProjeXtPal by <a href="#">Inclufy</a> &mdash; Monitoring Agent v1.0</p>
+  <p>&copy; 2026 <a href="#">Inclufy</a> &mdash; Platform Monitoring v2.0</p>
 </div>
 
 <script>
@@ -266,8 +300,8 @@ function showTab(tab) {
 
 function statusLabel(s) {
   const map = {healthy:'Operational',unhealthy:'Down',down:'Down',dead:'Dead',slow:'Slow',
-    degraded:'Degraded',warning:'Warning',error:'Error',timeout:'Timeout',unknown:'Unknown',
-    restarting:'Restarting',critical:'Critical'};
+    degraded:'Degraded',warning:'Warning',error:'Error',timeout:'Timeout',unknown:'Waiting',
+    restarting:'Restarting',critical:'Critical',not_found:'Not Found'};
   return map[s] || s;
 }
 
@@ -301,13 +335,22 @@ function uptimeColor(val) {
   return 'var(--red)';
 }
 
+function appAccentClass(name) {
+  const n = name.toLowerCase();
+  if (n.includes('projext')) return 'app-accent-projextpal';
+  if (n.includes('finance')) return 'app-accent-finance';
+  if (n.includes('marketing')) return 'app-accent-marketing';
+  if (n.includes('helix') || n.includes('iq')) return 'app-accent-iqhelix';
+  return 'app-accent-default';
+}
+
 async function fetchStatus() {
   try {
     const r = await fetch(API + '/api/status');
     const d = await r.json();
     updateOverall(d);
     updateStats(d);
-    updateApps(d.apps);
+    updateAppCards(d.apps);
     updateSystemCards(d.system);
     document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-GB');
   } catch(e) { console.error('fetch status error', e); }
@@ -320,19 +363,26 @@ function updateOverall(d) {
   const s = d.overall_status;
   badge.className = 'overall-badge ' + s;
   pulse.className = 'pulse ' + s;
-  const labels = {healthy:'All Systems Operational',degraded:'Performance Degraded',critical:'Systems Critical',unknown:'Unknown'};
+  const labels = {healthy:'All Systems Operational',degraded:'Performance Degraded',critical:'Systems Critical',unknown:'Initializing...'};
   text.textContent = labels[s] || s;
 }
 
 function updateStats(d) {
   const apps = d.apps || [];
   const healthy = apps.filter(a => a.status === 'healthy').length;
+  const totalContainers = apps.reduce((sum, a) => sum + (a.containers || []).length, 0);
+  const healthyContainers = apps.reduce((sum, a) => sum + (a.containers || []).filter(c => c.status === 'healthy').length, 0);
   const sys = d.system || {};
   const html = `
     <div class="card">
-      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Services</div>
-      <div class="stat-value" style="color:var(--green)">${healthy}/${apps.length}</div>
-      <div class="stat-label">Healthy services</div>
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Applications</div>
+      <div class="stat-value" style="color:${healthy === apps.length ? 'var(--green)' : 'var(--amber)'}">${healthy}/${apps.length}</div>
+      <div class="stat-label">Healthy applications</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M8 12h8M12 8v8"/></svg>Containers</div>
+      <div class="stat-value" style="color:${healthyContainers === totalContainers ? 'var(--green)' : 'var(--amber)'}">${healthyContainers}/${totalContainers}</div>
+      <div class="stat-label">Healthy containers</div>
     </div>
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Active Alerts</div>
@@ -340,44 +390,74 @@ function updateStats(d) {
       <div class="stat-label">${d.active_alerts_count === 0 ? 'No active alerts' : 'Require attention'}</div>
     </div>
     <div class="card">
-      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>CPU</div>
-      <div class="stat-value" style="color:${sys.cpu_percent > 80 ? 'var(--red)' : sys.cpu_percent > 60 ? 'var(--amber)' : 'var(--green)'}">${sys.cpu_percent ? sys.cpu_percent.toFixed(1) + '%' : '--'}</div>
-      <div class="stat-label">Processor usage</div>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0022 16z"/></svg>Memory</div>
-      <div class="stat-value" style="color:${sys.memory_percent > 85 ? 'var(--red)' : sys.memory_percent > 70 ? 'var(--amber)' : 'var(--green)'}">${sys.memory_percent ? sys.memory_percent.toFixed(1) + '%' : '--'}</div>
-      <div class="stat-label">RAM usage</div>
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>CPU / Memory</div>
+      <div class="stat-value" style="font-size:24px"><span style="color:${sys.cpu_percent > 80 ? 'var(--red)' : 'var(--green)'}">${sys.cpu_percent ? sys.cpu_percent.toFixed(0) + '%' : '--'}</span> <span style="font-size:16px;color:var(--text3)">/</span> <span style="color:${sys.memory_percent > 85 ? 'var(--red)' : 'var(--green)'}">${sys.memory_percent ? sys.memory_percent.toFixed(0) + '%' : '--'}</span></div>
+      <div class="stat-label">Processor / RAM usage</div>
     </div>`;
   document.getElementById('statsCards').innerHTML = html;
 }
 
-function updateApps(apps) {
-  const container = document.getElementById('appsList');
-  let html = `<div class="app-row" style="font-size:11px;color:var(--text3);padding:8px 18px;background:transparent">
-    <div>APPLICATION</div><div>STATUS</div><div style="text-align:right">RESPONSE</div><div style="text-align:right">UPTIME 24H</div><div style="text-align:right">AVG 1H</div></div>`;
-  const icons = {web:'glob',database:'db',cache:'zap'};
+function updateAppCards(apps) {
+  const container = document.getElementById('appCards');
+  let html = '';
+
   for (const app of apps) {
+    const accent = appAccentClass(app.name);
     const respTime = app.response_time_ms ? app.response_time_ms.toFixed(0) + 'ms' : '--';
-    const uptime = app.uptime_24h !== null ? app.uptime_24h.toFixed(1) + '%' : '--';
+    const uptime = app.uptime_24h !== null && app.uptime_24h !== undefined ? app.uptime_24h.toFixed(1) + '%' : '--';
     const avg = app.avg_response_1h ? app.avg_response_1h.toFixed(0) + 'ms' : '--';
-    html += `<div class="app-row">
-      <div><div class="app-name">${app.name}</div><div class="app-type">${app.type}</div></div>
-      <div><span class="status-pill ${app.status}"><span class="status-dot"></span>${statusLabel(app.status)}</span></div>
-      <div class="metric-val">${respTime}</div>
-      <div class="metric-val" style="color:${uptimeColor(app.uptime_24h || 0)}">${uptime}</div>
-      <div class="metric-val">${avg}</div>
+
+    let containerHtml = '';
+    if (app.containers && app.containers.length > 0) {
+      containerHtml = '<div class="container-list"><div class="container-list-title">Containers</div>';
+      for (const c of app.containers) {
+        containerHtml += `<div class="container-row">
+          <div class="container-name">
+            <span class="container-dot ${c.status}"></span>
+            ${c.name}
+            <span class="container-role">${c.role}</span>
+          </div>
+          <div class="container-status" style="font-size:12px;color:var(--text3)">${statusLabel(c.status)}</div>
+        </div>`;
+      }
+      containerHtml += '</div>';
+    }
+
+    html += `<div class="app-card ${accent}">
+      <div class="app-card-header">
+        <div class="app-card-info">
+          <div class="app-card-name">${app.name}</div>
+          <div class="app-card-type">${app.type}${app.group ? ' &middot; ' + app.group : ''}</div>
+        </div>
+        <span class="status-pill ${app.status}"><span class="status-dot"></span>${statusLabel(app.status)}</span>
+      </div>
+      <div class="app-card-metrics">
+        <div class="app-metric">
+          <div class="app-metric-value">${respTime}</div>
+          <div class="app-metric-label">Response</div>
+        </div>
+        <div class="app-metric">
+          <div class="app-metric-value" style="color:${uptimeColor(app.uptime_24h || 0)}">${uptime}</div>
+          <div class="app-metric-label">Uptime 24h</div>
+        </div>
+        <div class="app-metric">
+          <div class="app-metric-value">${avg}</div>
+          <div class="app-metric-label">Avg 1h</div>
+        </div>
+      </div>
+      ${containerHtml}
     </div>`;
   }
+
   container.innerHTML = html;
 }
 
 function updateSystemCards(sys) {
   if (!sys) return;
   const metrics = [
-    {label:'CPU Usage',value:sys.cpu_percent||0,unit:'%',icon:'cpu'},
-    {label:'Memory Usage',value:sys.memory_percent||0,unit:'%',icon:'mem'},
-    {label:'Disk Usage',value:sys.disk_percent||0,unit:'%',extra:sys.disk_free_gb ? sys.disk_free_gb.toFixed(1)+'GB free' : '',icon:'disk'}
+    {label:'CPU Usage',value:sys.cpu_percent||0,unit:'%'},
+    {label:'Memory Usage',value:sys.memory_percent||0,unit:'%'},
+    {label:'Disk Usage',value:sys.disk_percent||0,unit:'%',extra:sys.disk_free_gb ? sys.disk_free_gb.toFixed(1)+'GB free' : ''}
   ];
   let html = '';
   for (const m of metrics) {
@@ -437,28 +517,27 @@ async function fetchSystemHistory() {
         const y = H-P - ((v-min)/(max-min||1)) * (H-P*2);
         return x+','+y;
       });
-      const area = `M${P},${H-P} L${pts.join(' L')} L${P+(values.length-1)/(values.length-1||1)*(W-P*2)},${H-P} Z`;
-      return `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2"/>
-              <path d="${area}" fill="${color}" fill-opacity="0.08"/>`;
+      const area = 'M'+P+','+(H-P)+' L'+pts.join(' L')+' L'+(P+(values.length-1)/(values.length-1||1)*(W-P*2))+','+(H-P)+' Z';
+      return '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2"/><path d="'+area+'" fill="'+color+'" fill-opacity="0.08"/>';
     }
     const cpuVals = latest.map(d => d.cpu_percent||0);
     const memVals = latest.map(d => d.memory_percent||0);
     const diskVals = latest.map(d => d.disk_percent||0);
-    let html = `<div style="display:flex;gap:8px;margin-bottom:16px">
-      <span style="color:var(--purple);font-size:12px;font-weight:600">--- CPU</span>
-      <span style="color:var(--cyan);font-size:12px;font-weight:600">--- Memory</span>
-      <span style="color:var(--amber);font-size:12px;font-weight:600">--- Disk</span></div>`;
-    html += `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:220px">
-      <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="var(--border)" stroke-width="1"/>
-      <line x1="${P}" y1="${P}" x2="${W-P}" y2="${P}" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-      <line x1="${P}" y1="${H/2}" x2="${W-P}" y2="${H/2}" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-      <text x="${P-4}" y="${H-P+4}" fill="var(--text3)" font-size="10" text-anchor="end">0%</text>
-      <text x="${P-4}" y="${H/2+4}" fill="var(--text3)" font-size="10" text-anchor="end">50%</text>
-      <text x="${P-4}" y="${P+4}" fill="var(--text3)" font-size="10" text-anchor="end">100%</text>
-      ${sparkline(cpuVals, '#8B5CF6')}
-      ${sparkline(memVals, '#06B6D4')}
-      ${sparkline(diskVals, '#F59E0B')}
-    </svg>`;
+    let html = '<div style="display:flex;gap:16px;margin-bottom:16px">';
+    html += '<span style="color:#8B5CF6;font-size:12px;font-weight:600">&#9644; CPU</span>';
+    html += '<span style="color:#06B6D4;font-size:12px;font-weight:600">&#9644; Memory</span>';
+    html += '<span style="color:#F59E0B;font-size:12px;font-weight:600">&#9644; Disk</span></div>';
+    html += '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:220px">';
+    html += '<line x1="'+P+'" y1="'+(H-P)+'" x2="'+(W-P)+'" y2="'+(H-P)+'" stroke="var(--border)" stroke-width="1"/>';
+    html += '<line x1="'+P+'" y1="'+P+'" x2="'+(W-P)+'" y2="'+P+'" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>';
+    html += '<line x1="'+P+'" y1="'+(H/2)+'" x2="'+(W-P)+'" y2="'+(H/2)+'" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>';
+    html += '<text x="'+(P-4)+'" y="'+(H-P+4)+'" fill="var(--text3)" font-size="10" text-anchor="end">0%</text>';
+    html += '<text x="'+(P-4)+'" y="'+(H/2+4)+'" fill="var(--text3)" font-size="10" text-anchor="end">50%</text>';
+    html += '<text x="'+(P-4)+'" y="'+(P+4)+'" fill="var(--text3)" font-size="10" text-anchor="end">100%</text>';
+    html += sparkline(cpuVals, '#8B5CF6');
+    html += sparkline(memVals, '#06B6D4');
+    html += sparkline(diskVals, '#F59E0B');
+    html += '</svg>';
     document.getElementById('systemHistory').innerHTML = html;
   } catch(e) { console.error(e); }
 }
@@ -566,14 +645,33 @@ class DashboardAPIHandler(BaseHTTPRequestHandler):
             checks = get_recent_health_checks(name, limit=1)
             latest = _row_to_dict(checks[0]) if checks else None
 
+            # Gather container statuses
+            containers = app.get("containers", [])
+            if not containers and app.get("container"):
+                containers = [{"name": app["container"], "role": "main"}]
+
+            container_statuses = []
+            for c in containers:
+                c_name = f"{name}:{c.get('role', 'main')}"
+                c_checks = get_recent_health_checks(c_name, limit=1)
+                c_latest = _row_to_dict(c_checks[0]) if c_checks else None
+                container_statuses.append({
+                    "name": c.get("name", ""),
+                    "role": c.get("role", "main"),
+                    "status": c_latest["status"] if c_latest else "unknown",
+                    "last_check": c_latest["timestamp"] if c_latest else None,
+                })
+
             app_statuses.append({
                 "name": name,
+                "group": app.get("group", ""),
                 "type": app.get("type", "web"),
                 "status": latest["status"] if latest else "unknown",
                 "response_time_ms": latest.get("response_time_ms") if latest else None,
                 "last_check": latest["timestamp"] if latest else None,
                 "uptime_24h": get_uptime_percentage(name, 24),
                 "avg_response_1h": get_avg_response_time(name, 1),
+                "containers": container_statuses,
             })
 
         active_alerts = _rows_to_list(get_active_alerts())

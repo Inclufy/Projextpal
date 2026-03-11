@@ -161,23 +161,38 @@ class MonitoringAgent:
                         self.logger.info("%s: skipping recovery (startup grace period)",
                                          app_name)
 
-            # Docker container check
-            if app.get("container"):
-                result = check_container(app)
-                self.dashboard.update_app_result(app_name, "docker", result)
-                self.alert_manager.process_check_result(app_name, "docker", result)
+            # Docker container checks — supports both old single-container
+            # and new multi-container format
+            containers = app.get("containers", [])
+            # Backwards compatibility: single container field
+            if not containers and app.get("container"):
+                containers = [{"name": app["container"], "role": "main"}]
+
+            for container_conf in containers:
+                container_name = container_conf.get("name", "")
+                role = container_conf.get("role", "main")
+                # Build a pseudo app_config for the checker
+                container_app = {
+                    "name": f"{app_name}:{role}",
+                    "container": container_name,
+                    "health_command": container_conf.get("health_command"),
+                }
+                result = check_container(container_app)
+                self.dashboard.update_app_result(app_name, f"docker:{role}", result)
+                self.alert_manager.process_check_result(app_name, f"docker:{role}", result)
 
                 if result["status"] in ("down", "dead", "not_found"):
                     if self._check_count > self._startup_grace_cycles:
-                        recovery = self.recovery_manager.attempt_recovery(app_name, app, result)
+                        recovery_app = {**app, "container": container_name}
+                        recovery = self.recovery_manager.attempt_recovery(app_name, recovery_app, result)
                         if recovery["needs_manual"]:
                             self.alert_manager.trigger_alert(
                                 app_name, "CRITICAL",
-                                f"Container recovery failed: {recovery['details']}",
+                                f"Container '{container_name}' recovery failed: {recovery['details']}",
                             )
                     else:
-                        self.logger.info("%s: skipping recovery (startup grace period)",
-                                         app_name)
+                        self.logger.info("%s/%s: skipping recovery (startup grace period)",
+                                         app_name, role)
 
             # Log file check
             if app.get("log_path"):
