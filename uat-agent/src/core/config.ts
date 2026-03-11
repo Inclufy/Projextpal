@@ -37,11 +37,12 @@ export function getAppConfig(appName: string): AppConfig {
 export function getAgentConfig(): AgentConfig {
   return {
     headless: process.env.HEADLESS !== 'false',
-    screenshotOnFailure: process.env.SCREENSHOT_ON_FAILURE !== 'false',
+    screenshotOnBugOnly: process.env.SCREENSHOT_ON_BUG_ONLY !== 'false',
     videoOnFailure: process.env.VIDEO_ON_FAILURE === 'true',
     reportOutput: process.env.REPORT_OUTPUT || './reports',
     timeoutMs: parseInt(process.env.TIMEOUT_MS || '30000', 10),
     retryCount: parseInt(process.env.RETRY_COUNT || '1', 10),
+    crawlScreens: process.env.CRAWL_SCREENS === 'true',
   };
 }
 

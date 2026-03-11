@@ -13,4 +13,6 @@ export type {
   AgentConfig,
   ApiClient,
   ApiResponse,
+  Issue,
+  PageAudit,
 } from './types.js';

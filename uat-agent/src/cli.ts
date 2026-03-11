@@ -51,6 +51,7 @@ program
   .option('-t, --tag <tags...>', 'Run scenarios with specific tags')
   .option('--all', 'Run all scenarios for the app')
   .option('--headed', 'Run browser in headed mode (visible)')
+  .option('--crawl', 'Crawl all screens and audit each page for bugs')
   .option('--no-report', 'Skip saving report files')
   .action(async (options) => {
     const appName = options.app.toLowerCase();
@@ -59,6 +60,9 @@ program
 
     if (options.headed) {
       agentConfig.headless = false;
+    }
+    if (options.crawl) {
+      agentConfig.crawlScreens = true;
     }
 
     console.log('\n  Inclufy UAT Agent v1.0.0');

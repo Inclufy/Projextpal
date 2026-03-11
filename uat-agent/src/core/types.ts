@@ -1,4 +1,6 @@
 export type StepStatus = 'passed' | 'failed' | 'skipped' | 'running';
+export type IssueSeverity = 'critical' | 'major' | 'minor' | 'info';
+export type IssueType = 'bug' | 'missing_feature' | 'ui_issue' | 'a11y' | 'performance' | 'console_error';
 
 export interface StepResult {
   name: string;
@@ -8,12 +10,34 @@ export interface StepResult {
   screenshot?: string;
 }
 
+export interface Issue {
+  type: IssueType;
+  severity: IssueSeverity;
+  title: string;
+  description: string;
+  page: string;
+  screenshot?: string;
+  suggestion?: string;
+}
+
+export interface PageAudit {
+  url: string;
+  title: string;
+  status: 'ok' | 'error' | 'warning';
+  loadTime: number;
+  screenshot?: string;
+  consoleErrors: string[];
+  missingElements: string[];
+  issues: Issue[];
+}
+
 export interface ScenarioResult {
   id: string;
   name: string;
   app: string;
   status: 'passed' | 'failed' | 'skipped';
   steps: StepResult[];
+  issues: Issue[];
   duration: number;
   startedAt: string;
   finishedAt: string;
@@ -32,8 +56,13 @@ export interface TestReport {
     passed: number;
     failed: number;
     skipped: number;
+    issuesFound: number;
+    bugCount: number;
+    missingFeatureCount: number;
   };
   scenarios: ScenarioResult[];
+  pageAudits: PageAudit[];
+  allIssues: Issue[];
 }
 
 export interface AppConfig {
@@ -48,11 +77,12 @@ export interface AppConfig {
 
 export interface AgentConfig {
   headless: boolean;
-  screenshotOnFailure: boolean;
+  screenshotOnBugOnly: boolean;
   videoOnFailure: boolean;
   reportOutput: string;
   timeoutMs: number;
   retryCount: number;
+  crawlScreens: boolean;
 }
 
 export interface Scenario {
@@ -75,7 +105,10 @@ export interface ScenarioContext {
   app: AppConfig;
   config: AgentConfig;
   data: Record<string, any>;
+  issues: Issue[];
   log: (message: string) => void;
+  reportIssue: (issue: Omit<Issue, 'page'>) => void;
+  takeScreenshot: (name: string) => Promise<string | undefined>;
 }
 
 export interface ApiClient {
