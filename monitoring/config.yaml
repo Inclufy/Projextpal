@@ -31,11 +31,17 @@ global:
     auto_recovery_enabled: true
 
 applications:
+  # ──────────────────────────────────────────────
+  # ProjeXtPal — Project Management Platform
+  # Deployed at: ~/Documents/ProjeXtPal/
+  # Docker Compose: docker-compose.production.yml
+  # ──────────────────────────────────────────────
+
   - name: ProjeXtPal API
     type: web
     url: http://localhost:8001
     health_endpoint: /api/health/
-    container: inclufai-backend-1
+    container: projextpal-backend-prod
     log_path: /var/log/projextpal/backend.log
     max_response_time: 1500
     recovery: auto
@@ -44,73 +50,50 @@ applications:
   - name: ProjeXtPal Frontend
     type: web
     url: http://localhost:80
-    health_endpoint: /health
-    container: inclufai-frontend-1
+    health_endpoint: /
+    container: projextpal-frontend-prod
     recovery: auto
+    enabled: true
+
+  - name: ProjeXtPal Nginx
+    type: web
+    url: http://localhost:80
+    health_endpoint: /
+    container: projextpal-nginx-prod
+    recovery: restart
     enabled: true
 
   - name: ProjeXtPal Database
     type: database
-    container: inclufai-postgres-1
-    health_command: pg_isready -U postgres
+    container: projextpal-postgres-prod
+    health_command: pg_isready -U projextpal
     recovery: restart
     enabled: true
 
   - name: ProjeXtPal Redis
     type: cache
     url: redis://localhost:6379
-    container: inclufai-redis-1
+    container: projextpal-redis-prod
     health_command: redis-cli ping
     recovery: restart
     enabled: true
 
-  # Placeholder entries for future applications
-  # Uncomment and configure as each app is deployed
+  # ──────────────────────────────────────────────
+  # Future applications — uncomment when deployed
+  # ──────────────────────────────────────────────
 
   # - name: App2 API
   #   type: web
   #   url: http://localhost:8002
   #   health_endpoint: /api/health/
-  #   container: app2-backend-1
+  #   container: app2-backend-prod
   #   recovery: auto
   #   enabled: false
 
   # - name: App2 Frontend
   #   type: web
   #   url: http://localhost:8082
-  #   health_endpoint: /health
-  #   container: app2-frontend-1
-  #   recovery: auto
-  #   enabled: false
-
-  # - name: App3 API
-  #   type: web
-  #   url: http://localhost:8003
-  #   health_endpoint: /api/health/
-  #   container: app3-backend-1
-  #   recovery: auto
-  #   enabled: false
-
-  # - name: Mobile App1 Backend
-  #   type: mobile-backend
-  #   url: http://localhost:9001
-  #   health_endpoint: /api/health/
-  #   container: mobile1-backend-1
-  #   recovery: auto
-  #   enabled: false
-
-  # - name: Mobile App2 Backend
-  #   type: mobile-backend
-  #   url: http://localhost:9002
-  #   health_endpoint: /api/health/
-  #   container: mobile2-backend-1
-  #   recovery: auto
-  #   enabled: false
-
-  # - name: Mobile App3 Backend
-  #   type: mobile-backend
-  #   url: http://localhost:9003
-  #   health_endpoint: /api/health/
-  #   container: mobile3-backend-1
+  #   health_endpoint: /
+  #   container: app2-frontend-prod
   #   recovery: auto
   #   enabled: false

@@ -85,6 +85,26 @@ services:
     networks:
       - projextpal-network
 
+  monitoring:
+    build: ./monitoring
+    container_name: inclufai-monitoring
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - monitoring_data:/app/data
+    environment:
+      - MONITOR_EMAIL_USER=${MONITOR_EMAIL_USER}
+      - MONITOR_EMAIL_PASSWORD=${MONITOR_EMAIL_PASSWORD}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - backend
+      - frontend
+      - nginx
+    networks:
+      - projextpal-network
+    command: python agent.py --daemon --log-file /app/data/monitor.log
+
 networks:
   projextpal-network:
     driver: bridge
@@ -94,3 +114,4 @@ volumes:
   redis_data:
   static_files:
   media_files:
+  monitoring_data:
