@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inclufy Monitoring</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080810;--bg1:#0c0c18;--bg2:#111122;--bg3:#181830;--bg4:#222244;
+  --text:#e8ecf4;--text2:#9ba4b8;--text3:#5f6880;
+  --purple:#8B5CF6;--purple-dim:rgba(139,92,246,0.15);
+  --pink:#D946EF;--pink-dim:rgba(217,70,239,0.12);
+  --green:#22C55E;--green-dim:rgba(34,197,94,0.12);
+  --red:#EF4444;--red-dim:rgba(239,68,68,0.12);
+  --amber:#F59E0B;--amber-dim:rgba(245,158,11,0.12);
+  --blue:#3B82F6;--blue-dim:rgba(59,130,246,0.12);
+  --cyan:#06B6D4;--cyan-dim:rgba(6,182,212,0.12);
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --radius:14px;--radius-sm:10px;--radius-xs:6px;
+}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ===== Header ===== */
+.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:white;letter-spacing:-0.5px;flex-shrink:0}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.logo-text span{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:14px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;transition:all .3s}
+.badge-status{cursor:default}
+.badge-status.healthy{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-status.degraded{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+.badge-status.critical{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.badge-status.unknown{background:rgba(95,104,128,0.12);color:var(--text3);border:1px solid rgba(95,104,128,0.2)}
+.pulse-dot{width:8px;height:8px;border-radius:50%;position:relative}
+.pulse-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:currentColor;opacity:0.3;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite}
+@keyframes ping{75%,100%{transform:scale(2);opacity:0}}
+.pulse-dot.healthy{background:var(--green)}
+.pulse-dot.degraded{background:var(--amber)}
+.pulse-dot.critical{background:var(--red)}
+.pulse-dot.unknown{background:var(--text3)}
+.pulse-dot.unknown::after{display:none}
+.meta-info{font-size:11px;color:var(--text3);text-align:right;line-height:1.5}
+
+/* ===== Navigation Tabs ===== */
+.nav{padding:20px 32px 0;max-width:1440px;margin:0 auto}
+.tabs{display:flex;gap:2px;background:var(--bg1);padding:3px;border-radius:12px;border:1px solid var(--border);width:fit-content}
+.tab{padding:8px 20px;border-radius:9px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab.active{background:var(--purple);color:white;box-shadow:0 2px 8px rgba(139,92,246,0.3)}
+
+/* ===== Main Layout ===== */
+.main{max-width:1440px;margin:0 auto;padding:24px 32px 48px}
+.section{display:none}
+.section.active{display:block}
+
+/* ===== Summary Stats ===== */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:all .2s}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.stat-icon svg{width:18px;height:18px}
+.stat-icon.purple{background:var(--purple-dim);color:var(--purple)}
+.stat-icon.green{background:var(--green-dim);color:var(--green)}
+.stat-icon.red{background:var(--red-dim);color:var(--red)}
+.stat-icon.blue{background:var(--blue-dim);color:var(--blue)}
+.stat-value{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* ===== App Cards ===== */
+.section-header{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text2)}
+.section-header::before{content:'';width:3px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--purple),var(--pink))}
+.app-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:32px}
+.app-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .25s}
+.app-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px)}
+.app-card.accent-purple{border-top:3px solid var(--purple)}
+.app-card.accent-green{border-top:3px solid var(--green)}
+.app-card.accent-pink{border-top:3px solid var(--pink)}
+.app-card.accent-cyan{border-top:3px solid var(--cyan)}
+.app-card.accent-blue{border-top:3px solid var(--blue)}
+.app-top{padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start}
+.app-info h3{font-size:17px;font-weight:700;margin-bottom:3px}
+.app-info .app-type{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.3px}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.healthy{background:var(--green-dim);color:var(--green)}
+.pill.unhealthy,.pill.down,.pill.dead,.pill.error,.pill.timeout,.pill.critical{background:var(--red-dim);color:var(--red)}
+.pill.slow,.pill.degraded,.pill.warning{background:var(--amber-dim);color:var(--amber)}
+.pill.unknown,.pill.not_found{background:rgba(95,104,128,0.12);color:var(--text3)}
+.pill.restarting{background:var(--cyan-dim);color:var(--cyan)}
+.app-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;padding:0 24px 16px}
+.app-metric{text-align:center;padding:8px 0}
+.app-metric-val{font-size:20px;font-weight:700}
+.app-metric-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+.app-chart{padding:0 24px 16px;height:60px}
+.app-chart canvas{width:100%;height:100%;border-radius:var(--radius-xs)}
+.containers{border-top:1px solid var(--border);padding:14px 24px;background:rgba(0,0,0,0.15)}
+.containers-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600}
+.ctn-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12px}
+.ctn-row+.ctn-row{border-top:1px solid rgba(255,255,255,0.03)}
+.ctn-left{display:flex;align-items:center;gap:8px;color:var(--text2)}
+.ctn-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ctn-dot.healthy,.ctn-dot.running{background:var(--green)}
+.ctn-dot.down,.ctn-dot.dead,.ctn-dot.error,.ctn-dot.not_found{background:var(--red)}
+.ctn-dot.restarting{background:var(--amber)}
+.ctn-dot.unknown{background:var(--text3)}
+.ctn-role{font-size:9px;color:var(--text3);background:var(--bg);padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px}
+.ctn-status{font-size:11px;color:var(--text3)}
+
+/* ===== System Resources ===== */
+.sys-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+.sys-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px}
+.sys-card:hover{border-color:var(--border2)}
+.sys-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sys-label span:first-child{font-size:13px;color:var(--text2);font-weight:500}
+.sys-label span:last-child{font-size:18px;font-weight:700}
+.bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-fill.green{background:linear-gradient(90deg,#16a34a,var(--green))}
+.bar-fill.amber{background:linear-gradient(90deg,#d97706,var(--amber))}
+.bar-fill.red{background:linear-gradient(90deg,#dc2626,var(--red))}
+.sys-extra{font-size:11px;color:var(--text3);margin-top:8px}
+
+/* ===== System History Chart ===== */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:32px}
+.chart-card .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.chart-legend{display:flex;gap:16px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:500}
+.legend-dot{width:8px;height:8px;border-radius:2px}
+.chart-area{position:relative;height:220px}
+.chart-area canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* ===== Alerts ===== */
+.alert-list{display:flex;flex-direction:column;gap:8px;margin-bottom:32px}
+.alert-row{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);transition:border-color .2s}
+.alert-row:hover{border-color:var(--border2)}
+.alert-sev{font-size:10px;font-weight:700;padding:4px 10px;border-radius:var(--radius-xs);min-width:72px;text-align:center;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
+.alert-sev.CRITICAL,.alert-sev.EMERGENCY{background:var(--red-dim);color:var(--red)}
+.alert-sev.WARNING{background:var(--amber-dim);color:var(--amber)}
+.alert-sev.INFO{background:var(--blue-dim);color:var(--blue)}
+.alert-sev.RESOLVED{background:var(--green-dim);color:var(--green)}
+.alert-body{flex:1;min-width:0}
+.alert-app{font-size:13px;font-weight:600;margin-bottom:2px}
+.alert-msg{font-size:12px;color:var(--text2);line-height:1.4;word-break:break-word}
+.alert-time{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+
+/* ===== Recovery ===== */
+.recovery-list{display:flex;flex-direction:column;gap:8px}
+.rcv-row{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.rcv-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.rcv-icon.success{background:var(--green-dim);color:var(--green)}
+.rcv-icon.fail{background:var(--red-dim);color:var(--red)}
+.rcv-info{flex:1}
+.rcv-action{font-size:13px;font-weight:600}
+.rcv-detail{font-size:11px;color:var(--text3);margin-top:2px}
+.rcv-time{font-size:11px;color:var(--text3)}
+
+/* ===== Empty States ===== */
+.empty{text-align:center;padding:48px 24px;color:var(--text3);font-size:13px}
+.empty svg{width:48px;height:48px;margin-bottom:12px;opacity:0.3}
+.empty p{margin-top:4px}
+
+/* ===== Footer ===== */
+.footer{text-align:center;padding:24px 32px;color:var(--text3);font-size:11px;border-top:1px solid var(--border)}
+.footer a{color:var(--purple);text-decoration:none}
+
+/* ===== Loading Skeleton ===== */
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-xs)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ===== Responsive ===== */
+@media(max-width:1100px){.stats-row,.sys-grid{grid-template-columns:repeat(2,1fr)}.app-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .stats-row,.sys-grid,.app-grid{grid-template-columns:1fr}
+  .header{padding:0 16px;height:56px}
+  .nav,.main{padding-left:16px;padding-right:16px}
+  .header .meta-info{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">IF</div>
+    <div>
+      <div class="logo-text"><span>Inclufy</span> Monitoring</div>
+      <div class="logo-sub">Platform Health Dashboard</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="overallBadge" class="badge badge-status unknown">
+      <span class="pulse-dot unknown" id="pulseDot"></span>
+      <span id="overallLabel">Connecting...</span>
+    </div>
+    <div class="meta-info">
+      <div>Mac Studio</div>
+      <div>Updated <span id="lastUpdate">--:--:--</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="alerts">Alerts</button>
+    <button class="tab" data-tab="system">System</button>
+    <button class="tab" data-tab="recovery">Recovery</button>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="sec-overview">
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div style="height:72px" class="skeleton"></div></div>
+      <div class="stat-card"><div style="height:72px" class="skeleton"></div></div>
+      <div class="stat-card"><div style="height:72px" class="skeleton"></div></div>
+      <div class="stat-card"><div style="height:72px" class="skeleton"></div></div>
+    </div>
+    <div class="section-header">Applications</div>
+    <div class="app-grid" id="appGrid">
+      <div class="app-card"><div style="height:200px" class="skeleton"></div></div>
+      <div class="app-card"><div style="height:200px" class="skeleton"></div></div>
+    </div>
+    <div class="section-header">System Resources</div>
+    <div class="sys-grid" id="sysGrid"></div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="section" id="sec-alerts">
+    <div class="section-header">Active Alerts</div>
+    <div class="alert-list" id="activeAlerts"></div>
+    <div class="section-header">Recent Alerts</div>
+    <div class="alert-list" id="recentAlerts"></div>
+  </div>
+
+  <!-- SYSTEM -->
+  <div class="section" id="sec-system">
+    <div class="section-header">System Metrics — 24h History</div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>CPU</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>Memory</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Disk</div>
+        </div>
+      </div>
+      <div class="chart-area"><canvas id="sysChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- RECOVERY -->
+  <div class="section" id="sec-recovery">
+    <div class="section-header">Recovery Actions</div>
+    <div class="recovery-list" id="recoveryList"></div>
+  </div>
+
+</main>
+
+<footer class="footer">&copy; 2026 Inclufy &mdash; Platform Monitoring v2.0</footer>
+
+<script>
+// ===== State =====
+const API = '';
+let currentTab = 'overview';
+let appChartData = {};  // app_name -> [{timestamp, response_time_ms}]
+
+// ===== Tab Navigation =====
+document.getElementById('tabBar').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  currentTab = tab;
+  if (tab === 'alerts') loadAlerts();
+  if (tab === 'system') loadSystemHistory();
+  if (tab === 'recovery') loadRecovery();
+});
+
+// ===== Utilities =====
+const statusLabels = {
+  healthy:'Operational',unhealthy:'Down',down:'Down',dead:'Dead',slow:'Slow',
+  degraded:'Degraded',warning:'Warning',error:'Error',timeout:'Timeout',
+  unknown:'Unknown',restarting:'Restarting',critical:'Critical',not_found:'Not Found'
+};
+function statusText(s){ return statusLabels[s] || s }
+function timeAgo(ts){
+  if(!ts) return '--';
+  const d = new Date(ts.includes('T') ? ts : ts.replace(' ','T')+'Z');
+  const s = Math.floor((Date.now()-d.getTime())/1000);
+  if(s<60) return s+'s ago';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+function fmtTime(ts){
+  if(!ts) return '--';
+  try{ return new Date(ts.includes('T')?ts:ts.replace(' ','T')+'Z').toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) }
+  catch(e){ return ts.slice(-8) }
+}
+function barColor(v){ return v>=90?'red':v>=75?'amber':'green' }
+function uptimeColor(v){ return v>=99?'var(--green)':v>=95?'var(--amber)':'var(--red)' }
+function appAccent(name){
+  const n=name.toLowerCase();
+  if(n.includes('projext')) return 'accent-purple';
+  if(n.includes('finance')) return 'accent-green';
+  if(n.includes('marketing')) return 'accent-pink';
+  if(n.includes('helix')||n.includes('iq')) return 'accent-cyan';
+  return 'accent-blue';
+}
+
+// ===== SVG Icons =====
+const icons = {
+  activity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  cpu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+};
+
+// ===== Load Status (Overview) =====
+async function loadStatus(){
+  try{
+    const r = await fetch(API+'/api/status');
+    const d = await r.json();
+    renderOverallBadge(d.overall_status);
+    renderStats(d);
+    renderAppCards(d.apps);
+    renderSystemBars(d.system);
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('nl-NL');
+  } catch(e){ console.error('status error',e) }
+}
+
+function renderOverallBadge(s){
+  const badge = document.getElementById('overallBadge');
+  const dot = document.getElementById('pulseDot');
+  const label = document.getElementById('overallLabel');
+  badge.className = 'badge badge-status '+s;
+  dot.className = 'pulse-dot '+s;
+  const labels = {healthy:'All Systems Operational',degraded:'Performance Degraded',critical:'Systems Critical',unknown:'Initializing...'};
+  label.textContent = labels[s]||s;
+}
+
+function renderStats(d){
+  const apps = d.apps||[];
+  const healthy = apps.filter(a=>a.status==='healthy').length;
+  const totalC = apps.reduce((s,a)=>s+(a.containers||[]).length,0);
+  const healthyC = apps.reduce((s,a)=>s+(a.containers||[]).filter(c=>c.status==='healthy').length,0);
+  const sys = d.system||{};
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Applications</span>
+        <div class="stat-icon purple">${icons.activity}</div>
+      </div>
+      <div class="stat-value" style="color:${healthy===apps.length?'var(--green)':'var(--amber)'}">${healthy}<span style="font-size:16px;color:var(--text3);font-weight:400">/${apps.length}</span></div>
+      <div class="stat-sub">Healthy applications</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Containers</span>
+        <div class="stat-icon blue">${icons.box}</div>
+      </div>
+      <div class="stat-value" style="color:${healthyC===totalC?'var(--green)':'var(--amber)'}">${healthyC}<span style="font-size:16px;color:var(--text3);font-weight:400">/${totalC}</span></div>
+      <div class="stat-sub">Running containers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Active Alerts</span>
+        <div class="stat-icon ${d.active_alerts_count>0?'red':'green'}">${icons.alert}</div>
+      </div>
+      <div class="stat-value" style="color:${d.active_alerts_count>0?'var(--red)':'var(--green)'}">${d.active_alerts_count}</div>
+      <div class="stat-sub">${d.active_alerts_count===0?'No active alerts':'Require attention'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">CPU / Memory</span>
+        <div class="stat-icon purple">${icons.cpu}</div>
+      </div>
+      <div class="stat-value" style="font-size:22px">
+        <span style="color:${(sys.cpu_percent||0)>80?'var(--red)':'var(--green)'}">${sys.cpu_percent!=null?sys.cpu_percent.toFixed(0)+'%':'--'}</span>
+        <span style="font-size:14px;color:var(--text3);margin:0 4px">/</span>
+        <span style="color:${(sys.memory_percent||0)>85?'var(--red)':'var(--green)'}">${sys.memory_percent!=null?sys.memory_percent.toFixed(0)+'%':'--'}</span>
+      </div>
+      <div class="stat-sub">Processor / RAM usage</div>
+    </div>`;
+}
+
+function renderAppCards(apps){
+  let html = '';
+  for(const app of apps){
+    const accent = appAccent(app.name);
+    const resp = app.response_time_ms!=null ? app.response_time_ms.toFixed(0)+'ms' : '--';
+    const up = app.uptime_24h!=null ? app.uptime_24h.toFixed(1)+'%' : '--';
+    const avg = app.avg_response_1h ? app.avg_response_1h.toFixed(0)+'ms' : '--';
+
+    let ctns = '';
+    if(app.containers && app.containers.length > 0){
+      ctns = '<div class="containers"><div class="containers-title">Containers</div>';
+      for(const c of app.containers){
+        ctns += `<div class="ctn-row">
+          <div class="ctn-left">
+            <span class="ctn-dot ${c.status}"></span>
+            <span>${c.name}</span>
+            <span class="ctn-role">${c.role}</span>
+          </div>
+          <span class="ctn-status">${statusText(c.status)}</span>
+        </div>`;
+      }
+      ctns += '</div>';
+    }
+
+    html += `<div class="app-card ${accent}">
+      <div class="app-top">
+        <div class="app-info">
+          <h3>${app.name}</h3>
+          <div class="app-type">${app.type}${app.group?' &middot; '+app.group:''}</div>
+        </div>
+        <span class="pill ${app.status}"><span class="dot"></span>${statusText(app.status)}</span>
+      </div>
+      <div class="app-metrics">
+        <div class="app-metric"><div class="app-metric-val">${resp}</div><div class="app-metric-lbl">Response</div></div>
+        <div class="app-metric"><div class="app-metric-val" style="color:${uptimeColor(app.uptime_24h||0)}">${up}</div><div class="app-metric-lbl">Uptime 24h</div></div>
+        <div class="app-metric"><div class="app-metric-val">${avg}</div><div class="app-metric-lbl">Avg 1h</div></div>
+      </div>
+      <div class="app-chart"><canvas id="chart-${app.name.replace(/\s+/g,'-')}" data-app="${app.name}"></canvas></div>
+      ${ctns}
+    </div>`;
+  }
+  document.getElementById('appGrid').innerHTML = html;
+
+  // Load response time charts for each app
+  for(const app of apps){
+    loadAppChart(app.name);
+  }
+}
+
+async function loadAppChart(appName){
+  try{
+    const r = await fetch(API+'/api/apps/'+encodeURIComponent(appName)+'/history');
+    const data = await r.json();
+    if(!data.length) return;
+    const canvasId = 'chart-'+appName.replace(/\s+/g,'-');
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    drawSparkline(canvas, data.map(d=>d.response_time_ms), data.map(d=>d.status));
+  } catch(e){}
+}
+
+function drawSparkline(canvas, values, statuses){
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  if(values.length < 2) return;
+
+  const last60 = values.slice(-60);
+  const max = Math.max(...last60, 1);
+  const min = Math.min(...last60, 0);
+  const range = max - min || 1;
+  const pad = 2;
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(139,92,246,0.25)');
+  grad.addColorStop(1, 'rgba(139,92,246,0)');
+
+  ctx.beginPath();
+  ctx.moveTo(pad, H);
+  for(let i=0; i<last60.length; i++){
+    const x = pad + (i/(last60.length-1)) * (W - pad*2);
+    const y = H - pad - ((last60[i]-min)/range) * (H - pad*2);
+    if(i===0) ctx.lineTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W - pad, H);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  for(let i=0; i<last60.length; i++){
+    const x = pad + (i/(last60.length-1)) * (W - pad*2);
+    const y = H - pad - ((last60[i]-min)/range) * (H - pad*2);
+    if(i===0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#8B5CF6';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function renderSystemBars(sys){
+  if(!sys){
+    document.getElementById('sysGrid').innerHTML = '<div class="empty"><p>No system data yet</p></div>';
+    return;
+  }
+  const metrics = [
+    {label:'CPU Usage', value:sys.cpu_percent||0, unit:'%'},
+    {label:'Memory Usage', value:sys.memory_percent||0, unit:'%'},
+    {label:'Disk Usage', value:sys.disk_percent||0, unit:'%', extra:sys.disk_free_gb?sys.disk_free_gb.toFixed(1)+' GB free':''},
+  ];
+  let html = '';
+  for(const m of metrics){
+    const col = barColor(m.value);
+    html += `<div class="sys-card">
+      <div class="sys-label"><span>${m.label}</span><span style="color:var(--${col})">${m.value.toFixed(1)}${m.unit}</span></div>
+      <div class="bar-track"><div class="bar-fill ${col}" style="width:${m.value}%"></div></div>
+      ${m.extra?'<div class="sys-extra">'+m.extra+'</div>':''}
+    </div>`;
+  }
+  document.getElementById('sysGrid').innerHTML = html;
+}
+
+// ===== Alerts =====
+async function loadAlerts(){
+  try{
+    const [ar, rr] = await Promise.all([
+      fetch(API+'/api/alerts/active'), fetch(API+'/api/alerts')
+    ]);
+    const active = await ar.json();
+    const recent = await rr.json();
+
+    if(!active.length){
+      document.getElementById('activeAlerts').innerHTML = '<div class="empty">' + icons.check + '<p>No active alerts — all systems clear</p></div>';
+    } else {
+      document.getElementById('activeAlerts').innerHTML = active.map(a => `
+        <div class="alert-row">
+          <span class="alert-sev ${a.severity}">${a.severity}</span>
+          <div class="alert-body"><div class="alert-app">${a.app_name}</div><div class="alert-msg">${a.message||''}</div></div>
+          <div class="alert-time">${fmtTime(a.timestamp)}</div>
+        </div>`).join('');
+    }
+
+    if(!recent.length){
+      document.getElementById('recentAlerts').innerHTML = '<div class="empty"><p>No recent alerts</p></div>';
+    } else {
+      document.getElementById('recentAlerts').innerHTML = recent.slice(0,40).map(a => {
+        const sev = a.resolved ? 'RESOLVED' : a.severity;
+        return `<div class="alert-row">
+          <span class="alert-sev ${sev}">${sev}</span>
+          <div class="alert-body"><div class="alert-app">${a.app_name}${a.resolved?' [Resolved]':''}</div><div class="alert-msg">${a.message||''}</div></div>
+          <div class="alert-time">${fmtTime(a.timestamp)}</div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e){ console.error(e) }
+}
+
+// ===== System History =====
+async function loadSystemHistory(){
+  try{
+    const r = await fetch(API+'/api/system/history');
+    const data = await r.json();
+    if(!data.length) return;
+    drawSystemChart(data);
+  } catch(e){ console.error(e) }
+}
+
+function drawSystemChart(data){
+  const canvas = document.getElementById('sysChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const padL = 36, padR = 12, padT = 12, padB = 24;
+  const cW = W - padL - padR, cH = H - padT - padB;
+
+  const last = data.slice(-120);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for(let p=0; p<=100; p+=25){
+    const y = padT + cH - (p/100)*cH;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W-padR, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(p+'%', padL-6, y+3);
+  }
+
+  // Time labels
+  if(last.length > 1){
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.textAlign = 'center';
+    ctx.font = '10px Inter, sans-serif';
+    const step = Math.max(1, Math.floor(last.length / 6));
+    for(let i=0; i<last.length; i+=step){
+      const x = padL + (i/(last.length-1))*cW;
+      const ts = last[i].timestamp;
+      ctx.fillText(fmtTime(ts), x, H - 4);
+    }
+  }
+
+  function drawLine(values, color, alpha){
+    if(values.length < 2) return;
+    // Area
+    const grad = ctx.createLinearGradient(0, padT, 0, padT+cH);
+    grad.addColorStop(0, color.replace(')', ','+alpha+')').replace('rgb','rgba'));
+    grad.addColorStop(1, color.replace(')', ',0)').replace('rgb','rgba'));
+    ctx.beginPath();
+    ctx.moveTo(padL, padT+cH);
+    for(let i=0; i<values.length; i++){
+      const x = padL + (i/(values.length-1))*cW;
+      const y = padT + cH - (Math.min(values[i],100)/100)*cH;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(padL + (values.length-1)/(values.length-1)*cW, padT+cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    // Line
+    ctx.beginPath();
+    for(let i=0; i<values.length; i++){
+      const x = padL + (i/(values.length-1))*cW;
+      const y = padT + cH - (Math.min(values[i],100)/100)*cH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  drawLine(last.map(d=>d.disk_percent||0), 'rgb(245,158,11)', 0.08);
+  drawLine(last.map(d=>d.memory_percent||0), 'rgb(6,182,212)', 0.1);
+  drawLine(last.map(d=>d.cpu_percent||0), 'rgb(139,92,246)', 0.12);
+}
+
+// ===== Recovery =====
+async function loadRecovery(){
+  try{
+    const r = await fetch(API+'/api/recovery');
+    const data = await r.json();
+    if(!data.length){
+      document.getElementById('recoveryList').innerHTML = '<div class="empty"><p>No recovery actions recorded</p></div>';
+      return;
+    }
+    document.getElementById('recoveryList').innerHTML = data.map(a => `
+      <div class="rcv-row">
+        <div class="rcv-icon ${a.success?'success':'fail'}">${a.success?'&#10003;':'&#10007;'}</div>
+        <div class="rcv-info">
+          <div class="rcv-action" style="color:${a.success?'var(--green)':'var(--red)'}">${a.action||'Unknown'}</div>
+          <div class="rcv-detail">${a.app_name}${a.details?' &mdash; '+a.details:''}</div>
+        </div>
+        <div class="rcv-time">${fmtTime(a.timestamp)}</div>
+      </div>`).join('');
+  } catch(e){ console.error(e) }
+}
+
+// ===== Init =====
+loadStatus();
+setInterval(loadStatus, 30000);
+
+// Resize handler for charts
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if(currentTab === 'system') loadSystemHistory();
+  }, 200);
+});
+</script>
+</body>
+</html>

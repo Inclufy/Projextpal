@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import threading
 from datetime import datetime, timedelta
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -22,6 +23,9 @@ logger = logging.getLogger("monitor.api")
 
 # Default port for the dashboard API
 DEFAULT_PORT = 8555
+
+# Path to static dashboard files
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 
 def _row_to_dict(row):
@@ -77,7 +81,20 @@ def _get_app_configs():
         return []
 
 
-DASHBOARD_HTML = """<!DOCTYPE html>
+def _load_dashboard_html():
+    """Load the dashboard HTML from static file."""
+    html_path = os.path.join(STATIC_DIR, "index.html")
+    try:
+        with open(html_path, "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<html><body><h1>Dashboard not found</h1><p>Missing: " + html_path + "</p></body></html>"
+
+
+# Keep embedded HTML as fallback (empty — static file is used)
+DASHBOARD_HTML = _load_dashboard_html()
+
+_LEGACY_DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -565,6 +582,8 @@ setInterval(fetchStatus, 30000);
 </body>
 </html>"""
 
+# unused, kept for reference
+
 
 class DashboardAPIHandler(BaseHTTPRequestHandler):
     """HTTP request handler for the monitoring dashboard API."""
@@ -631,7 +650,8 @@ class DashboardAPIHandler(BaseHTTPRequestHandler):
             self._send_json({"error": "Not found"}, 404)
 
     def _handle_dashboard(self):
-        self._send_html(DASHBOARD_HTML)
+        # Always read from disk so edits take effect without restart
+        self._send_html(_load_dashboard_html())
 
     def _handle_status(self):
         """Overall system status overview."""
