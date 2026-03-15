@@ -1,9 +1,6 @@
 # ============================================
-# Inclufai Platform Monitoring Configuration
-# Applicatie-overstijgend — monitort ALLE Inclufy apps
-#
-# De monitoring agent draait met network_mode: host,
-# dus alle URLs gebruiken localhost + exposed ports.
+# ProjeXtPal Monitoring Configuration
+# Monitors ProjeXtPal infrastructure only
 # ============================================
 
 global:
@@ -47,85 +44,50 @@ applications:
 
   # ──────────────────────────────────────────────
   # ProjeXtPal — Project Management Platform
-  # Docker Stack: projextpal
-  # Exposed: port 443/80 via nginx
   # ──────────────────────────────────────────────
 
-  - name: ProjeXtPal
+  - name: ProjeXtPal API
     group: projextpal
     type: web
-    url: http://localhost
+    url: http://localhost:8001
     health_endpoint: /health/
     max_response_time: 1500
     recovery: auto
     enabled: true
     containers:
-      - name: projextpal-backend-prod
+      - name: projectpal-backend
         role: backend
-      - name: projextpal-frontend-prod
-        role: frontend
-      - name: projextpal-nginx-prod
+
+  - name: ProjeXtPal Nginx
+    group: projextpal
+    type: web
+    url: http://localhost:8090
+    health_endpoint: /
+    max_response_time: 1500
+    recovery: auto
+    enabled: true
+    containers:
+      - name: projectpal-proxy
         role: proxy
-      - name: projextpal-postgres-prod
+      - name: projectpal-frontend
+        role: frontend
+
+  - name: ProjeXtPal Database
+    group: projextpal
+    type: database
+    recovery: notify
+    enabled: true
+    containers:
+      - name: projectpal-postgres
         role: database
         health_command: pg_isready -U projextpal
-      - name: projextpal-redis-prod
+
+  - name: ProjeXtPal Redis
+    group: projextpal
+    type: cache
+    recovery: notify
+    enabled: true
+    containers:
+      - name: projectpal-redis
         role: cache
-        health_command: redis-cli ping
-
-  # ──────────────────────────────────────────────
-  # Inclufy Finance — AI-Powered Financial Platform
-  # Docker Stack: inclufy-auto-fina
-  # ──────────────────────────────────────────────
-
-  - name: Inclufy Finance
-    group: inclufy-auto-fina
-    type: web
-    url: http://localhost:8080
-    health_endpoint: /health
-    max_response_time: 2000
-    recovery: notify
-    enabled: true
-    containers:
-      - name: inclufyfinance-frontend
-        role: frontend
-
-  # ──────────────────────────────────────────────
-  # Inclufy Marketing — AI Marketing Platform
-  # Docker Stack: inclufymarketing
-  # Proxy: marketing-proxy on port 8092
-  # ──────────────────────────────────────────────
-
-  - name: Inclufy Marketing
-    group: inclufymarketing
-    type: web
-    url: http://localhost:8092
-    health_endpoint: /health
-    max_response_time: 2000
-    recovery: notify
-    enabled: true
-    containers:
-      - name: inclufymarketing-main-frontend-1
-        role: frontend
-      - name: inclufymarketing-main-backend-1
-        role: backend
-      - name: marketing-proxy
-        role: proxy
-
-  # ──────────────────────────────────────────────
-  # IQ Helix — Leadership Intelligence Platform
-  # Docker Stack: iqhelixdeployment
-  # Proxy: iqhelix-proxy on port 8095
-  # ──────────────────────────────────────────────
-
-  - name: IQ Helix
-    group: iqhelixdeployment
-    type: web
-    url: http://localhost:8095
-    health_endpoint: /
-    max_response_time: 3000
-    recovery: notify
-    enabled: true
-    containers:
-      - name: iqhelix-proxy
-        role: proxy
+        health_command: redis-cli -a redis_password_2024 ping
