@@ -58,7 +58,7 @@ import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 
 /* ─── Types ─── */
-type CopilotTab = "chat" | "guide";
+type CopilotTab = "chat" | "guide" | "setup";
 
 interface Message {
   id: string;
@@ -756,10 +756,48 @@ export default function AICopilotSidebar() {
             <HelpCircle className="h-3.5 w-3.5" />
             {isNl ? "Gids" : "Guide"}
           </button>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
+            <Settings className="h-3.5 w-3.5" />
+            Setup
+          </button>
         </div>
 
         {/* Content */}
-        {activeTab === "guide" ? (
+        {activeTab === "setup" ? (
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-4">
+              <div className="text-center pt-4 pb-2">
+                <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-600 shadow-lg">
+                  <Sparkles className="h-7 w-7 text-white" />
+                </div>
+                <h3 className="text-sm font-semibold">{isNl ? "AI Setup Copilot" : "AI Setup Copilot"}</h3>
+                <p className="text-[11px] text-muted-foreground mt-1">{isNl ? "Laat AI uw omgeving configureren" : "Let AI configure your environment"}</p>
+              </div>
+              <div className="space-y-2">
+                <button onClick={() => navigate("/setup-onboarding")} className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-purple-300 transition-all text-left group">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{isNl ? "Setup Wizard" : "Setup Wizard"}</p>
+                    <p className="text-[11px] text-muted-foreground">{isNl ? "Stap-voor-stap onboarding" : "Step-by-step onboarding"}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />
+                </button>
+                <button onClick={() => navigate("/demo-environment")} className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-purple-300 transition-all text-left group">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                    <Play className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{isNl ? "Demo Omgeving" : "Demo Environment"}</p>
+                    <p className="text-[11px] text-muted-foreground">{isNl ? "Genereer demo data" : "Generate demo data"}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-emerald-600" />
+                </button>
+              </div>
+            </div>
+          </ScrollArea>
+        ) : activeTab === "guide" ? (
           renderGuideTab()
         ) : (
           <>

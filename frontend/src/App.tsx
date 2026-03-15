@@ -95,6 +95,8 @@ import IntentSelection from "./pages/IntentSelection";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation";
 import Demo from './pages/Demo';
 import OnboardingWizard from './pages/OnboardingWizard';
+import DemoEnvironment from './pages/DemoEnvironment';
+import SetupOnboarding from './pages/SetupOnboarding';
 
 // Program Page Imports
 import ProgramsOverview from "./pages/ProgramsOverview";
@@ -418,6 +420,8 @@ const App = () => (
               <Route path="/intent-selection" element={<PublicRoute><IntentSelection /></PublicRoute>} />
               <Route path="/registration-confirmation" element={<PublicRoute><RegistrationConfirmation /></PublicRoute>} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/demo-environment" element={<ProtectedRoute><DemoEnvironment /></ProtectedRoute>} />
+              <Route path="/setup-onboarding" element={<ProtectedRoute><SetupOnboarding /></ProtectedRoute>} />
 
               {/* ============================================ */}
               {/* Admin Portal Routes (SuperAdmin Only)        */}

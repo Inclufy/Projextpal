@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'p2_programme',
     'hybrid_programme',
     'cross_methodology',
+    'onboarding',
 ]
 
 MIDDLEWARE = [

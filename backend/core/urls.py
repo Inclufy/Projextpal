@@ -57,6 +57,9 @@ urlpatterns = [
     path("api/v1/hybrid-programme/", include("hybrid_programme.urls")),
     path("api/v1/cross-methodology/", include("cross_methodology.urls")),
 
+    # Onboarding & Demo
+    path("api/v1/onboarding/", include("onboarding.urls")),
+
     # Single endpoint views
     path("api/v1/users/me/", CurrentUserView.as_view(), name="current-user"),
     path("api/v1/public/plans/", PublicPlansView.as_view(), name="public-plans"),
