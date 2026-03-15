@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Play, CheckCircle2, LayoutDashboard, Trash2 } from "lucide-react";
@@ -41,7 +41,7 @@ const AgileIterationBoard = () => {
 
   const activeIteration = iterations.find(i => i.status === "active");
   const iterItems = activeIteration ? items.filter(i => i.iteration === activeIteration.id) : [];
-  const columns = { todo: iterItems.filter(i => i.status === "todo" || i.status === "new"), in_progress: iterItems.filter(i => i.status === "in_progress"), done: iterItems.filter(i => i.status === "done" || i.status === "completed") };
+  const columns = { todo: iterItems.filter(i => i.status === "backlog" || i.status === "ready"), in_progress: iterItems.filter(i => i.status === "in_progress" || i.status === "review"), done: iterItems.filter(i => i.status === "done") };
 
   const createIteration = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } setSubmitting(true); try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Iteratie aangemaakt"); setDialogOpen(false); fetchData(); } else toast.error("Aanmaken mislukt"); } catch { toast.error("Aanmaken mislukt"); } finally { setSubmitting(false); } };
   const startIteration = async (itId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/${itId}/start/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Gestart"); fetchData(); } } catch { toast.error("Starten mislukt"); } };
@@ -64,9 +64,9 @@ const AgileIterationBoard = () => {
         <div className="flex gap-2 flex-wrap">{iterations.map(it => (
           <div key={it.id} className="flex items-center gap-1">
             <Badge variant={it.status === "active" ? "default" : it.status === "completed" ? "secondary" : "outline"}>{it.name} ({it.status})</Badge>
-            {it.status === "planned" && <Button variant="ghost" size="sm" onClick={() => startIteration(it.id)} className="h-6 px-2"><Play className="h-3 w-3" /></Button>}
+            {it.status === "planning" && <Button variant="ghost" size="sm" onClick={() => startIteration(it.id)} className="h-6 px-2"><Play className="h-3 w-3" /></Button>}
             {it.status === "active" && <Button variant="ghost" size="sm" onClick={() => completeIteration(it.id)} className="h-6 px-2"><CheckCircle2 className="h-3 w-3" /></Button>}
-            {it.status === "planned" && <Button variant="ghost" size="sm" onClick={() => deleteIteration(it.id)} className="h-6 px-2"><Trash2 className="h-3 w-3 text-destructive" /></Button>}
+            {it.status === "planning" && <Button variant="ghost" size="sm" onClick={() => deleteIteration(it.id)} className="h-6 px-2"><Trash2 className="h-3 w-3 text-destructive" /></Button>}
           </div>
         ))}</div>
 
@@ -87,7 +87,7 @@ const AgileIterationBoard = () => {
         )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Iteration")}</DialogTitle></DialogHeader>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{pt("New Iteration")}</DialogTitle><DialogDescription>{pt("Create a new iteration")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="space-y-2"><Label>{pt("Goal")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.goal} onChange={(e) => setForm({ ...form, goal: e.target.value })} /></div>

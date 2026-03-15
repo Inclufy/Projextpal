@@ -4,6 +4,7 @@
 // Complete course with full transcripts, quizzes, and resources
 // ============================================
 
+import { Crown } from 'lucide-react';
 import { Course, Module } from '../types';
 import { BRAND } from '../brand';
 import { instructors } from '../instructors';
@@ -235,6 +236,12 @@ Management en leiderschap zijn beide essentieel. Geweldige projectmanagers behee
 
 In de volgende lessen duiken we dieper in het ontwikkelen van je leiderschapscapaciteiten.`,
       keyTakeaways: [
+        'Managers do things right, leaders do the right things',
+        'Great PMs need both management AND leadership skills',
+        'Management focuses on processes, leadership on people',
+        'Leadership is a choice, not a position',
+      ],
+      keyTakeawaysEN: [
         'Managers do things right, leaders do the right things',
         'Great PMs need both management AND leadership skills',
         'Management focuses on processes, leadership on people',
@@ -875,6 +882,12 @@ De beste leiders gebruiken alle zes, aangepast aan de situatie.`,
         'Adapt your style to the person, situation, and task',
         'PMs often need to lead without authority - use influence',
       ],
+      keyTakeawaysEN: [
+        'Six leadership styles: Coercive, Authoritative, Affiliative, Democratic, Pacesetting, Coaching',
+        'Authoritative (visionary) is most effective overall',
+        'Adapt your style to the person, situation, and task',
+        'PMs often need to lead without authority - use influence',
+      ],
       keyTakeawaysNL: [
         'Zes leiderschapsstijlen: Dwingend, Autoritatief, Affiliatief, Democratisch, Pacesetting, Coaching',
         'Autoritatief (visionair) is meest effectief overall',
@@ -1276,6 +1289,12 @@ Emotionele Intelligentie heeft vijf componenten:
 
 Allemaal kunnen worden ontwikkeld met oefening en intentie.`,
       keyTakeaways: [
+        'EQ = ability to recognize, understand, and manage emotions (yours and others)',
+        'Five components: Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills',
+        'EQ is often more important than IQ for leadership success',
+        'All EQ components can be developed with practice',
+      ],
+      keyTakeawaysEN: [
         'EQ = ability to recognize, understand, and manage emotions (yours and others)',
         'Five components: Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills',
         'EQ is often more important than IQ for leadership success',
@@ -1690,6 +1709,12 @@ Zelfbewustzijn wordt ontwikkeld door:
 
 Dit is doorlopend werk, geen eenmalige activiteit.`,
       keyTakeaways: [
+        'Self-awareness is the foundation of leadership development',
+        'Use multiple tools: personality assessments, strengths assessments, 360 feedback',
+        'Daily practices: morning intention, evening reflection, in-the-moment awareness',
+        'Know your values and build your leadership brand',
+      ],
+      keyTakeawaysEN: [
         'Self-awareness is the foundation of leadership development',
         'Use multiple tools: personality assessments, strengths assessments, 360 feedback',
         'Daily practices: morning intention, evening reflection, in-the-moment awareness',
@@ -2385,6 +2410,12 @@ Bouw dit bewust. Onderhoud het continu.`,
         'High-performance teams have psychological safety, clear goals, and mutual accountability',
         'Create a team charter together to align on purpose, values, and ways of working',
       ],
+      keyTakeawaysEN: [
+        'Five dysfunctions: Absence of Trust, Fear of Conflict, Lack of Commitment, Avoidance of Accountability, Inattention to Results',
+        'Trust is the foundation - build it through vulnerability and personal connection',
+        'High-performance teams have psychological safety, clear goals, and mutual accountability',
+        'Create a team charter together to align on purpose, values, and ways of working',
+      ],
       keyTakeawaysNL: [
         'Vijf disfuncties: Afwezigheid van Vertrouwen, Angst voor Conflict, Gebrek aan Commitment, Vermijden van Accountability, Gebrek aan Aandacht voor Resultaten',
         'Vertrouwen is het fundament - bouw het door kwetsbaarheid en persoonlijke connectie',
@@ -2935,6 +2966,12 @@ Herken de fase. Leid dienovereenkomstig.`,
         'Teams go through five stages: Forming, Storming, Norming, Performing, Adjourning',
         'Storming is necessary - avoiding it prevents teams from reaching high performance',
         'Your leadership style must adapt: directive → coaching → supporting → delegating',
+        'Teams can regress to earlier stages with changes like new members or leadership',
+      ],
+      keyTakeawaysEN: [
+        'Teams go through five stages: Forming, Storming, Norming, Performing, Adjourning',
+        'Storming is necessary - avoiding it prevents teams from reaching high performance',
+        'Your leadership style must adapt: directive to coaching to supporting to delegating',
         'Teams can regress to earlier stages with changes like new members or leadership',
       ],
       keyTakeawaysNL: [
@@ -3517,6 +3554,12 @@ Voor belangrijke conflicten, werk samen:
 
 Pak conflicten vroeg en constructief aan.`,
       keyTakeaways: [
+        'Five conflict styles: Competing, Accommodating, Avoiding, Compromising, Collaborating',
+        'Collaborating (win-win) is ideal for important conflicts',
+        'Focus on interests (why) not positions (what)',
+        'Separate people from problem - attack the issue, not the person',
+      ],
+      keyTakeawaysEN: [
         'Five conflict styles: Competing, Accommodating, Avoiding, Compromising, Collaborating',
         'Collaborating (win-win) is ideal for important conflicts',
         'Focus on interests (why) not positions (what)',
@@ -4125,6 +4168,12 @@ Kernprincipes:
 
 Empower door autoriteit, informatie, resources en accountability te geven.`,
       keyTakeaways: [
+        'Delegation develops your team, frees your time, and scales the organization',
+        'Seven levels of delegation: from Tell to Delegate Fully - match to person and task',
+        'Use RACI matrix to clarify roles: Responsible, Accountable, Consulted, Informed',
+        'Empowerment = authority + information + resources + accountability',
+      ],
+      keyTakeawaysEN: [
         'Delegation develops your team, frees your time, and scales the organization',
         'Seven levels of delegation: from Tell to Delegate Fully - match to person and task',
         'Use RACI matrix to clarify roles: Responsible, Accountable, Consulted, Informed',
@@ -4763,6 +4812,12 @@ Kernprincipes:
 
 Motivatie is persoonlijk. Ken je mensen.`,
       keyTakeaways: [
+        'Intrinsic motivation (autonomy, mastery, purpose) is more powerful than extrinsic (money, bonuses)',
+        'Herzberg: Hygiene factors prevent dissatisfaction, motivators drive satisfaction',
+        'Pink\'s Drive: People need Autonomy, Mastery, and Purpose',
+        'McClelland: Three needs - Achievement, Affiliation, Power - in different proportions',
+      ],
+      keyTakeawaysEN: [
         'Intrinsic motivation (autonomy, mastery, purpose) is more powerful than extrinsic (money, bonuses)',
         'Herzberg: Hygiene factors prevent dissatisfaction, motivators drive satisfaction',
         'Pink\'s Drive: People need Autonomy, Mastery, and Purpose',
@@ -5628,6 +5683,12 @@ Je kunt technisch briljant zijn, maar als je niet kunt communiceren, kun je niet
         '55% of communication is body language - mind your non-verbal signals',
         'Choose the richest channel possible: face-to-face for sensitive topics, email for documentation',
       ],
+      keyTakeawaysEN: [
+        'Follow the 7 Cs: Clear, Concise, Concrete, Correct, Coherent, Complete, Courteous',
+        'Listen at Level 5 (Empathic) - understand feelings and meaning, not just words',
+        '55% of communication is body language - mind your non-verbal signals',
+        'Choose the richest channel possible: face-to-face for sensitive topics, email for documentation',
+      ],
       keyTakeawaysNL: [
         'Volg de 7 C\'s: Clear, Concise, Concrete, Correct, Coherent, Complete, Courteous',
         'Luister op Niveau 5 (Empathisch) - begrijp gevoelens en betekenis, niet alleen woorden',
@@ -6335,6 +6396,12 @@ Kernprincipe: Begrijp wat ze nodig hebben en wat ze vrezen. Pak dan beide aan.
 
 Je project's succes hangt meer af van mensen dan van processen.`,
       keyTakeaways: [
+        'Use Power/Interest Grid: Manage Closely (high power/interest), Keep Satisfied (high power/low interest), Keep Informed (low power/high interest), Monitor (low power/interest)',
+        'Understand each stakeholder: what they care about, current position, influence, and what they need',
+        'Build relationships through trust, value-add, expectation management, and visibility',
+        'Create Stakeholder Communication Matrix: who needs what information, how often, in what format',
+      ],
+      keyTakeawaysEN: [
         'Use Power/Interest Grid: Manage Closely (high power/interest), Keep Satisfied (high power/low interest), Keep Informed (low power/high interest), Monitor (low power/interest)',
         'Understand each stakeholder: what they care about, current position, influence, and what they need',
         'Build relationships through trust, value-add, expectation management, and visibility',
@@ -7084,6 +7151,12 @@ Onthoud: Beste onderhandelingen creëren waarde voor beide kanten. Denk win-win!
         'Use Harvard principles: Separate people from problem, focus on interests, generate options, use objective criteria',
         'Make conditional concessions: "If you..., then I..." - never give something for nothing',
       ],
+      keyTakeawaysEN: [
+        'Know your BATNA (Best Alternative To Negotiated Agreement) - your power comes from alternatives',
+        'Focus on interests (why they want it) not positions (what they say they want)',
+        'Use Harvard principles: Separate people from problem, focus on interests, generate options, use objective criteria',
+        'Make conditional concessions: "If you..., then I..." - never give something for nothing',
+      ],
       keyTakeawaysNL: [
         'Ken je BATNA (Best Alternative To Negotiated Agreement) - je macht komt van alternatieven',
         'Focus op interesses (waarom ze het willen) niet posities (wat ze zeggen dat ze willen)',
@@ -7776,6 +7849,12 @@ Onthoud: Je boodschap is belangrijk. Deel het met vertrouwen!`,
         'Slides: One message per slide, minimal text (6x6 rule), high contrast, visual not textual',
         'Delivery: Voice variety (pace, pitch, pause), body language (posture, gestures, eye contact), practice 10x',
       ],
+      keyTakeawaysEN: [
+        'Structure: Opening (hook attention), Body (3-5 key points), Closing (call to action)',
+        'Rule of Three: People remember threes - use this for structure and key messages',
+        'Slides: One message per slide, minimal text (6x6 rule), high contrast, visual not textual',
+        'Delivery: Voice variety (pace, pitch, pause), body language (posture, gestures, eye contact), practice 10x',
+      ],
       keyTakeawaysNL: [
         'Structuur: Opening (trek aandacht), Body (3-5 belangrijke punten), Afsluiting (call to action)',
         'Regel van Drie: Mensen onthouden drietallen - gebruik dit voor structuur en belangrijke boodschappen',
@@ -7828,42 +7907,34 @@ export const leadershipCourse: Course = {
   id: 'leadership-pm',
   title: 'Leadership for Project Managers',
   titleNL: 'Leiderschap voor Projectmanagers',
-  subtitle: 'Develop your leadership skills to lead teams effectively',
-  subtitleNL: 'Ontwikkel je leiderschapsvaardigheden om teams effectief te leiden',
   description: 'Master leadership styles, emotional intelligence, team dynamics and communication to become an inspiring project leader.',
   descriptionNL: 'Beheers leiderschapsstijlen, emotionele intelligentie, teamdynamiek en communicatie om een inspirerende projectleider te worden.',
+  icon: Crown,
+  color: BRAND.amber,
+  gradient: `linear-gradient(135deg, ${BRAND.amber}, #D97706)`,
   category: 'leadership',
   methodology: 'leadership',
-  difficulty: 'intermediate',
+  levels: 3,
+  modules: leadershipModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 30,
-  price: 0,
-  originalPrice: 199,
   rating: 4.8,
-  reviewCount: 1847,
   students: 9234,
-  language: 'Nederlands & English',
+  tags: ['Leadership', 'EQ', 'Team Dynamics', 'Communication', 'Conflict Resolution'],
+  tagsNL: ['Leiderschap', 'EQ', 'Teamdynamiek', 'Communicatie', 'Conflictoplossing'],
+  instructor: instructors.sarah,
   featured: false,
   bestseller: false,
   new: true,
-  hasCertificate: true,
-  icon: 'Crown',
-  color: '#F59E0B',
-  gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-  instructor: { 
-    name: 'Dr. Lisa van den Berg', 
-    title: 'Leadership Coach & PMP', 
-    avatar: '',
-    bio: 'Dr. Lisa is an executive coach and leadership development specialist with 15+ years of experience.',
-    bioNL: 'Dr. Lisa is executive coach en specialist in leiderschapsontwikkeling met 15+ jaar ervaring.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Develop your personal leadership style',
     'Build and lead high-performance teams',
     'Master conflict resolution techniques',
     'Improve stakeholder communication',
     'Lead effectively without formal authority',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Je persoonlijke leiderschapsstijl ontwikkelen',
     'High-performance teams bouwen en leiden',
     'Conflictoplossingstechnieken beheersen',

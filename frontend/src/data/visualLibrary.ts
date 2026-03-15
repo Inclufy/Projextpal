@@ -540,7 +540,167 @@ export const VISUAL_LIBRARY: Visual[] = [
     learningIntent: ['explain_concept', 'governance'],
     priority: 85
   },
-  
+
+  {
+    id: 'benefits-map',
+    name: 'Benefits Realization Map',
+    description: 'Benefits tracking from outputs through outcomes to strategic objectives',
+    tags: ['benefits', 'realization', 'outcomes', 'strategic', 'value'],
+    topics: ['program management', 'benefits', 'strategy'],
+    methodologies: ['program_management'],
+    conceptClass: ['diagram', 'framework'],
+    learningIntent: ['explain_concept', 'analyze_data'],
+    priority: 85
+  },
+
+  {
+    id: 'program-governance',
+    name: 'Program Governance Structure',
+    description: 'Governance layers: Steering Committee, Program Board, Workstreams',
+    tags: ['governance', 'steering', 'board', 'structure', 'authority'],
+    topics: ['program management', 'governance', 'decision making'],
+    methodologies: ['program_management'],
+    conceptClass: ['governance', 'diagram'],
+    learningIntent: ['governance', 'explain_concept'],
+    priority: 80
+  },
+
+  // ===== NEW VISUALS - PRINCE2 =====
+
+  {
+    id: 'prince2-processes',
+    name: 'PRINCE2 7 Processes',
+    description: 'Starting Up → Initiating → Directing → Controlling → Managing Product Delivery → Managing Stage Boundaries → Closing',
+    tags: ['prince2', 'processes', 'starting up', 'directing', 'controlling', 'closing'],
+    topics: ['prince2', 'processes', 'project lifecycle'],
+    methodologies: ['prince2'],
+    conceptClass: ['process_flow', 'framework'],
+    learningIntent: ['explain_concept', 'process_overview'],
+    priority: 95
+  },
+
+  {
+    id: 'prince2-themes',
+    name: 'PRINCE2 7 Themes',
+    description: 'Business Case, Organization, Quality, Plans, Risk, Change, Progress',
+    tags: ['prince2', 'themes', 'business case', 'organization', 'quality', 'plans', 'risk', 'change', 'progress'],
+    topics: ['prince2', 'themes', 'governance'],
+    methodologies: ['prince2'],
+    conceptClass: ['framework'],
+    learningIntent: ['explain_concept'],
+    priority: 95
+  },
+
+  {
+    id: 'prince2-principles',
+    name: 'PRINCE2 7 Principles',
+    description: 'Continued Business Justification, Learn from Experience, Defined Roles, Manage by Stages, Manage by Exception, Focus on Products, Tailor to Suit',
+    tags: ['prince2', 'principles', 'business justification', 'exception', 'tailor'],
+    topics: ['prince2', 'principles', 'foundation'],
+    methodologies: ['prince2'],
+    conceptClass: ['framework'],
+    learningIntent: ['explain_concept'],
+    priority: 95
+  },
+
+  {
+    id: 'prince2-product-planning',
+    name: 'Product-Based Planning',
+    description: 'Product Breakdown Structure → Product Description → Product Flow Diagram',
+    tags: ['product-based planning', 'product breakdown', 'product description', 'product flow', 'prince2'],
+    topics: ['prince2', 'planning', 'products'],
+    methodologies: ['prince2'],
+    conceptClass: ['planning', 'diagram'],
+    learningIntent: ['apply_template', 'explain_concept'],
+    priority: 90
+  },
+
+  {
+    id: 'prince2-organization',
+    name: 'PRINCE2 Organization Structure',
+    description: 'Project Board (Executive, Senior User, Senior Supplier), Project Manager, Team Manager',
+    tags: ['prince2', 'organization', 'project board', 'executive', 'roles'],
+    topics: ['prince2', 'organization', 'roles'],
+    methodologies: ['prince2'],
+    conceptClass: ['role_matrix', 'diagram'],
+    learningIntent: ['role_definition', 'explain_concept'],
+    priority: 85
+  },
+
+  {
+    id: 'prince2-stage-gates',
+    name: 'PRINCE2 Stage Gates',
+    description: 'Management stages with decision points and exception management',
+    tags: ['prince2', 'stages', 'gates', 'manage by stages', 'exception'],
+    topics: ['prince2', 'stages', 'governance'],
+    methodologies: ['prince2'],
+    conceptClass: ['process_flow', 'governance'],
+    learningIntent: ['process_overview', 'governance'],
+    priority: 85
+  },
+
+  // ===== NEW VISUALS - MS PROJECT =====
+
+  {
+    id: 'ms-project-gantt',
+    name: 'MS Project Gantt View',
+    description: 'Professional Gantt chart with task hierarchy, dependencies, and milestones',
+    tags: ['ms project', 'gantt', 'chart', 'schedule', 'dependencies', 'milestones'],
+    topics: ['ms project', 'scheduling', 'planning'],
+    methodologies: ['ms_project'],
+    conceptClass: ['tool_interface', 'planning'],
+    learningIntent: ['tooling', 'apply_template'],
+    priority: 95
+  },
+
+  {
+    id: 'ms-project-resources',
+    name: 'MS Project Resource Sheet',
+    description: 'Resource allocation view with overallocation detection and leveling',
+    tags: ['ms project', 'resources', 'allocation', 'leveling', 'overallocation'],
+    topics: ['ms project', 'resource management'],
+    methodologies: ['ms_project'],
+    conceptClass: ['tool_interface', 'role_matrix'],
+    learningIntent: ['tooling', 'analyze_data'],
+    priority: 90
+  },
+
+  {
+    id: 'ms-project-critical-path',
+    name: 'Critical Path Method',
+    description: 'Network diagram showing critical path, float, and task dependencies',
+    tags: ['critical path', 'cpm', 'network', 'float', 'slack', 'dependencies'],
+    topics: ['ms project', 'critical path', 'scheduling'],
+    methodologies: ['ms_project', 'generic_pm'],
+    conceptClass: ['diagram', 'analysis'],
+    learningIntent: ['analyze_data', 'explain_concept'],
+    priority: 90
+  },
+
+  {
+    id: 'ms-project-tracking',
+    name: 'MS Project Baseline Tracking',
+    description: 'Baseline vs actual progress with earned value metrics (CPI, SPI)',
+    tags: ['baseline', 'tracking', 'earned value', 'cpi', 'spi', 'progress'],
+    topics: ['ms project', 'tracking', 'earned value'],
+    methodologies: ['ms_project', 'generic_pm'],
+    conceptClass: ['metric_visualization'],
+    learningIntent: ['measure_metric', 'analyze_data'],
+    priority: 90
+  },
+
+  {
+    id: 'ms-project-dashboard',
+    name: 'MS Project Dashboard',
+    description: 'Executive dashboard with status indicators, timeline, and key metrics',
+    tags: ['dashboard', 'reporting', 'status', 'executive', 'kpi'],
+    topics: ['ms project', 'reporting', 'dashboard'],
+    methodologies: ['ms_project'],
+    conceptClass: ['metric_visualization', 'tool_interface'],
+    learningIntent: ['tooling', 'measure_metric'],
+    priority: 85
+  },
+
 ];
 
 /**

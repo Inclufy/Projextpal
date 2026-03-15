@@ -30,7 +30,10 @@ except ImportError:
     PracticeAssignment = None
     Exam = None
 
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+def get_openai_client():
+    return OpenAI(api_key=os.getenv('OPENAI_API_KEY', 'sk-placeholder'))
+
+client = get_openai_client()
 
 # ============================================================================
 # AI COMPLETE COURSE GENERATION

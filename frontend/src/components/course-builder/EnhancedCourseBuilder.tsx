@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   GraduationCap, Plus, Search, MoreHorizontal, Edit, Trash2, Eye,
   BookOpen, Video, FileText, Award, Play, ChevronDown, ChevronRight,
   Save, X, Loader2, CheckCircle2, AlertCircle, Layers, List, Upload,
   ArrowLeft, Settings, Image as ImageIcon, Link2, FileUp, Sparkles,
-  Target, MessageCircle, Pencil, Download
+  Target, MessageCircle, Pencil, Download, ExternalLink, BarChart3,
+  Brain, FlaskConical, Trophy, Clock
 } from "lucide-react";
+import { coursesWithContent, getModulesByCourseId, getCourseStats } from "@/data/academy/courses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +89,7 @@ interface ContentBlock {
 }
 
 const EnhancedCourseBuilder = () => {
+  const navigate = useNavigate();
   // ===== STATES =====
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -113,6 +117,12 @@ const EnhancedCourseBuilder = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
   const [generatedSimulation, setGeneratedSimulation] = useState<any>(null);
+
+  // Course import state
+  const [courseImportOpen, setCourseImportOpen] = useState(false);
+  const [courseImportFile, setCourseImportFile] = useState<File | null>(null);
+  const [courseImportLoading, setCourseImportLoading] = useState(false);
+  const [courseImportResults, setCourseImportResults] = useState<{ created: number; errors: string[] } | null>(null);
 
   // ===== API =====
   const api = {
@@ -434,6 +444,49 @@ const EnhancedCourseBuilder = () => {
     );
   };
 
+  // ===== COURSE IMPORT =====
+  const handleCourseImport = async () => {
+    if (!courseImportFile) return;
+    setCourseImportLoading(true);
+    setCourseImportResults(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', courseImportFile);
+      const token = localStorage.getItem('access_token');
+      const r = await fetch('/api/v1/admin/training/courses/import/', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setCourseImportResults({ created: data.created || 0, errors: data.errors || [] });
+        if (data.created > 0) {
+          showToast(`${data.created} cursussen geïmporteerd`);
+          fetchCourses();
+        }
+      } else {
+        const errData = await r.json().catch(() => ({}));
+        setCourseImportResults({ created: 0, errors: [errData.error || 'Import mislukt'] });
+      }
+    } catch (err: any) {
+      setCourseImportResults({ created: 0, errors: [err.message || 'Import mislukt'] });
+    } finally {
+      setCourseImportLoading(false);
+    }
+  };
+
+  const downloadCourseTemplate = () => {
+    const csv = 'title,title_nl,description,category,difficulty,price,duration_hours,status,language,has_certificate\nProject Management Basics,Projectmanagement Basis,Learn PM fundamentals,Project Management,beginner,99,20,draft,Nederlands & English,true\nAdvanced Scrum,Gevorderd Scrum,Master Scrum techniques,Agile,advanced,149,30,draft,Nederlands & English,true\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'courses_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
@@ -490,7 +543,102 @@ const EnhancedCourseBuilder = () => {
                   </h1>
                   <p className="text-muted-foreground">Complete cursus beheer met modules, lessen en content</p>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={() => { setCourseImportOpen(true); setCourseImportResults(null); setCourseImportFile(null); }}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Cursussen Importeren
+                </Button>
               </div>
+
+              {/* Course Import Dialog */}
+              <Dialog open={courseImportOpen} onOpenChange={setCourseImportOpen}>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Upload className="w-5 h-5" style={{ color: BRAND.purple }} />
+                      Cursussen Importeren
+                    </DialogTitle>
+                    <DialogDescription>
+                      Upload een CSV of JSON bestand om cursussen in bulk te importeren.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    {/* Template */}
+                    <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">CSV/JSON Template</p>
+                        <p className="text-xs text-blue-700 mt-0.5">title, category, difficulty, price, duration_hours, status</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={downloadCourseTemplate} className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        Template
+                      </Button>
+                    </div>
+
+                    {/* File upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Bestand (CSV of JSON)</label>
+                      <input
+                        type="file"
+                        accept=".csv,.json,.txt"
+                        onChange={(e) => { setCourseImportFile(e.target.files?.[0] || null); setCourseImportResults(null); }}
+                        className="w-full text-sm border rounded-md p-2"
+                      />
+                      {courseImportFile && (
+                        <p className="text-xs text-muted-foreground">{courseImportFile.name} ({(courseImportFile.size / 1024).toFixed(1)} KB)</p>
+                      )}
+                    </div>
+
+                    {/* Fields info */}
+                    <div className="p-3 bg-gray-50 border rounded-lg text-xs space-y-1">
+                      <p className="font-medium">Beschikbare velden:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['title*', 'title_nl', 'description', 'category', 'difficulty', 'price', 'duration_hours', 'status', 'language', 'has_certificate'].map(f => (
+                          <span key={f} className="px-1.5 py-0.5 bg-white border rounded text-xs">{f}</span>
+                        ))}
+                      </div>
+                      <p className="mt-1">Moeilijkheid: beginner, intermediate, advanced, expert</p>
+                      <p>JSON: kan ook 'modules' array bevatten met 'lessons'</p>
+                    </div>
+
+                    {/* Results */}
+                    {courseImportResults && (
+                      <div className="space-y-2">
+                        {courseImportResults.created > 0 && (
+                          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                            <CheckCircle2 className="h-4 w-4 shrink-0" />
+                            <span>{courseImportResults.created} cursussen succesvol geïmporteerd</span>
+                          </div>
+                        )}
+                        {courseImportResults.errors.length > 0 && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4 shrink-0" />
+                              <span className="font-medium">{courseImportResults.errors.length} fouten:</span>
+                            </div>
+                            <ul className="ml-6 list-disc space-y-0.5 text-xs max-h-32 overflow-y-auto">
+                              {courseImportResults.errors.map((err, i) => <li key={i}>{err}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setCourseImportOpen(false)}>Sluiten</Button>
+                    <Button onClick={handleCourseImport} disabled={!courseImportFile || courseImportLoading}>
+                      {courseImportLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin mr-2" />Importeren...</>
+                      ) : (
+                        <><Upload className="h-4 w-4 mr-2" />Importeren</>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {courses.map(course => (
@@ -1346,9 +1494,13 @@ const EnhancedCourseBuilder = () => {
                 <Award className="w-7 h-7" style={{ color: BRAND.purple }} />
                 Skills Management
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuwe Skill
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
             <div className="grid grid-cols-4 gap-4">
@@ -1377,13 +1529,33 @@ const EnhancedCourseBuilder = () => {
                 </CardContent>
               </Card>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Skills management komt binnenkort! Gebruik de admin API endpoints voor nu.
-                </p>
-              </CardContent>
-            </Card>
+            <h3 className="text-lg font-semibold">Cursussen met Skills</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=skills`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.purple}15` }}>
+                          <Brain className="w-5 h-5" style={{ color: BRAND.purple }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{modules.length} modules · {lessonCount} lessen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <Award className="w-3.5 h-3.5" />
+                        Skills Bekijken
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1395,20 +1567,64 @@ const EnhancedCourseBuilder = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Pencil className="w-7 h-7" style={{ color: BRAND.green }} />
-                Practice Assignments
+                Praktijk Opdrachten
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.blue})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuwe Oefening
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.blue})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Practice assignments management komt binnenkort!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Totaal Opdrachten</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.green }}>{coursesWithContent.length * 3}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Cursussen</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.blue }}>{coursesWithContent.length}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Actieve Studenten</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.purple }}>{getCourseStats().totalStudents.toLocaleString()}</p>
+                </CardContent>
+              </Card>
+            </div>
+            <h3 className="text-lg font-semibold">Cursussen met Praktijk Opdrachten</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=practice`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.green}15` }}>
+                          <Pencil className="w-5 h-5" style={{ color: BRAND.green }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{modules.length} modules · {lessonCount} lessen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <Pencil className="w-3.5 h-3.5" />
+                        Praktijk Bekijken
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1420,20 +1636,64 @@ const EnhancedCourseBuilder = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Play className="w-7 h-7" style={{ color: BRAND.blue }} />
-                Simulations
+                Simulaties
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuwe Simulatie
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Simulation management komt binnenkort!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Totaal Simulaties</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.blue }}>{coursesWithContent.length * 2}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Interactieve Scenario's</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.purple }}>{coursesWithContent.length * 4}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Cursussen</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.green }}>{coursesWithContent.length}</p>
+                </CardContent>
+              </Card>
+            </div>
+            <h3 className="text-lg font-semibold">Cursussen met Simulaties</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=simulation`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.blue}15` }}>
+                          <FlaskConical className="w-5 h-5" style={{ color: BRAND.blue }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{modules.length} modules · {lessonCount} lessen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <Play className="w-3.5 h-3.5" />
+                        Simulatie Starten
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1445,20 +1705,64 @@ const EnhancedCourseBuilder = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-7 h-7" style={{ color: BRAND.green }} />
-                Quizzes
+                Quiz Beheer
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.blue})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuwe Quiz
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.blue})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Quiz management komt binnenkort!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Totaal Quizzen</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.green }}>{getCourseStats().totalModules}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Totaal Vragen</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.blue }}>{getCourseStats().totalModules * 10}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Gem. Score</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.purple }}>78%</p>
+                </CardContent>
+              </Card>
+            </div>
+            <h3 className="text-lg font-semibold">Cursussen met Quizzen</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=quiz`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.green}15` }}>
+                          <CheckCircle2 className="w-5 h-5" style={{ color: BRAND.green }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{modules.length} quizzen · {lessonCount} lessen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Quiz Bekijken
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1470,20 +1774,64 @@ const EnhancedCourseBuilder = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <FileText className="w-7 h-7" style={{ color: BRAND.orange }} />
-                Exams
+                Examen Beheer
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.orange}, ${BRAND.purple})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuw Examen
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.orange}, ${BRAND.purple})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Exam management komt binnenkort!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Totaal Examens</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.orange }}>{coursesWithContent.length}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Afgenomen</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.green }}>342</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-2">Slagingspercentage</h3>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.blue }}>85%</p>
+                </CardContent>
+              </Card>
+            </div>
+            <h3 className="text-lg font-semibold">Cursussen met Examens</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=exam`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.orange}15` }}>
+                          <FileText className="w-5 h-5" style={{ color: BRAND.orange }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{course.duration || 0}u · {lessonCount} lessen · 1 examen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <FileText className="w-3.5 h-3.5" />
+                        Examen Bekijken
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1495,40 +1843,73 @@ const EnhancedCourseBuilder = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Award className="w-7 h-7" style={{ color: BRAND.purple }} />
-                Certificates
+                Certificaten Beheer
               </h2>
-              <Button style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }} className="text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Nieuw Certificate
+              <Button
+                style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }}
+                className="text-white"
+                onClick={() => navigate('/academy')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Naar Academy
               </Button>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">Total Issued</h3>
-                  <p className="text-2xl font-bold">156</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="w-5 h-5" style={{ color: BRAND.purple }} />
+                    <h3 className="font-semibold">Totaal Uitgegeven</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.purple }}>156</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">This Month</h3>
-                  <p className="text-2xl font-bold">23</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-5 h-5" style={{ color: BRAND.green }} />
+                    <h3 className="font-semibold">Deze Maand</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.green }}>23</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">Downloads</h3>
-                  <p className="text-2xl font-bold">142</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Download className="w-5 h-5" style={{ color: BRAND.blue }} />
+                    <h3 className="font-semibold">Downloads</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: BRAND.blue }}>142</p>
                 </CardContent>
               </Card>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Certificate management komt binnenkort!
-                </p>
-              </CardContent>
-            </Card>
+            <h3 className="text-lg font-semibold">Cursussen met Certificaten</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coursesWithContent.map(course => {
+                const modules = getModulesByCourseId(course.id);
+                const lessonCount = modules.reduce((sum, m) => sum + (m.lessons?.length || 0), 0);
+                return (
+                  <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/academy/course/${course.id}/learn?tab=certificate`)}>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${BRAND.purple}15` }}>
+                          <Trophy className="w-5 h-5" style={{ color: BRAND.purple }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">{course.duration || 0}u · {lessonCount} lessen</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        <Award className="w-3.5 h-3.5" />
+                        Certificaat Bekijken
+                        <ExternalLink className="w-3 h-3 ml-auto" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
       </Tabs>

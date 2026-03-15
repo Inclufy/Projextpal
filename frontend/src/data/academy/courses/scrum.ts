@@ -14,14 +14,14 @@ import { instructors } from '../instructors';
 // ============================================
 const module1: Module = {
   id: 'scrum-m1',
-  title: 'Module 1: Scrum Fundamenten',
+  title: 'Module 1: Scrum Fundamentals',
   titleNL: 'Module 1: Scrum Fundamenten',
   description: 'The foundation: empiricism, values, pillars, and the framework.',
   descriptionNL: 'De basis van Scrum: geschiedenis, waarden, principes en het framework.',
   lessons: [
     {
       id: 'scrum-l1',
-      title: 'De oorsprong en essentie van Scrum',
+      title: 'The Origin and Essence of Scrum',
       titleNL: 'De oorsprong en essentie van Scrum',
       duration: '18:00',
       type: 'video',
@@ -142,10 +142,22 @@ Scrum:
 - Bestaat uit rollen, events en artefacten
 - Is een framework, geen complete methode`,
       keyTakeaways: [
+        'Scrum is based on empiricism: learning through experience',
+        'Three pillars: transparency, inspection, adaptation',
+        'Five values: commitment, focus, openness, respect, courage',
+        'Scrum is a framework, not a complete methodology',
+      ],
+      keyTakeawaysNL: [
         'Scrum is gebaseerd op empirisme: leren door ervaring',
         'Drie pijlers: transparantie, inspectie, adaptatie',
         'Vijf waarden: commitment, focus, openness, respect, courage',
         'Scrum is een framework, geen complete methodologie',
+      ],
+      keyTakeawaysEN: [
+        'Scrum is based on empiricism: learning through experience',
+        'Three pillars: transparency, inspection, adaptation',
+        'Five values: commitment, focus, openness, respect, courage',
+        'Scrum is a framework, not a complete methodology',
       ],
       resources: [
         {
@@ -158,7 +170,7 @@ Scrum:
     },
     {
       id: 'scrum-l2',
-      title: 'De Scrum Rollen (Accountabilities)',
+      title: 'The Scrum Roles (Accountabilities)',
       titleNL: 'De Scrum Rollen (Accountabilities)',
       duration: '22:00',
       type: 'video',
@@ -293,10 +305,22 @@ De drie accountabilities:
 
 Samen vormen ze een cross-functional, self-managing team.`,
       keyTakeaways: [
+        'Three accountabilities: Product Owner, Scrum Master, Developers',
+        'Product Owner maximizes value and manages the backlog',
+        'Scrum Master is servant-leader, coach, and facilitator',
+        'Developers are all people who work on the product',
+      ],
+      keyTakeawaysNL: [
         'Drie accountabilities: Product Owner, Scrum Master, Developers',
         'Product Owner maximaliseert waarde en beheert de backlog',
         'Scrum Master is servant-leader, coach en facilitator',
         'Developers zijn alle mensen die aan het product werken',
+      ],
+      keyTakeawaysEN: [
+        'Three accountabilities: Product Owner, Scrum Master, Developers',
+        'The Product Owner maximizes value and manages the backlog',
+        'The Scrum Master is a servant-leader, coach, and facilitator',
+        'Developers are all people who work on the product',
       ],
       resources: [
         {
@@ -309,7 +333,7 @@ Samen vormen ze een cross-functional, self-managing team.`,
     },
     {
       id: 'scrum-l3',
-      title: 'De Scrum Events',
+      title: 'The Scrum Events',
       titleNL: 'De Scrum Events',
       duration: '25:00',
       type: 'video',
@@ -472,10 +496,22 @@ De events creëren een inspect-adapt ritme:
 
 Skip geen events - elk heeft een cruciale functie!`,
       keyTakeaways: [
+        'The Sprint is the container for all other events (max 4 weeks)',
+        'Sprint Planning defines the Sprint Goal and selects work',
+        'Daily Scrum is max 15 min for daily synchronization',
+        'Sprint Review showcases the Increment; Retrospective improves the process',
+      ],
+      keyTakeawaysNL: [
         'De Sprint is de container voor alle andere events (max 4 weken)',
         'Sprint Planning definieert het Sprint Goal en selecteert werk',
         'Daily Scrum is max 15 min voor dagelijkse synchronisatie',
         'Sprint Review toont het Increment; Retrospective verbetert het proces',
+      ],
+      keyTakeawaysEN: [
+        'The Sprint is the container for all other events (max 4 weeks)',
+        'Sprint Planning defines the Sprint Goal and selects work',
+        'Daily Scrum is max 15 min for daily synchronization',
+        'Sprint Review showcases the Increment; Retrospective improves the process',
       ],
       resources: [
         {
@@ -494,7 +530,7 @@ Skip geen events - elk heeft een cruciale functie!`,
     },
     {
       id: 'scrum-l4',
-      title: 'De Scrum Artefacten',
+      title: 'The Scrum Artifacts',
       titleNL: 'De Scrum Artefacten',
       duration: '18:00',
       type: 'video',
@@ -634,10 +670,22 @@ De drie artefacten:
 
 Transparantie is key - als artefacten niet transparant zijn, falen inspectie en adaptatie.`,
       keyTakeaways: [
+        'Each artifact has a commitment that provides focus',
+        'Product Backlog is ordered and owned by the Product Owner',
+        'Sprint Backlog is owned by the Developers and evolves',
+        'Definition of Done determines when work is truly "Done"',
+      ],
+      keyTakeawaysNL: [
         'Elk artefact heeft een commitment dat focus geeft',
         'Product Backlog is geordend en eigendom van de Product Owner',
         'Sprint Backlog is eigendom van de Developers en evolueert',
         'Definition of Done bepaalt wanneer werk echt "Done" is',
+      ],
+      keyTakeawaysEN: [
+        'Each artifact has a commitment that provides focus',
+        'The Product Backlog is ordered and owned by the Product Owner',
+        'The Sprint Backlog is owned by the Developers and evolves',
+        'The Definition of Done determines when work is truly "Done"',
       ],
       resources: [
         {
@@ -650,7 +698,7 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
     },
     {
       id: 'scrum-l5',
-      title: 'Quiz: Scrum Fundamenten',
+      title: 'Quiz: Scrum Fundamentals',
       titleNL: 'Quiz: Scrum Fundamenten',
       duration: '15:00',
       type: 'quiz',
@@ -705,7 +753,7 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
 // ============================================
 const module2: Module = {
   id: 'scrum-m2',
-  title: 'Module 2: De Rol van de Scrum Master',
+  title: 'Module 2: The Role of the Scrum Master',
   titleNL: 'Module 2: De Rol van de Scrum Master',
   description: 'Deep dive into the Scrum Master role: servant leadership, coaching, and facilitation.',
   descriptionNL: 'Diepgaande behandeling van de Scrum Master rol: servant leadership, coaching en facilitatie.',
@@ -808,15 +856,27 @@ De Scrum Master als servant-leader:
 - Coacht, faciliteert en onderwijst
 - Vertrouwt op het team`,
       keyTakeaways: [
+        'Servant leadership inverts the traditional pyramid',
+        'The SM serves the team, not the other way around',
+        'Listening, empathy, and persuasion are core skills',
+        'The SM is coach, facilitator, and teacher',
+      ],
+      keyTakeawaysNL: [
         'Servant leadership draait de traditionele piramide om',
         'De SM dient het team, niet andersom',
         'Luisteren, empathie en overtuigen zijn kernvaardigheden',
         'De SM is coach, facilitator en teacher',
       ],
+      keyTakeawaysEN: [
+        'Servant leadership inverts the traditional pyramid',
+        'The SM serves the team, not the other way around',
+        'Listening, empathy, and persuasion are core skills',
+        'The SM is a coach, facilitator, and teacher',
+      ],
     },
     {
       id: 'scrum-l7',
-      title: 'Impediments Oplossen',
+      title: 'Resolving Impediments',
       titleNL: 'Impediments Oplossen',
       duration: '18:00',
       type: 'video',
@@ -921,15 +981,27 @@ Impediments oplossen:
 - Soms is escaleren nodig
 - Een impediment backlog helpt bij tracking`,
       keyTakeaways: [
+        'Impediments are obstacles that hinder the team',
+        'Not everything is an impediment for the SM',
+        'Identify, prioritize, investigate, act, prevent',
+        'Escalating is not failure but working effectively',
+      ],
+      keyTakeawaysNL: [
         'Impediments zijn obstakels die het team hinderen',
         'Niet alles is een impediment voor de SM',
         'Identificeer, prioriteer, onderzoek, actie, voorkom',
         'Escaleren is geen falen maar effectief werken',
       ],
+      keyTakeawaysEN: [
+        'Impediments are obstacles that hinder the team',
+        'Not everything is an impediment for the SM',
+        'Identify, prioritize, investigate, act, prevent',
+        'Escalating is not failure but working effectively',
+      ],
     },
     {
       id: 'scrum-l8',
-      title: 'Events Faciliteren',
+      title: 'Facilitating Events',
       titleNL: 'Events Faciliteren',
       duration: '22:00',
       type: 'video',
@@ -1050,10 +1122,22 @@ Events faciliteren:
 - Vraagt om timemanagement en betrekken van iedereen
 - Elk event heeft zijn eigen dynamiek`,
       keyTakeaways: [
+        'Facilitating is helping the team collaborate effectively',
+        'The facilitator does not determine content but safeguards the process',
+        'Each Scrum event has its own facilitation approach',
+        'Timebox, engagement, and focus are key',
+      ],
+      keyTakeawaysNL: [
         'Faciliteren is het team helpen effectief samen te werken',
         'De facilitator bepaalt geen inhoud maar bewaakt het proces',
         'Elk Scrum event heeft zijn eigen facilitatie-aanpak',
         'Timebox, betrokkenheid en focus zijn key',
+      ],
+      keyTakeawaysEN: [
+        'Facilitation is helping the team collaborate effectively',
+        'The facilitator does not determine content but safeguards the process',
+        'Each Scrum event has its own facilitation approach',
+        'Timebox, engagement, and focus are key',
       ],
       resources: [
         {
@@ -1072,14 +1156,14 @@ Events faciliteren:
 // ============================================
 const module3: Module = {
   id: 'scrum-m3',
-  title: 'Module 3: Scrum in de Praktijk',
+  title: 'Module 3: Scrum in Practice',
   titleNL: 'Module 3: Scrum in de Praktijk',
   description: 'Practical application of Scrum: metrics, scaling, and common challenges.',
   descriptionNL: 'Praktische toepassing van Scrum: metrics, scaling en veelvoorkomende uitdagingen.',
   lessons: [
     {
       id: 'scrum-l9',
-      title: 'Scrum Metrics & Voorspelbaarheid',
+      title: 'Scrum Metrics & Predictability',
       titleNL: 'Scrum Metrics & Voorspelbaarheid',
       duration: '18:00',
       type: 'video',
@@ -1163,15 +1247,27 @@ Goede metrics:
 - Focus op trends, niet absolute waarden
 - Ondersteunen voorspelbaarheid`,
       keyTakeaways: [
+        'Velocity is for forecasting, not for comparing teams',
+        'Burndown/burnup charts visualize progress',
+        'Sprint Goal Success Rate measures predictability',
+        'Metrics are for the team, not for monitoring them',
+      ],
+      keyTakeawaysNL: [
         'Velocity is voor forecasting, niet voor vergelijking tussen teams',
         'Burndown/burnup charts visualiseren voortgang',
         'Sprint Goal Success Rate meet voorspelbaarheid',
         'Metrics zijn voor het team, niet om te controleren',
       ],
+      keyTakeawaysEN: [
+        'Velocity is for forecasting, not for comparing teams',
+        'Burndown/burnup charts visualize progress',
+        'Sprint Goal Success Rate measures predictability',
+        'Metrics are for the team, not for controlling them',
+      ],
     },
     {
       id: 'scrum-l10',
-      title: 'Veelvoorkomende Uitdagingen',
+      title: 'Common Challenges',
       titleNL: 'Veelvoorkomende Uitdagingen',
       duration: '20:00',
       type: 'video',
@@ -1283,15 +1379,27 @@ Bij uitdagingen:
 - Experimenteer met oplossingen
 - Wees geduldig, verandering kost tijd`,
       keyTakeaways: [
+        'Many challenges are symptoms of deeper problems',
+        'Refinement solves many planning problems',
+        'Self-management requires the SM to step back',
+        'Experiment and learn, perfection does not exist',
+      ],
+      keyTakeawaysNL: [
         'Veel uitdagingen zijn symptomen van diepere problemen',
         'Refinement lost veel planning problemen op',
         'Self-management vereist dat de SM terugstapt',
         'Experimenteer en leer, perfectie bestaat niet',
       ],
+      keyTakeawaysEN: [
+        'Many challenges are symptoms of deeper problems',
+        'Refinement solves many planning problems',
+        'Self-management requires the SM to step back',
+        'Experiment and learn, perfection does not exist',
+      ],
     },
     {
       id: 'scrum-l11',
-      title: 'Quiz: Scrum Master Rol & Praktijk',
+      title: 'Quiz: Scrum Master Role & Practice',
       titleNL: 'Quiz: Scrum Master Rol & Praktijk',
       duration: '15:00',
       type: 'quiz',
@@ -1355,7 +1463,7 @@ Bij uitdagingen:
     },
     {
       id: 'scrum-l12',
-      title: 'Eindexamen',
+      title: 'Final Exam',
       titleNL: 'Eindexamen',
       duration: '45:00',
       type: 'exam',
@@ -1381,7 +1489,7 @@ Succes!`,
     },
     {
       id: 'scrum-l13',
-      title: 'Certificaat',
+      title: 'Certificate',
       titleNL: 'Certificaat',
       duration: '5:00',
       type: 'certificate',

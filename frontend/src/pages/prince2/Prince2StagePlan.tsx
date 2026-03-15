@@ -52,26 +52,26 @@ const Prince2StagePlan = () => {
       const url = editing ? `/api/v1/projects/${id}/prince2/stage-plans/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-plans/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (response.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleApprove = async (planId: number) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/stage-plans/${planId}/approve/`, { method: "POST", headers: jsonHeaders });
-      if (r.ok) { toast.success("Goedgekeurd"); fetchData(); }
-      else toast.error("Goedkeuren mislukt");
-    } catch { toast.error("Goedkeuren mislukt"); }
+      if (r.ok) { toast.success(pt("Approved")); fetchData(); }
+      else toast.error(pt("Action failed"));
+    } catch { toast.error(pt("Action failed")); }
   };
 
   const handleDelete = async (planId: number) => {
-    if (!confirm("Faseplan verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/stage-plans/${planId}/`, { method: "DELETE", headers });
-      if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const getStageName = (stageId: number) => stages.find(s => s.id === stageId)?.name || `Stage ${stageId}`;

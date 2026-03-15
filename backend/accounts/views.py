@@ -398,6 +398,41 @@ class CurrentUserView(APIView):
                 pass
         return Response(data)
 
+    def post(self, request):
+        """SuperAdmin: link current user to a company (create if needed)."""
+        if getattr(request.user, "role", None) != "superadmin":
+            return Response(
+                {"error": "Only SuperAdmins can link themselves to a company."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        company_name = request.data.get("company_name", "").strip()
+        if not company_name:
+            return Response(
+                {"error": "company_name is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from accounts.models import Company
+
+        company, created = Company.objects.get_or_create(
+            name=company_name.lower(),
+            defaults={"description": f"Company: {company_name}"},
+        )
+
+        request.user.company = company
+        request.user.save(update_fields=["company"])
+
+        return Response(
+            {
+                "message": f"User linked to company '{company.name}'.",
+                "company_id": company.id,
+                "company_name": company.name,
+                "created": created,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 # Public admin registration: creates company + admin user
 class PublicAdminRegisterView(generics.CreateAPIView):
@@ -2106,3 +2141,140 @@ class RegistrationsView(APIView):
                 'active_trials': sum(1 for r in registrations if r['subscription']['is_active'] and r['subscription']['tier'] == 'trial'),
             }
         })
+
+
+# ============================================================
+# COMPANY API KEYS VIEW (client-facing, admin roles only)
+# ============================================================
+
+class CompanyApiKeysView(APIView):
+    """
+    GET  /api/v1/auth/company-api-keys/ - Get API keys for user's company
+    POST /api/v1/auth/company-api-keys/ - Create/update an API key for user's company
+    DELETE /api/v1/auth/company-api-keys/<provider>/ - Remove an API key
+    """
+    permission_classes = [IsAuthenticated]
+
+    def _check_admin_role(self, user):
+        return getattr(user, 'role', None) in ('superadmin', 'admin')
+
+    def get(self, request):
+        if not self._check_admin_role(request.user):
+            return Response(
+                {'error': 'Only admin users can manage API keys'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        company = getattr(request.user, 'company', None)
+        if not company:
+            return Response({'openai': None, 'anthropic': None})
+
+        from admin_portal.models import ClientApiKey
+        keys = ClientApiKey.objects.filter(company=company)
+        result = {}
+        for k in keys:
+            result[k.provider] = {
+                'id': str(k.id),
+                'masked_key': k.masked_key,
+                'is_active': k.is_active,
+                'use_custom': True,
+                'updated_at': k.updated_at.isoformat() if k.updated_at else None,
+            }
+        # Ensure both providers are in response
+        for provider in ('openai', 'anthropic'):
+            if provider not in result:
+                result[provider] = None
+        return Response(result)
+
+    def post(self, request):
+        if not self._check_admin_role(request.user):
+            return Response(
+                {'error': 'Only admin users can manage API keys'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        company = getattr(request.user, 'company', None)
+        if not company:
+            return Response(
+                {'error': 'User is not associated with a company'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        provider = request.data.get('provider')
+        api_key = request.data.get('api_key', '')
+        use_custom = request.data.get('use_custom', True)
+
+        if provider not in ('openai', 'anthropic'):
+            return Response(
+                {'error': 'provider must be openai or anthropic'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from admin_portal.models import ClientApiKey, log_action
+
+        if not use_custom:
+            # User wants to use the default platform key - delete their custom key
+            ClientApiKey.objects.filter(company=company, provider=provider).delete()
+            return Response({'status': 'using_default', 'provider': provider})
+
+        if not api_key:
+            return Response(
+                {'error': 'api_key is required when using a custom key'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        obj, created = ClientApiKey.objects.update_or_create(
+            company=company,
+            provider=provider,
+            defaults={
+                'api_key': api_key,
+                'is_active': True,
+                'updated_by': request.user,
+            },
+        )
+
+        log_action(
+            user=request.user,
+            action='api_key_created' if created else 'settings_updated',
+            category='settings',
+            description=f"{'Set' if created else 'Updated'} {provider} API key for {company.name}",
+            resource_type='client_api_key',
+            resource_id=str(obj.id),
+            company=company,
+            request=request,
+        )
+
+        return Response({
+            'id': str(obj.id),
+            'provider': provider,
+            'masked_key': obj.masked_key,
+            'is_active': obj.is_active,
+            'use_custom': True,
+        })
+
+    def delete(self, request, provider=None):
+        if not self._check_admin_role(request.user):
+            return Response(
+                {'error': 'Only admin users can manage API keys'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        company = getattr(request.user, 'company', None)
+        if not company or provider not in ('openai', 'anthropic'):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        from admin_portal.models import ClientApiKey, log_action
+
+        deleted_count, _ = ClientApiKey.objects.filter(
+            company=company, provider=provider
+        ).delete()
+
+        if deleted_count:
+            log_action(
+                user=request.user,
+                action='api_key_revoked',
+                category='settings',
+                severity='warning',
+                description=f"Removed {provider} API key for {company.name}",
+                company=company,
+                request=request,
+            )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

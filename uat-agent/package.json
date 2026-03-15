@@ -1,0 +1,30 @@
+{
+  "name": "inclufy-uat-agent",
+  "version": "1.0.0",
+  "description": "UAT Test Agent for ProjeXtPal and other Inclufy applications",
+  "main": "dist/cli.js",
+  "bin": {
+    "uat-agent": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npx tsx src/cli.ts",
+    "run:scenario": "npx tsx src/cli.ts run",
+    "run:all": "npx tsx src/cli.ts run --all",
+    "run:app": "npx tsx src/cli.ts run --app",
+    "list": "npx tsx src/cli.ts list",
+    "dev": "npx tsx --watch src/cli.ts"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "ora": "^8.0.1",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -6,14 +6,17 @@
 // All lessons have icons, key takeaways, and resources
 // ============================================
 
+import { Layers } from 'lucide-react';
 import { Course, Module } from '../types';
+import { BRAND } from '../brand';
+import { instructors } from '../instructors';
 
 // ============================================
 // MODULE 1: PROGRAM MANAGEMENT BASICS
 // ============================================
 const module1: Module = {
   id: 'pgm-m1',
-  title: 'Program Management Basics',
+  title: 'Module 1: Program Management Basics',
   titleNL: 'Programma Management Basis',
   description: 'Understanding the fundamentals of program management and how it differs from projects.',
   descriptionNL: 'Begrijpen van de fundamenten van programma management en hoe het verschilt van projecten.',
@@ -673,6 +676,12 @@ In de volgende les verkennen we de programma levenscyclus in detail!`,
         'Program Managers focus on benefits realization and strategic change, not just project delivery',
         'Use programs when you have multiple related projects with shared benefits and extended timeframes',
       ],
+      keyTakeawaysEN: [
+        'Projects deliver outputs (deliverables), Programs deliver outcomes (benefits), Portfolios deliver strategy',
+        'Programs coordinate multiple related projects for benefits not available from managing individually',
+        'Program Managers focus on benefits realization and strategic change, not just project delivery',
+        'Use programs when you have multiple related projects with shared benefits and extended timeframes',
+      ],
       keyTakeawaysNL: [
         'Projecten leveren outputs (opleveringen), Programma\'s leveren outcomes (benefits), Portfolio\'s leveren strategie',
         'Programma\'s coördineren meerdere gerelateerde projecten voor benefits niet beschikbaar door individueel managen',
@@ -1325,6 +1334,12 @@ Volgende: Benefits Management beheersen!`,
         'Benefits often realize 6-12 months AFTER projects complete - programs continue beyond project delivery',
         'Program closure is gradual as benefits transition to operations, not quick like project closure',
       ],
+      keyTakeawaysEN: [
+        'Program lifecycle has 4 phases: Definition, Setup (Benefits Delivery), Execution, Closure',
+        'Execution phase is iterative and adaptive - programs continuously plan, execute, measure, and adapt',
+        'Benefits often realize 6-12 months AFTER projects complete - programs continue beyond project delivery',
+        'Program closure is gradual as benefits transition to operations, not quick like project closure',
+      ],
       keyTakeawaysNL: [
         'Programma levenscyclus heeft 4 fasen: Definitie, Setup (Benefits Levering), Uitvoering, Afsluiting',
         'Uitvoering fase is iteratief en adaptief - programma\'s plannen, voeren uit, meten en passen continu aan',
@@ -1360,6 +1375,7 @@ Volgende: Benefits Management beheersen!`,
       videoUrl: '',
       icon: 'TrendingUp',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1371,6 +1387,7 @@ Volgende: Benefits Management beheersen!`,
       videoUrl: '',
       icon: 'Shield',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1387,7 +1404,7 @@ Volgende: Benefits Management beheersen!`,
 
 const module2: Module = {
   id: 'pgm-m2',
-  title: 'Strategic Alignment',
+  title: 'Module 2: Strategic Alignment',
   titleNL: 'Strategische Afstemming',
   description: 'Link programs to organizational strategy and manage stakeholders effectively.',
   descriptionNL: 'Koppel programma\'s aan organisatiestrategie en manage stakeholders effectief.',
@@ -1405,6 +1422,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Target',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1416,6 +1434,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Users',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1427,6 +1446,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Map',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1438,6 +1458,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'Calculator',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1449,6 +1470,7 @@ const module2: Module = {
       videoUrl: '',
       icon: 'AlertTriangle',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
   ],
@@ -1456,7 +1478,7 @@ const module2: Module = {
 
 const module3: Module = {
   id: 'pgm-m3',
-  title: 'Execution & Benefits',
+  title: 'Module 3: Execution & Benefits',
   titleNL: 'Uitvoering & Benefits',
   description: 'Execute programs effectively and ensure benefits are realized.',
   descriptionNL: 'Voer programma\'s effectief uit en verzeker dat benefits worden gerealiseerd.',
@@ -1474,6 +1496,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'GitBranch',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1485,6 +1508,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'CheckCircle',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1496,6 +1520,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'ArrowRightLeft',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1507,6 +1532,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'FolderCheck',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -1536,42 +1562,34 @@ export const programManagementCourse: Course = {
   id: 'program-management-pro',
   title: 'Program Management Professional',
   titleNL: 'Programma Management Professional',
-  subtitle: 'Lead complex programs that deliver strategic value',
-  subtitleNL: 'Leid complexe programma\'s die strategische waarde leveren',
   description: 'Master program lifecycle, benefits management, governance and strategic alignment for enterprise-level initiatives.',
   descriptionNL: 'Beheers de programmalevenscyclus, benefits management, governance en strategische afstemming voor enterprise-initiatieven.',
+  icon: Layers,
+  color: BRAND.purple,
+  gradient: `linear-gradient(135deg, ${BRAND.purple}, #818CF8)`,
   category: 'program',
   methodology: 'program-management',
-  difficulty: 'advanced',
+  levels: 4,
+  modules: programManagementModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 28,
-  price: 0,
-  originalPrice: 249,
   rating: 4.7,
-  reviewCount: 892,
   students: 4567,
-  language: 'Nederlands & English',
+  tags: ['Program Management', 'Benefits', 'Governance', 'Portfolio', 'Strategic Alignment'],
+  tagsNL: ['Programmamanagement', 'Benefits', 'Governance', 'Portfolio', 'Strategische Afstemming'],
+  instructor: instructors.erik,
   featured: false,
   bestseller: false,
   new: true,
-  hasCertificate: true,
-  icon: 'Layers',
-  color: '#6366F1',
-  gradient: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-  instructor: {
-    name: 'Marc de Vries, PgMP',
-    title: 'Program Director & Consultant',
-    avatar: '',
-    bio: 'Marc has led enterprise transformation programs for Fortune 500 companies and holds the PMI Program Management Professional (PgMP) certification.',
-    bioNL: 'Marc heeft enterprise transformatie programma\'s geleid voor Fortune 500 bedrijven en heeft de PMI Program Management Professional (PgMP) certificering.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Lead complex multi-project programs',
     'Manage benefits across project lifecycles',
     'Align programs to organizational strategy',
     'Implement effective governance structures',
     'Navigate stakeholder politics at scale',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Leid complexe multi-project programma\'s',
     'Manage benefits over project levenscycli',
     'Stem programma\'s af op organisatiestrategie',

@@ -1,27 +1,42 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Target, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import api from "@/lib/api";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+interface DashboardData {
+  current_phase?: string;
+  overall_progress?: number;
+  sigma_level?: string | number;
+  open_actions?: number;
+}
 
 const MethodologyDashboard = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [dashboard, setDashboard] = useState<any>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("access_token");
-  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
 
-  const fetchDashboard = async () => { try { const r = await fetch(`${BASE(id!)}/dashboard/`, { headers }); if (r.ok) setDashboard(await r.json()); } catch (err) { console.error(err); } finally { setLoading(false); } };
-  useEffect(() => { fetchDashboard(); }, [id]);
+  const fetchDashboard = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const data = await api.get<DashboardData>(`/sixsigma/projects/${id}/sixsigma/dashboard/`);
+      setDashboard(data);
+    } catch (err) {
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
   const nav = (path: string) => navigate(`/projects/${id}/six-sigma/${path}`);
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);

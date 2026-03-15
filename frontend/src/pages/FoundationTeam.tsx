@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UserPlus, Loader2, Trash2 } from "lucide-react";
@@ -27,6 +28,7 @@ interface CompanyUser {
 
 const FoundationTeam = () => {
   const { pt } = usePageTranslations();
+  const { t } = useLanguage();
   const { id: projectId } = useParams<{ id: string }>();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,15 +79,15 @@ const FoundationTeam = () => {
         body: JSON.stringify({ user_id: userId }),
       });
       if (response.ok) {
-        toast.success("Teamlid toegevoegd");
+        toast.success(t.common.teamMemberAdded);
         fetchMembers();
         fetchCompanyUsers();
       } else {
         const err = await response.json().catch(() => ({}));
-        toast.error(err.error || "Toevoegen mislukt");
+        toast.error(err.error || t.common.addFailed);
       }
     } catch {
-      toast.error("Toevoegen mislukt");
+      toast.error(t.common.addFailed);
     }
   };
 
@@ -96,13 +98,13 @@ const FoundationTeam = () => {
         headers,
       });
       if (response.ok || response.status === 204) {
-        toast.success("Teamlid verwijderd");
+        toast.success(t.common.teamMemberRemoved);
         fetchMembers();
       } else {
-        toast.error("Verwijderen mislukt");
+        toast.error(t.common.removeFailed);
       }
     } catch {
-      toast.error("Verwijderen mislukt");
+      toast.error(t.common.removeFailed);
     }
   };
 

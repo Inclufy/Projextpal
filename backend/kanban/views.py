@@ -116,7 +116,10 @@ class KanbanColumnViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        board = KanbanBoard.objects.get(project=project)
+        board, _ = KanbanBoard.objects.get_or_create(
+            project=project,
+            defaults={'name': f'{project.name} Board'}
+        )
         serializer.save(board=board)
 
     @action(detail=False, methods=['post'])
@@ -145,7 +148,10 @@ class KanbanSwimlaneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        board = KanbanBoard.objects.get(project=project)
+        board, _ = KanbanBoard.objects.get_or_create(
+            project=project,
+            defaults={'name': f'{project.name} Board'}
+        )
         serializer.save(board=board)
 
 
@@ -191,7 +197,10 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        board = KanbanBoard.objects.get(project=project)
+        board, _ = KanbanBoard.objects.get_or_create(
+            project=project,
+            defaults={'name': f'{project.name} Board'}
+        )
         serializer.save(board=board, reporter=self.request.user)
 
     @action(detail=True, methods=['post'])

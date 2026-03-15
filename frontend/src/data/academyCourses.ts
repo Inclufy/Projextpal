@@ -42,6 +42,7 @@ export interface Lesson {
   type?: 'video' | 'quiz' | 'assignment' | 'exam' | 'certificate';
   transcript?: string;
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
   resources?: Resource[];
   quiz?: QuizQuestion[];
   assignment?: Assignment;
@@ -53,6 +54,7 @@ export interface Module {
   description: string;
   lessons: Lesson[];
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
 }
 
 export interface CourseInstructor {
@@ -322,12 +324,12 @@ export const projectManagementFundamentals: Course = {
     // ==========================================
     {
       id: 'pm-m1',
-      title: 'Module 1: Introductie Project Management',
+      title: 'Module 1: Introduction to Project Management',
       description: 'De fundamenten: wat zijn projecten, wie is de PM, en welke methodologieën bestaan er?',
       lessons: [
         {
           id: 'pm-l1',
-          title: 'Wat is een project?',
+          title: 'What is a project?',
           duration: '12:00',
           type: 'video',
           transcript: `Welkom bij de eerste les van de Project Management Fundamentals cursus! Vandaag gaan we het hebben over een fundamentele vraag: wat is eigenlijk een project?
@@ -370,6 +372,12 @@ De statistieken zijn ontnuchterend:
 
 De projecten die wel slagen, hebben meestal één ding gemeen: goed projectmanagement.`,
           keyTakeaways: [
+            'A project is temporary, unique and delivers a specific result',
+            'The Triple Constraint (scope, time, budget) defines project boundaries',
+            'Projects differ fundamentally from operational activities',
+            '70% of projects fail without proper project management',
+          ],
+          keyTakeawaysNL: [
             'Een project is tijdelijk, uniek en levert een specifiek resultaat',
             'De Triple Constraint (scope, tijd, budget) bepaalt projectgrenzen',
             'Projecten verschillen fundamenteel van operationele werkzaamheden',
@@ -382,7 +390,7 @@ De projecten die wel slagen, hebben meestal één ding gemeen: goed projectmanag
         },
         {
           id: 'pm-l2',
-          title: 'De rol van de projectmanager',
+          title: 'The role of the project manager',
           duration: '15:00',
           type: 'video',
           transcript: `Een projectmanager (PM) is de persoon die verantwoordelijk is voor het plannen, uitvoeren en afsluiten van een project. Maar wat houdt dat precies in?
@@ -423,6 +431,12 @@ Een moderne visie ziet de PM als een "servant leader":
 - Je creëert een omgeving waarin mensen kunnen excelleren
 - Je faciliteert in plaats van dicteert`,
           keyTakeaways: [
+            'The PM is responsible for scope, time, budget and quality',
+            'Both hard skills and soft skills are essential',
+            'Servant leadership is more effective than command & control',
+            'There are multiple career paths to project management',
+          ],
+          keyTakeawaysNL: [
             'De PM is verantwoordelijk voor scope, tijd, budget en kwaliteit',
             'Zowel hard skills als soft skills zijn essentieel',
             'Dienend leiderschap is effectiever dan command & control',
@@ -431,7 +445,7 @@ Een moderne visie ziet de PM als een "servant leader":
         },
         {
           id: 'pm-l3',
-          title: 'Projectmanagement methodologieën',
+          title: 'Project management methodologies',
           duration: '18:00',
           type: 'video',
           transcript: `Een projectmanagement methodologie is een gestructureerde aanpak voor het managen van projecten. Er zijn veel verschillende methodologieën, elk met eigen sterke punten.
@@ -482,6 +496,12 @@ Factoren om te overwegen:
 - Team ervaring
 - Regelgeving en compliance`,
           keyTakeaways: [
+            'Methodologies provide structure and a common language',
+            'Waterfall is sequential; Agile is iterative and flexible',
+            'PRINCE2 focuses on governance; Lean Six Sigma on process improvement',
+            'Choose the methodology that fits your project and organization',
+          ],
+          keyTakeawaysNL: [
             'Methodologieën bieden structuur en gemeenschappelijke taal',
             'Waterfall is sequentieel; Agile is iteratief en flexibel',
             'PRINCE2 focust op governance; Lean Six Sigma op procesverbetering',
@@ -490,7 +510,7 @@ Factoren om te overwegen:
         },
         {
           id: 'pm-l4',
-          title: 'De projectlevenscyclus',
+          title: 'The project life cycle',
           duration: '14:00',
           type: 'video',
           transcript: `Elk project doorloopt een levenscyclus - een reeks fasen van begin tot eind. Het begrijpen van deze fasen is essentieel voor effectief projectmanagement.
@@ -533,6 +553,12 @@ Factoren om te overwegen:
 
 Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het project mag doorgaan.`,
           keyTakeaways: [
+            'Five phases: Initiation, Planning, Execution, Monitoring, Closure',
+            'The planning phase largely determines project success',
+            'Monitoring runs parallel to execution',
+            'Closure is crucial but is often neglected',
+          ],
+          keyTakeawaysNL: [
             'Vijf fasen: Initiatie, Planning, Uitvoering, Monitoring, Afsluiting',
             'De planningsfase bepaalt grotendeels het projectsucces',
             'Monitoring loopt parallel aan uitvoering',
@@ -541,7 +567,7 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
         },
         {
           id: 'pm-l5',
-          title: 'Quiz: Basisconcepten',
+          title: 'Quiz: Basic concepts',
           duration: '15:00',
           type: 'quiz',
           quiz: [
@@ -624,12 +650,12 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
     // ==========================================
     {
       id: 'pm-m2',
-      title: 'Module 2: Project Initiatie',
+      title: 'Module 2: Project Initiation',
       description: 'Hoe start je een project goed? Van stakeholder analyse tot business case.',
       lessons: [
         {
           id: 'pm-l6',
-          title: 'Het projectcharter opstellen',
+          title: 'Creating the project charter',
           duration: '16:00',
           type: 'video',
           transcript: `Het projectcharter is het formele document dat een project autoriseert en de projectmanager de bevoegdheid geeft om resources in te zetten.
@@ -657,6 +683,12 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
 **Voorbeeld SMART Doel:**
 "Het nieuwe CRM-systeem implementeren voor de sales afdeling (50 gebruikers) tegen 1 maart 2025, binnen een budget van €150.000, met een gebruikerstevredenheid van minimaal 4/5."`,
           keyTakeaways: [
+            'The project charter formally authorizes the project',
+            'Contains: goals, scope, budget, schedule, stakeholders, risks',
+            'Defining out-of-scope is just as important as in-scope',
+            'Keep it concise: 2-5 pages is sufficient',
+          ],
+          keyTakeawaysNL: [
             'Het projectcharter autoriseert het project formeel',
             'Bevat: doelen, scope, budget, planning, stakeholders, risico\'s',
             'Out-of-scope definiëren is net zo belangrijk als in-scope',
@@ -669,7 +701,7 @@ Tussen fasen zitten vaak "gates" - beslismomenten waar wordt bepaald of het proj
         },
         {
           id: 'pm-l7',
-          title: 'Stakeholder analyse',
+          title: 'Stakeholder analysis',
           duration: '14:00',
           type: 'video',
           transcript: `"Stakeholders kunnen je project maken of breken." Dit is een van de belangrijkste lessen in projectmanagement.
@@ -708,6 +740,12 @@ Documenteer voor elke stakeholder:
 - Communicatiebehoefte
 - Strategie`,
           keyTakeaways: [
+            'Stakeholders can make or break your project',
+            'Analyze stakeholders on power, interest and attitude',
+            'The Power/Interest matrix helps with prioritization',
+            'Stakeholder analysis is an ongoing process',
+          ],
+          keyTakeawaysNL: [
             'Stakeholders kunnen je project maken of breken',
             'Analyseer stakeholders op macht, belang en houding',
             'De Power/Interest matrix helpt bij het prioriteren',
@@ -720,7 +758,7 @@ Documenteer voor elke stakeholder:
         },
         {
           id: 'pm-l8',
-          title: 'Business case ontwikkelen',
+          title: 'Developing a business case',
           duration: '15:00',
           type: 'video',
           transcript: `De business case rechtvaardigt de investering in het project. Het beantwoordt de vraag: "Waarom zouden we dit project doen?"
@@ -753,6 +791,12 @@ Payback = Investering / Jaarlijkse besparing
 Houdt rekening met tijdswaarde van geld.
 NPV > 0 = winstgevend project`,
           keyTakeaways: [
+            'The business case justifies the investment',
+            'Always compare multiple options including "do nothing"',
+            'Use financial metrics: ROI, payback, NPV',
+            'Be realistic about costs and benefits',
+          ],
+          keyTakeawaysNL: [
             'De business case rechtvaardigt de investering',
             'Vergelijk altijd meerdere opties inclusief "niets doen"',
             'Gebruik financiële metrics: ROI, payback, NPV',
@@ -765,7 +809,7 @@ NPV > 0 = winstgevend project`,
         },
         {
           id: 'pm-l9',
-          title: 'Scope definitie',
+          title: 'Scope definition',
           duration: '12:00',
           type: 'video',
           transcript: `Scope is de totale omvang van het werk dat nodig is om de projectdoelen te bereiken.
@@ -795,6 +839,12 @@ Voorkomen door:
 - Regelmatige scope reviews
 - "Out of scope" discussies vastleggen`,
           keyTakeaways: [
+            'Scope = what is and is not part of the project',
+            'Distinguish product scope from project scope',
+            'Explicitly stating out-of-scope prevents scope creep',
+            'The scope statement is the formal documentation',
+          ],
+          keyTakeawaysNL: [
             'Scope = wat wel en niet tot het project behoort',
             'Onderscheid product scope van project scope',
             'Out-of-scope expliciet benoemen voorkomt scope creep',
@@ -803,7 +853,7 @@ Voorkomen door:
         },
         {
           id: 'pm-l10',
-          title: 'Praktijkopdracht: Project Charter',
+          title: 'Practical assignment: Project Charter',
           duration: '45:00',
           type: 'assignment',
           assignment: {
@@ -884,6 +934,12 @@ Elk werkpakket wordt beschreven in de WBS Dictionary:
 - Geschatte duur en kosten
 - Acceptatiecriteria`,
           keyTakeaways: [
+            'The WBS is the foundation for all planning and control',
+            'Follow the 100% rule: all work must be included',
+            'Use deliverables (what), not activities (how)',
+            'Work packages of 8-80 hours are ideal',
+          ],
+          keyTakeawaysNL: [
             'De WBS is de basis voor alle planning en control',
             'Volg de 100% regel: alle werk moet erin zitten',
             'Gebruik deliverables (wat), geen activiteiten (hoe)',
@@ -896,7 +952,7 @@ Elk werkpakket wordt beschreven in de WBS Dictionary:
         },
         {
           id: 'pm-l12',
-          title: 'Gantt charts maken',
+          title: 'Creating Gantt charts',
           duration: '20:00',
           type: 'video',
           transcript: `De Gantt chart is een visuele weergave van de projectplanning, vernoemd naar Henry Gantt (1910).
@@ -930,6 +986,12 @@ Kenmerken:
 - Vertraging op kritiek pad = vertraging project
 - Focus je monitoring op kritieke taken`,
           keyTakeaways: [
+            'Gantt charts visualize schedules and dependencies',
+            'The critical path determines the minimum project duration',
+            'There are four types of dependencies: FS, SS, FF, SF',
+            'Update the Gantt regularly for an accurate picture',
+          ],
+          keyTakeawaysNL: [
             'Gantt charts visualiseren planning en afhankelijkheden',
             'Het kritieke pad bepaalt de minimale projectduur',
             'Er zijn vier soorten afhankelijkheden: FS, SS, FF, SF',
@@ -971,6 +1033,12 @@ Visuele weergave van resource-inzet over tijd:
 - 80% is een realistische planningsnorm
 - Betrek teamleden bij schattingen`,
           keyTakeaways: [
+            'Resource planning matches required with available capacity',
+            'Resource leveling resolves overallocation by shifting tasks',
+            'The RACI matrix clarifies responsibilities',
+            'Plan at 80% - keep buffer for the unexpected',
+          ],
+          keyTakeawaysNL: [
             'Resource planning matcht benodigde met beschikbare capaciteit',
             'Resource leveling lost overbelasting op door taken te schuiven',
             'De RACI matrix verduidelijkt verantwoordelijkheden',
@@ -982,7 +1050,7 @@ Visuele weergave van resource-inzet over tijd:
         },
         {
           id: 'pm-l14',
-          title: 'Budget en kostenraming',
+          title: 'Budget and cost estimation',
           duration: '16:00',
           type: 'video',
           transcript: `**Methoden voor Kostenraming:**
@@ -1015,6 +1083,12 @@ PERT: (Optimistisch + 4×Meest Waarschijnlijk + Pessimistisch) / 6
 6. **Contingency** (5-15% voor bekende risico's)
 7. **Management Reserve** (5-10% voor onbekende risico's)`,
           keyTakeaways: [
+            'Bottom-up is the most accurate but most time-consuming',
+            'Build in contingency and management reserve',
+            'Earned Value Management measures costs and progress',
+            'Always document your assumptions',
+          ],
+          keyTakeawaysNL: [
             'Bottom-up is het nauwkeurigst maar meest tijdrovend',
             'Bouw contingency en management reserve in',
             'Earned Value Management meet kosten én voortgang',
@@ -1026,7 +1100,7 @@ PERT: (Optimistisch + 4×Meest Waarschijnlijk + Pessimistisch) / 6
         },
         {
           id: 'pm-l15',
-          title: 'Risicomanagement',
+          title: 'Risk management',
           duration: '22:00',
           type: 'video',
           transcript: `**Het Risicomanagement Proces:**
@@ -1071,6 +1145,12 @@ Score interpretatie:
 - Risico triggers monitoren
 - Nieuwe risico's identificeren`,
           keyTakeaways: [
+            'Risks have probability and impact - assess both',
+            'Four response strategies: avoid, transfer, mitigate, accept',
+            'The risk register is the central document',
+            'Risk management is continuous, not a one-time activity',
+          ],
+          keyTakeawaysNL: [
             'Risico\'s hebben kans én impact - beide beoordelen',
             'Vier response strategieën: vermijden, overdragen, mitigeren, accepteren',
             'Het risicoregister is het centrale document',
@@ -1088,12 +1168,12 @@ Score interpretatie:
     // ==========================================
     {
       id: 'pm-m4',
-      title: 'Module 4: Uitvoering & Monitoring',
+      title: 'Module 4: Execution & Monitoring',
       description: 'Teamleiderschap, communicatie, Earned Value en change control.',
       lessons: [
         {
           id: 'pm-l16',
-          title: 'Teams leiden en motiveren',
+          title: 'Leading and motivating teams',
           duration: '18:00',
           type: 'video',
           transcript: `De beste planning ter wereld faalt als je team niet gemotiveerd is. In deze les leer je hoe je teams leidt naar high performance.
@@ -1132,6 +1212,12 @@ Score interpretatie:
 - **Compromising**: Half-half, bij tijdsdruk
 - **Collaborating**: Win-win, voor belangrijke issues met tijd`,
           keyTakeaways: [
+            'Teams go through phases: Forming, Storming, Norming, Performing',
+            'Intrinsic motivation works better than extrinsic',
+            'Conflict styles must match the situation',
+            'Virtual teams require extra attention to communication',
+          ],
+          keyTakeawaysNL: [
             'Teams doorlopen fasen: Forming, Storming, Norming, Performing',
             'Intrinsieke motivatie werkt beter dan extrinsieke',
             'Conflictstijlen moeten passen bij de situatie',
@@ -1140,7 +1226,7 @@ Score interpretatie:
         },
         {
           id: 'pm-l17',
-          title: 'Stakeholder communicatie',
+          title: 'Stakeholder communication',
           duration: '16:00',
           type: 'video',
           transcript: `PM's besteden tot 90% van hun tijd aan communicatie. Effectieve communicatie is cruciaal.
@@ -1176,6 +1262,12 @@ Voor elke stakeholder(groep) bepalen:
 4. Face-to-face voor belangrijk nieuws
 5. Geef ruimte voor reacties`,
           keyTakeaways: [
+            'PMs spend 90% of their time on communication',
+            'A communication plan defines who-what-when-how',
+            'Adapt your style per stakeholder type',
+            'Deliver bad news honestly, with a plan',
+          ],
+          keyTakeawaysNL: [
             'PM\'s besteden 90% van hun tijd aan communicatie',
             'Een communicatieplan definieert wie-wat-wanneer-hoe',
             'Pas je stijl aan per stakeholder type',
@@ -1229,6 +1321,12 @@ Voor elke stakeholder(groep) bepalen:
 **EAC (Estimate at Completion)** = BAC / CPI
 Voorspelde totale kosten als huidige trend doorzet.`,
           keyTakeaways: [
+            'EVM combines scope, time and cost in one measurement',
+            'EV = what you have earned, not what you have spent',
+            'CPI < 1 means over budget per unit of work',
+            'EAC predicts total costs if the trend continues',
+          ],
+          keyTakeawaysNL: [
             'EVM combineert scope, tijd en kosten in één meting',
             'EV = wat je hebt verdiend, niet wat je hebt uitgegeven',
             'CPI < 1 betekent over budget per eenheid werk',
@@ -1283,6 +1381,12 @@ Dit is net zo schadelijk als scope creep:
 
 Regel: Niets toevoegen zonder formeel verzoek.`,
           keyTakeaways: [
+            'Change control is protection, not bureaucracy',
+            'Every change goes through: request, analysis, decision, implementation',
+            'The Change Control Board decides on significant changes',
+            'Gold plating is just as harmful as scope creep',
+          ],
+          keyTakeawaysNL: [
             'Change control is bescherming, niet bureaucratie',
             'Elke wijziging doorloopt: request, analyse, beslissing, implementatie',
             'Het Change Control Board beslist over significante wijzigingen',
@@ -1295,7 +1399,7 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
         },
         {
           id: 'pm-l20',
-          title: 'Quiz: Uitvoering & Monitoring',
+          title: 'Quiz: Execution & Monitoring',
           duration: '15:00',
           type: 'quiz',
           quiz: [
@@ -1343,12 +1447,12 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
     // ==========================================
     {
       id: 'pm-m5',
-      title: 'Module 5: Afsluiting',
+      title: 'Module 5: Closure',
       description: 'Formele acceptatie, lessons learned en administratieve afsluiting.',
       lessons: [
         {
           id: 'pm-l21',
-          title: 'Het belang van projectafsluiting',
+          title: 'The importance of project closure',
           duration: '12:00',
           type: 'video',
           transcript: `Veel projectmanagers haasten door de afsluitingsfase. Dit is een grote fout.
@@ -1380,6 +1484,12 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
 5. Archiveren van projectdocumentatie
 6. Vieren van succes`,
           keyTakeaways: [
+            'Closure is often neglected but is crucial',
+            'Zombie projects consume resources and cause confusion',
+            'Lessons learned prevent repeating mistakes',
+            'Even cancelled projects must be properly closed',
+          ],
+          keyTakeawaysNL: [
             'Afsluiting wordt vaak verwaarloosd maar is cruciaal',
             'Zombie projecten kosten resources en veroorzaken verwarring',
             'Lessons learned voorkomen herhaling van fouten',
@@ -1388,7 +1498,7 @@ Regel: Niets toevoegen zonder formeel verzoek.`,
         },
         {
           id: 'pm-l22',
-          title: 'Formele acceptatie en overdracht',
+          title: 'Formal acceptance and handover',
           duration: '14:00',
           type: 'video',
           transcript: `Formele acceptatie is het moment waarop de opdrachtgever bevestigt dat de deliverables voldoen aan de eisen.
@@ -1428,6 +1538,12 @@ Kennisoverdracht:
 - Walkthrough van architectuur
 - Hypercare periode`,
           keyTakeaways: [
+            'Acceptance criteria must be defined in advance',
+            'Acceptance is formal with sign-off',
+            'Handover includes product, documentation and knowledge',
+            'Schedule acceptance - it takes time',
+          ],
+          keyTakeawaysNL: [
             'Acceptatiecriteria moeten vooraf zijn gedefinieerd',
             'Acceptatie is formeel met handtekening',
             'Overdracht omvat product, documentatie en kennis',
@@ -1490,6 +1606,12 @@ Kennisoverdracht:
 - Oorzaak: Waarom?
 - Aanbeveling: Wat te doen in de toekomst?`,
           keyTakeaways: [
+            'Collect lessons learned during and at the end of the project',
+            'Create a blame-free environment',
+            'Good lessons are specific with context and recommendation',
+            'Lessons are worthless if they are not used',
+          ],
+          keyTakeawaysNL: [
             'Verzamel lessons learned tijdens én aan het einde',
             'Creëer een blame-free omgeving',
             'Goede lessons zijn specifiek met context en aanbeveling',
@@ -1502,7 +1624,7 @@ Kennisoverdracht:
         },
         {
           id: 'pm-l24',
-          title: 'Administratieve afsluiting',
+          title: 'Administrative closure',
           duration: '10:00',
           type: 'video',
           transcript: `De administratieve afsluiting is het "schoonmaken" na het project.
@@ -1544,6 +1666,12 @@ Kennisoverdracht:
 □ Final report geschreven
 □ Succes gevierd!`,
           keyTakeaways: [
+            'Financial closure prevents outstanding claims',
+            'Resources must be formally released',
+            'Archive documentation according to organizational policy',
+            'Don\'t forget to celebrate!',
+          ],
+          keyTakeawaysNL: [
             'Financiële afsluiting voorkomt openstaande claims',
             'Resources moeten formeel worden vrijgegeven',
             'Documentatie archiveren volgens organisatiebeleid',
@@ -1556,13 +1684,13 @@ Kennisoverdracht:
         },
         {
           id: 'pm-l25',
-          title: 'Eindexamen',
+          title: 'Final exam',
           duration: '45:00',
           type: 'exam',
         },
         {
           id: 'pm-l26',
-          title: 'Certificaat',
+          title: 'Certificate',
           duration: '5:00',
           type: 'certificate',
         },
@@ -1611,12 +1739,12 @@ export const prince2Course: Course = {
   modules: [
     {
       id: 'p2-m1',
-      title: 'Module 1: PRINCE2 Introductie & Principes',
+      title: 'Module 1: PRINCE2 Introduction & Principles',
       description: 'Kennismaking met PRINCE2 en de 7 ononderhandelbare principes.',
       lessons: [
         {
           id: 'p2-l1',
-          title: 'Wat is PRINCE2?',
+          title: 'What is PRINCE2?',
           duration: '15:00',
           type: 'video',
           transcript: `PRINCE2 = PRojects IN Controlled Environments. Het is een procesgebaseerde methodologie voor projectmanagement, oorspronkelijk ontwikkeld door de Britse overheid.
@@ -1633,6 +1761,12 @@ export const prince2Course: Course = {
 PRINCE2 is bijzonder geschikt voor projecten waar governance, controle en duidelijke beslisstructuren belangrijk zijn.`,
           keyTakeaways: [
             'PRINCE2 = PRojects IN Controlled Environments',
+            'Consists of 7 principles, 7 themes, 7 processes',
+            'The most widely used PM method worldwide',
+            'Two certification levels: Foundation and Practitioner',
+          ],
+          keyTakeawaysNL: [
+            'PRINCE2 = PRojects IN Controlled Environments',
             'Bestaat uit 7 principes, 7 thema\'s, 7 processen',
             'Wereldwijd de meest gebruikte PM-methode',
             'Twee certificeringsniveaus: Foundation en Practitioner',
@@ -1640,7 +1774,7 @@ PRINCE2 is bijzonder geschikt voor projecten waar governance, controle en duidel
         },
         {
           id: 'p2-l2',
-          title: 'De 7 Principes',
+          title: 'The 7 Principles',
           duration: '25:00',
           type: 'video',
           transcript: `De principes zijn niet onderhandelbaar - als je ze niet volgt, doe je geen PRINCE2.
@@ -1666,6 +1800,12 @@ Het project is gericht op het definiëren en opleveren van producten. Product De
 **7. Tailor to Suit the Project**
 Pas PRINCE2 aan op de grootte, complexiteit en risico van het project. Geen one-size-fits-all.`,
           keyTakeaways: [
+            'The 7 principles are mandatory - otherwise it is not PRINCE2',
+            'Business justification must apply throughout the entire project',
+            'Manage by Exception gives the PM room within tolerances',
+            'Tailoring is essential but principles remain intact',
+          ],
+          keyTakeawaysNL: [
             'De 7 principes zijn verplicht - anders is het geen PRINCE2',
             'Business justification moet gedurende heel het project gelden',
             'Manage by Exception geeft PM ruimte binnen toleranties',
@@ -1674,7 +1814,7 @@ Pas PRINCE2 aan op de grootte, complexiteit en risico van het project. Geen one-
         },
         {
           id: 'p2-l3',
-          title: 'De 7 Thema\'s',
+          title: 'The 7 Themes',
           duration: '20:00',
           type: 'video',
           transcript: `Thema's zijn aspecten van projectmanagement die continu aandacht nodig hebben gedurende het project.
@@ -1700,6 +1840,12 @@ Issue en change management. Configuration management.
 **7. Progress** - Waar staan we?
 Monitoren en controleren. Toleranties, rapportages, reviews.`,
           keyTakeaways: [
+            'Themes are aspects that need continuous attention',
+            'Business Case answers "why", Organization answers "who"',
+            'All 7 themes are integrated and work together',
+            'The depth depends on tailoring',
+          ],
+          keyTakeawaysNL: [
             'Thema\'s zijn aspecten die continu aandacht nodig hebben',
             'Business Case beantwoordt "waarom", Organization "wie"',
             'Alle 7 thema\'s zijn geïntegreerd en werken samen',
@@ -1710,7 +1856,7 @@ Monitoren en controleren. Toleranties, rapportages, reviews.`,
     },
     {
       id: 'p2-m2',
-      title: 'Module 2: De 7 Processen',
+      title: 'Module 2: The 7 Processes',
       description: 'De complete PRINCE2 processen van start tot finish.',
       lessons: [
         {
@@ -1732,6 +1878,12 @@ Monitoren en controleren. Toleranties, rapportages, reviews.`,
 
 SU voorkomt dat we tijd en geld verspillen aan projecten die nooit hadden moeten starten.`,
           keyTakeaways: [
+            'SU is a short pre-project process',
+            'The Project Brief is the main product',
+            'The Project Board is assembled during SU',
+            'SU prevents unnecessary initiation of bad projects',
+          ],
+          keyTakeawaysNL: [
             'SU is een kort pre-project proces',
             'Het Project Brief is het hoofdproduct',
             'De Project Board wordt samengesteld in SU',
@@ -1756,6 +1908,12 @@ SU voorkomt dat we tijd en geld verspillen aan projecten die nooit hadden moeten
 
 De PID is de baseline waartegen het project wordt gemeten. Na goedkeuring door de Board start de eerste delivery stage.`,
           keyTakeaways: [
+            'IP creates the PID - the project baseline',
+            'Four management strategies are established',
+            'The Business Case is refined with more detail',
+            'The PID is the basis for all further decisions',
+          ],
+          keyTakeawaysNL: [
             'IP creëert de PID - de projectbaseline',
             'Vier management strategies worden opgesteld',
             'De Business Case wordt verfijnd met meer detail',
@@ -1778,6 +1936,12 @@ De PID is de baseline waartegen het project wordt gemeten. Na goedkeuring door d
 
 De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escalaties.`,
           keyTakeaways: [
+            'DP is the process for the Project Board',
+            'Focuses on authorizations and key decisions',
+            'Management by Exception minimizes Board time',
+            'Board decides on go/no-go at each stage',
+          ],
+          keyTakeawaysNL: [
             'DP is het proces voor de Project Board',
             'Focust op autorisaties en key decisions',
             'Management by Exception minimaliseert Board-tijd',
@@ -1806,6 +1970,12 @@ De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escal
 - Highlight Reports: PM → Board (regelmatig)
 - Exception Reports: PM → Board (bij tolerantie-overschrijding)`,
           keyTakeaways: [
+            'CS is the daily management process of the PM',
+            'Work Packages delegate work to Team Managers',
+            'Highlight Reports go regularly to the Board',
+            'Exception Reports escalate beyond tolerances',
+          ],
+          keyTakeawaysNL: [
             'CS is het dagelijkse management proces van de PM',
             'Work Packages delegeren werk aan Team Managers',
             'Highlight Reports gaan regelmatig naar de Board',
@@ -1826,6 +1996,12 @@ De Board bestuurt "by exception" - ze worden alleen betrokken bij gates en escal
 
 De Team Manager rapporteert via Checkpoint Reports aan de PM. Kwaliteitscontrole gebeurt voordat producten worden opgeleverd.`,
           keyTakeaways: [
+            'MP is the process for Team Managers',
+            'Work Packages are the formal assignment from PM to Team',
+            'Checkpoint Reports report progress',
+            'Quality control before products are delivered',
+          ],
+          keyTakeawaysNL: [
             'MP is het proces voor Team Managers',
             'Work Packages zijn de formele opdracht van PM naar Team',
             'Checkpoint Reports rapporteren voortgang',
@@ -1848,6 +2024,12 @@ De Team Manager rapporteert via Checkpoint Reports aan de PM. Kwaliteitscontrole
 
 Het End Stage Report geeft de Board de informatie om te beslissen over doorgaan, stoppen, of aanpassen.`,
           keyTakeaways: [
+            'SB takes place at the end of each stage',
+            'End Stage Report for the Board\'s decision',
+            'Business Case is validated at each boundary',
+            'Exception Plans are created here when tolerances are exceeded',
+          ],
+          keyTakeawaysNL: [
             'SB vindt plaats aan het einde van elke stage',
             'End Stage Report voor de Board\'s beslissing',
             'Business Case wordt gevalideerd bij elke boundary',
@@ -1875,6 +2057,12 @@ Het End Stage Report geeft de Board de informatie om te beslissen over doorgaan,
 
 CP is verplicht, ook bij voortijdig stoppen!`,
           keyTakeaways: [
+            'CP is mandatory, even for premature closure',
+            'End Project Report evaluates the entire project',
+            'Benefits Review Plan for post-project benefits measurement',
+            'Lessons Report documents lessons learned',
+          ],
+          keyTakeawaysNL: [
             'CP is verplicht, ook bij voortijdig stoppen',
             'End Project Report evalueert het hele project',
             'Benefits Review Plan voor post-project benefits meting',
@@ -1906,6 +2094,12 @@ De 7 principes zijn niet onderhandelbaar.
 
 Bij kleine projecten: combineer SU en IP, minder formele documenten, PM combineert rollen.`,
           keyTakeaways: [
+            'Tailoring is a principle, not optional',
+            'Processes, themes and roles may be adapted',
+            'The 7 principles are non-negotiable',
+            'Document and get tailoring approved',
+          ],
+          keyTakeawaysNL: [
             'Tailoring is een principe, niet optioneel',
             'Processen, thema\'s en rollen mogen worden aangepast',
             'De 7 principes zijn niet onderhandelbaar',
@@ -1957,12 +2151,12 @@ export const scrumCourse: Course = {
   modules: [
     {
       id: 'scrum-m1',
-      title: 'Module 1: Scrum Fundamenten',
+      title: 'Module 1: Scrum Fundamentals',
       description: 'De basis: empirisme, waarden, pijlers en het framework.',
       lessons: [
         {
           id: 'scrum-l1',
-          title: 'De essentie van Scrum',
+          title: 'The essence of Scrum',
           duration: '18:00',
           type: 'video',
           transcript: `Scrum is een lichtgewicht framework dat teams helpt waarde te genereren door adaptieve oplossingen voor complexe problemen.
@@ -1989,6 +2183,12 @@ Scrum is gebaseerd op empirisme: kennis komt voort uit ervaring en beslissingen 
 
 Deze waarden geven richting aan werk, acties en gedrag van het Scrum Team.`,
           keyTakeaways: [
+            'Scrum is based on empiricism: learning through experience',
+            'Three pillars: Transparency, Inspection, Adaptation',
+            'Five values: Commitment, Focus, Openness, Respect, Courage',
+            'The values and pillars are the foundation of everything in Scrum',
+          ],
+          keyTakeawaysNL: [
             'Scrum is gebaseerd op empirisme: leren door ervaring',
             'Drie pijlers: Transparantie, Inspectie, Adaptatie',
             'Vijf waarden: Commitment, Focus, Openness, Respect, Courage',
@@ -1997,7 +2197,7 @@ Deze waarden geven richting aan werk, acties en gedrag van het Scrum Team.`,
         },
         {
           id: 'scrum-l2',
-          title: 'De Scrum Rollen (Accountabilities)',
+          title: 'The Scrum Roles (Accountabilities)',
           duration: '22:00',
           type: 'video',
           transcript: `Het Scrum Team bestaat uit drie accountabilities. Er zijn geen hiërarchieën of sub-teams.
@@ -2043,6 +2243,12 @@ Verantwoordelijkheden:
 - Dagelijks het plan aanpassen richting Sprint Goal
 - Elkaar accountable houden als professionals`,
           keyTakeaways: [
+            'Three accountabilities: Product Owner, Scrum Master, Developers',
+            'PO maximizes value and manages the Product Backlog',
+            'SM is servant-leader and coach for team and organization',
+            'Developers are all people working on the Increment',
+          ],
+          keyTakeawaysNL: [
             'Drie accountabilities: Product Owner, Scrum Master, Developers',
             'PO maximaliseert waarde en beheert de Product Backlog',
             'SM is servant-leader en coach voor team en organisatie',
@@ -2051,7 +2257,7 @@ Verantwoordelijkheden:
         },
         {
           id: 'scrum-l3',
-          title: 'De Scrum Events',
+          title: 'The Scrum Events',
           duration: '25:00',
           type: 'video',
           transcript: `Scrum gebruikt events om regelmaat te creëren en de behoefte aan andere meetings te minimaliseren.
@@ -2097,6 +2303,12 @@ Timebox: max 3 uur voor 1-maand Sprint.
 - Hoe werden problemen opgelost (of niet)?
 - Identificeer verbeteringen voor volgende Sprint`,
           keyTakeaways: [
+            'The Sprint is the container for all events (max 4 weeks)',
+            'Sprint Planning defines WHAT and HOW, resulting in the Sprint Goal',
+            'Daily Scrum is max 15 min, for Developers',
+            'Review shows the Increment; Retrospective improves the process',
+          ],
+          keyTakeawaysNL: [
             'De Sprint is de container voor alle events (max 4 weken)',
             'Sprint Planning definieert WAT en HOE, resulterend in Sprint Goal',
             'Daily Scrum is max 15 min, voor Developers',
@@ -2105,7 +2317,7 @@ Timebox: max 3 uur voor 1-maand Sprint.
         },
         {
           id: 'scrum-l4',
-          title: 'De Scrum Artefacten',
+          title: 'The Scrum Artifacts',
           duration: '18:00',
           type: 'video',
           transcript: `Scrum artefacten representeren werk of waarde. Elk artefact heeft een commitment dat transparantie en focus versterkt.
@@ -2142,6 +2354,12 @@ De formele beschrijving van de kwaliteitseisen voor het Increment.
 - Creëert transparantie over wat is gedaan
 - Als een PB item niet voldoet aan DoD, mag het niet worden gereleased`,
           keyTakeaways: [
+            'Three artifacts each with a commitment',
+            'Product Backlog → Product Goal',
+            'Sprint Backlog → Sprint Goal',
+            'Increment → Definition of Done',
+          ],
+          keyTakeawaysNL: [
             'Drie artefacten met elk een commitment',
             'Product Backlog → Product Goal',
             'Sprint Backlog → Sprint Goal',
@@ -2191,12 +2409,12 @@ export const leanSixSigmaCourse: Course = {
   modules: [
     {
       id: 'lss-m1',
-      title: 'Module 1: DMAIC Introductie',
+      title: 'Module 1: DMAIC Introduction',
       description: 'De fundamenten van Lean Six Sigma en de DMAIC cyclus.',
       lessons: [
         {
           id: 'lss-l1',
-          title: 'Wat is Lean Six Sigma?',
+          title: 'What is Lean Six Sigma?',
           duration: '20:00',
           type: 'video',
           transcript: `Lean Six Sigma combineert twee krachtige methodologieën:
@@ -2224,6 +2442,12 @@ export const leanSixSigmaCourse: Course = {
 - 3 Sigma: 66.800 DPMO
 - 6 Sigma: 3.4 DPMO`,
           keyTakeaways: [
+            'Lean focuses on eliminating waste, Six Sigma on reducing variation',
+            'DMAIC = Define, Measure, Analyze, Improve, Control',
+            '8 wastes: TIMWOODS',
+            'Six Sigma aims for 3.4 defects per million opportunities',
+          ],
+          keyTakeawaysNL: [
             'Lean focust op verspilling elimineren, Six Sigma op variatie reduceren',
             'DMAIC = Define, Measure, Analyze, Improve, Control',
             '8 verspillingen: TIMWOODS',
@@ -2232,7 +2456,7 @@ export const leanSixSigmaCourse: Course = {
         },
         {
           id: 'lss-l2',
-          title: 'De Define Fase',
+          title: 'The Define Phase',
           duration: '25:00',
           type: 'video',
           transcript: `De Define fase legt de basis voor het hele project.
@@ -2267,6 +2491,12 @@ High-level procesoverzicht:
 
 SIPOC helpt scope te definiëren en grenzen te bepalen.`,
           keyTakeaways: [
+            'Problem statement contains no causes or solutions',
+            'VOC → Needs → CTQs translates customer needs',
+            'SIPOC provides high-level process insight',
+            'The Define phase determines the success of the entire project',
+          ],
+          keyTakeawaysNL: [
             'Problem statement bevat geen oorzaken of oplossingen',
             'VOC → Needs → CTQ\'s vertaalt klantbehoeften',
             'SIPOC geeft high-level procesinzicht',
@@ -2275,7 +2505,7 @@ SIPOC helpt scope te definiëren en grenzen te bepalen.`,
         },
         {
           id: 'lss-l3',
-          title: 'De Measure Fase',
+          title: 'The Measure Phase',
           duration: '28:00',
           type: 'video',
           transcript: `"In God we trust, all others must bring data." De Measure fase verzamelt feiten.
@@ -2316,6 +2546,12 @@ Meet huidige performance:
 
 Deze baseline is het vertrekpunt voor verbetering.`,
           keyTakeaways: [
+            'Validate the measurement system before collecting data (MSA)',
+            'Distinguish continuous and discrete data',
+            'Process mapping reveals waste',
+            'Baseline metrics provide the starting point',
+          ],
+          keyTakeawaysNL: [
             'Valideer het meetsysteem voordat je data verzamelt (MSA)',
             'Onderscheid continue en discrete data',
             'Process mapping onthult verspilling',
@@ -2324,7 +2560,7 @@ Deze baseline is het vertrekpunt voor verbetering.`,
         },
         {
           id: 'lss-l4',
-          title: 'De Analyze Fase',
+          title: 'The Analyze Phase',
           duration: '22:00',
           type: 'video',
           transcript: `De Analyze fase beantwoordt: WAAROM bestaat dit probleem?
@@ -2363,6 +2599,12 @@ Focus op de "vital few" in plaats van de "trivial many".
 - **Regression**: Kwantificeer de relatie tussen X en Y
 - **Correlation**: Is er een verband?`,
           keyTakeaways: [
+            '5 Whys repeatedly asks "why" until the root cause is found',
+            'Fishbone organizes causes into categories (6Ms)',
+            'Pareto identifies the "vital few" causes',
+            'Hypothesis testing verifies whether causes are statistically significant',
+          ],
+          keyTakeawaysNL: [
             '5 Whys vraagt herhaaldelijk "waarom" tot de root cause',
             'Fishbone organiseert oorzaken in categorieën (6M\'s)',
             'Pareto identificeert de "vital few" oorzaken',
@@ -2371,7 +2613,7 @@ Focus op de "vital few" in plaats van de "trivial many".
         },
         {
           id: 'lss-l5',
-          title: 'De Improve Fase',
+          title: 'The Improve Phase',
           duration: '18:00',
           type: 'video',
           transcript: `De Improve fase transformeert inzichten in actie.
@@ -2407,6 +2649,12 @@ Test op kleine schaal voordat je breed uitrolt:
 - Bewijs verzamelen
 - Buy-in creëren`,
           keyTakeaways: [
+            'Brainstorming generates solutions; matrices select the best',
+            'FMEA identifies risks of solutions',
+            'Pilots test solutions on a small scale',
+            'Change management is essential for adoption',
+          ],
+          keyTakeawaysNL: [
             'Brainstorm genereert oplossingen; matrices selecteren de beste',
             'FMEA identificeert risico\'s van oplossingen',
             'Pilots testen oplossingen op kleine schaal',
@@ -2415,7 +2663,7 @@ Test op kleine schaal voordat je breed uitrolt:
         },
         {
           id: 'lss-l6',
-          title: 'De Control Fase',
+          title: 'The Control Phase',
           duration: '25:00',
           type: 'video',
           transcript: `De Control fase zorgt dat verbeteringen blijvend zijn.
@@ -2453,6 +2701,12 @@ Na project closure:
 - Verantwoordelijkheden helder
 - Benefits tracking opgezet`,
           keyTakeaways: [
+            'Control charts detect out-of-control conditions early',
+            'Special cause variation requires investigation and correction',
+            'The Control Plan describes who measures what and what to do when deviations occur',
+            'Handover to Process Owner ensures long-term success',
+          ],
+          keyTakeawaysNL: [
             'Control charts detecteren out-of-control condities vroeg',
             'Special cause variation vereist onderzoek en correctie',
             'Het Control Plan beschrijft wie wat meet en wat te doen bij afwijking',
@@ -2501,12 +2755,12 @@ export const waterfallCourse: Course = {
   modules: [
     {
       id: 'wf-m1',
-      title: 'Module 1: Waterfall Fundamenten',
+      title: 'Module 1: Waterfall Fundamentals',
       description: 'De basis van Waterfall: fasen, wanneer te gebruiken, en de trade-offs.',
       lessons: [
         {
           id: 'wf-l1',
-          title: 'Wat is Waterfall?',
+          title: 'What is Waterfall?',
           duration: '15:00',
           type: 'video',
           transcript: `Waterfall is een sequentiële, lineaire aanpak voor projectmanagement.
@@ -2541,6 +2795,12 @@ Elke fase moet volledig worden afgerond voordat de volgende begint.
 - Late feedback (werkend product pas aan het einde)
 - Risico: fouten vroeg gemaakt, laat ontdekt`,
           keyTakeaways: [
+            'Waterfall is sequential: each phase must be completed before the next starts',
+            'Ideal for stable requirements and compliance-intensive projects',
+            'Offers predictability but is inflexible for changes',
+            'Still relevant in construction, hardware, enterprise IT and regulated sectors',
+          ],
+          keyTakeawaysNL: [
             'Waterfall is sequentieel: elke fase moet af voor de volgende start',
             'Ideaal voor stabiele requirements en compliance-intensieve projecten',
             'Biedt voorspelbaarheid maar is inflexibel voor wijzigingen',
@@ -2549,7 +2809,7 @@ Elke fase moet volledig worden afgerond voordat de volgende begint.
         },
         {
           id: 'wf-l2',
-          title: 'Requirements Fase',
+          title: 'Requirements Phase',
           duration: '22:00',
           type: 'video',
           transcript: `De Requirements fase is de fundering. Fouten hier zijn het duurst om te fixen.
@@ -2590,6 +2850,12 @@ Dit helpt bij impact analysis en verificatie.
 
 Na formele review en goedkeuring activeert sign-off het change control proces.`,
           keyTakeaways: [
+            'Requirements errors are the most expensive to fix',
+            'Use multiple techniques: interviews, workshops, observation',
+            'Good requirements are SMART and testable',
+            'Formal sign-off activates change control',
+          ],
+          keyTakeawaysNL: [
             'Requirements fouten zijn de duurste om te fixen',
             'Gebruik meerdere technieken: interviews, workshops, observatie',
             'Goede requirements zijn SMART en toetsbaar',
@@ -2644,6 +2910,12 @@ Uitrol naar productie:
 
 Altijd met rollback plan!`,
           keyTakeaways: [
+            'Design translates WHAT (requirements) into HOW (technical)',
+            'Testing occurs at multiple levels up to and including UAT',
+            'UAT sign-off is required for go-live',
+            'Deployment always with a rollback plan',
+          ],
+          keyTakeawaysNL: [
             'Design vertaalt WAT (requirements) naar HOE (technisch)',
             'Testing gebeurt op meerdere niveaus tot en met UAT',
             'UAT sign-off is vereist voor go-live',
@@ -2692,12 +2964,12 @@ export const kanbanCourse: Course = {
   modules: [
     {
       id: 'kb-m1',
-      title: 'Module 1: Kanban Fundamenten',
+      title: 'Module 1: Kanban Fundamentals',
       description: 'De basis: principes, practices en het Kanban bord.',
       lessons: [
         {
           id: 'kb-l1',
-          title: 'Wat is Kanban?',
+          title: 'What is Kanban?',
           duration: '15:00',
           type: 'video',
           transcript: `Kanban (看板) is Japans voor "visueel signaal". Het is een evolutionaire aanpak voor werk management.
@@ -2727,6 +2999,12 @@ export const kanbanCourse: Course = {
 
 Kanban vraagt geen grote reorganisatie. Je begint met je huidige proces en verbetert geleidelijk.`,
           keyTakeaways: [
+            'Kanban = visual signal, focus on flow and pull',
+            'Start where you are - no major reorganization needed',
+            '6 core practices form the heart of Kanban',
+            'Kanban is complementary to Scrum, not a replacement',
+          ],
+          keyTakeawaysNL: [
             'Kanban = visueel signaal, focus op flow en pull',
             'Start waar je bent - geen grote reorganisatie nodig',
             '6 core practices vormen het hart van Kanban',
@@ -2735,7 +3013,7 @@ Kanban vraagt geen grote reorganisatie. Je begint met je huidige proces en verbe
         },
         {
           id: 'kb-l2',
-          title: 'Het Kanban Bord Ontwerpen',
+          title: 'Designing the Kanban Board',
           duration: '20:00',
           type: 'video',
           transcript: `Het bord visualiseert je workflow.
@@ -2771,6 +3049,12 @@ Analysis [3] | Dev [5] | Review [2]
 
 Lead Time = tijd tussen deze twee punten.`,
           keyTakeaways: [
+            'Start by mapping your actual workflow',
+            'Split Doing/Done to reveal wait time',
+            'Make blockers explicitly visible',
+            'Evolve the board based on insights',
+          ],
+          keyTakeawaysNL: [
             'Begin met je werkelijke workflow te mappen',
             'Split Doing/Done om wachttijd te onthullen',
             'Maak blokkades expliciet zichtbaar',
@@ -2779,7 +3063,7 @@ Lead Time = tijd tussen deze twee punten.`,
         },
         {
           id: 'kb-l3',
-          title: 'WIP Limieten',
+          title: 'WIP Limits',
           duration: '18:00',
           type: 'video',
           transcript: `WIP limieten zijn het hart van Kanban.
@@ -2819,6 +3103,12 @@ Als het niet knelt, zijn je limieten te los.
 
 NIET: De limiet verhogen bij het eerste ongemak!`,
           keyTakeaways: [
+            'Little\'s Law: Lead Time = WIP / Throughput',
+            'Context switching costs 15-20 minutes per switch',
+            '"Stop starting, start finishing!"',
+            'The pain of WIP limits reveals problems',
+          ],
+          keyTakeawaysNL: [
             'Little\'s Law: Lead Time = WIP / Throughput',
             'Context switching kost 15-20 minuten per switch',
             '"Stop starting, start finishing!"',
@@ -2865,6 +3155,12 @@ Flow Efficiency = Werktijd / Lead Time × 100%
 Typisch voor kenniswerk: 5-15%!
 Dat is 85-95% wachttijd - hier zit verbeterpotentieel.`,
           keyTakeaways: [
+            'Lead Time = WIP / Throughput (Little\'s Law)',
+            'CFD visualizes WIP, lead time, throughput and bottlenecks',
+            'Use 85th percentile for reliable predictions',
+            'Flow efficiency in knowledge work is typically 5-15%',
+          ],
+          keyTakeawaysNL: [
             'Lead Time = WIP / Throughput (Little\'s Law)',
             'CFD visualiseert WIP, lead time, throughput en bottlenecks',
             'Gebruik 85e percentiel voor betrouwbare voorspellingen',
@@ -2913,12 +3209,12 @@ export const agileFundamentalsCourse: Course = {
   modules: [
     {
       id: 'ag-m1',
-      title: 'Module 1: De Agile Mindset',
+      title: 'Module 1: The Agile Mindset',
       description: 'Waarden, principes en de fundamentele mindshift.',
       lessons: [
         {
           id: 'ag-l1',
-          title: 'Het Agile Manifesto',
+          title: 'The Agile Manifesto',
           duration: '18:00',
           type: 'video',
           transcript: `In 2001 kwamen 17 software ontwikkelaars samen in Snowbird, Utah. Na drie dagen produceerden ze het Agile Manifesto.
@@ -2950,6 +3246,12 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
 ❌ Chaos en "we zien wel"
 ❌ Alleen voor software`,
           keyTakeaways: [
+            'Four values: People, Working software, Customer collaboration, Responding to change',
+            'It is about prioritization, not elimination of the right side',
+            'Agile requires a mindshift from predicting to adapting',
+            'The Manifesto is a foundation, not a complete method',
+          ],
+          keyTakeawaysNL: [
             'Vier waarden: Mensen, Werkende software, Klantcollaboratie, Inspelen op verandering',
             'Het gaat om prioritering, niet eliminatie van de rechterkant',
             'Agile vraagt een mindshift van voorspellen naar aanpassen',
@@ -2958,7 +3260,7 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
         },
         {
           id: 'ag-l2',
-          title: 'De 12 Principes',
+          title: 'The 12 Principles',
           duration: '25:00',
           type: 'video',
           transcript: `Achter de vier waarden liggen twaalf principes:
@@ -2989,6 +3291,12 @@ Hoewel wij de zaken aan de rechterkant belangrijk vinden, hechten wij meer waard
 
 De principes zijn geen checklist maar een kompas voor beslissingen.`,
           keyTakeaways: [
+            'The 12 principles make the 4 values concrete',
+            'Focus on frequent delivery of working software',
+            'Build around motivated people with trust',
+            'Continuous reflection and improvement is essential',
+          ],
+          keyTakeawaysNL: [
             'De 12 principes concretiseren de 4 waarden',
             'Focus op frequente levering van werkende software',
             'Bouw rond gemotiveerde mensen met vertrouwen',
@@ -2997,7 +3305,7 @@ De principes zijn geen checklist maar een kompas voor beslissingen.`,
         },
         {
           id: 'ag-l3',
-          title: 'Agile vs. Traditioneel',
+          title: 'Agile vs. Traditional',
           duration: '20:00',
           type: 'video',
           transcript: `**Het Stacey Diagram:**
@@ -3024,6 +3332,12 @@ Agile: Tijd/budget vast, scope variabel
 
 Bij Agile bouwen we de belangrijkste features eerst.`,
           keyTakeaways: [
+            'Traditional fits predictable, stable contexts',
+            'Agile fits uncertain, changing contexts',
+            'The Stacey diagram helps in choosing the approach',
+            'Hybrid approaches combine elements of both',
+          ],
+          keyTakeawaysNL: [
             'Traditioneel past bij voorspelbare, stabiele contexten',
             'Agile past bij onzekere, veranderlijke contexten',
             'Het Stacey diagram helpt bij het kiezen van de aanpak',
@@ -3032,7 +3346,7 @@ Bij Agile bouwen we de belangrijkste features eerst.`,
         },
         {
           id: 'ag-l4',
-          title: 'Agile Frameworks Overzicht',
+          title: 'Agile Frameworks Overview',
           duration: '22:00',
           type: 'video',
           transcript: `Het Manifesto biedt waarden en principes, maar geen concrete werkwijze. Daarom zijn er frameworks.
@@ -3064,6 +3378,12 @@ Factoren:
 
 Begin pure, pas aan na ervaring.`,
           keyTakeaways: [
+            'Frameworks are the HOW, the Manifesto is the WHY',
+            'Scrum, Kanban, XP are the most used team-level frameworks',
+            'SAFe, LeSS, Nexus scale to multiple teams',
+            'Start pure, adapt after experience (ShuHaRi)',
+          ],
+          keyTakeawaysNL: [
             'Frameworks zijn de HOW, het Manifesto is de WHY',
             'Scrum, Kanban, XP zijn de meest gebruikte team-frameworks',
             'SAFe, LeSS, Nexus schalen naar meerdere teams',

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 import {
   Plus,
   Search,
@@ -211,8 +212,8 @@ interface ProgramFormData {
 const ProgramsOverview = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
-  
+  const { t, language } = useLanguage();
+
   // Get methodology config with translations - FIXED: Added safety check
   const METHODOLOGY_CONFIG = useMemo(() => t?.programs?.methodologies ? getMethodologyConfig(t) : {}, [t]);
   
@@ -464,13 +465,7 @@ Respond in this EXACT JSON format only, no other text:
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(amount || 0);
-  };
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -932,7 +927,7 @@ Respond in this EXACT JSON format only, no other text:
                         {formData.total_budget && (
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">€{parseInt(formData.total_budget).toLocaleString()}</span>
+                            <span className="text-sm">{formatCurrency(parseInt(formData.total_budget))}</span>
                           </div>
                         )}
                         {formData.duration && (

@@ -48,6 +48,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Types
 type ProgramMethodology = 'safe' | 'msp' | 'pmi' | 'prince2_programme' | 'hybrid';

@@ -131,7 +131,7 @@ interface TeamMember {
   name: string;
   email: string;
   phone?: string;
-  role: "ADMIN" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
+  role: "ADMIN" | "PROGRAM_MANAGER" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
   department?: string;
   status: "Active" | "Inactive" | "Pending";
   joinedDate: string;
@@ -529,21 +529,27 @@ export default function Team() {
     mutationFn: async (memberData: typeof newMember) => {
       const token = localStorage.getItem("access_token");
       
-      // ADD password to payload:
-const payload: any = {
-  first_name: memberData.name,  // Changed from 'name' to 'first_name'
-  email: memberData.email,
-  role: memberData.role.toLowerCase(),
-  send_invite: sendInviteEmail,
-};
+      // Map frontend roles to backend roles
+      const roleMap: Record<string, string> = {
+        'ADMIN': 'admin',
+        'PROGRAM_MANAGER': 'program_manager',
+        'PM': 'pm',
+        'MEMBER': 'contibuter',
+        'REVIEWER': 'reviewer',
+        'GUEST': 'guest',
+      };
+      const payload: any = {
+        first_name: memberData.name,
+        email: memberData.email,
+        role: roleMap[memberData.role] || memberData.role.toLowerCase(),
+        send_invite: sendInviteEmail,
+      };
 
 // Only send password if NOT sending invite email
 if (!sendInviteEmail) {
   payload.password = memberData.password || "TempPass123!";
 }
 
-      console.log('Creating team member with payload:', payload);
-      
       const response = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
         method: 'POST',
         headers: {
@@ -554,11 +560,11 @@ if (!sendInviteEmail) {
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to create member:', response.status, errorData);
-        throw new Error('Failed to create member');
+        const errData = await response.json().catch(() => null);
+        const errMsg = errData?.email?.[0] || errData?.role?.[0] || errData?.error || errData?.detail || 'Failed to create member';
+        throw new Error(errMsg);
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -571,11 +577,10 @@ if (!sendInviteEmail) {
         description: "Het nieuwe teamlid is succesvol toegevoegd.",
       });
     },
-    onError: (error) => {
-      console.error('Create member error:', error);
+    onError: (error: Error) => {
       toast({
         title: "Fout",
-        description: "Kon teamlid niet aanmaken.",
+        description: error.message || "Kon teamlid niet aanmaken.",
         variant: "destructive",
       });
     },
@@ -619,12 +624,17 @@ if (!sendInviteEmail) {
     mutationFn: async (memberData: { id: string; name: string; email: string; phone: string; role: string; department: string }) => {
       const token = localStorage.getItem("access_token");
       
+      const roleMap: Record<string, string> = {
+        'ADMIN': 'admin',
+        'PROGRAM_MANAGER': 'program_manager',
+        'PM': 'pm',
+        'MEMBER': 'contibuter',
+        'REVIEWER': 'reviewer',
+        'GUEST': 'guest',
+      };
       const payload = {
-        name: memberData.name,
-        email: memberData.email,
-        phone: memberData.phone || '',
-        role: memberData.role.toLowerCase(),
-        department: memberData.department || '',
+        first_name: memberData.name,
+        role: roleMap[memberData.role] || memberData.role.toLowerCase(),
       };
       
       const response = await fetch(`${API_BASE_URL}/auth/admin/users/${memberData.id}/`, {
@@ -651,8 +661,7 @@ if (!sendInviteEmail) {
         description: "Het teamlid is succesvol bijgewerkt.",
       });
     },
-    onError: (error) => {
-      console.error('Update member error:', error);
+    onError: () => {
       toast({
         title: "Fout",
         description: "Kon teamlid niet bijwerken.",
@@ -1439,15 +1448,6 @@ if (!sendInviteEmail) {
               </p>
             </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="phone">{pt("Phone number")}</Label>
-              <Input
-                id="phone"
-                placeholder="+31 6 12345678"
-                value={newMember.phone}
-                onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="phone">{pt("Phone number")}</Label>
               <Input

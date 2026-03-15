@@ -6,7 +6,10 @@
 // All lessons have icons, key takeaways, and resources
 // ============================================
 
+import { MonitorSmartphone } from 'lucide-react';
 import { Course, Module } from '../types';
+import { BRAND } from '../brand';
+import { instructors } from '../instructors';
 
 // ============================================
 // MODULE 1: GETTING STARTED
@@ -719,6 +722,12 @@ In de volgende les maken we daadwerkelijk je eerste project vanaf nul!`,
         'Views control HOW you see data, Tables control WHICH columns appear',
         'Master keyboard shortcuts to dramatically increase productivity',
       ],
+      keyTakeawaysEN: [
+        'MS Project has 7 main tabs: File, Task, Resource, Project, View, Format, Report',
+        'Gantt Chart (default view) combines task list on left with visual timeline on right',
+        'Views control HOW you see data, Tables control WHICH columns appear',
+        'Master keyboard shortcuts to dramatically increase productivity',
+      ],
       keyTakeawaysNL: [
         'MS Project heeft 7 hoofdtabs: Bestand, Taak, Resource, Project, Weergave, Opmaak, Rapport',
         'Gantt Diagram (standaard weergave) combineert takenlijst links met visuele tijdlijn rechts',
@@ -1231,6 +1240,12 @@ In de volgende les verkennen we kalenders en werktijd - cruciaal voor nauwkeurig
         'Auto-Scheduled mode (recommended) lets MS Project calculate dates based on dependencies',
         'Milestones (0 duration tasks) mark important project events and appear as diamonds',
       ],
+      keyTakeawaysEN: [
+        'Always set the project start date BEFORE adding tasks - MS Project calculates all dates from this',
+        'Use summary tasks to organize work into logical phases with proper hierarchy',
+        'Auto-Scheduled mode (recommended) lets MS Project calculate dates based on dependencies',
+        'Milestones (0 duration tasks) mark important project events and appear as diamonds',
+      ],
       keyTakeawaysNL: [
         'Stel altijd project startdatum in VOOR het toevoegen van taken - MS Project berekent alle datums hiervandaan',
         'Gebruik samenvattingstaken om werk te organiseren in logische fasen met juiste hiërarchie',
@@ -1601,6 +1616,12 @@ Bij een conflict gebruikt MS Project deze volgorde:
 
 Volgende les: Taken in detail maken en beheren!`,
       keyTakeaways: [
+        'Three calendar types: Base (template), Project (company-wide), Resource (individual)',
+        'Calendars determine when work can happen - crucial for accurate scheduling',
+        'Resource calendars override project calendar - remember the hierarchy',
+        'Add holidays and exceptions early to avoid unrealistic schedules',
+      ],
+      keyTakeawaysEN: [
         'Three calendar types: Base (template), Project (company-wide), Resource (individual)',
         'Calendars determine when work can happen - crucial for accurate scheduling',
         'Resource calendars override project calendar - remember the hierarchy',
@@ -2154,6 +2175,12 @@ Je hebt geleerd:
 
 Volgende les: Taken koppelen met afhankelijkheden!`,
       keyTakeaways: [
+        'Four task types: Normal (work items), Summary (groups), Milestones (0 duration), Recurring (repeating)',
+        'Summary tasks automatically calculate duration from subtasks - use for phases',
+        'Keep tasks 1-10 days for manageability - too short is over-detailed, too long is hard to track',
+        'Avoid hard constraints (Must Start On, Must Finish On) - use ASAP with deadlines instead',
+      ],
+      keyTakeawaysEN: [
         'Four task types: Normal (work items), Summary (groups), Milestones (0 duration), Recurring (repeating)',
         'Summary tasks automatically calculate duration from subtasks - use for phases',
         'Keep tasks 1-10 days for manageability - too short is over-detailed, too long is hard to track',
@@ -2786,6 +2813,12 @@ Volgende: De Kritieke Pad Methode!`,
         'FS is the default and most common - use it for 80% of your dependencies',
         'Avoid over-linking tasks - only link direct predecessors to keep schedule flexible',
       ],
+      keyTakeawaysEN: [
+        'Four dependency types: Finish-to-Start (FS-80%), Start-to-Start (SS), Finish-to-Finish (FF), Start-to-Finish (SF-rare)',
+        'Use lag (positive) for delays between tasks, lead (negative) for overlapping work',
+        'FS is the default and most common - use it for 80% of your dependencies',
+        'Avoid over-linking tasks - only link direct predecessors to keep schedule flexible',
+      ],
       keyTakeawaysNL: [
         'Vier afhankelijkheid types: Finish-to-Start (FS-80%), Start-to-Start (SS), Finish-to-Finish (FF), Start-to-Finish (SF-zeldzaam)',
         'Gebruik vertraging (positief) voor delays tussen taken, voorsprong (negatief) voor overlappend werk',
@@ -2830,6 +2863,12 @@ Volgende: De Kritieke Pad Methode!`,
         'Focus management attention on critical path tasks to keep project on schedule',
         'Non-critical tasks have slack - can be delayed without affecting project end date',
       ],
+      keyTakeawaysEN: [
+        'Critical Path is the longest sequence of tasks - determines minimum project duration',
+        'Tasks on critical path have zero float/slack - any delay delays the entire project',
+        'Focus management attention on critical path tasks to keep project on schedule',
+        'Non-critical tasks have slack - can be delayed without affecting project end date',
+      ],
       keyTakeawaysNL: [
         'Kritiek Pad is de langste reeks taken - bepaalt minimale projectduur',
         'Taken op kritiek pad hebben nul float/slack - elke vertraging vertraagt het hele project',
@@ -2847,6 +2886,7 @@ Volgende: De Kritieke Pad Methode!`,
       videoUrl: '',
       icon: 'UserPlus',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2858,6 +2898,7 @@ Volgende: De Kritieke Pad Methode!`,
       videoUrl: '',
       icon: 'BarChart3',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2869,6 +2910,7 @@ Volgende: De Kritieke Pad Methode!`,
       videoUrl: '',
       icon: 'Target',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2880,6 +2922,7 @@ Volgende: De Kritieke Pad Methode!`,
       videoUrl: '',
       icon: 'DollarSign',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
   ],
@@ -2905,6 +2948,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'PaintBucket',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2916,6 +2960,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'Filter',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2927,6 +2972,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'PieChart',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2938,6 +2984,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'Share2',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2949,6 +2996,7 @@ const module3: Module = {
       videoUrl: '',
       icon: 'Lightbulb',
       keyTakeaways: [],
+      keyTakeawaysEN: [],
       resources: [],
     },
     {
@@ -2978,42 +3026,34 @@ export const msProjectCourse: Course = {
   id: 'ms-project-masterclass',
   title: 'Microsoft Project Masterclass',
   titleNL: 'Microsoft Project Masterclass',
-  subtitle: 'Master MS Project for professional project planning',
-  subtitleNL: 'Beheers MS Project voor professionele projectplanning',
   description: 'From basics to advanced: create professional project plans, track progress, manage resources and generate reports.',
   descriptionNL: 'Van basis tot gevorderd: maak professionele projectplannen, volg voortgang, beheer resources en genereer rapporten.',
+  icon: MonitorSmartphone,
+  color: BRAND.blue,
+  gradient: `linear-gradient(135deg, ${BRAND.blue}, #106EBE)`,
   category: 'tools',
   methodology: 'tools',
-  difficulty: 'intermediate',
+  levels: 3,
+  modules: msProjectModules.reduce((total, m) => total + m.lessons.length, 0),
   duration: 22,
-  price: 0,
-  originalPrice: 149,
   rating: 4.5,
-  reviewCount: 2134,
   students: 12456,
-  language: 'Nederlands & English',
+  tags: ['MS Project', 'Gantt Chart', 'Resource Management', 'Critical Path', 'Baseline'],
+  tagsNL: ['MS Project', 'Gantt Chart', 'Resource Management', 'Kritieke Pad', 'Baseline'],
+  instructor: instructors.peter,
   featured: false,
   bestseller: true,
   new: false,
-  hasCertificate: true,
-  icon: 'MonitorSmartphone',
-  color: '#0078D4',
-  gradient: 'linear-gradient(135deg, #0078D4 0%, #106EBE 100%)',
-  instructor: {
-    name: 'Peter Jansen, MPM',
-    title: 'MS Project Specialist',
-    avatar: '',
-    bio: 'Peter has 20+ years of experience training project managers on Microsoft Project and has certified thousands of professionals worldwide.',
-    bioNL: 'Peter heeft 20+ jaar ervaring met het trainen van projectmanagers in Microsoft Project en heeft duizenden professionals wereldwijd gecertificeerd.',
-  },
-  learningOutcomes: [
+  freeForCustomers: true,
+  certificate: true,
+  whatYouLearn: [
     'Create professional project plans with proper task hierarchy',
     'Track progress with baselines and earned value analysis',
     'Manage resources and resolve allocation conflicts',
     'Generate executive reports and dashboards',
     'Master the critical path method for schedule optimization',
   ],
-  learningOutcomesNL: [
+  whatYouLearnNL: [
     'Professionele projectplannen maken met juiste taak hiërarchie',
     'Voortgang bijhouden met baselines en earned value analyse',
     'Resources beheren en allocatie conflicten oplossen',

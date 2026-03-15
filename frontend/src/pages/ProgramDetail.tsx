@@ -57,6 +57,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
 
 // API functions
 const fetchProgram = async (id: string) => {
@@ -117,6 +119,7 @@ const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: st
 
 const ProgramDetail = () => {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -282,13 +285,7 @@ const ProgramDetail = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(amount || 0);
-  };
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -464,7 +461,7 @@ const ProgramDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">{pt("Sponsor")}</p>
-                    <p className="font-medium">{program.sponsor_name || 'Not specified'}</p>
+                    <p className="font-medium">{program.executive_sponsor_name || program.sponsor_name || 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>

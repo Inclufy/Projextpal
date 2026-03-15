@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8083'
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -7,11 +9,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
-    ['html', { outputFolder: 'test-results/playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'playwright-report/results.json' }],
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5173',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -30,10 +32,15 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  /* webServer only needed when app is not already running */
+  ...(process.env.CI
+    ? {
+        webServer: {
+          command: 'npm run dev',
+          url: BASE_URL,
+          reuseExistingServer: false,
+          timeout: 120000,
+        },
+      }
+    : {}),
 })

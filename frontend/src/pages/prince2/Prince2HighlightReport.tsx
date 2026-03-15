@@ -52,24 +52,24 @@ const Prince2HighlightReport = () => {
   };
 
   const handleSave = async () => {
-    if (!form.title) { toast.error("Titel is verplicht"); return; }
+    if (!form.title) { toast.error(pt("Title is required")); return; }
     setSubmitting(true);
     try {
       const url = editing ? `/api/v1/projects/${id}/prince2/highlight-reports/${editing.id}/` : `/api/v1/projects/${id}/prince2/highlight-reports/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (response.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); }
-      else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); }
+      if (response.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (rId: number) => {
-    if (!confirm("Rapport verwijderen?")) return;
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
       const response = await fetch(`/api/v1/projects/${id}/prince2/highlight-reports/${rId}/`, { method: "DELETE", headers });
-      if (response.ok || response.status === 204) { toast.success("Verwijderd"); fetchData(); }
-    } catch { toast.error("Verwijderen mislukt"); }
+      if (response.ok || response.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
   };
 
   const statusColor = (s: string) => ({ green: "bg-green-100 text-green-700", amber: "bg-amber-100 text-amber-700", red: "bg-red-100 text-red-700" }[s] || "bg-gray-100");

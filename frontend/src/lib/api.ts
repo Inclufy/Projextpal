@@ -132,9 +132,9 @@ export const programsApi = {
   
   // Program-specific endpoints
   getProjects: (programId: string | number) => api.get<any[]>(`/programs/${programId}/projects/`),
-  addProject: (programId: string | number, projectId: string | number) => 
-    api.post(`/programs/${programId}/projects/`, { project_id: projectId }),
-  removeProject: (programId: string | number, projectId: string | number) => 
+  addProject: (programId: string | number, projectId: string | number) =>
+    api.post(`/programs/${programId}/add_project/`, { project_id: projectId }),
+  removeProject: (programId: string | number, projectId: string | number) =>
     api.delete(`/programs/${programId}/projects/${projectId}/`),
   
   getMetrics: (programId: string | number) => api.get<any>(`/programs/${programId}/metrics/`),

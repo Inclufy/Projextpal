@@ -233,7 +233,23 @@ const ReportsPage: React.FC = () => {
       if (!response.ok) throw new Error("Failed to generate report");
       
       const data = await response.json();
-      setReportData(data);
+      // Validate and sanitize report data to prevent render crashes
+      setReportData({
+        title: String(data.title || "Report"),
+        date: String(data.date || new Date().toISOString()),
+        executive_summary: String(data.executive_summary || ""),
+        sections: Array.isArray(data.sections) ? data.sections.map((s: any) => ({
+          heading: String(s.heading || ""),
+          content: String(s.content || ""),
+        })) : [],
+        recommendations: Array.isArray(data.recommendations) ? data.recommendations.map(String) : [],
+        risk_highlights: Array.isArray(data.risk_highlights) ? data.risk_highlights.map(String) : [],
+        kpis: Array.isArray(data.kpis) ? data.kpis.map((k: any) => ({
+          name: String(k.name || ""),
+          value: String(k.value || ""),
+          trend: String(k.trend || "stable"),
+        })) : [],
+      });
     } catch (error) {
       console.error("Report generation failed:", error);
       setReportData({

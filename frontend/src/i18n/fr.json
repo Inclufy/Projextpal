@@ -1,0 +1,186 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "contact": "Contact",
+    "login": "Connexion",
+    "openApp": "Ouvrir l'App",
+    "programs": "Programmes",
+    "projects": "Projets"
+  },
+  "navigation": {
+    "home": "Accueil"
+  },
+  "app": {
+    "totalPrograms": "Total Programmes",
+    "totalProjects": "Total Projets",
+    "timeTracking": "Suivi du Temps",
+    "active": "Actif",
+    "completed": "Terminé",
+    "planning": "Planification",
+    "pending": "En attente",
+    "inProgress": "En cours",
+    "requiresAttention": "Nécessite une attention",
+    "totalAllocated": "Total alloué",
+    "programsOverview": "Aperçu des Programmes",
+    "projectsOverview": "Aperçu des Projets",
+    "total": "Total",
+    "dashboardTitle": "Tableau de Bord Exécutif",
+    "dashboardSubtitle": "Aperçu de tous les programmes et projets",
+    "viewAll": "Voir tout",
+    "programName": "Nom du Programme",
+    "framework": "Framework",
+    "projects": "Projets",
+    "budget": "Budget",
+    "progress": "Progression",
+    "status": "Statut",
+    "health": "Santé",
+    "activePrograms": "Programmes Actifs",
+    "activeProjects": "Projets Actifs",
+    "name": "Nom"
+  },
+  "hero": {
+    "badge": "Plateforme de Gestion de Projets propulsée par l'IA",
+    "title1": "Gérez Programmes & Projets avec",
+    "title2": "l'Intelligence Artificielle",
+    "subtitle": "ProjeXtPal combine des outils de gestion de projets puissants avec des analyses basées sur l'IA pour rendre vos équipes plus efficaces.",
+    "getStarted": "Commencer Gratuitement",
+    "watchDemo": "Voir la Démo",
+    "programManagement": "Gestion de Programme",
+    "projectTracking": "Suivi de Projet",
+    "aiInsights": "Analyses IA",
+    "timeManagement": "Gestion du Temps",
+    "stats": {
+      "projects": "Économies Moyennes",
+      "programs": "Temps Gagné par Semaine",
+      "hours": "Moins de Travail Manuel",
+      "success": "Analyses en Temps Réel"
+    }
+  },
+  "about": {
+    "badge": "À propos de ProjeXtPal",
+    "title1": "Tout ce dont vous avez besoin pour",
+    "title2": "une Gestion de Projet Réussie",
+    "description": "ProjeXtPal est la seule plateforme qui combine programmes, projets et IA dans une solution puissante. Que vous travailliez avec PRINCE2, Scrum, Agile, Kanban ou SAFe - nous supportons toutes les méthodologies.",
+    "capabilities": [
+      "Gestion de Portfolio & Programme avec SAFe, MSP et PMI",
+      "Gestion de projet pour toutes les méthodologies (PRINCE2, Scrum, Agile, Waterfall, Kanban)",
+      "Assistance IA pour la planification, la gestion des risques et les rapports",
+      "Collaboration en temps réel et suivi de la progression",
+      "Gestion du temps et contrôle budgétaire intégrés"
+    ],
+    "getStarted": "Commencer",
+    "programs": "Programmes",
+    "programsDesc": "Gérez plusieurs projets comme un portfolio avec SAFe, MSP ou PMI",
+    "projects": "Projets",
+    "projectsDesc": "PRINCE2, Scrum, Agile, Waterfall, Kanban et plus",
+    "aiPowered": "Propulsé par l'IA",
+    "aiPoweredDesc": "Planification intelligente, analyse des risques et rapports automatisés",
+    "smartEntry": "Saisie Intelligente",
+    "aiReports": "Rapports IA",
+    "methodologyAdvisor": "Conseiller en Méthodologie"
+  },
+  "features": {
+    "badge": "Fonctionnalités Puissantes",
+    "title1": "Tout ce dont vous avez besoin pour",
+    "title2": "une Gestion de Projet Moderne",
+    "items": [
+      {
+        "title": "Gestion de Programme",
+        "desc": "Gérez les portfolios avec les frameworks SAFe, MSP et PMI"
+      },
+      {
+        "title": "Multi-Méthodologie",
+        "desc": "PRINCE2, Scrum, Agile, Waterfall, Kanban et approches hybrides"
+      },
+      {
+        "title": "Assistance IA",
+        "desc": "Planification intelligente, analyse des risques et perspectives prédictives"
+      },
+      {
+        "title": "Suivi du Temps",
+        "desc": "Gestion du temps intégrée avec rapports automatiques"
+      },
+      {
+        "title": "Collaboration d'Équipe",
+        "desc": "Collaboration en temps réel avec communication intégrée"
+      },
+      {
+        "title": "Modèles Intelligents",
+        "desc": "Plans de projet et documentation générés par l'IA"
+      },
+      {
+        "title": "Rapports & KPIs",
+        "desc": "Tableaux de bord visuels et mises à jour de statut automatisées"
+      },
+      {
+        "title": "Gestion des Risques",
+        "desc": "Identification et atténuation des risques par l'IA"
+      },
+      {
+        "title": "Gestion des Parties Prenantes",
+        "desc": "Communication intégrée et suivi de l'engagement"
+      }
+    ],
+    "startUsing": "Commencer Gratuitement"
+  },
+  "demo": {
+    "badge": "Démo en Direct",
+    "title1": "Voir ProjeXtPal",
+    "title2": "En Action",
+    "aiOnline": "IA En Ligne",
+    "aiInsight": "Analyse IA",
+    "aiInsightText": "Le projet est en retard de 5% - envisagez d'ajouter des ressources aux tâches critiques",
+    "tryIt": "Essayer Gratuitement"
+  },
+  "contact": {
+    "badge": "Contactez-Nous",
+    "title": "Prêt à Commencer ?",
+    "letsTalk": "Parlons-en",
+    "description": "Contactez-nous pour une démo, un devis ou si vous avez des questions sur ProjeXtPal.",
+    "name": "Nom",
+    "email": "E-mail",
+    "message": "Message",
+    "send": "Envoyer le Message"
+  },
+  "faq": {
+    "title": "Questions Fréquemment Posées",
+    "items": [
+      {
+        "q": "Quelles méthodologies ProjeXtPal supporte-t-il ?",
+        "a": "ProjeXtPal supporte toutes les méthodologies principales : PRINCE2, Scrum, Agile, Waterfall, Kanban, SAFe, MSP et les approches hybrides."
+      },
+      {
+        "q": "Comment fonctionne l'assistance IA ?",
+        "a": "Notre IA analyse vos données de projet et fournit des suggestions pour la planification, identifie les risques, génère des rapports et aide à la prise de décision."
+      },
+      {
+        "q": "Y a-t-il un essai gratuit ?",
+        "a": "Oui ! Vous pouvez essayer ProjeXtPal gratuitement pendant 14 jours sans carte de crédit."
+      },
+      {
+        "q": "Des équipes de différentes tailles peuvent-elles utiliser ProjeXtPal ?",
+        "a": "Absolument ! Des petites équipes aux grandes entreprises - ProjeXtPal évolue avec vous."
+      },
+      {
+        "q": "Intégrez-vous avec d'autres outils ?",
+        "a": "Oui, nous intégrons avec des outils populaires comme Jira, Slack, Microsoft Teams, et plus encore."
+      }
+    ]
+  },
+  "footer": {
+    "cta": {
+      "title1": "Prêt à Commencer avec",
+      "title2": "une Gestion de Projet Intelligente ?"
+    },
+    "description": "ProjeXtPal - Plateforme propulsée par l'IA pour Programmes & Projets",
+    "product": "Produit",
+    "company": "Entreprise",
+    "rights": "Tous droits réservés."
+  },
+  "auth": {
+    "logout": "Déconnexion"
+  }
+}
