@@ -386,8 +386,8 @@ class CurrentUserView(APIView):
                 )
                 data["has_active_subscription"] = True
                 data["subscription_status"] = active_subscription.status
-                data["subscription_plan"] = active_subscription.plan.name
-            except CompanySubscription.DoesNotExist:
+                data["subscription_plan"] = getattr(active_subscription.plan, 'name', None) if active_subscription.plan else None
+            except (CompanySubscription.DoesNotExist, AttributeError):
                 data["has_active_subscription"] = False
                 data["subscription_status"] = "inactive"
         
