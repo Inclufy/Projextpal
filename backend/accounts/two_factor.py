@@ -119,6 +119,7 @@ class Check2FAStatusView(APIView):
 
 class LoginWith2FAView(APIView):
     """Login with optional 2FA support"""
+    authentication_classes = []
     permission_classes = []
     
     def post(self, request):
