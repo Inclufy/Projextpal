@@ -82,11 +82,13 @@ applications:
     group: inclufy-auto-fina
     type: web
     url: http://localhost:8080
-    health_endpoint: /
+    health_endpoint: /health
     max_response_time: 2000
     recovery: notify
     enabled: true
-    containers: []              # Update when container names are known
+    containers:
+      - name: inclufyfinance-frontend
+        role: frontend
 
   # ──────────────────────────────────────────────
   # Inclufy Marketing — AI Marketing Platform
@@ -98,11 +100,15 @@ applications:
     group: inclufymarketing
     type: web
     url: http://localhost:8092
-    health_endpoint: /
+    health_endpoint: /health
     max_response_time: 2000
     recovery: notify
     enabled: true
     containers:
+      - name: inclufymarketing-main-frontend-1
+        role: frontend
+      - name: inclufymarketing-main-backend-1
+        role: backend
       - name: marketing-proxy
         role: proxy
 
