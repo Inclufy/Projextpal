@@ -77,8 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return createUserFromData(userData);
       }
       
-      // Other errors
+      // 500+ server errors - don't clear tokens, server may be temporarily down
+      if (response.status >= 500) {
+        console.error('⚠ Server error fetching user data:', response.status);
+        return null;
+      }
+
+      // Other client errors - clear tokens
       console.error('Failed to fetch user data:', response.status);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user_email');
       return null;
       
     } catch (error) {

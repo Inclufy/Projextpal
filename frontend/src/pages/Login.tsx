@@ -70,7 +70,12 @@ const Login = () => {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(`Server error (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
