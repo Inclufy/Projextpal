@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2, Sparkles } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -263,7 +263,7 @@ const AppHeader = () => {
   const { logout, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { toggle: toggleCopilot, isOpen: copilotOpen } = useCopilot();
+  const { toggle: toggleCopilot, isOpen: copilotOpen, openWithTab } = useCopilot();
   const toggleTheme = () => document.documentElement.classList.toggle("dark");
 
   return (
@@ -296,11 +296,21 @@ const AppHeader = () => {
         <Button
           variant={copilotOpen ? "default" : "ghost"}
           size="icon"
-          onClick={toggleCopilot}
+          onClick={() => openWithTab("chat")}
           title="AI Copilot"
           className={copilotOpen ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700" : ""}
         >
           <Sparkles className="h-5 w-5" />
+        </Button>
+
+        {/* Guide Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => openWithTab("guide")}
+          title="Gids"
+        >
+          <HelpCircle className="h-5 w-5" />
         </Button>
 
         {/* Logout */}
