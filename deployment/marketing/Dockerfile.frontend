@@ -12,6 +12,10 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine AS production
 
+# Copy SPA nginx config
+COPY frontend-nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
