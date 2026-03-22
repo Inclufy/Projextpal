@@ -487,6 +487,11 @@ const CourseLearningPlayer = () => {
   const [showAchievementDialog, setShowAchievementDialog] = useState(false);
   const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null);
 
+  // Feature 4: AI Feedback
+  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [currentFeedback, setCurrentFeedback] = useState('');
+
   // ============================================
   // VISUAL RENDERING — Unified in VisualTemplateRenderer
   // Old renderVisual + 25 keyword template functions removed.
