@@ -432,6 +432,7 @@ const CourseLearningPlayer = () => {
   // Feature 2: Practice Work Storage
   const [practiceWork, setPracticeWork] = useState<PracticeWork[]>([]);
   const [currentPracticeContent, setCurrentPracticeContent] = useState('');
+  const [savingPractice, setSavingPractice] = useState(false);
 
   // Feature 3: Achievement System
   const [achievements, setAchievements] = useState<Achievement[]>([
