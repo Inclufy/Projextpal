@@ -21,14 +21,11 @@ from .models import (
     Certificate    # Bestaat al!
 )
 
-# Deze models moeten nog toegevoegd worden aan models.py
-try:
-    from .models import Skill, PracticeAssignment, PracticeSubmission, Exam, ExamQuestion, ExamAttempt
-except ImportError:
-    # Models bestaan nog niet, ze worden toegevoegd via migrations
-    Skill = None
-    PracticeAssignment = None
-    Exam = None
+# Import existing models - ExamQuestion does not exist (Exam uses JSONField for questions)
+from .models import (
+    Skill, SkillCategory, PracticeAssignment, PracticeSubmission,
+    Exam, ExamAttempt, Certificate, LessonSkillMapping
+)
 
 def get_openai_client():
     return OpenAI(api_key=os.getenv('OPENAI_API_KEY', 'sk-placeholder'))
@@ -142,12 +139,6 @@ Return ONLY valid JSON (no markdown):
 @permission_classes([IsAdminUser])
 def list_skills(request):
     """Get all skills"""
-    if Skill is None:
-        return Response({
-            'error': 'Skill model not yet migrated. Run migrations first.',
-            'skills': []
-        })
-    
     skills = Skill.objects.all()
     
     category = request.query_params.get('category')
@@ -156,14 +147,15 @@ def list_skills(request):
     
     search = request.query_params.get('search')
     if search:
-        skills = skills.filter(title__icontains=search)
-    
+        skills = skills.filter(name__icontains=search)
+
     data = [{
         'id': skill.id,
-        'title': skill.title,
+        'name': skill.name,
+        'name_nl': skill.name_nl,
         'description': skill.description,
-        'category': skill.category,
-        'courses_count': skill.courses.count() if hasattr(skill, 'courses') else 0
+        'category': str(skill.category_id) if skill.category_id else None,
+        'lessons_count': LessonSkillMapping.objects.filter(skill=skill).count()
     } for skill in skills]
     
     return Response(data)
@@ -173,45 +165,48 @@ def list_skills(request):
 @permission_classes([IsAdminUser])
 def create_skill(request):
     """Create a new skill"""
-    if Skill is None:
-        return Response({'error': 'Run migrations first'}, status=status.HTTP_400_BAD_REQUEST)
-    
+    category_id = request.data.get('category')
+    category = None
+    if category_id:
+        category = SkillCategory.objects.filter(id=category_id).first()
+
     skill = Skill.objects.create(
-        title=request.data['title'],
+        id=request.data.get('id', request.data['name'].lower().replace(' ', '-')),
+        name=request.data['name'],
+        name_nl=request.data.get('name_nl', ''),
         description=request.data.get('description', ''),
-        category=request.data.get('category', 'technical')
+        description_nl=request.data.get('description_nl', ''),
+        category=category
     )
-    return Response({'id': skill.id, 'title': skill.title}, status=status.HTTP_201_CREATED)
+    return Response({'id': skill.id, 'name': skill.name}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['PUT', 'DELETE'])
 @permission_classes([IsAdminUser])
 def manage_skill(request, skill_id):
     """Update or delete a skill"""
-    if Skill is None:
-        return Response({'error': 'Run migrations first'}, status=status.HTTP_400_BAD_REQUEST)
-    
     skill = get_object_or_404(Skill, id=skill_id)
     
     if request.method == 'DELETE':
         skill.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-    skill.title = request.data.get('title', skill.title)
+    skill.name = request.data.get('name', skill.name)
+    skill.name_nl = request.data.get('name_nl', skill.name_nl)
     skill.description = request.data.get('description', skill.description)
-    skill.category = request.data.get('category', skill.category)
+    skill.description_nl = request.data.get('description_nl', skill.description_nl)
+    category_id = request.data.get('category')
+    if category_id:
+        skill.category = SkillCategory.objects.filter(id=category_id).first()
     skill.save()
-    
-    return Response({'id': skill.id, 'title': skill.title})
+
+    return Response({'id': skill.id, 'name': skill.name})
 
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def generate_skills_ai(request):
     """Generate skills for a course using AI"""
-    if Skill is None:
-        return Response({'error': 'Run migrations first'}, status=status.HTTP_400_BAD_REQUEST)
-    
     course_id = request.data.get('course_id')
     course = get_object_or_404(Course, id=course_id)
     
@@ -251,14 +246,17 @@ Return ONLY JSON:
         created_skills = []
         
         for skill_data in skills_data['skills']:
+            skill_id = skill_data['title'].lower().replace(' ', '-')
+            category = SkillCategory.objects.filter(id=skill_data.get('category', 'technical')).first()
             skill, created = Skill.objects.get_or_create(
-                title=skill_data['title'],
+                id=skill_id,
                 defaults={
+                    'name': skill_data['title'],
                     'description': skill_data.get('description', ''),
-                    'category': skill_data.get('category', 'technical')
+                    'category': category
                 }
             )
-            created_skills.append({'id': skill.id, 'title': skill.title, 'category': skill.category})
+            created_skills.append({'id': skill.id, 'name': skill.name, 'category': str(skill.category_id)})
         
         return Response({'skills': created_skills})
         
@@ -274,9 +272,6 @@ Return ONLY JSON:
 @permission_classes([IsAdminUser])
 def list_practice_assignments(request):
     """Get all practice assignments"""
-    if PracticeAssignment is None:
-        return Response({'error': 'Run migrations first', 'assignments': []})
-    
     assignments = PracticeAssignment.objects.select_related('course').all()
     
     course_id = request.query_params.get('course')
@@ -300,9 +295,6 @@ def list_practice_assignments(request):
 @permission_classes([IsAdminUser])
 def create_practice_assignment(request):
     """Create a new practice assignment"""
-    if PracticeAssignment is None:
-        return Response({'error': 'Run migrations first'}, status=status.HTTP_400_BAD_REQUEST)
-    
     assignment = PracticeAssignment.objects.create(
         title=request.data['title'],
         description=request.data.get('description', ''),
@@ -321,16 +313,13 @@ def create_practice_assignment(request):
 @permission_classes([IsAdminUser])
 def list_exams(request):
     """Get all exams"""
-    if Exam is None:
-        return Response({'error': 'Run migrations first', 'exams': []})
-    
     exams = Exam.objects.all()
     
     data = [{
         'id': exam.id,
         'title': exam.title,
-        'num_questions': exam.questions.count() if hasattr(exam, 'questions') else 0,
-        'time_limit': exam.time_limit_minutes,
+        'num_questions': len(exam.questions) if exam.questions else 0,
+        'time_limit': exam.time_limit,
         'passing_score': exam.passing_score,
         'attempts_count': exam.attempts.count() if hasattr(exam, 'attempts') else 0,
     } for exam in exams]
@@ -342,12 +331,9 @@ def list_exams(request):
 @permission_classes([IsAdminUser])
 def create_exam(request):
     """Create a new exam"""
-    if Exam is None:
-        return Response({'error': 'Run migrations first'}, status=status.HTTP_400_BAD_REQUEST)
-    
     exam = Exam.objects.create(
         title=request.data['title'],
-        time_limit_minutes=request.data.get('time_limit', 60),
+        time_limit=request.data.get('time_limit', 60),
         passing_score=request.data.get('passing_score', 70)
     )
     return Response({'id': exam.id, 'title': exam.title}, status=status.HTTP_201_CREATED)
@@ -361,20 +347,24 @@ def create_exam(request):
 @permission_classes([IsAdminUser])
 def list_certificates(request):
     """Get all certificates"""
-    certificates = Certificate.objects.select_related('user', 'course').all()
-    
+    certificates = Certificate.objects.select_related('enrollment__user', 'enrollment__course').all()
+
     course_id = request.query_params.get('course')
     if course_id and course_id != 'all':
-        certificates = certificates.filter(course_id=course_id)
-    
+        certificates = certificates.filter(enrollment__course_id=course_id)
+
     data = [{
         'id': str(certificate.id),
-        'user_name': certificate.user.get_full_name() if hasattr(certificate.user, 'get_full_name') else certificate.user.email,
-        'user_email': certificate.user.email,
-        'course': certificate.course.title,
-        'certificate_number': getattr(certificate, 'certificate_number', 'N/A'),
-        'issued_at': certificate.created_at.isoformat() if hasattr(certificate, 'created_at') else None,
-        'verification_code': getattr(certificate, 'verification_code', 'N/A')
+        'user_name': (certificate.enrollment.user.get_full_name()
+                      if certificate.enrollment.user
+                      else certificate.enrollment.first_name or 'N/A'),
+        'user_email': (certificate.enrollment.user.email
+                       if certificate.enrollment.user
+                       else certificate.enrollment.email),
+        'course': certificate.enrollment.course.title,
+        'certificate_number': certificate.certificate_number or 'N/A',
+        'issued_at': certificate.issued_at.isoformat() if certificate.issued_at else None,
+        'verification_code': certificate.verification_code or 'N/A'
     } for certificate in certificates]
     
     return Response(data)
@@ -386,8 +376,9 @@ def certificate_stats(request):
     """Get certificate statistics"""
     total = Certificate.objects.count()
     this_month = Certificate.objects.filter(
-        created_at__month=datetime.now().month
-    ).count() if hasattr(Certificate, 'created_at') else 0
+        issued_at__month=datetime.now().month,
+        issued_at__year=datetime.now().year
+    ).count()
     
     return Response({
         'total': total,
