@@ -5,8 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 
 interface ProjectDetail {
@@ -22,23 +24,34 @@ interface ProjectDetail {
 }
 
 export default function ProjectDetailScreen({ route }: any) {
+  const { t } = useTranslation();
   const { projectId } = route.params;
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
+
+  async function loadProject() {
+    try {
+      setError(false);
+      const res = await api.get(`/projects/${projectId}/`);
+      setProject(res.data);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await api.get(`/projects/${projectId}/`);
-        setProject(res.data);
-      } catch {
-        // handle error
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    loadProject();
   }, [projectId]);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadProject();
+    setRefreshing(false);
+  }
 
   if (loading) {
     return (
@@ -51,13 +64,16 @@ export default function ProjectDetailScreen({ route }: any) {
   if (!project) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Project not found</Text>
+        <Text style={styles.errorText}>{t('projects.projectNotFound')}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A78BFA" />}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>{project.name}</Text>
         <View style={styles.badges}>
@@ -74,13 +90,13 @@ export default function ProjectDetailScreen({ route }: any) {
 
       {project.description ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('projects.description')}</Text>
           <Text style={styles.description}>{project.description}</Text>
         </View>
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Progress</Text>
+        <Text style={styles.sectionTitle}>{t('academy.progress')}</Text>
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, { width: `${project.progress || 0}%` }]} />
         </View>
@@ -88,7 +104,7 @@ export default function ProjectDetailScreen({ route }: any) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Timeline</Text>
+        <Text style={styles.sectionTitle}>{t('projects.timeline')}</Text>
         <View style={styles.infoRow}>
           <Ionicons name="calendar" size={16} color="#9CA3AF" />
           <Text style={styles.infoText}>
@@ -100,7 +116,7 @@ export default function ProjectDetailScreen({ route }: any) {
       {project.team_members && project.team_members.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Team ({project.team_members.length})
+            {t('projects.team')} ({project.team_members.length})
           </Text>
           {project.team_members.map((member) => (
             <View key={member.id} style={styles.memberRow}>

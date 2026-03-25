@@ -19,7 +19,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
 
   async function handleReset() {
     if (!email) {
-      setError('Please enter your email');
+      setError(t('auth.emailRequired'));
       return;
     }
     setLoading(true);
@@ -28,7 +28,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
       await api.post('/auth/forgot-password/', { email });
       setSent(true);
     } catch {
-      setError('Failed to send reset email');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -37,12 +37,12 @@ export default function ForgotPasswordScreen({ navigation }: any) {
   if (sent) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Check your email</Text>
+        <Text style={styles.title}>{t('auth.checkEmail')}</Text>
         <Text style={styles.subtitle}>
-          We sent a password reset link to {email}
+          {t('auth.resetSent')}
         </Text>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.buttonText}>Back to Login</Text>
+          <Text style={styles.buttonText}>{t('auth.backToLogin')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -51,7 +51,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('auth.forgotPassword')}</Text>
-      <Text style={styles.subtitle}>Enter your email to receive a reset link</Text>
+      <Text style={styles.subtitle}>{t('auth.enterEmail')}</Text>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -73,7 +73,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Send Reset Link</Text>
+          <Text style={styles.buttonText}>{t('auth.sendReset')}</Text>
         )}
       </TouchableOpacity>
 

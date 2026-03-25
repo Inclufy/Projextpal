@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -19,11 +20,11 @@ export default function ProfileScreen({ navigation }: any) {
   }
 
   const menuItems = [
-    { icon: 'person-outline' as const, label: 'Account Settings', screen: 'Settings' },
-    { icon: 'shield-checkmark-outline' as const, label: 'Security & 2FA', screen: 'Settings' },
-    { icon: 'notifications-outline' as const, label: 'Notifications', screen: 'Settings' },
-    { icon: 'globe-outline' as const, label: 'Language', screen: 'Settings' },
-    { icon: 'moon-outline' as const, label: 'Appearance', screen: 'Settings' },
+    { icon: 'person-outline' as const, label: t('profile.accountSettings'), screen: 'Settings' },
+    { icon: 'shield-checkmark-outline' as const, label: t('profile.security'), screen: 'Settings' },
+    { icon: 'notifications-outline' as const, label: t('profile.notifications'), screen: 'Settings' },
+    { icon: 'globe-outline' as const, label: t('profile.language'), screen: 'Settings' },
+    { icon: 'moon-outline' as const, label: t('profile.appearance'), screen: 'Settings' },
   ];
 
   return (
@@ -51,7 +52,7 @@ export default function ProfileScreen({ navigation }: any) {
       {user?.subscription_tier && (
         <View style={styles.planCard}>
           <View style={styles.planInfo}>
-            <Text style={styles.planLabel}>Current Plan</Text>
+            <Text style={styles.planLabel}>{t('profile.currentPlan')}</Text>
             <Text style={styles.planName}>{user.subscription_tier}</Text>
           </View>
           <Ionicons name="diamond" size={24} color="#FBBF24" />
@@ -60,7 +61,7 @@ export default function ProfileScreen({ navigation }: any) {
 
       <View style={styles.menu}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem}>
+          <TouchableOpacity key={index} style={styles.menuItem} onPress={() => Alert.alert(t('common.comingSoon'), item.label)}>
             <View style={styles.menuLeft}>
               <Ionicons name={item.icon} size={20} color="#9CA3AF" />
               <Text style={styles.menuLabel}>{item.label}</Text>
@@ -75,7 +76,7 @@ export default function ProfileScreen({ navigation }: any) {
         <Text style={styles.logoutText}>{t('auth.logout')}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>ProjeXtPal v1.0.0</Text>
+      <Text style={styles.version}>ProjeXtPal v1.0.1</Text>
 
       <View style={{ height: 40 }} />
     </ScrollView>

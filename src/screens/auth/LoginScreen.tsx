@@ -23,7 +23,7 @@ export default function LoginScreen({ navigation }: any) {
 
   async function handleLogin() {
     if (!email || !password) {
-      setError('Please enter email and password');
+      setError(t('auth.emailRequired'));
       return;
     }
     setLoading(true);

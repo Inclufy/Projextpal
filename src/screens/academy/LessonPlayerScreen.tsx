@@ -6,24 +6,39 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Dimensions, RefreshControl,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+// LinearGradient replaced with plain View to avoid extra dependency
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
-import { COLORS } from '../../constants/colors';
-import { coursesService, Lesson, LessonResource } from '../../services/coursesService';
+import { useTranslation } from 'react-i18next';
+import api from '../../services/api';
+
+interface Lesson {
+  id: number;
+  title: string;
+  description?: string;
+  content?: string;
+  content_type?: string;
+  video_url?: string;
+  duration_minutes?: number;
+  completed?: boolean;
+  transcript?: string;
+  key_takeaways?: string[];
+}
+
+interface LessonResource {
+  id: number;
+  title: string;
+  type: string;
+  url?: string;
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const VIDEO_HEIGHT = (SCREEN_WIDTH * 9) / 16;
 
 type TabId = 'content' | 'resources' | 'takeaways';
 
-const TABS: { id: TabId; name: string; icon: string }[] = [
-  { id: 'content', name: 'Inhoud', icon: 'document-text' },
-  { id: 'resources', name: 'Bronnen', icon: 'folder-open' },
-  { id: 'takeaways', name: 'Kernpunten', icon: 'bulb' },
-];
-
 export function LessonPlayerScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { courseId, lessonId } = route.params;
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [resources, setResources] = useState<LessonResource[]>([]);
@@ -32,12 +47,18 @@ export function LessonPlayerScreen({ route, navigation }: any) {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('content');
 
+  const TABS: { id: TabId; name: string; icon: string }[] = [
+    { id: 'content', name: t('academy.lessonPlayer'), icon: 'document-text' },
+    { id: 'resources', name: t('common.noData').includes('No') ? 'Resources' : 'Bronnen', icon: 'folder-open' },
+    { id: 'takeaways', name: t('common.noData').includes('No') ? 'Key Takeaways' : 'Kernpunten', icon: 'bulb' },
+  ];
+
   const loadLesson = useCallback(async () => {
     try {
-      const data = await coursesService.getLesson(courseId, lessonId);
+      const data = await api.get(`/academy/courses/${courseId}/lessons/${lessonId}/`).then(r => r.data);
       setLesson(data);
       try {
-        const res = await coursesService.getLessonResources(courseId, lessonId);
+        const res = await api.get(`/academy/courses/${courseId}/lessons/${lessonId}/resources/`).then(r => r.data);
         setResources(res);
       } catch {
         // resources optional
@@ -63,8 +84,8 @@ export function LessonPlayerScreen({ route, navigation }: any) {
     if (!lesson || lesson.completed) return;
     setCompleting(true);
     try {
-      await coursesService.completeLesson(courseId, lessonId);
-      setLesson((prev) => (prev ? { ...prev, completed: true } : prev));
+      await api.post(`/academy/courses/${courseId}/lessons/${lessonId}/complete/`);
+      setLesson((prev: Lesson | null) => (prev ? { ...prev, completed: true } : prev));
     } catch {
       // silent
     } finally {
@@ -75,7 +96,7 @@ export function LessonPlayerScreen({ route, navigation }: any) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={COLORS.purple} />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -83,10 +104,10 @@ export function LessonPlayerScreen({ route, navigation }: any) {
   if (!lesson) {
     return (
       <View style={styles.center}>
-        <Ionicons name="alert-circle-outline" size={48} color={COLORS.gray[500]} />
-        <Text style={styles.errorText}>Les niet gevonden</Text>
+        <Ionicons name="alert-circle-outline" size={48} color="#6B7280" />
+        <Text style={styles.errorText}>{t('common.loadError')}</Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtnText}>Terug</Text>
+          <Text style={styles.backBtnText}>{t('common.back')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -105,10 +126,7 @@ export function LessonPlayerScreen({ route, navigation }: any) {
           />
         </View>
       ) : (
-        <LinearGradient
-          colors={COLORS.primaryGradient as unknown as string[]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
           style={styles.headerGradient}
         >
           <Ionicons
@@ -119,20 +137,20 @@ export function LessonPlayerScreen({ route, navigation }: any) {
               'document-text'
             }
             size={48}
-            color={COLORS.white}
+            color="#FFFFFF"
           />
           <Text style={styles.headerTitle}>{lesson.title}</Text>
           <Text style={styles.headerSubtitle}>
-            {lesson.content_type?.charAt(0).toUpperCase() + lesson.content_type?.slice(1)} · {lesson.duration_minutes || 0} min
+            {lesson.content_type?.charAt(0).toUpperCase() + (lesson.content_type?.slice(1) || '')} · {lesson.duration_minutes || 0} min
           </Text>
-        </LinearGradient>
+        </View>
       )}
 
       {/* Completion Badge */}
       {lesson.completed && (
         <View style={styles.completedBanner}>
-          <Ionicons name="checkmark-circle" size={16} color={COLORS.green} />
-          <Text style={styles.completedText}>Voltooid</Text>
+          <Ionicons name="checkmark-circle" size={16} color="#34D399" />
+          <Text style={styles.completedText}>{t('academy.completed')}</Text>
         </View>
       )}
 
@@ -147,7 +165,7 @@ export function LessonPlayerScreen({ route, navigation }: any) {
             <Ionicons
               name={tab.icon as any}
               size={16}
-              color={activeTab === tab.id ? COLORS.purple : COLORS.gray[400]}
+              color={activeTab === tab.id ? '#7C3AED' : '#9CA3AF'}
             />
             <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
               {tab.name}
@@ -160,7 +178,7 @@ export function LessonPlayerScreen({ route, navigation }: any) {
       <ScrollView
         style={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.purple} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
         }
       >
         {activeTab === 'content' && (
@@ -175,8 +193,8 @@ export function LessonPlayerScreen({ route, navigation }: any) {
               <Text style={styles.bodyText}>{lesson.content}</Text>
             ) : (
               <View style={styles.emptyState}>
-                <Ionicons name="document-text-outline" size={40} color={COLORS.gray[600]} />
-                <Text style={styles.emptyText}>Geen tekstinhoud beschikbaar</Text>
+                <Ionicons name="document-text-outline" size={40} color="#4B5563" />
+                <Text style={styles.emptyText}>{t('common.noData')}</Text>
               </View>
             )}
             {lesson.transcript ? (
@@ -202,20 +220,20 @@ export function LessonPlayerScreen({ route, navigation }: any) {
                         'document-attach'
                       }
                       size={20}
-                      color={COLORS.purple}
+                      color="#7C3AED"
                     />
                   </View>
                   <View style={styles.resourceInfo}>
                     <Text style={styles.resourceTitle}>{resource.title}</Text>
                     <Text style={styles.resourceType}>{resource.type?.toUpperCase()}</Text>
                   </View>
-                  <Ionicons name="download-outline" size={20} color={COLORS.gray[400]} />
+                  <Ionicons name="download-outline" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Ionicons name="folder-open-outline" size={40} color={COLORS.gray[600]} />
-                <Text style={styles.emptyText}>Geen bronnen beschikbaar</Text>
+                <Ionicons name="folder-open-outline" size={40} color="#4B5563" />
+                <Text style={styles.emptyText}>{t('common.noData')}</Text>
               </View>
             )}
           </View>
@@ -224,21 +242,20 @@ export function LessonPlayerScreen({ route, navigation }: any) {
         {activeTab === 'takeaways' && (
           <View style={styles.section}>
             {lesson.key_takeaways && lesson.key_takeaways.length > 0 ? (
-              lesson.key_takeaways.map((takeaway, index) => (
+              lesson.key_takeaways.map((takeaway: string, index: number) => (
                 <View key={index} style={styles.takeawayRow}>
-                  <LinearGradient
-                    colors={COLORS.primaryGradient as unknown as string[]}
+                  <View
                     style={styles.takeawayBullet}
                   >
                     <Text style={styles.takeawayNumber}>{index + 1}</Text>
-                  </LinearGradient>
+                  </View>
                   <Text style={styles.takeawayText}>{takeaway}</Text>
                 </View>
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Ionicons name="bulb-outline" size={40} color={COLORS.gray[600]} />
-                <Text style={styles.emptyText}>Geen kernpunten beschikbaar</Text>
+                <Ionicons name="bulb-outline" size={40} color="#4B5563" />
+                <Text style={styles.emptyText}>{t('common.noData')}</Text>
               </View>
             )}
           </View>
@@ -255,26 +272,23 @@ export function LessonPlayerScreen({ route, navigation }: any) {
             onPress={markComplete}
             disabled={completing}
           >
-            <LinearGradient
-              colors={[COLORS.green, COLORS.emerald]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+            <View
               style={styles.completeBtnGradient}
             >
               {completing ? (
-                <ActivityIndicator size="small" color={COLORS.white} />
+                <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
-                  <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
-                  <Text style={styles.completeBtnText}>Markeer als voltooid</Text>
+                  <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                  <Text style={styles.completeBtnText}>{t('academy.markComplete')}</Text>
                 </>
               )}
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         ) : (
           <View style={styles.completedFooter}>
-            <Ionicons name="checkmark-circle" size={20} color={COLORS.green} />
-            <Text style={styles.completedFooterText}>Les voltooid</Text>
+            <Ionicons name="checkmark-circle" size={20} color="#34D399" />
+            <Text style={styles.completedFooterText}>{t('academy.completed')}</Text>
           </View>
         )}
       </View>
@@ -285,17 +299,17 @@ export function LessonPlayerScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[900],
+    backgroundColor: '#191A2E',
   },
   center: {
     flex: 1,
-    backgroundColor: COLORS.gray[900],
+    backgroundColor: '#191A2E',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
   },
   errorText: {
-    color: COLORS.gray[400],
+    color: '#9CA3AF',
     fontSize: 16,
   },
   backBtn: {
@@ -303,10 +317,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: COLORS.gray[800],
+    backgroundColor: '#1F2037',
   },
   backBtnText: {
-    color: COLORS.purple,
+    color: '#7C3AED',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -325,11 +339,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 24,
+    backgroundColor: '#7C3AED',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: COLORS.white,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   headerSubtitle: {
@@ -345,14 +360,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   completedText: {
-    color: COLORS.green,
+    color: '#34D399',
     fontSize: 13,
     fontWeight: '600',
   },
   tabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[700],
+    borderBottomColor: '#374151',
   },
   tab: {
     flex: 1,
@@ -364,15 +379,15 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.purple,
+    borderBottomColor: '#7C3AED',
   },
   tabText: {
     fontSize: 13,
-    color: COLORS.gray[400],
+    color: '#9CA3AF',
     fontWeight: '600',
   },
   activeTabText: {
-    color: COLORS.purple,
+    color: '#7C3AED',
   },
   content: {
     flex: 1,
@@ -383,37 +398,37 @@ const styles = StyleSheet.create({
   lessonTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: COLORS.gray[100],
+    color: '#F3F4F6',
     marginBottom: 12,
   },
   description: {
     fontSize: 14,
-    color: COLORS.gray[400],
+    color: '#9CA3AF',
     lineHeight: 22,
     marginBottom: 16,
   },
   bodyText: {
     fontSize: 15,
-    color: COLORS.gray[300],
+    color: '#D1D5DB',
     lineHeight: 24,
   },
   transcriptSection: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: COLORS.gray[800],
+    backgroundColor: '#1F2037',
     borderRadius: 12,
   },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.gray[400],
+    color: '#9CA3AF',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
   },
   transcriptText: {
     fontSize: 13,
-    color: COLORS.gray[400],
+    color: '#9CA3AF',
     lineHeight: 20,
   },
   emptyState: {
@@ -422,7 +437,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    color: COLORS.gray[500],
+    color: '#6B7280',
     fontSize: 14,
   },
   resourceRow: {
@@ -431,13 +446,13 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[800],
+    borderBottomColor: '#1F2037',
   },
   resourceIcon: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: `${COLORS.purple}15`,
+    backgroundColor: 'rgba(124, 58, 237, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -447,11 +462,11 @@ const styles = StyleSheet.create({
   resourceTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.gray[200],
+    color: '#E5E7EB',
   },
   resourceType: {
     fontSize: 11,
-    color: COLORS.gray[500],
+    color: '#6B7280',
     marginTop: 2,
   },
   takeawayRow: {
@@ -466,22 +481,23 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#7C3AED',
   },
   takeawayNumber: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '700',
   },
   takeawayText: {
     flex: 1,
     fontSize: 14,
-    color: COLORS.gray[300],
+    color: '#D1D5DB',
     lineHeight: 22,
     paddingTop: 3,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.gray[700],
+    borderTopColor: '#374151',
     padding: 16,
     paddingBottom: 32,
   },
@@ -495,9 +511,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
+    backgroundColor: '#34D399',
+    borderRadius: 12,
   },
   completeBtnText: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 15,
   },
@@ -512,7 +530,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   completedFooterText: {
-    color: COLORS.green,
+    color: '#34D399',
     fontWeight: '600',
     fontSize: 15,
   },

@@ -19,7 +19,7 @@ export default function TwoFactorScreen({ navigation }: any) {
 
   async function handleVerify() {
     if (code.length !== 6) {
-      setError('Please enter a 6-digit code');
+      setError(t('auth.enter6Digit'));
       return;
     }
     setLoading(true);

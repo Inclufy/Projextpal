@@ -26,13 +26,15 @@ export default function ProjectsScreen({ navigation }: any) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
 
   async function loadProjects() {
     try {
+      setError(false);
       const res = await api.get('/projects/');
       setProjects(res.data.results || res.data || []);
     } catch {
-      // keep empty
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -117,8 +119,13 @@ export default function ProjectsScreen({ navigation }: any) {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="folder-open-outline" size={64} color="#374151" />
-            <Text style={styles.emptyText}>No projects yet</Text>
-            <Text style={styles.emptySubtext}>Create your first project on the web app</Text>
+            <Text style={styles.emptyText}>{error ? t('common.loadError') : t('projects.noProjects')}</Text>
+            <Text style={styles.emptySubtext}>{error ? '' : t('projects.createOnWeb')}</Text>
+            {error && (
+              <TouchableOpacity onPress={() => { setError(false); setLoading(true); loadProjects(); }}>
+                <Text style={{ color: '#7C3AED', marginTop: 8, fontWeight: '600' }}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />

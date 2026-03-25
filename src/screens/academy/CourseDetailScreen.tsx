@@ -41,26 +41,29 @@ export default function CourseDetailScreen({ route, navigation }: any) {
   const { t } = useTranslation();
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const endpoint = slug
-          ? `/academy/courses/${slug}/`
-          : `/academy/courses/${courseId}/`;
-        const res = await api.get(endpoint);
-        setCourse(res.data);
-        if (res.data.modules?.length > 0) {
-          setExpandedModules(new Set([res.data.modules[0].id]));
-        }
-      } catch {
-        // handle
-      } finally {
-        setLoading(false);
+  async function loadCourse() {
+    try {
+      setError(false);
+      const endpoint = slug
+        ? `/academy/courses/${slug}/`
+        : `/academy/courses/${courseId}/`;
+      const res = await api.get(endpoint);
+      setCourse(res.data);
+      if (res.data.modules?.length > 0) {
+        setExpandedModules(new Set([res.data.modules[0].id]));
       }
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
     }
-    load();
+  }
+
+  useEffect(() => {
+    loadCourse();
   }, [courseId, slug]);
 
   function toggleModule(moduleId: number) {
@@ -93,7 +96,13 @@ export default function CourseDetailScreen({ route, navigation }: any) {
   if (!course) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Course not found</Text>
+        <Ionicons name="cloud-offline-outline" size={48} color="#6B7280" />
+        <Text style={styles.errorText}>{error ? t('common.loadError') : t('academy.courseNotFound')}</Text>
+        {error && (
+          <TouchableOpacity onPress={() => { setError(false); setLoading(true); loadCourse(); }}>
+            <Text style={{ color: '#7C3AED', marginTop: 12, fontWeight: '600' }}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -108,7 +117,7 @@ export default function CourseDetailScreen({ route, navigation }: any) {
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${course.progress}%` }]} />
             </View>
-            <Text style={styles.progressText}>{course.progress}% complete</Text>
+            <Text style={styles.progressText}>{course.progress}{t('academy.complete')}</Text>
           </View>
         )}
       </View>
@@ -124,7 +133,7 @@ export default function CourseDetailScreen({ route, navigation }: any) {
             onPress={() => toggleModule(mod.id)}
           >
             <View style={styles.moduleInfo}>
-              <Text style={styles.moduleOrder}>Module {mod.order}</Text>
+              <Text style={styles.moduleOrder}>{t('academy.modules')} {mod.order}</Text>
               <Text style={styles.moduleTitle}>{mod.title}</Text>
               <Text style={styles.lessonCount}>
                 {mod.lessons?.length || 0} {t('academy.lessons').toLowerCase()}

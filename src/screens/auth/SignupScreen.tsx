@@ -25,7 +25,7 @@ export default function SignupScreen({ navigation }: any) {
 
   async function handleSignup() {
     if (!firstName || !email || !password) {
-      setError('Please fill in all required fields');
+      setError(t('auth.fillRequired'));
       return;
     }
     setLoading(true);
@@ -41,7 +41,7 @@ export default function SignupScreen({ navigation }: any) {
       navigation.navigate('Login');
     } catch (err: any) {
       const data = err.response?.data;
-      const msg = data?.error || data?.email?.[0] || data?.password?.[0] || 'Registration failed';
+      const msg = data?.error || data?.email?.[0] || data?.password?.[0] || t('auth.registrationFailed');
       setError(msg);
     } finally {
       setLoading(false);
@@ -62,21 +62,21 @@ export default function SignupScreen({ navigation }: any) {
           style={styles.input}
           value={firstName}
           onChangeText={setFirstName}
-          placeholder="First name *"
+          placeholder={`${t('auth.firstName')} *`}
           placeholderTextColor="#666"
         />
         <TextInput
           style={styles.input}
           value={lastName}
           onChangeText={setLastName}
-          placeholder="Last name"
+          placeholder={t('auth.lastName')}
           placeholderTextColor="#666"
         />
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="Email *"
+          placeholder={`${t('auth.email')} *`}
           placeholderTextColor="#666"
           keyboardType="email-address"
           autoCapitalize="none"
@@ -85,7 +85,7 @@ export default function SignupScreen({ navigation }: any) {
           style={styles.input}
           value={password}
           onChangeText={setPassword}
-          placeholder="Password *"
+          placeholder={`${t('auth.password')} *`}
           placeholderTextColor="#666"
           secureTextEntry
         />
@@ -93,7 +93,7 @@ export default function SignupScreen({ navigation }: any) {
           style={styles.input}
           value={organization}
           onChangeText={setOrganization}
-          placeholder="Organization (optional)"
+          placeholder={t('auth.organization')}
           placeholderTextColor="#666"
         />
 

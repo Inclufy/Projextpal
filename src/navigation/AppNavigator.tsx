@@ -37,40 +37,42 @@ const screenOptions = {
 };
 
 function ProjectsStackScreen() {
+  const { t } = useTranslation();
   return (
     <ProjectsStack.Navigator screenOptions={screenOptions}>
       <ProjectsStack.Screen
         name="ProjectsList"
         component={ProjectsScreen}
-        options={{ title: 'Projects' }}
+        options={{ title: t('projects.myProjects') }}
       />
       <ProjectsStack.Screen
         name="ProjectDetail"
         component={ProjectDetailScreen}
-        options={({ route }: any) => ({ title: 'Project' })}
+        options={({ route }: any) => ({ title: t('projects.projectDetails') })}
       />
     </ProjectsStack.Navigator>
   );
 }
 
 function AcademyStackScreen() {
+  const { t } = useTranslation();
   return (
     <AcademyStack.Navigator screenOptions={screenOptions}>
       <AcademyStack.Screen
         name="AcademyList"
         component={AcademyScreen}
-        options={{ title: 'Academy' }}
+        options={{ title: t('tabs.academy') }}
       />
       <AcademyStack.Screen
         name="CourseDetail"
         component={CourseDetailScreen}
-        options={({ route }: any) => ({ title: 'Course' })}
+        options={({ route }: any) => ({ title: t('academy.courses') })}
       />
       <AcademyStack.Screen
         name="LessonPlayer"
         component={LessonPlayerScreen}
         options={({ route }: any) => ({
-          title: route.params?.lessonTitle || 'Lesson',
+          title: route.params?.lessonTitle || t('academy.lessonPlayer'),
         })}
       />
     </AcademyStack.Navigator>
@@ -109,7 +111,7 @@ function MainTabs() {
           title: t('tabs.dashboard'),
           headerShown: true,
           ...screenOptions,
-          headerTitle: 'ProjeXtPal',
+          headerTitle: 'ProjeXtPal',  // Brand name, keep English
         }}
       />
       <Tab.Screen
@@ -129,7 +131,7 @@ function MainTabs() {
           title: t('tabs.profile'),
           headerShown: true,
           ...screenOptions,
-          headerTitle: 'Profile',
+          headerTitle: t('tabs.profile'),
         }}
       />
     </Tab.Navigator>

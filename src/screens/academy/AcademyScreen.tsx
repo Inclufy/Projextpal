@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -33,13 +32,15 @@ export default function AcademyScreen({ navigation }: any) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
 
   async function loadCourses() {
     try {
+      setError(false);
       const res = await api.get('/academy/courses/');
       setCourses(res.data.results || res.data || []);
     } catch {
-      // keep empty
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -139,7 +140,12 @@ export default function AcademyScreen({ navigation }: any) {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="school-outline" size={64} color="#374151" />
-            <Text style={styles.emptyText}>No courses available</Text>
+            <Text style={styles.emptyText}>{error ? t('common.loadError') : t('academy.noCourses')}</Text>
+            {error && (
+              <TouchableOpacity onPress={() => { setError(false); setLoading(true); loadCourses(); }}>
+                <Text style={{ color: '#7C3AED', marginTop: 8, fontWeight: '600' }}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />

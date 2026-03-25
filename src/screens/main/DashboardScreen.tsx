@@ -24,13 +24,15 @@ export default function DashboardScreen({ navigation }: any) {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
 
   async function loadDashboard() {
     try {
+      setError(false);
       const res = await api.get('/dashboard/');
       setData(res.data);
     } catch {
-      // use defaults
+      setError(true);
     }
   }
 
