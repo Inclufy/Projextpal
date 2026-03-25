@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import api from '../services/api';
+import api, { setOnUnauthorized } from '../services/api';
 
 interface User {
   id: number;
@@ -32,6 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadStoredAuth();
+    // Sync React auth state when API gets 401
+    setOnUnauthorized(() => {
+      setToken(null);
+      setUser(null);
+    });
+    return () => setOnUnauthorized(null);
   }, []);
 
   async function loadStoredAuth() {
