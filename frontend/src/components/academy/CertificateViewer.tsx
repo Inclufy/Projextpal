@@ -213,8 +213,8 @@ export default function CertificateViewer({
             <div className="mt-6 text-center">
               <p className="text-xs text-muted-foreground">
                 {isNL 
-                  ? "Verifieer dit certificaat op: projectpal.com/verify/" + certificate.certificate_number
-                  : "Verify this certificate at: projectpal.com/verify/" + certificate.certificate_number
+                  ? "Verifieer dit certificaat op: projextpal.com/verify/" + certificate.certificate_number
+                  : "Verify this certificate at: projextpal.com/verify/" + certificate.certificate_number
                 }
               </p>
             </div>

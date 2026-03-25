@@ -18,8 +18,8 @@ const IntegrationManagement = lazy(() => import('./IntegrationManagement'));
 const AuditLogs = lazy(() => import('./AuditLogs'));
 const SystemSettings = lazy(() => import('./SystemSettings'));
 
-// Import from pricing system (separate module)
-const PricingSettings = lazy(() => import('../pricing-system/pages/PricingSettings'));
+// Subscription management (was PricingSettings)
+const SubscriptionManagement = lazy(() => import('./SubscriptionManagement'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -96,7 +96,7 @@ export const adminRoutes: RouteObject = {
     },
     {
       path: 'subscriptions',
-      element: withSuspense(PricingSettings),
+      element: withSuspense(SubscriptionManagement),
     },
     {
       path: 'integrations',

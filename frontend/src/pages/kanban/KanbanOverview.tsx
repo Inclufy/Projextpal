@@ -57,13 +57,13 @@ const KanbanOverview = () => {
             { label: pt("Work Items"), path: "work-items", icon: ListChecks },
             { label: "Board Config", path: "board-configuration", icon: Columns },
             { label: "WIP Limits", path: "wip-limits", icon: Zap },
-            { label: pt("Blocked Items"), path: "blocked-items", icon: Ban },
-            { label: pt("Flow Metrics"), path: "flow-metrics", icon: BarChart3 },
+            { label: pt("Blocked Items"), path: "blocked", icon: Ban },
+            { label: pt("Flow Metrics"), path: "metrics", icon: BarChart3 },
             { label: "CFD", path: "cfd", icon: TrendingUp },
             { label: pt("Work Policies"), path: "work-policies", icon: FileText },
             { label: pt("Team"), path: "team", icon: Users },
             { label: pt("Budget"), path: "budget", icon: DollarSign },
-            { label: "Continuous Improvement", path: "continuous-improvement", icon: TrendingUp },
+            { label: "Continuous Improvement", path: "improvement", icon: TrendingUp },
           ].map(({ label, path, icon: Icon }) => (
             <Card key={path} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => nav(path)}>
               <CardContent className="p-4 flex items-center gap-3"><Icon className="h-5 w-5 text-muted-foreground" /><span className="font-medium text-sm">{label}</span></CardContent>

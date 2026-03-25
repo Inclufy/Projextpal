@@ -54,6 +54,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // ── API Base URL ──────────────────────────────────────────────
 const MONITOR_API = import.meta.env.VITE_MONITOR_URL || 'http://localhost:8555';
@@ -218,6 +219,7 @@ function resourceColor(pct: number) {
 // ── Component ─────────────────────────────────────────────────
 
 export default function MonitoringDashboard() {
+  const { pt } = usePageTranslations();
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // ─ Queries ──────────────────
@@ -266,7 +268,7 @@ export default function MonitoringDashboard() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        <span className="ml-3 text-muted-foreground">Connecting to monitoring agent...</span>
+        <span className="ml-3 text-muted-foreground">{pt("Connecting to monitoring agent...")}</span>
       </div>
     );
   }
@@ -275,13 +277,13 @@ export default function MonitoringDashboard() {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <WifiOff className="h-12 w-12 text-red-500" />
-        <h2 className="text-xl font-semibold">Cannot reach monitoring agent</h2>
+        <h2 className="text-xl font-semibold">{pt("Cannot reach monitoring agent")}</h2>
         <p className="max-w-md text-muted-foreground">
           The monitoring API at <code className="rounded bg-muted px-1.5 py-0.5 text-sm">{MONITOR_API}</code> is
           unreachable. Make sure the monitoring container is running.
         </p>
         <Button onClick={() => refetchStatus()} variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" /> Retry
+          <RefreshCw className="h-4 w-4" /> {pt("Retry")}
         </Button>
       </div>
     );
@@ -298,9 +300,9 @@ export default function MonitoringDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">System Monitoring</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{pt("System Monitoring")}</h1>
           <p className="text-muted-foreground">
-            Real-time infrastructure health for ProjeXtPal
+            {pt("Real-time infrastructure health for ProjeXtPal")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -311,10 +313,10 @@ export default function MonitoringDashboard() {
             className="gap-1.5"
           >
             {autoRefresh ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-            {autoRefresh ? 'Live' : 'Paused'}
+            {autoRefresh ? pt('Live') : pt('Paused')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetchStatus()} className="gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            <RefreshCw className="h-3.5 w-3.5" /> {pt("Refresh")}
           </Button>
         </div>
       </div>
@@ -339,14 +341,14 @@ export default function MonitoringDashboard() {
             <div>
               <p className="text-lg font-semibold">
                 {overallStatus === 'healthy'
-                  ? 'All Systems Operational'
+                  ? pt('All Systems Operational')
                   : overallStatus === 'degraded'
-                    ? 'Some Systems Degraded'
-                    : 'Issues Detected'}
+                    ? pt('Some Systems Degraded')
+                    : pt('Issues Detected')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Last checked: {formatTime(status?.timestamp || null)}
-                {activeAlerts.length > 0 && ` \u2022 ${activeAlerts.length} active alert${activeAlerts.length > 1 ? 's' : ''}`}
+                {pt("Last checked:")} {formatTime(status?.timestamp || null)}
+                {activeAlerts.length > 0 && ` \u2022 ${activeAlerts.length} ${activeAlerts.length > 1 ? pt("active alerts") : pt("active alert")}`}
               </p>
             </div>
           </div>
@@ -354,11 +356,11 @@ export default function MonitoringDashboard() {
             <div className="hidden gap-6 md:flex">
               <div className="text-center">
                 <p className="text-2xl font-bold">{summary.total_checks.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Checks (24h)</p>
+                <p className="text-xs text-muted-foreground">{pt("Checks (24h)")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{summary.total_alerts}</p>
-                <p className="text-xs text-muted-foreground">Alerts (24h)</p>
+                <p className="text-xs text-muted-foreground">{pt("Alerts (24h)")}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">
@@ -366,7 +368,7 @@ export default function MonitoringDashboard() {
                     ? `${summary.recovery_successes}/${summary.recovery_attempts}`
                     : '0'}
                 </p>
-                <p className="text-xs text-muted-foreground">Recoveries</p>
+                <p className="text-xs text-muted-foreground">{pt("Recoveries")}</p>
               </div>
             </div>
           )}
@@ -377,11 +379,11 @@ export default function MonitoringDashboard() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview" className="gap-1.5">
-            <Activity className="h-4 w-4" /> Overview
+            <Activity className="h-4 w-4" /> {pt("Overview")}
           </TabsTrigger>
           <TabsTrigger value="alerts" className="gap-1.5">
             <AlertTriangle className="h-4 w-4" />
-            Alerts
+            {pt("Alerts")}
             {activeAlerts.length > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px]">
                 {activeAlerts.length}
@@ -389,10 +391,10 @@ export default function MonitoringDashboard() {
             )}
           </TabsTrigger>
           <TabsTrigger value="system" className="gap-1.5">
-            <Server className="h-4 w-4" /> System
+            <Server className="h-4 w-4" /> {pt("System")}
           </TabsTrigger>
           <TabsTrigger value="recovery" className="gap-1.5">
-            <Wrench className="h-4 w-4" /> Recovery
+            <Wrench className="h-4 w-4" /> {pt("Recovery")}
           </TabsTrigger>
         </TabsList>
 
@@ -413,25 +415,25 @@ export default function MonitoringDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Response</span>
+                    <span className="text-muted-foreground">{pt("Response")}</span>
                     <span className={app.response_time_ms && app.response_time_ms > 1500 ? 'font-medium text-red-500' : 'font-medium'}>
                       {app.response_time_ms ? `${Math.round(app.response_time_ms)}ms` : '-'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Uptime (24h)</span>
+                    <span className="text-muted-foreground">{pt("Uptime (24h)")}</span>
                     <span className={`font-medium ${uptimeColor(app.uptime_24h)}`}>
                       {app.uptime_24h}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Avg Response (1h)</span>
+                    <span className="text-muted-foreground">{pt("Avg Response (1h)")}</span>
                     <span className="font-medium">
                       {app.avg_response_1h ? `${Math.round(app.avg_response_1h)}ms` : '-'}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Last check: {formatTime(app.last_check)}
+                    {pt("Last check:")} {formatTime(app.last_check)}
                   </div>
                 </CardContent>
               </Card>
@@ -442,7 +444,7 @@ export default function MonitoringDashboard() {
           {sys && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">System Resources</CardTitle>
+                <CardTitle className="text-base">{pt("System Resources")}</CardTitle>
                 <CardDescription>Mac Studio — current usage</CardDescription>
               </CardHeader>
               <CardContent>
@@ -451,7 +453,7 @@ export default function MonitoringDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <Cpu className="h-4 w-4 text-muted-foreground" />
-                        <span>CPU</span>
+                        <span>{pt("CPU")}</span>
                       </div>
                       <span className="font-medium">{sys.cpu_percent?.toFixed(1)}%</span>
                     </div>
@@ -461,7 +463,7 @@ export default function MonitoringDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                        <span>Memory</span>
+                        <span>{pt("Memory")}</span>
                       </div>
                       <span className="font-medium">{sys.memory_percent?.toFixed(1)}%</span>
                     </div>
@@ -471,7 +473,7 @@ export default function MonitoringDashboard() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <HardDrive className="h-4 w-4 text-muted-foreground" />
-                        <span>Disk</span>
+                        <span>{pt("Disk")}</span>
                       </div>
                       <span className="font-medium">{sys.disk_percent?.toFixed(1)}% ({sys.disk_free_gb?.toFixed(1)} GB free)</span>
                     </div>
@@ -486,7 +488,7 @@ export default function MonitoringDashboard() {
           {summary && Object.keys(summary.app_uptimes).length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">24-Hour Uptime</CardTitle>
+                <CardTitle className="text-base">{pt("24-Hour Uptime")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
@@ -509,7 +511,7 @@ export default function MonitoringDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Active Alerts
+                {pt("Active Alerts")}
                 {activeAlerts.length > 0 && (
                   <Badge variant="destructive">{activeAlerts.length}</Badge>
                 )}
@@ -524,10 +526,10 @@ export default function MonitoringDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Message</TableHead>
+                      <TableHead>{pt("Time")}</TableHead>
+                      <TableHead>{pt("Severity")}</TableHead>
+                      <TableHead>{pt("Service")}</TableHead>
+                      <TableHead>{pt("Message")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -552,21 +554,21 @@ export default function MonitoringDashboard() {
           {/* Alert History */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Alert History</CardTitle>
-              <CardDescription>Recent alerts across all services</CardDescription>
+              <CardTitle className="text-base">{pt("Alert History")}</CardTitle>
+              <CardDescription>{pt("Recent alerts across all services")}</CardDescription>
             </CardHeader>
             <CardContent>
               {!alerts || alerts.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">No alerts recorded yet.</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">{pt("No alerts recorded yet.")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{pt("Time")}</TableHead>
+                      <TableHead>{pt("Severity")}</TableHead>
+                      <TableHead>{pt("Service")}</TableHead>
+                      <TableHead>{pt("Message")}</TableHead>
+                      <TableHead>{pt("Status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -583,10 +585,10 @@ export default function MonitoringDashboard() {
                         <TableCell>
                           {a.resolved ? (
                             <Badge variant="default" className="text-[10px]">
-                              Resolved {a.resolved_at ? formatTime(a.resolved_at) : ''}
+                              {pt("Resolved")} {a.resolved_at ? formatTime(a.resolved_at) : ''}
                             </Badge>
                           ) : (
-                            <Badge variant="destructive" className="text-[10px]">Active</Badge>
+                            <Badge variant="destructive" className="text-[10px]">{pt("Active")}</Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -611,7 +613,7 @@ export default function MonitoringDashboard() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold">{sys.cpu_percent?.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground">CPU Usage</p>
+                      <p className="text-xs text-muted-foreground">{pt("CPU Usage")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -624,7 +626,7 @@ export default function MonitoringDashboard() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold">{sys.memory_percent?.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground">Memory Usage</p>
+                      <p className="text-xs text-muted-foreground">{pt("Memory Usage")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -637,7 +639,7 @@ export default function MonitoringDashboard() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold">{sys.disk_percent?.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground">Disk Usage</p>
+                      <p className="text-xs text-muted-foreground">{pt("Disk Usage")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -650,7 +652,7 @@ export default function MonitoringDashboard() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold">{sys.disk_free_gb?.toFixed(1)} GB</p>
-                      <p className="text-xs text-muted-foreground">Disk Free</p>
+                      <p className="text-xs text-muted-foreground">{pt("Disk Free")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -663,7 +665,7 @@ export default function MonitoringDashboard() {
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">CPU & Memory — 24 Hours</CardTitle>
+                  <CardTitle className="text-base">{pt("CPU & Memory — 24 Hours")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -714,7 +716,7 @@ export default function MonitoringDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Disk Usage — 24 Hours</CardTitle>
+                  <CardTitle className="text-base">{pt("Disk Usage — 24 Hours")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
@@ -753,27 +755,26 @@ export default function MonitoringDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Wrench className="h-5 w-5" />
-                Recovery Actions
+                {pt("Recovery Actions")}
               </CardTitle>
               <CardDescription>
-                Automatic recovery attempts performed by the monitoring agent
+                {pt("Automatic recovery attempts performed by the monitoring agent")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!recovery || recovery.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
-                  No recovery actions recorded. The agent will automatically attempt to restart
-                  unhealthy containers.
+                  {pt("No recovery actions recorded.")}
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Result</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Details</TableHead>
+                      <TableHead>{pt("Time")}</TableHead>
+                      <TableHead>{pt("Result")}</TableHead>
+                      <TableHead>{pt("Service")}</TableHead>
+                      <TableHead>{pt("Action")}</TableHead>
+                      <TableHead>{pt("Details")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -782,9 +783,9 @@ export default function MonitoringDashboard() {
                         <TableCell className="text-xs whitespace-nowrap">{formatDateTime(r.timestamp)}</TableCell>
                         <TableCell>
                           {r.success ? (
-                            <Badge variant="default" className="text-[10px]">Success</Badge>
+                            <Badge variant="default" className="text-[10px]">{pt("Success")}</Badge>
                           ) : (
-                            <Badge variant="destructive" className="text-[10px]">Failed</Badge>
+                            <Badge variant="destructive" className="text-[10px]">{pt("Failed")}</Badge>
                           )}
                         </TableCell>
                         <TableCell className="font-medium">{r.app_name}</TableCell>

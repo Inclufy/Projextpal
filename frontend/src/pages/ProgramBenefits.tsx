@@ -73,13 +73,13 @@ const ProgramBenefits = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Award className="h-6 w-6 text-indigo-600" />
-              Benefits Management
+              {pt("Benefits Management")}
             </h1>
-            <p className="text-muted-foreground">Track and realize program benefits</p>
+            <p className="text-muted-foreground">{pt("Track and realize program benefits")}</p>
           </div>
           <Button className="bg-indigo-600 hover:bg-indigo-700">
             <Plus className="h-4 w-4 mr-2" />
-            Add Benefit
+            {pt("Add Benefit")}
           </Button>
         </div>
 
@@ -87,19 +87,19 @@ const ProgramBenefits = () => {
         <div className="grid grid-cols-4 gap-4">
           <Card className="border-l-4 border-l-green-500">
             <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Target Financial Benefits</p>
+              <p className="text-sm text-muted-foreground">{pt("Target Financial Benefits")}</p>
               <p className="text-2xl font-bold">{fmtCurrency(summary.totalFinancial)}</p>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-blue-500">
             <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Realized to Date</p>
+              <p className="text-sm text-muted-foreground">{pt("Realized to Date")}</p>
               <p className="text-2xl font-bold text-blue-600">{fmtCurrency(summary.realizedFinancial)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <p className="text-sm text-muted-foreground">Benefits On Track</p>
+              <p className="text-sm text-muted-foreground">{pt("Benefits On Track")}</p>
               <p className="text-2xl font-bold text-green-600">{summary.onTrack + summary.realized}</p>
             </CardContent>
           </Card>
@@ -114,27 +114,27 @@ const ProgramBenefits = () => {
         {/* Benefits Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Benefits Register</CardTitle>
+            <CardTitle>{pt("Benefits Register")}</CardTitle>
           </CardHeader>
           <CardContent>
             {benefits.length === 0 ? (
               <div className="text-center py-8">
                 <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No benefits defined yet</p>
+                <p className="text-muted-foreground mb-4">{pt("No benefits defined yet")}</p>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add First Benefit
+                  {pt("Add First Benefit")}
                 </Button>
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-3">Benefit</th>
+                    <th className="pb-3">{pt("Benefit")}</th>
                     <th className="pb-3">{pt("Type")}</th>
                     <th className="pb-3">{pt("Owner")}</th>
                     <th className="pb-3">{pt("Target")}</th>
-                    <th className="pb-3">Realized</th>
+                    <th className="pb-3">{pt("Realized")}</th>
                     <th className="pb-3">{pt("Progress")}</th>
                     <th className="pb-3">{pt("Status")}</th>
                   </tr>

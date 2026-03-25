@@ -42,6 +42,7 @@ interface LessonViewerProps {
   onNext?: () => void;
   hasPrevious?: boolean;
   hasNext?: boolean;
+  onComplete?: () => void;
 }
 
 // ============================================
@@ -197,6 +198,7 @@ const LessonViewer = ({
   onNext,
   hasPrevious = false,
   hasNext = false,
+  onComplete,
 }: LessonViewerProps) => {
   const [activeTab, setActiveTab] = useState<'content' | 'resources' | 'takeaways'>('content');
 
@@ -405,6 +407,7 @@ const LessonViewer = ({
           </Button>
 
           <Button
+            onClick={onComplete}
             className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/30"
           >
             <CheckCircle2 className="h-4 w-4 mr-2" />

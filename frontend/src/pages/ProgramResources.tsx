@@ -95,13 +95,13 @@ const ProgramResources = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Users className="h-6 w-6 text-indigo-600" />
-              Resource Management
+              {pt("Resource Management")}
             </h1>
-            <p className="text-muted-foreground">Manage resources across program projects</p>
+            <p className="text-muted-foreground">{pt("Manage resources across program projects")}</p>
           </div>
           <Button className="bg-indigo-600 hover:bg-indigo-700">
             <Plus className="h-4 w-4 mr-2" />
-            Add Resource
+            {pt("Add Resource")}
           </Button>
         </div>
 
@@ -109,25 +109,25 @@ const ProgramResources = () => {
         <div className="grid grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Total Resources</p>
+              <p className="text-sm text-muted-foreground">{pt("Total Resources")}</p>
               <p className="text-3xl font-bold">{summary.total}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Fully Allocated</p>
+              <p className="text-sm text-muted-foreground">{pt("Fully Allocated")}</p>
               <p className="text-3xl font-bold text-green-600">{summary.allocated}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Available Capacity</p>
+              <p className="text-sm text-muted-foreground">{pt("Available Capacity")}</p>
               <p className="text-3xl font-bold text-blue-600">{summary.available}</p>
             </CardContent>
           </Card>
           <Card className={summary.overallocated > 0 ? 'border-red-200 bg-red-50' : ''}>
             <CardContent className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">Overallocated</p>
+              <p className="text-sm text-muted-foreground">{pt("Overallocated")}</p>
               <p className={`text-3xl font-bold ${summary.overallocated > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {summary.overallocated}
               </p>
@@ -141,7 +141,7 @@ const ProgramResources = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-yellow-700">
                 <AlertTriangle className="h-5 w-5" />
-                Resource Conflicts
+                {pt("Resource Conflicts")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -170,16 +170,16 @@ const ProgramResources = () => {
         {/* Resource Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Resource Allocation</CardTitle>
+            <CardTitle>{pt("Resource Allocation")}</CardTitle>
           </CardHeader>
           <CardContent>
             {resources.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No resources assigned yet</p>
+                <p className="text-muted-foreground mb-4">{pt("No resources assigned yet")}</p>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add First Resource
+                  {pt("Add First Resource")}
                 </Button>
               </div>
             ) : (

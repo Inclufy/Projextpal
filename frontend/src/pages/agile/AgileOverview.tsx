@@ -69,8 +69,8 @@ const AgileOverview = () => {
           {[
             { label: pt("Backlog"), path: "backlog", icon: ListChecks },
             { label: pt("Iteration Board"), path: "iteration-board", icon: Target },
-            { label: pt("Product Vision"), path: "product-vision", icon: Eye },
-            { label: pt("User Personas"), path: "user-personas", icon: Users },
+            { label: pt("Product Vision"), path: "vision", icon: Eye },
+            { label: pt("User Personas"), path: "personas", icon: Users },
             { label: pt("Daily Progress"), path: "daily-progress", icon: BarChart3 },
             { label: pt("Release Planning"), path: "release-planning", icon: Rocket },
             { label: pt("Retrospective"), path: "retrospective", icon: RotateCcw },

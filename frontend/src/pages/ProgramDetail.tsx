@@ -156,11 +156,11 @@ const ProgramDetail = () => {
     mutationFn: () => deleteProgram(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Program deleted successfully");
+      toast.success(pt("Program deleted successfully"));
       navigate("/programs");
     },
     onError: () => {
-      toast.error("Failed to delete program");
+      toast.error(pt("Failed to delete program"));
     },
   });
 
@@ -202,11 +202,11 @@ const ProgramDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["program-projects", id] });
       queryClient.invalidateQueries({ queryKey: ["program", id] });
-      toast.success("Project gekoppeld aan programma");
+      toast.success(pt("Project gekoppeld aan programma"));
       setLinkDialogOpen(false);
     },
     onError: () => {
-      toast.error("Koppelen mislukt");
+      toast.error(pt("Koppelen mislukt"));
     },
   });
 
@@ -225,11 +225,11 @@ const ProgramDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["program", id] });
       queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Program updated successfully");
+      toast.success(pt("Program updated successfully"));
       setEditDialogOpen(false);
     },
     onError: () => {
-      toast.error("Failed to update program");
+      toast.error(pt("Failed to update program"));
     },
   });
 
@@ -307,10 +307,10 @@ const ProgramDetail = () => {
   if (error || !program) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-red-500">Failed to load program</p>
+        <p className="text-red-500">{pt("Failed to load program")}</p>
         <Button onClick={() => navigate("/programs")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Programs
+          {pt("Back to Programs")}
         </Button>
       </div>
     );
@@ -431,7 +431,7 @@ const ProgramDetail = () => {
       <Card className="mb-6">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Overall Progress</span>
+            <span className="text-sm font-medium">{pt("Overall Progress")}</span>
             <span className="text-sm text-muted-foreground">{program.progress || 0}%</span>
           </div>
           <Progress value={program.progress || 0} className="h-3" />
@@ -442,16 +442,16 @@ const ProgramDetail = () => {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">{pt("Overview")}</TabsTrigger>
-          <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
+          <TabsTrigger value="projects">{pt("Projects")} ({projects.length})</TabsTrigger>
           <TabsTrigger value="timeline">{pt("Timeline")}</TabsTrigger>
-          <TabsTrigger value="risks">Risks & Issues</TabsTrigger>
+          <TabsTrigger value="risks">{pt("Risks & Issues")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Program Details</CardTitle>
+                <CardTitle>{pt("Program Details")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -468,7 +468,7 @@ const ProgramDetail = () => {
                     <p className="font-medium">{formatDate(program.start_date)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Target End Date</p>
+                    <p className="text-sm text-muted-foreground">{pt("Target End Date")}</p>
                     <p className="font-medium">{formatDate(program.target_end_date)}</p>
                   </div>
                 </div>
@@ -483,7 +483,7 @@ const ProgramDetail = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Budget Overview</CardTitle>
+                <CardTitle>{pt("Budget Overview")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -498,7 +498,7 @@ const ProgramDetail = () => {
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Budget Utilization</span>
+                    <span>{pt("Budget Utilization")}</span>
                     <span>
                       {program.total_budget 
                         ? Math.round((program.spent_budget / program.total_budget) * 100) 
@@ -525,7 +525,7 @@ const ProgramDetail = () => {
 
         <TabsContent value="projects" className="space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Projects in this Program</h3>
+            <h3 className="text-lg font-semibold">{pt("Projects in this Program")}</h3>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => { fetchAllProjects(); setLinkDialogOpen(true); }}>
                 <FolderKanban className="h-4 w-4 mr-2" />
@@ -541,9 +541,9 @@ const ProgramDetail = () => {
           {projects.length === 0 ? (
             <Card className="p-8 text-center">
               <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{pt("No projects yet")}</h3>
               <p className="text-muted-foreground mb-4">
-                Add projects to this program to track progress
+                {pt("Add projects to this program to track progress")}
               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => { fetchAllProjects(); setLinkDialogOpen(true); }}>
@@ -579,7 +579,7 @@ const ProgramDetail = () => {
                             navigate(`/projects/${project.id}/foundation/overview`);
                           }}>
                             <Eye className="h-4 w-4 mr-2" />
-                            View
+                            {pt("View")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
@@ -621,9 +621,9 @@ const ProgramDetail = () => {
         <TabsContent value="timeline">
           <Card className="p-8 text-center">
             <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Timeline View</h3>
+            <h3 className="text-lg font-semibold mb-2">{pt("Timeline View")}</h3>
             <p className="text-muted-foreground">
-              Program timeline visualization coming soon
+              {pt("Program timeline visualization coming soon")}
             </p>
           </Card>
         </TabsContent>
@@ -631,9 +631,9 @@ const ProgramDetail = () => {
         <TabsContent value="risks">
           <Card className="p-8 text-center">
             <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Risks & Issues</h3>
+            <h3 className="text-lg font-semibold mb-2">{pt("Risks & Issues")}</h3>
             <p className="text-muted-foreground">
-              Risk management features coming soon
+              {pt("Risk management features coming soon")}
             </p>
           </Card>
         </TabsContent>
@@ -643,9 +643,9 @@ const ProgramDetail = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Program</AlertDialogTitle>
+            <AlertDialogTitle>{pt("Delete Program")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{program.name}"? This action cannot be undone.
+              {pt("Are you sure you want to delete this program? This action cannot be undone.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -722,14 +722,14 @@ const ProgramDetail = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Program</DialogTitle>
+            <DialogTitle>{pt("Edit Program")}</DialogTitle>
             <DialogDescription>
-              Update your program details
+              {pt("Update your program details")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Program Name</Label>
+              <Label htmlFor="edit-name">{pt("Program Name")}</Label>
               <Input
                 id="edit-name"
                 value={editFormData.name}
@@ -746,7 +746,7 @@ const ProgramDetail = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-budget">Total Budget (€)</Label>
+              <Label htmlFor="edit-budget">{pt("Total Budget")} (€)</Label>
               <Input
                 id="edit-budget"
                 type="number"
@@ -769,7 +769,7 @@ const ProgramDetail = () => {
               {pt("Cancel")}
             </Button>
             <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              {updateMutation.isPending ? pt("Saving...") : pt("Save Changes")}
             </Button>
           </div>
         </DialogContent>

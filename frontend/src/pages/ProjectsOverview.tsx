@@ -1001,7 +1001,7 @@ Respond in this EXACT JSON format only, no other text:
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{tp.totalBudget}</p>
-                <p className="text-2xl font-bold">€ {formatCurrency(metrics.totalBudget)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(metrics.totalBudget)}</p>
               </div>
               <DollarSign className="h-8 w-8 text-muted-foreground" />
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,12 @@ export default function QuizEngine({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // ADDED: Timer state (in seconds)
   const [showHint, setShowHint] = useState<Record<number, boolean>>({}); // ADDED: Hint visibility per question
 
+  // Ref to track latest selectedAnswers for use in timer callback (avoids stale closure)
+  const selectedAnswersRef = useRef<Record<string, number[]>>(selectedAnswers);
+  useEffect(() => {
+    selectedAnswersRef.current = selectedAnswers;
+  }, [selectedAnswers]);
+
   const isNL = language === "nl";
 
   // ADDED: Initialize timer when quiz loads
@@ -74,13 +80,15 @@ export default function QuizEngine({
   }, [timeLimit, results]);
 
   // ADDED: Timer countdown
+  // Uses selectedAnswersRef to avoid stale closure over selectedAnswers
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0 && !results) {
       const timer = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev === null) return null;
           if (prev <= 1) {
-            handleSubmit(); // Auto-submit when time's up
+            // Auto-submit when time's up using ref to get latest answers
+            handleSubmitWithAnswers(selectedAnswersRef.current);
             return 0;
           }
           return prev - 1;
@@ -299,7 +307,8 @@ export default function QuizEngine({
     }
   };
 
-  const handleSubmit = async () => {
+  // Core submit function that accepts answers explicitly (avoids stale closure in timer)
+  const handleSubmitWithAnswers = async (answers: Record<string, number[]>) => {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("access_token") || "";
@@ -309,31 +318,34 @@ export default function QuizEngine({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ answers: selectedAnswers, lang: language }),
+        body: JSON.stringify({ answers, lang: language }),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         setResults(data);
         onComplete?.(data.passed, data.percentage);
       } else {
         // Fallback: score locally with sample correct answers
-        scoreLocally();
+        scoreLocally(answers);
       }
     } catch {
-      scoreLocally();
+      scoreLocally(answers);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const scoreLocally = () => {
+  // Wrapper that uses current state (safe for direct user clicks)
+  const handleSubmit = () => handleSubmitWithAnswers(selectedAnswers);
+
+  const scoreLocally = (answers: Record<string, number[]> = selectedAnswers) => {
     let score = 0;
     const maxScore = questions.length;
     const questionResults: QuizResult[] = [];
-    
+
     for (const q of questions) {
-      const selected = selectedAnswers[String(q.id)] || [];
+      const selected = answers[String(q.id)] || [];
       const correct = SAMPLE_CORRECT[q.id] || [q.answers[1]?.id];
       const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
       if (isCorrect) score++;

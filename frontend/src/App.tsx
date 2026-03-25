@@ -1,7 +1,3 @@
-// ============================================
-// ADD THIS IMPORT AT THE VERY TOP OF App.tsx
-// ============================================
-import i18n from 'i18next';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { LanguageProvider, useLanguage, languages } from "./contexts/LanguageContext";
+import { useLanguage, languages } from "./contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FeatureGuard from '@/components/FeatureGuard';
 import { CopilotProvider, useCopilot } from "@/contexts/CopilotContext";
@@ -171,6 +167,7 @@ import KanbanCFD from './pages/kanban/KanbanCFD';
 import KanbanContinuousImprovement from './pages/kanban/KanbanContinuousImprovement';
 import KanbanWorkItems from './pages/kanban/KanbanWorkItems';
 import KanbanBlockedItems from './pages/kanban/KanbanBlockedItems';
+import KanbanWorkPolicies from './pages/kanban/KanbanWorkPolicies';
 
 // Agile imports
 import AgileOverview from './pages/agile/AgileOverview';
@@ -199,6 +196,11 @@ import WaterfallMaintenance from './pages/waterfall/WaterfallMaintenance';
 import WaterfallGantt from './pages/waterfall/WaterfallGantt';
 import WaterfallMilestones from './pages/waterfall/WaterfallMilestones';
 import WaterfallChangeRequests from './pages/waterfall/WaterfallChangeRequests';
+import WaterfallPhaseGate from './pages/waterfall/WaterfallPhaseGate';
+import WaterfallRisks from './pages/waterfall/WaterfallRisks';
+import WaterfallIssues from './pages/waterfall/WaterfallIssues';
+import WaterfallDeliverables from './pages/waterfall/WaterfallDeliverables';
+import WaterfallBaselines from './pages/waterfall/WaterfallBaselines';
 
 // ============================================
 // Admin Portal Imports
@@ -365,6 +367,23 @@ const OnboardingCheck = ({ children }: { children: React.ReactNode }) => {
 };
 
 // ============================================
+// SuperAdmin Route Guard
+// ============================================
+const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-purple-600" /></div>;
+  }
+
+  if (!isAuthenticated || !user?.isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// ============================================
 // Public Route Component
 // ============================================
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
@@ -396,7 +415,6 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 // ============================================
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
@@ -426,7 +444,7 @@ const App = () => (
               {/* ============================================ */}
               {/* Admin Portal Routes (SuperAdmin Only)        */}
               {/* ============================================ */}
-              <Route path="/admin" element={<AdminPortalLayout />}>
+              <Route path="/admin" element={<SuperAdminRoute><AdminPortalLayout /></SuperAdminRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tenants" element={<TenantManagement />} />
@@ -798,6 +816,7 @@ const App = () => (
               <Route path="/projects/:id/kanban/improvement" element={<ProtectedPage><KanbanContinuousImprovement /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/work-items" element={<ProtectedPage><KanbanWorkItems /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/blocked" element={<ProtectedPage><KanbanBlockedItems /></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/work-policies" element={<ProtectedPage><KanbanWorkPolicies /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Agile Routes                                 */}
@@ -830,6 +849,11 @@ const App = () => (
               <Route path="/projects/:id/waterfall/gantt" element={<ProtectedPage><WaterfallGantt /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><WaterfallMilestones /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><WaterfallChangeRequests /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/phase-gate" element={<ProtectedPage><WaterfallPhaseGate /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/risks" element={<ProtectedPage><WaterfallRisks /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><WaterfallIssues /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><WaterfallDeliverables /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><WaterfallBaselines /></ProtectedPage>} />
               
                             {/* Academy Routes */}
               <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
@@ -845,23 +869,24 @@ const App = () => (
 
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
-              <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
-              <Route path="/settings/biometric" element={<ProtectedRoute><BiometricAuth /></ProtectedRoute>} />
+              <Route path="/settings/2fa" element={<ProtectedPage><TwoFactorAuth /></ProtectedPage>} />
+              <Route path="/settings/biometric" element={<ProtectedPage><BiometricAuth /></ProtectedPage>} />
 
-              <Route path="*" element={<NotFound />} />
               {/* Governance */}
               <Route path="/governance/portfolios" element={<ProtectedPage><Portfolios /></ProtectedPage>} />
+              <Route path="/governance/portfolios/new" element={<ProtectedPage><CreatePortfolio /></ProtectedPage>} />
               <Route path="/governance/portfolios/:id" element={<ProtectedPage><PortfolioDetail /></ProtectedPage>} />
               <Route path="/governance/boards" element={<ProtectedPage><GovernanceBoards /></ProtectedPage>} />
+              <Route path="/governance/boards/new" element={<ProtectedPage><CreateBoard /></ProtectedPage>} />
               <Route path="/governance/boards/:id" element={<ProtectedPage><BoardDetail /></ProtectedPage>} />
               <Route path="/governance/stakeholders" element={<ProtectedPage><Stakeholders /></ProtectedPage>} />
-              <Route path="/governance/portfolios/new" element={<ProtectedPage><CreatePortfolio /></ProtectedPage>} />
-              <Route path="/governance/boards/new" element={<ProtectedPage><CreateBoard /></ProtectedPage>} />
               <Route path="/governance/stakeholders/new" element={<ProtectedPage><CreateStakeholder /></ProtectedPage>} />
+
+              {/* Catch-all - MUST be last */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
         </TooltipProvider>
       </AuthProvider>
-    </LanguageProvider>
   </QueryClientProvider>
 );
 

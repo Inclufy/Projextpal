@@ -35,7 +35,7 @@ const PersonalInfoTab = () => {
           </Avatar>
           <div>
             <CardTitle className="text-2xl">
-              {user?.name || user?.first_name || user?.email?.split('@')[0] || 'User'}
+              {user?.firstName || user?.email?.split('@')[0] || 'User'}
             </CardTitle>
             <CardDescription className="flex items-center gap-2 mt-1">
               <Mail className="h-4 w-4" />

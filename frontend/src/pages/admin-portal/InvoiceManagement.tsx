@@ -59,6 +59,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 
 // ============================================================
@@ -116,6 +117,7 @@ const getAuthHeaders = () => {
 export default function InvoiceManagement() {
   const { language } = useLanguage();
   const isNL = language === 'nl';
+  const { pt } = usePageTranslations();
 
   // State
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -188,7 +190,7 @@ export default function InvoiceManagement() {
       setInvoices(data.results || data);
     } catch (err) {
       console.error('Error fetching invoices:', err);
-      setError(isNL ? 'Kon facturen niet laden' : 'Failed to load invoices');
+      setError(pt("Failed to load invoices"));
     } finally {
       setIsLoading(false);
     }
@@ -242,11 +244,7 @@ export default function InvoiceManagement() {
 
       const data = await response.json();
       
-      toast.success(
-        isNL 
-          ? `${data.generated_count} facturen gegenereerd` 
-          : `${data.generated_count} invoices generated`
-      );
+      toast.success(`${data.generated_count} ${pt("invoices generated")}`);
       
       setIsGenerateDialogOpen(false);
       fetchInvoices();
@@ -275,7 +273,7 @@ export default function InvoiceManagement() {
         throw new Error('Failed to send invoice');
       }
 
-      toast.success(isNL ? 'Factuur verzonden' : 'Invoice sent');
+      toast.success(pt("Invoice sent"));
       setIsSendDialogOpen(false);
       setSendForm({ email: '', subject: '', message: '' });
       fetchInvoices();
@@ -304,7 +302,7 @@ export default function InvoiceManagement() {
         throw new Error('Failed to mark as paid');
       }
 
-      toast.success(isNL ? 'Factuur gemarkeerd als betaald' : 'Invoice marked as paid');
+      toast.success(pt("Invoice marked as paid"));
       setIsMarkPaidDialogOpen(false);
       setPaidForm({ payment_method: '', payment_reference: '' });
       fetchInvoices();
@@ -317,14 +315,14 @@ export default function InvoiceManagement() {
 
   const handleDownloadPDF = async (invoice: Invoice) => {
     if (!invoice.pdf_url) {
-      toast.error(isNL ? 'Geen PDF beschikbaar' : 'No PDF available');
+      toast.error(pt("No PDF available"));
       return;
     }
 
     try {
       window.open(invoice.pdf_url, '_blank');
     } catch (err) {
-      toast.error(isNL ? 'Kon PDF niet openen' : 'Failed to open PDF');
+      toast.error(pt("Failed to open PDF"));
     }
   };
 
@@ -343,7 +341,7 @@ export default function InvoiceManagement() {
       }
 
       const data = await response.json();
-      toast.success(isNL ? 'PDF gegenereerd' : 'PDF generated');
+      toast.success(pt("PDF generated"));
       
       // Open PDF in new tab
       if (data.pdf_url) {
@@ -398,7 +396,7 @@ export default function InvoiceManagement() {
       return (
         <Badge className="bg-red-100 text-red-700">
           <AlertCircle className="mr-1 h-3 w-3" />
-          {isNL ? `${invoice.days_overdue}d achterstallig` : `${invoice.days_overdue}d overdue`}
+          {`${invoice.days_overdue}${pt("d overdue")}`}
         </Badge>
       );
     }
@@ -424,9 +422,9 @@ export default function InvoiceManagement() {
 
   const getPeriodLabel = (period: string) => {
     const labels: Record<string, string> = {
-      monthly: isNL ? 'Maandelijks' : 'Monthly',
-      quarterly: isNL ? 'Kwartaal' : 'Quarterly',
-      yearly: isNL ? 'Jaarlijks' : 'Yearly',
+      monthly: pt('Monthly'),
+      quarterly: pt('Quarterly'),
+      yearly: pt('Yearly'),
     };
     return labels[period] || period;
   };
@@ -459,15 +457,15 @@ export default function InvoiceManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {isNL ? 'Facturen' : 'Invoices'}
+            {pt("Invoices")}
           </h1>
           <p className="text-muted-foreground">
-            {isNL ? 'Beheer en genereer facturen' : 'Manage and generate invoices'}
+            {pt("Manage and generate invoices")}
           </p>
         </div>
         <Button onClick={() => setIsGenerateDialogOpen(true)}>
           <Zap className="mr-2 h-4 w-4" />
-          {isNL ? 'Genereer Facturen' : 'Generate Invoices'}
+          {pt("Generate Invoices")}
         </Button>
       </div>
 
@@ -476,7 +474,7 @@ export default function InvoiceManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Totaal Facturen' : 'Total Invoices'}
+              {pt("Total Invoices")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -486,7 +484,7 @@ export default function InvoiceManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Betaald' : 'Paid'}
+              {pt("Paid")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -496,7 +494,7 @@ export default function InvoiceManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Achterstallig' : 'Overdue'}
+              {pt("Overdue")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -506,7 +504,7 @@ export default function InvoiceManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Openstaand' : 'Outstanding'}
+              {pt("Outstanding")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -522,7 +520,7 @@ export default function InvoiceManagement() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder={isNL ? 'Zoek facturen...' : 'Search invoices...'}
+                placeholder={pt("Search invoices...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -531,35 +529,35 @@ export default function InvoiceManagement() {
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder={isNL ? 'Status' : 'Status'} />
+                <SelectValue placeholder={pt("Status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isNL ? 'Alle statussen' : 'All statuses'}</SelectItem>
-                <SelectItem value="draft">{isNL ? 'Concept' : 'Draft'}</SelectItem>
-                <SelectItem value="sent">{isNL ? 'Verzonden' : 'Sent'}</SelectItem>
-                <SelectItem value="paid">{isNL ? 'Betaald' : 'Paid'}</SelectItem>
-                <SelectItem value="overdue">{isNL ? 'Achterstallig' : 'Overdue'}</SelectItem>
+                <SelectItem value="all">{pt("All statuses")}</SelectItem>
+                <SelectItem value="draft">{pt("Draft")}</SelectItem>
+                <SelectItem value="sent">{pt("Sent")}</SelectItem>
+                <SelectItem value="paid">{pt("Paid")}</SelectItem>
+                <SelectItem value="overdue">{pt("Overdue")}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={periodFilter} onValueChange={setPeriodFilter}>
               <SelectTrigger>
-                <SelectValue placeholder={isNL ? 'Period' : 'Period'} />
+                <SelectValue placeholder={pt("Period")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isNL ? 'Alle periodes' : 'All periods'}</SelectItem>
-                <SelectItem value="monthly">{isNL ? 'Maandelijks' : 'Monthly'}</SelectItem>
-                <SelectItem value="quarterly">{isNL ? 'Kwartaal' : 'Quarterly'}</SelectItem>
-                <SelectItem value="yearly">{isNL ? 'Jaarlijks' : 'Yearly'}</SelectItem>
+                <SelectItem value="all">{pt("All periods")}</SelectItem>
+                <SelectItem value="monthly">{pt("Monthly")}</SelectItem>
+                <SelectItem value="quarterly">{pt("Quarterly")}</SelectItem>
+                <SelectItem value="yearly">{pt("Yearly")}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
               <SelectTrigger>
-                <SelectValue placeholder={isNL ? 'Organisatie' : 'Company'} />
+                <SelectValue placeholder={pt("Company")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isNL ? 'Alle organisaties' : 'All companies'}</SelectItem>
+                <SelectItem value="all">{pt("All companies")}</SelectItem>
                 {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id.toString()}>
                     {company.name}
@@ -604,21 +602,21 @@ export default function InvoiceManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{isNL ? 'Nummer' : 'Number'}</TableHead>
-                  <TableHead>{isNL ? 'Klant' : 'Customer'}</TableHead>
-                  <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
-                  <TableHead>{isNL ? 'Vervaldatum' : 'Due Date'}</TableHead>
-                  <TableHead>{isNL ? 'Periode' : 'Period'}</TableHead>
-                  <TableHead>{isNL ? 'Bedrag' : 'Amount'}</TableHead>
+                  <TableHead>{pt("Number")}</TableHead>
+                  <TableHead>{pt("Customer")}</TableHead>
+                  <TableHead>{pt("Date")}</TableHead>
+                  <TableHead>{pt("Due Date")}</TableHead>
+                  <TableHead>{pt("Period")}</TableHead>
+                  <TableHead>{pt("Amount")}</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
+                  <TableHead className="text-right">{pt("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      {isNL ? 'Geen facturen gevonden' : 'No invoices found'}
+                      {pt("No invoices found")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -654,12 +652,12 @@ export default function InvoiceManagement() {
                             {invoice.pdf_url ? (
                               <DropdownMenuItem onClick={() => handleDownloadPDF(invoice)}>
                                 <Download className="mr-2 h-4 w-4" />
-                                {isNL ? 'Download PDF' : 'Download PDF'}
+                                {pt("Download PDF")}
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem onClick={() => handleGeneratePDF(invoice)}>
                                 <FileText className="mr-2 h-4 w-4" />
-                                {isNL ? 'Genereer PDF' : 'Generate PDF'}
+                                {pt("Generate PDF")}
                               </DropdownMenuItem>
                             )}
                             
@@ -667,11 +665,11 @@ export default function InvoiceManagement() {
                               <>
                                 <DropdownMenuItem onClick={() => openSendDialog(invoice)}>
                                   <Send className="mr-2 h-4 w-4" />
-                                  {isNL ? 'Verzenden' : 'Send'}
+                                  {pt("Send")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => openMarkPaidDialog(invoice)}>
                                   <CheckCircle className="mr-2 h-4 w-4" />
-                                  {isNL ? 'Markeer Betaald' : 'Mark Paid'}
+                                  {pt("Mark Paid")}
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -691,17 +689,14 @@ export default function InvoiceManagement() {
       <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Facturen Genereren' : 'Generate Invoices'}</DialogTitle>
+            <DialogTitle>{pt("Generate Invoices")}</DialogTitle>
             <DialogDescription>
-              {isNL 
-                ? 'Genereer automatisch facturen voor actieve abonnementen'
-                : 'Automatically generate invoices for active subscriptions'
-              }
+              {pt("Automatically generate invoices for active subscriptions")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>{isNL ? 'Facturatiecyclus' : 'Billing Period'}</Label>
+              <Label>{pt("Billing Period")}</Label>
               <Select
                 value={generateForm.billing_period}
                 onValueChange={(v) => setGenerateForm({ ...generateForm, billing_period: v })}
@@ -710,9 +705,9 @@ export default function InvoiceManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">{isNL ? 'Maandelijks' : 'Monthly'}</SelectItem>
-                  <SelectItem value="quarterly">{isNL ? 'Kwartaal' : 'Quarterly'}</SelectItem>
-                  <SelectItem value="yearly">{isNL ? 'Jaarlijks' : 'Yearly'}</SelectItem>
+                  <SelectItem value="monthly">{pt("Monthly")}</SelectItem>
+                  <SelectItem value="quarterly">{pt("Quarterly")}</SelectItem>
+                  <SelectItem value="yearly">{pt("Yearly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -726,16 +721,16 @@ export default function InvoiceManagement() {
                 className="h-4 w-4"
               />
               <label htmlFor="auto_send" className="text-sm">
-                {isNL ? 'Automatisch verzenden via email' : 'Automatically send via email'}
+                {pt("Automatically send via email")}
               </label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsGenerateDialogOpen(false)} disabled={isGenerating}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleGenerate} disabled={isGenerating}>
-              {isGenerating ? (isNL ? 'Bezig...' : 'Generating...') : (isNL ? 'Genereren' : 'Generate')}
+              {isGenerating ? pt("Generating...") : pt("Generate")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -745,14 +740,14 @@ export default function InvoiceManagement() {
       <Dialog open={isSendDialogOpen} onOpenChange={setIsSendDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Factuur Verzenden' : 'Send Invoice'}</DialogTitle>
+            <DialogTitle>{pt("Send Invoice")}</DialogTitle>
             <DialogDescription>
               {selectedInvoice && `${selectedInvoice.invoice_number} - ${selectedInvoice.customer_name}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>{isNL ? 'Email' : 'Email'}</Label>
+              <Label>{pt("Email")}</Label>
               <Input
                 type="email"
                 value={sendForm.email}
@@ -761,7 +756,7 @@ export default function InvoiceManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Onderwerp' : 'Subject'}</Label>
+              <Label>{pt("Subject")}</Label>
               <Input
                 value={sendForm.subject}
                 onChange={(e) => setSendForm({ ...sendForm, subject: e.target.value })}
@@ -769,7 +764,7 @@ export default function InvoiceManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Bericht (optioneel)' : 'Message (optional)'}</Label>
+              <Label>{pt("Message (optional)")}</Label>
               <Textarea
                 value={sendForm.message}
                 onChange={(e) => setSendForm({ ...sendForm, message: e.target.value })}
@@ -780,11 +775,11 @@ export default function InvoiceManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsSendDialogOpen(false)} disabled={isSending}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleSend} disabled={!sendForm.email || isSending}>
               <Send className="mr-2 h-4 w-4" />
-              {isSending ? (isNL ? 'Bezig...' : 'Sending...') : (isNL ? 'Verzenden' : 'Send')}
+              {isSending ? pt("Sending...") : pt("Send")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -794,38 +789,38 @@ export default function InvoiceManagement() {
       <Dialog open={isMarkPaidDialogOpen} onOpenChange={setIsMarkPaidDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Markeer als Betaald' : 'Mark as Paid'}</DialogTitle>
+            <DialogTitle>{pt("Mark as Paid")}</DialogTitle>
             <DialogDescription>
               {selectedInvoice && `${selectedInvoice.invoice_number} - €${selectedInvoice.total}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>{isNL ? 'Betaalmethode' : 'Payment Method'}</Label>
+              <Label>{pt("Payment Method")}</Label>
               <Input
                 value={paidForm.payment_method}
                 onChange={(e) => setPaidForm({ ...paidForm, payment_method: e.target.value })}
-                placeholder={isNL ? 'Bijv. Bankoverschrijving' : 'e.g. Bank Transfer'}
+                placeholder={pt("e.g. Bank Transfer")}
                 disabled={isMarkingPaid}
               />
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Referentie' : 'Reference'}</Label>
+              <Label>{pt("Reference")}</Label>
               <Input
                 value={paidForm.payment_reference}
                 onChange={(e) => setPaidForm({ ...paidForm, payment_reference: e.target.value })}
-                placeholder={isNL ? 'Optioneel' : 'Optional'}
+                placeholder={pt("Optional")}
                 disabled={isMarkingPaid}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsMarkPaidDialogOpen(false)} disabled={isMarkingPaid}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleMarkPaid} disabled={isMarkingPaid}>
               <CheckCircle className="mr-2 h-4 w-4" />
-              {isMarkingPaid ? (isNL ? 'Bezig...' : 'Saving...') : (isNL ? 'Markeer Betaald' : 'Mark Paid')}
+              {isMarkingPaid ? pt("Saving...") : pt("Mark Paid")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -112,6 +112,7 @@ const getAuthHeaders = () => {
 export default function UserManagement() {
   const { language } = useLanguage();
   const isNL = language === 'nl';
+  const { pt } = usePageTranslations();
 
   // State
   const [users, setUsers] = useState<User[]>([]);
@@ -188,7 +189,7 @@ export default function UserManagement() {
       setTotalCount(data.count || data.length);
     } catch (err) {
       console.error('Error fetching users:', err);
-      setError(isNL ? 'Kon gebruikers niet laden' : 'Failed to load users');
+      setError(pt("Failed to load users"));
     } finally {
       setIsLoading(false);
     }
@@ -234,7 +235,7 @@ export default function UserManagement() {
     try {
       // Validate password only if NOT sending invite email
       if (!sendInviteEmail && (!formData.password || formData.password.length < 8)) {
-        toast.error(isNL ? 'Wachtwoord moet minimaal 8 tekens bevatten' : 'Password must be at least 8 characters');
+        toast.error(pt("Password must be at least 8 characters"));
         return;
       }
 
@@ -264,8 +265,8 @@ export default function UserManagement() {
 
       toast.success(
         sendInviteEmail
-          ? (isNL ? 'Uitnodiging verstuurd' : 'Invite sent')
-          : (isNL ? 'Gebruiker aangemaakt' : 'User created')
+          ? pt("Invite sent")
+          : pt("User created")
       );
       setIsCreateDialogOpen(false);
       resetForm();
@@ -294,7 +295,7 @@ export default function UserManagement() {
         throw new Error('Failed to update user');
       }
 
-      toast.success(isNL ? 'Gebruiker bijgewerkt' : 'User updated');
+      toast.success(pt("User updated"));
       setIsEditDialogOpen(false);
       resetForm();
       fetchUsers();
@@ -316,7 +317,7 @@ export default function UserManagement() {
         throw new Error('Failed to delete user');
       }
 
-      toast.success(isNL ? 'Gebruiker verwijderd' : 'User deleted');
+      toast.success(pt("User deleted"));
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
       fetchUsers();
@@ -339,8 +340,8 @@ export default function UserManagement() {
 
       toast.success(
         user.is_active 
-          ? (isNL ? 'Gebruiker geschorst' : 'User suspended')
-          : (isNL ? 'Gebruiker geactiveerd' : 'User activated')
+          ? pt("User suspended")
+          : pt("User activated")
       );
       fetchUsers();
     } catch (err: any) {
@@ -359,7 +360,7 @@ export default function UserManagement() {
         throw new Error('Failed to resend invite');
       }
 
-      toast.success(isNL ? 'Uitnodiging verstuurd' : 'Invite sent');
+      toast.success(pt("Invite sent"));
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -376,7 +377,7 @@ export default function UserManagement() {
         throw new Error('Failed to send reset email');
       }
 
-      toast.success(isNL ? 'Wachtwoord reset email verstuurd' : 'Password reset email sent');
+      toast.success(pt("Password reset email sent"));
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -397,7 +398,7 @@ export default function UserManagement() {
 
   const handleImportUsers = async () => {
     if (!importFile) {
-      toast.error(isNL ? 'Selecteer een bestand' : 'Select a file');
+      toast.error(pt("Select a file"));
       return;
     }
     setImportLoading(true);
@@ -418,18 +419,18 @@ export default function UserManagement() {
         const data = await response.json();
         setImportResults({ created: data.created || 0, errors: data.errors || [] });
         if (data.created > 0) {
-          toast.success(isNL ? `${data.created} gebruikers geïmporteerd` : `${data.created} users imported`);
+          toast.success(`${data.created} ${pt("users imported")}`);
         }
         if (data.errors?.length > 0) {
-          toast.error(isNL ? `${data.errors.length} fouten bij import` : `${data.errors.length} import errors`);
+          toast.error(`${data.errors.length} ${pt("import errors")}`);
         }
         fetchUsers();
       } else {
         const errData = await response.json().catch(() => ({}));
-        toast.error(errData.error || (isNL ? 'Import mislukt' : 'Import failed'));
+        toast.error(errData.error || pt("Import failed"));
       }
     } catch (err: any) {
-      toast.error(err.message || (isNL ? 'Import mislukt' : 'Import failed'));
+      toast.error(err.message || pt("Import failed"));
     } finally {
       setImportLoading(false);
     }
@@ -499,10 +500,10 @@ export default function UserManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {isNL ? 'Gebruikersbeheer' : 'User Management'}
+            {pt("User Management")}
           </h1>
           <p className="text-muted-foreground">
-            {isNL ? 'Beheer alle gebruikers van het platform' : 'Manage all platform users'}
+            {pt("Manage all platform users")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -515,11 +516,11 @@ export default function UserManagement() {
             }}
           >
             <Upload className="mr-2 h-4 w-4" />
-            {isNL ? 'Importeren' : 'Import'}
+            {pt("Import")}
           </Button>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            {isNL ? 'Nieuwe Gebruiker' : 'New User'}
+            {pt("New User")}
           </Button>
         </div>
       </div>
@@ -529,7 +530,7 @@ export default function UserManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Totaal Gebruikers' : 'Total Users'}
+              {pt("Total Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -539,7 +540,7 @@ export default function UserManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Actieve Gebruikers' : 'Active Users'}
+              {pt("Active Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -551,7 +552,7 @@ export default function UserManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Inactieve Gebruikers' : 'Inactive Users'}
+              {pt("Inactive Users")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -563,7 +564,7 @@ export default function UserManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Admins' : 'Admins'}
+              {pt("Admins")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -581,7 +582,7 @@ export default function UserManagement() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder={isNL ? 'Zoek op naam of email...' : 'Search by name or email...'}
+                placeholder={pt("Search by name or email...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -592,9 +593,9 @@ export default function UserManagement() {
                 <SelectValue placeholder={"Status"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isNL ? 'Alle Status' : 'All Status'}</SelectItem>
-                <SelectItem value="active">{isNL ? 'Actief' : 'Active'}</SelectItem>
-                <SelectItem value="inactive">{isNL ? 'Inactief' : 'Inactive'}</SelectItem>
+                <SelectItem value="all">{pt("All Status")}</SelectItem>
+                <SelectItem value="active">{pt("Active")}</SelectItem>
+                <SelectItem value="inactive">{pt("Inactive")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
@@ -602,7 +603,7 @@ export default function UserManagement() {
                 <SelectValue placeholder={"Role"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{isNL ? 'Alle Rollen' : 'All Roles'}</SelectItem>
+                <SelectItem value="all">{pt("All Roles")}</SelectItem>
                 <SelectItem value="superadmin">Super Admin</SelectItem>
                 <SelectItem value="admin">{"Admin"}</SelectItem>
                 <SelectItem value="program_manager">{"Program Manager"}</SelectItem>
@@ -645,19 +646,19 @@ export default function UserManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{isNL ? 'Gebruiker' : 'User'}</TableHead>
-                  <TableHead>{isNL ? 'Organisatie' : 'Organization'}</TableHead>
-                  <TableHead>{isNL ? 'Rol' : 'Role'}</TableHead>
+                  <TableHead>{pt("User")}</TableHead>
+                  <TableHead>{pt("Organization")}</TableHead>
+                  <TableHead>{pt("Role")}</TableHead>
                   <TableHead>{"Status"}</TableHead>
-                  <TableHead>{isNL ? 'Laatst Actief' : 'Last Active'}</TableHead>
-                  <TableHead className="text-right">{isNL ? 'Acties' : 'Actions'}</TableHead>
+                  <TableHead>{pt("Last Active")}</TableHead>
+                  <TableHead className="text-right">{pt("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      {isNL ? 'Geen gebruikers gevonden' : 'No users found'}
+                      {pt("No users found")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -678,7 +679,7 @@ export default function UserManagement() {
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell>
                         <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                          {user.is_active ? (isNL ? 'Actief' : 'Active') : (isNL ? 'Inactief' : 'Inactive')}
+                          {user.is_active ? pt("Active") : pt("Inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(user.last_login)}</TableCell>
@@ -692,28 +693,28 @@ export default function UserManagement() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditDialog(user)}>
                               <Edit className="mr-2 h-4 w-4" />
-                              {isNL ? 'Bewerken' : 'Edit'}
+                              {pt("Edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggleStatus(user)}>
                               {user.is_active ? (
                                 <>
                                   <UserX className="mr-2 h-4 w-4" />
-                                  {isNL ? 'Schorsen' : 'Suspend'}
+                                  {pt("Suspend")}
                                 </>
                               ) : (
                                 <>
                                   <UserCheck className="mr-2 h-4 w-4" />
-                                  {isNL ? 'Activeren' : 'Activate'}
+                                  {pt("Activate")}
                                 </>
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleResendInvite(user)}>
                               <Mail className="mr-2 h-4 w-4" />
-                              {isNL ? 'Uitnodiging Versturen' : 'Resend Invite'}
+                              {pt("Resend Invite")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                               <KeyRound className="mr-2 h-4 w-4" />
-                              {isNL ? 'Wachtwoord Resetten' : 'Reset Password'}
+                              {pt("Reset Password")}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {
@@ -723,7 +724,7 @@ export default function UserManagement() {
                               className="text-red-600"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              {isNL ? 'Verwijderen' : 'Delete'}
+                              {pt("Delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -738,7 +739,7 @@ export default function UserManagement() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
-                  {isNL ? `Pagina ${page} van ${totalPages}` : `Page ${page} of ${totalPages}`}
+                  {`${pt("Page")} ${page} ${pt("of")} ${totalPages}`}
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -768,9 +769,9 @@ export default function UserManagement() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Nieuwe Gebruiker' : 'New User'}</DialogTitle>
+            <DialogTitle>{pt("New User")}</DialogTitle>
             <DialogDescription>
-              {isNL ? 'Voeg een nieuwe gebruiker toe aan het platform' : 'Add a new user to the platform'}
+              {pt("Add a new user to the platform")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -789,12 +790,10 @@ export default function UserManagement() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">
-                    {isNL ? 'Uitnodigingsmail versturen' : 'Send Invite Email'}
+                    {pt("Send Invite Email")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    {isNL 
-                      ? 'Gebruiker ontvangt email om wachtwoord in te stellen'
-                      : 'User will receive email to set password'}
+                    {pt("User will receive email to set password")}
                   </p>
                 </div>
                 <Switch
@@ -807,29 +806,29 @@ export default function UserManagement() {
             {/* Password field - only show if NOT sending invite */}
             {!sendInviteEmail && (
               <div className="space-y-2">
-                <Label>{isNL ? 'Wachtwoord' : 'Password'}</Label>
+                <Label>{pt("Password")}</Label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder={isNL ? 'Min. 8 tekens' : 'Min. 8 characters'}
+                  placeholder={pt("Min. 8 characters")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {isNL ? 'Gebruiker kan dit later wijzigen' : 'User can change this later'}
+                  {pt("User can change this later")}
                 </p>
               </div>
             )}
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isNL ? 'Voornaam' : 'First Name'}</Label>
+                <Label>{pt("First Name")}</Label>
                 <Input
                   value={formData.first_name}
                   onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>{isNL ? 'Achternaam' : 'Last Name'}</Label>
+                <Label>{pt("Last Name")}</Label>
                 <Input
                   value={formData.last_name}
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
@@ -837,7 +836,7 @@ export default function UserManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Rol' : 'Role'}</Label>
+              <Label>{pt("Role")}</Label>
               <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v })}>
                 <SelectTrigger>
                   <SelectValue />
@@ -853,10 +852,10 @@ export default function UserManagement() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Organisatie' : 'Organization'}</Label>
+              <Label>{pt("Organization")}</Label>
               <Select value={formData.company} onValueChange={(v) => setFormData({ ...formData, company: v })}>
                 <SelectTrigger>
-                  <SelectValue placeholder={isNL ? 'Selecteer organisatie' : 'Select organization'} />
+                  <SelectValue placeholder={pt("Select organization")} />
                 </SelectTrigger>
                 <SelectContent>
                   {companies.map((company) => (
@@ -870,10 +869,10 @@ export default function UserManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleCreateUser}>
-              {isNL ? 'Aanmaken' : 'Create'}
+              {pt("Create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -883,7 +882,7 @@ export default function UserManagement() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Gebruiker Bewerken' : 'Edit User'}</DialogTitle>
+            <DialogTitle>{pt("Edit User")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -892,14 +891,14 @@ export default function UserManagement() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{isNL ? 'Voornaam' : 'First Name'}</Label>
+                <Label>{pt("First Name")}</Label>
                 <Input
                   value={formData.first_name}
                   onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>{isNL ? 'Achternaam' : 'Last Name'}</Label>
+                <Label>{pt("Last Name")}</Label>
                 <Input
                   value={formData.last_name}
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
@@ -907,7 +906,7 @@ export default function UserManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Rol' : 'Role'}</Label>
+              <Label>{pt("Role")}</Label>
               <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v })}>
                 <SelectTrigger>
                   <SelectValue />
@@ -923,10 +922,10 @@ export default function UserManagement() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{isNL ? 'Organisatie' : 'Organization'}</Label>
+              <Label>{pt("Organization")}</Label>
               <Select value={formData.company} onValueChange={(v) => setFormData({ ...formData, company: v })}>
                 <SelectTrigger>
-                  <SelectValue placeholder={isNL ? 'Selecteer organisatie' : 'Select organization'} />
+                  <SelectValue placeholder={pt("Select organization")} />
                 </SelectTrigger>
                 <SelectContent>
                   {companies.map((company) => (
@@ -940,10 +939,10 @@ export default function UserManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button onClick={handleUpdateUser}>
-              {isNL ? 'Opslaan' : 'Save'}
+              {pt("Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -953,20 +952,17 @@ export default function UserManagement() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isNL ? 'Gebruiker Verwijderen' : 'Delete User'}</DialogTitle>
+            <DialogTitle>{pt("Delete User")}</DialogTitle>
             <DialogDescription>
-              {isNL
-                ? `Weet je zeker dat je ${selectedUser?.email} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.`
-                : `Are you sure you want to delete ${selectedUser?.email}? This action cannot be undone.`
-              }
+              {`${pt("Are you sure you want to delete")} ${selectedUser?.email}? ${pt("This action cannot be undone.")}`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {isNL ? 'Annuleren' : 'Cancel'}
+              {pt("Cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
-              {isNL ? 'Verwijderen' : 'Delete'}
+              {pt("Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -978,13 +974,10 @@ export default function UserManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5 text-purple-600" />
-              {isNL ? 'Gebruikers Importeren' : 'Import Users'}
+              {pt("Import Users")}
             </DialogTitle>
             <DialogDescription>
-              {isNL
-                ? 'Upload een CSV-bestand om meerdere gebruikers tegelijk aan te maken. Elke gebruiker ontvangt een uitnodigingsmail.'
-                : 'Upload a CSV file to create multiple users at once. Each user will receive an invitation email.'
-              }
+              {pt("Upload a CSV file to create multiple users at once. Each user will receive an invitation email.")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -993,10 +986,10 @@ export default function UserManagement() {
               <FileSpreadsheet className="h-5 w-5 text-blue-600 shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-blue-900">
-                  {isNL ? 'Download het CSV template' : 'Download the CSV template'}
+                  {pt("Download the CSV template")}
                 </p>
                 <p className="text-xs text-blue-700">
-                  {isNL ? 'Kolommen: email, first_name, last_name, role' : 'Columns: email, first_name, last_name, role'}
+                  {pt("Columns: email, first_name, last_name, role")}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={downloadTemplate} className="border-blue-300 text-blue-700 hover:bg-blue-100">
@@ -1007,7 +1000,7 @@ export default function UserManagement() {
 
             {/* File upload */}
             <div className="space-y-2">
-              <Label>{isNL ? 'CSV Bestand' : 'CSV File'}</Label>
+              <Label>{pt("CSV File")}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   type="file"
@@ -1028,28 +1021,26 @@ export default function UserManagement() {
 
             {/* Target Company/Client */}
             <div className="space-y-2">
-              <Label>{isNL ? 'Importeer naar organisatie' : 'Import into organization'}</Label>
+              <Label>{pt("Import into organization")}</Label>
               <Select value={importCompanyId} onValueChange={setImportCompanyId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={isNL ? 'Alle (per CSV kolom)' : 'All (per CSV column)'} />
+                  <SelectValue placeholder={pt("All (per CSV column)")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{isNL ? 'Per CSV kolom (company_id)' : 'Per CSV column (company_id)'}</SelectItem>
+                  <SelectItem value="all">{pt("Per CSV column (company_id)")}</SelectItem>
                   {companies.map(c => (
                     <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {isNL
-                  ? 'Selecteer een organisatie om alle gebruikers in te importeren, of laat leeg en gebruik de company_id kolom in de CSV.'
-                  : 'Select an organization to import all users into, or leave empty and use the company_id column in CSV.'}
+                {pt("Select an organization to import all users into, or leave empty and use the company_id column in CSV.")}
               </p>
             </div>
 
             {/* Roles info */}
             <div className="p-3 bg-gray-50 border rounded-lg text-xs space-y-1">
-              <p className="font-medium">{isNL ? 'Beschikbare rollen:' : 'Available roles:'}</p>
+              <p className="font-medium">{pt("Available roles:")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {['pm', 'admin', 'program_manager', 'contributor', 'reviewer', 'guest'].map(role => (
                   <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
@@ -1063,14 +1054,14 @@ export default function UserManagement() {
                 {importResults.created > 0 && (
                   <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    <span>{importResults.created} {isNL ? 'gebruikers succesvol geïmporteerd' : 'users imported successfully'}</span>
+                    <span>{importResults.created} {pt("users imported successfully")}</span>
                   </div>
                 )}
                 {importResults.errors.length > 0 && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800 space-y-1">
                     <div className="flex items-center gap-2">
                       <XCircle className="h-4 w-4 shrink-0" />
-                      <span className="font-medium">{importResults.errors.length} {isNL ? 'fouten:' : 'errors:'}</span>
+                      <span className="font-medium">{importResults.errors.length} {pt("errors:")}</span>
                     </div>
                     <ul className="ml-6 list-disc space-y-0.5 text-xs max-h-32 overflow-y-auto">
                       {importResults.errors.map((err, i) => (
@@ -1084,7 +1075,7 @@ export default function UserManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
-              {isNL ? 'Sluiten' : 'Close'}
+              {pt("Close")}
             </Button>
             <Button
               onClick={handleImportUsers}
@@ -1093,12 +1084,12 @@ export default function UserManagement() {
               {importLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  {isNL ? 'Importeren...' : 'Importing...'}
+                  {pt("Importing...")}
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4 mr-2" />
-                  {isNL ? 'Importeren' : 'Import'}
+                  {pt("Import")}
                 </>
               )}
             </Button>

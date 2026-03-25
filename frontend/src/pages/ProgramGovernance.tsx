@@ -71,9 +71,9 @@ const ProgramGovernance = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Shield className="h-6 w-6 text-indigo-600" />
-              Program Governance
+              {pt("Program Governance")}
             </h1>
-            <p className="text-muted-foreground">Governance structure and decision making</p>
+            <p className="text-muted-foreground">{pt("Governance structure and decision making")}</p>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ const ProgramGovernance = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-indigo-600" />
-                Program Board
+                {pt("Program Board")}
               </CardTitle>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
@@ -95,7 +95,7 @@ const ProgramGovernance = () => {
             {governanceBoard.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No board members defined yet</p>
+                <p className="text-muted-foreground">{pt("No board members defined yet")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-4">
@@ -131,7 +131,7 @@ const ProgramGovernance = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-indigo-600" />
-                  Governance Meetings
+                  {pt("Governance Meetings")}
                 </CardTitle>
                 <Button size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
@@ -143,7 +143,7 @@ const ProgramGovernance = () => {
               {meetings.length === 0 ? (
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No meetings scheduled</p>
+                  <p className="text-muted-foreground">{pt("No meetings scheduled")}</p>
                 </div>
               ) : (
                 meetings.map((meeting: any, i: number) => (
@@ -171,14 +171,14 @@ const ProgramGovernance = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-red-600" />
-                Active Escalations
+                {pt("Active Escalations")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {escalations.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-4" />
-                  <p className="text-muted-foreground">No active escalations</p>
+                  <p className="text-muted-foreground">{pt("No active escalations")}</p>
                 </div>
               ) : (
                 escalations.map((esc: any) => (
@@ -205,11 +205,11 @@ const ProgramGovernance = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-indigo-600" />
-                Decision Log
+                {pt("Decision Log")}
               </CardTitle>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Decision
+                {pt("Add Decision")}
               </Button>
             </div>
           </CardHeader>
@@ -217,14 +217,14 @@ const ProgramGovernance = () => {
             {decisions.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No decisions logged yet</p>
+                <p className="text-muted-foreground">{pt("No decisions logged yet")}</p>
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-3">ID</th>
-                    <th className="pb-3">Decision</th>
+                    <th className="pb-3">{pt("ID")}</th>
+                    <th className="pb-3">{pt("Decision")}</th>
                     <th className="pb-3">{pt("Date")}</th>
                     <th className="pb-3">{pt("Impact")}</th>
                     <th className="pb-3">{pt("Status")}</th>

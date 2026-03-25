@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Plus, CreditCard, Pencil, Trash2, Star, Check, Zap, Crown, Building2, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const DEFAULT_PLANS = [
   {
@@ -105,6 +106,7 @@ const DEFAULT_PLANS = [
 ];
 
 const SubscriptionManagement = () => {
+  const { pt } = usePageTranslations();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -283,7 +285,7 @@ const SubscriptionManagement = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <CreditCard className="h-6 w-6 text-purple-500" />
-          <h1 className="text-2xl font-bold">Subscription Plans</h1>
+          <h1 className="text-2xl font-bold">{pt("Subscription Plans")}</h1>
           <Badge variant="outline">{plans.length > 0 ? plans.length : DEFAULT_PLANS.length}</Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -295,11 +297,11 @@ const SubscriptionManagement = () => {
               className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
             >
               {seedingDefaults ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-              Standaard Plannen Aanmaken
+              {pt("Create Default Plans")}
             </Button>
           )}
           <Button onClick={openCreate} className="gap-2 bg-purple-600 hover:bg-purple-700">
-            <Plus className="h-4 w-4" /> Nieuw Plan
+            <Plus className="h-4 w-4" /> {pt("New Plan")}
           </Button>
         </div>
       </div>
@@ -308,7 +310,7 @@ const SubscriptionManagement = () => {
         <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
           <Zap className="h-4 w-4 shrink-0" />
           <span>
-            Dit zijn voorbeeld plannen. Klik op <strong>"Standaard Plannen Aanmaken"</strong> om ze op te slaan in de database, of maak je eigen plannen aan.
+            {pt("These are example plans. Click")} <strong>"{pt("Create Default Plans")}"</strong> {pt("to save them to the database, or create your own plans.")}
           </span>
         </div>
       )}
@@ -323,7 +325,7 @@ const SubscriptionManagement = () => {
             onClick={() => setBillingFilter(filter)}
             className={billingFilter === filter ? "bg-purple-600 hover:bg-purple-700" : ""}
           >
-            {filter === "all" ? "Alle" : filter === "monthly" ? "Maandelijks" : "Jaarlijks"}
+            {filter === "all" ? pt("All") : filter === "monthly" ? pt("Monthly") : pt("Yearly")}
           </Button>
         ))}
       </div>
@@ -333,7 +335,7 @@ const SubscriptionManagement = () => {
           <Card key={p.id} className={`relative overflow-hidden transition-shadow hover:shadow-lg ${!p.is_active ? "opacity-60" : ""} ${(p as any).is_popular ? "ring-2 ring-purple-500" : ""}`}>
             {(p as any).is_popular && (
               <div className="absolute top-0 right-0 bg-purple-600 text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
-                Populair
+                {pt("Popular")}
               </div>
             )}
             <div className={`h-2 bg-gradient-to-r ${getPlanGradient(p)}`} />
@@ -356,7 +358,7 @@ const SubscriptionManagement = () => {
               </p>
               {p.plan_type === 'yearly' && (
                 <p className="text-xs text-green-600 font-medium mb-2">
-                  €{(p.price / 12).toFixed(0)}/mo - Bespaar 2 maanden!
+                  €{(p.price / 12).toFixed(0)}/mo - {pt("Save 2 months!")}
                 </p>
               )}
               <div className="space-y-1 text-sm mb-3">
@@ -364,8 +366,8 @@ const SubscriptionManagement = () => {
                   <Badge variant="secondary" className="text-xs">{planLevelLabel(p.plan_level)}</Badge>
                   <Badge variant="outline" className="text-xs">{planTypeLabel(p.plan_type)}</Badge>
                 </div>
-                {p.max_projects ? <p className="text-muted-foreground">Max projecten: <strong>{p.max_projects}</strong></p> : <p className="text-muted-foreground">Onbeperkt projecten</p>}
-                {p.max_users ? <p className="text-muted-foreground">Max gebruikers: <strong>{p.max_users}</strong></p> : <p className="text-muted-foreground">Onbeperkt gebruikers</p>}
+                {p.max_projects ? <p className="text-muted-foreground">{pt("Max projects:")} <strong>{p.max_projects}</strong></p> : <p className="text-muted-foreground">{pt("Unlimited projects")}</p>}
+                {p.max_users ? <p className="text-muted-foreground">{pt("Max users:")} <strong>{p.max_users}</strong></p> : <p className="text-muted-foreground">{pt("Unlimited users")}</p>}
               </div>
               {p.features && (
                 <div className="border-t pt-3 space-y-1.5">
@@ -378,9 +380,9 @@ const SubscriptionManagement = () => {
                 </div>
               )}
               <div className="mt-3 pt-2 border-t flex items-center justify-between">
-                <Badge variant={p.is_active ? "default" : "secondary"} className="text-xs">{p.is_active ? "Actief" : "Inactief"}</Badge>
+                <Badge variant={p.is_active ? "default" : "secondary"} className="text-xs">{p.is_active ? pt("Active") : pt("Inactive")}</Badge>
                 {(p as any).subscriber_count !== undefined && (
-                  <span className="text-xs text-muted-foreground">{(p as any).subscriber_count} abonnees</span>
+                  <span className="text-xs text-muted-foreground">{(p as any).subscriber_count} {pt("subscribers")}</span>
                 )}
               </div>
             </CardContent>
@@ -390,31 +392,31 @@ const SubscriptionManagement = () => {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editing ? "Plan Bewerken" : "Nieuw Plan"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? pt("Edit Plan") : pt("New Plan")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Naam *</Label>
+                <Label>{pt("Name *")}</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Prijs (€)</Label>
+                <Label>{pt("Price (€)")}</Label>
                 <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Facturatie Type *</Label>
+                <Label>{pt("Billing Type *")}</Label>
                 <Select value={form.plan_type} onValueChange={(v) => setForm({ ...form, plan_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Maandelijks</SelectItem>
-                    <SelectItem value="yearly">Jaarlijks</SelectItem>
+                    <SelectItem value="monthly">{pt("Monthly")}</SelectItem>
+                    <SelectItem value="yearly">{pt("Yearly")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Plan Niveau *</Label>
+                <Label>{pt("Plan Level *")}</Label>
                 <Select value={form.plan_level} onValueChange={(v) => setForm({ ...form, plan_level: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -429,25 +431,25 @@ const SubscriptionManagement = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Max Projecten</Label>
+                <Label>{pt("Max Projects")}</Label>
                 <Input type="number" value={form.max_projects} onChange={(e) => setForm({ ...form, max_projects: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Max Gebruikers</Label>
+                <Label>{pt("Max Users")}</Label>
                 <Input type="number" value={form.max_users} onChange={(e) => setForm({ ...form, max_users: e.target.value })} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Features (komma-gescheiden)</Label>
+              <Label>{pt("Features (comma-separated)")}</Label>
               <textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} placeholder="Feature 1, Feature 2, Feature 3" />
             </div>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Actief
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> {pt("Active")}
             </label>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuleren</Button>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting} className="bg-purple-600 hover:bg-purple-700">
-                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Opslaan
+                {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
               </Button>
             </div>
           </div>

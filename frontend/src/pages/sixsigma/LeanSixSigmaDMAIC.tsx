@@ -23,7 +23,7 @@ const LeanSixSigmaDMAIC = () => {
   const fetchData = async () => { try { const r = await fetch(`${BASE(id!)}/tollgates/`, { headers }); if (r.ok) { const d = await r.json(); setTollgates(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   const initTollgates = async () => { try { const r = await fetch(`${BASE(id!)}/tollgates/initialize/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("DMAIC tollgates geïnitialiseerd"); fetchData(); } else toast.error("Initialiseren mislukt"); } catch { toast.error("Initialiseren mislukt"); } };
   useEffect(() => { fetchData(); }, [id]);
-  const nav = (path: string) => navigate(`/projects/${id}/six-sigma/${path}`);
+  const nav = (phase: string, path: string) => navigate(`/projects/${id}/${phase}/${path}`);
 
   const dmaic = [
     { phase: "Define", desc: "Define the problem, scope, goals, and customer requirements", color: "bg-blue-500 text-blue-700 bg-blue-50 border-blue-200", tools: ["SIPOC Diagram", "Voice of Customer"], paths: ["sipoc", "voc"] },
@@ -48,7 +48,7 @@ const LeanSixSigmaDMAIC = () => {
                 <div className="flex items-center justify-between mb-2"><div className="flex items-center gap-3"><div className={`h-8 w-8 rounded-full ${colors[0]} flex items-center justify-center text-white font-bold text-sm`}>{d.phase.charAt(0)}</div><h2 className="text-lg font-bold">{d.phase}</h2>{tg?.status === "approved" && <CheckCircle2 className="h-5 w-5 text-green-500" />}{tg && <Badge variant={tg.status === "approved" ? "default" : "outline"} className="text-xs">{tg.status}</Badge>}</div></div>
                 <p className="text-sm text-muted-foreground mb-3">{d.desc}</p>
                 <div className="flex flex-wrap gap-2">{d.tools.map((tool, ti) => (
-                  <Button key={tool} variant="outline" size="sm" onClick={() => nav(d.paths[ti])} className="gap-1"><ArrowRight className="h-3 w-3" />{tool}</Button>
+                  <Button key={tool} variant="outline" size="sm" onClick={() => nav(d.phase.toLowerCase(), d.paths[ti])} className="gap-1"><ArrowRight className="h-3 w-3" />{tool}</Button>
                 ))}</div>
               </CardContent>
             </Card>
