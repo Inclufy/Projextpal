@@ -18,6 +18,7 @@ import DashboardScreen from '../screens/main/DashboardScreen';
 import ProjectsScreen from '../screens/main/ProjectsScreen';
 import ProjectDetailScreen from '../screens/main/ProjectDetailScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import PrivacySecurityScreen from '../screens/main/PrivacySecurityScreen';
 
 // Academy screens
 import AcademyScreen from '../screens/academy/AcademyScreen';
@@ -28,6 +29,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const ProjectsStack = createNativeStackNavigator();
 const AcademyStack = createNativeStackNavigator();
+const ProfileStack = createNativeStackNavigator();
 
 const screenOptions = {
   headerStyle: { backgroundColor: '#191A2E' },
@@ -79,6 +81,24 @@ function AcademyStackScreen() {
   );
 }
 
+function ProfileStackScreen() {
+  const { t } = useTranslation();
+  return (
+    <ProfileStack.Navigator screenOptions={screenOptions}>
+      <ProfileStack.Screen
+        name="ProfileMain"
+        component={ProfileScreen}
+        options={{ title: t('tabs.profile') }}
+      />
+      <ProfileStack.Screen
+        name="PrivacySecurity"
+        component={PrivacySecurityScreen}
+        options={{ title: 'Privacy & Beveiliging' }}
+      />
+    </ProfileStack.Navigator>
+  );
+}
+
 function MainTabs() {
   const { t } = useTranslation();
 
@@ -126,13 +146,8 @@ function MainTabs() {
       />
       <Tab.Screen
         name="ProfileTab"
-        component={ProfileScreen}
-        options={{
-          title: t('tabs.profile'),
-          headerShown: true,
-          ...screenOptions,
-          headerTitle: t('tabs.profile'),
-        }}
+        component={ProfileStackScreen}
+        options={{ title: t('tabs.profile'), headerShown: false }}
       />
     </Tab.Navigator>
   );

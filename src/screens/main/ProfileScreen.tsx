@@ -19,12 +19,16 @@ export default function ProfileScreen({ navigation }: any) {
     await logout();
   }
 
-  const menuItems = [
-    { icon: 'person-outline' as const, label: t('profile.accountSettings'), screen: 'Settings' },
-    { icon: 'shield-checkmark-outline' as const, label: t('profile.security'), screen: 'Settings' },
-    { icon: 'notifications-outline' as const, label: t('profile.notifications'), screen: 'Settings' },
-    { icon: 'globe-outline' as const, label: t('profile.language'), screen: 'Settings' },
-    { icon: 'moon-outline' as const, label: t('profile.appearance'), screen: 'Settings' },
+  const menuItems: Array<{
+    icon: 'person-outline' | 'shield-checkmark-outline' | 'notifications-outline' | 'globe-outline' | 'moon-outline';
+    label: string;
+    screen: string | null;
+  }> = [
+    { icon: 'person-outline', label: t('profile.accountSettings'), screen: null },
+    { icon: 'shield-checkmark-outline', label: t('profile.security'), screen: 'PrivacySecurity' },
+    { icon: 'notifications-outline', label: t('profile.notifications'), screen: null },
+    { icon: 'globe-outline', label: t('profile.language'), screen: null },
+    { icon: 'moon-outline', label: t('profile.appearance'), screen: null },
   ];
 
   return (
@@ -61,7 +65,17 @@ export default function ProfileScreen({ navigation }: any) {
 
       <View style={styles.menu}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={() => Alert.alert(t('common.comingSoon'), item.label)}>
+          <TouchableOpacity
+            key={index}
+            style={styles.menuItem}
+            onPress={() => {
+              if (item.screen) {
+                navigation.navigate(item.screen);
+              } else {
+                Alert.alert(t('common.comingSoon'), item.label);
+              }
+            }}
+          >
             <View style={styles.menuLeft}>
               <Ionicons name={item.icon} size={20} color="#9CA3AF" />
               <Text style={styles.menuLabel}>{item.label}</Text>
