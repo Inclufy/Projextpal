@@ -19,6 +19,8 @@ npm ci
 # Set env vars
 echo "=== Setting environment variables ==="
 export EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-https://projextpal.com/api/v1}"
+# Fix Xcode Cloud setting CI=TRUE (uppercase) — Expo expects lowercase boolean
+export CI=1
 
 # Run expo prebuild (clean regenerate ios/ for fresh Xcode project)
 echo "=== Running Expo prebuild ==="
