@@ -1,39 +1,16 @@
 stages:
-  - build
+  - test
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-
-build-backend:
-  stage: build
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+typecheck:mobile:
+  stage: test
+  image: node:20
+  cache:
+    key: mobile-${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
   script:
-    - cd backend
-    - docker build -f Dockerfile.prod -t $CI_REGISTRY_IMAGE/backend:latest -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/backend:latest
-    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+    - npm ci
+    - npx tsc --noEmit
   only:
     - main
-    - tags
-  allow_failure: true
-
-build-frontend:
-  stage: build
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-  script:
-    - cd frontend
-    - docker build -f Dockerfile.prod -t $CI_REGISTRY_IMAGE/frontend:latest -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/frontend:latest
-    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
-  only:
-    - main
-    - tags
+    - merge_requests
