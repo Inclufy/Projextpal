@@ -20,13 +20,14 @@ npm ci
 echo "=== Setting environment variables ==="
 export EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-https://projextpal.com/api/v1}"
 
-# Run expo prebuild
+# Run expo prebuild (clean regenerate ios/ for fresh Xcode project)
 echo "=== Running Expo prebuild ==="
+rm -rf ios
 npx expo prebuild --platform ios --no-install
 
 # Install CocoaPods
 echo "=== Installing CocoaPods ==="
 cd ios
-pod install
+pod install --repo-update
 
 echo "=== ci_post_clone.sh complete ==="
