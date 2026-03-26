@@ -58,8 +58,19 @@ backups/
 .DS_Store
 .env
 .DS_Store
-<<<<<<< HEAD
 backend/.env.prod
-=======
 frontend/test-results/
->>>>>>> claude/create-test-agent-uat-KR36j
+
+# Expo
+.expo/
+android/
+ios/
+
+# TypeScript
+*.tsbuildinfo
+
+# Web
+web/.next/
+
+# Claude
+.claude/
