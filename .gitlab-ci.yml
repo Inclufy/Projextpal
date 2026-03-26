@@ -10,6 +10,36 @@ variables:
   POSTGRES_HOST: postgres
   DATABASE_URL: postgresql://projextpal:test_password@postgres:5432/projextpal_test
   DJANGO_SETTINGS_MODULE: core.settings
+  # CI-safe defaults for django-decouple env vars without defaults in settings.py
+  SECRET_KEY: ci-test-secret-key-not-for-production
+  DEBUG: "True"
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  EMAIL_HOST: localhost
+  EMAIL_PORT: "25"
+  EMAIL_HOST_USER: ""
+  EMAIL_HOST_PASSWORD: ""
+  DEFAULT_FROM_EMAIL: ci@projextpal.com
+  FRONTEND_URL: http://localhost:3000
+  BASE_URL: http://localhost:8000
+  STRIPE_SECRET_KEY: sk_test_ci_placeholder
+  STRIPE_PUBLIC_KEY: pk_test_ci_placeholder
+  STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+  OPENAI_API_KEY: sk-ci-placeholder
+
+typecheck:mobile:
+  stage: test
+  image: node:20
+  cache:
+    key: mobile-${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+  script:
+    - npm ci
+    - npx tsc --noEmit
+  only:
+    - master
+    - main
+    - merge_requests
 
 test:backend:
   stage: test

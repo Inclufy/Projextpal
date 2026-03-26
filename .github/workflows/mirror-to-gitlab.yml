@@ -1,22 +1,16 @@
 name: Mirror to GitLab
+
 on:
   push:
-<<<<<<< HEAD
-    branches: [master]
-=======
     branches:
       - master
       - main
-      - 'claude/**'
-  delete:
-    branches:
-      - 'claude/**'
->>>>>>> claude/create-test-agent-uat-KR36j
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: |
