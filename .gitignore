@@ -64,7 +64,7 @@ frontend/test-results/
 # Expo
 .expo/
 android/
-ios/
+# ios/  # committed for Xcode Cloud
 
 # TypeScript
 *.tsbuildinfo
