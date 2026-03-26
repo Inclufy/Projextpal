@@ -27,4 +27,21 @@ echo "=== Running Expo prebuild ==="
 rm -rf ios
 npx expo prebuild --platform ios --clean
 
+# Disable Explicitly Built Modules (Xcode 26 default breaks Expo SDK 52 pods)
+echo "=== Disabling Explicitly Built Modules for Xcode 26 compatibility ==="
+cat >> ios/Podfile << 'PODEOF'
+
+post_install do |installer|
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
+  end
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
+    end
+  end
+end
+PODEOF
+cd ios && pod install
+
 echo "=== ci_post_clone.sh complete ==="
