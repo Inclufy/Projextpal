@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import api, { setOnUnauthorized } from '../services/api';
+
+const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 interface User {
   id: number;
@@ -29,6 +32,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tempToken, setTempToken] = useState<string | null>(null);
+  const lastActiveRef = useRef<number>(Date.now());
+
+  // Idle session timeout: sign out after 15 min of being backgrounded
+  useEffect(() => {
+    function handleAppStateChange(nextState: AppStateStatus) {
+      if (nextState === 'active') {
+        const elapsed = Date.now() - lastActiveRef.current;
+        if (elapsed > IDLE_TIMEOUT_MS) {
+          logout().catch(() => {});
+        }
+        lastActiveRef.current = Date.now();
+      } else {
+        lastActiveRef.current = Date.now();
+      }
+    }
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadStoredAuth();
