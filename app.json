@@ -2,7 +2,7 @@
   "expo": {
     "name": "ProjeXtPal",
     "slug": "projextpal",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
         "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
@@ -48,7 +48,10 @@
             "targetSdkVersion": 35
           }
         }
-      ]
+      ],
+      "@sentry/react-native",
+      "expo-secure-store",
+      "expo-web-browser"
     ]
   }
 }
