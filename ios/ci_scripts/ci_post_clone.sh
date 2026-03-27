@@ -19,10 +19,11 @@ echo "Node: $(node --version) | npm: $(npm --version)"
 echo "=== Installing npm dependencies ==="
 CI=1 npm ci
 
-# Set Supabase env vars
+# Set environment variables
 echo "=== Setting environment variables ==="
 export EXPO_PUBLIC_SUPABASE_URL="${EXPO_PUBLIC_SUPABASE_URL}"
 export EXPO_PUBLIC_SUPABASE_ANON_KEY="${EXPO_PUBLIC_SUPABASE_ANON_KEY}"
+export SENTRY_DISABLE_AUTO_UPLOAD=true
 
 # Run expo prebuild (regenerates ios/ directory)
 echo "=== Running Expo prebuild ==="
