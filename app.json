@@ -39,7 +39,16 @@
     },
     "plugins": [
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
+        }
+      ]
     ]
   }
 }
