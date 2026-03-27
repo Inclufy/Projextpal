@@ -7,9 +7,6 @@ echo "=== Xcode Cloud ci_post_clone.sh (ProjeXtPal) ==="
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 echo "Working directory: $(pwd)"
 
-# Save this script before prebuild --clean deletes ios/
-cp ios/ci_scripts/ci_post_clone.sh /tmp/ci_post_clone_backup.sh
-
 # Install Node.js
 echo "=== Installing Node.js ==="
 brew install node
@@ -23,16 +20,10 @@ CI=1 npm ci
 echo "=== Setting environment variables ==="
 export EXPO_PUBLIC_SUPABASE_URL="${EXPO_PUBLIC_SUPABASE_URL}"
 export EXPO_PUBLIC_SUPABASE_ANON_KEY="${EXPO_PUBLIC_SUPABASE_ANON_KEY}"
-export SENTRY_DISABLE_AUTO_UPLOAD=true
 
-# Run expo prebuild (regenerates ios/ directory)
+# Run expo prebuild (without --clean to preserve ios/ config)
 echo "=== Running Expo prebuild ==="
-npx expo prebuild --platform ios --clean --no-install
-
-# Restore ci_scripts after prebuild wiped ios/
-echo "=== Restoring ci_scripts ==="
-mkdir -p ios/ci_scripts
-cp /tmp/ci_post_clone_backup.sh ios/ci_scripts/ci_post_clone.sh
+npx expo prebuild --platform ios --no-install
 
 # Install CocoaPods
 echo "=== Installing CocoaPods ==="
