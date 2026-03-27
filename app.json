@@ -14,11 +14,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "20",
+      "buildNumber": "22",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
         "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
-        "NSFaceIDUsageDescription": "ProjeXtPal uses Face ID for secure and quick login"
+        "NSFaceIDUsageDescription": "ProjeXtPal uses Face ID for secure and quick login",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
