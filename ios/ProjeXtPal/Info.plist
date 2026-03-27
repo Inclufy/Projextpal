@@ -51,6 +51,8 @@
     <string>ProjeXtPal uses Face ID for secure and quick login</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>ProjeXtPal needs photo access for documents</string>
+    <key>RCTNewArchEnabled</key>
+    <true/>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
