@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
         "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
