@@ -2,7 +2,7 @@
   "expo": {
     "name": "ProjeXtPal",
     "slug": "projextpal",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "22",
+      "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
         "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
