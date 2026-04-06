@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "23",
+      "buildNumber": "24",
       "associatedDomains": [
         "applinks:projextpal.com",
         "applinks:www.projextpal.com"
