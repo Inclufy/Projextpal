@@ -9,23 +9,26 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#191A2E"
+      "backgroundColor": "#8B5CF6"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
       "buildNumber": "2",
+      "associatedDomains": [
+        "applinks:projextpal.com",
+        "applinks:www.projextpal.com"
+      ],
       "infoPlist": {
-        "NSCameraUsageDescription": "ProjeXtPal needs camera access for profile photos",
-        "NSPhotoLibraryUsageDescription": "ProjeXtPal needs photo access for documents",
-        "NSFaceIDUsageDescription": "ProjeXtPal uses Face ID for secure and quick login",
+        "NSCameraUsageDescription": "ProjeXtPal heeft toegang tot je camera nodig voor profiel foto's",
+        "NSPhotoLibraryUsageDescription": "ProjeXtPal heeft toegang tot je foto's nodig voor documenten",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#191A2E"
+        "backgroundColor": "#8B5CF6"
       },
       "package": "com.inclufy.projextpal"
     },

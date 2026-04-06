@@ -1,0 +1,505 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fout",
+    "success": "Succes",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "submit": "Indienen",
+    "back": "Terug",
+    "next": "Volgende",
+    "confirm": "Bevestigen",
+    "yes": "Ja",
+    "no": "Nee",
+    "search": "Zoeken",
+    "filter": "Filteren",
+    "sort": "Sorteren",
+    "refresh": "Vernieuwen",
+    "add": "Toevoegen",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "navigation": {
+    "home": "Home",
+    "projects": "Projecten",
+    "programs": "Programma's",
+    "academy": "Academy",
+    "profile": "Profiel",
+    "tasks": "Taken",
+    "team": "Team",
+    "settings": "Instellingen",
+    "logout": "Uitloggen"
+  },
+  "projects": {
+    "title": "Projecten",
+    "total": "Totaal",
+    "active": "Actief",
+    "completed": "Afgerond",
+    "all": "Alle",
+    "noProjects": "Geen projecten gevonden",
+    "addProject": "Project Toevoegen",
+    "noDescription": "Geen beschrijving",
+    "progress": "Voortgang",
+    "budget": "Budget",
+    "startDate": "Startdatum",
+    "endDate": "Einddatum",
+    "totalHours": "Totaal uren",
+    "overview": "Overzicht",
+    "hours": "Uren",
+    "activity": "Activiteit",
+    "description": "Beschrijving",
+    "projectInfo": "Project Informatie",
+    "recentActivity": "Recente Activiteit",
+    "notFound": "Project niet gevonden",
+    "status": {
+      "planning": "Planning",
+      "pending": "In afwachting",
+      "active": "Actief",
+      "in_progress": "In uitvoering",
+      "completed": "Afgerond",
+      "on_hold": "On hold",
+      "cancelled": "Geannuleerd"
+    }
+  },
+  "projectDetail": {
+    "title": "Project Details",
+    "notFound": "Project niet gevonden",
+    "tabs": {
+      "overview": "Overzicht",
+      "hours": "Uren",
+      "activity": "Activiteit"
+    },
+    "status": {
+      "active": "Actief",
+      "completed": "Afgerond",
+      "on_hold": "On hold",
+      "cancelled": "Geannuleerd",
+      "planning": "Planning",
+      "pending": "In afwachting"
+    },
+    "overview": {
+      "description": "Beschrijving",
+      "noDescription": "Geen beschrijving beschikbaar",
+      "projectInfo": "Project Informatie",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "budget": "Budget",
+      "totalHours": "Totaal uren"
+    },
+    "hours": {
+      "summary": {
+        "total": "Totaal",
+        "approved": "Goedgekeurd",
+        "pending": "In afwachting"
+      },
+      "registered": "Geregistreerde Uren",
+      "noHours": "Nog geen uren geregistreerd",
+      "addHours": "Uren toevoegen",
+      "status": {
+        "approved": "✓ Goedgekeurd",
+        "rejected": "✗ Afgewezen",
+        "pending": "⏱ In afwachting",
+        "draft": "📝 Concept"
+      }
+    },
+    "activity": {
+      "recent": "Recente Activiteit",
+      "taskCompleted": "Taak voltooid",
+      "newComment": "Nieuwe opmerking",
+      "documentAdded": "Document toegevoegd"
+    },
+    "modal": {
+      "addHours": "Uren Toevoegen",
+      "date": "Datum",
+      "hours": "Aantal uren",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Wat heb je gedaan?",
+      "note": "Uren moeten worden goedgekeurd door een manager",
+      "submit": "Toevoegen"
+    },
+    "actions": {
+      "approve": "Goedkeuren",
+      "reject": "Afkeuren",
+      "delete": "Verwijderen",
+      "edit": "Bewerken",
+      "submit": "Indienen"
+    },
+    "alerts": {
+      "error": "Fout",
+      "success": "Succes",
+      "invalidHours": "Voer geldige uren in",
+      "descriptionRequired": "Voer een beschrijving in",
+      "hoursAdded": "{{hours}} uren toegevoegd!",
+      "couldNotAddHours": "Kon uren niet toevoegen. Probeer opnieuw.",
+      "approveTitle": "Uren Goedkeuren",
+      "approveMessage": "Weet je zeker dat je deze uren wilt goedkeuren?",
+      "approved": "Uren zijn goedgekeurd!",
+      "couldNotApprove": "Kon uren niet goedkeuren.",
+      "rejectTitle": "Uren Afkeuren",
+      "rejectPrompt": "Geef een reden voor afkeuring:",
+      "rejected": "Uren zijn afgewezen.",
+      "noReason": "Geen reden opgegeven",
+      "couldNotReject": "Kon uren niet afkeuren.",
+      "deleteTitle": "Uren Verwijderen",
+      "deleteMessage": "Weet je zeker dat je deze uren wilt verwijderen?",
+      "deleted": "Uren zijn verwijderd.",
+      "couldNotDelete": "Kon uren niet verwijderen.",
+      "cancel": "Annuleren"
+    }
+  },
+  "programs": {
+    "title": "Programma's",
+    "noPrograms": "Geen programma's gevonden",
+    "noProgramsFound": "Geen programma's gevonden",
+    "newProgram": "+ Nieuw Programma",
+    "averageProgress": "Gem. Voortgang",
+    "noDescription": "Geen beschrijving",
+    "projectsCount": "projecten",
+    "addNew": "Nieuw Programma",
+    "stats": {
+      "programs": "Programma's",
+      "projects": "Projecten",
+      "avgProgress": "Gem. Voortgang"
+    },
+    "status": {
+      "active": "Actief",
+      "completed": "Afgerond",
+      "on_hold": "On Hold",
+      "planning": "Planning"
+    },
+    "modal": {
+      "title": "Nieuw Programma",
+      "name": "Programmanaam",
+      "namePlaceholder": "Bijv. Digital Transformation",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Beschrijf het programma...",
+      "status": "Status",
+      "submit": "Programma Aanmaken"
+    },
+    "validation": {
+      "nameRequired": "Vul een programmanaam in"
+    },
+    "errors": {
+      "loadFailed": "Kon programma's niet laden",
+      "createFailed": "Kon programma niet aanmaken"
+    },
+    "success": {
+      "created": "Programma aangemaakt!"
+    },
+    "detail": {
+      "title": "Programma Details",
+      "notFound": "Programma niet gevonden",
+      "tabs": {
+        "overview": "Overzicht",
+        "projects": "Projecten",
+        "hours": "Uren"
+      },
+      "stats": {
+        "projects": "Projecten",
+        "progress": "Voortgang",
+        "hours": "Uren"
+      },
+      "description": "Beschrijving",
+      "noDescription": "Geen beschrijving beschikbaar",
+      "information": "Informatie",
+      "statusLabel": "Status",
+      "startDate": "Startdatum",
+      "budget": "Budget",
+      "actions": "Acties",
+      "addProject": "Project Toevoegen",
+      "logHours": "Uren Registreren",
+      "projectsList": "Projecten",
+      "noProjects": "Nog geen projecten"
+    }
+  },
+  "timeTracking": {
+    "title": "Urenregistratie",
+    "addHours": "Uren Toevoegen",
+    "numberOfHours": "Aantal uren",
+    "description": "Beschrijving",
+    "whatDidYouDo": "Wat heb je gedaan?",
+    "whatAreYouDoing": "Wat ben je aan het doen?",
+    "date": "Datum",
+    "approve": "Goedkeuren",
+    "reject": "Afkeuren",
+    "totalHours": "Totaal",
+    "approvedHours": "Goedgekeurd",
+    "pendingHours": "In afwachting",
+    "registeredHours": "Geregistreerde Uren",
+    "noHoursRegistered": "Nog geen uren geregistreerd",
+    "noHoursThisWeek": "Nog geen uren geregistreerd deze week",
+    "addHoursButton": "+ Uren toevoegen",
+    "approveHours": "Uren Goedkeuren",
+    "rejectHours": "Uren Afkeuren",
+    "deleteHours": "Uren Verwijderen",
+    "confirmApprove": "Weet je zeker dat je deze uren wilt goedkeuren?",
+    "confirmReject": "Weet je zeker dat je deze uren wilt afkeuren?",
+    "confirmDelete": "Weet je zeker dat je deze uren wilt verwijderen?",
+    "rejectReason": "Geef een reden voor afkeuring:",
+    "noReasonProvided": "Geen reden opgegeven",
+    "hoursMustBeApproved": "Uren moeten worden goedgekeurd door een manager",
+    "hoursAdded": "{{hours}} uren toegevoegd!",
+    "hoursApproved": "Uren zijn goedgekeurd!",
+    "hoursRejected": "Uren zijn afgekeurd.",
+    "hoursDeleted": "Uren zijn verwijderd.",
+    "hoursRegistered": "{{hours}} geregistreerd!",
+    "errorAddingHours": "Kon uren niet toevoegen. Probeer opnieuw.",
+    "errorApprovingHours": "Kon uren niet goedkeuren.",
+    "errorRejectingHours": "Kon uren niet afkeuren.",
+    "errorDeletingHours": "Kon uren niet verwijderen.",
+    "errorSaving": "Kon tijd niet opslaan. Probeer opnieuw.",
+    "enterValidHours": "Voer geldige uren in",
+    "enterDescription": "Voer een beschrijving in",
+    "statusApproved": "✓ Goedgekeurd",
+    "statusRejected": "✗ Afgekeurd",
+    "statusPending": "⏱ In afwachting",
+    "timerActive": "Timer Actief",
+    "startTimer": "Start Timer",
+    "stopAndSave": "Stop & Opslaan",
+    "start": "Start",
+    "selectProject": "Selecteer project...",
+    "selectProjectTitle": "Selecteer Project",
+    "selectProjectMessage": "Selecteer eerst een project om tijd te registreren.",
+    "logTime": "Uren Registreren",
+    "myTime": "Mijn Uren",
+    "teamTime": "Team Uren",
+    "approvals": "Goedkeuringen",
+    "reports": "Rapporten",
+    "today": "Vandaag",
+    "worked": "Gewerkt",
+    "tasks": "Taken",
+    "projects": "Projecten",
+    "thisWeek": "Deze Week",
+    "thisMonth": "Deze Maand",
+    "seeAll": "Alles",
+    "tooShort": "Te kort",
+    "tooShortMessage": "De tijd was te kort om te registreren.",
+    "descriptionNeeded": "Beschrijving nodig",
+    "descriptionNeededMessage": "Voer een beschrijving in voor de gewerkte tijd.",
+    "billableHours": "Factureerbare Uren",
+    "nonBillableHours": "Niet-factureerbare Uren"
+  },
+  "ai": {
+    "assistant": "AI Assistent",
+    "welcome": "Hallo! 👋 Ik ben je AI-assistent voor projectmanagement. Ik kan je helpen met:\n\n📁 Projecten beheren\n⏱️ Uren registreren\n⚠️ Risico's analyseren\n💰 Budget bewaken\n📚 Cursussen vinden\n\nWaar kan ik je mee helpen?",
+    "quickActions": "Snelle acties",
+    "generateReport": "Genereer rapport",
+    "analyzeData": "Analyseer data",
+    "suggestions": "Suggesties",
+    "planTask": "Plan taak",
+    "askQuestion": "Stel een vraag...",
+    "showMyProjects": "Toon mijn projecten",
+    "thisWeeksHours": "Uren van deze week",
+    "openRisks": "Open risico's"
+  },
+  "admin": {
+    "portal": "Admin Portal",
+    "dashboard": "Dashboard",
+    "users": "Gebruikers",
+    "activity": "Activiteit",
+    "system": "Systeem"
+  },
+  "addProject": {
+    "title": "Project Toevoegen",
+    "editTitle": "Project Bewerken",
+    "form": {
+      "name": "Projectnaam",
+      "namePlaceholder": "Voer projectnaam in",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Voer projectbeschrijving in",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "budget": "Budget",
+      "budgetPlaceholder": "Voer budgetbedrag in",
+      "status": "Status",
+      "methodology": "Methodologie",
+      "manager": "Projectmanager",
+      "team": "Teamleden"
+    },
+    "methodologies": {
+      "agile": "Agile",
+      "scrum": "Scrum",
+      "waterfall": "Waterval",
+      "prince2": "PRINCE2",
+      "hybrid": "Hybride"
+    },
+    "validation": {
+      "nameRequired": "Projectnaam is verplicht",
+      "descriptionRequired": "Beschrijving is verplicht",
+      "invalidBudget": "Voer een geldig budgetbedrag in",
+      "invalidDates": "Einddatum moet na de startdatum zijn"
+    },
+    "success": {
+      "created": "Project succesvol aangemaakt!",
+      "updated": "Project succesvol bijgewerkt!"
+    },
+    "error": {
+      "create": "Kon project niet aanmaken. Probeer opnieuw.",
+      "update": "Kon project niet bijwerken. Probeer opnieuw."
+    }
+  },
+  "tasks": {
+    "title": "Taken",
+    "myTasks": "Mijn Taken",
+    "allTasks": "Alle Taken",
+    "addTask": "Taak Toevoegen",
+    "noTasks": "Geen taken gevonden",
+    "status": {
+      "todo": "Te Doen",
+      "in_progress": "In Uitvoering",
+      "review": "In Review",
+      "done": "Klaar",
+      "blocked": "Geblokkeerd"
+    },
+    "priority": {
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog",
+      "critical": "Kritiek"
+    },
+    "filters": {
+      "all": "Alle",
+      "myTasks": "Mijn Taken",
+      "overdue": "Achterstallig",
+      "today": "Vandaag",
+      "thisWeek": "Deze Week"
+    }
+  },
+  "team": {
+    "title": "Team",
+    "members": "Teamleden",
+    "addMember": "Lid Toevoegen",
+    "noMembers": "Geen teamleden gevonden",
+    "roles": {
+      "admin": "Beheerder",
+      "manager": "Manager",
+      "member": "Lid",
+      "viewer": "Kijker"
+    },
+    "inviteUser": "Gebruiker Uitnodigen",
+    "removeUser": "Gebruiker Verwijderen",
+    "changeRole": "Rol Wijzigen"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "general": "Algemeen",
+    "account": "Account",
+    "notifications": "Meldingen",
+    "language": "Taal",
+    "theme": "Thema",
+    "privacy": "Privacy",
+    "about": "Over",
+    "languages": {
+      "en": "English",
+      "nl": "Nederlands"
+    },
+    "themes": {
+      "light": "Licht",
+      "dark": "Donker",
+      "auto": "Automatisch"
+    }
+  },
+  "profile": {
+    "title": "Profiel",
+    "editProfile": "Profiel Bewerken",
+    "personalInfo": "Persoonlijke Informatie",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "email": "E-mail",
+    "phone": "Telefoon",
+    "role": "Rol",
+    "department": "Afdeling",
+    "location": "Locatie",
+    "changePassword": "Wachtwoord Wijzigen",
+    "currentPassword": "Huidig Wachtwoord",
+    "newPassword": "Nieuw Wachtwoord",
+    "confirmPassword": "Bevestig Wachtwoord"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "logout": "Uitloggen",
+    "register": "Registreren",
+    "forgotPassword": "Wachtwoord Vergeten?",
+    "resetPassword": "Wachtwoord Resetten",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "confirmPassword": "Bevestig Wachtwoord",
+    "rememberMe": "Onthoud Mij",
+    "signIn": "Aanmelden",
+    "signUp": "Registreren",
+    "welcomeBack": "Welkom Terug",
+    "createAccount": "Account Aanmaken",
+    "alreadyHaveAccount": "Heb je al een account?",
+    "dontHaveAccount": "Heb je nog geen account?",
+    "errors": {
+      "invalidCredentials": "Ongeldige e-mail of wachtwoord",
+      "emailRequired": "E-mail is verplicht",
+      "passwordRequired": "Wachtwoord is verplicht",
+      "passwordMismatch": "Wachtwoorden komen niet overeen",
+      "weakPassword": "Wachtwoord is te zwak",
+      "emailInUse": "E-mail is al in gebruik",
+      "genericError": "Er is een fout opgetreden. Probeer opnieuw."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welkom terug, {{name}}",
+    "overview": "Overzicht",
+    "activeProjects": "Actieve Projecten",
+    "completedTasks": "Voltooide Taken",
+    "teamMembers": "Teamleden",
+    "upcomingDeadlines": "Aankomende Deadlines",
+    "recentActivity": "Recente Activiteit",
+    "quickActions": "Snelle Acties",
+    "stats": {
+      "projects": "Projecten",
+      "tasks": "Taken",
+      "hours": "Uren",
+      "team": "Team"
+    }
+  },
+  "reports": {
+    "title": "Rapporten",
+    "projectReports": "Projectrapporten",
+    "timeReports": "Urenrapporten",
+    "teamReports": "Teamrapporten",
+    "export": "Exporteren",
+    "generateReport": "Rapport Genereren",
+    "dateRange": "Datumbereik",
+    "from": "Van",
+    "to": "Tot"
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "markAllRead": "Alles Markeren als Gelezen",
+    "noNotifications": "Geen meldingen",
+    "types": {
+      "taskAssigned": "Taak aan jou toegewezen",
+      "projectUpdate": "Projectupdate",
+      "hoursApproved": "Uren goedgekeurd",
+      "hoursRejected": "Uren afgewezen",
+      "deadline": "Deadline nadert",
+      "mention": "Je bent vermeld"
+    }
+  },
+  "errors": {
+    "networkError": "Netwerkfout. Controleer je verbinding.",
+    "serverError": "Serverfout. Probeer later opnieuw.",
+    "notFound": "Bron niet gevonden",
+    "unauthorized": "Je bent niet geautoriseerd om deze actie uit te voeren",
+    "validationError": "Controleer je invoer en probeer opnieuw",
+    "genericError": "Er is een fout opgetreden. Probeer opnieuw."
+  },
+  "validation": {
+    "required": "Dit veld is verplicht",
+    "email": "Voer een geldig e-mailadres in",
+    "minLength": "Moet minimaal {{min}} tekens bevatten",
+    "maxLength": "Mag maximaal {{max}} tekens bevatten",
+    "number": "Moet een getal zijn",
+    "positiveNumber": "Moet een positief getal zijn",
+    "date": "Voer een geldige datum in",
+    "url": "Voer een geldige URL in"
+  }
+}

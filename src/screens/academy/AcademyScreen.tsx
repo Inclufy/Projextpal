@@ -1,256 +1,203 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import api from '../../services/api';
+import { COLORS } from '../../constants/colors';
 
-interface Course {
-  id: number;
-  slug: string;
-  title: string;
-  description: string;
-  category: string;
-  modules_count: number;
-  lessons_count: number;
-  duration_hours: number;
-  level: string;
-  thumbnail?: string;
-  enrolled?: boolean;
-  progress?: number;
-}
+export const AcademyScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [selectedTab, setSelectedTab] = useState('all');
 
-export default function AcademyScreen({ navigation }: any) {
-  const { t } = useTranslation();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(false);
+  const courses = [
+    { id: '1', title: 'PRINCE2 Foundation', duration: '40u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'shield-checkmark', gradient: ['#8B5CF6', '#A855F7'] },
+    { id: '2', title: 'Agile & Scrum Mastery', duration: '32u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'flash', gradient: ['#3B82F6', '#2563EB'] },
+    { id: '3', title: 'Project Management Fundamentals', duration: '25u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'bar-chart', gradient: ['#10B981', '#059669'] },
+    { id: '4', title: 'Leadership & Team Management', duration: '30u', level: 'Advanced', price: 'Gratis', progress: 0, icon: 'people', gradient: ['#F59E0B', '#D97706'] },
+    { id: '5', title: 'Risk Management Professional', duration: '28u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'shield', gradient: ['#EC4899', '#F472B6'] },
+    { id: '6', title: 'Budget & Financial Planning', duration: '22u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'wallet', gradient: ['#14B8A6', '#06B6D4'] },
+  ];
 
-  async function loadCourses() {
-    try {
-      setError(false);
-      const res = await api.get('/academy/courses/');
-      setCourses(res.data.results || res.data || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadCourses();
-  }, []);
-
-  async function onRefresh() {
-    setRefreshing(true);
-    await loadCourses();
-    setRefreshing(false);
-  }
-
-  const levelColors: Record<string, string> = {
-    beginner: '#34D399',
-    intermediate: '#FBBF24',
-    advanced: '#F472B6',
-  };
-
-  function renderCourse({ item }: { item: Course }) {
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate('CourseDetail', { courseId: item.id, slug: item.slug })}
-      >
-        <View style={styles.cardTop}>
-          <View
-            style={[
-              styles.levelBadge,
-              { backgroundColor: (levelColors[item.level] || '#818CF8') + '20' },
-            ]}
-          >
-            <Text
-              style={[
-                styles.levelText,
-                { color: levelColors[item.level] || '#818CF8' },
-              ]}
-            >
-              {item.level?.toUpperCase()}
-            </Text>
-          </View>
-          <Text style={styles.category}>{item.category}</Text>
-        </View>
-
-        <Text style={styles.courseTitle}>{item.title}</Text>
-        <Text style={styles.courseDesc} numberOfLines={2}>
-          {item.description}
-        </Text>
-
-        <View style={styles.meta}>
-          <View style={styles.metaItem}>
-            <Ionicons name="layers" size={14} color="#9CA3AF" />
-            <Text style={styles.metaText}>{item.modules_count} modules</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="document-text" size={14} color="#9CA3AF" />
-            <Text style={styles.metaText}>{item.lessons_count} lessons</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="time" size={14} color="#9CA3AF" />
-            <Text style={styles.metaText}>{item.duration_hours}h</Text>
-          </View>
-        </View>
-
-        {item.enrolled && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${item.progress || 0}%` }]} />
-            </View>
-            <Text style={styles.progressText}>{item.progress || 0}%</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  }
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#7C3AED" />
-      </View>
-    );
-  }
+  const tabs = [
+    { id: 'all', name: 'Alles', icon: 'grid' },
+    { id: 'ongoing', name: 'Bezig', icon: 'play-circle' },
+    { id: 'completed', name: 'Voltooid', icon: 'checkmark-circle' },
+    { id: 'saved', name: 'Opgeslagen', icon: 'bookmark' },
+  ];
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={courses}
-        renderItem={renderCourse}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A78BFA" />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="school-outline" size={64} color="#374151" />
-            <Text style={styles.emptyText}>{error ? t('common.loadError') : t('academy.noCourses')}</Text>
-            {error && (
-              <TouchableOpacity onPress={() => { setError(false); setLoading(true); loadCourses(); }}>
-                <Text style={{ color: '#7C3AED', marginTop: 8, fontWeight: '600' }}>{t('common.retry')}</Text>
-              </TouchableOpacity>
-            )}
+      <LinearGradient colors={['#8B5CF6', '#EC4899']} style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Academy</Text>
+        <TouchableOpacity style={styles.searchButton}>
+          <Ionicons name="search" size={24} color="white" />
+        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
+          {tabs.map((tab) => (
+            <TouchableOpacity key={tab.id} style={[styles.tab, selectedTab === tab.id && styles.tabActive]} onPress={() => setSelectedTab(tab.id)}>
+              <Ionicons name={tab.icon as any} size={18} color={selectedTab === tab.id ? 'white' : '#6B7280'} />
+              <Text style={[styles.tabText, selectedTab === tab.id && styles.tabTextActive]}>{tab.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Featured Banner */}
+        <View style={styles.featuredBanner}>
+          <LinearGradient colors={['#6366F1', '#8B5CF6']} style={styles.bannerGradient}>
+            <Text style={styles.bannerBadge}>✨ NIEUW</Text>
+            <Text style={styles.bannerTitle}>Gratis Certificering</Text>
+            <Text style={styles.bannerSubtitle}>Start vandaag met PRINCE2 Foundation</Text>
+            <TouchableOpacity style={styles.bannerButton}>
+              <Text style={styles.bannerButtonText}>Start Nu →</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
+
+        {/* Stats */}
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <LinearGradient colors={['#8B5CF6', '#A855F7']} style={styles.statIconGradient}>
+              <Ionicons name="book" size={24} color="white" />
+            </LinearGradient>
+            <Text style={styles.statNumber}>12</Text>
+            <Text style={styles.statLabel}>Cursussen</Text>
           </View>
-        }
-      />
+          <View style={styles.statBox}>
+            <LinearGradient colors={['#F59E0B', '#D97706']} style={styles.statIconGradient}>
+              <Ionicons name="trophy" size={24} color="white" />
+            </LinearGradient>
+            <Text style={styles.statNumber}>5</Text>
+            <Text style={styles.statLabel}>Certificaten</Text>
+          </View>
+          <View style={styles.statBox}>
+            <LinearGradient colors={['#3B82F6', '#2563EB']} style={styles.statIconGradient}>
+              <Ionicons name="time" size={24} color="white" />
+            </LinearGradient>
+            <Text style={styles.statNumber}>48u</Text>
+            <Text style={styles.statLabel}>Geleerd</Text>
+          </View>
+        </View>
+
+        {/* Courses Grid - LUXE GRADIENT ICONS */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Beschikbare Cursussen</Text>
+          {courses.map((course) => (
+            <TouchableOpacity key={course.id} style={styles.courseCard}>
+              <LinearGradient 
+                colors={course.gradient} 
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.courseImageGradient}
+              >
+                <View style={styles.courseIconContainer}>
+                  <Ionicons name={course.icon as any} size={36} color="white" />
+                </View>
+              </LinearGradient>
+              <View style={styles.courseInfo}>
+                <Text style={styles.courseTitle}>{course.title}</Text>
+                <View style={styles.courseMeta}>
+                  <View style={styles.metaItem}>
+                    <Ionicons name="time-outline" size={14} color="#6B7280" />
+                    <Text style={styles.metaText}>{course.duration}</Text>
+                  </View>
+                  <View style={styles.metaItem}>
+                    <Ionicons name="bar-chart-outline" size={14} color="#6B7280" />
+                    <Text style={styles.metaText}>{course.level}</Text>
+                  </View>
+                </View>
+                <View style={styles.coursePriceRow}>
+                  <View style={styles.priceTag}>
+                    <Text style={styles.priceText}>{course.price}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.startButton}>
+                    <Text style={styles.startButtonText}>Start →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#191A2E',
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingTop: 60, paddingBottom: 20, paddingHorizontal: 20 },
+  backButton: { padding: 8 },
+  title: { flex: 1, fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center' },
+  searchButton: { padding: 8 },
+  
+  tabsContainer: { backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  tabs: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  tab: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F9FAFB', gap: 6 },
+  tabActive: { backgroundColor: '#8B5CF6' },
+  tabText: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
+  tabTextActive: { color: 'white' },
+  
+  content: { flex: 1 },
+  
+  featuredBanner: { marginHorizontal: 20, marginTop: 20, borderRadius: 16, overflow: 'hidden', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
+  bannerGradient: { padding: 24 },
+  bannerBadge: { fontSize: 12, fontWeight: 'bold', color: 'white', backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginBottom: 8 },
+  bannerTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 4 },
+  bannerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.9)', marginBottom: 16 },
+  bannerButton: { backgroundColor: 'white', alignSelf: 'flex-start', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
+  bannerButtonText: { fontSize: 14, fontWeight: 'bold', color: '#8B5CF6' },
+  
+  statsRow: { flexDirection: 'row', paddingHorizontal: 20, marginTop: 20, gap: 12 },
+  statBox: { flex: 1, backgroundColor: 'white', borderRadius: 12, padding: 16, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+  statIconGradient: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 5 },
+  statNumber: { fontSize: 20, fontWeight: 'bold', color: '#1F2937', marginTop: 4 },
+  statLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  
+  section: { paddingHorizontal: 20, marginTop: 24 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F2937', marginBottom: 16 },
+  
+  courseCard: { flexDirection: 'row', backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  courseImageGradient: { 
+    width: 80, 
+    height: 80, 
+    borderRadius: 16, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 16, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 8, 
+    elevation: 8 
   },
-  center: {
-    flex: 1,
-    backgroundColor: '#191A2E',
-    justifyContent: 'center',
+  courseIconContainer: { 
+    width: 64, 
+    height: 64, 
+    borderRadius: 32, 
+    backgroundColor: 'rgba(255,255,255,0.25)', 
+    justifyContent: 'center', 
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  list: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#1F2037',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  levelBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  levelText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  category: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  courseTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#F3F4F6',
-    marginBottom: 6,
-  },
-  courseDesc: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  meta: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  progressSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#374151',
-  },
-  progressBar: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#374151',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#34D399',
-    borderRadius: 2,
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#34D399',
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 80,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
+  courseInfo: { flex: 1 },
+  courseTitle: { fontSize: 16, fontWeight: '600', color: '#1F2937', marginBottom: 8 },
+  courseMeta: { flexDirection: 'row', gap: 12, marginBottom: 8 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metaText: { fontSize: 12, color: '#6B7280' },
+  coursePriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  priceTag: { backgroundColor: '#DCFCE7', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  priceText: { fontSize: 12, fontWeight: 'bold', color: '#16A34A' },
+  startButton: { paddingHorizontal: 16, paddingVertical: 8 },
+  startButtonText: { fontSize: 14, fontWeight: '600', color: '#8B5CF6' },
 });

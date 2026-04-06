@@ -6,138 +6,121 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import api from '../../services/api';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AuthService from '../../services/authService';
 
 export default function ForgotPasswordScreen({ navigation }: any) {
-  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
-  async function handleReset() {
+  const handleSubmit = async () => {
     if (!email) {
-      setError(t('auth.emailRequired'));
+      Alert.alert('Error', 'Please enter your email address');
       return;
     }
+
     setLoading(true);
-    setError('');
     try {
-      await api.post('/auth/forgot-password/', { email });
-      setSent(true);
-    } catch {
-      setError(t('common.error'));
+      await AuthService.forgotPassword({ email });
+      setEmailSent(true);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  if (sent) {
+  if (emailSent) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('auth.checkEmail')}</Text>
-        <Text style={styles.subtitle}>
-          {t('auth.resetSent')}
-        </Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.buttonText}>{t('auth.backToLogin')}</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>Check Your Email</Text>
+          <Text style={styles.message}>
+            We've sent password reset instructions to{'\n'}
+            <Text style={styles.emailText}>{email}</Text>
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={styles.buttonText}>Back to Login</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('auth.forgotPassword')}</Text>
-      <Text style={styles.subtitle}>{t('auth.enterEmail')}</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Forgot Password?</Text>
+        <Text style={styles.subtitle}>
+          Enter your email and we'll send you instructions to reset your password.
+        </Text>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        <TextInput
+          style={styles.input}
+          placeholder="your@email.com"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoFocus
+        />
 
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="name@company.com"
-        placeholderTextColor="#666"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Send Reset Link</Text>
+          )}
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleReset}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>{t('auth.sendReset')}</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={styles.link}>{t('common.back')}</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.link}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.linkText}>
+            Remember your password? <Text style={styles.linkBold}>Sign In</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#191A2E',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#F3F4F6',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 32,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { flex: 1, padding: 24, justifyContent: 'center' },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#1F2937', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#6B7280', marginBottom: 32, lineHeight: 24 },
+  message: { fontSize: 16, color: '#6B7280', textAlign: 'center', marginBottom: 32, lineHeight: 24 },
+  emailText: { fontWeight: '600', color: '#1F2937' },
   input: {
-    backgroundColor: '#1F2037',
+    height: 48,
     borderWidth: 1,
-    borderColor: '#374151',
-    borderRadius: 12,
-    padding: 14,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
     fontSize: 16,
-    color: '#F3F4F6',
     marginBottom: 16,
   },
   button: {
+    height: 48,
     backgroundColor: '#7C3AED',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  error: {
-    color: '#EF4444',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  link: {
-    color: '#A78BFA',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 16,
-  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  link: { marginTop: 16, alignItems: 'center' },
+  linkText: { fontSize: 14, color: '#6B7280' },
+  linkBold: { color: '#7C3AED', fontWeight: '600' },
 });

@@ -1,212 +1,52 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const en = {
-  common: {
-    loading: 'Loading...',
-    error: 'Something went wrong',
-    retry: 'Retry',
-    cancel: 'Cancel',
-    save: 'Save',
-    delete: 'Delete',
-    edit: 'Edit',
-    back: 'Back',
-    next: 'Next',
-    done: 'Done',
-    search: 'Search',
-    loadError: 'Could not load data',
-    comingSoon: 'Coming soon',
-    noData: 'No data available',
+import nl from './nl.json';
+import en from './en.json';
+
+const LANGUAGE_KEY = '@language';
+
+const languageDetector = {
+  type: 'languageDetector' as const,
+  async: true,
+  detect: async (callback: (lng: string) => void) => {
+    try {
+      const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+      if (savedLanguage) {
+        callback(savedLanguage);
+        return;
+      }
+      const deviceLanguage = Localization.locale.split('-')[0];
+      callback(deviceLanguage);
+    } catch (error) {
+      callback('nl');
+    }
   },
-  auth: {
-    login: 'Log In',
-    signup: 'Sign Up',
-    logout: 'Log Out',
-    email: 'Email',
-    password: 'Password',
-    forgotPassword: 'Forgot Password?',
-    twoFactor: 'Two-Factor Authentication',
-    enterCode: 'Enter your 2FA code',
-    verify: 'Verify',
-    rememberMe: 'Remember me for 30 days',
-    noAccount: "Don't have an account?",
-    hasAccount: 'Already have an account?',
-    emailRequired: 'Please enter email and password',
-    fillRequired: 'Please fill in all required fields',
-    firstName: 'First name',
-    lastName: 'Last name',
-    organization: 'Organization (optional)',
-    enterEmail: 'Enter your email to receive a reset link',
-    checkEmail: 'Check your email',
-    resetSent: 'We sent a password reset link to your email',
-    sendReset: 'Send Reset Link',
-    enter6Digit: 'Please enter a 6-digit code',
-    registrationFailed: 'Registration failed',
-    backToLogin: 'Back to Login',
-  },
-  tabs: {
-    dashboard: 'Dashboard',
-    projects: 'Projects',
-    academy: 'Academy',
-    profile: 'Profile',
-  },
-  academy: {
-    courses: 'Courses',
-    myCourses: 'My Courses',
-    continue: 'Continue Learning',
-    startCourse: 'Start Course',
-    lessons: 'Lessons',
-    modules: 'Modules',
-    quiz: 'Quiz',
-    exam: 'Exam',
-    certificate: 'Certificate',
-    progress: 'Progress',
-    lessonPlayer: 'Lesson',
-    nextLesson: 'Next Lesson',
-    previousLesson: 'Previous',
-    markComplete: 'Mark as Complete',
-    completed: 'Completed',
-    noCourses: 'No courses available',
-    courseNotFound: 'Course not found',
-    complete: '% complete',
-  },
-  projects: {
-    myProjects: 'My Projects',
-    createProject: 'Create Project',
-    projectDetails: 'Project Details',
-    status: 'Status',
-    methodology: 'Methodology',
-    team: 'Team',
-    tasks: 'Tasks',
-    noProjects: 'No projects yet',
-    createOnWeb: 'Create your first project on the web app',
-    projectNotFound: 'Project not found',
-    description: 'Description',
-    timeline: 'Timeline',
-  },
-  dashboard: {
-    welcome: 'Welcome',
-    recentProjects: 'Recent Projects',
-    activeCourses: 'Active Courses',
-    quickActions: 'Quick Actions',
-  },
-  profile: {
-    accountSettings: 'Account Settings',
-    security: 'Security & 2FA',
-    notifications: 'Notifications',
-    language: 'Language',
-    appearance: 'Appearance',
-    currentPlan: 'Current Plan',
-    version: 'Version',
+  init: () => {},
+  cacheUserLanguage: async (language: string) => {
+    try {
+      await AsyncStorage.setItem(LANGUAGE_KEY, language);
+    } catch (error) {
+      console.error('Error saving language:', error);
+    }
   },
 };
 
-const nl = {
-  common: {
-    loading: 'Laden...',
-    error: 'Er ging iets mis',
-    retry: 'Opnieuw',
-    cancel: 'Annuleren',
-    save: 'Opslaan',
-    delete: 'Verwijderen',
-    edit: 'Bewerken',
-    back: 'Terug',
-    next: 'Volgende',
-    done: 'Klaar',
-    search: 'Zoeken',
-    loadError: 'Kon gegevens niet laden',
-    comingSoon: 'Binnenkort beschikbaar',
-    noData: 'Geen gegevens beschikbaar',
-  },
-  auth: {
-    login: 'Inloggen',
-    signup: 'Registreren',
-    logout: 'Uitloggen',
-    email: 'E-mail',
-    password: 'Wachtwoord',
-    forgotPassword: 'Wachtwoord vergeten?',
-    twoFactor: 'Tweefactorauthenticatie',
-    enterCode: 'Voer je 2FA-code in',
-    verify: 'Verifiëren',
-    rememberMe: '30 dagen onthouden',
-    noAccount: 'Nog geen account?',
-    hasAccount: 'Heb je al een account?',
-    emailRequired: 'Vul e-mail en wachtwoord in',
-    fillRequired: 'Vul alle verplichte velden in',
-    firstName: 'Voornaam',
-    lastName: 'Achternaam',
-    organization: 'Organisatie (optioneel)',
-    enterEmail: 'Vul je e-mail in om een resetlink te ontvangen',
-    checkEmail: 'Controleer je e-mail',
-    resetSent: 'We hebben een wachtwoord-resetlink naar je e-mail gestuurd',
-    sendReset: 'Resetlink versturen',
-    enter6Digit: 'Voer een 6-cijferige code in',
-    registrationFailed: 'Registratie mislukt',
-    backToLogin: 'Terug naar inloggen',
-  },
-  tabs: {
-    dashboard: 'Dashboard',
-    projects: 'Projecten',
-    academy: 'Academie',
-    profile: 'Profiel',
-  },
-  academy: {
-    courses: 'Cursussen',
-    myCourses: 'Mijn Cursussen',
-    continue: 'Verder leren',
-    startCourse: 'Cursus starten',
-    lessons: 'Lessen',
-    modules: 'Modules',
-    quiz: 'Quiz',
-    exam: 'Examen',
-    certificate: 'Certificaat',
-    progress: 'Voortgang',
-    lessonPlayer: 'Les',
-    nextLesson: 'Volgende les',
-    previousLesson: 'Vorige',
-    markComplete: 'Markeer als voltooid',
-    completed: 'Voltooid',
-    noCourses: 'Geen cursussen beschikbaar',
-    courseNotFound: 'Cursus niet gevonden',
-    complete: '% voltooid',
-  },
-  projects: {
-    myProjects: 'Mijn Projecten',
-    createProject: 'Project aanmaken',
-    projectDetails: 'Projectdetails',
-    status: 'Status',
-    methodology: 'Methodologie',
-    team: 'Team',
-    tasks: 'Taken',
-    noProjects: 'Nog geen projecten',
-    createOnWeb: 'Maak je eerste project aan via de webapp',
-    projectNotFound: 'Project niet gevonden',
-    description: 'Beschrijving',
-    timeline: 'Tijdlijn',
-  },
-  dashboard: {
-    welcome: 'Welkom',
-    recentProjects: 'Recente Projecten',
-    activeCourses: 'Actieve Cursussen',
-    quickActions: 'Snelle Acties',
-  },
-  profile: {
-    accountSettings: 'Accountinstellingen',
-    security: 'Beveiliging & 2FA',
-    notifications: 'Meldingen',
-    language: 'Taal',
-    appearance: 'Weergave',
-    currentPlan: 'Huidig Plan',
-    version: 'Versie',
-  },
-};
-
-i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, nl: { translation: nl } },
-  lng: Localization.getLocales()[0]?.languageCode || 'en',
-  fallbackLng: 'en',
-  interpolation: { escapeValue: false },
-});
+i18n
+  .use(languageDetector)
+  .use(initReactI18next)
+  .init({
+    compatibilityJSON: 'v3',
+    resources: {
+      nl: { translation: nl },
+      en: { translation: en },
+    },
+    fallbackLng: 'nl',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 
 export default i18n;

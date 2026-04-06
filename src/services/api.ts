@@ -1,43 +1,71 @@
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://projextpal.com/api/v1';
-
-// Callback for 401 auth state sync
-let onUnauthorized: (() => void) | null = null;
-export function setOnUnauthorized(callback: (() => void) | null) {
-  onUnauthorized = callback;
-}
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
+// API Configuration
+export const API_CONFIG = {
+  BASE_URL: __DEV__ 
+    ? Platform.OS === 'ios' 
+      ? 'http://localhost:8001'  // iOS Simulator
+      : 'http://192.168.76.240:8001'  // Android Emulator
+    : 'https://projextpal.com',  // Production ← CORRECT!
+  ENDPOINTS: {
+    // Auth
+    LOGIN: '/api/v1/auth/login/',
+    REGISTER: '/api/v1/auth/register/',
+    PROFILE: '/api/v1/auth/user/',
+    REFRESH: '/api/v1/auth/token/refresh/',
+    
+    // Project Management
+    PROGRAMS: '/api/v1/programs/',
+    PROJECTS: '/api/v1/projects/',
+    
+    // Projects sub-resources
+    BUDGET: '/api/v1/projects/budget/',
+    BUDGET_OVERVIEW: '/api/v1/projects/budget/overview/',
+    BUDGET_CATEGORIES: '/api/v1/projects/budget-categories/',
+    BUDGET_ITEMS: '/api/v1/projects/budget-items/',
+    
+    RISKS: '/api/v1/projects/risks/',
+    TIME_ENTRIES: '/api/v1/projects/time-entries/',
+    MILESTONES: '/api/v1/projects/milestones/',
+    TASKS: '/api/v1/projects/tasks/',
+    EXPENSES: '/api/v1/projects/expenses/',
+    
+    // Programs sub-resources
+    PROGRAM_BUDGET: '/api/v1/programs/budget/',
+    PROGRAM_RISKS: '/api/v1/programs/risks/',
+    
+    // Academy
+    COURSES: '/api/v1/academy/courses/',
+    ENROLLMENTS: '/api/v1/academy/enrollments/',
+    COURSE_MODULES: (courseId: string) => `/api/v1/academy/courses/${courseId}/modules/`,
+    LESSONS: (moduleId: number) => `/api/v1/academy/modules/${moduleId}/lessons/`,
+    
+    // AI
+    AI_CHAT: '/api/v1/bot/chats/',
+    
+    // Admin - Dashboard
+    ADMIN_DASHBOARD_STATS: '/api/v1/admin/dashboard/stats/',
+    ADMIN_MODULES: '/api/v1/admin/modules/',
+    
+    // Admin - Users
+    ADMIN_USERS: '/api/v1/admin/users/',
+    ADMIN_USERS_STATS: '/api/v1/admin/users/stats/',
+    ADMIN_USER_DETAIL: (id: number) => `/api/v1/admin/users/${id}/`,
+    
+    // Admin - Activity
+    ADMIN_ACTIVITY: '/api/v1/admin/activity/',
+    ADMIN_ACTIVITY_STATS: '/api/v1/admin/activity/stats/',
+    
+    // Admin - System
+    ADMIN_SYSTEM_INFO: '/api/v1/admin/system/info/',
+    ADMIN_SYSTEM_HEALTH: '/api/v1/admin/system/health/',
   },
-});
+  
+  TIMEOUT: 10000,
+};
 
-api.interceptors.request.use(async (config) => {
-  try {
-    const token = await SecureStore.getItemAsync('auth_token');
-    if (token) {
-      config.headers.Authorization = `Token ${token}`;
-    }
-  } catch {
-    // SecureStore may fail on first launch
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync('auth_token');
-      onUnauthorized?.();
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default api;
+export const APP_CONFIG = {
+  NAME: 'ProjeXtPal',
+  VERSION: '1.0.0',
+  BUNDLE_ID: 'com.inclufy.projextpal',
+};

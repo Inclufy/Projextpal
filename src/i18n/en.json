@@ -1,0 +1,505 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "add": "Add",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "navigation": {
+    "home": "Home",
+    "projects": "Projects",
+    "programs": "Programs",
+    "academy": "Academy",
+    "profile": "Profile",
+    "tasks": "Tasks",
+    "team": "Team",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "projects": {
+    "title": "Projects",
+    "total": "Total",
+    "active": "Active",
+    "completed": "Completed",
+    "all": "All",
+    "noProjects": "No projects found",
+    "addProject": "Add Project",
+    "noDescription": "No description",
+    "progress": "Progress",
+    "budget": "Budget",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "totalHours": "Total hours",
+    "overview": "Overview",
+    "hours": "Hours",
+    "activity": "Activity",
+    "description": "Description",
+    "projectInfo": "Project Information",
+    "recentActivity": "Recent Activity",
+    "notFound": "Project not found",
+    "status": {
+      "planning": "Planning",
+      "pending": "Pending",
+      "active": "Active",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "on_hold": "On Hold",
+      "cancelled": "Cancelled"
+    }
+  },
+  "projectDetail": {
+    "title": "Project Details",
+    "notFound": "Project not found",
+    "tabs": {
+      "overview": "Overview",
+      "hours": "Hours",
+      "activity": "Activity"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "on_hold": "On Hold",
+      "cancelled": "Cancelled",
+      "planning": "Planning",
+      "pending": "Pending"
+    },
+    "overview": {
+      "description": "Description",
+      "noDescription": "No description available",
+      "projectInfo": "Project Information",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "budget": "Budget",
+      "totalHours": "Total Hours"
+    },
+    "hours": {
+      "summary": {
+        "total": "Total",
+        "approved": "Approved",
+        "pending": "Pending"
+      },
+      "registered": "Registered Hours",
+      "noHours": "No hours registered yet",
+      "addHours": "Add Hours",
+      "status": {
+        "approved": "✓ Approved",
+        "rejected": "✗ Rejected",
+        "pending": "⏱ Pending",
+        "draft": "📝 Draft"
+      }
+    },
+    "activity": {
+      "recent": "Recent Activity",
+      "taskCompleted": "Task completed",
+      "newComment": "New comment",
+      "documentAdded": "Document added"
+    },
+    "modal": {
+      "addHours": "Add Hours",
+      "date": "Date",
+      "hours": "Number of hours",
+      "description": "Description",
+      "descriptionPlaceholder": "What did you do?",
+      "note": "Hours must be approved by a manager",
+      "submit": "Add"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete",
+      "edit": "Edit",
+      "submit": "Submit"
+    },
+    "alerts": {
+      "error": "Error",
+      "success": "Success",
+      "invalidHours": "Enter valid hours",
+      "descriptionRequired": "Enter a description",
+      "hoursAdded": "{{hours}} hours added!",
+      "couldNotAddHours": "Could not add hours. Please try again.",
+      "approveTitle": "Approve Hours",
+      "approveMessage": "Are you sure you want to approve these hours?",
+      "approved": "Hours have been approved!",
+      "couldNotApprove": "Could not approve hours.",
+      "rejectTitle": "Reject Hours",
+      "rejectPrompt": "Provide a reason for rejection:",
+      "rejected": "Hours have been rejected.",
+      "noReason": "No reason provided",
+      "couldNotReject": "Could not reject hours.",
+      "deleteTitle": "Delete Hours",
+      "deleteMessage": "Are you sure you want to delete these hours?",
+      "deleted": "Hours have been deleted.",
+      "couldNotDelete": "Could not delete hours.",
+      "cancel": "Cancel"
+    }
+  },
+  "programs": {
+    "title": "Programs",
+    "noPrograms": "No programs found",
+    "noProgramsFound": "No programs found",
+    "newProgram": "+ New Program",
+    "averageProgress": "Avg. Progress",
+    "noDescription": "No description",
+    "projectsCount": "projects",
+    "addNew": "New Program",
+    "stats": {
+      "programs": "Programs",
+      "projects": "Projects",
+      "avgProgress": "Avg. Progress"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "on_hold": "On Hold",
+      "planning": "Planning"
+    },
+    "modal": {
+      "title": "New Program",
+      "name": "Program Name",
+      "namePlaceholder": "E.g., Digital Transformation",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the program...",
+      "status": "Status",
+      "submit": "Create Program"
+    },
+    "validation": {
+      "nameRequired": "Enter a program name"
+    },
+    "errors": {
+      "loadFailed": "Could not load programs",
+      "createFailed": "Could not create program"
+    },
+    "success": {
+      "created": "Program created!"
+    },
+    "detail": {
+      "title": "Program Details",
+      "notFound": "Program not found",
+      "tabs": {
+        "overview": "Overview",
+        "projects": "Projects",
+        "hours": "Hours"
+      },
+      "stats": {
+        "projects": "Projects",
+        "progress": "Progress",
+        "hours": "Hours"
+      },
+      "description": "Description",
+      "noDescription": "No description available",
+      "information": "Information",
+      "statusLabel": "Status",
+      "startDate": "Start Date",
+      "budget": "Budget",
+      "actions": "Actions",
+      "addProject": "Add Project",
+      "logHours": "Log Hours",
+      "projectsList": "Projects",
+      "noProjects": "No projects yet"
+    }
+  },
+  "timeTracking": {
+    "title": "Time Tracking",
+    "addHours": "Add Hours",
+    "numberOfHours": "Number of hours",
+    "description": "Description",
+    "whatDidYouDo": "What did you do?",
+    "whatAreYouDoing": "What are you doing?",
+    "date": "Date",
+    "approve": "Approve",
+    "reject": "Reject",
+    "totalHours": "Total",
+    "approvedHours": "Approved",
+    "pendingHours": "Pending",
+    "registeredHours": "Registered Hours",
+    "noHoursRegistered": "No hours registered yet",
+    "noHoursThisWeek": "No hours registered this week",
+    "addHoursButton": "+ Add hours",
+    "approveHours": "Approve Hours",
+    "rejectHours": "Reject Hours",
+    "deleteHours": "Delete Hours",
+    "confirmApprove": "Are you sure you want to approve these hours?",
+    "confirmReject": "Are you sure you want to reject these hours?",
+    "confirmDelete": "Are you sure you want to delete these hours?",
+    "rejectReason": "Give a reason for rejection:",
+    "noReasonProvided": "No reason provided",
+    "hoursMustBeApproved": "Hours must be approved by a manager",
+    "hoursAdded": "{{hours}} hours added!",
+    "hoursApproved": "Hours approved!",
+    "hoursRejected": "Hours rejected.",
+    "hoursDeleted": "Hours deleted.",
+    "hoursRegistered": "{{hours}} registered!",
+    "errorAddingHours": "Could not add hours. Try again.",
+    "errorApprovingHours": "Could not approve hours.",
+    "errorRejectingHours": "Could not reject hours.",
+    "errorDeletingHours": "Could not delete hours.",
+    "errorSaving": "Could not save time. Try again.",
+    "enterValidHours": "Enter valid hours",
+    "enterDescription": "Enter a description",
+    "statusApproved": "✓ Approved",
+    "statusRejected": "✗ Rejected",
+    "statusPending": "⏱ Pending",
+    "timerActive": "Timer Active",
+    "startTimer": "Start Timer",
+    "stopAndSave": "Stop & Save",
+    "start": "Start",
+    "selectProject": "Select project...",
+    "selectProjectTitle": "Select Project",
+    "selectProjectMessage": "Please select a project first to track time.",
+    "logTime": "Log Time",
+    "myTime": "My Time",
+    "teamTime": "Team Time",
+    "approvals": "Approvals",
+    "reports": "Reports",
+    "today": "Today",
+    "worked": "Worked",
+    "tasks": "Tasks",
+    "projects": "Projects",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "seeAll": "See all",
+    "tooShort": "Too Short",
+    "tooShortMessage": "The time was too short to register.",
+    "descriptionNeeded": "Description Needed",
+    "descriptionNeededMessage": "Enter a description for the worked time.",
+    "billableHours": "Billable Hours",
+    "nonBillableHours": "Non-Billable Hours"
+  },
+  "ai": {
+    "assistant": "AI Assistant",
+    "welcome": "Hello! 👋 I'm your AI assistant for project management. I can help you with:\n\n📁 Managing projects\n⏱️ Time tracking\n⚠️ Risk analysis\n💰 Budget monitoring\n📚 Finding courses\n\nHow can I help you today?",
+    "quickActions": "Quick actions",
+    "generateReport": "Generate report",
+    "analyzeData": "Analyze data",
+    "suggestions": "Suggestions",
+    "planTask": "Plan task",
+    "askQuestion": "Ask a question...",
+    "showMyProjects": "Show my projects",
+    "thisWeeksHours": "This week's hours",
+    "openRisks": "Open risks"
+  },
+  "admin": {
+    "portal": "Admin Portal",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "activity": "Activity",
+    "system": "System"
+  },
+  "addProject": {
+    "title": "Add Project",
+    "editTitle": "Edit Project",
+    "form": {
+      "name": "Project Name",
+      "namePlaceholder": "Enter project name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter project description",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "budget": "Budget",
+      "budgetPlaceholder": "Enter budget amount",
+      "status": "Status",
+      "methodology": "Methodology",
+      "manager": "Project Manager",
+      "team": "Team Members"
+    },
+    "methodologies": {
+      "agile": "Agile",
+      "scrum": "Scrum",
+      "waterfall": "Waterfall",
+      "prince2": "PRINCE2",
+      "hybrid": "Hybrid"
+    },
+    "validation": {
+      "nameRequired": "Project name is required",
+      "descriptionRequired": "Description is required",
+      "invalidBudget": "Enter a valid budget amount",
+      "invalidDates": "End date must be after start date"
+    },
+    "success": {
+      "created": "Project created successfully!",
+      "updated": "Project updated successfully!"
+    },
+    "error": {
+      "create": "Could not create project. Please try again.",
+      "update": "Could not update project. Please try again."
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "myTasks": "My Tasks",
+    "allTasks": "All Tasks",
+    "addTask": "Add Task",
+    "noTasks": "No tasks found",
+    "status": {
+      "todo": "To Do",
+      "in_progress": "In Progress",
+      "review": "In Review",
+      "done": "Done",
+      "blocked": "Blocked"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "filters": {
+      "all": "All",
+      "myTasks": "My Tasks",
+      "overdue": "Overdue",
+      "today": "Due Today",
+      "thisWeek": "This Week"
+    }
+  },
+  "team": {
+    "title": "Team",
+    "members": "Team Members",
+    "addMember": "Add Member",
+    "noMembers": "No team members found",
+    "roles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "member": "Member",
+      "viewer": "Viewer"
+    },
+    "inviteUser": "Invite User",
+    "removeUser": "Remove User",
+    "changeRole": "Change Role"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "account": "Account",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "privacy": "Privacy",
+    "about": "About",
+    "languages": {
+      "en": "English",
+      "nl": "Nederlands"
+    },
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "department": "Department",
+    "location": "Location",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember Me",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "welcomeBack": "Welcome Back",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "passwordMismatch": "Passwords do not match",
+      "weakPassword": "Password is too weak",
+      "emailInUse": "Email is already in use",
+      "genericError": "An error occurred. Please try again."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}",
+    "overview": "Overview",
+    "activeProjects": "Active Projects",
+    "completedTasks": "Completed Tasks",
+    "teamMembers": "Team Members",
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "stats": {
+      "projects": "Projects",
+      "tasks": "Tasks",
+      "hours": "Hours",
+      "team": "Team"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "projectReports": "Project Reports",
+    "timeReports": "Time Reports",
+    "teamReports": "Team Reports",
+    "export": "Export",
+    "generateReport": "Generate Report",
+    "dateRange": "Date Range",
+    "from": "From",
+    "to": "To"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All as Read",
+    "noNotifications": "No notifications",
+    "types": {
+      "taskAssigned": "Task assigned to you",
+      "projectUpdate": "Project update",
+      "hoursApproved": "Hours approved",
+      "hoursRejected": "Hours rejected",
+      "deadline": "Deadline approaching",
+      "mention": "You were mentioned"
+    }
+  },
+  "errors": {
+    "networkError": "Network error. Please check your connection.",
+    "serverError": "Server error. Please try again later.",
+    "notFound": "Resource not found",
+    "unauthorized": "You are not authorized to perform this action",
+    "validationError": "Please check your input and try again",
+    "genericError": "An error occurred. Please try again."
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Must be no more than {{max}} characters",
+    "number": "Must be a number",
+    "positiveNumber": "Must be a positive number",
+    "date": "Please enter a valid date",
+    "url": "Please enter a valid URL"
+  }
+}
