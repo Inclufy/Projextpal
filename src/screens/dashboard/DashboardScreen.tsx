@@ -78,12 +78,12 @@ export const DashboardScreen = ({ navigation }: any) => {
     { name: 'Budget', icon: 'wallet', screen: 'Budget', colors: ['#10B981', '#3B82F6'] },
     { name: isNL ? "Risico's" : 'Risks', icon: 'shield', screen: 'Risks', colors: ['#EC4899', '#8B5CF6'] },
     { name: 'Academy', icon: 'school', screen: 'Academy', colors: ['#F59E0B', '#EC4899'] },
-    { name: 'Team', icon: 'people', screen: 'Team', colors: ['#6366F1', '#8B5CF6'], soon: true },
-    { name: 'Docs', icon: 'document-text', screen: 'Documents', colors: ['#14B8A6', '#06B6D4'], soon: true },
-    { name: 'Analytics', icon: 'analytics', screen: 'Analytics', colors: ['#F97316', '#FB923C'], soon: true },
-    { name: isNL ? 'Kalender' : 'Calendar', icon: 'calendar', screen: 'Calendar', colors: ['#A855F7', '#C084FC'], soon: true },
-    { name: isNL ? 'Taken' : 'Tasks', icon: 'checkmark-circle', screen: 'Tasks', colors: ['#2563EB', '#3B82F6'], soon: true },
-    { name: isNL ? 'Instellingen' : 'Settings', icon: 'settings', screen: 'Settings', colors: ['#6B7280', '#9CA3AF'], soon: true },
+    { name: 'Team', icon: 'people', screen: 'Team', colors: ['#6366F1', '#8B5CF6'] },
+    { name: 'Docs', icon: 'document-text', screen: 'Documents', colors: ['#14B8A6', '#06B6D4'] },
+    { name: 'Analytics', icon: 'analytics', screen: 'Analytics', colors: ['#F97316', '#FB923C'] },
+    { name: isNL ? 'Kalender' : 'Calendar', icon: 'calendar', screen: 'Calendar', colors: ['#A855F7', '#C084FC'] },
+    { name: isNL ? 'Taken' : 'Tasks', icon: 'checkmark-circle', screen: 'Tasks', colors: ['#2563EB', '#3B82F6'] },
+    { name: isNL ? 'Instellingen' : 'Settings', icon: 'settings', screen: 'Settings', colors: ['#6B7280', '#9CA3AF'] },
   ];
 
   useEffect(() => {

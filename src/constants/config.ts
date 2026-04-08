@@ -54,6 +54,16 @@ export const API_CONFIG = {
     COURSE_MODULES: (courseId: string) => `/api/v1/academy/courses/${courseId}/modules/`,
     LESSONS: (moduleId: number) => `/api/v1/academy/modules/${moduleId}/lessons/`,
     
+    // Teams
+    TEAMS: '/api/v1/teams/',
+    TEAM_MEMBERS: '/api/v1/teams/members/',
+
+    // Documents
+    DOCUMENTS: '/api/v1/documents/',
+
+    // Analytics
+    ANALYTICS: '/api/v1/analytics/',
+
     // AI
     AI_CHAT: '/api/v1/bot/chats/',
     

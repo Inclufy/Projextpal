@@ -45,6 +45,13 @@ import { NewProjectScreen, AddProjectScreen } from '../screens/projects/NewProje
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
 import PricingScreen from '../screens/app/PricingScreen';
 
+// New feature screens
+import { TasksScreen } from '../screens/tasks/TasksScreen';
+import { TeamScreen } from '../screens/team/TeamScreen';
+import { DocumentsScreen } from '../screens/documents/DocumentsScreen';
+import { AnalyticsScreen } from '../screens/analytics/AnalyticsScreen';
+import { CalendarScreen } from '../screens/calendar/CalendarScreen';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -130,6 +137,13 @@ const MainStackNavigator = () => {
       
       {/* Settings */}
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ animation: 'slide_from_right' }} />
+
+      {/* New Feature Screens */}
+      <Stack.Screen name="Tasks" component={TasksScreen} />
+      <Stack.Screen name="Team" component={TeamScreen} />
+      <Stack.Screen name="Documents" component={DocumentsScreen} />
+      <Stack.Screen name="Analytics" component={AnalyticsScreen} />
+      <Stack.Screen name="Calendar" component={CalendarScreen} />
       
       {/* AI Chat */}
       <Stack.Screen name="AIChat" component={AIChatScreen} options={{ animation: 'slide_from_bottom', presentation: 'modal' }} />
