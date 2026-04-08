@@ -45,6 +45,9 @@ import { NewProjectScreen, AddProjectScreen } from '../screens/projects/NewProje
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
 import PricingScreen from '../screens/app/PricingScreen';
 
+// Academy/Courses screens
+import { LessonDetailScreen } from '../screens/lessons/LessonDetailScreen';
+
 // New feature screens
 import { TasksScreen } from '../screens/tasks/TasksScreen';
 import { TeamScreen } from '../screens/team/TeamScreen';
@@ -130,6 +133,7 @@ const MainStackNavigator = () => {
       
       {/* Course Screens */}
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="LessonDetail" component={LessonDetailScreen} options={{ animation: 'slide_from_bottom' }} />
       
       {/* Time Tracking Screens */}
       <Stack.Screen name="TimeTracking" component={TimeTrackingScreen} />
