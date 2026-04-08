@@ -33,7 +33,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>25</string>
+    <string>28</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>LSMinimumSystemVersion</key>
@@ -50,7 +50,7 @@
     <key>NSCameraUsageDescription</key>
     <string>ProjeXtPal heeft toegang tot je camera nodig voor profiel foto's</string>
     <key>NSFaceIDUsageDescription</key>
-    <string>ProjeXtPal uses Face ID for secure and quick login</string>
+    <string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSPhotoLibraryUsageDescription</key>

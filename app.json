@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inclufy.projextpal",
-      "buildNumber": "27",
+      "buildNumber": "28",
       "infoPlist": {
         "NSCameraUsageDescription": "ProjeXtPal heeft toegang tot je camera nodig voor profiel foto's",
         "NSPhotoLibraryUsageDescription": "ProjeXtPal heeft toegang tot je foto's nodig voor documenten",
@@ -49,7 +49,6 @@
           }
         }
       ],
-      "@sentry/react-native",
       "expo-secure-store",
       "expo-web-browser"
     ]
