@@ -26,7 +26,7 @@ variables:
   STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
   OPENAI_API_KEY: sk-ci-placeholder
 
-typecheck:mobile:
+build:mobile:
   stage: test
   image: node:20
   cache:
@@ -35,7 +35,7 @@ typecheck:mobile:
       - node_modules/
   script:
     - npm ci
-    - npx tsc --noEmit
+    - npx expo export --platform ios
   only:
     - master
     - main
