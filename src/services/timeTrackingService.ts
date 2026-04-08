@@ -53,7 +53,7 @@ class TimeTrackingService {
    */
   async getTimeEntries(): Promise<TimeEntry[]> {
     try {
-      const response = await apiService.get(API_CONFIG.ENDPOINTS.TIME_ENTRIES);
+      const response = await apiService.get(API_CONFIG.ENDPOINTS.TIME_ENTRIES) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch time entries:', error);
@@ -67,7 +67,7 @@ class TimeTrackingService {
   async getTimeEntriesByProject(projectId: string): Promise<TimeEntry[]> {
     try {
       // Backend expects 'project' as query param name
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?project=${projectId}`);
+      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?project=${projectId}`) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch project time entries:', error);
@@ -81,7 +81,7 @@ class TimeTrackingService {
   async getTimeEntriesByProgram(programId: string): Promise<TimeEntry[]> {
     try {
       // Backend expects 'program' as query param name
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?program=${programId}`);
+      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?program=${programId}`) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch program time entries:', error);
@@ -95,7 +95,7 @@ class TimeTrackingService {
   async getTimeEntry(id: string): Promise<TimeEntry> {
     try {
       const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}${id}/`);
-      return response;
+      return response as TimeEntry;
     } catch (error) {
       console.error('Failed to fetch time entry:', error);
       throw error;
@@ -122,9 +122,9 @@ class TimeTrackingService {
       console.log('Creating time entry with payload:', JSON.stringify(payload));
       
       const response = await apiService.post(API_CONFIG.ENDPOINTS.TIME_ENTRIES, payload);
-      
+
       console.log('Time entry created successfully:', response);
-      return response;
+      return response as TimeEntry;
     } catch (error: any) {
       console.error('Failed to create time entry:', error);
       console.error('Error message:', error?.message);
@@ -140,7 +140,7 @@ class TimeTrackingService {
   async updateTimeEntry(id: string, data: UpdateTimeEntryData): Promise<TimeEntry> {
     try {
       const response = await apiService.patch(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}${id}/`, data);
-      return response;
+      return response as TimeEntry;
     } catch (error) {
       console.error('Failed to update time entry:', error);
       throw error;
@@ -167,7 +167,7 @@ class TimeTrackingService {
   async submitTimeEntry(id: string): Promise<TimeEntry> {
     try {
       const response = await apiService.post(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}${id}/submit/`);
-      return response;
+      return response as TimeEntry;
     } catch (error) {
       // Fallback to PATCH if dedicated endpoint doesn't exist
       console.warn('Submit endpoint not found, using PATCH fallback');
@@ -181,7 +181,7 @@ class TimeTrackingService {
   async approveTimeEntry(id: string): Promise<TimeEntry> {
     try {
       const response = await apiService.post(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}${id}/approve/`);
-      return response;
+      return response as TimeEntry;
     } catch (error) {
       // Fallback to PATCH if dedicated endpoint doesn't exist
       console.warn('Approve endpoint not found, using PATCH fallback');
@@ -195,7 +195,7 @@ class TimeTrackingService {
   async rejectTimeEntry(id: string, reason: string): Promise<TimeEntry> {
     try {
       const response = await apiService.post(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}${id}/reject/`, { reason });
-      return response;
+      return response as TimeEntry;
     } catch (error) {
       // Fallback to PATCH if dedicated endpoint doesn't exist
       console.warn('Reject endpoint not found, using PATCH fallback');
@@ -213,7 +213,7 @@ class TimeTrackingService {
       if (projectId) {
         url += `&project=${projectId}`;  // ✅ CHANGED from project_id to project
       }
-      const response = await apiService.get(url);
+      const response = await apiService.get(url) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch pending approvals:', error);
@@ -256,7 +256,7 @@ class TimeTrackingService {
     try {
       // Backend expects 'project' as query param name
       const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}summary/?project=${projectId}`);
-      return response;
+      return response as TimeEntrySummary;
     } catch (error) {
       // Calculate locally if endpoint doesn't exist
       console.warn('Summary endpoint not found, calculating locally');
@@ -270,7 +270,7 @@ class TimeTrackingService {
    */
   async getTimeEntriesByDateRange(startDate: string, endDate: string): Promise<TimeEntry[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?start_date=${startDate}&end_date=${endDate}`);
+      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.TIME_ENTRIES}?start_date=${startDate}&end_date=${endDate}`) as any;
       return response.results || response || [];
     } catch (error: any) {
       console.error('Failed to fetch time entries by date range:', error);

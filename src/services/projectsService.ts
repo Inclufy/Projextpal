@@ -121,7 +121,7 @@ class ProjectsService {
         status: data.status || 'active',
         progress: 0,
       });
-      return response;
+      return response as Project;
     } catch (error) {
       console.error('Failed to create project:', error);
       throw error;
@@ -134,7 +134,7 @@ class ProjectsService {
   async updateProject(id: string, data: UpdateProjectData): Promise<Project> {
     try {
       const response = await apiService.patch(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/`, data);
-      return response;
+      return response as Project;
     } catch (error) {
       console.error('Failed to update project:', error);
       throw error;
@@ -197,7 +197,7 @@ class ProjectsService {
    */
   async getProjectTeam(projectId: string): Promise<any[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}${projectId}/team/`);
+      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}${projectId}/team/`) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch project team:', error);
@@ -246,7 +246,7 @@ class ProjectsService {
   }> {
     try {
       const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/stats/`);
-      return response;
+      return response as any;
     } catch (error) {
       console.error('Failed to fetch project stats:', error);
       // Return empty stats if endpoint fails
@@ -275,7 +275,7 @@ class ProjectsService {
   }> {
     try {
       const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/dashboard/`);
-      return response;
+      return response as any;
     } catch (error) {
       // Build dashboard data from project only
       const project = await this.getProject(id);

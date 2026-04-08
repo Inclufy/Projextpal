@@ -58,7 +58,7 @@ class RisksService {
    */
   async getRisks(): Promise<Risk[]> {
     try {
-      const response = await apiService.get('/risks/');
+      const response = await apiService.get('/risks/') as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch risks:', error);
@@ -71,7 +71,7 @@ class RisksService {
    */
   async getRisksByProject(projectId: string): Promise<Risk[]> {
     try {
-      const response = await apiService.get(`/risks/?project_id=${projectId}`);
+      const response = await apiService.get(`/risks/?project_id=${projectId}`) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch project risks:', error);
@@ -84,7 +84,7 @@ class RisksService {
    */
   async getRisksByProgram(programId: string): Promise<Risk[]> {
     try {
-      const response = await apiService.get(`/risks/?program_id=${programId}`);
+      const response = await apiService.get(`/risks/?program_id=${programId}`) as any;
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch program risks:', error);
@@ -98,7 +98,7 @@ class RisksService {
   async getRisk(id: string): Promise<Risk> {
     try {
       const response = await apiService.get(`/risks/${id}/`);
-      return response;
+      return response as Risk;
     } catch (error) {
       console.error('Failed to fetch risk:', error);
       throw error;
@@ -119,7 +119,7 @@ class RisksService {
         status: data.status || 'identified',
         identified_date: data.identified_date || new Date().toISOString().split('T')[0],
       });
-      return response;
+      return response as Risk;
     } catch (error) {
       console.error('Failed to create risk:', error);
       throw error;
@@ -141,7 +141,7 @@ class RisksService {
       }
       
       const response = await apiService.patch(`/risks/${id}/`, updateData);
-      return response;
+      return response as Risk;
     } catch (error) {
       console.error('Failed to update risk:', error);
       throw error;
@@ -206,7 +206,7 @@ class RisksService {
   }> {
     try {
       const response = await apiService.get(`/risks/stats/?project_id=${projectId}`);
-      return response;
+      return response as { total: number; by_status: Record<string, number>; by_level: Record<string, number>; avg_score: number };
     } catch (error) {
       // Calculate locally if endpoint doesn't exist
       console.warn('Stats endpoint not found, calculating locally');
@@ -220,7 +220,7 @@ class RisksService {
    */
   async getHighPriorityRisks(): Promise<Risk[]> {
     try {
-      const response = await apiService.get('/risks/?min_score=11');
+      const response = await apiService.get('/risks/?min_score=11') as any;
       return response.results || response || [];
     } catch (error) {
       // Filter locally if endpoint doesn't support filtering

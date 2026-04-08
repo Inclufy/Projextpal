@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiService } from './apiService';
 import { API_CONFIG } from '../constants/config';
 
 interface UserFeatures {
@@ -57,8 +58,8 @@ class SubscriptionService {
 
   async getUserFeatures() {
   try {
-    const response = await apiClient.get('/users/features/');
-    return response.data;
+    const response = await apiService.get('/users/features/') as any;
+    return response.data || response;
   } catch (error) {
     console.warn('User features not available, using defaults');
     // Return default values when endpoint doesn't exist
