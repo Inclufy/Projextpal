@@ -36,7 +36,8 @@ def health_check(request):
         health_status["status"] = "unhealthy"
         logger.error("Health check: database unhealthy — %s", e)
 
-    # Check cache connectivity
+    # Check cache connectivity — degraded, not fatal. Redis being down
+    # shouldn't return 503 because the app can still serve requests without it.
     try:
         start_time = time.time()
         cache.set("health_check", "test", 10)
@@ -54,9 +55,8 @@ def health_check(request):
                 "error": "Cache read/write mismatch",
             }
     except Exception as e:
-        health_status["checks"]["cache"] = {"status": "unhealthy", "error": str(e)}
-        health_status["status"] = "unhealthy"
-        logger.error("Health check: cache unhealthy — %s", e)
+        health_status["checks"]["cache"] = {"status": "degraded", "error": str(e)}
+        logger.warning("Health check: cache degraded — %s", e)
 
     # Check Channels/Redis layer
     try:
