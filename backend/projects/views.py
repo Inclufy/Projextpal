@@ -170,6 +170,9 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         # Apply methodology template if set
         if project.methodology:
             apply_methodology_template(project)
+        # Sync Program M2M so program.projects.all() stays in sync with project.program FK
+        if project.program_id:
+            project.program.projects.add(project)
 
     def perform_update(self, serializer):
         user = self.request.user
@@ -177,7 +180,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             raise serializers.ValidationError(
                 {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
             )
-        serializer.save(company=user.company)
+        project = serializer.save(company=user.company)
+        # Keep Program M2M aligned after FK changes
+        if project.program_id:
+            project.program.projects.add(project)
 
     def destroy(self, request, *args, **kwargs):
         """Delete a project with proper handling of related records."""

@@ -85,17 +85,26 @@ const Login = () => {
     orDivider: isNL ? 'of' : 'or',
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Read values from the form DOM, not React state. Chrome's password autofill
+    // can populate inputs without firing onChange, so React state may be stale.
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const emailValue = (fd.get('email') as string | null)?.trim() || email;
+    const passwordValue = (fd.get('password') as string | null) || password;
+    if (emailValue !== email) setEmail(emailValue);
+    if (passwordValue !== password) setPassword(passwordValue);
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login-2fa/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          password,
+          email: emailValue,
+          password: passwordValue,
           totp_code: requires2FA ? totpCode : undefined
         }),
       });
@@ -272,7 +281,9 @@ const Login = () => {
                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-400" />
                     <Input
                       id="email"
+                      name="email"
                       type="email"
+                      autoComplete="username"
                       placeholder={txt.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -301,7 +312,9 @@ const Login = () => {
                     <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-400" />
                     <Input
                       id="password"
+                      name="password"
                       type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       placeholder={txt.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}

@@ -52,9 +52,15 @@ class ProgramViewSet(viewsets.ModelViewSet):
         return ProgramDetailSerializer
 
     def perform_create(self, serializer):
+        user = self.request.user
+        if getattr(user, "company", None) is None:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({
+                "company": "Your account is not linked to a company. Contact your administrator."
+            })
         serializer.save(
-            company=self.request.user.company,
-            created_by=self.request.user
+            company=user.company,
+            created_by=user
         )
 
     @action(detail=True, methods=['get'])

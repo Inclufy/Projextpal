@@ -29,23 +29,36 @@ Usage:
     pytest -k "lss" -v
 """
 
+import os
+# Ensure Django settings are configured before any app imports. pytest-django
+# normally handles this, but the earlier version of this conftest imported
+# models at module level which crashed with AppRegistryNotReady.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+
+import django
+try:
+    django.setup()
+except Exception:
+    # Already set up, or pytest-django will handle it
+    pass
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from datetime import datetime, timedelta
 
-# Import models - with error handling
+# Import models - widened except so AppRegistryNotReady also degrades gracefully.
 try:
     from projects.models import Project
     PROJECTS_AVAILABLE = True
-except ImportError:
+except Exception:
     PROJECTS_AVAILABLE = False
     Project = None
 
 try:
     from accounts.models import Company
     ACCOUNTS_AVAILABLE = True
-except ImportError:
+except Exception:
     ACCOUNTS_AVAILABLE = False
     Company = None
 

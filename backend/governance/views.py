@@ -32,10 +32,12 @@ class PortfolioViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         company = getattr(user, 'company', None)
+        # Always stamp the owner from the authenticated request so portfolios
+        # aren't orphaned. Company is attached when available.
         if company:
-            serializer.save(company=company)
+            serializer.save(company=company, owner=user)
         else:
-            serializer.save()
+            serializer.save(owner=user)
 
     def perform_update(self, serializer):
         user = self.request.user

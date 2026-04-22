@@ -173,9 +173,9 @@ class PublicAdminRegisterSerializer(serializers.Serializer):
         accept_terms = validated_data.pop('accept_terms', False)
         subscribe_newsletter = validated_data.pop('subscribe_newsletter', False)
         
-        # Create company
+        # Create company — preserve caller-provided casing verbatim
         company = Company.objects.create(
-            name=validated_data["company_name"],
+            name=validated_data["company_name"].strip(),
             description=validated_data.get("company_description", ""),
         )
         

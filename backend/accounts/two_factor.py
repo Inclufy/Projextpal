@@ -121,7 +121,6 @@ class LoginWith2FAView(APIView):
     """Login with optional 2FA support"""
     authentication_classes = []
     permission_classes = []
-    authentication_classes = []
 
     def post(self, request):
         from django.contrib.auth import get_user_model
@@ -139,10 +138,10 @@ class LoginWith2FAView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Authenticate user directly by email (bypass AUTHENTICATION_BACKENDS)
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        # Authenticate user directly by email. Use .filter().first() so a duplicate
+        # email row surfaces as 401, not a 500 from MultipleObjectsReturned.
+        user = User.objects.filter(email=email).order_by('id').first()
+        if user is None:
             return Response(
                 {'error': 'Invalid email or password'},
                 status=status.HTTP_401_UNAUTHORIZED
