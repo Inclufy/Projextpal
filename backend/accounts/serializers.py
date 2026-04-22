@@ -270,6 +270,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             "password",
             "image",
             "first_name",
+            "last_name",
             "role",
             "send_invite",
         ]
@@ -284,11 +285,14 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         # Disallow creating users with superadmin role
         if value == "superadmin":
             raise serializers.ValidationError("Invalid role selection.")
-        # Ensure role is one of allowed choices (excluding superadmin)
+        # Accept "contributor" (correctly spelled) as an alias for the legacy
+        # stored value "contibuter" until a migration renames the choice.
+        if value == "contributor":
+            value = "contibuter"
         allowed_roles = {"admin", "pm", "program_manager", "contibuter", "reviewer", "guest"}
         if value not in allowed_roles:
             raise serializers.ValidationError(
-                "Role must be one of admin, program_manager, pm, contibuter, reviewer or guest."
+                "Role must be one of admin, program_manager, pm, contributor, reviewer or guest."
             )
         return value
     
@@ -316,6 +320,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             email=validated_data["email"],
             image=validated_data.get("image", None),
             first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", ""),
             is_active=False,
             role=validated_data.get("role", "pm"),
             company=admin_user.company,

@@ -1,12 +1,29 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 // API Configuration
+// Dev base URL can be overridden via:
+//   - EXPO_PUBLIC_API_URL env var
+//   - expo-constants expoConfig.extra.apiUrl
+//   - expoConfig.hostUri (Metro bundler IP) → falls back to the machine running Metro
+// Production always points at projextpal.com.
+const devHostUri = (Constants.expoConfig as any)?.hostUri as string | undefined;
+const devLanIp = devHostUri ? devHostUri.split(':')[0] : undefined;
+const ENV_API_URL =
+  (process.env.EXPO_PUBLIC_API_URL as string | undefined) ||
+  ((Constants.expoConfig as any)?.extra?.apiUrl as string | undefined);
+
+const iosDev = ENV_API_URL || 'http://localhost:8001';
+const androidDev =
+  ENV_API_URL ||
+  (devLanIp ? `http://${devLanIp}:8001` : 'http://10.0.2.2:8001');
+
 export const API_CONFIG = {
-  BASE_URL: __DEV__ 
-    ? Platform.OS === 'ios' 
-      ? 'http://localhost:8001'  // iOS Simulator
-      : 'http://192.168.76.240:8001'  // Android Emulator
-    : 'https://projextpal.com',  // Production ← CORRECT!
+  BASE_URL: __DEV__
+    ? Platform.OS === 'ios'
+      ? iosDev
+      : androidDev
+    : 'https://projextpal.com',
   ENDPOINTS: {
     // Auth
     LOGIN: '/api/v1/auth/login/',
