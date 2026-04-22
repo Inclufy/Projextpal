@@ -235,17 +235,23 @@ class Task(models.Model):
         return f"{self.title} - {self.milestone.name}"
 
     def compute_progress_from_subtasks(self):
-        """Calculate progress based on subtask completion"""
+        """Calculate progress from subtasks, or fall back to task status.
+
+        Project-level progress aggregates this per task. When a task has no
+        subtasks we must not return 0 just because self.progress is unset —
+        infer from status so a ``done`` task contributes 100% and an
+        ``in_progress`` task contributes 50%.
+        """
         subtasks = self.subtasks.all()
-        if not subtasks.exists():
-            return self.progress  # Return current progress if no subtasks
-
-        completed_count = subtasks.filter(completed=True).count()
-        total_count = subtasks.count()
-
-        if total_count > 0:
+        if subtasks.exists():
+            completed_count = subtasks.filter(completed=True).count()
+            total_count = subtasks.count()
             return int(round((completed_count / total_count) * 100))
-        return 0
+
+        if self.progress:
+            return int(self.progress)
+        status_to_pct = {"done": 100, "in_progress": 50, "blocked": 0, "todo": 0}
+        return status_to_pct.get(self.status, 0)
 
     def update_progress_from_subtasks(self, save=True):
         """Update task progress based on subtask completion"""
