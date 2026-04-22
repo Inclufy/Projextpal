@@ -313,37 +313,45 @@ class ForgotPasswordView(APIView):
         
         try:
             user = User.objects.get(email=email)
-            
-            # Create reset token
-            reset_token = PasswordResetToken.objects.create(user=user)
-            
-            # Generate URLs
-            web_reset_url = f"{settings.FRONTEND_URL}/reset-password/{reset_token.token}"
-            mobile_reset_url = f"{settings.MOBILE_DEEP_LINK}reset-password?token={reset_token.token}"
-            
-            # Render HTML template
-            html_content = render_to_string('emails/password_reset.html', {
-                'user': user,
-                'reset_url': web_reset_url,
-                'mobile_url': mobile_reset_url,
-            })
-            
-            # Plain text fallback
-            plain_message = strip_tags(html_content)
-            
-            # Create and send email
-            email_message = EmailMultiAlternatives(
-                subject='Wachtwoord Reset - ProjeXtPal',
-                body=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email],
-            )
-            email_message.attach_alternative(html_content, "text/html")
-            email_message.send(fail_silently=False)
-            
         except User.DoesNotExist:
-            pass  # Don't reveal if email exists
-        
+            # Don't reveal whether the email exists. Still return 200 below.
+            user = None
+
+        if user is not None:
+            # Email delivery / token creation / template rendering can fail for
+            # reasons that shouldn't crash the request (misconfigured SMTP,
+            # missing template, missing optional setting, etc.). Log and
+            # continue — the response body is intentionally the same regardless
+            # so attackers can't probe for valid emails.
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                reset_token = PasswordResetToken.objects.create(user=user)
+                web_reset_url = f"{settings.FRONTEND_URL}/reset-password/{reset_token.token}"
+                mobile_deep_link = getattr(settings, "MOBILE_DEEP_LINK", "projextpal://")
+                mobile_reset_url = f"{mobile_deep_link}reset-password?token={reset_token.token}"
+
+                html_content = render_to_string('emails/password_reset.html', {
+                    'user': user,
+                    'reset_url': web_reset_url,
+                    'mobile_url': mobile_reset_url,
+                })
+                plain_message = strip_tags(html_content)
+
+                email_message = EmailMultiAlternatives(
+                    subject='Wachtwoord Reset - ProjeXtPal',
+                    body=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email],
+                )
+                email_message.attach_alternative(html_content, "text/html")
+                email_message.send(fail_silently=False)
+            except Exception as exc:
+                logger.exception(
+                    "Forgot-password flow failed for user id=%s: %s",
+                    getattr(user, "id", None), exc
+                )
+
         return Response(
             {"message": "Als dit email adres bestaat, ontvang je een reset link."},
             status=status.HTTP_200_OK
@@ -1562,34 +1570,42 @@ class ResendVerificationEmailView(APIView):
         
         try:
             user = CustomUser.objects.get(email=email)
-            
-            # Check if user is already active
-            if user.is_active:
-                return Response(
-                    {"message": "Email already verified"},
-                    status=status.HTTP_200_OK
-                )
-            
-            # Get or create new verification token
-            old_tokens = VerificationToken.objects.filter(user=user, is_used=False)
-            old_tokens.update(is_used=True)  # Invalidate old tokens
-            
-            # Create new token
-            verification_token = VerificationToken.objects.create(user=user)
-            
-            # Send email
-            send_verification_email(user, verification_token)
-            
-            return Response(
-                {"message": f"Verification email sent to {email}"},
-                status=status.HTTP_200_OK
-            )
-            
         except CustomUser.DoesNotExist:
             return Response(
                 {"error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        # Check if user is already active
+        if user.is_active:
+            return Response(
+                {"message": "Email already verified"},
+                status=status.HTTP_200_OK
+            )
+
+        # Token creation + email send are "best effort" — SMTP misconfiguration
+        # shouldn't return 500 to the caller. Log the error and surface a 503
+        # so the client can retry or fall back, without leaking stack traces.
+        import logging
+        logger = logging.getLogger(__name__)
+        try:
+            # Invalidate old tokens, create new one, send email
+            VerificationToken.objects.filter(user=user, is_used=False).update(is_used=True)
+            verification_token = VerificationToken.objects.create(user=user)
+            send_verification_email(user, verification_token)
+        except Exception as exc:
+            logger.exception(
+                "Resend-verification failed for user id=%s: %s", user.id, exc
+            )
+            return Response(
+                {"error": "Could not send verification email. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            {"message": f"Verification email sent to {email}"},
+            status=status.HTTP_200_OK
+        )
 
 
 class ApproveRegistrationView(APIView):

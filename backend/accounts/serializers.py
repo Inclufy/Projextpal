@@ -224,20 +224,31 @@ class PublicAdminRegisterSerializer(serializers.Serializer):
             registration.user_agent = request.META.get('HTTP_USER_AGENT', '')
             registration.save()
 
-        # Send verification email
-        verification_token = VerificationToken.objects.create(user=user)
-        rest_url = f"verify-email/{verification_token.token}/"
-        verification_url = f"{settings.FRONTEND_URL}/{rest_url}"
-        send_mail(
-            subject="Verify Your Email",
-            message=(
-                f"Click the link to verify your email: {verification_url}\n"
-                f"This link expires in 24 hours."
-            ),
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            recipient_list=[user.email],
-        )
-        
+        # Send verification email — best-effort. User + company + registration
+        # are already committed; if SMTP is down we must not crash the POST or
+        # the caller will see 500 while the account silently exists in the DB.
+        import logging
+        logger = logging.getLogger(__name__)
+        try:
+            verification_token = VerificationToken.objects.create(user=user)
+            rest_url = f"verify-email/{verification_token.token}/"
+            verification_url = f"{settings.FRONTEND_URL}/{rest_url}"
+            send_mail(
+                subject="Verify Your Email",
+                message=(
+                    f"Click the link to verify your email: {verification_url}\n"
+                    f"This link expires in 24 hours."
+                ),
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception as exc:
+            logger.exception(
+                "Registration verification email failed for user id=%s: %s",
+                user.id, exc
+            )
+
         return user
 
     def to_representation(self, instance):
