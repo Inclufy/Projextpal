@@ -128,9 +128,9 @@ export const TimeTrackingDetailScreen: React.FC = () => {
         {
           text: isNL ? 'Afkeuren' : 'Reject',
           style: 'destructive',
-          onPress: async (reason) => {
+          onPress: async (reason: string | undefined) => {
             try {
-              await timeTrackingService.updateTimeEntry(entryId, { 
+              await timeTrackingService.updateTimeEntry(entryId, {
                 status: 'rejected',
                 rejection_reason: reason || (isNL ? 'Geen reden opgegeven' : 'No reason provided')
               });
@@ -369,7 +369,7 @@ export const TimeTrackingDetailScreen: React.FC = () => {
           ) : (
             filteredEntries.map((entry) => {
               const statusStyle = getStatusStyle(entry.status);
-              const canApprove = isManager && entry.status === 'pending' && entry.user_id !== user?.id;
+              const canApprove = isManager && entry.status === 'pending' && String(entry.user_id) !== String(user?.id);
               
               return (
                 <View key={entry.id} style={styles.entryCard}>

@@ -67,7 +67,7 @@ class BudgetService {
    */
   async getBudgetOverview(): Promise<Budget> {
     try {
-      const response = await apiService.get('/budget/overview/');
+      const response = await apiService.get<Budget>('/budget/overview/');
       return response;
     } catch (error) {
       console.error('Failed to fetch budget overview:', error);
@@ -80,7 +80,7 @@ class BudgetService {
    */
   async getProjectBudget(projectId: string): Promise<ProjectBudget> {
     try {
-      const response = await apiService.get(`/projects/${projectId}/budget/`);
+      const response = await apiService.get<ProjectBudget>(`/projects/${projectId}/budget/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch project budget:', error);
@@ -98,7 +98,7 @@ class BudgetService {
     projects: ProjectBudget[];
   }> {
     try {
-      const response = await apiService.get(`/programs/${programId}/budget/`);
+      const response = await apiService.get<{ total: number; spent: number; remaining: number; projects: ProjectBudget[] }>(`/programs/${programId}/budget/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch program budget:', error);
@@ -126,7 +126,7 @@ class BudgetService {
       if (filters?.end_date) params.append('end_date', filters.end_date);
       if (filters?.status) params.append('status', filters.status);
 
-      const response = await apiService.get(`/budget/items/?${params.toString()}`);
+      const response = await apiService.get<any>(`/budget/items/?${params.toString()}`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch budget items:', error);
@@ -139,7 +139,7 @@ class BudgetService {
    */
   async getBudgetItem(id: string): Promise<BudgetItem> {
     try {
-      const response = await apiService.get(`/budget/items/${id}/`);
+      const response = await apiService.get<BudgetItem>(`/budget/items/${id}/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch budget item:', error);
@@ -152,7 +152,7 @@ class BudgetService {
    */
   async createBudgetItem(data: CreateBudgetItemData): Promise<BudgetItem> {
     try {
-      const response = await apiService.post('/budget/items/', {
+      const response = await apiService.post<BudgetItem>('/budget/items/', {
         ...data,
         date: data.date || new Date().toISOString().split('T')[0],
         type: data.type || 'expense',
@@ -169,7 +169,7 @@ class BudgetService {
    */
   async updateBudgetItem(id: string, data: Partial<CreateBudgetItemData>): Promise<BudgetItem> {
     try {
-      const response = await apiService.patch(`/budget/items/${id}/`, data);
+      const response = await apiService.patch<BudgetItem>(`/budget/items/${id}/`, data);
       return response;
     } catch (error) {
       console.error('Failed to update budget item:', error);
@@ -196,7 +196,7 @@ class BudgetService {
    */
   async getCategories(): Promise<BudgetCategory[]> {
     try {
-      const response = await apiService.get('/budget/categories/');
+      const response = await apiService.get<any>('/budget/categories/');
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch categories:', error);
@@ -209,7 +209,7 @@ class BudgetService {
    */
   async createCategory(data: { name: string; allocated?: number; color?: string }): Promise<BudgetCategory> {
     try {
-      const response = await apiService.post('/budget/categories/', data);
+      const response = await apiService.post<BudgetCategory>('/budget/categories/', data);
       return response;
     } catch (error) {
       console.error('Failed to create category:', error);
@@ -222,7 +222,7 @@ class BudgetService {
    */
   async updateCategoryAllocation(categoryId: string, allocated: number): Promise<BudgetCategory> {
     try {
-      const response = await apiService.patch(`/budget/categories/${categoryId}/`, { allocated });
+      const response = await apiService.patch<BudgetCategory>(`/budget/categories/${categoryId}/`, { allocated });
       return response;
     } catch (error) {
       console.error('Failed to update category:', error);
@@ -237,7 +237,7 @@ class BudgetService {
    */
   async approveItem(itemId: string): Promise<BudgetItem> {
     try {
-      const response = await apiService.post(`/budget/items/${itemId}/approve/`);
+      const response = await apiService.post<BudgetItem>(`/budget/items/${itemId}/approve/`);
       return response;
     } catch (error) {
       console.error('Failed to approve item:', error);
@@ -250,7 +250,7 @@ class BudgetService {
    */
   async rejectItem(itemId: string, reason?: string): Promise<BudgetItem> {
     try {
-      const response = await apiService.post(`/budget/items/${itemId}/reject/`, { reason });
+      const response = await apiService.post<BudgetItem>(`/budget/items/${itemId}/reject/`, { reason });
       return response;
     } catch (error) {
       console.error('Failed to reject item:', error);
@@ -263,7 +263,7 @@ class BudgetService {
    */
   async getPendingItems(): Promise<BudgetItem[]> {
     try {
-      const response = await apiService.get('/budget/items/?status=pending');
+      const response = await apiService.get<any>('/budget/items/?status=pending');
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch pending items:', error);
@@ -286,7 +286,7 @@ class BudgetService {
       const url = projectId 
         ? `/budget/analytics/by-category/?project_id=${projectId}`
         : '/budget/analytics/by-category/';
-      const response = await apiService.get(url);
+      const response = await apiService.get<{ category: string; spent: number; allocated: number; percentage: number }[]>(url);
       return response;
     } catch (error) {
       console.error('Failed to fetch spending by category:', error);
@@ -302,7 +302,7 @@ class BudgetService {
     amount: number;
   }[]> {
     try {
-      const response = await apiService.get(`/budget/analytics/trend/?period=${period}`);
+      const response = await apiService.get<{ date: string; amount: number }[]>(`/budget/analytics/trend/?period=${period}`);
       return response;
     } catch (error) {
       console.error('Failed to fetch spending trend:', error);
@@ -323,7 +323,7 @@ class BudgetService {
       const url = projectId 
         ? `/budget/forecast/?project_id=${projectId}`
         : '/budget/forecast/';
-      const response = await apiService.get(url);
+      const response = await apiService.get<{ projected_spend: number; projected_remaining: number; burn_rate: number; days_until_depleted: number | null }>(url);
       return response;
     } catch (error) {
       console.error('Failed to fetch forecast:', error);

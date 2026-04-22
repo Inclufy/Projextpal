@@ -1,33 +1,19 @@
 import { apiService } from './apiService';
 import { API_CONFIG } from '../constants/config';
+import type { Risk, RiskProbability, RiskImpact, RiskStatus } from '../types';
 
-export interface Risk {
-  id: string;
-  title: string;
-  description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  probability: 'low' | 'medium' | 'high';
-  impact: 'low' | 'medium' | 'high';
-  status: 'open' | 'mitigating' | 'mitigated' | 'closed';
-  project?: string;
-  project_name?: string;
-  owner?: string;
-  mitigation_plan?: string;
-  identified_date?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+export type { Risk };
 
 export interface CreateRiskData {
   title: string;
   description?: string;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
-  probability?: 'low' | 'medium' | 'high';
-  impact?: 'low' | 'medium' | 'high';
-  status?: 'open' | 'mitigating' | 'mitigated' | 'closed';
-  project?: string;
-  owner?: string;
-  mitigation_plan?: string;
+  category?: string;
+  probability?: RiskProbability;
+  impact?: RiskImpact;
+  status?: RiskStatus;
+  project?: string | { id: string; name: string };
+  owner?: string | { id: string; name: string };
+  mitigation?: string;
 }
 
 export interface UpdateRiskData extends Partial<CreateRiskData> {}

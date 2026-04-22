@@ -109,7 +109,8 @@ class AdminService {
   // ========== Activity Logs ==========
   
   async getActivities(params?: { period?: 'today' | 'week' | 'month' }): Promise<Activity[]> {
-    return apiService.get<Activity[]>('/admin/activity/', params);
+    const queryStr = params?.period ? `?period=${params.period}` : '';
+    return apiService.get<Activity[]>(`/admin/activity/${queryStr}`);
   }
 
   async getActivityStats(): Promise<ActivityStats> {

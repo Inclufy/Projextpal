@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/colors';
-import { budgetService, Budget } from '../../services/budget';
+import { budgetService, Budget } from '../../services/budgetService';
 
 export const BudgetScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [budget, setBudget] = useState<Budget | null>(null);
@@ -16,7 +16,7 @@ export const BudgetScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const loadBudget = async () => {
     try {
       setLoading(true);
-      const data = await budgetService.getBudget();
+      const data = await budgetService.getBudgetOverview();
       setBudget(data);
     } catch (error) {
       console.error('Failed to load budget:', error);
@@ -53,13 +53,13 @@ export const BudgetScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Uitgegeven</Text>
                 <Text style={[styles.summaryValue, { color: '#EF4444' }]}>
-                  {formatCurrency(budget.spent || 0)}
+                  {formatCurrency(budget.total_spent || 0)}
                 </Text>
               </View>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Resterend</Text>
                 <Text style={[styles.summaryValue, { color: '#10B981' }]}>
-                  {formatCurrency(budget.remaining || 0)}
+                  {formatCurrency(budget.total_remaining || 0)}
                 </Text>
               </View>
             </View>
@@ -70,11 +70,11 @@ export const BudgetScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               <Text style={styles.sectionTitle}>Project Budgetten</Text>
               {budget.projects.map((project) => (
                 <View key={project.id} style={styles.projectCard}>
-                  <Text style={styles.projectName}>{project.name}</Text>
+                  <Text style={styles.projectName}>{project.project_name}</Text>
                   <View style={styles.projectBudget}>
                     <View style={styles.budgetRow}>
                       <Text style={styles.budgetLabel}>Budget:</Text>
-                      <Text style={styles.budgetValue}>{formatCurrency(project.budget)}</Text>
+                      <Text style={styles.budgetValue}>{formatCurrency(project.allocated)}</Text>
                     </View>
                     <View style={styles.budgetRow}>
                       <Text style={styles.budgetLabel}>Uitgegeven:</Text>

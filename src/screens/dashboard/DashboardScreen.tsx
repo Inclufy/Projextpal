@@ -47,7 +47,7 @@ interface RecentCourse {
   progress: number;
   duration: string;
   icon: string;
-  gradient: string[];
+  gradient: [string, string];
 }
 
 export const DashboardScreen = ({ navigation }: any) => {
@@ -71,7 +71,7 @@ export const DashboardScreen = ({ navigation }: any) => {
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [recentCourses, setRecentCourses] = useState<RecentCourse[]>([]);
 
-  const quickActions = [
+  const quickActions: { name: string; icon: string; screen: string; colors: [string, string]; soon?: boolean }[] = [
     { name: isNL ? 'Projecten' : 'Projects', icon: 'folder', screen: 'Projects', colors: ['#8B5CF6', '#EC4899'] },
     { name: isNL ? "Programma's" : 'Programs', icon: 'briefcase', screen: 'Programs', colors: ['#3B82F6', '#8B5CF6'] },
     { name: 'Time', icon: 'time', screen: 'TimeTracking', colors: ['#F59E0B', '#EF4444'] },
@@ -132,7 +132,7 @@ export const DashboardScreen = ({ navigation }: any) => {
       );
 
       // Set recent courses with gradients
-      const courseGradients = [
+      const courseGradients: [string, string][] = [
         ['#8B5CF6', '#A855F7'],
         ['#3B82F6', '#2563EB'],
         ['#10B981', '#059669'],

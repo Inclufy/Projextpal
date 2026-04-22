@@ -4,10 +4,13 @@ import { API_CONFIG } from '../constants/config';
 
 interface User {
   email: string;
-  role: 'user' | 'admin' | 'superadmin';
+  role: 'user' | 'admin' | 'superadmin' | 'manager';
   id?: number;
   first_name?: string;
   last_name?: string;
+  firstName?: string;
+  lastName?: string;
+  profile_image?: string;
 }
 
 interface AuthState {
@@ -19,6 +22,7 @@ interface AuthState {
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   isSuperAdmin: () => boolean;
+  updateUser: (user: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -89,5 +93,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isSuperAdmin: () => {
     const { user } = get();
     return user?.role === 'superadmin';
+  },
+
+  updateUser: (update: Partial<User>) => {
+    set((state) => ({ user: state.user ? { ...state.user, ...update } : null }));
   },
 }));

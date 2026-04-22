@@ -16,7 +16,7 @@ export interface AnalyticsData {
 class AnalyticsService {
   async getAnalytics(): Promise<AnalyticsData> {
     try {
-      const response = await apiService.get('/api/v1/analytics/');
+      const response = await apiService.get<AnalyticsData>('/api/v1/analytics/');
       return response;
     } catch {
       // Fallback: aggregate from existing services

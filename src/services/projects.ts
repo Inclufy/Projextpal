@@ -12,6 +12,8 @@ export interface Project {
   end_date?: string;
   program?: string;
   health_status?: string;
+  manager_id?: string;
+  manager_name?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,6 +41,12 @@ class ProjectsService {
   async getProject(id: string): Promise<Project> {
     const response = await apiService.get<Project>(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/`);
     return response;
+  }
+
+  // READ - Get projects by program
+  async getProjectsByProgram(programId: string): Promise<Project[]> {
+    const response = await apiService.get<Project[] | { results: Project[] }>(`${API_CONFIG.ENDPOINTS.PROJECTS}?program=${programId}`);
+    return Array.isArray(response) ? response : response.results || [];
   }
 
   // CREATE - Create new project

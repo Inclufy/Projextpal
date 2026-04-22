@@ -19,7 +19,8 @@ const languageDetector = {
         callback(savedLanguage);
         return;
       }
-      const deviceLanguage = Localization.locale.split('-')[0];
+      const locales = Localization.getLocales();
+      const deviceLanguage = (locales?.[0]?.languageCode) || 'nl';
       callback(deviceLanguage);
     } catch (error) {
       callback('nl');
@@ -42,7 +43,7 @@ if (!i18nInitialized) {
       .use(languageDetector)
       .use(initReactI18next)
       .init({
-        compatibilityJSON: 'v3',
+        compatibilityJSON: 'v4',
         resources: {
           nl: { translation: nl },
           en: { translation: en },
@@ -397,10 +398,12 @@ const translations: Record<Language, Translations> = {
   },
 };
 
+type TranslationFunction = ((key: string, options?: any) => string) & Translations;
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, options?: any) => string;  // ⬅️ Changed to i18n's t function
+  t: TranslationFunction;
   isNL: boolean;
 }
 
@@ -437,10 +440,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  // Create t function that supports both t('key') and t.key access
+  const tFunc: any = (key: string, options?: any) => i18n.t(key, options);
+  Object.assign(tFunc, translations[language]);
+
   const value: LanguageContextType = {
     language,
     setLanguage,
-    t: (key: string, options?: any) => i18n.t(key, options), // ⬅️ Use i18n's t function
+    t: tFunc as TranslationFunction,
     isNL: language === 'nl',
   };
 

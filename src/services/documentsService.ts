@@ -17,7 +17,7 @@ export interface Document {
 class DocumentsService {
   async getDocuments(): Promise<Document[]> {
     try {
-      const response = await apiService.get('/api/v1/documents/');
+      const response = await apiService.get<any>('/api/v1/documents/');
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch documents:', error);

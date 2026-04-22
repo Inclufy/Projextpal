@@ -114,7 +114,7 @@ export const AdminDashboard: React.FC = () => {
           { icon: 'settings', title: 'Instellingen', subtitle: 'Systeem configuratie', count: '-', colors: ['#6B7280', '#4B5563'] },
         ].map((module, index) => (
           <TouchableOpacity key={index} style={styles.moduleCard}>
-            <LinearGradient colors={module.colors} style={styles.moduleIcon}>
+            <LinearGradient colors={module.colors as [string, string]} style={styles.moduleIcon}>
               <Ionicons name={module.icon as any} size={28} color="white" />
             </LinearGradient>
             <View style={styles.moduleContent}>

@@ -11,7 +11,7 @@ export interface TimeEntry {
   hours: number;
   description: string;
   date: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'pending';
   rejection_reason?: string;
   approved_by?: string;
   approved_at?: string;
@@ -26,14 +26,14 @@ export interface CreateTimeEntryData {
   hours: number;
   description: string;
   date: string;
-  status?: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'pending';
 }
 
 export interface UpdateTimeEntryData {
   hours?: number;
   description?: string;
   date?: string;
-  status?: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'pending';
   rejection_reason?: string;
 }
 

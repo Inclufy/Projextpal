@@ -23,6 +23,24 @@ export const COLORS = {
   indigo: '#6366F1',
   violet: '#8B5CF6',
   
+  // Semantic text colors
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+
+  // Semantic UI colors
+  error: '#EF4444',
+  success: '#10B981',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  border: '#E5E7EB',
+  divider: '#E5E7EB',
+  cardBackground: '#FFFFFF',
+  inputBackground: '#F9FAFB',
+  backgroundSecondary: '#F9FAFB',
+
+  // Secondary gradient
+  secondaryGradient: ['#3B82F6', '#06B6D4'] as const,
+
   // Neutrals
   white: '#FFFFFF',
   black: '#000000',

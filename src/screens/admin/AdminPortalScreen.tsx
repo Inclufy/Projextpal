@@ -122,7 +122,7 @@ export const AdminPortalScreen: React.FC<{ navigation: any }> = ({ navigation })
                 { icon: 'construct', title: 'Cursus Bouwer', count: '-', colors: ['#6366F1', '#8B5CF6'] },
               ].map((module, index) => (
                 <TouchableOpacity key={index} style={styles.moduleCard}>
-                  <LinearGradient colors={module.colors} style={styles.moduleGradient}>
+                  <LinearGradient colors={module.colors as [string, string]} style={styles.moduleGradient}>
                     <Ionicons name={module.icon as any} size={32} color="white" />
                   </LinearGradient>
                   <Text style={styles.moduleTitle}>{module.title}</Text>

@@ -18,7 +18,7 @@ export interface Task {
 class TasksService {
   async getTasks(): Promise<Task[]> {
     try {
-      const response = await apiService.get('/api/v1/projects/tasks/');
+      const response = await apiService.get<any>('/api/v1/projects/tasks/');
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch tasks:', error);

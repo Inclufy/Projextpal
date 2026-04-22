@@ -38,9 +38,9 @@ export const RisksScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const renderRisk = ({ item }: { item: Risk }) => (
     <TouchableOpacity style={styles.riskCard}>
       <View style={styles.riskHeader}>
-        <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(item.severity) }]}>
+        <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(item.impact) }]}>
           <Ionicons name="warning" size={16} color="white" />
-          <Text style={styles.severityText}>{item.severity}</Text>
+          <Text style={styles.severityText}>{item.impact}</Text>
         </View>
         <View style={styles.statusBadge}>
           <Text style={styles.statusText}>{item.status}</Text>

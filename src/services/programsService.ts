@@ -46,8 +46,8 @@ class ProgramsService {
    */
   async getPrograms(): Promise<Program[]> {
     try {
-      const response = await apiClient.get('/programs/');
-      return response.data.results || response.data || [];
+      const response = await apiService.get<any>('/programs/');
+      return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch programs:', error);
       throw error;
@@ -59,8 +59,8 @@ class ProgramsService {
    */
   async getProgram(id: string): Promise<Program> {
     try {
-      const response = await apiClient.get(`/programs/${id}/`);
-      return response.data;
+      const response = await apiService.get<Program>(`/programs/${id}/`);
+      return response;
     } catch (error) {
       console.error('Failed to fetch program:', error);
       throw error;
@@ -72,12 +72,12 @@ class ProgramsService {
    */
   async createProgram(data: CreateProgramData): Promise<Program> {
     try {
-      const response = await apiClient.post('/programs/', {
+      const response = await apiService.post<Program>('/programs/', {
         ...data,
         status: data.status || 'active',
         progress: 0,
       });
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to create program:', error);
       throw error;
@@ -89,8 +89,8 @@ class ProgramsService {
    */
   async updateProgram(id: string, data: UpdateProgramData): Promise<Program> {
     try {
-      const response = await apiClient.patch(`/programs/${id}/`, data);
-      return response.data;
+      const response = await apiService.patch<Program>(`/programs/${id}/`, data);
+      return response;
     } catch (error) {
       console.error('Failed to update program:', error);
       throw error;
@@ -102,7 +102,7 @@ class ProgramsService {
    */
   async deleteProgram(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/programs/${id}/`);
+      await apiService.delete(`/programs/${id}/`);
     } catch (error) {
       console.error('Failed to delete program:', error);
       throw error;
@@ -116,8 +116,8 @@ class ProgramsService {
    */
   async getProgramProjects(programId: string): Promise<any[]> {
     try {
-      const response = await apiClient.get(`/projects/?program_id=${programId}`);
-      return response.data.results || response.data || [];
+      const response = await apiService.get<any>(`/projects/?program_id=${programId}`);
+      return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch program projects:', error);
       throw error;
@@ -129,11 +129,11 @@ class ProgramsService {
    */
   async addProjectToProgram(programId: string, projectId: string): Promise<void> {
     try {
-      await apiClient.post(`/programs/${programId}/projects/`, { project_id: projectId });
+      await apiService.post(`/programs/${programId}/projects/`, { project_id: projectId });
     } catch (error) {
       // Fallback: update the project directly
       console.warn('Add project endpoint not found, updating project directly');
-      await apiClient.patch(`/projects/${projectId}/`, { program_id: programId });
+      await apiService.patch(`/projects/${projectId}/`, { program_id: programId });
     }
   }
 
@@ -142,11 +142,11 @@ class ProgramsService {
    */
   async removeProjectFromProgram(programId: string, projectId: string): Promise<void> {
     try {
-      await apiClient.delete(`/programs/${programId}/projects/${projectId}/`);
+      await apiService.delete(`/programs/${programId}/projects/${projectId}/`);
     } catch (error) {
       // Fallback: update the project directly
       console.warn('Remove project endpoint not found, updating project directly');
-      await apiClient.patch(`/projects/${projectId}/`, { program_id: null });
+      await apiService.patch(`/projects/${projectId}/`, { program_id: null });
     }
   }
 
@@ -200,8 +200,8 @@ class ProgramsService {
     risks_count: number;
   }> {
     try {
-      const response = await apiClient.get(`/programs/${id}/stats/`);
-      return response.data;
+      const response = await apiService.get<any>(`/programs/${id}/stats/`);
+      return response;
     } catch (error) {
       // Calculate locally if endpoint doesn't exist
       console.warn('Stats endpoint not found, calculating locally');
@@ -230,8 +230,8 @@ class ProgramsService {
     upcomingMilestones: any[];
   }> {
     try {
-      const response = await apiClient.get(`/programs/${id}/dashboard/`);
-      return response.data;
+      const response = await apiService.get<any>(`/programs/${id}/dashboard/`);
+      return response;
     } catch (error) {
       // Build dashboard data from separate endpoints
       const [program, projects] = await Promise.all([

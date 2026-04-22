@@ -33,7 +33,7 @@ export const ProgramsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     try {
       setLoading(true);
       const data = await programsService.getPrograms();
-      setPrograms(Array.isArray(data) ? data : data.results || []);
+      setPrograms(data);
     } catch (error) {
       console.error('Failed to load programs:', error);
       Alert.alert(t('common.error'), t('programs.errors.loadFailed'));
@@ -46,7 +46,7 @@ export const ProgramsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     setRefreshing(true);
     try {
       const data = await programsService.getPrograms();
-      setPrograms(Array.isArray(data) ? data : data.results || []);
+      setPrograms(data);
     } catch (error) {
       console.error('Failed to refresh programs:', error);
     } finally {

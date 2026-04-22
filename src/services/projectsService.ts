@@ -58,9 +58,9 @@ class ProjectsService {
   async getProjects(): Promise<Project[]> {
     try {
       console.log('📂 Fetching projects...');
-      const response = await apiService.get(API_CONFIG.ENDPOINTS.PROJECTS);
+      const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.PROJECTS);
       console.log('📂 Projects response:', response);
-      
+
       // apiService returns response directly (not wrapped in .data)
       const projects = response.results || response || [];
       
@@ -77,7 +77,7 @@ class ProjectsService {
    */
   async getProjectsByProgram(programId: string): Promise<Project[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}?program=${programId}`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.PROJECTS}?program=${programId}`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch program projects:', error);
@@ -90,7 +90,7 @@ class ProjectsService {
    */
   async getProjectsByStatus(status: string): Promise<Project[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}?status=${status}`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.PROJECTS}?status=${status}`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch projects by status:', error);
@@ -103,7 +103,7 @@ class ProjectsService {
    */
   async getProject(id: string): Promise<Project> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/`);
+      const response = await apiService.get<Project>(`${API_CONFIG.ENDPOINTS.PROJECTS}${id}/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch project:', error);

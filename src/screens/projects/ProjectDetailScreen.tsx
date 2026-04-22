@@ -172,9 +172,9 @@ export const ProjectDetailScreen: React.FC<{ navigation: any; route: any }> = ({
         {
           text: t('projectDetail.actions.reject'),
           style: 'destructive',
-          onPress: async (reason) => {
+          onPress: async (reason: string | undefined) => {
             try {
-              await timeTrackingService.updateTimeEntry(entryId, { 
+              await timeTrackingService.updateTimeEntry(entryId, {
                 status: 'rejected',
                 rejection_reason: reason || t('projectDetail.alerts.noReason')
               });
@@ -473,8 +473,8 @@ export const ProjectDetailScreen: React.FC<{ navigation: any; route: any }> = ({
             ) : (
               timeEntries.map((entry) => {
                 const statusStyle = getTimeEntryStatusStyle(entry.status);
-                const canEdit = entry.user_id === user?.id && (entry.status === 'pending' || entry.status === 'draft');
-                const canApprove = isManager && entry.status === 'pending' && entry.user_id !== user?.id;
+                const canEdit = String(entry.user_id) === String(user?.id) && (entry.status === 'pending' || entry.status === 'draft');
+                const canApprove = isManager && entry.status === 'pending' && String(entry.user_id) !== String(user?.id);
                 
                 return (
                   <View key={entry.id} style={styles.timeEntryCard}>

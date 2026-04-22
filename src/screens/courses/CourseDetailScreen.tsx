@@ -109,10 +109,10 @@ export const CourseDetailScreen: React.FC = () => {
     }
 
     // Navigate to lesson
-    navigation.navigate('LessonDetail' as never, { 
-      courseId: course?.id, 
-      lessonId: lesson.id 
-    } as never);
+    (navigation as any).navigate('LessonDetail', {
+      courseId: course?.id,
+      lessonId: lesson.id
+    });
   };
 
   const handleCompleteLesson = async (lessonId: string) => {
@@ -136,10 +136,10 @@ export const CourseDetailScreen: React.FC = () => {
     try {
       const nextLesson = await coursesService.getNextLesson(course.id);
       if (nextLesson) {
-        navigation.navigate('LessonDetail' as never, {
+        (navigation as any).navigate('LessonDetail', {
           courseId: course.id,
           lessonId: nextLesson.id,
-        } as never);
+        });
       } else {
         // All lessons completed
         Alert.alert(
@@ -151,10 +151,10 @@ export const CourseDetailScreen: React.FC = () => {
       // Fallback: start from first incomplete lesson
       const firstIncomplete = lessons.find(l => !completedLessons.has(l.id));
       if (firstIncomplete) {
-        navigation.navigate('LessonDetail' as never, {
+        (navigation as any).navigate('LessonDetail', {
           courseId: course.id,
           lessonId: firstIncomplete.id,
-        } as never);
+        });
       }
     }
   };

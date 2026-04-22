@@ -10,6 +10,9 @@ export interface Program {
   methodology?: string;
   projects_count?: number;
   total_budget?: number;
+  budget?: number;
+  manager_id?: string;
+  manager_name?: string;
   health_status?: string;
   start_date?: string;
   end_date?: string;

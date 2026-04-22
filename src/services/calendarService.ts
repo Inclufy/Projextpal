@@ -14,7 +14,7 @@ class CalendarService {
   async getEvents(month?: number, year?: number): Promise<CalendarEvent[]> {
     try {
       const params = month && year ? `?month=${month}&year=${year}` : '';
-      const response = await apiService.get(`/api/v1/projects/milestones/${params}`);
+      const response = await apiService.get<any>(`/api/v1/projects/milestones/${params}`);
       const milestones = response.results || response || [];
       return milestones.map((m: any) => ({
         id: m.id,

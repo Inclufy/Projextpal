@@ -87,16 +87,11 @@ class AuthService {
     } as any);
 
     // ✅ FIXED: Use full API path
-    const response = await apiService.post(
-      `${API_CONFIG.ENDPOINTS.PROFILE}/image/`,  // This becomes /api/v1/auth/user/image/
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+    const response = await apiService.post<any>(
+      `${API_CONFIG.ENDPOINTS.PROFILE}/image/`,
+      formData
     );
-    
+
     return response.profile_image_url;
   }
 } // ← ADDED THIS CLOSING BRACE

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { adminService, User } from '../../services/adminService';
+import { adminService, AdminUser as User } from '../../services/adminService';
 
 export const AdminUsers: React.FC = () => {
   const { t } = useTranslation();

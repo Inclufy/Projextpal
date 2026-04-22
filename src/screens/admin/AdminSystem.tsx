@@ -154,12 +154,12 @@ export const AdminSystem: React.FC = () => {
           <View style={styles.progressBar}>
             <View 
               style={[
-                styles.progressFill, 
-                { 
-                  width: service.uptime,
+                styles.progressFill,
+                {
+                  width: service.uptime as any,
                   backgroundColor: getStatusColor(service.status)
                 }
-              ]} 
+              ]}
             />
           </View>
           <Text style={[styles.serviceStatus, { color: getStatusColor(service.status) }]}>

@@ -63,7 +63,7 @@ export const ProgramDetailScreen: React.FC<{ navigation: any; route: any }> = ({
   const loadProjects = async () => {
     try {
       const data = await projectsService.getProjectsByProgram(programId);
-      setProjects(Array.isArray(data) ? data : data.results || []);
+      setProjects(data);
     } catch (error) {
       console.error('Failed to load projects:', error);
       setProjects([]);
@@ -154,9 +154,9 @@ export const ProgramDetailScreen: React.FC<{ navigation: any; route: any }> = ({
         {
           text: t('projectDetail.actions.reject'),
           style: 'destructive',
-          onPress: async (reason) => {
+          onPress: async (reason: string | undefined) => {
             try {
-              await timeTrackingService.updateTimeEntry(entryId, { 
+              await timeTrackingService.updateTimeEntry(entryId, {
                 status: 'rejected',
                 rejection_reason: reason || t('projectDetail.alerts.noReason')
               });
@@ -511,7 +511,7 @@ export const ProgramDetailScreen: React.FC<{ navigation: any; route: any }> = ({
             ) : (
               timeEntries.map((entry) => {
                 const statusStyle = getTimeEntryStatusStyle(entry.status);
-                const canApprove = isManager && entry.status === 'pending' && entry.user_id !== user?.id;
+                const canApprove = isManager && entry.status === 'pending' && String(entry.user_id) !== String(user?.id);
                 
                 return (
                   <View key={entry.id} style={styles.timeEntryCard}>

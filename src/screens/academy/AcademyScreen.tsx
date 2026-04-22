@@ -90,8 +90,8 @@ export const AcademyScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           <Text style={styles.sectionTitle}>Beschikbare Cursussen</Text>
           {courses.map((course) => (
             <TouchableOpacity key={course.id} style={styles.courseCard}>
-              <LinearGradient 
-                colors={course.gradient} 
+              <LinearGradient
+                colors={course.gradient as [string, string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.courseImageGradient}

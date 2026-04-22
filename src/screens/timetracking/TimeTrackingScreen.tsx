@@ -43,7 +43,7 @@ export const TimeTrackingScreen: React.FC<{ navigation: any }> = ({ navigation }
         projectsService.getProjects(),
       ]);
       setTimeEntries(entriesData);
-      setProjects(projectsData.results || projectsData || []);
+      setProjects(projectsData);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {

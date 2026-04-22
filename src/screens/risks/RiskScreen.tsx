@@ -13,7 +13,7 @@ import { Card } from '../../components';
 import { COLORS } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Risk, RiskProbability, RiskImpact } from '../../types';
-import { riskService } from '../../services/risks';
+import { risksService as riskService } from '../../services/risks';
 
 const { width } = Dimensions.get('window');
 

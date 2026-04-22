@@ -18,7 +18,8 @@ const languageDetector = {
         callback(savedLanguage);
         return;
       }
-      const deviceLanguage = Localization.locale.split('-')[0];
+      const locales = Localization.getLocales();
+      const deviceLanguage = (locales?.[0]?.languageCode) || 'nl';
       callback(deviceLanguage);
     } catch (error) {
       callback('nl');
@@ -38,7 +39,7 @@ i18n
   .use(languageDetector)
   .use(initReactI18next)
   .init({
-    compatibilityJSON: 'v3',
+    compatibilityJSON: 'v4',
     resources: {
       nl: { translation: nl },
       en: { translation: en },

@@ -74,7 +74,7 @@ class CoursesService {
   async getCourses(): Promise<Course[]> {
     try {
       console.log('📚 Fetching courses...');
-      const response = await apiService.get(API_CONFIG.ENDPOINTS.COURSES);
+      const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.COURSES);
       console.log('📚 Courses response:', response);
       return response.results || response || [];
     } catch (error) {
@@ -88,7 +88,7 @@ class CoursesService {
    */
   async getCoursesByCategory(category: string): Promise<Course[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}?category=${category}`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.COURSES}?category=${category}`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch courses by category:', error);
@@ -101,7 +101,7 @@ class CoursesService {
    */
   async getFreeCourses(): Promise<Course[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}?is_free=true`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.COURSES}?is_free=true`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch free courses:', error);
@@ -114,7 +114,7 @@ class CoursesService {
    */
   async getCourse(id: string): Promise<Course> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${id}/`);
+      const response = await apiService.get<Course>(`${API_CONFIG.ENDPOINTS.COURSES}${id}/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch course:', error);
@@ -127,7 +127,7 @@ class CoursesService {
    */
   async searchCourses(query: string): Promise<Course[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}?search=${encodeURIComponent(query)}`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.COURSES}?search=${encodeURIComponent(query)}`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to search courses:', error);
@@ -142,7 +142,7 @@ class CoursesService {
    */
   async getCourseLessons(courseId: string): Promise<Lesson[]> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/`);
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch lessons:', error);
@@ -155,7 +155,7 @@ class CoursesService {
    */
   async getLesson(courseId: string, lessonId: string): Promise<Lesson> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/${lessonId}/`);
+      const response = await apiService.get<Lesson>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/${lessonId}/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch lesson:', error);
@@ -171,7 +171,7 @@ class CoursesService {
   async getEnrolledCourses(): Promise<(Course & { enrollment: Enrollment })[]> {
     try {
       console.log('📚 Fetching enrolled courses...');
-      const response = await apiService.get(API_CONFIG.ENDPOINTS.ENROLLMENTS);
+      const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ENROLLMENTS);
       console.log('📚 Enrolled response:', response);
       return response.results || response || [];
     } catch (error) {
@@ -185,7 +185,7 @@ class CoursesService {
    */
   async getEnrollment(courseId: string): Promise<Enrollment | null> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.ENROLLMENTS}?course_id=${courseId}`);
+      const response = await apiService.get<any>(`${API_CONFIG.ENDPOINTS.ENROLLMENTS}?course_id=${courseId}`);
       const enrollments = response.results || response || [];
       return enrollments.length > 0 ? enrollments[0] : null;
     } catch (error) {
@@ -199,7 +199,7 @@ class CoursesService {
    */
   async enrollInCourse(courseId: string): Promise<Enrollment> {
     try {
-      const response = await apiService.post(API_CONFIG.ENDPOINTS.ENROLLMENTS, { course_id: courseId });
+      const response = await apiService.post<Enrollment>(API_CONFIG.ENDPOINTS.ENROLLMENTS, { course_id: courseId });
       return response;
     } catch (error) {
       console.error('Failed to enroll in course:', error);
@@ -231,7 +231,7 @@ class CoursesService {
     time_spent_minutes: number;
   }> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/progress/`);
+      const response = await apiService.get<{ progress: number; completed_lessons: number; total_lessons: number; time_spent_minutes: number }>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/progress/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch course progress:', error);
@@ -250,7 +250,7 @@ class CoursesService {
    */
   async completeLesson(courseId: string, lessonId: string): Promise<LessonProgress> {
     try {
-      const response = await apiService.post(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/${lessonId}/complete/`);
+      const response = await apiService.post<LessonProgress>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/${lessonId}/complete/`);
       return response;
     } catch (error) {
       console.error('Failed to complete lesson:', error);
@@ -267,7 +267,7 @@ class CoursesService {
     progress: { progress_percent?: number; time_spent_minutes?: number; last_position?: number }
   ): Promise<LessonProgress> {
     try {
-      const response = await apiService.patch(
+      const response = await apiService.patch<LessonProgress>(
         `${API_CONFIG.ENDPOINTS.COURSES}${courseId}/lessons/${lessonId}/progress/`,
         progress
       );
@@ -283,7 +283,7 @@ class CoursesService {
    */
   async getNextLesson(courseId: string): Promise<Lesson | null> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/next-lesson/`);
+      const response = await apiService.get<Lesson | null>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/next-lesson/`);
       return response;
     } catch (error) {
       console.error('Failed to get next lesson:', error);
@@ -303,7 +303,7 @@ class CoursesService {
     certificate_url: string;
   } | null> {
     try {
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/certificate/`);
+      const response = await apiService.get<{ id: string; course_id: string; issued_at: string; certificate_url: string } | null>(`${API_CONFIG.ENDPOINTS.COURSES}${courseId}/certificate/`);
       return response;
     } catch (error) {
       console.error('Failed to fetch certificate:', error);

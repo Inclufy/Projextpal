@@ -14,7 +14,7 @@ export interface TeamMember {
 class TeamService {
   async getMembers(): Promise<TeamMember[]> {
     try {
-      const response = await apiService.get('/api/v1/teams/members/');
+      const response = await apiService.get<any>('/api/v1/teams/members/');
       return response.results || response || [];
     } catch (error) {
       console.error('Failed to fetch team members:', error);
