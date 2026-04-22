@@ -16,5 +16,5 @@ project_router.register(r'measurements', LSSGreenMeasurementViewSet, basename='p
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('projects/<uuid:project_id>/', include(project_router.urls)),
+    path('projects/<int:project_id>/', include(project_router.urls)),
 ]

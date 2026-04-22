@@ -658,6 +658,11 @@ class UpdateOwnProfileView(APIView):
             return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # Accept PATCH as well — the serializer already uses partial=True, so
+    # PATCH and PUT are semantically equivalent here. Prevents 405 on
+    # partial-update clients (e.g. avatar-only edits from the mobile app).
+    patch = put
+
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]

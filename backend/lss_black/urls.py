@@ -18,5 +18,5 @@ project_router.register(r'spc-charts', SPCChartViewSet, basename='project-spc-ch
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('projects/<uuid:project_id>/', include(project_router.urls)),
+    path('projects/<int:project_id>/', include(project_router.urls)),
 ]
