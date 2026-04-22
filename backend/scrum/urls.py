@@ -6,7 +6,7 @@ from .views import (
     ProductBacklogViewSet, BacklogItemViewSet, SprintViewSet,
     DailyStandupViewSet, SprintReviewViewSet, SprintRetrospectiveViewSet,
     VelocityViewSet, DefinitionOfDoneViewSet, ScrumTeamViewSet,
-    ScrumDashboardView, SprintGoalViewSet,
+    ScrumDashboardView, ScrumBoardView, SprintGoalViewSet,
     SprintPlanningViewSet,
     IncrementViewSet,
     DoDChecklistCompletionViewSet,
@@ -265,5 +265,14 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/dashboard/',
         ScrumDashboardView.as_view(),
         name='scrum-dashboard'
+    ),
+
+    # =========================================================================
+    # BOARD (kanban view, read-only)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/scrum/board/',
+        ScrumBoardView.as_view(),
+        name='scrum-board'
     ),
 ]

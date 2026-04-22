@@ -317,13 +317,24 @@ class ProgramBudgetCategoryViewSet(viewsets.ModelViewSet):
         queryset = ProgramBudgetCategory.objects.filter(
             program__company=self.request.user.company
         )
-        
+
         # Filter by program
         program_id = self.request.query_params.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
-        
+
         return queryset
+
+    def perform_create(self, serializer):
+        """Ensure the program belongs to the user's company."""
+        from rest_framework.exceptions import ValidationError
+        program = serializer.validated_data.get('program')
+        user = self.request.user
+        if program is None:
+            raise ValidationError({'program': 'This field is required.'})
+        if getattr(user, 'company_id', None) != getattr(program, 'company_id', None):
+            raise ValidationError({'program': 'Program not found in your company.'})
+        serializer.save()
 
 
 class ProgramBudgetItemViewSet(viewsets.ModelViewSet):

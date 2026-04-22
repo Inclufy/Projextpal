@@ -158,11 +158,33 @@ class LessonsLogSerializer(serializers.ModelSerializer):
 
 class ProjectToleranceSerializer(serializers.ModelSerializer):
     tolerance_type_display = serializers.CharField(source='get_tolerance_type_display', read_only=True)
-    
+
     class Meta:
         model = ProjectTolerance
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        """
+        Clean 400 instead of DB-level IntegrityError 500 when a tolerance
+        of the same (project, tolerance_type) already exists. Also tolerate
+        clients that send no tolerance_type (default 'cost') — surface a
+        helpful validation error rather than crashing on unique_together.
+        """
+        # Only enforce on create
+        if self.instance is None:
+            project = self.context.get('project')
+            tolerance_type = attrs.get('tolerance_type') or 'cost'
+            if project is not None and ProjectTolerance.objects.filter(
+                project=project, tolerance_type=tolerance_type
+            ).exists():
+                raise serializers.ValidationError({
+                    'tolerance_type': (
+                        f"A tolerance of type '{tolerance_type}' already exists "
+                        f"for this project. Update the existing one instead."
+                    )
+                })
+        return attrs
 
 
 class ProductSerializer(serializers.ModelSerializer):

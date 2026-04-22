@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Max
+from django.db import IntegrityError
 # NEW (CORRECT):
 from .models import (
     ProductBacklog, BacklogItem, Sprint, SprintBurndown,
@@ -99,7 +100,19 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         project = self.get_project()
         backlog, _ = ProductBacklog.objects.get_or_create(project=project)
-        serializer.save(backlog=backlog, reporter=self.request.user)
+        # Auto-compute next order if not explicitly provided, to avoid
+        # collisions from multiple items sharing the default order=0.
+        order = serializer.validated_data.get('order')
+        if order is None or order == 0:
+            max_order = BacklogItem.objects.filter(
+                backlog__project=project
+            ).aggregate(m=Max('order'))['m'] or 0
+            serializer.validated_data['order'] = max_order + 1
+        try:
+            serializer.save(backlog=backlog, reporter=self.request.user)
+        except IntegrityError as e:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'detail': f'Could not create backlog item: {str(e)}'})
 
     @action(detail=True, methods=['post'])
     def assign_to_sprint(self, request, project_id=None, pk=None):
@@ -613,48 +626,108 @@ class ScrumDashboardView(APIView):
 
     def get(self, request, project_id):
         from projects.models import Project
-        
+
         project = get_object_or_404(
             Project,
             id=project_id,
             company=request.user.company
         )
-        
-        # Get active sprint
-        active_sprint = Sprint.objects.filter(project=project, status='active').first()
-        
-        # Get backlog stats
-        backlog = ProductBacklog.objects.filter(project=project).first()
-        backlog_items = BacklogItem.objects.filter(backlog__project=project) if backlog else []
-        
-        # Velocity
-        velocities = Velocity.objects.filter(project=project).order_by('-sprint__number')[:5]
-        avg_velocity = velocities.aggregate(avg=Avg('completed_points'))['avg'] or 0
-        
-        # Team
-        team = ScrumTeam.objects.filter(project=project)
-        
+
+        # Empty/zero-filled defaults so a brand-new project with no
+        # sprints/backlog/velocity returns a valid payload instead of 500.
         dashboard_data = {
             'project_id': project.id,
             'project_name': project.name,
-            
-            # Active Sprint
-            'active_sprint': SprintSerializer(active_sprint).data if active_sprint else None,
-            'sprint_progress': active_sprint.completed_story_points if active_sprint else 0,
-            'sprint_total': active_sprint.total_story_points if active_sprint else 0,
-            
-            # Backlog
-            'backlog_items_count': backlog_items.count() if backlog_items else 0,
-            'backlog_ready_count': backlog_items.filter(status='ready').count() if backlog_items else 0,
-            'total_story_points': backlog_items.aggregate(total=Sum('story_points'))['total'] or 0,
-            
-            # Velocity
-            'average_velocity': round(avg_velocity, 1),
-            'recent_velocities': VelocitySerializer(velocities, many=True).data,
-            
-            # Team
-            'team_size': team.count(),
-            'team': ScrumTeamSerializer(team, many=True).data,
+            'active_sprint': None,
+            'sprint_progress': 0,
+            'sprint_total': 0,
+            'backlog_items_count': 0,
+            'backlog_ready_count': 0,
+            'total_story_points': 0,
+            'average_velocity': 0,
+            'recent_velocities': [],
+            'team_size': 0,
+            'team': [],
         }
-        
+
+        try:
+            active_sprint = Sprint.objects.filter(project=project, status='active').first()
+            if active_sprint:
+                dashboard_data['active_sprint'] = SprintSerializer(active_sprint).data
+                dashboard_data['sprint_progress'] = active_sprint.completed_story_points or 0
+                dashboard_data['sprint_total'] = active_sprint.total_story_points or 0
+        except Exception:
+            pass
+
+        try:
+            # Always use a queryset (never a list) so .count()/.filter()/.aggregate() work.
+            backlog_items = BacklogItem.objects.filter(backlog__project=project)
+            dashboard_data['backlog_items_count'] = backlog_items.count()
+            dashboard_data['backlog_ready_count'] = backlog_items.filter(status='ready').count()
+            dashboard_data['total_story_points'] = (
+                backlog_items.aggregate(total=Sum('story_points'))['total'] or 0
+            )
+        except Exception:
+            pass
+
+        try:
+            velocities = Velocity.objects.filter(project=project).order_by('-sprint__number')[:5]
+            avg_velocity = velocities.aggregate(avg=Avg('completed_points'))['avg'] or 0
+            dashboard_data['average_velocity'] = round(avg_velocity, 1)
+            dashboard_data['recent_velocities'] = VelocitySerializer(velocities, many=True).data
+        except Exception:
+            pass
+
+        try:
+            team = ScrumTeam.objects.filter(project=project)
+            dashboard_data['team_size'] = team.count()
+            dashboard_data['team'] = ScrumTeamSerializer(team, many=True).data
+        except Exception:
+            pass
+
         return Response(dashboard_data)
+
+
+# =============================================================================
+# SCRUM BOARD (read-only kanban view)
+# =============================================================================
+
+class ScrumBoardView(APIView):
+    """Read-only Scrum board: backlog grouped by status + active sprint."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_id):
+        from projects.models import Project
+
+        project = get_object_or_404(
+            Project,
+            id=project_id,
+            company=request.user.company
+        )
+
+        active_sprint = Sprint.objects.filter(
+            project=project, status='active'
+        ).first()
+
+        # Prefer active-sprint items for the board; fall back to the full
+        # project backlog when no sprint is active.
+        if active_sprint:
+            items_qs = BacklogItem.objects.filter(sprint=active_sprint)
+        else:
+            items_qs = BacklogItem.objects.filter(backlog__project=project)
+
+        def serialize(status_value):
+            qs = items_qs.filter(status=status_value)
+            return BacklogItemSerializer(qs, many=True).data
+
+        backlog_by_status = {
+            'todo': serialize('new') + serialize('ready'),
+            'in_progress': serialize('in_progress'),
+            'done': serialize('done'),
+            'blocked': serialize('removed'),
+        }
+
+        return Response({
+            'active_sprint': SprintSerializer(active_sprint).data if active_sprint else None,
+            'backlog_by_status': backlog_by_status,
+        })

@@ -12,11 +12,16 @@ from .views import (
 )
 
 # Router
+# IMPORTANT: specific prefixes (budget, budget-categories, budget-items) MUST be
+# registered BEFORE the empty prefix for ProgramViewSet — otherwise DRF's
+# DefaultRouter places the program detail pattern `^(?P<pk>[^/.]+)/$` ahead of
+# the more specific ones, causing POST /budget-categories/ to resolve to the
+# program detail route (which has no POST handler) and return 405.
 router = DefaultRouter()
-router.register(r'', ProgramViewSet, basename='program')
 router.register(r'budget', ProgramBudgetViewSet, basename='program-budget')
 router.register(r'budget-categories', ProgramBudgetCategoryViewSet, basename='program-budget-category')
 router.register(r'budget-items', ProgramBudgetItemViewSet, basename='program-budget-item')
+router.register(r'', ProgramViewSet, basename='program')
 
 urlpatterns = [
     # Explicit URL patterns for custom actions (before router to ensure priority)
@@ -27,36 +32,38 @@ urlpatterns = [
          ProgramViewSet.as_view({'get': 'projects'}),
          name='program-projects-explicit'),
 
-    path('', include(router.urls)),
-
-    # Budget overview (custom route)
-    path('programs/<int:pk>/budget/overview/', 
-         ProgramBudgetOverviewViewSet.as_view({'get': 'retrieve'}), 
+    # Budget overview (custom route) — must come BEFORE the router include
+    # so the program detail pattern doesn't swallow it.
+    path('<int:pk>/budget/overview/',
+         ProgramBudgetOverviewViewSet.as_view({'get': 'retrieve'}),
          name='program-budget-overview'),
-    
+
     # Nested routes for benefits
-    path('programs/<int:program_pk>/benefits/', 
-         ProgramBenefitViewSet.as_view({'get': 'list', 'post': 'create'}), 
+    path('<int:program_pk>/benefits/',
+         ProgramBenefitViewSet.as_view({'get': 'list', 'post': 'create'}),
          name='program-benefits-list'),
-    path('programs/<int:program_pk>/benefits/<int:pk>/', 
-         ProgramBenefitViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), 
+    path('<int:program_pk>/benefits/<int:pk>/',
+         ProgramBenefitViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-benefits-detail'),
-    
+
     # Nested routes for risks
-    path('programs/<int:program_pk>/risks/', 
-         ProgramRiskViewSet.as_view({'get': 'list', 'post': 'create'}), 
+    path('<int:program_pk>/risks/',
+         ProgramRiskViewSet.as_view({'get': 'list', 'post': 'create'}),
          name='program-risks-list'),
-    path('programs/<int:program_pk>/risks/<int:pk>/', 
-         ProgramRiskViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), 
+    path('<int:program_pk>/risks/<int:pk>/',
+         ProgramRiskViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-risks-detail'),
-    
+
     # Nested routes for milestones
-    path('programs/<int:program_pk>/milestones/', 
-         ProgramMilestoneViewSet.as_view({'get': 'list', 'post': 'create'}), 
+    path('<int:program_pk>/milestones/',
+         ProgramMilestoneViewSet.as_view({'get': 'list', 'post': 'create'}),
          name='program-milestones-list'),
-    path('programs/<int:program_pk>/milestones/<int:pk>/', 
-         ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), 
+    path('<int:program_pk>/milestones/<int:pk>/',
+         ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-milestones-detail'),
+
+    # Router include LAST so explicit paths above take priority
+    path('', include(router.urls)),
 ]
 # AI Insights endpoints
 urlpatterns += [

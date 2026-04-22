@@ -183,7 +183,7 @@ class ProgramBudgetCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProgramBudgetCategory
         fields = [
-            'id', 'name', 'allocated', 'spent', 'remaining',
+            'id', 'program', 'name', 'allocated', 'spent', 'remaining',
             'color', 'icon', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

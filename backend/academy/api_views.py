@@ -1,9 +1,10 @@
+from django.db import models
 from rest_framework import viewsets, serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Course, CourseModule, CourseLesson
+from .models import Course, CourseModule, CourseLesson, Enrollment
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -294,3 +295,44 @@ Return JSON:
             "confidence": 0.5,
             "reasoning": f"Fallback due to error: {str(e)}"
         }, status=200)
+
+
+# ---------------------------------------------------------------------------
+# Enrollment endpoint for the public academy app
+# Exposed at /api/v1/academy/enrollments/ — the admin-side view lives
+# separately under /api/v1/admin/training/enrollments/.
+# ---------------------------------------------------------------------------
+class EnrollmentSerializer(serializers.ModelSerializer):
+    course_title = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = [
+            'id', 'user', 'course', 'course_title',
+            'email', 'first_name', 'last_name', 'company',
+            'status', 'progress', 'amount_paid',
+            'enrolled_at', 'started_at', 'completed_at', 'expires_at',
+        ]
+        read_only_fields = ['id', 'enrolled_at']
+
+
+class EnrollmentViewSet(viewsets.ModelViewSet):
+    """User enrollments. Superadmins see all, regular users see only their own."""
+    serializer_class = EnrollmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Enrollment.objects.select_related('course').all()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return qs
+        # Match by user FK or by email (legacy non-registered enrollments)
+        email = getattr(user, 'email', None) or ''
+        if email:
+            return qs.filter(models.Q(user=user) | models.Q(email__iexact=email))
+        return qs.filter(user=user)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        email = getattr(user, 'email', '') or serializer.validated_data.get('email', '')
+        serializer.save(user=user, email=email)

@@ -9,7 +9,8 @@ from .views import (
     StageViewSet, StagePlanViewSet, StageGateViewSet, WorkPackageViewSet,
     ProjectBoardViewSet, ProjectBoardMemberViewSet, HighlightReportViewSet,
     EndProjectReportViewSet, LessonsLogViewSet, ProjectToleranceViewSet,
-    Prince2DashboardView
+    Prince2DashboardView,
+    ProjectBriefComputedView, ProjectClosureComputedView,
 )
 
 
@@ -334,6 +335,38 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/products/<int:pk>/reject/',
         ProductViewSet.as_view({'post': 'reject'}),
         name='prince2-products-reject'
+    ),
+
+    # =========================================================================
+    # PRODUCT DESCRIPTIONS (alias for products/)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/product-descriptions/',
+        ProductViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-product-descriptions-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/product-descriptions/<int:pk>/',
+        ProductViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-product-descriptions-detail'
+    ),
+
+    # =========================================================================
+    # PROJECT BRIEF (computed, read-only)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/project-brief/',
+        ProjectBriefComputedView.as_view(),
+        name='prince2-project-brief-computed'
+    ),
+
+    # =========================================================================
+    # PROJECT CLOSURE (computed, read-only)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/project-closure/',
+        ProjectClosureComputedView.as_view(),
+        name='prince2-project-closure-computed'
     ),
 
     # =========================================================================

@@ -356,7 +356,7 @@ class AIMitigationSerializer(serializers.ModelSerializer):
 
 class ManualMitigationSerializer(serializers.ModelSerializer):
     risk = serializers.PrimaryKeyRelatedField(
-        queryset=Risk.objects.all(), write_only=True, required=False
+        queryset=Risk.objects.all(), required=False
     )
 
     class Meta:
@@ -376,9 +376,28 @@ class ManualMitigationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_by", "created_at", "updated_at"]
 
+    def validate(self, attrs):
+        """
+        Require `risk` either from the payload or from the URL kwarg
+        (nested route /risks/<risk_id>/manual-mitigations/). Without it we
+        cannot create a ManualMitigation because the underlying FK is NOT NULL,
+        which previously surfaced as a 500. Return a clear 400 instead.
+        """
+        if self.instance is None:  # create only
+            risk = attrs.get("risk")
+            view = self.context.get("view")
+            url_risk_id = None
+            if view is not None:
+                url_risk_id = view.kwargs.get("risk_id") or view.kwargs.get("risk_pk")
+            if risk is None and not url_risk_id:
+                raise serializers.ValidationError(
+                    {"risk": "This field is required."}
+                )
+        return attrs
+
     def create(self, validated_data):
         request = self.context.get("request")
-        if request and request.user:
+        if request and request.user and request.user.is_authenticated:
             validated_data["created_by"] = request.user
         return super().create(validated_data)
 

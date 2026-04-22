@@ -439,6 +439,18 @@ class ProjectToleranceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return self.get_project_queryset(ProjectTolerance)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Provide the resolved project so the serializer can validate
+        # (project, tolerance_type) uniqueness and return a clean 400
+        # instead of letting the DB raise an IntegrityError -> 500.
+        if self.kwargs.get('project_id') and self.request is not None:
+            try:
+                context['project'] = self.get_project()
+            except Exception:
+                pass
+        return context
+
     def perform_create(self, serializer):
         project = self.get_project()
         serializer.save(project=project)
@@ -518,6 +530,101 @@ class Prince2DashboardView(APIView):
         }
         
         return Response(dashboard_data)
+
+
+class ProjectBriefComputedView(APIView):
+    """
+    Read-only computed Project Brief derived from existing models.
+    Mirrors the PRINCE2 Project Brief shape without introducing a new model.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_id):
+        from projects.models import Project, ProjectTeam
+        project = get_object_or_404(
+            Project, id=project_id, company=request.user.company
+        )
+        bc = BusinessCase.objects.filter(project=project).order_by('-created_at').first()
+
+        team_structure = []
+        for member in ProjectTeam.objects.filter(project=project, is_active=True).select_related('user'):
+            user = member.user
+            role_display = ''
+            try:
+                role_display = user.get_role_display()
+            except Exception:
+                role_display = getattr(user, 'role', '') or ''
+            full_name = ''
+            try:
+                full_name = user.get_full_name()
+            except Exception:
+                full_name = getattr(user, 'email', '') or ''
+            team_structure.append({
+                'user_id': user.id,
+                'name': full_name or getattr(user, 'email', ''),
+                'email': getattr(user, 'email', ''),
+                'role': role_display,
+            })
+
+        stages = list(
+            Stage.objects.filter(project=project)
+            .order_by('order')
+            .values('id', 'name', 'order', 'status', 'progress_percentage')
+        )
+
+        return Response({
+            'project_id': project.id,
+            'project_name': project.name,
+            'project_definition': project.description or '',
+            'outline_business_case': (bc.executive_summary if bc else '') or '',
+            'project_approach': getattr(project, 'methodology', '') or '',
+            'project_management_team_structure': team_structure,
+            'stages': stages,
+        })
+
+
+class ProjectClosureComputedView(APIView):
+    """
+    Read-only computed Project Closure payload derived from
+    EndProjectReport, Lessons, and BusinessCase benefits.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_id):
+        from projects.models import Project
+        project = get_object_or_404(
+            Project, id=project_id, company=request.user.company
+        )
+        end_report = EndProjectReport.objects.filter(project=project).order_by('-created_at').first()
+        bc = BusinessCase.objects.filter(project=project).order_by('-created_at').first()
+        lessons_qs = LessonsLog.objects.filter(project=project)
+
+        # "summary" field doesn't exist on EndProjectReport; fall back to
+        # achievements_summary if present, else ''.
+        summary_results = ''
+        follow_on_actions = ''
+        if end_report is not None:
+            summary_results = (
+                getattr(end_report, 'summary', None)
+                or getattr(end_report, 'achievements_summary', '')
+                or ''
+            )
+            follow_on_actions = getattr(end_report, 'follow_on_actions', '') or ''
+
+        outcomes_achieved = ''
+        if bc is not None:
+            outcomes_achieved = bc.expected_benefits or ''
+
+        return Response({
+            'project_id': project.id,
+            'project_name': project.name,
+            'summary_results': summary_results,
+            'lessons_learned_count': lessons_qs.count(),
+            'outcomes_achieved': outcomes_achieved,
+            'follow_on_actions': follow_on_actions,
+            'has_end_project_report': end_report is not None,
+            'end_project_report_status': end_report.status if end_report else None,
+        })
 
 
 class ProductViewSet(ProjectFilterMixin, viewsets.ModelViewSet):

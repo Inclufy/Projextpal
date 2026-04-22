@@ -195,3 +195,37 @@ def ai_generate_text(request):
             {"error": f"AI service unavailable: {type(e).__name__}"},
             status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
         )
+
+
+# ---------------------------------------------------------------------------
+# Meeting / Decision stubs
+# The admin portal UI expects /api/v1/governance/meetings/ and /decisions/
+# endpoints for each board tab. No Meeting/Decision models exist yet, so these
+# stubs return an empty result set for GET and 501 Not Implemented for POST.
+# ---------------------------------------------------------------------------
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def meetings_stub(request):
+    if request.method == 'GET':
+        return Response({"results": [], "count": 0})
+    return Response(
+        {
+            "error": "Meetings are not implemented yet.",
+            "detail": "No Meeting model exists. Track this at a future /api/v1/governance/meetings/ endpoint.",
+        },
+        status=http_status.HTTP_501_NOT_IMPLEMENTED,
+    )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def decisions_stub(request):
+    if request.method == 'GET':
+        return Response({"results": [], "count": 0})
+    return Response(
+        {
+            "error": "Decisions are not implemented yet.",
+            "detail": "No Decision model exists. Track this at a future /api/v1/governance/decisions/ endpoint.",
+        },
+        status=http_status.HTTP_501_NOT_IMPLEMENTED,
+    )
