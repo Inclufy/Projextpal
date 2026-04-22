@@ -926,6 +926,20 @@ class BudgetCategory(models.Model):
 
     @property
     def spent(self):
+        """Total spent in this category, aggregated from related BudgetItems."""
+        from django.db.models import Sum
+        total = BudgetItem.objects.filter(category=self, type='expense').aggregate(
+            total=Sum('amount')
+        )['total']
+        return total or 0
+
+    @property
+    def remaining(self):
+        """Allocated minus spent. Returns 0 if negative (over budget)."""
+        return (self.allocated or 0) - self.spent
+
+    @property
+    def spent(self):
         """Calculate total spent in this category"""
         return self.budget_items.filter(
             status='approved'
