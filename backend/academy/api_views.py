@@ -57,6 +57,27 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    def get_object(self):
+        """Look up by UUID primary key OR by slug, whichever the URL
+        carries. The frontend uses slugs in routes like
+        /academy/course/prince2-foundation/… but existing callers (mobile,
+        scripts) still pass UUIDs, so we support both transparently."""
+        import uuid as _uuid
+        lookup = self.kwargs.get(self.lookup_field, self.kwargs.get('pk'))
+        if lookup is None:
+            return super().get_object()
+        # Try UUID first
+        try:
+            _uuid.UUID(str(lookup))
+            return super().get_object()
+        except (ValueError, TypeError):
+            pass
+        # Fall back to slug lookup
+        from django.shortcuts import get_object_or_404
+        obj = get_object_or_404(self.get_queryset(), slug=lookup)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
 class CourseModuleViewSet(viewsets.ModelViewSet):
     queryset = CourseModule.objects.all()
     serializer_class = CourseModuleSerializer
