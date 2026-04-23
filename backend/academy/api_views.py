@@ -137,43 +137,6 @@ class CourseLessonViewSet(viewsets.ModelViewSet):
         })
 
 
-# ===== Nested-list endpoints (mobile + frontend expect these) =====
-
-@api_view(['GET'])
-def course_modules_list(request, course_id):
-    """GET /api/v1/academy/courses/{course_id}/modules/
-
-    Returns the modules belonging to a course. Accepts either the
-    UUID primary key or the slug (same lookup strategy as
-    CourseViewSet.get_object, keeping mobile and web parity).
-    """
-    import uuid as _uuid
-    from django.shortcuts import get_object_or_404
-    # Resolve course: UUID first, slug fallback
-    try:
-        _uuid.UUID(str(course_id))
-        course = get_object_or_404(Course, pk=course_id)
-    except (ValueError, TypeError):
-        course = get_object_or_404(Course, slug=course_id)
-
-    modules = CourseModule.objects.filter(course=course).order_by('order')
-    return Response(CourseModuleSerializer(modules, many=True).data)
-
-
-@api_view(['GET'])
-def module_lessons_list(request, module_id):
-    """GET /api/v1/academy/modules/{module_id}/lessons/
-
-    Returns the lessons belonging to a module. Mobile app's LESSONS()
-    helper builds this URL — previously 404, now 200 with sorted
-    lesson list.
-    """
-    from django.shortcuts import get_object_or_404
-    module = get_object_or_404(CourseModule, pk=module_id)
-    lessons = CourseLesson.objects.filter(module=module).order_by('order')
-    return Response(CourseLessonSerializer(lessons, many=True).data)
-
-
 # ===== CRUD endpoints for EnhancedCourseBuilder =====
 
 @api_view(['PATCH'])

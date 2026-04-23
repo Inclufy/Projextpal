@@ -26,18 +26,6 @@ urlpatterns = [
     path('skills/', include(skills_router.urls)),
     path('visuals/', include('academy.urls_visual')),
 
-    # ===== Nested list endpoints (mobile + web expect these) =====
-    # /academy/courses/<id>/modules/  and  /academy/modules/<id>/lessons/
-    # return the children as a list. The existing router exposes flat
-    # endpoints with query filters (/modules/?course=X) but mobile api.ts
-    # uses the nested shape, so we mount both forms.
-    path('courses/<str:course_id>/modules/',
-         api_views.course_modules_list,
-         name='course-modules-list'),
-    path('modules/<int:module_id>/lessons/',
-         api_views.module_lessons_list,
-         name='module-lessons-list'),
-
     # ===== EnhancedCourseBuilder CRUD endpoints =====
     path('courses/<str:pk>/update/', api_views.course_update, name='course-update'),
     path('courses/<str:pk>/delete/', api_views.course_delete, name='course-delete'),
