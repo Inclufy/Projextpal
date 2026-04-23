@@ -61,7 +61,31 @@ class ProductBacklogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        serializer.save(project=project)
+        # ProductBacklog.project is a OneToOneField: a second create for the
+        # same project would raise IntegrityError → 500. Make the endpoint
+        # idempotent by returning the existing backlog if one already exists.
+        existing = ProductBacklog.objects.filter(project=project).first()
+        if existing is not None:
+            serializer.instance = existing
+            return
+        try:
+            serializer.save(project=project)
+        except IntegrityError:
+            # Race with a parallel create — reload the now-existing row.
+            serializer.instance = ProductBacklog.objects.get(project=project)
+
+    def create(self, request, *args, **kwargs):
+        # Override so we return 200 OK with the existing backlog payload
+        # instead of 201, avoiding misleading "created" semantics when the
+        # backlog was already there.
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        existed_before = ProductBacklog.objects.filter(
+            project_id=self.kwargs.get('project_id')
+        ).exists()
+        self.perform_create(serializer)
+        response_status = status.HTTP_200_OK if existed_before else status.HTTP_201_CREATED
+        return Response(serializer.data, status=response_status)
 
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):

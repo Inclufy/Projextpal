@@ -13,6 +13,9 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", include("health.urls")),
+    # Mobile / web clients hit /api/v1/health/; keep the legacy /health/
+    # mount so ops tooling (load balancers, uptime checks) doesn't break.
+    path("api/v1/health/", include("health.urls")),
     
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
