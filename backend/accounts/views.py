@@ -406,21 +406,6 @@ class CurrentUserView(APIView):
                 pass
         return Response(data)
 
-    # Profile edits from /auth/user/ — frontend + mobile both use this URL
-    # for reads; accepting PATCH/PUT here avoids the asymmetric API where
-    # /auth/user/update/ is the only place that accepts writes (common
-    # mobile-client 405 trap).
-    def patch(self, request):
-        serializer = UpdateOwnProfileSerializer(
-            instance=request.user, data=request.data, partial=True,
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return self.get(request)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    put = patch
-
     def post(self, request):
         """SuperAdmin: link current user to a company (create if needed)."""
         if getattr(request.user, "role", None) != "superadmin":
