@@ -2,19 +2,47 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import Enrollment, Certificate, UserSkill
 import secrets
 from datetime import datetime
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def enrollment_eligibility(request, enrollment_id):
+    """GET /academy/enrollments/<id>/eligibility/
+
+    Learner-facing endpoint: returns whether this enrollment can claim a
+    certificate yet, and if not, which gate is still open. Frontend uses
+    the `eligible` boolean to decide whether to show the "Download
+    Certificate" button.
+    """
+    enrollment = get_object_or_404(
+        Enrollment, id=enrollment_id, user=request.user
+    )
+    data = enrollment.certificate_eligibility()
+    data['enrollment_id'] = str(enrollment.id)
+    data['has_certificate'] = hasattr(enrollment, 'certificate')
+    if data['has_certificate']:
+        data['certificate_id'] = str(enrollment.certificate.id)
+        data['certificate_number'] = enrollment.certificate.certificate_number
+    return Response(data)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_certificate(request, enrollment_id):
-    """Generate certificate for enrollment"""
+    """Generate certificate for enrollment — gated on eligibility.
+
+    The client MUST call GET /enrollments/<id>/eligibility/ first to know
+    whether to show the "Download Certificate" button; this endpoint is a
+    server-side guard against forged or out-of-band POSTs.
+    """
     try:
         enrollment = get_object_or_404(Enrollment, id=enrollment_id, user=request.user)
-        
+
         # Check if already exists
         if hasattr(enrollment, 'certificate'):
             return Response({
@@ -22,6 +50,19 @@ def generate_certificate(request, enrollment_id):
                 'certificate_id': str(enrollment.certificate.id),
                 'certificate_number': enrollment.certificate.certificate_number
             })
+
+        # === eligibility gate ===
+        # Reject the request if this learner hasn't completed all the
+        # lessons, passed all quizzes, and passed the final exam. Without
+        # this, any enrolled user could mint a certificate immediately,
+        # making the credential meaningless.
+        eligibility = enrollment.certificate_eligibility()
+        if not eligibility['eligible']:
+            return Response({
+                'error': 'certificate_not_earned',
+                'detail': 'You have not completed all course requirements yet.',
+                **eligibility,
+            }, status=status.HTTP_403_FORBIDDEN)
         
         # Aggregate skills data
         user_skills = UserSkill.objects.filter(user=request.user)

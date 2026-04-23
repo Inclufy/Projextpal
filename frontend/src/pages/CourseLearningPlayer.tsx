@@ -2337,36 +2337,88 @@ return (
                             <Button
                               disabled={progress < 100}
                               className={progress === 100 ? "w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white" : "w-full"}
-                              onClick={() => {
+                              onClick={async () => {
                                 if (progress < 100) return;
+                                // Certificate flow (Phase 1 gated LMS):
+                                //   1. Fetch/create enrollment for this course (so we have a UUID)
+                                //   2. Check eligibility — backend gates on all-lessons + quizzes + exam passed
+                                //   3. If eligible, POST generate → then GET download
                                 try {
                                   const token = localStorage.getItem('access_token');
-                                  const certUrl = `${import.meta.env.VITE_BACKEND_URL || '/api/v1'}/academy/certificates/generate/?course_id=${course.id}`;
-                                  fetch(certUrl, {
-                                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                                  })
-                                    .then(res => {
-                                      if (res.ok) return res.blob();
-                                      throw new Error('Certificate not available');
-                                    })
-                                    .then(blob => {
-                                      const url = URL.createObjectURL(blob);
-                                      const a = document.createElement('a');
-                                      a.href = url;
-                                      a.download = `certificate-${course.id}.pdf`;
-                                      a.click();
-                                      URL.revokeObjectURL(url);
-                                    })
-                                    .catch(() => {
-                                      toast({
-                                        title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
-                                        description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
-                                      });
+                                  const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+                                  const headers: HeadersInit = token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
+                                  // 1. Lookup or create enrollment. Course.id here = the frontend
+                                  // slug (e.g. 'prince2-foundation'). Backend Course now has a
+                                  // matching row with that slug (seed migration 0014).
+                                  const enrollRes = await fetch(`${apiBase}/academy/enrollments/`, {
+                                    method: 'POST',
+                                    headers,
+                                    body: JSON.stringify({
+                                      course: course.id,
+                                      email: user?.email || '',
+                                      first_name: user?.name?.split(' ')[0] || 'Student',
+                                      last_name: user?.name?.split(' ').slice(1).join(' ') || '',
+                                    }),
+                                  });
+                                  if (!enrollRes.ok) throw new Error('Enrollment failed');
+                                  const enrollment = await enrollRes.json();
+
+                                  // 2. Eligibility gate
+                                  const eligRes = await fetch(`${apiBase}/academy/enrollments/${enrollment.id}/eligibility/`, { headers });
+                                  if (!eligRes.ok) throw new Error('Eligibility check failed');
+                                  const elig = await eligRes.json();
+                                  if (!elig.eligible) {
+                                    const missing = [];
+                                    if (elig.lessons_completed < elig.lessons_total - elig.quizzes_total) {
+                                      missing.push(isNL ? `${elig.lessons_total - elig.lessons_completed} lessen te voltooien` : `${elig.lessons_total - elig.lessons_completed} lessons to complete`);
+                                    }
+                                    if (elig.quizzes_passed < elig.quizzes_total) {
+                                      missing.push(isNL ? `${elig.quizzes_total - elig.quizzes_passed} quizzen te slagen` : `${elig.quizzes_total - elig.quizzes_passed} quizzes to pass`);
+                                    }
+                                    if (elig.exam_required && !elig.exam_passed) {
+                                      missing.push(isNL ? 'examen te slagen' : 'final exam to pass');
+                                    }
+                                    toast({
+                                      title: isNL ? 'Certificaat nog niet beschikbaar' : 'Certificate not yet earned',
+                                      description: (isNL ? 'Nog te doen: ' : 'Still needed: ') + missing.join(', '),
+                                      variant: 'default',
                                     });
-                                } catch {
+                                    return;
+                                  }
+
+                                  // 3. Generate cert
+                                  const genRes = await fetch(`${apiBase}/academy/certificate/generate/${enrollment.id}/`, { method: 'POST', headers });
+                                  if (!genRes.ok) throw new Error('Certificate generation failed');
+                                  const cert = await genRes.json();
+
+                                  // 4. Download it
+                                  const dlRes = await fetch(`${apiBase}/academy/certificate/${cert.certificate_id}/download/`, { headers });
+                                  if (dlRes.ok) {
+                                    const blob = await dlRes.blob();
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `certificate-${cert.certificate_number}.pdf`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                  } else {
+                                    // Cert record exists but PDF not rendered yet — ops probably
+                                    // runs PDF rendering async. Show the verification code.
+                                    toast({
+                                      title: isNL ? 'Certificaat aangevraagd' : 'Certificate issued',
+                                      description: isNL
+                                        ? `Nummer: ${cert.certificate_number}. De PDF wordt gegenereerd.`
+                                        : `Number: ${cert.certificate_number}. PDF rendering in progress.`,
+                                    });
+                                  }
+                                } catch (err) {
                                   toast({
-                                    title: isNL ? 'Certificaat wordt gegenereerd' : 'Certificate being generated',
-                                    description: isNL ? 'Je ontvangt je certificaat binnenkort per e-mail.' : 'You will receive your certificate by email shortly.',
+                                    title: isNL ? 'Er ging iets mis' : 'Something went wrong',
+                                    description: isNL
+                                      ? 'Probeer het later opnieuw of neem contact op met support.'
+                                      : 'Please try again later or contact support.',
+                                    variant: 'destructive',
                                   });
                                 }
                               }}

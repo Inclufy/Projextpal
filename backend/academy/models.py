@@ -285,6 +285,92 @@ class Enrollment(models.Model):
             return 0
         return int((self.completed_lessons.count() / total_lessons) * 100)
 
+    def certificate_eligibility(self):
+        """Return a dict describing whether this enrollment can claim a
+        certificate and WHY (or why not). Callers:
+          - GET  /academy/enrollments/<id>/eligibility/  (learner checks)
+          - POST /academy/certificate/generate/<id>/     (server gate)
+
+        Eligibility rules (v1 of the gated LMS):
+          1. All non-quiz/exam lessons must be marked completed
+          2. Every quiz-type lesson must have a QuizAttempt where passed=True
+          3. If the course has an Exam, the user must have an ExamAttempt
+             on it with passed=True
+        The `quizzes_total` count is 0 for courses without quizzes, in which
+        case rule 2 is vacuously satisfied.
+        """
+        # Count total lessons + count per-type requirements
+        all_lessons = CourseLesson.objects.filter(module__course=self.course)
+        lessons_total = all_lessons.count()
+        if lessons_total == 0:
+            # A course with no lessons can't gate anything — treat as
+            # not-eligible so we don't mint empty certs.
+            return {
+                'eligible': False,
+                'reason': 'course_has_no_lessons',
+                'progress_percent': 0,
+                'lessons_total': 0,
+                'lessons_completed': 0,
+                'quizzes_total': 0,
+                'quizzes_passed': 0,
+                'exam_required': False,
+                'exam_passed': False,
+            }
+
+        lessons_completed = self.completed_lessons.count()
+
+        # Quizzes: lessons with lesson_type='quiz'
+        quiz_lessons = all_lessons.filter(lesson_type='quiz')
+        quizzes_total = quiz_lessons.count()
+        # A quiz is "passed" if there's any QuizAttempt for this enrollment+lesson with passed=True
+        quizzes_passed = self.quiz_attempts.filter(
+            lesson__in=quiz_lessons, passed=True
+        ).values_list('lesson_id', flat=True).distinct().count()
+
+        # Exams: any Exam attached to this course (or its modules)
+        # NB: ExamAttempt is user-scoped, not enrollment-scoped, so we need
+        # to cross-reference self.user
+        from django.db.models import Q
+        course_exams = Exam.objects.filter(
+            Q(course=self.course) | Q(module__course=self.course)
+        )
+        exam_required = course_exams.exists()
+        if exam_required and self.user_id:
+            exam_passed = ExamAttempt.objects.filter(
+                user_id=self.user_id, exam__in=course_exams, passed=True
+            ).exists()
+        else:
+            exam_passed = not exam_required  # vacuously true if no exam
+
+        non_quiz_completed = lessons_completed >= (lessons_total - quizzes_total)
+        all_quizzes_passed = quizzes_passed >= quizzes_total
+
+        eligible = non_quiz_completed and all_quizzes_passed and exam_passed
+
+        # Compose a human-readable reason when not eligible
+        if eligible:
+            reason = 'eligible'
+        elif not non_quiz_completed:
+            reason = 'lessons_incomplete'
+        elif not all_quizzes_passed:
+            reason = 'quiz_not_passed'
+        elif not exam_passed:
+            reason = 'exam_not_passed'
+        else:
+            reason = 'unknown'
+
+        return {
+            'eligible': eligible,
+            'reason': reason,
+            'progress_percent': self.calculate_progress(),
+            'lessons_total': lessons_total,
+            'lessons_completed': lessons_completed,
+            'quizzes_total': quizzes_total,
+            'quizzes_passed': quizzes_passed,
+            'exam_required': exam_required,
+            'exam_passed': exam_passed,
+        }
+
 
 class LessonProgress(models.Model):
     """Track individual lesson progress"""

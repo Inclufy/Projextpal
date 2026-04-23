@@ -67,6 +67,14 @@ urlpatterns = [
     path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
     path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),
     path('certificate/verify/<str:verification_code>/', certificate_api.verify_certificate),
+
+    # Eligibility check — learner calls this before showing the
+    # "Download Certificate" button in the learning player.
+    path(
+        'enrollments/<uuid:enrollment_id>/eligibility/',
+        certificate_api.enrollment_eligibility,
+        name='enrollment-eligibility',
+    ),
     
     # ===== ADMIN VISUAL CONFIG =====
     path('admin/lessons/<int:lesson_id>/visual/', views.admin_update_lesson_visual, name='admin-lesson-visual'),
