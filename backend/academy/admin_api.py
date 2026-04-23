@@ -15,8 +15,9 @@ from datetime import datetime
 
 # CORRECT IMPORTS - gebruik de echte model namen
 from .models import (
-    Course, 
-    CourseModule,  # Was "Module" 
+    Course,
+    CourseCategory,
+    CourseModule,  # Was "Module"
     CourseLesson,  # Was "Lesson"
     Certificate    # Bestaat al!
 )
@@ -89,14 +90,35 @@ Return ONLY valid JSON (no markdown):
         content = content.strip()
         
         course_structure = json.loads(content)
-        
+
+        # Course.category is a non-null FK to CourseCategory. If prod hasn't been
+        # seeded yet, bootstrap a default "General" category so the first
+        # AI-generated course doesn't crash on an IntegrityError. Callers can
+        # optionally pass `category_slug` to pick an existing one.
+        from django.utils.text import slugify
+        requested_slug = (data.get('category_slug') or '').strip()
+        if requested_slug:
+            category, _ = CourseCategory.objects.get_or_create(
+                slug=requested_slug,
+                defaults={'name': data.get('category_name', requested_slug.replace('-', ' ').title())}
+            )
+        else:
+            category = CourseCategory.objects.first()
+            if category is None:
+                category = CourseCategory.objects.create(
+                    name='General',
+                    slug='general',
+                    description='Default category — auto-created for the first course.',
+                )
+
         # Create the course
         course = Course.objects.create(
             title=course_structure['course_title'],
             description=course_structure['course_description'],
             difficulty=data.get('difficulty', 'intermediate'),
             status='draft',
-            language='nl'
+            language='nl',
+            category=category,
         )
         
         # Create modules and lessons
