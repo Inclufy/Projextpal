@@ -117,45 +117,58 @@ const AcademyCheckoutSuccess = () => {
         return;
       }
 
-      try {
-        const response = await fetch(`/api/v1/academy/verify-payment/?session_id=${sessionId}`);
-        const data = await response.json();
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        setIsVerifying(false);
+        setIsSuccess(false);
+        return;
+      }
 
-        if (data.success && data.status === 'paid') {
+      // The webhook may not have landed yet when Stripe redirects back
+      // (typical delay: a few seconds). Poll the success endpoint up to
+      // ~10 seconds; treat `ready: true` as "enrollment exists, we can
+      // safely redirect into the learning player".
+      const headers: HeadersInit = {
+        'Authorization': `Bearer ${token}`,
+      };
+      const url = `${apiBase}/academy/checkout/success/?session_id=${sessionId}`;
+
+      try {
+        let data: any = null;
+        const deadline = Date.now() + 10000;
+        while (Date.now() < deadline) {
+          const response = await fetch(url, { headers });
+          if (!response.ok) {
+            data = null;
+            break;
+          }
+          data = await response.json();
+          if (data.paid && data.ready) break;
+          await new Promise(r => setTimeout(r, 1000));
+        }
+
+        if (data && data.paid) {
           setIsSuccess(true);
           setCourseData({
             id: data.course_id,
-            title: data.course_title,
+            title: '',
           });
-          
-          // Trigger confetti!
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
+          try {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+            });
+          } catch {
+            /* confetti optional */
+          }
         } else {
           setIsSuccess(false);
         }
       } catch (error) {
         console.error('Verification error:', error);
-        // For demo purposes, show success anyway
-        setIsSuccess(true);
-        setCourseData({
-          id: courseId || '2',
-          title: 'Agile & Scrum Mastery',
-        });
-        
-        // Trigger confetti!
-        try {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
-        } catch (e) {
-          // confetti might not be available
-        }
+        setIsSuccess(false);
       } finally {
         setIsVerifying(false);
       }

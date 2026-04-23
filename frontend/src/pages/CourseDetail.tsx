@@ -738,12 +738,54 @@ const CourseDetail = () => {
     setIsPreviewOpen(true);
   };
 
-  const handleEnroll = () => {
-    setIsEnrolled(true);
-    toast({
-      title: isNL ? "Ingeschreven!" : "Enrolled!",
-      description: isNL ? "Je kunt nu beginnen met de cursus" : "You can now start the course",
-    });
+  const handleEnroll = async () => {
+    if (!safeCourse) return;
+    // Phase 3 gated LMS flow:
+    //   - Free course → backend enrolls synchronously, we redirect to the player.
+    //   - Paid course → backend returns a Stripe checkout URL, we redirect there.
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        // User not logged in — redirect to sign-in with a return URL
+        navigate(`/signin?returnTo=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+      const res = await fetch(`${apiBase}/academy/checkout/create-session/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ course_id: safeCourse.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Enrollment failed');
+      }
+      const data = await res.json();
+
+      if (data.free) {
+        // Free course — enrollment created on the server, go to player
+        setIsEnrolled(true);
+        toast({
+          title: isNL ? 'Ingeschreven!' : 'Enrolled!',
+          description: isNL ? 'Je kunt nu beginnen met de cursus' : 'You can now start the course',
+        });
+        handleStartCourse();
+      } else if (data.checkout_url) {
+        // Paid course — redirect to Stripe Checkout
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('Unexpected response from checkout');
+      }
+    } catch (err: any) {
+      toast({
+        title: isNL ? 'Er ging iets mis' : 'Something went wrong',
+        description: err?.message || (isNL ? 'Probeer het later opnieuw.' : 'Please try again later.'),
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleStartCourse = () => {

@@ -1383,16 +1383,45 @@ useEffect(() => {
 const markAsComplete = async () => {
   // Award skill points FIRST
   await awardSkillPoints(currentLessonId, 'lesson_complete');
-  
+
   const newProgress = completeLesson(course.id, currentLessonId, allLessons.length);
-  
+
   checkAndUnlockAchievements('lesson-complete');
-  
+
+  // Phase 2 gated LMS: persist lesson completion to backend so the
+  // cert-eligibility gate can count it. Returns 202 + a soft hint when
+  // the lesson is hardcoded-only (no DB row) — in that case we still
+  // have localStorage tracking, just no server-side record. The
+  // certificate gate requires DB-backed lessons, so after
+  // `manage.py import_frontend_courses` runs, every lesson completion
+  // lands properly.
+  try {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+      fetch(`${apiBase}/academy/lessons/${currentLessonId}/complete/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ watch_time: 0 }),
+      }).catch(() => {
+        // Silent: local progress is the user-facing truth. Backend
+        // persistence is for cert eligibility — if it fails, user
+        // retries will reconcile, and the frontend already has the
+        // lesson marked complete locally.
+      });
+    }
+  } catch {
+    /* ignore — local state is still valid */
+  }
+
   toast({
     title: content.labels.lessonCompleted,
     description: isNL ? 'Je voortgang is opgeslagen.' : 'Your progress has been saved.',
   });
-  
+
   if (newProgress === 100) {
     setCertificateDialogOpen(true);
   } else {
