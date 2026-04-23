@@ -822,12 +822,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='ai-insights')
     def ai_insights(self, request, pk=None):
         """Generate AI-powered insights for this project"""
+        from decimal import Decimal
         project = self.get_object()
-        
-        # Get metrics
-        budget = project.budget or 0
+
+        # Get metrics. project.budget is a Decimal — multiplying by a float
+        # raises TypeError, so coerce to Decimal throughout.
+        budget = project.budget or Decimal('0')
         # For now, assume 50% spent if in progress (we can enhance this later)
-        spent = budget * 0.5 if project.status == 'in_progress' else 0
+        spent = budget * Decimal('0.5') if project.status == 'in_progress' else Decimal('0')
         allocated = budget
         
         # Get computed progress
