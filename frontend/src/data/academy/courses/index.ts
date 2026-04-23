@@ -22,6 +22,7 @@ import { leadershipCourse, leadershipModules } from './leadership';
 import { programManagementCourse, programManagementModules } from './program-management';
 import { safeCourse, safeModules } from './safe';
 import { msProjectCourse, msProjectModules } from './ms-project';
+import { aiLiteracyCourse, aiLiteracyModules } from './ai-literacy';
 
 // ============================================
 // RE-EXPORT INDIVIDUAL COURSES & MODULES
@@ -60,13 +61,16 @@ export {
   // MS Project
   msProjectCourse,
   msProjectModules,
+  // AI Literacy
+  aiLiteracyCourse,
+  aiLiteracyModules,
 };
 
 // ============================================
 // COURSES WITH CONTENT (for marketplace)
 // ============================================
 // These are the only courses shown in TrainingMarketplace
-// Total: 11 courses, 35 modules, 166 lessons
+// Total: 12 courses, 39 modules, 182 lessons
 // Use getCourseStats() to get real-time accurate stats
 export const coursesWithContent: Course[] = [
   pmFundamentalsCourse,      // 5 modules, 26 lessons, ~8h
@@ -80,6 +84,7 @@ export const coursesWithContent: Course[] = [
   programManagementCourse,   // 3 modules, 16 lessons, ~14h
   safeCourse,                // 3 modules, 17 lessons, ~16h
   msProjectCourse,           // 3 modules, 18 lessons, ~10h
+  aiLiteracyCourse,          // 4 modules, 16 lessons, ~10h — NEW
 ];
 
 // Main export - only courses with content
