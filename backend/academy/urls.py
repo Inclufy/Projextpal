@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views
+from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views, checkout
 from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGoalViewSet, SkillActivityViewSet
 from .views_visual import LessonVisualViewSet
 from .api_views import EnrollmentViewSet
@@ -80,6 +80,12 @@ urlpatterns = [
         certificate_api.enrollment_eligibility,
         name='enrollment-eligibility',
     ),
+
+    # Phase 3 — Stripe checkout for course purchases (one-time payment)
+    path('checkout/create-session/', checkout.create_course_checkout,
+         name='academy-checkout-create'),
+    path('checkout/success/', checkout.checkout_success,
+         name='academy-checkout-success'),
     
     # ===== ADMIN VISUAL CONFIG =====
     path('admin/lessons/<int:lesson_id>/visual/', views.admin_update_lesson_visual, name='admin-lesson-visual'),

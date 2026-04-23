@@ -52,12 +52,21 @@ def stripe_webhook(request):
 
 def handle_checkout_session_completed(session):
     """
-    Handle successful checkout session completion
+    Handle successful checkout session completion.
+
+    Branches on metadata.purchase_type:
+      - 'course'       → one-time course purchase → create Enrollment
+      - otherwise      → subscription (existing path below)
     """
     try:
         print(f"Processing checkout session: {session.get('id')}")
         metadata = session.get("metadata", {})
         print(f"Session metadata: {metadata}")
+
+        # === Phase 3 gated LMS: one-time course purchase ===
+        if metadata.get("purchase_type") == "course":
+            handle_course_purchase_completed(session, metadata)
+            return
 
         user_id = metadata.get("user_id")
         company_id = metadata.get("company_id")
@@ -434,3 +443,62 @@ def update_company_subscription_status(company):
 
     except Exception as e:
         print(f"Error updating company subscription status: {str(e)}")
+
+
+def handle_course_purchase_completed(session, metadata):
+    """Create an academy Enrollment for a one-time course purchase.
+
+    Called by handle_checkout_session_completed() when the session's
+    metadata.purchase_type == 'course'. The metadata was set when the
+    checkout session was created in academy/checkout.py.
+    """
+    try:
+        from academy.models import Course, Enrollment
+        from accounts.models import CustomUser
+
+        course_id = metadata.get("course_id")
+        user_id = metadata.get("user_id")
+        user_email = metadata.get("user_email")
+
+        if not course_id:
+            print(f"Course purchase webhook missing course_id in metadata: {metadata}")
+            return
+
+        course = Course.objects.filter(id=course_id).first()
+        if not course:
+            print(f"Course purchase webhook: course {course_id} not found")
+            return
+
+        user = None
+        if user_id:
+            user = CustomUser.objects.filter(id=user_id).first()
+        if not user and user_email:
+            user = CustomUser.objects.filter(email=user_email).first()
+        if not user:
+            print(f"Course purchase webhook: user lookup failed (id={user_id}, email={user_email})")
+            return
+
+        # amount_paid comes back from Stripe in cents
+        amount_total = session.get("amount_total", 0)
+        amount_paid = amount_total / 100
+
+        enrollment, created = Enrollment.objects.update_or_create(
+            user=user,
+            course=course,
+            defaults={
+                "email": user.email,
+                "first_name": getattr(user, "first_name", "") or "Student",
+                "last_name": getattr(user, "last_name", "") or "",
+                "company": getattr(getattr(user, "company", None), "name", ""),
+                "status": "active",
+                "amount_paid": amount_paid,
+                "payment_id": session.get("payment_intent") or session.get("id", ""),
+            },
+        )
+        action = "created" if created else "updated"
+        print(f"Course purchase webhook: enrollment {enrollment.id} {action} for user {user.id} / course {course.slug}")
+
+    except Exception as e:
+        import traceback
+        print(f"Error handling course purchase: {e}")
+        traceback.print_exc()
