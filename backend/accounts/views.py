@@ -681,7 +681,7 @@ class ChangePasswordView(APIView):
 
 class CrmApiKeyViewSet(viewsets.ModelViewSet):
     """ViewSet for managing CRM API keys"""
-    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    permission_classes = [IsAuthenticated, HasRole("superadmin", "admin", "pm")]
     
     def get_queryset(self):
         """Filter API keys by user's company"""
