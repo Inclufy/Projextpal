@@ -1122,7 +1122,7 @@ const contentSections = useMemo(() => {
   // NEW: Simulation Answer Handler with Score Tracking + Skill Points
 const handleSimulationAnswer = async (answerIndex: number, correctIndex: number) => {
   const isCorrect = answerIndex === correctIndex;
-  
+
   const newScore: SimulationScore = {
     scenarioId: currentLessonId,
     selectedAnswer: answerIndex,
@@ -1130,16 +1130,40 @@ const handleSimulationAnswer = async (answerIndex: number, correctIndex: number)
     isCorrect,
     timestamp: new Date(),
   };
-  
+
   setSimulationScores([...simulationScores, newScore]);
   setCurrentSimulationAnswer(answerIndex);
   setShowScoreDialog(true);
-  
+
+  // Phase 4 gated LMS: persist simulation attempt so skill points
+  // accrue server-side (and admin dashboards can see simulation
+  // engagement). Fire-and-forget — user-facing skill dialog still
+  // comes from the local awardSkillPoints call.
+  try {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+      fetch(`${apiBase}/academy/simulation/submit/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lesson_id: currentLessonId,
+          scenario_id: currentLessonId,
+          selected: String(answerIndex),
+          correct: isCorrect,
+        }),
+      }).catch(() => { /* silent: local UI is source of truth */ });
+    }
+  } catch { /* ignore */ }
+
   if (isCorrect) {
     // Award skill points for correct simulation
     await awardSkillPoints(currentLessonId, 'simulation_correct');
     checkAndUnlockAchievements('simulation-correct');
-    
+
     toast({
       title: isNL ? '🎯 Correct!' : '🎯 Correct!',
       description: isNL ? 'Je hebt extra skill punten verdiend!' : 'You earned bonus skill points!',
@@ -1149,27 +1173,67 @@ const handleSimulationAnswer = async (answerIndex: number, correctIndex: number)
   // NEW: Practice Work Save Handler + Skill Points
 const handleSavePracticeWork = async () => {
   setSavingPractice(true);
-  
+
   try {
     const newWork: PracticeWork = {
       lessonId: currentLessonId,
       content: currentPracticeContent,
       submittedAt: new Date(),
     };
-    
     setPracticeWork([...practiceWork, newWork]);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
+    // Phase 4 gated LMS: persist the submission to the backend so it
+    // feeds into the cert-eligibility gate. The lesson's practice_id
+    // is on CourseLesson.practice_assignments (after bulk-generate).
+    // If the practice isn't in the DB yet (e.g. user is on a hardcoded
+    // course before admin seeded practice), the call will 404 — we
+    // accept that silently and keep the local state so the learner
+    // doesn't lose their work.
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
+      // Look up the lesson's practice assignment (lazily fetch the
+      // lesson detail from the backend to find its practice id)
+      try {
+        const lessonRes = await fetch(`${apiBase}/academy/lessons/${currentLessonId}/`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        let practiceId: number | null = null;
+        if (lessonRes.ok) {
+          const lesson = await lessonRes.json();
+          if (lesson.practice_assignments?.length) {
+            practiceId = lesson.practice_assignments[0].id;
+          } else if (lesson.practice_set_id) {
+            practiceId = lesson.practice_set_id;
+          }
+        }
+        if (practiceId != null) {
+          await fetch(`${apiBase}/academy/practice/${practiceId}/submit/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              submission_text: currentPracticeContent,
+            }),
+          });
+        }
+      } catch {
+        /* silent: local save still happened */
+      }
+    }
+
     // Award skill points for practice submission
     await awardSkillPoints(currentLessonId, 'practice_submit');
-    
+
     checkAndUnlockAchievements('practice-submit');
-    
+
     toast({
       title: isNL ? '💾 Opgeslagen!' : '💾 Saved!',
-      description: isNL ? 'Je werk is opgeslagen en je hebt skill punten verdiend!' : 'Your work is saved and you earned skill points!',
+      description: isNL
+        ? 'Je werk is ingediend. Een beoordelaar kijkt er naar.'
+        : 'Your work has been submitted. A reviewer will check it.',
     });
   } catch (error) {
     console.error('Failed to save practice:', error);
