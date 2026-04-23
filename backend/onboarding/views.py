@@ -264,7 +264,7 @@ class OnboardingStatusView(APIView):
 
     def get(self, request):
         user = request.user
-        company = user.company
+        company = getattr(user, 'company', None)
 
         if not company:
             return Response({
@@ -272,15 +272,28 @@ class OnboardingStatusView(APIView):
                 'has_company': False,
             })
 
+        # We previously only caught DoesNotExist, so anything else
+        # (MultipleObjectsReturned from a bad migration, corrupt JSON field,
+        # serializer error) bubbled out as a bare Django 500 HTML page.
+        # Degrade gracefully — log, return "has company, not onboarded".
         try:
-            profile = OnboardingProfile.objects.get(company=company)
+            profile = OnboardingProfile.objects.filter(company=company).first()
+            if profile is None:
+                return Response({
+                    'onboarding_completed': False,
+                    'has_company': True,
+                })
             return Response({
                 'onboarding_completed': profile.onboarding_completed,
                 'has_company': True,
                 'profile': OnboardingProfileSerializer(profile).data,
             })
-        except OnboardingProfile.DoesNotExist:
+        except Exception:
+            import logging
+            logging.exception("OnboardingStatusView failed for user=%s company=%s",
+                              getattr(user, 'id', None), getattr(company, 'id', None))
             return Response({
                 'onboarding_completed': False,
                 'has_company': True,
+                'error': 'profile_read_failed',
             })
