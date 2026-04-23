@@ -36,46 +36,46 @@ export const API_CONFIG = {
     PROJECTS: '/api/v1/projects/',
     
     // Projects sub-resources
-    BUDGET: '/api/v1/projects/budget/',
+    // Note: /projects/budget/ has no root list endpoint — only the
+    // overview action does, and per-project items live under /budget-items/.
     BUDGET_OVERVIEW: '/api/v1/projects/budget/overview/',
     BUDGET_CATEGORIES: '/api/v1/projects/budget-categories/',
     BUDGET_ITEMS: '/api/v1/projects/budget-items/',
-    
+
     RISKS: '/api/v1/projects/risks/',
     TIME_ENTRIES: '/api/v1/projects/time-entries/',
     MILESTONES: '/api/v1/projects/milestones/',
     TASKS: '/api/v1/projects/tasks/',
     EXPENSES: '/api/v1/projects/expenses/',
-    
-    // Programs sub-resources
-    PROGRAM_BUDGET: '/api/v1/programs/budget/',
-    PROGRAM_RISKS: '/api/v1/programs/risks/',
-    
+
+    // Program sub-resources live under the program detail route, NOT
+    // at /programs/budget/ or /programs/risks/ (those 404). Callers
+    // must pass the program id:
+    PROGRAM_BUDGET: (programId: number) => `/api/v1/programs/${programId}/budget/overview/`,
+    PROGRAM_RISKS: (programId: number) => `/api/v1/programs/${programId}/risks/`,
+    PROGRAM_MILESTONES: (programId: number) => `/api/v1/programs/${programId}/milestones/`,
+    PROGRAM_BENEFITS: (programId: number) => `/api/v1/programs/${programId}/benefits/`,
+
     // Academy
     COURSES: '/api/v1/academy/courses/',
     ENROLLMENTS: '/api/v1/academy/enrollments/',
     COURSE_MODULES: (courseId: string) => `/api/v1/academy/courses/${courseId}/modules/`,
     LESSONS: (moduleId: number) => `/api/v1/academy/modules/${moduleId}/lessons/`,
-    
+
     // AI
     AI_CHAT: '/api/v1/bot/chats/',
-    
-    // Admin - Dashboard
-    ADMIN_DASHBOARD_STATS: '/api/v1/admin/dashboard/stats/',
-    ADMIN_MODULES: '/api/v1/admin/modules/',
-    
-    // Admin - Users
+
+    // Admin — actual paths per backend/admin_portal/urls.py
+    // Old stale paths removed: /admin/dashboard/stats/, /admin/modules/,
+    // /admin/users/stats/, /admin/activity/(/stats/), /admin/system/info/,
+    // /admin/system/health/ — none of these exist on the backend.
+    ADMIN_STATS: '/api/v1/admin/stats/',
     ADMIN_USERS: '/api/v1/admin/users/',
-    ADMIN_USERS_STATS: '/api/v1/admin/users/stats/',
     ADMIN_USER_DETAIL: (id: number) => `/api/v1/admin/users/${id}/`,
-    
-    // Admin - Activity
-    ADMIN_ACTIVITY: '/api/v1/admin/activity/',
-    ADMIN_ACTIVITY_STATS: '/api/v1/admin/activity/stats/',
-    
-    // Admin - System
-    ADMIN_SYSTEM_INFO: '/api/v1/admin/system/info/',
-    ADMIN_SYSTEM_HEALTH: '/api/v1/admin/system/health/',
+    ADMIN_TENANTS: '/api/v1/admin/tenants/',
+    ADMIN_PLANS: '/api/v1/admin/plans/',
+    ADMIN_LOGS: '/api/v1/admin/logs/',
+    ADMIN_SETTINGS: '/api/v1/admin/settings/',
   },
   
   TIMEOUT: 10000,
