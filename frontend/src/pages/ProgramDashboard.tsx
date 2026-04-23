@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -92,8 +92,10 @@ const deleteProgram = async (id: string) => {
 const ProgramDashboard = () => {
   const { pt } = usePageTranslations();
   const { t, language } = useLanguage();
+  const isNL = language === 'nl';
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   
   // Dialog states
@@ -276,11 +278,46 @@ const ProgramDashboard = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Layers className="h-6 w-6 text-indigo-600" />
-              Program Dashboard
-            </h1>
-            <p className="text-muted-foreground">{program?.name || 'Overview of all projects in the program'}</p>
+            {(() => {
+              // ProgramDashboard serves 15 different sidebar tabs (dashboard,
+              // projects, charter, business-case, communications, stakeholders,
+              // risks, features, pi/*, etc.). Until each gets its own dedicated
+              // screen, differentiate by URL so users at least see a title that
+              // matches the tab they clicked.
+              const parts = location.pathname.split('/').filter(Boolean);
+              const last = parts[parts.length - 1] ?? 'dashboard';
+              const TAB_TITLES: Record<string, { en: string; nl: string; sub: { en: string; nl: string } }> = {
+                dashboard:       { en: 'Program Dashboard',        nl: 'Programma Dashboard',        sub: { en: 'Summary of all projects in the program',                 nl: 'Overzicht van alle projecten in het programma' } },
+                projects:        { en: 'Projects in Program',      nl: 'Projecten in Programma',     sub: { en: 'All projects under this program',                        nl: 'Alle projecten onder dit programma' } },
+                art:             { en: 'Agile Release Train',      nl: 'Agile Release Train',        sub: { en: 'ART composition and member teams',                        nl: 'ART-samenstelling en teams' } },
+                charter:         { en: 'Programme Charter',        nl: 'Programma Charter',          sub: { en: 'Mandate, goals and scope',                                nl: 'Mandaat, doelen en scope' } },
+                'business-case': { en: 'Programme Business Case',  nl: 'Programma Business Case',    sub: { en: 'Justification and expected value',                        nl: 'Rechtvaardiging en verwachte waarde' } },
+                blueprint:       { en: 'Programme Blueprint',      nl: 'Programma Blauwdruk',        sub: { en: 'Target operating model',                                  nl: 'Doel-operating model' } },
+                stakeholders:    { en: 'Stakeholders',             nl: 'Stakeholders',               sub: { en: 'Engagement and influence map',                            nl: 'Betrokkenheid en invloed' } },
+                communications:  { en: 'Communications',           nl: 'Communicatie',               sub: { en: 'Communication plan and recent messages',                  nl: 'Communicatieplan en recente berichten' } },
+                risks:           { en: 'Program Risks',            nl: "Programma Risico's",         sub: { en: 'Risk register at program level',                          nl: 'Risicoregister op programmaniveau' } },
+                features:        { en: 'Program Features',         nl: 'Programma Features',         sub: { en: 'Features planned for this program',                       nl: 'Geplande features voor dit programma' } },
+                demos:           { en: 'System Demos',             nl: 'Systeem Demos',              sub: { en: 'Integrated demo schedule and outcomes',                   nl: 'Schema en uitkomsten' } },
+                'inspect-adapt': { en: 'Inspect & Adapt',          nl: 'Inspect & Adapt',            sub: { en: 'Continuous improvement workshops',                        nl: 'Continue verbetering workshops' } },
+                current:         { en: 'Current PI',               nl: 'Huidige PI',                 sub: { en: 'Active program increment',                                nl: 'Actieve program increment' } },
+                planning:        { en: 'PI Planning',              nl: 'PI Planning',                sub: { en: 'Upcoming program increment planning',                     nl: 'Komende program increment planning' } },
+                objectives:      { en: 'PI Objectives',            nl: 'PI Doelstellingen',          sub: { en: 'Team-level PI objectives',                                nl: 'PI-doelstellingen per team' } },
+              };
+              const info = TAB_TITLES[last] ?? TAB_TITLES.dashboard;
+              const title = isNL ? info.nl : info.en;
+              const subtitle = program?.name
+                ? `${program.name} — ${(isNL ? info.sub.nl : info.sub.en)}`
+                : (isNL ? info.sub.nl : info.sub.en);
+              return (
+                <>
+                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <Layers className="h-6 w-6 text-indigo-600" />
+                    {title}
+                  </h1>
+                  <p className="text-muted-foreground">{subtitle}</p>
+                </>
+              );
+            })()}
           </div>
           <Button 
             className="bg-indigo-600 hover:bg-indigo-700"

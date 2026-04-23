@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const fetchProgramProjects = async (programId: string) => {
 const COLORS = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-red-500', 'bg-cyan-500', 'bg-pink-500'];
 
 const ProgramRoadmap = () => {
+  const location = useLocation();
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -100,11 +101,30 @@ const ProgramRoadmap = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Map className="h-6 w-6 text-indigo-600" />
-              Program Roadmap
-            </h1>
-            <p className="text-muted-foreground">Timeline view of all projects</p>
+            {(() => {
+              // ProgramRoadmap serves 6 sidebar tabs: roadmap, milestones,
+              // schedule, dependencies, tranches, transitions.
+              const parts = location.pathname.split('/').filter(Boolean);
+              const last = parts[parts.length - 1] ?? 'roadmap';
+              const TAB: Record<string, [string, string]> = {
+                roadmap:      ['Program Roadmap',        'Long-term delivery roadmap across tranches'],
+                milestones:   ['Program Milestones',     'Key delivery milestones across the program'],
+                schedule:     ['Program Schedule',       'Consolidated schedule of all in-flight projects'],
+                dependencies: ['Cross-Project Dependencies', 'How projects block or enable each other'],
+                tranches:     ['Tranche Plan',           'MSP / PRINCE2 tranche breakdown'],
+                transitions:  ['Transitions',            'Handover from tranche to business-as-usual'],
+              };
+              const [title, sub] = TAB[last] ?? TAB.roadmap;
+              return (
+                <>
+                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <Map className="h-6 w-6 text-indigo-600" />
+                    {title}
+                  </h1>
+                  <p className="text-muted-foreground">{sub}</p>
+                </>
+              );
+            })()}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={() => setCurrentYear(currentYear - 1)}>

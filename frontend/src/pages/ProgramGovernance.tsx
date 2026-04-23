@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ const fetchProgramRisks = async (programId: string) => {
 };
 
 const ProgramGovernance = () => {
+  const location = useLocation();
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
 
@@ -69,11 +70,29 @@ const ProgramGovernance = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-6 w-6 text-indigo-600" />
-              {pt("Program Governance")}
-            </h1>
-            <p className="text-muted-foreground">{pt("Governance structure and decision making")}</p>
+            {(() => {
+              // ProgramGovernance serves 5 sidebar tabs: governance, stage-gates,
+              // exceptions, highlights, reports.
+              const parts = location.pathname.split('/').filter(Boolean);
+              const last = parts[parts.length - 1] ?? 'governance';
+              const TAB: Record<string, [string, string]> = {
+                governance:     ['Program Governance',   'Governance structure and decision making'],
+                'stage-gates':  ['Stage Gates',          'Tranche end-stage review and approval'],
+                exceptions:     ['Exception Reports',    'Tolerance breaches escalated to the board'],
+                highlights:     ['Highlight Reports',    'Regular board updates and progress summary'],
+                reports:        ['Program Reports',      'Status and financial reports for the program'],
+              };
+              const [title, sub] = TAB[last] ?? TAB.governance;
+              return (
+                <>
+                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <Shield className="h-6 w-6 text-indigo-600" />
+                    {pt(title)}
+                  </h1>
+                  <p className="text-muted-foreground">{pt(sub)}</p>
+                </>
+              );
+            })()}
           </div>
         </div>
 

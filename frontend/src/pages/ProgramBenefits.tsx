@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ const fetchProgramBenefits = async (programId: string) => {
 };
 
 const ProgramBenefits = () => {
+  const location = useLocation();
   const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const fmtCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
@@ -71,11 +72,28 @@ const ProgramBenefits = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Award className="h-6 w-6 text-indigo-600" />
-              {pt("Benefits Management")}
-            </h1>
-            <p className="text-muted-foreground">{pt("Track and realize program benefits")}</p>
+            {(() => {
+              // ProgramBenefits serves 4 sidebar tabs: benefits, benefits/profiles,
+              // benefits/realization, kpis.
+              const parts = location.pathname.split('/').filter(Boolean);
+              const last = parts[parts.length - 1] ?? 'benefits';
+              const TAB: Record<string, [string, string]> = {
+                benefits:    ['Benefits Register',  'All benefits tracked for this program'],
+                profiles:    ['Benefit Profiles',   'Ownership and realization approach per benefit'],
+                realization: ['Realization Plan',   'Timeline and milestones for benefits'],
+                kpis:        ['Program KPIs',       'Quantitative performance indicators'],
+              };
+              const [title, sub] = TAB[last] ?? TAB.benefits;
+              return (
+                <>
+                  <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <Award className="h-6 w-6 text-indigo-600" />
+                    {pt(title)}
+                  </h1>
+                  <p className="text-muted-foreground">{pt(sub)}</p>
+                </>
+              );
+            })()}
           </div>
           <Button className="bg-indigo-600 hover:bg-indigo-700">
             <Plus className="h-4 w-4 mr-2" />
