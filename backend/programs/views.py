@@ -417,6 +417,11 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
             # Get categories
             categories = ProgramBudgetCategory.objects.filter(program=program)
             
+            # Return the dict directly. Wrapping it in
+            # ProgramBudgetOverviewSerializer(data) would double-serialize
+            # the nested categories list (which is already dicts), and
+            # DRF's nested ModelSerializer then calls .pk on integer FK
+            # values → "'int' object has no attribute 'pk'" 500.
             data = {
                 'program_id': program.id,
                 'program_name': program.name,
@@ -427,9 +432,7 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 'currency': budget.currency,
                 'categories': ProgramBudgetCategorySerializer(categories, many=True).data
             }
-            
-            serializer = ProgramBudgetOverviewSerializer(data)
-            return Response(serializer.data)
+            return Response(data)
             
         except Program.DoesNotExist:
             return Response(

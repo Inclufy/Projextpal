@@ -111,9 +111,21 @@ Return ONLY valid JSON (no markdown):
                     description='Default category — auto-created for the first course.',
                 )
 
+        # Course.slug is a SlugField with unique=True. Generating a unique
+        # slug from the title prevents "duplicate key value violates unique
+        # constraint academy_course_slug_key" (empty slugs would collide on
+        # repeat calls).
+        base_slug = slugify(course_structure['course_title'])[:50] or 'course'
+        unique_slug = base_slug
+        suffix = 2
+        while Course.objects.filter(slug=unique_slug).exists():
+            unique_slug = f"{base_slug}-{suffix}"
+            suffix += 1
+
         # Create the course
         course = Course.objects.create(
             title=course_structure['course_title'],
+            slug=unique_slug,
             description=course_structure['course_description'],
             difficulty=data.get('difficulty', 'intermediate'),
             status='draft',

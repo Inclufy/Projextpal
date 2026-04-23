@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Count, Avg, F
+from django.db import IntegrityError
 from datetime import timedelta
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
@@ -58,7 +59,28 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        serializer.save(project=project)
+        # KanbanBoard.project is OneToOneField: second POST would raise
+        # IntegrityError → 500. Make create idempotent.
+        existing = KanbanBoard.objects.filter(project=project).first()
+        if existing is not None:
+            serializer.instance = existing
+            return
+        try:
+            serializer.save(project=project)
+        except IntegrityError:
+            serializer.instance = KanbanBoard.objects.get(project=project)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        existed_before = KanbanBoard.objects.filter(
+            project_id=self.kwargs.get('project_id')
+        ).exists()
+        self.perform_create(serializer)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK if existed_before else status.HTTP_201_CREATED,
+        )
 
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):

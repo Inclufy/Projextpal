@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, Count, Q, Max, Min, Avg
+from django.db import IntegrityError
 from django.utils import timezone
 from datetime import date
 
@@ -154,11 +155,23 @@ class WaterfallPhaseViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
+        project = self.get_project()
         max_order = WaterfallPhase.objects.filter(
-            project=self.get_project()
+            project=project
         ).aggregate(max=Max('order'))['max'] or 0
-        serializer.save(project=self.get_project(), order=max_order + 1)
-    
+        # unique_together = ['project', 'phase_type']: raise clean 400
+        # instead of bubbling IntegrityError → 500 when the same phase_type
+        # already exists (e.g. after initialize/ seeded defaults).
+        try:
+            serializer.save(project=project, order=max_order + 1)
+        except IntegrityError as e:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({
+                'phase_type': [
+                    f"A phase of this type already exists for this project."
+                ]
+            })
+
     @action(detail=True, methods=['post'])
     def start(self, request, pk=None, project_id=None):
         """Start a phase"""
