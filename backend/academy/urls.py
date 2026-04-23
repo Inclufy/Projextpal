@@ -39,9 +39,14 @@ urlpatterns = [
     # Visual Selection AI endpoint
     path('analyze-lesson/', api_views.analyze_lesson_for_visual, name='analyze-lesson-visual'),
     
-    # Quiz/Exam endpoints
+    # Quiz/Exam endpoints — Phase 2 gated LMS
     path('quiz/<str:lesson_id>/', quiz_exam_api.get_quiz, name='get-quiz'),
     path('quiz/<str:lesson_id>/submit/', quiz_exam_api.submit_quiz, name='submit-quiz'),
+    # New: exam submission + lesson completion. Both persist the
+    # corresponding attempt/progress record so Enrollment.certificate_eligibility
+    # can open the gate.
+    path('exam/<int:exam_id>/submit/', quiz_exam_api.submit_exam, name='submit-exam'),
+    path('lessons/<str:lesson_id>/complete/', quiz_exam_api.mark_lesson_complete, name='lesson-complete'),
     
     # AI Content Generation endpoints
     path('ai/analyze-lesson/<int:lesson_id>/', ai_content_api.analyze_lesson_content, name='ai-analyze-lesson'),
