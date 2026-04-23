@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views, checkout, bulk_generate
+from . import api_views, views, test_view, quiz_exam_api, ai_content_api, certificate_api, admin_api, ai_views, checkout, bulk_generate, practice_simulation_api
 from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGoalViewSet, SkillActivityViewSet
 from .views_visual import LessonVisualViewSet
 from .api_views import EnrollmentViewSet
@@ -96,6 +96,20 @@ urlpatterns = [
          name='admin-bulk-exams'),
     path('admin/bulk/skills/', bulk_generate.bulk_generate_skills,
          name='admin-bulk-skills'),
+    path('admin/bulk/practice/', bulk_generate.bulk_generate_practice,
+         name='admin-bulk-practice'),
+    path('admin/bulk/simulations/', bulk_generate.bulk_generate_simulations,
+         name='admin-bulk-simulations'),
+
+    # Practice + simulation submission endpoints (Phase 4)
+    # Practice submissions count toward cert eligibility; simulation
+    # attempts are micro-learning (skill points only, not gated).
+    path('practice/<int:practice_id>/submit/',
+         practice_simulation_api.submit_practice,
+         name='practice-submit'),
+    path('simulation/submit/',
+         practice_simulation_api.submit_simulation,
+         name='simulation-submit'),
     
     # ===== ADMIN VISUAL CONFIG =====
     path('admin/lessons/<int:lesson_id>/visual/', views.admin_update_lesson_visual, name='admin-lesson-visual'),

@@ -342,10 +342,31 @@ class Enrollment(models.Model):
         else:
             exam_passed = not exam_required  # vacuously true if no exam
 
+        # Practice assignments (if any) — every practice attached to this
+        # course requires at least one *approved* submission by this user.
+        # 'pending' / 'needs_work' submissions don't unlock the gate; the
+        # admin review is the quality control.
+        practice_assignments = PracticeAssignment.objects.filter(course=self.course)
+        practice_total = practice_assignments.count()
+        if practice_total and self.user_id:
+            approved_submissions = PracticeSubmission.objects.filter(
+                assignment__in=practice_assignments,
+                user_id=self.user_id,
+                status='approved',
+            ).values_list('assignment_id', flat=True).distinct().count()
+        else:
+            approved_submissions = 0
+        all_practice_approved = approved_submissions >= practice_total
+
         non_quiz_completed = lessons_completed >= (lessons_total - quizzes_total)
         all_quizzes_passed = quizzes_passed >= quizzes_total
 
-        eligible = non_quiz_completed and all_quizzes_passed and exam_passed
+        eligible = (
+            non_quiz_completed
+            and all_quizzes_passed
+            and exam_passed
+            and all_practice_approved
+        )
 
         # Compose a human-readable reason when not eligible
         if eligible:
@@ -356,6 +377,8 @@ class Enrollment(models.Model):
             reason = 'quiz_not_passed'
         elif not exam_passed:
             reason = 'exam_not_passed'
+        elif not all_practice_approved:
+            reason = 'practice_not_approved'
         else:
             reason = 'unknown'
 
@@ -369,6 +392,8 @@ class Enrollment(models.Model):
             'quizzes_passed': quizzes_passed,
             'exam_required': exam_required,
             'exam_passed': exam_passed,
+            'practice_total': practice_total,
+            'practice_approved': approved_submissions,
         }
 
 
