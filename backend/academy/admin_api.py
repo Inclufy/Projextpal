@@ -199,19 +199,48 @@ def list_skills(request):
 @permission_classes([IsAdminUser])
 def create_skill(request):
     """Create a new skill"""
+    from django.db import IntegrityError
+    from django.utils.text import slugify
+
+    name = request.data.get('name')
+    if not name:
+        return Response({'error': 'name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Skill.category is a non-null FK. If the caller didn't pass one, or
+    # passed an unknown slug, bootstrap/find a default "General" category
+    # so we don't raise IntegrityError → 500.
     category_id = request.data.get('category')
     category = None
     if category_id:
         category = SkillCategory.objects.filter(id=category_id).first()
+    if category is None:
+        category, _ = SkillCategory.objects.get_or_create(
+            id='general',
+            defaults={'name': 'General', 'name_nl': 'Algemeen',
+                      'icon': 'star', 'color': 'gray', 'order': 99},
+        )
 
-    skill = Skill.objects.create(
-        id=request.data.get('id', request.data['name'].lower().replace(' ', '-')),
-        name=request.data['name'],
-        name_nl=request.data.get('name_nl', ''),
-        description=request.data.get('description', ''),
-        description_nl=request.data.get('description_nl', ''),
-        category=category
-    )
+    # Ensure unique slug-style PK; Skill.id is a CharField primary key so
+    # duplicates would IntegrityError. Auto-dedupe with numeric suffix.
+    base_id = request.data.get('id') or slugify(name)[:50] or 'skill'
+    skill_id = base_id
+    n = 2
+    while Skill.objects.filter(id=skill_id).exists():
+        skill_id = f"{base_id}-{n}"
+        n += 1
+
+    try:
+        skill = Skill.objects.create(
+            id=skill_id,
+            name=name,
+            name_nl=request.data.get('name_nl', '') or name,
+            description=request.data.get('description', ''),
+            description_nl=request.data.get('description_nl', ''),
+            category=category,
+        )
+    except IntegrityError as e:
+        return Response({'error': f'could not create skill: {e}'},
+                        status=status.HTTP_400_BAD_REQUEST)
     return Response({'id': skill.id, 'name': skill.name}, status=status.HTTP_201_CREATED)
 
 
@@ -365,11 +394,31 @@ def list_exams(request):
 @permission_classes([IsAdminUser])
 def create_exam(request):
     """Create a new exam"""
-    exam = Exam.objects.create(
-        title=request.data['title'],
-        time_limit=request.data.get('time_limit', 60),
-        passing_score=request.data.get('passing_score', 70)
-    )
+    # Exam.questions is a JSONField with no default and no null=True, so
+    # calling .create() without it raises IntegrityError → bare 500.
+    # Default to empty list + handle duration_minutes alias the frontend
+    # sometimes sends instead of time_limit.
+    title = request.data.get('title')
+    if not title:
+        return Response({'error': 'title is required'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    time_limit = request.data.get('time_limit',
+                                   request.data.get('duration_minutes', 60))
+    from django.db import IntegrityError
+    try:
+        exam = Exam.objects.create(
+            title=title,
+            description=request.data.get('description', ''),
+            time_limit=time_limit,
+            passing_score=request.data.get('passing_score', 80),
+            max_attempts=request.data.get('max_attempts', 3),
+            questions=request.data.get('questions', []),
+            course_id=request.data.get('course_id'),
+            module_id=request.data.get('module_id'),
+        )
+    except IntegrityError as e:
+        return Response({'error': f'could not create exam: {e}'},
+                        status=status.HTTP_400_BAD_REQUEST)
     return Response({'id': exam.id, 'title': exam.title}, status=status.HTTP_201_CREATED)
 
 
