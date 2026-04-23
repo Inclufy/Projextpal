@@ -2,7 +2,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from .models import Enrollment, Certificate, UserSkill
 import secrets
@@ -63,6 +63,8 @@ def generate_certificate(request, enrollment_id):
             'download_url': f'/api/v1/academy/certificate/{cert.id}/download/'
         })
         
+    except Http404:
+        raise  # DRF converts to clean 404
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -79,6 +81,8 @@ def download_certificate(request, certificate_id):
         
         return Response({'error': 'PDF not yet generated'}, status=404)
         
+    except Http404:
+        raise  # DRF converts to clean 404
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -102,5 +106,7 @@ def verify_certificate(request, verification_code):
             'skills_summary': len(cert.skills_data.get('categories', {}))
         })
         
+    except Http404:
+        raise  # DRF converts to clean 404
     except Exception as e:
         return Response({'error': str(e)}, status=500)

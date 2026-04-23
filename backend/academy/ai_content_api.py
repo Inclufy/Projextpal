@@ -55,6 +55,8 @@ Return ONLY the transcript content, no metadata."""
         content = response.json()['choices'][0]['message']['content']
         
         return Response({'content': content})
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -109,6 +111,8 @@ Return JSON with this exact format:
         questions = json.loads(data['choices'][0]['message']['content'])
         
         return Response({'questions': questions.get('questions', [])})
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -171,6 +175,8 @@ Return JSON with this exact format:
         simulation = json.loads(data['choices'][0]['message']['content'])
         
         return Response(simulation)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -228,6 +234,8 @@ Return JSON with this exact format:
         assignment = json.loads(data['choices'][0]['message']['content'])
         
         return Response(assignment)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -287,6 +295,8 @@ Return JSON with this exact format:
         exam = json.loads(data['choices'][0]['message']['content'])
         
         return Response(exam)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -337,6 +347,8 @@ Return JSON with this exact format:
         skills = json.loads(data['choices'][0]['message']['content'])
         
         return Response(skills)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -345,13 +357,17 @@ Return JSON with this exact format:
 # ADMIN PORTAL FUNCTIONS (4 old functions for backward compatibility)
 # ============================================================================
 
+from django.http import Http404
+
+
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def analyze_lesson_content(request, lesson_id):
     """Analyze lesson content and suggest improvements (Admin Portal)"""
     try:
         from .models import CourseLesson
-        lesson = CourseLesson.objects.get(id=lesson_id)
+        from django.shortcuts import get_object_or_404
+        lesson = get_object_or_404(CourseLesson, id=lesson_id)
         
         prompt = f"""Analyze this lesson and provide improvement suggestions:
 
@@ -391,6 +407,8 @@ Return JSON with this exact format:
         result = json.loads(data['choices'][0]['message']['content'])
         
         return Response(result)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -401,7 +419,8 @@ def auto_assign_skills(request, lesson_id):
     """Auto-assign skills to a lesson based on content (Admin Portal)"""
     try:
         from .models import CourseLesson
-        lesson = CourseLesson.objects.get(id=lesson_id)
+        from django.shortcuts import get_object_or_404
+        lesson = get_object_or_404(CourseLesson, id=lesson_id)
         
         prompt = f"""Identify relevant skills for this lesson:
 
@@ -442,6 +461,8 @@ Return JSON with this exact format:
         skills_data = json.loads(data['choices'][0]['message']['content'])
         
         return Response(skills_data)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -452,7 +473,8 @@ def generate_visual(request, lesson_id, visual_type):
     """Generate visual content suggestion for a lesson (Admin Portal)"""
     try:
         from .models import CourseLesson
-        lesson = CourseLesson.objects.get(id=lesson_id)
+        from django.shortcuts import get_object_or_404
+        lesson = get_object_or_404(CourseLesson, id=lesson_id)
         
         prompt = f"""Suggest a {visual_type} visual for this lesson:
 
@@ -494,6 +516,8 @@ Return JSON with this exact format:
         visual = json.loads(data['choices'][0]['message']['content'])
         
         return Response(visual)
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -557,5 +581,7 @@ Return JSON: {{"quality_score": 85, "needs_improvement": false, "priority": "med
             'analyzed': len(results),
             'results': results
         })
+    except Http404:
+        raise
     except Exception as e:
         return Response({'error': str(e)}, status=500)
