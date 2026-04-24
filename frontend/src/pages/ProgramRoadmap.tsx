@@ -112,17 +112,17 @@ const ProgramRoadmap = () => {
               const last = parts[parts.length - 1] ?? 'roadmap';
               const TAB: Record<string, { en: [string, string]; nl: [string, string] }> = {
                 roadmap:      { en: ['Program Roadmap',              'Long-term delivery roadmap across tranches'],
-                                nl: ['Programma Routekaart',         'Lange-termijn leveringsroadmap over tranches'] },
+                                nl: ['Programma Routekaart',         'Lange-termijn leveringsplan over tranches'] },
                 milestones:   { en: ['Program Milestones',           'Key delivery milestones across the program'],
                                 nl: ['Programma Mijlpalen',          'Belangrijke leveringsmijlpalen in het programma'] },
                 schedule:     { en: ['Program Schedule',             'Consolidated schedule of all in-flight projects'],
                                 nl: ['Programma Planning',           'Geconsolideerde planning van alle lopende projecten'] },
                 dependencies: { en: ['Cross-Project Dependencies',   'How projects block or enable each other'],
-                                nl: ['Cross-Project Afhankelijkheden','Hoe projecten elkaar blokkeren of mogelijk maken'] },
+                                nl: ['Afhankelijkheden tussen Projecten','Hoe projecten elkaar blokkeren of mogelijk maken'] },
                 tranches:     { en: ['Tranche Plan',                 'MSP / PRINCE2 tranche breakdown'],
                                 nl: ['Tranche Plan',                 'MSP / PRINCE2 tranche-indeling'] },
                 transitions:  { en: ['Transitions',                  'Handover from tranche to business-as-usual'],
-                                nl: ['Transities',                   'Overdracht van tranche naar business-as-usual'] },
+                                nl: ['Transities',                   'Overdracht van tranche naar dagelijkse operatie'] },
               };
               const info = TAB[last] ?? TAB.roadmap;
               const [title, sub] = isNL ? info.nl : info.en;
