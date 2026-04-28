@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: INTRODUCTIE PROJECT MANAGEMENT
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'pm-m1',
   title: 'Module 1: Introduction to Project Management',
   titleNL: 'Module 1: Introductie Project Management',
@@ -788,6 +789,7 @@ De vijf fasen van een project:
 // MODULE 2: PROJECT INITIATIE
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'pm-m2',
   title: 'Module 2: Project Initiation',
   titleNL: 'Module 2: Project Initiatie',
@@ -1502,6 +1504,7 @@ Gebruik het meegeleverde template en lever een document van 3-5 pagina's in.`,
 // MODULE 3: PLANNING
 // ============================================
 const module3: Module = {
+  order: 2,
   id: 'pm-m3',
   title: 'Module 3: Planning',
   titleNL: 'Module 3: Planning',
@@ -2114,6 +2117,7 @@ of verbeteren.
 // MODULE 4: UITVOERING & MONITORING
 // ============================================
 const module4: Module = {
+  order: 3,
   id: 'pm-m4',
   title: 'Module 4: Execution & Monitoring',
   titleNL: 'Module 4: Uitvoering & Monitoring',
@@ -2876,6 +2880,7 @@ Effectief change control:
 // MODULE 5: AFSLUITING
 // ============================================
 const module5: Module = {
+  order: 4,
   id: 'pm-m5',
   title: 'Module 5: Closure',
   titleNL: 'Module 5: Afsluiting',

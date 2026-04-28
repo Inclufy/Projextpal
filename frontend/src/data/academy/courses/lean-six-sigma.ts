@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: INTRODUCTIE & DEFINE
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'lss-m1',
   title: 'Module 1: Introduction & Define',
   titleNL: 'Module 1: Introductie & Define',
@@ -426,6 +427,7 @@ De Define fase:
 // MODULE 2: MEASURE
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'lss-m2',
   title: 'Module 2: Measure',
   titleNL: 'Module 2: Measure',
@@ -614,6 +616,7 @@ De Measure fase:
 // MODULE 3: ANALYZE
 // ============================================
 const module3: Module = {
+  order: 2,
   id: 'lss-m3',
   title: 'Module 3: Analyze',
   titleNL: 'Module 3: Analyze',
@@ -809,6 +812,7 @@ Root cause analysis:
 // MODULE 4: IMPROVE
 // ============================================
 const module4: Module = {
+  order: 3,
   id: 'lss-m4',
   title: 'Module 4: Improve',
   titleNL: 'Module 4: Improve',
@@ -979,6 +983,7 @@ De Improve fase:
 // MODULE 5: CONTROL
 // ============================================
 const module5: Module = {
+  order: 4,
   id: 'lss-m5',
   title: 'Module 5: Control',
   titleNL: 'Module 5: Control',

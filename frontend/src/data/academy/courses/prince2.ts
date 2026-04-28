@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: PRINCE2 INTRODUCTIE & PRINCIPES
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'p2-m1',
   title: 'Module 1: PRINCE2 Introduction & Principles',
   titleNL: 'Module 1: PRINCE2 Introductie & Principes',
@@ -542,6 +543,7 @@ In de volgende lessen gaan we dieper in op elk thema.`,
 // MODULE 2: DE 7 THEMA'S IN DETAIL
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'p2-m2',
   title: 'Module 2: The 7 Themes in Detail',
   titleNL: 'Module 2: De 7 Thema\'s in Detail',
@@ -1200,6 +1202,7 @@ Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden
 // MODULE 3: DE 7 PROCESSEN
 // ============================================
 const module3: Module = {
+  order: 2,
   id: 'p2-m3',
   title: 'Module 3: The 7 Processes',
   titleNL: 'Module 3: De 7 Processen',
@@ -2064,6 +2067,7 @@ Closing a Project:
 // MODULE 4: TAILORING & EXAMEN
 // ============================================
 const module4: Module = {
+  order: 3,
   id: 'p2-m4',
   title: 'Module 4: Tailoring & Exam Preparation',
   titleNL: 'Module 4: Tailoring & Examen Voorbereiding',
