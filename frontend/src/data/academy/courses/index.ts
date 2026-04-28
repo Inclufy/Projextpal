@@ -108,6 +108,7 @@ const courseModulesMap: Record<string, Module[]> = {
   'program-management-pro': programManagementModules,
   'safe-scaling-agile': safeModules,
   'ms-project-masterclass': msProjectModules,
+  'ai-literacy': aiLiteracyModules,
 };
 
 // ============================================
