@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DemoControls } from "@/components/DemoControls";
 import {
   ArrowLeft,
   Edit,
@@ -54,6 +55,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CURRENCIES, type CurrencyCode } from "@/lib/currencies";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -149,6 +152,7 @@ const ProgramDetail = () => {
     name: "",
     description: "",
     total_budget: "",
+    currency: "EUR",
     strategic_objective: "",
   });
 
@@ -271,6 +275,7 @@ const ProgramDetail = () => {
         name: program.name || "",
         description: program.description || "",
         total_budget: program.total_budget?.toString() || "",
+        currency: program.currency || "EUR",
         strategic_objective: program.strategic_objective || "",
       });
     }
@@ -284,6 +289,7 @@ const ProgramDetail = () => {
         name: editFormData.name,
         description: editFormData.description,
         total_budget: parseFloat(editFormData.total_budget) || 0,
+        currency: editFormData.currency,
         strategic_objective: editFormData.strategic_objective,
       },
     });
@@ -317,7 +323,8 @@ const ProgramDetail = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
+  const programCurrency = (program?.currency as CurrencyCode) || getCurrencyFromLanguage(language);
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, programCurrency, language);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -375,6 +382,19 @@ const ProgramDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {id && (
+            <DemoControls
+              entityId={id}
+              seedUrl={`/api/v1/programs/${id}/seed-demo/`}
+              clearUrl={`/api/v1/programs/${id}/clear-demo/`}
+              onChanged={() => {
+                queryClient.invalidateQueries({ queryKey: ["program", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-projects", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-milestones", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-risks", id] });
+              }}
+            />
+          )}
           <Button variant="outline" onClick={handleEditClick}>
             <Edit className="h-4 w-4 mr-2" />
             {pt("Edit")}
@@ -879,14 +899,34 @@ const ProgramDetail = () => {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-budget">{pt("Total Budget")} (€)</Label>
-              <Input
-                id="edit-budget"
-                type="number"
-                value={editFormData.total_budget}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="edit-budget">{pt("Total Budget")}</Label>
+                <Input
+                  id="edit-budget"
+                  type="number"
+                  value={editFormData.total_budget}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-currency">{pt("Currency")}</Label>
+                <Select
+                  value={editFormData.currency}
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, currency: value }))}
+                >
+                  <SelectTrigger id="edit-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(CURRENCIES).map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.symbol} {c.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-objective">{pt("Strategic Objective")}</Label>

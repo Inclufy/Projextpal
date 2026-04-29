@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { DemoControls } from "@/components/DemoControls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -109,10 +110,13 @@ const Prince2Dashboard = () => {
               <p className="text-sm text-muted-foreground">{dashboard?.project_name || "Projects IN Controlled Environments"}</p>
             </div>
           </div>
-          <Button variant="outline" onClick={fetchDashboard} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            {pt("Refresh")}
-          </Button>
+          <div className="flex gap-2">
+            {id && <DemoControls entityId={id} methodology="prince2" onChanged={fetchDashboard} />}
+            <Button variant="outline" onClick={fetchDashboard} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              {pt("Refresh")}
+            </Button>
+          </div>
         </div>
 
         {/* No stages warning */}

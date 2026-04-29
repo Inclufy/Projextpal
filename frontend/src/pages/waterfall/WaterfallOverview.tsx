@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milestone, BarChart3, GitPullRequest, Rocket, Wrench, DollarSign, AlertTriangle, AlertCircle, Package, Baseline, Users } from "lucide-react";
+import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milestone, BarChart3, GitPullRequest, Rocket, Wrench, Euro, AlertTriangle, AlertCircle, Package, Baseline, Users } from "lucide-react";
 import { toast } from "sonner";
+import { DemoControls } from "@/components/DemoControls";
 
 const WaterfallOverview = () => {
   const { pt } = usePageTranslations();
@@ -33,7 +34,11 @@ const WaterfallOverview = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-lg bg-cyan-600 flex items-center justify-center"><Waves className="h-5 w-5 text-white" /></div><div><h1 className="text-2xl font-bold">Waterfall Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div></div>
-          <div className="flex gap-2"><Button variant="outline" onClick={initialize} className="gap-2"><Plus className="h-4 w-4" /> Initialize</Button><Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button></div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={initialize} className="gap-2"><Plus className="h-4 w-4" /> Initialize</Button>
+            {id && <DemoControls entityId={id} methodology="waterfall" onChanged={fetchDashboard} />}
+            <Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -63,7 +68,7 @@ const WaterfallOverview = () => {
             { label: pt("Change Requests"), path: "change-requests", icon: GitPullRequest },
             { label: pt("Deployment"), path: "deployment", icon: Rocket },
             { label: pt("Maintenance"), path: "maintenance", icon: Wrench },
-            { label: pt("Budget"), path: "budget", icon: DollarSign },
+            { label: pt("Budget"), path: "budget", icon: Euro },
             { label: pt("Risks"), path: "risks", icon: AlertTriangle },
             { label: pt("Issues"), path: "issues", icon: AlertCircle },
             { label: pt("Deliverables"), path: "deliverables", icon: Package },
