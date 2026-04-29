@@ -1,3 +1,4 @@
+from typing import Optional
 from typing import Dict, Any
 from bot.ai.tools import ToolRegistry
 from bot.ai.tools import form_tool
@@ -52,9 +53,24 @@ def delete_program(program_id: str) -> Dict[str, Any]:
 
 
 @ToolRegistry.register_tool(return_direct=False)
-def list_programs(status: str = None, page: int = 1, size: int = 10) -> Dict[str, Any]:
+def list_programs(status: Optional[str] = None, page: int = 1, size: int = 10) -> Dict[str, Any]:
     """
     Lists all programs. Optionally filter by status.
+
+    PRESENTATION: When summarizing the result for the user, ALWAYS render the
+    list as a markdown table with these exact columns:
+
+        | Naam | Status | Projecten | Startdatum | Einddatum | Health |
+
+    Map the data fields to columns:
+      - Naam       ← name
+      - Status     ← status (Planning / Active / On Hold / Completed)
+      - Projecten  ← project_count (integer)
+      - Startdatum ← start_date (DD-MM-YYYY) or "—"
+      - Einddatum  ← end_date (DD-MM-YYYY) or "—"
+      - Health     ← health (green / amber / red)
+
+    Do NOT use nested bullet lists. Keep prose around the table short.
     """
     permission_error = require_permission(
         return_dict=True, 
@@ -76,16 +92,50 @@ def list_programs(status: str = None, page: int = 1, size: int = 10) -> Dict[str
     end = start + size
     programs = programs[start:end]
 
+    from datetime import date as _date
+    today = _date.today()
+
     program_list = []
     for p in programs:
+        end = getattr(p, "target_end_date", None)
+        status_val = getattr(p, 'status', 'active')
+        if end and today > end and status_val != 'completed':
+            health = "red"
+        elif end and (end - today).days < 30 and status_val != 'completed':
+            health = "amber"
+        else:
+            health = "green"
         program_list.append({
             "id": p.id,
             "name": p.name,
-            "status": getattr(p, 'status', 'active'),
+            "status": status_val,
             "start_date": str(p.start_date) if p.start_date else None,
-            "end_date": str(p.end_date) if p.end_date else None,
+            "end_date": str(p.target_end_date) if p.target_end_date else None,
             "project_count": p.projects.count() if hasattr(p, 'projects') else 0,
+            "health": health,
         })
+
+    if program_list:
+        md_lines = [
+            "| Naam | Status | Projecten | Startdatum | Einddatum | Health |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+        for r in program_list:
+            def fmt(d):
+                if not d:
+                    return "—"
+                try:
+                    y, m, dd = d.split("-")
+                    return f"{dd}-{m}-{y}"
+                except Exception:
+                    return d
+            md_lines.append(
+                f"| {r['name']} | {(r['status'] or '').replace('_', ' ').title()} "
+                f"| {r['project_count']} | {fmt(r['start_date'])} | {fmt(r['end_date'])} | {r['health']} |"
+            )
+        markdown_table = "\n".join(md_lines)
+    else:
+        markdown_table = "_Geen programma's gevonden._"
 
     return {
         "success": True,
@@ -94,6 +144,7 @@ def list_programs(status: str = None, page: int = 1, size: int = 10) -> Dict[str
             "programs": program_list,
             "total": total,
             "page": page,
-            "size": size
+            "size": size,
+            "_markdown_table": markdown_table,
         }
     }

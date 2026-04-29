@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: WATERFALL FUNDAMENTALS
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'wf-m1',
   title: 'Module 1: Waterfall Fundamentals',
   titleNL: 'Module 1: Waterfall Fundamenten',
@@ -813,6 +814,7 @@ De uitvoerende fasen:
 // MODULE 2: WATERFALL IN PRACTICE
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'wf-m2',
   title: 'Module 2: Waterfall in Practice',
   titleNL: 'Module 2: Waterfall in de Praktijk',

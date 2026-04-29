@@ -1013,9 +1013,13 @@ const CourseDetail = () => {
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold" style={{ color: BRAND.green }}>
-                        {course.freeForCustomers ? (isNL ? 'Gratis' : 'Free') : `€${safeCourse.price}`}
+                        {course.freeForCustomers
+                          ? (isNL ? 'Gratis' : 'Free')
+                          : (safeCourse.price != null && safeCourse.price !== '' && Number(safeCourse.price) > 0
+                              ? `€${safeCourse.price}`
+                              : (isNL ? 'Op aanvraag' : 'On request'))}
                       </span>
-                      {safeCourse.originalPrice && (
+                      {safeCourse.originalPrice && Number(safeCourse.originalPrice) > 0 && (
                         <span className="text-lg text-gray-400 line-through">€{safeCourse.originalPrice}</span>
                       )}
                     </div>

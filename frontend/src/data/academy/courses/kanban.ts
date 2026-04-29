@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: KANBAN FUNDAMENTEN
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'kb-m1',
   title: 'Module 1: Kanban Fundamentals',
   titleNL: 'Module 1: Kanban Fundamenten',
@@ -774,6 +775,7 @@ Flow metrics:
 // MODULE 2: KANBAN IN DE PRAKTIJK
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'kb-m2',
   title: 'Module 2: Kanban in Practice',
   titleNL: 'Module 2: Kanban in de Praktijk',

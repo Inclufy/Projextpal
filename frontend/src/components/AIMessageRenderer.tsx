@@ -120,11 +120,29 @@ function detectSectionType(title: string): string {
 // MARKDOWN PARSING
 // ============================================
 interface ParsedBlock {
-  type: 'header' | 'paragraph' | 'list' | 'code' | 'quote' | 'divider';
+  type: 'header' | 'paragraph' | 'list' | 'code' | 'quote' | 'divider' | 'table';
   level?: number;
   content: string;
   items?: string[];
   listType?: 'bullet' | 'numbered';
+  /** For table blocks */
+  headers?: string[];
+  /** For table blocks — each inner array is one row */
+  rows?: string[][];
+}
+
+/** Helper: split a markdown table row into trimmed cells. */
+function splitTableRow(line: string): string[] {
+  // Strip leading/trailing pipes, then split on |. Trim each cell.
+  return line.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+}
+
+/** Helper: a line is a table separator if it consists of dashes/colons inside pipes. */
+function isTableSeparator(line: string): boolean {
+  if (!line.includes('|')) return false;
+  const cells = splitTableRow(line);
+  if (cells.length === 0) return false;
+  return cells.every(c => /^:?-{3,}:?$/.test(c));
 }
 
 function parseMarkdown(text: string): ParsedBlock[] {
@@ -195,6 +213,29 @@ function parseMarkdown(text: string): ParsedBlock[] {
         currentList = null;
       }
       blocks.push({ type: 'header', level: headerMatch[1].length, content: headerMatch[2] });
+      continue;
+    }
+
+    // Markdown table — header row, separator, then body rows.
+    // Detect: current line has at least one '|' and the next line is a separator
+    // (e.g. `| --- | --- |`). Greedily consume subsequent pipe-rows as data.
+    if (trimmed.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1].trim())) {
+      // Flush any in-progress list
+      if (currentList) {
+        blocks.push({ type: 'list', content: '', items: currentList.items, listType: currentList.type });
+        currentList = null;
+      }
+      const headers = splitTableRow(trimmed);
+      const rows: string[][] = [];
+      i += 2; // skip header + separator
+      while (i < lines.length) {
+        const rowLine = lines[i].trim();
+        if (!rowLine || !rowLine.includes('|')) break;
+        rows.push(splitTableRow(rowLine));
+        i++;
+      }
+      i--; // for-loop will i++ next iteration
+      blocks.push({ type: 'table', content: '', headers, rows });
       continue;
     }
 
@@ -435,6 +476,129 @@ function ParagraphBlock({ content }: { content: string }) {
   );
 }
 
+/**
+ * TableBlock — renders a parsed markdown table.
+ *
+ * Detects "Status" / "Health" / "Voortgang" / "Progress" cells and styles them
+ * specially so a list of projects/programs reads like a real dashboard table
+ * instead of nested bullets.
+ */
+function TableBlock({ headers, rows }: { headers: string[]; rows: string[][] }) {
+  const headerLower = headers.map(h => h.toLowerCase());
+
+  const renderCell = (cell: string, colIdx: number) => {
+    const header = headerLower[colIdx] || '';
+    const value = cell.trim();
+
+    // Health dot
+    if (header.includes('health') || header.includes('gezondheid')) {
+      const v = value.toLowerCase();
+      const color =
+        v.startsWith('green') || v.startsWith('groen') || v === '🟢'
+          ? 'bg-green-500'
+          : v.startsWith('amber') || v.startsWith('oranje') || v.startsWith('yellow') || v === '🟡'
+            ? 'bg-amber-500'
+            : v.startsWith('red') || v.startsWith('rood') || v === '🔴'
+              ? 'bg-red-500'
+              : 'bg-slate-300 dark:bg-slate-600';
+      return (
+        <div className="flex items-center gap-2">
+          <span className={cn('inline-block h-2.5 w-2.5 rounded-full', color)} aria-hidden />
+          <span className="text-xs text-foreground/80 capitalize">{value || '—'}</span>
+        </div>
+      );
+    }
+
+    // Status badge
+    if (header === 'status' || header.includes('status')) {
+      const v = value.toLowerCase().replace(/\s+/g, '_');
+      const variant: 'default' | 'secondary' | 'destructive' | 'outline' =
+        v.includes('complet') || v.includes('done') || v.includes('voltooi')
+          ? 'default'
+          : v.includes('progress') || v.includes('uitvoer') || v.includes('active')
+            ? 'secondary'
+            : v.includes('hold') || v.includes('paus')
+              ? 'outline'
+              : v.includes('cancel') || v.includes('block') || v.includes('geblokkeerd')
+                ? 'destructive'
+                : 'outline';
+      return <Badge variant={variant} className="text-xs">{value || '—'}</Badge>;
+    }
+
+    // Progress / Voortgang — render as a slim bar if it looks numeric (e.g. "45%")
+    if (header.includes('progress') || header.includes('voortgang')) {
+      const numMatch = value.match(/(\d+)\s*%?/);
+      if (numMatch) {
+        const pct = Math.max(0, Math.min(100, parseInt(numMatch[1], 10)));
+        return (
+          <div className="flex items-center gap-2 min-w-[100px]">
+            <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${BRAND.purple}, ${BRAND.pink})` }}
+              />
+            </div>
+            <span className="text-xs tabular-nums text-foreground/80">{pct}%</span>
+          </div>
+        );
+      }
+    }
+
+    return <span className="text-sm text-foreground/90">{formatInlineText(value)}</span>;
+  };
+
+  // Decide which columns can wrap text vs which stay on one line.
+  // Status badges, progress bars and health dots are always single-line.
+  // Long-text columns (Naam, Programma, Module) get to wrap so the table
+  // fits the chat without horizontal scroll on typical viewports.
+  const isCompactCol = (colIdx: number) => {
+    const h = (headers[colIdx] || '').toLowerCase();
+    return h.includes('status') || h.includes('voortgang') || h.includes('progress')
+      || h.includes('health') || h.includes('gezondheid')
+      || h.includes('einddatum') || h.includes('startdatum') || h.includes('datum')
+      || h === 'projecten' || h === 'projects' || h === '#';
+  };
+
+  return (
+    <div className="my-3 w-full overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-left text-sm table-auto">
+        <thead className="bg-muted/50">
+          <tr>
+            {headers.map((h, i) => (
+              <th
+                key={i}
+                className={cn(
+                  'px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground',
+                  isCompactCol(i) ? 'whitespace-nowrap' : 'whitespace-normal',
+                )}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} className="border-t border-border hover:bg-muted/30 transition-colors">
+              {headers.map((_, ci) => (
+                <td
+                  key={ci}
+                  className={cn(
+                    'px-3 py-2 align-middle',
+                    isCompactCol(ci) ? 'whitespace-nowrap' : 'whitespace-normal break-words',
+                  )}
+                >
+                  {renderCell(row[ci] ?? '', ci)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ============================================
 // USER MESSAGE
 // ============================================
@@ -479,9 +643,13 @@ function AssistantMessage({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Tables need room — if any block is a table, let the assistant message
+  // span the full chat width instead of being capped at 90%.
+  const hasTable = blocks.some(b => b.type === 'table');
+
   return (
     <div className="flex mb-6">
-      <div className="flex items-start gap-3 max-w-[90%]">
+      <div className={cn('flex items-start gap-3', hasTable ? 'w-full' : 'max-w-[90%]')}>
         {/* AI Avatar */}
         <div 
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
@@ -502,6 +670,8 @@ function AssistantMessage({
                       return <HeaderBlock key={idx} level={block.level || 2} content={block.content} />;
                     case 'list':
                       return <ListBlock key={idx} items={block.items || []} listType={block.listType || 'bullet'} />;
+                    case 'table':
+                      return <TableBlock key={idx} headers={block.headers || []} rows={block.rows || []} />;
                     case 'code':
                       return <CodeBlock key={idx} content={block.content} />;
                     case 'quote':

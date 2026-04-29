@@ -4,6 +4,17 @@ import { Loader2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const ALLOWED_ROLES = ["superadmin", "admin", "pm", "program_manager"];
 
@@ -55,7 +66,6 @@ export const DemoControls = ({
   };
 
   const seedDemo = async () => {
-    if (!confirm(pt("Fill all empty tabs with realistic demo data? Existing data will be preserved."))) return;
     setSeeding(true);
     try {
       const r = await post(computedSeed);
@@ -75,7 +85,6 @@ export const DemoControls = ({
   };
 
   const clearDemo = async () => {
-    if (!confirm(pt("Permanently delete ALL data for this methodology? This cannot be undone."))) return;
     setClearing(true);
     try {
       const r = await post(computedClear);
@@ -94,19 +103,56 @@ export const DemoControls = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <Button variant="outline" onClick={seedDemo} disabled={seeding} className="gap-2">
-        {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-        {pt("Fill with demo data")}
-      </Button>
-      <Button
-        variant="outline"
-        onClick={clearDemo}
-        disabled={clearing}
-        className="gap-2 text-destructive hover:bg-destructive/10"
-      >
-        {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-        {pt("Clear data")}
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="outline" disabled={seeding} className="gap-2">
+            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {pt("Fill with demo data")}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pt("Fill with demo data?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pt("Fill all empty tabs with realistic demo data? Existing data will be preserved.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={seedDemo}>{pt("Yes, fill")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="outline"
+            disabled={clearing}
+            className="gap-2 text-destructive hover:bg-destructive/10"
+          >
+            {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {pt("Clear data")}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pt("Clear all data?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pt("Permanently delete ALL data for this methodology? This cannot be undone.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={clearDemo}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {pt("Yes, clear all")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

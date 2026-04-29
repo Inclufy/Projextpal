@@ -1315,33 +1315,56 @@ Respond in JSON format only, no other text:
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-4">{tt.projectDistribution}</h3>
             {projectDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={projectDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    dataKey="hours"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    labelLine={false}
-                  >
-                    {projectDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                    formatter={(value: number) => [`${value}h`, "Hours"]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0">
+                  <ResponsiveContainer width={260} height={260}>
+                    <PieChart>
+                      <Pie
+                        data={projectDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={110}
+                        paddingAngle={2}
+                        dataKey="hours"
+                        nameKey="name"
+                      >
+                        {projectDistribution.map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                        formatter={(value: number) => [`${value}h`, "Hours"]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 min-w-0 space-y-1.5 max-h-[260px] overflow-y-auto pr-2">
+                  {[...projectDistribution]
+                    .sort((a, b) => b.hours - a.hours)
+                    .map((p) => {
+                      const totalProjectHours = projectDistribution.reduce((s, x) => s + x.hours, 0);
+                      const pct = totalProjectHours > 0 ? Math.round((p.hours / totalProjectHours) * 100) : 0;
+                      const origIdx = projectDistribution.findIndex((x) => x.name === p.name);
+                      return (
+                        <div key={p.name} className="flex items-center gap-2 text-sm">
+                          <span
+                            className="inline-block h-3 w-3 rounded-sm flex-shrink-0"
+                            style={{ background: CHART_COLORS[origIdx % CHART_COLORS.length] }}
+                          />
+                          <span className="truncate flex-1 text-foreground/80" title={p.name}>{p.name}</span>
+                          <span className="tabular-nums text-muted-foreground">{p.hours}h</span>
+                          <span className="tabular-nums text-xs text-muted-foreground w-10 text-right">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             ) : (
               <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                 No time entries yet

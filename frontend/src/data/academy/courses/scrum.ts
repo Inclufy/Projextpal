@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: SCRUM FUNDAMENTEN
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'scrum-m1',
   title: 'Module 1: Scrum Fundamentals',
   titleNL: 'Module 1: Scrum Fundamenten',
@@ -752,6 +753,7 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
 // MODULE 2: DE ROL VAN DE SCRUM MASTER
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'scrum-m2',
   title: 'Module 2: The Role of the Scrum Master',
   titleNL: 'Module 2: De Rol van de Scrum Master',
@@ -1155,6 +1157,7 @@ Events faciliteren:
 // MODULE 3: SCRUM IN DE PRAKTIJK
 // ============================================
 const module3: Module = {
+  order: 2,
   id: 'scrum-m3',
   title: 'Module 3: Scrum in Practice',
   titleNL: 'Module 3: Scrum in de Praktijk',

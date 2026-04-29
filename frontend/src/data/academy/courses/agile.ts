@@ -13,6 +13,7 @@ import { instructors } from '../instructors';
 // MODULE 1: DE AGILE MINDSET
 // ============================================
 const module1: Module = {
+  order: 0,
   id: 'ag-m1',
   title: 'Module 1: The Agile Mindset',
   titleNL: 'Module 1: De Agile Mindset',
@@ -830,6 +831,7 @@ Agile frameworks:
 // MODULE 2: AGILE IN DE PRAKTIJK
 // ============================================
 const module2: Module = {
+  order: 1,
   id: 'ag-m2',
   title: 'Module 2: Agile in Practice',
   titleNL: 'Module 2: Agile in de Praktijk',

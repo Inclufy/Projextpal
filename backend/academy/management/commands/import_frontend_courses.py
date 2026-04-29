@@ -224,11 +224,16 @@ class Command(BaseCommand):
                     course.title_nl = fc['titleNL']
                     course.save(update_fields=['title_nl'])
 
-                # Upsert modules + lessons
+                # Upsert modules + lessons. Key the upsert by (course, m_order)
+                # — the file-declaration order from `enumerate` — rather than
+                # `fm['order']`. The JS extractor emits `order: 0` when the
+                # source module has no top-level `order:` field, which used to
+                # collide every module on (course, 0) and silently overwrite all
+                # but the last. Enumerate index is always unique per file.
                 for m_order, fm in enumerate(fc['modules']):
                     mod, mc = CourseModule.objects.update_or_create(
                         course=course,
-                        order=fm.get('order', m_order),
+                        order=m_order,
                         defaults={
                             'title': fm['title'],
                             'title_nl': fm.get('titleNL') or fm['title'],

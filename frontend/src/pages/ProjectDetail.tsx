@@ -60,6 +60,7 @@ import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage, CURRENCIES, type CurrencyCode } from '@/lib/currencies';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DemoControls } from "@/components/DemoControls";
 
 // API functions
 const fetchProgram = async (id: string) => {
@@ -287,6 +288,14 @@ const ProgramDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {id && program?.methodology && (
+            <DemoControls
+              entityId={id}
+              seedUrl={`/api/v1/${program.methodology}/projects/${id}/seed-demo/`}
+              clearUrl={`/api/v1/${program.methodology}/projects/${id}/clear-demo/`}
+              onChanged={() => queryClient.invalidateQueries({ queryKey: ["project", id] })}
+            />
+          )}
           <Button variant="outline" onClick={handleEditClick}>
             <Edit className="h-4 w-4 mr-2" />
             {pt("Edit")}
