@@ -119,6 +119,29 @@ const VisualTemplateRenderer: React.FC<VisualTemplateRendererProps> = ({
   );
 };
 
+/**
+ * Empty/sparse content placeholder.
+ * Rendered instead of guessing a topic visual when the lesson body is too thin —
+ * prevents misleading fallbacks (e.g. a Stakeholder Mapping lesson rendering
+ * as the generic "Wat is een Project?" visual just because the topic detector
+ * had nothing else to match on).
+ */
+const EmptyContentPlaceholder: React.FC<{ isNL: boolean }> = ({ isNL }) => (
+  <div className="rounded-xl border border-dashed border-purple-200 dark:border-purple-800 bg-purple-50/40 dark:bg-purple-950/20 p-8 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
+      <Sparkles className="h-6 w-6 text-white" />
+    </div>
+    <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+      {isNL ? 'Inhoud volgt binnenkort' : 'Content coming soon'}
+    </p>
+    <p className="mt-1 text-xs text-purple-700 dark:text-purple-300">
+      {isNL
+        ? 'Onze auteurs werken nog aan deze les. Ze verschijnt zodra ze klaar is.'
+        : 'Our authors are still finalizing this lesson — it will appear once ready.'}
+    </p>
+  </div>
+);
+
 /** Inner component that renders the appropriate template */
 const TemplateVisual: React.FC<VisualTemplateRendererProps> = ({
   visualType,
@@ -127,6 +150,19 @@ const TemplateVisual: React.FC<VisualTemplateRendererProps> = ({
   isNL,
   index = 0,
 }) => {
+  // If the lesson body is too sparse to safely auto-detect a topic, render
+  // an explicit "content coming soon" state instead of guessing.
+  // Threshold chosen so that real lessons (≥500 chars typical) always render
+  // their proper visual; only true stubs hit this branch.
+  const meaningfulContent = (content || '').trim();
+  if (
+    (!visualType || visualType === 'auto')
+    && meaningfulContent.length < 200
+    && !visualData?.preview_image_url
+  ) {
+    return <EmptyContentPlaceholder isNL={isNL} />;
+  }
+
   const resolvedType: VisualType =
     visualType && visualType !== 'auto'
       ? visualType

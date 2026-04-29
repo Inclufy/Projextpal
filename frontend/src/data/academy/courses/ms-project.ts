@@ -2885,6 +2885,73 @@ Volgende: De Kritieke Pad Methode!`,
       duration: '14:00',
       videoUrl: '',
       icon: 'UserPlus',
+      transcript: `Resource Assignment is where your schedule stops being a wishlist and starts being a real plan. In this lesson you'll learn how to build a resource pool, assign people, equipment, and materials to tasks, and avoid the most common mistake new MS Project users make: ignoring the assignment formula.
+
+### Why Resource Assignment Matters
+
+A task without resources is just a date on a chart. Once you assign a resource you get realistic durations, accurate costs, capacity warnings, and the ability to track who is actually doing the work. PMBOK 7 calls this out under the Performance Domain "Team" — you cannot manage delivery without knowing who is delivering.
+
+### Step 1 — Build the Resource Sheet
+
+Open the **Resource Sheet** view (View tab → Resource Sheet). For each row, fill in:
+
+- **Resource Name** — the person, role, or material
+- **Type** — Work (people, hours-based), Material (consumed, unit-based), or Cost (one-off charges like travel)
+- **Max Units** — capacity, e.g. \`100%\` for a full-time person, \`50%\` for half-time, \`300%\` for a team of three
+- **Std. Rate** — cost per hour (Work) or per unit (Material)
+- **Ovt. Rate** — overtime rate if it differs
+- **Accrue At** — Start, End, or Prorated (when MS Project books the cost)
+- **Base Calendar** — usually Standard, but use a custom calendar for night shifts or part-time staff
+
+### Step 2 — Assign Resources to Tasks
+
+There are three reliable ways:
+
+1. **Resource Names column** in the Gantt Chart — type or pick from the dropdown
+2. **Assign Resources dialog** (Alt+F10) — multi-select tasks, assign at once
+3. **Task Information** (double-click task) → Resources tab — best for fine control over Units and Work
+
+When you assign, you can set **Units** (how much of their capacity goes to this task). Assigning Anna at \`50%\` to a 10-day task means she spends half her workday on it.
+
+### The Assignment Formula — The Most Important Concept
+
+MS Project links three values with an equation:
+
+\`\`\`
+Work = Duration × Units
+\`\`\`
+
+- **Work** — total effort hours (e.g. 80 hours)
+- **Duration** — calendar time the task spans (e.g. 10 days)
+- **Units** — % of resource capacity allocated (e.g. 100%)
+
+Change one and MS Project recalculates another based on the **Task Type**:
+
+- **Fixed Units** (default) — change Duration, Work flexes
+- **Fixed Duration** — change Units, Work flexes; useful for time-boxed meetings
+- **Fixed Work** — change Units, Duration flexes; ideal for effort-driven engineering work
+
+Set the Task Type via Task Information → Advanced. Pair this with the **Effort Driven** checkbox: when on, adding a second resource halves the duration; when off, both resources work the original duration.
+
+### Step 3 — Verify the Assignment
+
+After assigning, switch to **Task Usage** view (View tab) to see hours per resource per day. Look for:
+
+- Resources double-booked across tasks
+- Total Work matching your estimate
+- Costs rolling up correctly in the Cost table
+
+Any red names in the Resource Sheet mean overallocation — we'll fix that in the next lesson on Resource Leveling.
+
+### Common Pitfalls
+
+- Assigning a generic role ("Developer") and forgetting to swap in a real name later
+- Letting MS Project change Duration when you actually wanted Work fixed — always confirm Task Type first
+- Forgetting Material resources for things like server licenses or printed manuals — they affect cost reports
+
+### Practice
+
+Open your sample plan, add five resources to the sheet, assign them to tasks, then open Task Usage and confirm the totals match your estimates.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2897,6 +2964,69 @@ Volgende: De Kritieke Pad Methode!`,
       duration: '12:00',
       videoUrl: '',
       icon: 'BarChart3',
+      transcript: `Resource Leveling is how MS Project resolves overallocations — those moments when one person is somehow scheduled for 14 hours in a single day. In this lesson you'll learn to spot, diagnose, and fix overallocations without breaking your critical path.
+
+### What Is an Overallocation?
+
+An overallocation occurs when assigned Work exceeds a resource's Max Units capacity for a given period. MS Project flags it with a red person icon in the Indicators column and red text on the Resource Sheet.
+
+Causes are almost always one of:
+
+- A resource assigned to two parallel tasks at 100% each
+- A task estimate that grew without adjusting Units
+- Two tasks accidentally scheduled on the same day after a predecessor moved
+- Holidays or vacations entered on the resource calendar after assignment
+
+### Step 1 — See the Problem
+
+Switch to **Resource Usage** view (View tab → Resource Usage). You will see a row per resource with daily Work totals. Anything above their Max Units capacity is highlighted.
+
+Even better: open the **Team Planner** (View tab → Team Planner). It shows each resource as a swim lane with their tasks plotted on a timeline. Overlaps are visually obvious — and you can drag tasks to fix them by hand.
+
+### Step 2 — Decide on a Strategy
+
+There are four legitimate ways to resolve an overallocation:
+
+1. **Add capacity** — bring in another resource or increase Max Units
+2. **Reduce scope or work** — challenge the estimate
+3. **Delay non-critical tasks** — push tasks with slack later (this is what leveling does)
+4. **Split tasks** — interrupt a task to free up the resource for higher-priority work
+
+Pick the strategy before letting MS Project automate, otherwise you may end up with a project end date six weeks later than expected.
+
+### Step 3 — Run Resource Leveling
+
+Resource tab → **Leveling Options**. Key settings:
+
+- **Leveling calculations**: Manual (recommended — runs only when you click Level All) or Automatic
+- **Look for overallocations on a... basis**: Day by Day for tight schedules, Week by Week for higher tolerance
+- **Leveling order**: Standard (uses priority, slack, dates), Priority Standard (priority first), or ID Only
+- **Level only within available slack** — check this to protect your finish date
+- **Leveling can adjust individual assignments / can create splits** — leave on for flexibility
+
+Then click **Level All**, **Level Resource** (one person), or **Level Selection** (highlighted tasks).
+
+### Step 4 — Review and Tune
+
+After leveling, compare with the baseline. If the project end moved out:
+
+- Set task **Priority** values 0–1000 on Task Information → General; higher numbers level later
+- Use **Clear Leveling** to undo and try a different strategy
+- Manually drag in Team Planner for surgical fixes
+
+### When Not to Use Auto-Leveling
+
+Auto-leveling is mathematical, not strategic. Avoid it on:
+
+- Schedules where business deadlines are non-negotiable
+- Plans where political priority differs from technical priority
+- Resources where individual skills matter more than capacity numbers
+
+In those cases, level by hand using Team Planner.
+
+### Practice
+
+Take a plan with at least two overallocated resources. Run Level All, note the change in finish date, then Clear Leveling, set priorities, and try again. Compare the two outcomes.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2909,6 +3039,72 @@ Volgende: De Kritieke Pad Methode!`,
       duration: '14:00',
       videoUrl: '',
       icon: 'Target',
+      transcript: `A plan without a baseline is unfalsifiable — you cannot say you are "behind schedule" if you never recorded what the schedule was. In this lesson you will set a baseline, capture progress, and read variance the way auditors and steering committees expect.
+
+### What Is a Baseline?
+
+A baseline is a snapshot of your approved plan: every task's planned Start, Finish, Duration, Work, and Cost frozen at a point in time. MS Project lets you save up to 11 baselines (Baseline, Baseline1 through Baseline10) so you can keep history when scope changes.
+
+PMBOK 7 treats baselines as the reference for Performance Measurement. Without one, terms like SV (Schedule Variance) and CV (Cost Variance) have no meaning.
+
+### Step 1 — Set the First Baseline
+
+Project tab → **Set Baseline** → Set Baseline → choose "Baseline" → For "Entire project" → OK.
+
+Do this immediately after stakeholders approve the plan, before any actuals exist. The baseline now appears as a thin gray bar beneath each Gantt bar in the **Tracking Gantt** view (View tab → Tracking Gantt).
+
+### Step 2 — Capture Actuals
+
+Each reporting cycle (typically weekly), update what actually happened. Use the **Update Tasks** dialog (Task tab → dropdown under Mark on Track):
+
+- **% Complete** — quick estimate, not always accurate
+- **Actual Start / Actual Finish** — when the task really started/ended
+- **Actual Duration / Remaining Duration** — for in-progress work
+- **Actual Work** — hours actually logged
+
+For larger plans, use **Update Project** (Project tab → Update Project) to mark everything on track up to a status date.
+
+Set the **Status Date** (Project tab → Status Date) before updating — this is the "as of" date for variance calculations.
+
+### Step 3 — Read the Variance
+
+Switch to the **Variance Table** (View tab → Tables → Variance) and you will see:
+
+- **Start Variance** — Actual Start minus Baseline Start (positive = late)
+- **Finish Variance** — same for finish dates
+- **Duration Variance** — task is taking longer/shorter than planned
+
+For cost and work variance, switch to the **Work Table** and **Cost Table**.
+
+### Earned Value at a Glance
+
+Once a baseline exists and you log actuals, MS Project computes EV metrics under the **Earned Value Table** (View tab → Tables → More Tables → Earned Value):
+
+- **PV (BCWS)** — Planned Value
+- **EV (BCWP)** — Earned Value
+- **AC (ACWP)** — Actual Cost
+- **SV** = EV − PV (negative = behind schedule)
+- **CV** = EV − AC (negative = over budget)
+- **SPI** = EV / PV (under 1.0 = behind)
+- **CPI** = EV / AC (under 1.0 = over budget)
+
+### Tracking Best Practices
+
+- Baseline once, update only when scope is officially re-baselined — keep history
+- Use **Baseline1** for re-baselines so the original is still visible
+- Mark progress on the same day each week so SV reflects reality
+- Always set the Status Date before running Update Project
+- Add the **Variance** column to your default Gantt for at-a-glance status
+
+### Common Mistakes
+
+- Forgetting to baseline before kickoff, then scrambling later
+- Re-baselining the entire project after every change — destroys auditability
+- Confusing % Complete (duration-based) with % Work Complete (effort-based)
+
+### Practice
+
+Baseline your plan, advance the status date by two weeks, mark some tasks as 50% and others as late, then open the Earned Value table and explain SPI and CPI to yourself out loud.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2921,6 +3117,73 @@ Volgende: De Kritieke Pad Methode!`,
       duration: '12:00',
       videoUrl: '',
       icon: 'DollarSign',
+      transcript: `Cost Management in MS Project is more than a budget number on the title slide. It is a live model of how your project consumes money over time, and when it is set up correctly, your finance team will stop asking you for spreadsheets.
+
+### The Three Cost Sources in MS Project
+
+Every cost in your plan comes from one of three places:
+
+1. **Resource costs** — rates × hours, computed automatically from assignments
+2. **Fixed costs** — lump sums attached to a task (permits, licenses, travel)
+3. **Cost resources** — reusable cost categories like "Travel" or "Cloud Hosting" that you assign and amount per task
+
+Knowing which one to use is half the skill.
+
+### Step 1 — Set Up Resource Costs
+
+In the Resource Sheet, fill in for each Work resource:
+
+- **Std. Rate** — typically per hour (\`$75/hr\`) or per day (\`$600/day\`)
+- **Ovt. Rate** — overtime hourly rate
+- **Cost/Use** — flat fee per assignment (consultant call-out fee)
+- **Accrue At** — Start (book on day one), End (book on completion), or Prorated (spread over duration)
+
+For Material resources, Std. Rate is per unit (\`$50/license\`).
+
+### Step 2 — Add Fixed Costs to Tasks
+
+Switch to the **Cost Table** (View tab → Tables → Cost). The Fixed Cost column is editable. Use it for things that are not driven by hours: a $5,000 software license, a $2,000 travel reimbursement, a $10,000 vendor invoice. Set the **Fixed Cost Accrual** on the same row to control timing.
+
+### Step 3 — Use Cost Resources for Reusable Categories
+
+Create a Cost-type resource named, say, "Travel". Assign it to a task and enter the amount in Task Information → Resources. Now travel rolls up across all tasks where you assigned it — useful for finance reports.
+
+### Step 4 — Set the Project Budget
+
+Create a **Budget Resource** (a Work, Material, or Cost resource with the Budget flag set on the Resource Information dialog). Assign it to the project summary task. This represents the approved budget envelope.
+
+Then add **Budget Work** and **Budget Cost** columns to the Resource Usage view to compare your detailed plan against the top-down budget.
+
+### Step 5 — Read the Cost Reports
+
+Project tab → **Reports** → Costs:
+
+- **Cash Flow** — when money goes out, by week or month
+- **Cost Overruns** — tasks where actual cost exceeds baseline
+- **Earned Value** — CPI, CV, EAC summarized
+
+For your own analysis, the **Cost Table** plus the **Variance Table** combined are usually enough.
+
+### Cost Variance and EAC
+
+Once you baseline and start logging Actual Cost (Cost Table → Actual Cost column), MS Project computes:
+
+- **CV** = BCWP − ACWP (negative = over budget)
+- **CPI** = BCWP / ACWP
+- **EAC (Estimate at Completion)** = BAC / CPI — a forecast of where you'll land
+
+Use these for steering committee reporting; they are PMBOK-aligned and defensible.
+
+### Best Practices
+
+- Define rates once in the Resource Sheet — never type costs into individual tasks unless they are truly fixed
+- Use Accrue At = Prorated for cash-flow reporting; Start or End for invoicing reality
+- Lock the baseline before tracking actuals; never overwrite Baseline Cost without versioning
+- Round resource rates to a comfortable level of precision; false precision irritates auditors
+
+### Practice
+
+Add three resource rates, two fixed costs, and one cost resource to your sample plan, then open the Cash Flow report and confirm the monthly totals match your expectation.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2947,6 +3210,73 @@ const module3: Module = {
       duration: '12:00',
       videoUrl: '',
       icon: 'PaintBucket',
+      transcript: `The default Gantt Chart in MS Project is functional but generic. A well-customized Gantt is the single most powerful communication tool a project manager owns. In this lesson you will reshape your Gantt so steering committees, team members, and clients each get the view that matters to them.
+
+### What You Can Customize
+
+The Gantt has four customizable layers:
+
+1. **Bar Styles** — what each bar type looks like
+2. **Text Styles** — fonts, colors, weights for different task categories
+3. **Gridlines and Timescale** — the canvas behind the bars
+4. **Bar Text** — labels left, right, inside, above, below each bar
+
+Each is independent, and each is saved with the view, not the project — so you can build a library of views and switch between them.
+
+### Step 1 — Customize Bar Styles
+
+Format tab (visible when a Gantt view is active) → **Format** dropdown → **Bar Styles** (or right-click in the Gantt area → Bar Styles).
+
+Common changes:
+
+- Make critical tasks bright red, non-critical tasks blue
+- Add a thicker bar for summary tasks
+- Show baseline as a thin gray bar below the active bar
+- Highlight late tasks with a contrasting outline using the Show For filter (e.g., \`Critical, Slipping\`)
+
+You can add new bar types with the Insert Row button — for example, a custom "External Dependency" bar with a striped pattern.
+
+### Step 2 — Bar Text and Labels
+
+In the Bar Styles dialog, the Text tab lets you place fields on each bar position:
+
+- **Left** — task name or ID
+- **Right** — resource names (this is the most common addition)
+- **Inside** — % complete or duration
+- **Top / Bottom** — finish date or notes flag
+
+Pick one or two — anything more becomes noise.
+
+### Step 3 — Format the Timescale
+
+Click the timescale ribbon at the top of the Gantt to open Timescale settings. You have three tiers (Top, Middle, Bottom). A clean executive view uses Quarters / Months. A detailed working view uses Weeks / Days.
+
+Right-click the timescale → **Zoom** for quick presets. Ctrl+scroll-wheel zooms in/out smoothly.
+
+### Step 4 — Use the Format Tab Quick Tools
+
+The Format tab also offers one-click toggles that handle 80% of customization:
+
+- **Critical Tasks** — turn red coloring on/off
+- **Slack** — show free slack as a thin line
+- **Late Tasks** — automatically highlight slipping tasks
+- **Baseline** — toggle baseline bars
+- **Slippage** — show how far each task moved from baseline
+
+### Step 5 — Save the Custom View
+
+When you're happy: View tab → **Other Views** → **Save View**. Name it ("Steering Committee Gantt", "Engineering Detail"). Now you can switch with one click and share via View Organizer when copying to other projects.
+
+### Best Practices
+
+- Build at least three views: an executive summary view, a working view, and a status review view
+- Keep colors meaningful and limited — three to four maximum
+- Always show the baseline on a status view so variance is visible
+- Avoid stacking too many text labels; the eye loses the bars
+
+### Practice
+
+Take your project plan, build a "Sponsor View" Gantt that shows summary tasks, milestones, and the baseline only, then a "Team View" with resource names on the right of each bar. Switch between them.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2959,6 +3289,83 @@ const module3: Module = {
       duration: '10:00',
       videoUrl: '',
       icon: 'Filter',
+      transcript: `MS Project ships with about 25 standard views and a similar number of filters. Most users stay on Gantt Chart and lose hours scrolling. In this lesson you will build custom views, filters, groups, and tables so the data you need surfaces in seconds.
+
+### The Three Building Blocks of a View
+
+Every view in MS Project is the combination of:
+
+- **Screen** — Gantt, Sheet, Usage, Form, Network Diagram, etc.
+- **Table** — which columns appear (Entry, Cost, Schedule, Variance, Work, Custom)
+- **Filter / Group** — which rows appear and how they cluster
+
+Mix and match these and you can answer almost any project question without exporting to Excel.
+
+### Step 1 — Use Built-in Filters
+
+Filters narrow the rows. View tab → **Filter** dropdown:
+
+- **Critical** — only critical-path tasks
+- **Incomplete Tasks** — anything not yet 100%
+- **Tasks with Estimated Durations** — find planning gaps marked with \`?\`
+- **Slipping Tasks** — finish later than baseline
+- **Using Resource…** — tasks for a specific person
+- **Date Range…** — tasks within a window
+
+The dropdown also has a **Highlight** mode that grays out rows instead of hiding them — better for context.
+
+### Step 2 — Build a Custom Filter
+
+View tab → Filter → **More Filters** → **New**. The filter editor lets you combine field tests:
+
+\`\`\`
+Field Name        Test          Value
+% Complete        is less than  100
+And/Or            And
+Finish            is less than  Status Date
+\`\`\`
+
+Save it as "Behind Schedule" — now it's reusable across projects via Organizer.
+
+### Step 3 — Group Tasks
+
+Groups cluster rows with subtotals. View tab → **Group By**:
+
+- **Critical** — separates critical from non-critical
+- **Resource** — by person assigned
+- **Priority** — by priority value
+- **Milestones** — pulls all milestones to top
+
+Group By → **More Groups** → **New** lets you group on any field, including custom ones. Groups display rolled-up Work, Cost, and Duration automatically.
+
+### Step 4 — Customize the Table
+
+Right-click any column header → **Insert Column** to add fields. Or View tab → **Tables** → **More Tables** → **New** to define a saved table. Choose carefully — your most-used columns stay leftmost so they're visible without scrolling.
+
+A useful custom table for status reports:
+
+\`Task Name | Duration | % Complete | Finish | Finish Variance | Resource Names\`
+
+### Step 5 — Save as a Custom View
+
+View tab → **More Views** → **New** → **Single View**. Combine your screen, table, group, and filter, then name it. Tick **Show in menu** and the view appears in the View tab dropdown.
+
+For multi-pane views (e.g., Gantt above, Resource Usage below), pick **Combination View**.
+
+### Step 6 — Share Across Projects
+
+File → Info → **Organizer** lets you copy custom Views, Tables, Filters, Groups, Reports, and Calendars between projects or into your Global.MPT (your personal template). Standardize your team on a common Global.MPT and everyone gets the same toolkit.
+
+### Best Practices
+
+- One purpose per view — don't try to make one view do everything
+- Always label custom views with your initials or team name to avoid clashes
+- Document the filter logic in Project Notes so successors understand it
+- Use Highlight Filter when presenting; Hide Filter when working
+
+### Practice
+
+Build a "Weekly Status" view: Gantt screen, Variance table, Slipping Tasks filter, grouped by Resource. Save it, then run it before your next stand-up.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2971,6 +3378,85 @@ const module3: Module = {
       duration: '14:00',
       videoUrl: '',
       icon: 'PieChart',
+      transcript: `Reporting Dashboards in MS Project 2021 turn your live plan into one-page status visuals — no Excel pivot tables required. In this lesson you'll work through the built-in dashboards, customize one, and build your own from scratch.
+
+### What Is a Report in MS Project?
+
+A Report is a separate object (not a view) made of charts, tables, and shapes that read live from your project data. Open them via the **Report tab** on the ribbon. The five built-in groups are:
+
+- **Dashboards** — high-level overview reports
+- **Resources** — utilization, overallocation, who has what
+- **Costs** — cash flow, overruns, value
+- **In Progress** — late tasks, slipping milestones, tasks starting soon
+- **Custom / Recent / Getting Started**
+
+### Step 1 — Run the Built-in Dashboards
+
+Report tab → **Dashboards**:
+
+- **Burndown** — remaining work vs baseline by date; great for agile-flavored projects
+- **Cost Overview** — % complete, cumulative cost, % budget consumed
+- **Project Overview** — milestones, late tasks, % complete, upcoming work — ideal for steering committee summaries
+- **Upcoming Tasks** — what's due in the next week
+- **Work Overview** — work burndown by resource group
+
+Click any of these and the report opens in its own tab. Edit live or print/export.
+
+### Step 2 — Customize an Existing Report
+
+When a report is open, the **Report Design** and **Format** tabs appear. You can:
+
+- Click any chart, table, or text and resize/move/restyle
+- Right-click a chart → **Edit Data** to change which fields plot
+- Add fields by dragging from the **Field List** panel on the right
+- Apply a different chart type (Column, Line, Pie, Stacked Bar)
+- Insert your company logo via Report Design → Images
+
+Save the customized version as a new report so the original stays clean.
+
+### Step 3 — Build a Report From Scratch
+
+Report tab → **New Report** → choose a layout:
+
+- **Blank** — total freedom
+- **Chart** — a single chart filling the page
+- **Table** — a single data table
+- **Comparison** — two side-by-side charts (great for baseline vs actual)
+
+Then add elements from the Report Design tab:
+
+- **Chart** — pick fields, choose Tasks or Resources data, filter, and group
+- **Table** — same idea, table form
+- **Text Box** — narrative summary
+- **Image** — logos, screenshots, sponsor headshots
+- **Shapes** — arrows, callouts, highlights
+
+### Step 4 — Make Charts Tell a Story
+
+For each chart, the right-hand pane lets you set:
+
+- **Select Category** — Tasks, Resources, Assignments
+- **Filter** — limit what shows (e.g., only Critical tasks)
+- **Group By** — cluster the data
+- **Outline Level** — summary level depth
+- **Sort By** — which order
+
+A common steering committee chart: Tasks → Filter Slipping Tasks → Group By Resource → Sort by Finish Variance descending. One chart, one story: who is slipping the schedule.
+
+### Step 5 — Export and Share
+
+Report Design tab → **Copy Report** → paste into PowerPoint, Word, or email. Or File → Export → **Create PDF/XPS** for archival. The report is a snapshot, but in MS Project itself it stays live.
+
+### Best Practices
+
+- One report per audience — sponsor, team, finance, PMO
+- Keep at most six elements per page; whitespace beats clutter
+- Always include a "data as of" status date text box
+- Use baseline comparisons to make variance visible without explanation
+
+### Practice
+
+Open the Project Overview dashboard, customize the milestone table to show only milestones in the next 60 days, save it as "Sponsor Update", then export to PDF.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2983,6 +3469,75 @@ const module3: Module = {
       duration: '8:00',
       videoUrl: '',
       icon: 'Share2',
+      transcript: `Most stakeholders never open MS Project. Your job is to get the right slice of your plan into the format they actually read — Excel, PDF, PowerPoint, email. In this lesson you will learn the cleanest export paths and how to avoid the data corruption that happens with sloppy copy-paste.
+
+### Export Targets and When to Use Them
+
+- **PDF** — for read-only sponsor updates, archival baselines, audit trails
+- **Excel** — when stakeholders need to filter or analyze further
+- **PowerPoint** — for quarterly business reviews, leadership decks
+- **Image (PNG/JPG)** — for embedding Gantts in email or Confluence
+- **XML** — for system-to-system integration with other PM tools
+- **MPP** — when sharing the live plan with another MS Project user
+
+### Step 1 — Export to PDF
+
+File → Export → **Create PDF/XPS Document**. Set Options:
+
+- **Range**: All, From-To, or Selected Tasks
+- **Include**: Notes, Resources, Assignments
+- **Page Setup**: orientation, margins, scale to fit
+
+For a Gantt that fits on one page wide, set Page Setup → Page → Fit to 1 page wide × N tall, then export.
+
+### Step 2 — Export to Excel
+
+File → Export → **Save Project as File** → **Microsoft Excel Workbook** → Save → choose the **Excel Template** wizard. The wizard asks:
+
+- **Tasks, Resources, Assignments, or Custom** export
+- Which fields to include
+- Whether to include a header row
+
+The exported workbook has separate sheets for Tasks/Resources/Assignments. Use the **Use existing map** option to reuse field mappings across projects — the **"Compare to Baseline"** map is particularly handy.
+
+### Step 3 — Copy and Paste to PowerPoint
+
+For a Gantt slide:
+
+1. Select the rows you want
+2. Format tab → **Copy Picture** (not Copy)
+3. Choose **For screen** or **For printer** and define the timescale range
+4. Paste into PowerPoint as a clean image
+
+\`Copy Picture\` is preferred over screenshots because it captures live timescale and respects your view filtering.
+
+### Step 4 — Save as Image
+
+Copy Picture → **To GIF image file** writes a PNG-equivalent to disk. Useful for embedding in Confluence pages or wiki status updates.
+
+### Step 5 — Share the Live Plan
+
+When the recipient also has MS Project:
+
+- **OneDrive / SharePoint** — store the .mpp file in the cloud, share link, control versions via SharePoint history
+- **Project for the Web / Project Online** — for true co-authoring, publish the schedule to Project Online
+- **Email attachment** — fine for ad-hoc, but watch file size; consider compressing
+
+### Step 6 — Export to XML
+
+File → Save As → **XML Format**. Use this for tool-to-tool migration: into Smartsheet, Primavera, or custom systems. The XML is verbose but lossless for schedule data.
+
+### Best Practices
+
+- Strip baselines and history if exporting externally for confidentiality
+- Always note the **status date** on PDF exports so consumers know how fresh the data is
+- Lock PDFs with passwords for sensitive financial detail (Acrobat post-export)
+- Never paste raw \`Ctrl+C\` from a Gantt cell into Excel; the formatting breaks — use Copy Picture or the wizard
+- For recurring sponsor updates, automate Excel exports with the Use Existing Map option to keep field choices consistent
+
+### Practice
+
+Export your project as both a PDF (for the sponsor) and an Excel workbook (for the PMO), then verify the Finish Variance column came across correctly in Excel.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
@@ -2995,6 +3550,78 @@ const module3: Module = {
       duration: '10:00',
       videoUrl: '',
       icon: 'Lightbulb',
+      transcript: `This lesson collects the small habits and shortcuts that separate slow MS Project users from fast ones. None of these are revelations on their own; together they save you hours every week.
+
+### Productivity Shortcuts You'll Actually Use
+
+- **F5** — Go To date, jumps the timescale to a specific day
+- **Alt+F10** — Assign Resources dialog
+- **Shift+F2** — Task Notes
+- **Ctrl+F2** — Indent (make subtask)
+- **Ctrl+Shift+F2** — Outdent
+- **Ctrl+F5** — Update task on track to status date
+- **Ctrl+Shift+F5** — Link tasks (FS dependency)
+- **F9** — Recalculate (when calculation is set to Manual)
+- **Alt+Q** — "Tell me what you want to do" search
+
+Ctrl+Click on a column header sorts; Shift+drag on the timescale grabs a range.
+
+### Auto-Schedule vs Manual-Schedule — Pick Deliberately
+
+Every task is either Auto Scheduled or Manually Scheduled. Auto Scheduled tasks recompute based on dependencies and constraints — that's what you want for 90% of work. Manually Scheduled tasks are fixed in place even when predecessors slip — handy for placeholders, but dangerous if you forget.
+
+Set the project default: File → Options → Schedule → **New tasks created** → Auto Scheduled.
+
+### Fix the "Move Task" Surprises
+
+If a task moves unexpectedly:
+
+1. Open Task Information → Advanced
+2. Look at **Constraint Type** — anything other than \`As Soon As Possible\` is suspect; \`Must Start On\` and \`Must Finish On\` are usually mistakes from typing dates directly
+3. Check the predecessors and lag values; lag in calendar days vs working days matters
+
+Always use **As Soon As Possible** unless a real-world hard date forces otherwise — and document the reason in the task notes.
+
+### Custom Fields Are Your Friend
+
+Project tab → **Custom Fields**. You get 30 Text fields, 30 Number, 30 Cost, 10 Outline Code, 30 Flag, 10 Lookup. Use them for:
+
+- **Workstream** (Outline Code or Lookup) — group by workstream in any view
+- **Stage Gate** (Lookup) — filter by gate status
+- **Owner** (Text) — for tasks where the owner isn't a resource
+- **Risk Score** (Number) — color-code via Format Bar Styles
+
+Lookup fields with predefined values prevent typos and enable clean grouping.
+
+### The Global.MPT Trick
+
+Every customization you make — views, filters, tables, reports — lives in your project file by default. To make them available in all future projects, copy them to your **Global.MPT** via File → Info → **Organizer**. This single move is the biggest leverage MS Project offers; once your Global.MPT is set up, every new project starts pre-loaded with your toolkit.
+
+### Common Time-Wasters and Their Fixes
+
+- **Slow scrolling on big plans** — File → Options → Schedule → uncheck "Show scheduling messages"; collapse summary tasks
+- **% Complete drift** — use Status Date and Update Project, never type % into tasks one by one
+- **Resource icon staying red after fix** — re-apply the leveling or recalculate (F9)
+- **Lost custom view** — always save before closing; views are stored with the project, not the user
+
+### Diagnostic Habits
+
+Each Friday, run this 3-minute check on your plan:
+
+1. Project tab → **Statistics** — confirm Start, Finish, Duration, Work, Cost numbers look right
+2. Filter **Slipping Tasks** — anything new?
+3. Resource Sheet → look for red names
+4. Status Date → push to today, run Update Project, refresh reports
+
+This becomes muscle memory after a month and prevents silent drift.
+
+### Final Habit — Save Templates
+
+Once you've built a project of a type you'll repeat (e.g., a quarterly release, a vendor onboarding), File → Save As → **Project Template (.mpt)**. Strip baselines and actuals on the way out. Now your next project starts at hour one, not week three.
+
+### Practice
+
+Pick three shortcuts from this list, write them on a sticky note next to your monitor, and use them every day this week. The muscle memory pays for the lesson.`,
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],

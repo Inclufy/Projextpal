@@ -507,6 +507,127 @@ def render_empty_lessons_markdown(records: list[dict]) -> str:
     return '\n'.join(lines)
 
 
+def collect_lesson_alignment_records(courses_dir: Path) -> list[dict]:
+    """Walk every video/reading-type lesson with non-empty content and return
+    (course, module, lesson_title, content_excerpt) records for semantic
+    title-vs-content alignment checking.
+    """
+    out: list[dict] = []
+    for path in sorted(courses_dir.glob('*.ts')):
+        if path.name == 'index.ts':
+            continue
+        if not MODULE_DECL.search(path.read_text()):
+            continue
+        c = parse_course_file(path)
+        course_title = c.get('title') or path.stem
+        course_id = c.get('id') or path.stem
+        for m_idx, mb in enumerate(c['module_blocks']):
+            mod_title = mb['meta'].get('title') or f'module#{m_idx}'
+            for L in mb['lessons']:
+                ltype = (L.get('type') or 'video').lower()
+                if ltype not in TEXT_BEARING_TYPES:
+                    continue
+                # We only have boolean transcript/content flags from the parser.
+                # Re-extract the actual transcript text for the LLM to evaluate.
+                # (Cheap alternative: skip alignment check for ones the parser
+                # already flagged as empty — they have nothing to misalign with.)
+                if not L['transcript'] and not L['content']:
+                    continue
+                out.append({
+                    'course_id': course_id,
+                    'course_title': course_title,
+                    'module_title': mod_title,
+                    'lesson_id': L.get('id'),
+                    'lesson_title': L.get('title'),
+                    'lesson_titleNL': L.get('titleNL'),
+                })
+    return out
+
+
+def check_lesson_alignment(records: list[dict], compose_file: str,
+                           container: str, model: str = 'gpt-4o-mini',
+                           limit: int | None = None) -> list[dict]:
+    """For each lesson record, ask an LLM whether the title matches its content.
+
+    Calls OpenAI through the backend container's environment (which has the
+    OPENAI_API_KEY set). Returns a list of mismatch dicts:
+        [{course, lesson_id, title, verdict, reason}, ...]
+    Verdict is 'aligned' / 'partial' / 'misaligned' / 'error'.
+    Cost: ~$0.001 per lesson with gpt-4o-mini → ~$0.20 for all 12 courses.
+    """
+    if limit:
+        records = records[:limit]
+
+    # Pull each lesson's actual transcript from the DB so we have something
+    # real to compare against.  The DB import is the source of truth for
+    # what the user will see.
+    code = (
+        "import json, os\n"
+        "from openai import OpenAI\n"
+        "from academy.models import CourseLesson\n"
+        "client = OpenAI()\n"
+        "results = []\n"
+        f"records = {json.dumps(records)}\n"
+        "for r in records:\n"
+        "    L = CourseLesson.objects.filter(title=r['lesson_title']).first()\n"
+        "    body = (L.content or '')[:1500] if L else ''\n"
+        "    if not body.strip():\n"
+        "        results.append({**r, 'verdict': 'no_db_body', 'reason': 'no body in DB to compare'})\n"
+        "        continue\n"
+        "    prompt = (f\"Lesson title: {r['lesson_title']}\\n\\n\"\n"
+        "              f\"Lesson body (first 1500 chars):\\n{body}\\n\\n\"\n"
+        "              f\"Does the body teach what the title says it teaches? \"\n"
+        "              f\"Answer with JSON: {{\\\"verdict\\\": \\\"aligned\\\"|\\\"partial\\\"|\\\"misaligned\\\", \"\n"
+        "              f\"\\\"reason\\\": \\\"<one short sentence>\\\"}}\")\n"
+        "    try:\n"
+        f"        resp = client.chat.completions.create(model='{model}',\n"
+        "            messages=[{'role':'user','content':prompt}],\n"
+        "            response_format={'type':'json_object'},\n"
+        "            max_tokens=120)\n"
+        "        data = json.loads(resp.choices[0].message.content)\n"
+        "        results.append({**r, 'verdict': data.get('verdict','?'),\n"
+        "                              'reason': data.get('reason','')})\n"
+        "    except Exception as e:\n"
+        "        results.append({**r, 'verdict': 'error', 'reason': str(e)[:120]})\n"
+        "print('JSON_BEGIN' + json.dumps(results) + 'JSON_END')\n"
+    )
+    cmd = ['docker', 'compose', '-f', compose_file, 'exec', '-T', container.replace('projextpal-', '').replace('-prod', ''),
+           'python', 'manage.py', 'shell', '-c', code]
+    # The `container` arg is a CONTAINER NAME, but `docker compose exec` wants the
+    # SERVICE NAME. Hard-code 'backend' since this script targets that one service.
+    cmd[6] = 'backend'
+    res = subprocess.run(cmd, capture_output=True, text=True, timeout=60 * len(records) + 60)
+    out_text = res.stdout
+    s = out_text.find('JSON_BEGIN')
+    e = out_text.find('JSON_END')
+    if s < 0 or e < 0:
+        raise RuntimeError(f'Alignment output not parseable: {res.stderr[:500]} | {out_text[:500]}')
+    return json.loads(out_text[s + len('JSON_BEGIN'):e])
+
+
+def render_alignment_report(results: list[dict]) -> str:
+    if not results:
+        return '# Alignment report\n\nNo lessons checked.\n'
+    by_verdict: dict[str, list[dict]] = defaultdict(list)
+    for r in results:
+        by_verdict[r['verdict']].append(r)
+    lines = ['# Lesson title-vs-content alignment', '']
+    counts = {k: len(v) for k, v in sorted(by_verdict.items(), key=lambda kv: -len(kv[1]))}
+    lines.append(f'**Summary:** {counts}')
+    lines.append('')
+    for verdict in ('misaligned', 'partial', 'no_db_body', 'error', 'aligned'):
+        rs = by_verdict.get(verdict, [])
+        if not rs:
+            continue
+        lines.append(f'## {verdict} ({len(rs)})')
+        lines.append('')
+        for r in rs:
+            lines.append(f'- **{r["course_title"]}** › *{r["module_title"]}* › `{r["lesson_id"]}`: '
+                         f'{r["lesson_title"]} — _{r.get("reason","")}_')
+        lines.append('')
+    return '\n'.join(lines)
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -523,6 +644,14 @@ def main() -> int:
                    help='in --export-empty-lessons mode, include interactive '
                         'lesson types (quiz/exam/cert/practice/...) even '
                         'though their empty body is expected')
+    p.add_argument('--check-content-alignment', action='store_true',
+                   help='ask an LLM whether each text-bearing lesson body '
+                        'matches its title; reports misaligned/partial/error '
+                        'lessons. Costs ~$0.20 for all 12 courses with gpt-4o-mini.')
+    p.add_argument('--alignment-limit', type=int, default=None,
+                   help='limit alignment checks to first N lessons (testing)')
+    p.add_argument('--alignment-model', default='gpt-4o-mini',
+                   help='OpenAI model used for alignment checks (default: gpt-4o-mini)')
     args = p.parse_args()
 
     if not args.courses_dir.exists():
@@ -537,6 +666,17 @@ def main() -> int:
             print(json.dumps(records, indent=2))
         else:
             print(render_empty_lessons_markdown(records))
+        return 0
+
+    if args.check_content_alignment:
+        records = collect_lesson_alignment_records(args.courses_dir)
+        print(f'Checking alignment for {len(records)} lessons '
+              f'{"(limited to " + str(args.alignment_limit) + ")" if args.alignment_limit else ""}',
+              file=sys.stderr)
+        results = check_lesson_alignment(records, args.compose_file,
+                                         args.container, model=args.alignment_model,
+                                         limit=args.alignment_limit)
+        print(render_alignment_report(results))
         return 0
 
     issues, summary = validate(

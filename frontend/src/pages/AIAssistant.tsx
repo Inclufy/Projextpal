@@ -35,6 +35,7 @@ import { AIMessageRenderer } from "@/components/AIMessageRenderer";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useSearchParams } from "react-router-dom";
 
 // Brand colors
 const BRAND = {
@@ -106,6 +107,8 @@ export default function AIAssistant() {
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasAutoSubmitted = useRef(false);
+  const [searchParams] = useSearchParams();
 
   // Get current language from context
   const { language } = useLanguage();
@@ -128,6 +131,18 @@ export default function AIAssistant() {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Auto-submit prompt from URL query param (e.g., from "Analyze with AI" button)
+  useEffect(() => {
+    const p = searchParams.get('prompt');
+    if (p && !hasAutoSubmitted.current) {
+      hasAutoSubmitted.current = true;
+      setInputValue(p);
+      // Submit on next tick so input state propagates
+      setTimeout(() => handleSendMessage(p), 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const fetchConversations = async () => {
     setIsLoading(true);

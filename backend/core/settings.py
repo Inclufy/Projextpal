@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'hybrid_programme',
     'cross_methodology',
     'onboarding',
+    'integrations',
 ]
 
 MIDDLEWARE = [
@@ -110,7 +111,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [{"address": (os.environ.get("REDIS_HOST", "redis"), int(os.environ.get("REDIS_PORT", 6379))), "password": os.environ.get("REDIS_PASSWORD")}],
         },
     },
 }
@@ -138,6 +139,13 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Per-view throttling (e.g. forgot-password) uses ScopedRateThrottle.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "forgot_password": "3/10min",
+    },
 }
 
 
