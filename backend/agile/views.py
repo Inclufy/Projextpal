@@ -8,6 +8,7 @@ from django.db.models import Sum, Avg
 from datetime import date
 
 from projects.models import Project
+from projects.permissions import MethodologyMatchesProjectPermission
 from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
@@ -44,7 +45,7 @@ class AgileProjectMixin:
 # ============================================
 
 class AgileDashboardViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
         project = get_object_or_404(Project, id=project_id)
@@ -142,7 +143,7 @@ class AgileDashboardViewSet(viewsets.ViewSet):
 class AgileTeamViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileTeamMember.objects.all()
     serializer_class = AgileTeamMemberSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -186,7 +187,7 @@ class AgileTeamViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 # ============================================
 
 class AgileProductVisionViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
         project = get_object_or_404(Project, id=project_id)
@@ -205,7 +206,7 @@ class AgileProductVisionViewSet(viewsets.ViewSet):
 class AgileProductGoalViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileProductGoal.objects.all()
     serializer_class = AgileProductGoalSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
         project = self.get_project()
@@ -230,7 +231,7 @@ class AgileProductGoalViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileUserPersonaViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileUserPersona.objects.all()
     serializer_class = AgileUserPersonaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
@@ -243,7 +244,7 @@ class AgileUserPersonaViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileEpicViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileEpic.objects.all()
     serializer_class = AgileEpicSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
@@ -260,7 +261,7 @@ class AgileEpicViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileBacklogItemViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileBacklogItem.objects.all()
     serializer_class = AgileBacklogItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -321,7 +322,7 @@ class AgileBacklogItemViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileIterationViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileIteration.objects.all()
     serializer_class = AgileIterationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -382,7 +383,7 @@ class AgileIterationViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileReleaseViewSet(AgileProjectMixin, viewsets.ModelViewSet):
     queryset = AgileRelease.objects.all()
     serializer_class = AgileReleaseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
@@ -404,7 +405,7 @@ class AgileReleaseViewSet(AgileProjectMixin, viewsets.ModelViewSet):
 class AgileDailyUpdateViewSet(viewsets.ModelViewSet):
     queryset = AgileDailyUpdate.objects.all()
     serializer_class = AgileDailyUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -442,7 +443,7 @@ class AgileDailyUpdateViewSet(viewsets.ModelViewSet):
 class AgileRetrospectiveViewSet(viewsets.ModelViewSet):
     queryset = AgileRetrospective.objects.all()
     serializer_class = AgileRetrospectiveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -464,7 +465,7 @@ class AgileRetrospectiveViewSet(viewsets.ModelViewSet):
 class AgileRetroItemViewSet(viewsets.ModelViewSet):
     queryset = AgileRetroItem.objects.all()
     serializer_class = AgileRetroItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     @action(detail=True, methods=['post'])
     def vote(self, request, pk=None):
@@ -480,7 +481,7 @@ class AgileRetroItemViewSet(viewsets.ModelViewSet):
 # ============================================
 
 class AgileBudgetViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
         project = get_object_or_404(Project, id=project_id)
@@ -499,7 +500,7 @@ class AgileBudgetViewSet(viewsets.ViewSet):
 class AgileBudgetItemViewSet(viewsets.ModelViewSet):
     queryset = AgileBudgetItem.objects.all()
     serializer_class = AgileBudgetItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -516,13 +517,334 @@ class AgileBudgetItemViewSet(viewsets.ModelViewSet):
 
 class DefinitionOfDoneViewSet(viewsets.ModelViewSet):
     serializer_class = DefinitionOfDoneSerializer
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         return DefinitionOfDone.objects.filter(project_id=project_id)
-    
+
     def perform_create(self, serializer):
         project_id = self.kwargs.get('project_id')
         from projects.models import Project
         serializer.save(project=Project.objects.get(id=project_id))
+
+
+class AgileSeedDemoView(viewsets.ViewSet):
+    """One-shot endpoint that pre-fills every Agile sub-tab with realistic
+    demo data so an empty project becomes a working showcase. Idempotent —
+    re-running on the same project skips tabs that already have data.
+    """
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def create(self, request, project_id=None):
+        from datetime import timedelta
+        from django.db import transaction
+
+        project = get_object_or_404(Project, id=project_id)
+        user = request.user
+        company = getattr(user, 'company', None)
+        team_pool = list(User.objects.filter(company=company)[:6]) if company else [user]
+        if not team_pool:
+            team_pool = [user]
+
+        created = {}
+
+        with transaction.atomic():
+            # ---- Team ----
+            roles = ['product_owner', 'tech_lead', 'developer', 'designer', 'qa', 'devops']
+            skill_sets = [
+                ['Roadmap', 'Stakeholder mgmt'],
+                ['Architecture', 'Python', 'AWS'],
+                ['React', 'TypeScript'],
+                ['Figma', 'UX research'],
+                ['Cypress', 'Playwright'],
+                ['Docker', 'Kubernetes'],
+            ]
+            team_count = 0
+            for idx, member in enumerate(team_pool):
+                _, was_created = AgileTeamMember.objects.get_or_create(
+                    project=project, user=member,
+                    defaults={
+                        'role': roles[idx % len(roles)],
+                        'capacity_hours': 40,
+                        'skills': skill_sets[idx % len(skill_sets)],
+                    }
+                )
+                if was_created:
+                    team_count += 1
+            created['team'] = team_count
+
+            # ---- Product Vision + Goals ----
+            vision, vision_created = AgileProductVision.objects.get_or_create(
+                project=project,
+                defaults={
+                    'vision_statement': f"Empower customers to achieve measurable outcomes through {project.name}.",
+                    'target_audience': "Mid-market B2B teams (50-500 FTE) with hybrid workflows.",
+                    'problem_statement': "Existing tools are siloed, hard to adopt, and produce no measurable insights.",
+                    'unique_value_proposition': "AI-assisted workflows + integrated reporting in one collaborative workspace.",
+                    'success_criteria': [
+                        "20% lift in weekly active usage by Q2",
+                        "NPS > 40 across pilot customers",
+                        "<2 weeks time-to-first-value for new tenants",
+                    ],
+                }
+            )
+            goals_created = 0
+            if vision_created or vision.goals.count() == 0:
+                goals_seed = [
+                    ('Launch MVP to 3 pilot customers', 'critical', 'in_progress', 30),
+                    ('Reach 80% feature adoption', 'high', 'planned', 90),
+                    ('Establish weekly release cadence', 'high', 'in_progress', 45),
+                    ('Reduce onboarding to <2 weeks', 'medium', 'planned', 75),
+                ]
+                for order, (title, prio, st, days) in enumerate(goals_seed):
+                    AgileProductGoal.objects.create(
+                        vision=vision, title=title, priority=prio, status=st,
+                        target_date=date.today() + timedelta(days=days), order=order,
+                    )
+                    goals_created += 1
+            created['vision'] = 1 if vision_created else 0
+            created['goals'] = goals_created
+
+            # ---- User Personas ----
+            personas_created = 0
+            if not AgileUserPersona.objects.filter(project=project).exists():
+                personas_seed = [
+                    ('Sarah Chen', 'Product Manager', '32-40', 'blue',
+                     "10y product experience in SaaS startups, currently scaling Series-B fintech.",
+                     ['Ship faster', 'Align engineering + business', 'Data-driven decisions'],
+                     ['Tooling fragmentation', 'Late visibility on risks'],
+                     "I need one place to see everything that matters this sprint."),
+                    ('Marcus Johnson', 'Engineering Lead', '35-45', 'purple',
+                     "Tech lead managing 8 engineers across two squads.",
+                     ['Reduce handoff friction', 'Protect deep-work time', 'Mentor team'],
+                     ['Context-switching', 'Stand-ups eating focus time'],
+                     "I want async-first updates and a clean backlog."),
+                    ('Priya Patel', 'UX Researcher', '28-35', 'pink',
+                     "Embedded researcher pairing with PMs and designers.",
+                     ['Run quick discovery cycles', 'Share insights broadly'],
+                     ['Insights getting lost', 'Slow stakeholder feedback'],
+                     "Make research findings impossible to ignore."),
+                ]
+                for name, role, age, color, bg, goals, pains, quote in personas_seed:
+                    AgileUserPersona.objects.create(
+                        project=project, name=name, role=role, age_range=age,
+                        avatar_color=color, background=bg,
+                        goals=goals, pain_points=pains, quote=quote,
+                    )
+                    personas_created += 1
+            created['personas'] = personas_created
+
+            # ---- Epics ----
+            epics = []
+            if not AgileEpic.objects.filter(project=project).exists():
+                epics_seed = [
+                    ('Onboarding & Activation', 'Smooth first-run experience', 'must_have', 'emerald'),
+                    ('Reporting Dashboard', 'KPIs and team performance views', 'should_have', 'blue'),
+                    ('AI Assistant', 'Inline AI helpers across workflows', 'should_have', 'purple'),
+                    ('Mobile Companion', 'iOS + Android read-mostly app', 'could_have', 'amber'),
+                ]
+                for order, (t, d, p, c) in enumerate(epics_seed):
+                    epics.append(AgileEpic.objects.create(
+                        project=project, title=t, description=d, priority=p, color=c, order=order,
+                    ))
+            else:
+                epics = list(AgileEpic.objects.filter(project=project))
+            created['epics'] = sum(1 for _ in epics) if not AgileEpic.objects.filter(project=project).count() else len(epics)
+
+            # ---- Iterations ----
+            iterations = list(AgileIteration.objects.filter(project=project))
+            today = date.today()
+            if len(iterations) < 2:
+                # Sprint 1 — completed
+                sp1 = AgileIteration.objects.create(
+                    project=project, name='Sprint 1',
+                    goal='Ship onboarding flow + auth hardening',
+                    start_date=today - timedelta(days=21),
+                    end_date=today - timedelta(days=7),
+                    status='completed',
+                    velocity_committed=24, velocity_completed=22,
+                )
+                # Sprint 2 — active
+                sp2 = AgileIteration.objects.create(
+                    project=project, name='Sprint 2',
+                    goal='Reporting dashboard MVP + first AI helper',
+                    start_date=today - timedelta(days=6),
+                    end_date=today + timedelta(days=8),
+                    status='active',
+                    velocity_committed=28, velocity_completed=12,
+                )
+                iterations = [sp1, sp2]
+                created['iterations'] = 2
+            else:
+                created['iterations'] = 0
+
+            # ---- Backlog Items ----
+            backlog_count = 0
+            if not AgileBacklogItem.objects.filter(project=project).exists() and epics:
+                stories_seed = [
+                    (epics[0], 'As a new user I can complete signup in <2 min', 'must_have', 'done', 5, 'story'),
+                    (epics[0], 'Email verification with magic link', 'must_have', 'done', 3, 'story'),
+                    (epics[0], 'Welcome tour for first login', 'should_have', 'in_progress', 5, 'story'),
+                    (epics[0], 'Bug: signup form rejects + symbol in email', 'must_have', 'done', 2, 'bug'),
+                    (epics[1], 'Velocity widget on dashboard', 'should_have', 'in_progress', 8, 'story'),
+                    (epics[1], 'Burndown chart per sprint', 'should_have', 'review', 5, 'story'),
+                    (epics[1], 'Export reports to PDF', 'could_have', 'backlog', 8, 'story'),
+                    (epics[2], 'Spike: evaluate GPT-4 vs Claude for ticket triage', 'should_have', 'done', 3, 'spike'),
+                    (epics[2], 'AI: auto-summarize standup blockers', 'should_have', 'ready', 8, 'story'),
+                    (epics[2], 'AI: suggest acceptance criteria from title', 'could_have', 'backlog', 5, 'story'),
+                    (epics[3], 'Mobile read-only project list', 'could_have', 'backlog', 5, 'story'),
+                    (epics[3], 'Push notifications for sprint events', 'could_have', 'backlog', 3, 'story'),
+                ]
+                for order, (epic, title, prio, status, points, kind) in enumerate(stories_seed):
+                    iter_assigned = None
+                    if status in ('done', 'review') and len(iterations) >= 1:
+                        iter_assigned = iterations[0]
+                    elif status in ('in_progress', 'ready') and len(iterations) >= 2:
+                        iter_assigned = iterations[1]
+                    AgileBacklogItem.objects.create(
+                        project=project, epic=epic, title=title, priority=prio,
+                        status=status, story_points=points, item_type=kind,
+                        iteration=iter_assigned,
+                        assignee=team_pool[order % len(team_pool)] if team_pool else None,
+                        order=order,
+                        acceptance_criteria="Given the user is logged in\nWhen they perform the action\nThen the result is observable.",
+                    )
+                    backlog_count += 1
+            created['backlog'] = backlog_count
+
+            # ---- Release ----
+            release_count = 0
+            if not AgileRelease.objects.filter(project=project).exists():
+                rel = AgileRelease.objects.create(
+                    project=project, name='v1.0 — Public Beta',
+                    version='1.0.0',
+                    description='First public-beta release covering onboarding, reporting and AI helper.',
+                    target_date=today + timedelta(days=30),
+                    status='in_progress',
+                    features=['Onboarding flow', 'Reporting dashboard', 'AI standup summarizer'],
+                )
+                if iterations:
+                    rel.iterations.set(iterations)
+                release_count = 1
+            created['releases'] = release_count
+
+            # ---- Daily Updates (last 3 days for active sprint) ----
+            daily_count = 0
+            active_sprint = next((it for it in iterations if it.status == 'active'), None)
+            if active_sprint and not AgileDailyUpdate.objects.filter(iteration=active_sprint).exists():
+                yesterday_template = [
+                    "Finished velocity widget data layer",
+                    "Reviewed PR for burndown chart",
+                    "Pairing on AI standup summarizer prompt",
+                    "Bug-bash session — logged 4 issues",
+                    "Sketched mobile nav, got feedback from Priya",
+                    "Set up cypress runners on staging",
+                ]
+                today_template = [
+                    "Wire widget into dashboard layout",
+                    "Address review comments + ship",
+                    "Continue AI prompt tuning",
+                    "Triage and assign bugs from yesterday",
+                    "Iterate on mobile nav v2",
+                    "Validate cypress green on PR pipeline",
+                ]
+                blockers_template = ["", "Waiting on staging deploy", "", "", "Need design tokens", ""]
+                for d_offset in range(3):
+                    d = today - timedelta(days=d_offset)
+                    if d < active_sprint.start_date or d > active_sprint.end_date:
+                        continue
+                    for idx, member in enumerate(team_pool):
+                        AgileDailyUpdate.objects.create(
+                            project=project, iteration=active_sprint, user=member, date=d,
+                            yesterday=yesterday_template[idx % len(yesterday_template)],
+                            today=today_template[idx % len(today_template)],
+                            blockers=blockers_template[idx % len(blockers_template)],
+                        )
+                        daily_count += 1
+            created['daily_updates'] = daily_count
+
+            # ---- Retrospective for completed sprint ----
+            retro_count = 0
+            completed_sprint = next((it for it in iterations if it.status == 'completed'), None)
+            if completed_sprint and not hasattr(completed_sprint, 'retrospective'):
+                try:
+                    retro = AgileRetrospective.objects.create(
+                        iteration=completed_sprint, date=completed_sprint.end_date,
+                        facilitator=team_pool[0] if team_pool else None,
+                        notes="Solid sprint, on-time delivery. Picked up 2 unplanned bugs that ate into velocity.",
+                    )
+                    retro_items_seed = [
+                        ('went_well', 'Onboarding flow shipped on day 12', 4),
+                        ('went_well', 'Pairing sessions reduced review time', 3),
+                        ('went_well', 'No production incidents', 2),
+                        ('to_improve', 'Estimation was off on auth hardening', 5),
+                        ('to_improve', 'Standups ran long on Monday/Wednesday', 3),
+                        ('action_item', 'Time-box standups to 10 min', 6),
+                        ('action_item', 'Add buffer for security work in next sprint', 4),
+                    ]
+                    for cat, content, votes in retro_items_seed:
+                        AgileRetroItem.objects.create(
+                            retrospective=retro, category=cat, content=content,
+                            votes=votes, status='open' if cat == 'action_item' else 'done',
+                            assignee=team_pool[0] if team_pool and cat == 'action_item' else None,
+                            created_by=user,
+                        )
+                        retro_count += 1
+                except Exception:
+                    pass
+            created['retro_items'] = retro_count
+
+            # ---- Definition of Done ----
+            dod_count = 0
+            if not DefinitionOfDone.objects.filter(project=project).exists():
+                dod_seed = [
+                    ('Code reviewed by at least 1 peer', 'review'),
+                    ('All unit tests pass on CI', 'testing'),
+                    ('E2E happy-path test added or updated', 'testing'),
+                    ('User-facing copy reviewed by PM', 'review'),
+                    ('Updated docs in /docs or inline', 'documentation'),
+                    ('No new ESLint or TS errors', 'quality'),
+                    ('Demo recorded or shown in standup', 'acceptance'),
+                    ('Security checklist (XSS, authz, PII) passed', 'security'),
+                ]
+                for order, (desc, cat) in enumerate(dod_seed):
+                    DefinitionOfDone.objects.create(
+                        project=project, description=desc, category=cat,
+                        is_required=True, order=order,
+                    )
+                    dod_count += 1
+            created['dod'] = dod_count
+
+            # ---- Budget + Items ----
+            budget, budget_created = AgileBudget.objects.get_or_create(
+                project=project,
+                defaults={'total_budget': 250000, 'currency': 'EUR'},
+            )
+            if budget_created or budget.total_budget == 0:
+                budget.total_budget = 250000
+                budget.save(update_fields=['total_budget'])
+            budget_items_count = 0
+            if not budget.items.exists():
+                items_seed = [
+                    ('development', 'Sprint 1 — engineering capacity', 60000, 58000, today - timedelta(days=7)),
+                    ('design', 'Onboarding visual design + assets', 12000, 11500, today - timedelta(days=14)),
+                    ('qa', 'Test automation setup (Cypress)', 9000, 8800, today - timedelta(days=10)),
+                    ('infrastructure', 'AWS staging + production environments (Q1)', 18000, 6200, today - timedelta(days=2)),
+                    ('tools', 'Annual licenses (Figma, Linear, Sentry)', 14000, 14000, today - timedelta(days=30)),
+                    ('training', 'Agile + AI workshop for team', 6000, 0, today + timedelta(days=14)),
+                ]
+                for cat, desc, planned, actual, d in items_seed:
+                    AgileBudgetItem.objects.create(
+                        budget=budget, category=cat, description=desc,
+                        planned_amount=planned, actual_amount=actual, date=d,
+                    )
+                    budget_items_count += 1
+            created['budget_items'] = budget_items_count
+
+        return Response({
+            'success': True,
+            'project_id': project.id,
+            'created': created,
+            'message': f"Demo data seeded for {project.name}",
+        }, status=status.HTTP_200_OK)
