@@ -933,7 +933,7 @@ def analyze_project_summary(
     """
     # Check permissions
     permission_error = require_permission(
-        return_dict=True, allowed_roles=["admin", "pm", "team_member"]
+        return_dict=True, allowed_roles=["superadmin", "admin", "pm", "team_member"]
     )
     if permission_error:
         return permission_error

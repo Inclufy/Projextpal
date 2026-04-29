@@ -393,6 +393,25 @@
     },
 
     {
+      "id": "BUG-022",
+      "title": "AI Assistant 'analyze project' tool denies superadmin — bot tool role list missing superadmin",
+      "severity": "P1",
+      "area": "bot",
+      "endpoint": "POST /api/v1/bot/chats/{id}/send_message/ with prompt 'Analyze project: ...'",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 200,
+      "expected_behavior": "Superadmin must be able to call any bot tool. The analyze_project_summary tool restricted allowed_roles to ['admin','pm','team_member'] — dropping superadmin.",
+      "previous_error_contains": ["necessary authorization", "not authorized"],
+      "root_cause": "backend/bot/ai/tools/project_analysis_tools.py:936 hardcoded allowed_roles=['admin','pm','team_member']. check_user_permission has no superadmin bypass, so superadmin role was rejected. Other tools correctly include 'superadmin' in their list — this one was the outlier.",
+      "fix_location": "backend/bot/ai/utils/permissions.py — added blanket superadmin/is_superuser bypass at the top of check_user_permission. backend/bot/ai/tools/project_analysis_tools.py:936 — added 'superadmin' to allowed_roles list for consistency.",
+      "regression_check": "Login as a superadmin user, send 'Analyze project: <name>' to AI Assistant — must return analysis, not authorization error.",
+      "found": "2026-04-29",
+      "found_by": "user — sami@inclufy.com on /ai-assistant",
+      "status": "fix_pending_deploy"
+    },
+
+    {
       "id": "HISTORIC-001",
       "title": "ai-insights 500 on Decimal*float TypeError",
       "severity": "P2",

@@ -32,6 +32,12 @@ def check_user_permission(
 
     user_role = user.role
 
+    # Superadmin and is_superuser always pass — they bypass tool-specific
+    # role lists. Without this, a tool that hardcodes allowed_roles=["admin","pm"]
+    # would lock out superadmins who legitimately have full access.
+    if user_role == "superadmin" or getattr(user, "is_superuser", False):
+        return None
+
     # Check if user role is in allowed roles
     if user_role not in allowed_roles:
         return error_message
