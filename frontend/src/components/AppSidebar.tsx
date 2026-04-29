@@ -425,7 +425,28 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
     case 'lean_six_sigma_green':
     case 'lean_six_sigma_black':
       const isBlackBelt = methodology?.toLowerCase() === 'lean_six_sigma_black';
+      const lssBase = isBlackBelt ? 'lss-black' : 'lss-green';
       return [
+        {
+          id: "lss-dashboard",
+          title: isBlackBelt ? "LSS Black Belt" : "LSS Green Belt",
+          icon: FlaskConical,
+          items: [
+            { title: "Overview", url: `/projects/${projectId}/${lssBase}/overview`, icon: LayoutDashboard },
+            { title: "Phases", url: `/projects/${projectId}/${lssBase}/phases`, icon: Target },
+            { title: "Tasks", url: `/projects/${projectId}/${lssBase}/tasks`, icon: ListChecks },
+            { title: "Timeline", url: `/projects/${projectId}/${lssBase}/timeline`, icon: Calendar },
+            ...(isBlackBelt ? [
+              { title: "Hypothesis Tests", url: `/projects/${projectId}/lss-black/hypothesis-tests`, icon: FileBarChart },
+              { title: "DOE", url: `/projects/${projectId}/lss-black/doe`, icon: FlaskConical },
+              { title: "Control Plans", url: `/projects/${projectId}/lss-black/control-plans`, icon: Shield },
+              { title: "SPC Charts", url: `/projects/${projectId}/lss-black/spc-charts`, icon: BarChart3 },
+            ] : [
+              { title: "Metrics", url: `/projects/${projectId}/lss-green/metrics`, icon: Gauge },
+              { title: "Measurements", url: `/projects/${projectId}/lss-green/measurements`, icon: BarChart3 },
+            ]),
+          ],
+        },
         {
           id: "define",
           title: "Define",
@@ -590,6 +611,46 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
       ];
 
     case 'hybrid':
+      return [
+        {
+          id: "hybrid-dashboard",
+          title: "Hybrid",
+          icon: GitMerge,
+          items: [
+            { title: "Overview", url: `/projects/${projectId}/hybrid/overview`, icon: LayoutDashboard },
+            { title: "Phases", url: `/projects/${projectId}/hybrid/phases`, icon: Target },
+            { title: "Tasks", url: `/projects/${projectId}/hybrid/tasks`, icon: ListChecks },
+            { title: "Timeline", url: `/projects/${projectId}/hybrid/timeline`, icon: Calendar },
+            { title: "Artifacts", url: `/projects/${projectId}/hybrid/artifacts`, icon: FileText },
+            { title: "Configuration", url: `/projects/${projectId}/hybrid/configuration`, icon: Settings },
+          ],
+        },
+        {
+          id: "foundation",
+          title: "Project Foundation",
+          icon: FolderKanban,
+          items: [
+            { title: "Overview", url: `/projects/${projectId}/foundation/overview`, icon: FolderKanban },
+            { title: "Workflow", url: `/projects/${projectId}/foundation/workflow`, icon: GitBranch },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: FileCheck },
+            { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
+            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+          ],
+        },
+        {
+          id: "planning",
+          title: "Planning & Design",
+          icon: Calendar,
+          items: [
+            { title: "Timeline", url: `/projects/${projectId}/planning/timeline`, icon: Calendar },
+            { title: "Milestones", url: `/projects/${projectId}/planning/milestones`, icon: CheckSquare },
+            { title: "Tasks", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "RACI", url: `/projects/${projectId}/planning/raci`, icon: Network },
+            { title: "Risks", url: `/projects/${projectId}/planning/risks`, icon: Shield },
+          ],
+        },
+      ];
+
     default:
       return [
         {

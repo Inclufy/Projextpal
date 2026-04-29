@@ -183,6 +183,32 @@ import AgileRetrospective from './pages/agile/AgileRetrospective';
 import AgileVelocity from './pages/agile/AgileVelocity';
 import AgileDefinitionOfDone from './pages/agile/AgileDefinitionOfDone';
 
+// LSS Green imports
+import LSSGreenOverview from './pages/lss-green/LSSGreenOverview';
+import LSSGreenPhases from './pages/lss-green/LSSGreenPhases';
+import LSSGreenTasks from './pages/lss-green/LSSGreenTasks';
+import LSSGreenTimeline from './pages/lss-green/LSSGreenTimeline';
+import LSSGreenMetrics from './pages/lss-green/LSSGreenMetrics';
+import LSSGreenMeasurements from './pages/lss-green/LSSGreenMeasurements';
+
+// LSS Black imports
+import LSSBlackOverview from './pages/lss-black/LSSBlackOverview';
+import LSSBlackPhases from './pages/lss-black/LSSBlackPhases';
+import LSSBlackTasks from './pages/lss-black/LSSBlackTasks';
+import LSSBlackTimeline from './pages/lss-black/LSSBlackTimeline';
+import LSSBlackHypothesisTests from './pages/lss-black/LSSBlackHypothesisTests';
+import LSSBlackDOE from './pages/lss-black/LSSBlackDOE';
+import LSSBlackControlPlans from './pages/lss-black/LSSBlackControlPlans';
+import LSSBlackSPCCharts from './pages/lss-black/LSSBlackSPCCharts';
+
+// Hybrid imports
+import HybridOverview from './pages/hybrid/HybridOverview';
+import HybridPhases from './pages/hybrid/HybridPhases';
+import HybridTasks from './pages/hybrid/HybridTasks';
+import HybridTimeline from './pages/hybrid/HybridTimeline';
+import HybridArtifacts from './pages/hybrid/HybridArtifacts';
+import HybridConfiguration from './pages/hybrid/HybridConfiguration';
+
 // Waterfall imports
 import WaterfallOverview from './pages/waterfall/WaterfallOverview';
 import WaterfallTeam from './pages/waterfall/WaterfallTeam';
@@ -854,7 +880,39 @@ const App = () => (
               <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><WaterfallIssues /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><WaterfallDeliverables /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><WaterfallBaselines /></ProtectedPage>} />
-              
+
+              {/* ============================================ */}
+              {/* LSS Green Routes                             */}
+              {/* ============================================ */}
+              <Route path="/projects/:id/lss-green/overview" element={<ProtectedPage><LSSGreenOverview /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/phases" element={<ProtectedPage><LSSGreenPhases /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/tasks" element={<ProtectedPage><LSSGreenTasks /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/timeline" element={<ProtectedPage><LSSGreenTimeline /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/metrics" element={<ProtectedPage><LSSGreenMetrics /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/measurements" element={<ProtectedPage><LSSGreenMeasurements /></ProtectedPage>} />
+
+              {/* ============================================ */}
+              {/* LSS Black Routes                             */}
+              {/* ============================================ */}
+              <Route path="/projects/:id/lss-black/overview" element={<ProtectedPage><LSSBlackOverview /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/phases" element={<ProtectedPage><LSSBlackPhases /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/tasks" element={<ProtectedPage><LSSBlackTasks /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/timeline" element={<ProtectedPage><LSSBlackTimeline /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/hypothesis-tests" element={<ProtectedPage><LSSBlackHypothesisTests /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/doe" element={<ProtectedPage><LSSBlackDOE /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/control-plans" element={<ProtectedPage><LSSBlackControlPlans /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/spc-charts" element={<ProtectedPage><LSSBlackSPCCharts /></ProtectedPage>} />
+
+              {/* ============================================ */}
+              {/* Hybrid Routes                                */}
+              {/* ============================================ */}
+              <Route path="/projects/:id/hybrid/overview" element={<ProtectedPage><HybridOverview /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/phases" element={<ProtectedPage><HybridPhases /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/tasks" element={<ProtectedPage><HybridTasks /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/timeline" element={<ProtectedPage><HybridTimeline /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/artifacts" element={<ProtectedPage><HybridArtifacts /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/configuration" element={<ProtectedPage><HybridConfiguration /></ProtectedPage>} />
+
                             {/* Academy Routes */}
               <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
               <Route path="/academy/marketplace" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
