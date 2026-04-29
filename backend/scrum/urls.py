@@ -10,6 +10,7 @@ from .views import (
     SprintPlanningViewSet,
     IncrementViewSet,
     DoDChecklistCompletionViewSet,
+    ScrumSeedDemoView,
 )
 
 
@@ -274,5 +275,10 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/board/',
         ScrumBoardView.as_view(),
         name='scrum-board'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/seed-demo/',
+        ScrumSeedDemoView.as_view(),
+        name='scrum-seed-demo'
     ),
 ]
