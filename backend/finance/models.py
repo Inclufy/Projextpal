@@ -128,12 +128,12 @@ class Invoice(models.Model):
     company = models.ForeignKey(
         "accounts.Company",
         on_delete=models.CASCADE,
-        related_name="invoices",
+        related_name="vendor_invoices",
     )
     vendor = models.ForeignKey(
         Vendor,
         on_delete=models.PROTECT,
-        related_name="invoices",
+        related_name="vendor_invoices",
     )
     project = models.ForeignKey(
         "projects.Project",

@@ -520,6 +520,42 @@
     },
 
     {
+      "id": "FEAT-002",
+      "title": "Inclufy Finance ↔ ProjeXtPal integration — pull-sync + webhook + push-back",
+      "severity": "feature",
+      "area": "finance",
+      "endpoint": "POST /api/v1/finance/sync/inclufy/ + POST /api/v1/finance/webhooks/inclufy/ + sync_inclufy_finance management command + Supabase Edge Function in inclufy-auto-finance-main",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": null,
+      "expected_behavior": "Three flows: (1) PULL — ProjeXtPal queries Inclufy Finance Supabase REST and reconciles suppliers/invoices/lines/booking entries into local finance models. (2) PUSH — Inclufy Finance Edge Function calls a ProjeXtPal webhook on invoice events. (3) PROJECT_CODE — Django signal pushes project_code/program_code metadata to Finance on Project/Program save.",
+      "root_cause": "No connection existed between the two products before — invoices had to be re-keyed manually into ProjeXtPal.",
+      "fix_location": "ProjeXtPal: backend/finance/inclufy_sync.py + sync_views.py + signals.py + management/commands/sync_inclufy_finance.py + INTEGRATION.md + settings.py keys. Inclufy Finance: supabase/functions/sync-to-projextpal/index.ts + supabase/migrations/20260429155538_projextpal_sync.sql (sync log table + DB trigger on invoices) + docs/integrations.md.",
+      "regression_check": "After deploy + secrets configured: (a) python manage.py sync_inclufy_finance --company 1 --dry-run returns counts. (b) curl webhook POST with shared token returns 200 + creates an Invoice. (c) creating a Project with project_code in ProjeXtPal upserts a row in Finance projextpal_projects table.",
+      "found": "2026-04-29",
+      "found_by": "user request",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "FEAT-003",
+      "title": "Methodology parity — LSS Green/Black + Hybrid now have planning dates + per-task assignment",
+      "severity": "feature",
+      "area": "methodology",
+      "endpoint": "POST /api/v1/projects/{id}/lss-green/tasks/ + /lss-black/tasks/ + /hybrid/tasks/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": null,
+      "expected_behavior": "All 8 project methodologies now support task assignment to a user (assignee FK) AND planning dates (start_date / due_date / target_start / target_end). Closes the gap flagged in the methodology capability matrix.",
+      "root_cause": "Earlier audit found LSS Green had no native task model + only timestamp dates; LSS Black only had ControlPlan.responsible; Hybrid had no native task model + no dates on PhaseMethodology.",
+      "fix_location": "backend/lss_green/models.py — added target_start_date+target_end_date to DMAICPhase; new LSSGreenTask model (project + phase FK, assignee, status, priority, dates, order). backend/lss_black/models.py — new LSSBlackTask model + responsible FK on HypothesisTest/DesignOfExperiment/SPCChart. backend/hybrid/models.py — start_date+end_date+progress on PhaseMethodology; new HybridTask model. New serializers + viewsets + URL routes (membership-scoped via _accessible_project_ids). Migrations: lss_green/0002, lss_black/0002, hybrid/0002.",
+      "regression_check": "POST a task to /lss-green/projects/{id}/tasks/ with assignee + due_date — round-trip GET must return the task with assignee_name populated.",
+      "found": "2026-04-29",
+      "found_by": "user request — methodology parity",
+      "status": "fix_pending_deploy"
+    },
+
+    {
       "id": "INFRA-001",
       "title": "Health endpoint reports 503 — channels (Redis) credentials misconfigured",
       "severity": "P3",

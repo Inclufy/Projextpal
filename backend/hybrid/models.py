@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.conf import settings
 import uuid
@@ -55,6 +56,12 @@ class PhaseMethodology(models.Model):
     methodology = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    progress = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,3 +72,51 @@ class PhaseMethodology(models.Model):
 
     def __str__(self):
         return f"{self.phase} -> {self.methodology}"
+
+
+class HybridTask(models.Model):
+    """Per-phase task with assignee + planning dates for Hybrid projects."""
+
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('blocked', 'Blocked'),
+        ('done', 'Done'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='hybrid_tasks')
+    phase = models.ForeignKey(PhaseMethodology, on_delete=models.CASCADE, related_name='tasks')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='hybrid_assigned_tasks'
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    start_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='hybrid_created_tasks'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'Hybrid Task'
+        verbose_name_plural = 'Hybrid Tasks'
+
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"

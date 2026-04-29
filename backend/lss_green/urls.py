@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     DMAICPhaseViewSet, LSSGreenMetricViewSet, LSSGreenMeasurementViewSet,
+    LSSGreenTaskViewSet,
     LSSGreenSeedDemoView, LSSGreenClearDemoView,
 )
 
@@ -11,11 +12,13 @@ router = DefaultRouter()
 router.register(r'dmaic-phases', DMAICPhaseViewSet, basename='dmaic-phase')
 router.register(r'metrics', LSSGreenMetricViewSet, basename='metric')
 router.register(r'measurements', LSSGreenMeasurementViewSet, basename='measurement')
+router.register(r'tasks', LSSGreenTaskViewSet, basename='task')
 
 project_router = DefaultRouter()
 project_router.register(r'dmaic-phases', DMAICPhaseViewSet, basename='project-dmaic-phase')
 project_router.register(r'metrics', LSSGreenMetricViewSet, basename='project-metric')
 project_router.register(r'measurements', LSSGreenMeasurementViewSet, basename='project-measurement')
+project_router.register(r'tasks', LSSGreenTaskViewSet, basename='project-task')
 
 urlpatterns = [
     path('', include(router.urls)),

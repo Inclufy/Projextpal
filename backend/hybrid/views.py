@@ -9,8 +9,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from projects.models import Project
 from projects.permissions import MethodologyMatchesProjectPermission
 
-from .models import HybridArtifact, HybridConfiguration, PhaseMethodology
-from .serializers import HybridArtifactSerializer, HybridConfigurationSerializer, PhaseMethodologySerializer
+from .models import HybridArtifact, HybridConfiguration, PhaseMethodology, HybridTask
+from .serializers import (
+    HybridArtifactSerializer, HybridConfigurationSerializer,
+    PhaseMethodologySerializer, HybridTaskSerializer,
+)
 
 
 def _get_company(user):
@@ -159,6 +162,35 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
             serializer.save(project_id=project_id)
         else:
             serializer.save()
+
+
+class HybridTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = HybridTaskSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_fields = ['project', 'phase', 'assignee', 'status', 'priority']
+    ordering_fields = ['order', 'due_date', 'priority', 'created_at']
+    search_fields = ['title', 'description']
+
+    def get_queryset(self):
+        company = _get_company(self.request.user)
+        if not company:
+            return HybridTask.objects.none()
+        queryset = HybridTask.objects.select_related('project', 'phase', 'assignee').filter(
+            project_id__in=_accessible_project_ids(self.request.user)
+        )
+        project_id = self.kwargs.get('project_id')
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        project_id = self.kwargs.get('project_id')
+        if project_id:
+            _verify_project_access(self.request.user, project_id)
+            serializer.save(project_id=project_id, created_by=self.request.user)
+        else:
+            serializer.save(created_by=self.request.user)
 
 
 class HybridSeedDemoView(viewsets.ViewSet):

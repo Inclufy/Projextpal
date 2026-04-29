@@ -28,6 +28,10 @@ class HypothesisTest(models.Model):
     reject_null = models.BooleanField(null=True, blank=True)
     sample_size = models.IntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='lss_black_hypothesis_tests'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,6 +69,10 @@ class DesignOfExperiment(models.Model):
     objective = models.TextField(blank=True)
     results = models.JSONField(default=dict, blank=True)
     conclusion = models.TextField(blank=True)
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='lss_black_doe'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -123,6 +131,10 @@ class SPCChart(models.Model):
     data_points = models.JSONField(default=list, blank=True)
     subgroup_size = models.IntegerField(default=5)
     notes = models.TextField(blank=True)
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='lss_black_spc_charts'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -132,3 +144,57 @@ class SPCChart(models.Model):
 
     def __str__(self):
         return f"{self.get_chart_type_display()} - {self.project.name}"
+
+
+class LSSBlackTask(models.Model):
+    """Per-phase task with assignee + planning dates for LSS Black Belt.
+
+    Phase FK uses string reference to lss_green.DMAICPhase to avoid circular
+    import — Black Belt reuses the Green Belt DMAIC phase model.
+    """
+
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('blocked', 'Blocked'),
+        ('done', 'Done'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='lss_black_tasks')
+    phase = models.ForeignKey(
+        'lss_green.DMAICPhase', on_delete=models.CASCADE, related_name='lss_black_tasks'
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='lss_black_assigned_tasks'
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    start_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='lss_black_created_tasks'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'LSS Black Task'
+        verbose_name_plural = 'LSS Black Tasks'
+
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"

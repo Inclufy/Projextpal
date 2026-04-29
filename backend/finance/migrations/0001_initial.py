@@ -119,11 +119,11 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('company', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
-                    related_name='invoices', to='accounts.company',
+                    related_name='vendor_invoices', to='accounts.company',
                 )),
                 ('vendor', models.ForeignKey(
                     on_delete=django.db.models.deletion.PROTECT,
-                    related_name='invoices', to='finance.vendor',
+                    related_name='vendor_invoices', to='finance.vendor',
                 )),
                 ('project', models.ForeignKey(
                     blank=True, null=True,
