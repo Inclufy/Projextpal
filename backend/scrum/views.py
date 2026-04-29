@@ -808,8 +808,12 @@ class ScrumBoardView(APIView):
 
 
 class ScrumSeedDemoView(APIView):
-    """One-shot demo seeder for every Scrum sub-tab. Idempotent."""
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    """One-shot demo seeder for every Scrum sub-tab. Idempotent.
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def post(self, request, project_id=None):
         from datetime import date, timedelta
@@ -1028,8 +1032,12 @@ class ScrumSeedDemoView(APIView):
 
 
 class ScrumClearDemoView(APIView):
-    """Wipe all Scrum data for a project."""
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    """Wipe all Scrum data for a project.
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def post(self, request, project_id=None):
         from django.db import transaction

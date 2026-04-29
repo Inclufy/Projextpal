@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,10 +10,14 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
+
 const ScrumOverview = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canManageDemo = !!user && DEMO_ADMIN_ROLES.includes(user.role);
   const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -72,10 +77,18 @@ const ScrumOverview = () => {
             <div><h1 className="text-2xl font-bold">Scrum Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={seedDemo} disabled={seeding} className="gap-2">
-              {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {pt("Fill with demo data")}
-            </Button>
+            {canManageDemo && (
+              <>
+                <Button variant="outline" onClick={seedDemo} disabled={seeding} className="gap-2">
+                  {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {pt("Fill with demo data")}
+                </Button>
+                <Button variant="outline" onClick={clearDemo} disabled={clearing} className="gap-2 text-destructive hover:bg-destructive/10">
+                  {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  {pt("Clear data")}
+                </Button>
+              </>
+            )}
             <Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button>
           </div>
         </div>

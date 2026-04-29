@@ -533,8 +533,12 @@ class AgileSeedDemoView(viewsets.ViewSet):
     """One-shot endpoint that pre-fills every Agile sub-tab with realistic
     demo data so an empty project becomes a working showcase. Idempotent —
     re-running on the same project skips tabs that already have data.
+
+    Restricted to admins, project managers and program managers — content
+    creators only.
     """
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def create(self, request, project_id=None):
         from datetime import timedelta
@@ -851,8 +855,12 @@ class AgileSeedDemoView(viewsets.ViewSet):
 
 
 class AgileClearDemoView(viewsets.ViewSet):
-    """Wipe all Agile data for a project (team, backlog, iterations, etc.)."""
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    """Wipe all Agile data for a project (team, backlog, iterations, etc.).
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def create(self, request, project_id=None):
         from django.db import transaction

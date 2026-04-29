@@ -579,8 +579,12 @@ class WorkPolicyViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 
 class KanbanSeedDemoView(APIView):
-    """One-shot demo seeder for Kanban (board, columns, cards, policies)."""
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    """One-shot demo seeder for Kanban (board, columns, cards, policies).
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def post(self, request, project_id=None):
         from datetime import date, timedelta
@@ -709,8 +713,12 @@ class KanbanSeedDemoView(APIView):
 
 
 class KanbanClearDemoView(APIView):
-    """Wipe all Kanban data for a project (board, columns, cards, policies)."""
-    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+    """Wipe all Kanban data for a project (board, columns, cards, policies).
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
 
     def post(self, request, project_id=None):
         from django.db import transaction
