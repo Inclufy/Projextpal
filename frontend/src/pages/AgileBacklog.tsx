@@ -44,7 +44,7 @@ const fetchBacklogItems = async (projectId: string) => {
   });
   if (!response.ok) {
     // Fallback to tasks
-    const tasksResponse = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/`, {
+    const tasksResponse = await fetch(`${API_BASE_URL}/projects/tasks/?project=${projectId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!tasksResponse.ok) return { epics: [], stories: [] };

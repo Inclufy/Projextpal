@@ -10,7 +10,9 @@ class Program(models.Model):
         ("msp", "MSP (Managing Successful Programmes)"),
         ("pmi", "PMI Program Management"),
         ("prince2_programme", "PRINCE2 Programme"),
+        ("p2_programme", "P2 Programme (PRINCE2-based blueprint)"),
         ("hybrid", "Hybrid"),
+        ("hybrid_programme", "Hybrid Programme"),
     ]
 
     STATUS_CHOICES = [
@@ -125,6 +127,34 @@ class Program(models.Model):
     def budget_variance(self):
         """Calculate budget variance."""
         return self.total_budget - self.spent_budget
+
+
+class ProgramTeam(models.Model):
+    """Team members assigned to a program."""
+
+    program = models.ForeignKey(
+        Program, on_delete=models.CASCADE, related_name="team_members"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="program_teams"
+    )
+    role = models.CharField(max_length=100, blank=True)
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="added_program_team_members",
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["program", "user"]
+        ordering = ["-added_at"]
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.email} - {self.program.name}"
 
 
 class ProgramBenefit(models.Model):

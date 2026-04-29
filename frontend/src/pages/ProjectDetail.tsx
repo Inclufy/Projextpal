@@ -7,7 +7,7 @@ import {
   Trash2,
   Loader2,
   Calendar,
-  DollarSign,
+  Euro,
   Users,
   FolderKanban,
   Target,
@@ -58,7 +58,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
+import { formatBudgetDetailed, getCurrencyFromLanguage, CURRENCIES, type CurrencyCode } from '@/lib/currencies';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // API functions
 const fetchProgram = async (id: string) => {
@@ -129,6 +130,7 @@ const ProgramDetail = () => {
     name: "",
     description: "",
     total_budget: "",
+    currency: "EUR",
     strategic_objective: "",
   });
 
@@ -179,6 +181,7 @@ const ProgramDetail = () => {
         name: program.name || "",
         description: program.description || "",
         total_budget: program.total_budget?.toString() || "",
+        currency: program.currency || "EUR",
         strategic_objective: program.strategic_objective || "",
       });
     }
@@ -192,6 +195,7 @@ const ProgramDetail = () => {
         name: editFormData.name,
         description: editFormData.description,
         total_budget: parseFloat(editFormData.total_budget) || 0,
+        currency: editFormData.currency,
         strategic_objective: editFormData.strategic_objective,
       },
     });
@@ -225,7 +229,8 @@ const ProgramDetail = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
+  const programCurrency = (program?.currency as CurrencyCode) || getCurrencyFromLanguage(language);
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, programCurrency, language);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -339,7 +344,7 @@ const ProgramDetail = () => {
                 <p className="text-sm text-muted-foreground">{pt("Total Budget")}</p>
                 <p className="text-2xl font-bold">{formatCurrency(program.total_budget)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
+              <Euro className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -350,7 +355,7 @@ const ProgramDetail = () => {
                 <p className="text-sm text-muted-foreground">{pt("Spent")}</p>
                 <p className="text-2xl font-bold">{formatCurrency(program.spent_budget)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-amber-500" />
+              <Euro className="h-8 w-8 text-amber-500" />
             </div>
           </CardContent>
         </Card>
@@ -617,14 +622,34 @@ const ProgramDetail = () => {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-budget">Total Budget (€)</Label>
-              <Input
-                id="edit-budget"
-                type="number"
-                value={editFormData.total_budget}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="edit-budget">Total Budget</Label>
+                <Input
+                  id="edit-budget"
+                  type="number"
+                  value={editFormData.total_budget}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-currency">Currency</Label>
+                <Select
+                  value={editFormData.currency}
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, currency: value }))}
+                >
+                  <SelectTrigger id="edit-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(CURRENCIES).map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.symbol} {c.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-objective">{pt("Strategic Objective")}</Label>

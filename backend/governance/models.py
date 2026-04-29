@@ -152,3 +152,94 @@ class GovernanceStakeholder(models.Model):
             return 'keep_informed'  # Keep Informed
         else:
             return 'monitor'  # Monitor
+
+
+class Decision(models.Model):
+    """Programme-level governance decisions (steering board, sponsor calls, etc.)."""
+
+    IMPACT_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    program = models.ForeignKey(
+        'programs.Program', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='decisions',
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='governance_decisions',
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+    impact = models.CharField(max_length=10, choices=IMPACT_CHOICES, default='medium')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    evidence = models.TextField(
+        blank=True,
+        help_text='Links / references to supporting artefacts (board minutes, business case, etc.)',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Decision'
+        verbose_name_plural = 'Decisions'
+        ordering = ['-decided_at', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"
+
+
+class Meeting(models.Model):
+    """Programme governance meetings (steering committee, programme board, etc.)."""
+
+    TYPE_CHOICES = [
+        ('steering', 'Steering Committee'),
+        ('board', 'Programme Board'),
+        ('working', 'Working Group'),
+    ]
+
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    program = models.ForeignKey(
+        'programs.Program', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='governance_meetings',
+    )
+    title = models.CharField(max_length=255)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='steering')
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    facilitator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='facilitated_meetings',
+    )
+    attendees = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name='attended_meetings'
+    )
+    agenda = models.TextField(blank=True)
+    minutes = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Governance Meeting'
+        verbose_name_plural = 'Governance Meetings'
+        ordering = ['-scheduled_at', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.get_type_display()})"

@@ -14,7 +14,7 @@ class MSPBenefit(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='msp_benefits')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='msp_benefits')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     target_value = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
@@ -63,7 +63,7 @@ class MSPTranche(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='msp_tranches')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='msp_tranches')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     sequence = models.PositiveIntegerField(default=1)

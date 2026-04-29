@@ -1,13 +1,41 @@
 """Certificate Generation API"""
+import logging
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.core.files.base import ContentFile
 from .models import Enrollment, Certificate, UserSkill
+from .certificate_generator import generate_certificate_pdf
 import secrets
+import os
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+
+def _render_and_attach_pdf(cert):
+    """Render the cert to PDF and persist to cert.pdf_file.
+
+    Failures are logged but don't bubble up — the cert row still exists,
+    and the download endpoint will surface a clear error. We don't want a
+    transient PDF-rendering glitch (e.g. font cache) to roll back the cert
+    creation, because the eligibility checks have already passed.
+    """
+    try:
+        pdf_path, filename = generate_certificate_pdf(cert)
+        with open(pdf_path, 'rb') as f:
+            cert.pdf_file.save(filename, ContentFile(f.read()), save=True)
+        try:
+            os.unlink(pdf_path)
+        except OSError:
+            pass
+        return True
+    except Exception:  # noqa: BLE001 — broad catch is intentional here
+        logger.exception('Certificate PDF render failed for cert %s', cert.id)
+        return False
 
 
 @api_view(['GET'])
@@ -95,12 +123,18 @@ def generate_certificate(request, enrollment_id):
             simulations_completed=15,
             practice_submitted=10
         )
-        
+
+        # Render PDF and attach to cert.pdf_file so /download/ returns a
+        # real file rather than 404. See _render_and_attach_pdf() for
+        # error handling.
+        pdf_ok = _render_and_attach_pdf(cert)
+
         return Response({
             'success': True,
             'certificate_id': str(cert.id),
             'certificate_number': cert.certificate_number,
             'verification_code': cert.verification_code,
+            'pdf_generated': pdf_ok,
             'download_url': f'/api/v1/academy/certificate/{cert.id}/download/'
         })
         
@@ -115,11 +149,18 @@ def download_certificate(request, certificate_id):
     """Download certificate PDF"""
     try:
         cert = get_object_or_404(Certificate, id=certificate_id)
-        
+
+        # Lazy backfill: if a cert was created before PDF generation was
+        # wired up (or rendering failed last time), generate it on demand.
+        if not cert.pdf_file:
+            _render_and_attach_pdf(cert)
+            cert.refresh_from_db()
+
         if cert.pdf_file:
-            return FileResponse(cert.pdf_file, as_attachment=True, 
-                              filename=f"certificate_{cert.certificate_number}.pdf")
-        
+            return FileResponse(cert.pdf_file, as_attachment=True,
+                              filename=f"certificate_{cert.certificate_number}.pdf",
+                              content_type='application/pdf')
+
         return Response({'error': 'PDF not yet generated'}, status=404)
         
     except Http404:
@@ -129,8 +170,9 @@ def download_certificate(request, certificate_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def verify_certificate(request, verification_code):
-    """Verify certificate by code"""
+    """Verify certificate by code (public — used by employers without an account)."""
     try:
         cert = Certificate.objects.filter(verification_code=verification_code).first()
         

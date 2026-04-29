@@ -57,7 +57,7 @@ const FoundationTeam = () => {
   const fetchCompanyUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await fetch("/api/v1/users/", { headers });
+      const response = await fetch("/api/v1/auth/company-users/", { headers });
       if (response.ok) {
         const data = await response.json();
         setCompanyUsers(Array.isArray(data) ? data : data.results || []);

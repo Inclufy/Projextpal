@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Circle, Clock, Loader2, Plus } from "lucide-react";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
 const fetchProjectMilestones = async (projectId: string) => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/milestones/`, {
+  const response = await fetch(`${API_BASE_URL}/projects/milestones/?project=${projectId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) return [];
@@ -20,6 +21,7 @@ const fetchProjectMilestones = async (projectId: string) => {
 
 const ProjectMilestones = () => {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();
 
   const { data: milestones = [], isLoading } = useQuery({
@@ -30,7 +32,8 @@ const ProjectMilestones = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('nl-NL', {
+    const locale = language === 'nl' ? 'nl-NL' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',

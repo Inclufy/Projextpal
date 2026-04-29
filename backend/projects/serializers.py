@@ -128,6 +128,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "project_type",
             "methodology",
             "budget",
+            "currency",
             "start_date",
             "end_date",
             "description",

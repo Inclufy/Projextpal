@@ -1,6 +1,6 @@
 import { LayoutDashboard, MessageSquare, FolderKanban, Users, 
   FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare, 
-  GitBranch, Network, ListChecks, LayoutGrid, DollarSign, FileText, 
+  GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText, 
   Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers, 
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
@@ -294,7 +294,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Overview", url: `/projects/${projectId}/scrum/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/scrum/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: Euro },
             { title: "Definition of Done", url: `/projects/${projectId}/scrum/definition-of-done`, icon: CheckSquare },
           ],
         },
@@ -338,7 +338,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Overview", url: `/projects/${projectId}/kanban/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/kanban/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/kanban/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/kanban/budget`, icon: Euro },
             { title: "Board Configuration", url: `/projects/${projectId}/kanban/board-configuration`, icon: Columns },
             { title: "WIP Limits", url: `/projects/${projectId}/kanban/wip-limits`, icon: Shield },
             { title: "Work Policies", url: `/projects/${projectId}/kanban/work-policies`, icon: FileText },
@@ -382,7 +382,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Overview", url: `/projects/${projectId}/prince2/dashboard`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
             { title: "Business Case", url: `/projects/${projectId}/prince2/business-case`, icon: FileCheck },
             { title: "Project Brief", url: `/projects/${projectId}/prince2/project-brief`, icon: FileText },
           ],
@@ -436,7 +436,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Voice of Customer", url: `/projects/${projectId}/define/voc`, icon: Users },
             { title: "Overview", url: `/projects/${projectId}/define/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/define/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/define/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/define/budget`, icon: Euro },
           ],
         },
         {
@@ -498,7 +498,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Overview", url: `/projects/${projectId}/agile/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/agile/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/agile/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/agile/budget`, icon: Euro },
           ],
         },
         {
@@ -549,7 +549,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Overview", url: `/projects/${projectId}/waterfall/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/waterfall/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/waterfall/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/waterfall/budget`, icon: Euro },
           ],
         },
         {
@@ -601,7 +601,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Workflow", url: `/projects/${projectId}/foundation/workflow`, icon: GitBranch },
             { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: FileCheck },
             { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: DollarSign },
+            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
           ],
         },
         {
@@ -769,18 +769,18 @@ export function AppSidebar() {
     if (user?.isSuperAdmin || user?.role === 'superadmin') {
       return false;
     }
-    
+
     // No feature requirement = always accessible
     if (!featureName) {
       return false;
     }
-    
+
     // Don't lock while loading
     if (featuresLoading || !userFeatures) {
       return false;
     }
-    
-    // Check if feature is available
+
+    // hasFeature handles role-based bypass (e.g. program_manager → program_management)
     return !hasFeature(userFeatures, featureName);
   };
 

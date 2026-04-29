@@ -220,22 +220,24 @@ class BiometricCredentialListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from .models_biometric import BiometricCredential
-
-        credentials = BiometricCredential.objects.filter(
-            user=request.user, is_active=True
-        )
-
-        return Response([
-            {
-                'id': cred.id,
-                'credential_id': cred.credential_id[:12] + '...',
-                'device_name': cred.device_name,
-                'created_at': cred.created_at.isoformat(),
-                'last_used_at': cred.last_used_at.isoformat() if cred.last_used_at else None,
-            }
-            for cred in credentials
-        ])
+        try:
+            from .models_biometric import BiometricCredential
+            credentials = BiometricCredential.objects.filter(
+                user=request.user, is_active=True
+            )
+            return Response([
+                {
+                    'id': cred.id,
+                    'credential_id': cred.credential_id[:12] + '...',
+                    'device_name': cred.device_name,
+                    'created_at': cred.created_at.isoformat(),
+                    'last_used_at': cred.last_used_at.isoformat() if cred.last_used_at else None,
+                }
+                for cred in credentials
+            ])
+        except Exception:
+            # Table missing or DB error — degrade to empty list rather than 500.
+            return Response([])
 
     def delete(self, request):
         from .models_biometric import BiometricCredential
@@ -267,12 +269,13 @@ class BiometricStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from .models_biometric import BiometricCredential
-
-        count = BiometricCredential.objects.filter(
-            user=request.user, is_active=True
-        ).count()
-
+        try:
+            from .models_biometric import BiometricCredential
+            count = BiometricCredential.objects.filter(
+                user=request.user, is_active=True
+            ).count()
+        except Exception:
+            count = 0
         return Response({
             'has_biometric': count > 0,
             'credential_count': count,

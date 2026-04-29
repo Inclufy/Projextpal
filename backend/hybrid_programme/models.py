@@ -7,7 +7,7 @@ class HybridGovernanceConfig(models.Model):
     """Governance configuration for hybrid programmes mixing multiple frameworks"""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    programme = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='hybrid_governance_configs')
+    programme = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='hybrid_governance_configs')
     primary_framework = models.CharField(max_length=50)
     secondary_frameworks = models.JSONField(default=list)
     rationale = models.TextField(blank=True)
@@ -47,7 +47,7 @@ class HybridAdaptation(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    programme = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='hybrid_adaptations')
+    programme = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='hybrid_adaptations')
     trigger = models.CharField(max_length=30, choices=TRIGGER_CHOICES)
     response = models.CharField(max_length=30, choices=RESPONSE_CHOICES)
     methodology_adjustment = models.TextField(blank=True)

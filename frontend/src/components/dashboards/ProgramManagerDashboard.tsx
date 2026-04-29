@@ -18,7 +18,7 @@ import {
   FolderKanban,
   TrendingUp,
   AlertTriangle,
-  DollarSign,
+  Euro,
   Sparkles,
   ArrowRight,
   Target,
@@ -331,7 +331,7 @@ const ProgramManagerDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📋 {pt("Program Manager Dashboard")}</span>
+            <span>{pt("Program Manager Dashboard")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
@@ -375,7 +375,7 @@ const ProgramManagerDashboard: React.FC = () => {
           <StatCard title={pt("Total Projects")} value={totalProjects} subtitle={pt("Across all programs")} icon={FolderKanban} color="blue" />
           <StatCard title={pt("Active")} value={activeProjects} subtitle={pt("In progress")} icon={Activity} color="emerald" />
           <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={pt("Need attention")} icon={AlertTriangle} color="red" />
-          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={Euro} color="amber" />
           <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average completion")} icon={Target} color="emerald" />
         </div>
 

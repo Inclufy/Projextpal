@@ -227,16 +227,21 @@ Answer ONLY in valid JSON format. Answer in English."""
 def ai_generate_practice(request):
     """Generate a personalized practice assignment based on sector and role"""
     try:
-        lesson_title = request.data.get('lessonTitle', '')
-        course_title = request.data.get('courseTitle', '')
-        lesson_content = request.data.get('lessonContent', '')
+        # Accept both camelCase (lessonTitle) and snake_case (lesson_title) for
+        # consistency with the rest of the academy AI generators.
+        lesson_title = request.data.get('lessonTitle') or request.data.get('lesson_title') or ''
+        course_title = request.data.get('courseTitle') or request.data.get('course_title') or ''
+        lesson_content = request.data.get('lessonContent') or request.data.get('lesson_content') or ''
         sector = request.data.get('sector', '')
         role = request.data.get('role', '')
         methodology = request.data.get('methodology', '')
         language = request.data.get('language', 'nl')
 
         if not lesson_title:
-            return Response({'error': 'lessonTitle is required'}, status=400)
+            return Response(
+                {'error': 'lesson_title (or lessonTitle) is required'},
+                status=400,
+            )
 
         api_key = OPENAI_API_KEY
         if not api_key:

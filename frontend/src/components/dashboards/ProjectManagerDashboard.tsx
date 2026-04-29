@@ -16,7 +16,7 @@ import {
   FolderKanban,
   TrendingUp,
   AlertTriangle,
-  DollarSign,
+  Euro,
   Sparkles,
   ArrowRight,
   Target,
@@ -281,7 +281,7 @@ const ProjectManagerDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>📊 {pt("Project Manager Dashboard")}</span>
+            <span>{pt("Project Manager Dashboard")}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
@@ -325,7 +325,7 @@ const ProjectManagerDashboard: React.FC = () => {
           <StatCard title={pt("Active")} value={activeProjects} subtitle={pt("In progress")} icon={Activity} color="emerald" />
           <StatCard title={pt("Completed")} value={completedProjects} subtitle={pt("Delivered")} icon={CheckCircle2} color="purple" />
           <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={pt("Need attention")} icon={AlertTriangle} color="red" />
-          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={pt("Total allocated")} icon={Euro} color="amber" />
           <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average completion")} icon={Target} color="emerald" />
         </div>
 
@@ -357,7 +357,7 @@ const ProjectManagerDashboard: React.FC = () => {
             <CardHeader className="border-b border-purple-100 dark:border-purple-900/30 pb-5">
               <CardTitle className="flex items-center gap-3.5 text-xl font-bold text-gray-900 dark:text-gray-100">
                 <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <DollarSign className="h-5 w-5 text-white" />
+                  <Euro className="h-5 w-5 text-white" />
                 </div>
                 {pt("Budget Overview")}
               </CardTitle>

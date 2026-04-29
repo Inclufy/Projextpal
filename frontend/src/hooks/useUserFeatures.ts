@@ -187,9 +187,34 @@ const isSuperAdmin = (): boolean => {
   return false;
 };
 
+// A user's role grants implicit access to its core feature regardless of plan.
+// A program manager must always reach /programs even on a free plan; a project
+// manager must always reach Team + Post Project; an admin must always reach
+// admin features.
+const FEATURE_ROLE_GRANTS: Record<string, string[]> = {
+  program_management: ['program_manager', 'admin'],
+  governance: ['program_manager', 'admin'],
+  teams: ['pm', 'project_manager', 'program_manager', 'admin'],
+  post_project: ['pm', 'project_manager', 'program_manager', 'admin'],
+  time_tracking: ['pm', 'project_manager', 'program_manager', 'admin'],
+  admin_permissions: ['admin'],
+};
+
+const roleGrantsFeature = (featureName: string): boolean => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return false;
+  try {
+    const role = JSON.parse(userStr).role;
+    return !!role && FEATURE_ROLE_GRANTS[featureName]?.includes(role);
+  } catch {
+    return false;
+  }
+};
+
 // Helper functions
 export const hasFeature = (features: UserFeatures | undefined, featureName: string): boolean => {
   if (isSuperAdmin()) return true;
+  if (roleGrantsFeature(featureName)) return true;
   if (!features) return false;
   return features.features[featureName as keyof typeof features.features] || false;
 };

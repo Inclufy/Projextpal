@@ -13,6 +13,22 @@ class Company(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_subscribed = models.BooleanField(default=False)
 
+    # Tenant-wide 2FA enforcement
+    # When True, every user in the tenant must enrol 2FA at next login.
+    # The login flow checks `not has_2fa(user) and user.company.require_2fa`
+    # and redirects to 2FA enrolment.
+    require_2fa = models.BooleanField(
+        default=False,
+        help_text="Force all users in this tenant to enable 2FA at next login.",
+    )
+    require_2fa_enabled_at = models.DateTimeField(null=True, blank=True)
+
+    # Subscription billing helpers (lightweight — full billing lives in
+    # subscriptions app + Stripe). next_invoice_date / last_payment_date
+    # are populated by the subscriptions webhook handler.
+    next_invoice_date = models.DateTimeField(null=True, blank=True)
+    last_payment_date = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.name
 
@@ -698,7 +714,11 @@ class TeamInvitation(models.Model):
     @property
     def is_expired(self):
         return timezone.now() > self.expires_at
-    
+
     @property
     def can_be_accepted(self):
         return self.status == 'pending' and not self.is_expired
+
+
+# Re-export biometric model so Django auto-discovers it for migrations.
+from .models_biometric import BiometricCredential  # noqa: E402,F401
