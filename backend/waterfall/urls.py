@@ -21,6 +21,8 @@ from .views import (
     WaterfallIssueViewSet,
     WaterfallDeliverableViewSet,
     WaterfallBaselineViewSet,
+    WaterfallSeedDemoView,
+    WaterfallClearDemoView,
 )
 
 urlpatterns = [
@@ -108,4 +110,8 @@ urlpatterns = [
     # Baseline Management
     path('projects/<int:project_id>/waterfall/baselines/', WaterfallBaselineViewSet.as_view({'get': 'list', 'post': 'create'}), name='waterfall-baselines-list'),
     path('projects/<int:project_id>/waterfall/baselines/<int:pk>/', WaterfallBaselineViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='waterfall-baselines-detail'),
+
+    # Demo seed/clear
+    path('projects/<int:project_id>/waterfall/seed-demo/', WaterfallSeedDemoView.as_view(), name='waterfall-seed-demo'),
+    path('projects/<int:project_id>/waterfall/clear-demo/', WaterfallClearDemoView.as_view(), name='waterfall-clear-demo'),
 ]

@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, Count, Q
-from .models import Program, ProgramBenefit, ProgramRisk, ProgramMilestone
+from .models import Program, ProgramBenefit, ProgramRisk, ProgramMilestone, ProgramTeam
 from .serializers import (
     ProgramListSerializer,
     ProgramDetailSerializer,
@@ -11,6 +11,7 @@ from .serializers import (
     ProgramBenefitSerializer,
     ProgramRiskSerializer,
     ProgramMilestoneSerializer,
+    ProgramTeamSerializer,
 )
 
 
@@ -222,6 +223,68 @@ class ProgramViewSet(viewsets.ModelViewSet):
             except Exception:
                 pass
         return Response(resources)
+
+    @action(detail=True, methods=['get'], url_path='team')
+    def get_team(self, request, pk=None):
+        """List program team members."""
+        program = self.get_object()
+        members = program.team_members.filter(is_active=True).select_related('user', 'added_by')
+        return Response(ProgramTeamSerializer(members, many=True).data)
+
+    @action(detail=True, methods=['post'], url_path='team/add')
+    def add_team_member(self, request, pk=None):
+        """Assign a user to this program."""
+        program = self.get_object()
+        user_id = request.data.get('user_id')
+        role = request.data.get('role', '') or ''
+
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        try:
+            user = User.objects.get(id=user_id, company=request.user.company)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found or not in the same company'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if program.team_members.filter(user=user, is_active=True).exists():
+            return Response(
+                {'error': 'User is already a team member of this program'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            member = program.team_members.get(user=user, is_active=False)
+            member.is_active = True
+            member.role = role or member.role
+            member.added_by = request.user
+            member.save()
+        except ProgramTeam.DoesNotExist:
+            member = ProgramTeam.objects.create(
+                program=program, user=user, role=role, added_by=request.user
+            )
+
+        return Response(ProgramTeamSerializer(member).data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=['delete'],
+        url_path='team/remove/(?P<team_member_id>[^/.]+)',
+    )
+    def remove_team_member(self, request, pk=None, team_member_id=None):
+        """Remove a user from this program (soft delete)."""
+        program = self.get_object()
+        try:
+            member = program.team_members.get(id=team_member_id)
+        except ProgramTeam.DoesNotExist:
+            return Response({'error': 'Team member not found'}, status=status.HTTP_404_NOT_FOUND)
+        member.is_active = False
+        member.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProgramBenefitViewSet(viewsets.ModelViewSet):
@@ -636,3 +699,203 @@ def generate_program_recommendations(budget_risk, health_score, project_insights
         })
     
     return recommendations
+
+
+# =============================================================================
+# DEMO SEED + CLEAR (program-level)
+# =============================================================================
+from rest_framework.views import APIView
+from accounts.permissions import HasRole
+from django.shortcuts import get_object_or_404
+
+PROGRAM_DEMO_ROLES = HasRole("superadmin", "admin", "pm", "program_manager")
+
+
+class ProgramSeedDemoView(APIView):
+    """Seed demo data into a program: team, benefits, risks, milestones, budget."""
+    permission_classes = [PROGRAM_DEMO_ROLES]
+
+    def post(self, request, pk=None):
+        from datetime import date, timedelta
+        from django.db import transaction
+        from django.contrib.auth import get_user_model
+        from .models import (
+            Program, ProgramTeam, ProgramBenefit, ProgramRisk, ProgramMilestone,
+            ProgramBudget, ProgramBudgetCategory, ProgramBudgetItem,
+        )
+        User = get_user_model()
+        program = get_object_or_404(Program, pk=pk, company=request.user.company)
+        team_pool = list(User.objects.filter(company=program.company)[:6]) or [request.user]
+        created = {}
+        today = date.today()
+
+        with transaction.atomic():
+            # ---- Team ----
+            team_count = 0
+            roles = ['Program Manager', 'Programme Sponsor', 'Business Change Manager',
+                     'Senior Responsible Owner', 'PMO Lead', 'Programme Architect']
+            for idx, member in enumerate(team_pool):
+                _, c = ProgramTeam.objects.get_or_create(
+                    program=program, user=member,
+                    defaults={'role': roles[idx % len(roles)], 'is_active': True,
+                              'added_by': request.user},
+                )
+                if c:
+                    team_count += 1
+            created['team'] = team_count
+
+            # ---- Benefits ----
+            ben_count = 0
+            if not ProgramBenefit.objects.filter(program=program).exists():
+                bens_seed = [
+                    ('Operational efficiency gain', 'operational', 'in_progress', 1500000, 580000, 'EUR', 90),
+                    ('Customer NPS improvement', 'customer', 'identified', 20, 0, 'pts', 180),
+                    ('Reduce time-to-market for new products', 'strategic', 'planned', 35, 0, '%', 270),
+                    ('Employee engagement uplift', 'employee', 'identified', 15, 0, 'pts', 180),
+                    ('Cost savings through consolidation', 'financial', 'in_progress', 800000, 250000, 'EUR', 150),
+                ]
+                for name, cat, status, target, actual, unit, off in bens_seed:
+                    ProgramBenefit.objects.create(
+                        program=program, name=name,
+                        description=f"Programme-level benefit: {name}",
+                        category=cat, status=status,
+                        target_value=target, actual_value=actual, measurement_unit=unit,
+                        expected_date=today + timedelta(days=off),
+                        owner=team_pool[0],
+                    )
+                    ben_count += 1
+            created['benefits'] = ben_count
+
+            # ---- Risks ----
+            risk_count = 0
+            if not ProgramRisk.objects.filter(program=program).exists():
+                risks_seed = [
+                    ('Inter-project dependency slippage', 'high', 'high', 'mitigating',
+                     'Project A delivery date slips, causing knock-on delay across 3 dependent projects.',
+                     'Weekly cross-project sync; buffer in master schedule; clear owner per dependency.'),
+                    ('Benefit realisation gap', 'medium', 'high', 'open',
+                     'Realised benefits trail forecast by >20% in first 12 months.',
+                     'Quarterly benefits review with Business Change Manager; corrective KPI tracking.'),
+                    ('Resource contention across projects', 'high', 'medium', 'mitigating',
+                     'Key SMEs requested by multiple projects simultaneously.',
+                     'Centralised resource pool; PMO-led prioritisation calls; backup specialists.'),
+                    ('Vendor lock-in', 'medium', 'medium', 'open',
+                     'Programme-wide tooling concentrates on a single vendor.',
+                     'Periodic vendor review; abstraction layers in architecture; multi-vendor RFP option.'),
+                    ('Stakeholder fatigue', 'medium', 'low', 'open',
+                     'Long programme duration leads to stakeholder disengagement.',
+                     'Quarterly showcase; clear comms plan; visible quick wins.'),
+                ]
+                for name, impact, prob, status, desc, mit in risks_seed:
+                    ProgramRisk.objects.create(
+                        program=program, name=name, description=desc,
+                        impact=impact, probability=prob, status=status,
+                        mitigation_plan=mit, owner=team_pool[0],
+                    )
+                    risk_count += 1
+            created['risks'] = risk_count
+
+            # ---- Milestones ----
+            ms_count = 0
+            if not ProgramMilestone.objects.filter(program=program).exists():
+                ms_seed = [
+                    ('Programme charter approved', 'completed', -90, -90),
+                    ('Tranche 1 — Foundation complete', 'completed', -30, -32),
+                    ('Tranche 2 — Build kickoff', 'in_progress', 0, None),
+                    ('Mid-programme benefits review', 'pending', 60, None),
+                    ('Tranche 2 — Delivery', 'pending', 120, None),
+                    ('Tranche 3 — Embed & sustain', 'pending', 240, None),
+                    ('Programme close-out report', 'pending', 360, None),
+                ]
+                for name, status, target_off, actual_off in ms_seed:
+                    ProgramMilestone.objects.create(
+                        program=program, name=name,
+                        description=f"Programme milestone: {name}",
+                        target_date=today + timedelta(days=target_off),
+                        actual_date=today + timedelta(days=actual_off) if actual_off is not None else None,
+                        status=status,
+                    )
+                    ms_count += 1
+            created['milestones'] = ms_count
+
+            # ---- Budget + Categories + Items ----
+            try:
+                budget, _ = ProgramBudget.objects.get_or_create(
+                    program=program,
+                    defaults={'total_budget': 5000000, 'currency': 'EUR'},
+                )
+            except Exception:
+                budget = None
+            cat_count = 0
+            item_count = 0
+            if budget:
+                if hasattr(budget, 'total_budget') and not budget.total_budget:
+                    budget.total_budget = 5000000
+                    budget.save()
+                # Categories
+                try:
+                    if not ProgramBudgetCategory.objects.filter(budget=budget).exists():
+                        cats_seed = [
+                            ('Personnel', 2500000),
+                            ('Vendor / External', 1200000),
+                            ('Tooling & Licenses', 350000),
+                            ('Infrastructure', 600000),
+                            ('Training & Change', 150000),
+                            ('Contingency', 200000),
+                        ]
+                        for name, allocated in cats_seed:
+                            cat = ProgramBudgetCategory.objects.create(
+                                budget=budget, name=name, allocated_amount=allocated,
+                            )
+                            cat_count += 1
+                            ProgramBudgetItem.objects.create(
+                                budget=budget, category=cat,
+                                description=f"{name} — Q1+Q2 programme spend",
+                                planned_amount=allocated * 0.5,
+                                actual_amount=allocated * 0.35,
+                                date=today - timedelta(days=30),
+                            )
+                            item_count += 1
+                except Exception:
+                    pass
+            created['budget_categories'] = cat_count
+            created['budget_items'] = item_count
+
+        return Response({'success': True, 'program_id': program.id, 'created': created,
+                         'message': f"Program demo data seeded for {program.name}"})
+
+
+class ProgramClearDemoView(APIView):
+    """Wipe all demo data from a program (team, benefits, risks, milestones, budget)."""
+    permission_classes = [PROGRAM_DEMO_ROLES]
+
+    def post(self, request, pk=None):
+        from django.db import transaction
+        from .models import (
+            Program, ProgramTeam, ProgramBenefit, ProgramRisk, ProgramMilestone,
+            ProgramBudget,
+        )
+        program = get_object_or_404(Program, pk=pk, company=request.user.company)
+        deleted = {}
+        with transaction.atomic():
+            for label, qs in [
+                ('team', ProgramTeam.objects.filter(program=program)),
+                ('benefits', ProgramBenefit.objects.filter(program=program)),
+                ('risks', ProgramRisk.objects.filter(program=program)),
+                ('milestones', ProgramMilestone.objects.filter(program=program)),
+            ]:
+                deleted[label] = qs.count()
+                qs.delete()
+            try:
+                budget = ProgramBudget.objects.filter(program=program).first()
+                if budget:
+                    deleted['budget_items'] = budget.items.count() if hasattr(budget, 'items') else 0
+                    budget.delete()
+                    deleted['budget'] = 1
+                else:
+                    deleted['budget'] = 0
+                    deleted['budget_items'] = 0
+            except Exception:
+                deleted['budget'] = 0
+                deleted['budget_items'] = 0
+        return Response({'success': True, 'deleted': deleted})

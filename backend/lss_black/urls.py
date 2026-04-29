@@ -1,6 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import HypothesisTestViewSet, DesignOfExperimentViewSet, ControlPlanViewSet, SPCChartViewSet
+from .views import (
+    HypothesisTestViewSet, DesignOfExperimentViewSet, ControlPlanViewSet, SPCChartViewSet,
+    LSSBlackSeedDemoView, LSSBlackClearDemoView,
+)
 
 app_name = 'lss-black'
 
@@ -19,4 +22,8 @@ project_router.register(r'spc-charts', SPCChartViewSet, basename='project-spc-ch
 urlpatterns = [
     path('', include(router.urls)),
     path('projects/<int:project_id>/', include(project_router.urls)),
+    path('projects/<int:project_id>/lss-black/seed-demo/',
+         LSSBlackSeedDemoView.as_view({'post': 'create'}), name='lss-black-seed-demo'),
+    path('projects/<int:project_id>/lss-black/clear-demo/',
+         LSSBlackClearDemoView.as_view({'post': 'create'}), name='lss-black-clear-demo'),
 ]
