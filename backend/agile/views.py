@@ -848,3 +848,44 @@ class AgileSeedDemoView(viewsets.ViewSet):
             'created': created,
             'message': f"Demo data seeded for {project.name}",
         }, status=status.HTTP_200_OK)
+
+
+class AgileClearDemoView(viewsets.ViewSet):
+    """Wipe all Agile data for a project (team, backlog, iterations, etc.)."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def create(self, request, project_id=None):
+        from django.db import transaction
+        project = get_object_or_404(Project, id=project_id)
+        deleted = {}
+        with transaction.atomic():
+            deleted['team'] = AgileTeamMember.objects.filter(project=project).count()
+            AgileTeamMember.objects.filter(project=project).delete()
+            deleted['personas'] = AgileUserPersona.objects.filter(project=project).count()
+            AgileUserPersona.objects.filter(project=project).delete()
+            deleted['backlog_items'] = AgileBacklogItem.objects.filter(project=project).count()
+            AgileBacklogItem.objects.filter(project=project).delete()
+            deleted['epics'] = AgileEpic.objects.filter(project=project).count()
+            AgileEpic.objects.filter(project=project).delete()
+            deleted['iterations'] = AgileIteration.objects.filter(project=project).count()
+            AgileIteration.objects.filter(project=project).delete()
+            deleted['releases'] = AgileRelease.objects.filter(project=project).count()
+            AgileRelease.objects.filter(project=project).delete()
+            deleted['daily_updates'] = AgileDailyUpdate.objects.filter(project=project).count()
+            AgileDailyUpdate.objects.filter(project=project).delete()
+            deleted['dod'] = DefinitionOfDone.objects.filter(project=project).count()
+            DefinitionOfDone.objects.filter(project=project).delete()
+            try:
+                deleted['vision'] = 1 if project.agile_vision else 0
+                project.agile_vision.delete()
+            except AgileProductVision.DoesNotExist:
+                deleted['vision'] = 0
+            try:
+                budget = project.agile_budget
+                deleted['budget_items'] = budget.items.count()
+                budget.delete()
+                deleted['budget'] = 1
+            except AgileBudget.DoesNotExist:
+                deleted['budget_items'] = 0
+                deleted['budget'] = 0
+        return Response({'success': True, 'deleted': deleted})

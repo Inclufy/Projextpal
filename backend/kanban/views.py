@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db.models import Count, Avg, F
 from django.db import IntegrityError
 from datetime import timedelta
+from projects.permissions import MethodologyMatchesProjectPermission
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
     CardHistory, CardComment, CardChecklist, ChecklistItem,
@@ -43,7 +44,7 @@ class ProjectFilterMixin:
 
 class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = KanbanBoardSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -127,7 +128,7 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class KanbanColumnViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = KanbanColumnSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -159,7 +160,7 @@ class KanbanColumnViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class KanbanSwimlaneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = KanbanSwimlaneSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -183,7 +184,7 @@ class KanbanSwimlaneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = KanbanCardSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -316,7 +317,7 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class CardCommentViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = CardCommentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -328,7 +329,7 @@ class CardCommentViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class CardChecklistViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = CardChecklistSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -363,7 +364,7 @@ class CardChecklistViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = KanbanMetricsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -402,15 +403,33 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         )
         
         avg_lead_time = None
+        avg_cycle_time = None
         if completed_cards.exists():
             lead_times = []
+            cycle_times = []
             for card in completed_cards:
+                # Lead time = creation -> completion (Anderson "ready to done").
                 if card.completed_date and card.created_at:
-                    lead_time = (card.completed_date - card.created_at.date()).total_seconds() / 3600
-                    lead_times.append(lead_time)
+                    lead = (card.completed_date - card.created_at.date()).total_seconds() / 3600
+                    lead_times.append(lead)
+                # Cycle time = first time the card entered an in_progress
+                # column -> completion. Falls back to entered_column_at if
+                # history is missing.
+                first_in_progress = card.history.filter(
+                    to_column__column_type='in_progress'
+                ).order_by('moved_at').first()
+                started_at = first_in_progress.moved_at if first_in_progress else card.entered_column_at
+                if card.completed_date and started_at:
+                    cycle = (
+                        card.completed_date - started_at.date()
+                    ).total_seconds() / 3600
+                    if cycle >= 0:
+                        cycle_times.append(cycle)
             if lead_times:
                 avg_lead_time = sum(lead_times) / len(lead_times)
-        
+            if cycle_times:
+                avg_cycle_time = sum(cycle_times) / len(cycle_times)
+
         # Record CFD data
         for column in board.columns.all():
             CumulativeFlowData.objects.update_or_create(
@@ -419,7 +438,7 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                 column=column,
                 defaults={'card_count': column.cards.count()}
             )
-        
+
         metrics, _ = KanbanMetrics.objects.update_or_create(
             board=board,
             date=today,
@@ -427,6 +446,7 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                 'cards_completed': completed_today,
                 'total_wip': total_wip,
                 'avg_lead_time_hours': avg_lead_time,
+                'avg_cycle_time_hours': avg_cycle_time,
             }
         )
         
@@ -471,7 +491,7 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class KanbanDashboardView(APIView):
     """Kanban Dashboard for a project"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get(self, request, project_id):
         from projects.models import Project
@@ -547,12 +567,165 @@ class KanbanDashboardView(APIView):
 
 class WorkPolicyViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = WorkPolicySerializer
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         return WorkPolicy.objects.filter(project_id=project_id)
-    
+
     def perform_create(self, serializer):
         project = self.get_project()
         serializer.save(project=project)
+
+
+class KanbanSeedDemoView(APIView):
+    """One-shot demo seeder for Kanban (board, columns, cards, policies)."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def post(self, request, project_id=None):
+        from datetime import date, timedelta
+        from django.contrib.auth import get_user_model
+        from django.db import transaction
+        from projects.models import Project
+        from .models import (
+            KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
+            CardComment, CardChecklist, ChecklistItem, WorkPolicy,
+        )
+
+        User = get_user_model()
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+        team_pool = list(User.objects.filter(company=project.company)[:5]) or [request.user]
+        created = {}
+
+        with transaction.atomic():
+            board, _ = KanbanBoard.objects.get_or_create(
+                project=project,
+                defaults={'name': f'{project.name} Board', 'description': 'Single-team kanban board for current work-in-flight.'},
+            )
+
+            col_count = 0
+            if not board.columns.exists():
+                cols_seed = [
+                    ('Backlog', 'backlog', None, '#94a3b8', False),
+                    ('Ready', 'todo', 6, '#3b82f6', False),
+                    ('In Progress', 'in_progress', 4, '#f59e0b', False),
+                    ('Review', 'review', 3, '#a855f7', False),
+                    ('Done', 'done', None, '#10b981', True),
+                ]
+                for order, (name, ctype, wip, color, is_done) in enumerate(cols_seed):
+                    KanbanColumn.objects.create(
+                        board=board, name=name, column_type=ctype, order=order,
+                        wip_limit=wip, color=color, is_done_column=is_done,
+                    )
+                    col_count += 1
+            created['columns'] = col_count
+
+            sw_count = 0
+            if not board.swimlanes.exists():
+                for order, (name, color, default) in enumerate([
+                    ('Default', '#f3f4f6', True),
+                    ('Expedite', '#fee2e2', False),
+                ]):
+                    KanbanSwimlane.objects.create(board=board, name=name, color=color, is_default=default, order=order)
+                    sw_count += 1
+            created['swimlanes'] = sw_count
+
+            cols = {c.column_type: c for c in board.columns.all()}
+            default_lane = board.swimlanes.filter(is_default=True).first()
+            expedite_lane = board.swimlanes.filter(is_default=False).first()
+
+            card_count = 0
+            if not board.cards.exists() and cols:
+                cards_seed = [
+                    ('Set up CI pipeline', 'task', 'high', 'done', 'default', 8, 7.5, -14, False, 'devops,ci'),
+                    ('Login API contract', 'feature', 'high', 'done', 'default', 6, 5, -10, False, 'backend,auth'),
+                    ('Design system tokens', 'task', 'medium', 'done', 'default', 12, 13, -8, False, 'design'),
+                    ('OAuth integration', 'feature', 'high', 'in_progress', 'default', 16, 9, 4, False, 'backend,auth'),
+                    ('Dashboard layout', 'feature', 'medium', 'in_progress', 'default', 10, 4, 6, False, 'frontend'),
+                    ('Bug: timezone drift on reports', 'bug', 'critical', 'in_progress', 'expedite', 4, 2, 1, True, 'bug,backend'),
+                    ('Cypress E2E for signup', 'task', 'medium', 'review', 'default', 6, 6, 2, False, 'qa'),
+                    ('Update README + setup docs', 'task', 'low', 'review', 'default', 3, 2.5, 5, False, 'docs'),
+                    ('Add export-to-PDF', 'feature', 'medium', 'todo', 'default', 8, None, 14, False, 'frontend'),
+                    ('Performance audit (Lighthouse)', 'improvement', 'medium', 'todo', 'default', 4, None, 10, False, 'perf'),
+                    ('Mobile responsive pass', 'task', 'medium', 'todo', 'default', 6, None, 12, False, 'frontend,mobile'),
+                    ('Bug: 401 retry loop', 'bug', 'high', 'todo', 'expedite', 3, None, 2, False, 'bug,frontend'),
+                    ('SSO with Google Workspace', 'feature', 'high', 'backlog', 'default', 12, None, 30, False, 'auth'),
+                    ('Audit log viewer', 'feature', 'medium', 'backlog', 'default', 10, None, 45, False, 'admin'),
+                    ('Notifications: digest emails', 'feature', 'low', 'backlog', 'default', 8, None, 60, False, 'notifications'),
+                ]
+                today = date.today()
+                for order, (title, ctype, prio, col_type, lane, est, act, due_off, blocked, tags) in enumerate(cards_seed):
+                    col = cols.get(col_type) or list(cols.values())[0]
+                    swim = expedite_lane if lane == 'expedite' else default_lane
+                    completed = today + timedelta(days=due_off - 5) if col.is_done_column else None
+                    card = KanbanCard.objects.create(
+                        board=board, column=col, swimlane=swim,
+                        title=title, description=f"Auto-generated demo card for {title}.",
+                        card_type=ctype, priority=prio, order=order,
+                        assignee=team_pool[order % len(team_pool)],
+                        reporter=team_pool[0],
+                        start_date=today - timedelta(days=max(1, abs(due_off) // 2)) if act else None,
+                        due_date=today + timedelta(days=due_off),
+                        completed_date=completed,
+                        estimated_hours=est, actual_hours=act,
+                        is_blocked=blocked, blocked_reason='Awaiting upstream API fix' if blocked else None,
+                        tags=tags,
+                    )
+                    if col_type == 'in_progress' and order < 6:
+                        cl = CardChecklist.objects.create(card=card, title='Acceptance')
+                        for i, item in enumerate(['Implementation', 'Unit tests', 'PR opened', 'Reviewed']):
+                            ChecklistItem.objects.create(checklist=cl, text=item, is_completed=(i < 2), order=i)
+                        CardComment.objects.create(
+                            card=card, user=team_pool[0],
+                            content='Picked this up — pairing with QA on edge cases.',
+                        )
+                    card_count += 1
+            created['cards'] = card_count
+
+            policy_count = 0
+            if not WorkPolicy.objects.filter(project=project).exists():
+                policies_seed = [
+                    ('WIP limits enforced', 'Cards beyond column WIP cannot be added; pull policy applies.', 'workflow'),
+                    ('Definition of Ready', 'Story has clear AC, sized < 3 days, dependencies resolved.', 'workflow'),
+                    ('Definition of Done', 'Code reviewed, tests pass, deployed to staging, demoed.', 'quality'),
+                    ('Expedite lane', 'Reserved for production incidents only — bypasses WIP.', 'process'),
+                    ('Daily replenishment', 'Team pulls 1-2 ready cards every morning at standup.', 'team'),
+                    ('Blocker escalation', 'Cards blocked >24h are flagged on the daily standup.', 'process'),
+                ]
+                for order, (title, desc, cat) in enumerate(policies_seed):
+                    WorkPolicy.objects.create(
+                        project=project, title=title, description=desc,
+                        category=cat, is_active=True, order=order,
+                    )
+                    policy_count += 1
+            created['policies'] = policy_count
+
+        return Response({
+            'success': True,
+            'project_id': project.id,
+            'created': created,
+            'message': f"Kanban demo data seeded for {project.name}",
+        })
+
+
+class KanbanClearDemoView(APIView):
+    """Wipe all Kanban data for a project (board, columns, cards, policies)."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def post(self, request, project_id=None):
+        from django.db import transaction
+        from projects.models import Project
+        from .models import KanbanBoard, WorkPolicy
+
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+        deleted = {}
+        with transaction.atomic():
+            board = KanbanBoard.objects.filter(project=project).first()
+            if board:
+                deleted['cards'] = board.cards.count()
+                deleted['columns'] = board.columns.count()
+                deleted['swimlanes'] = board.swimlanes.count()
+                board.delete()
+            deleted['policies'] = WorkPolicy.objects.filter(project=project).count()
+            WorkPolicy.objects.filter(project=project).delete()
+        return Response({'success': True, 'deleted': deleted})

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const ScrumOverview = () => {
@@ -30,6 +30,7 @@ const ScrumOverview = () => {
   useEffect(() => { fetchDashboard(); }, [id]);
 
   const [seeding, setSeeding] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const seedDemo = async () => {
     if (!confirm(pt("Fill all empty Scrum tabs with realistic demo data? Existing data will be preserved."))) return;
     setSeeding(true);
@@ -43,6 +44,16 @@ const ScrumOverview = () => {
       } else { toast.error(pt("Failed to seed demo data")); }
     } catch { toast.error(pt("Failed to seed demo data")); }
     finally { setSeeding(false); }
+  };
+  const clearDemo = async () => {
+    if (!confirm(pt("Permanently delete ALL Scrum data for this project (team, sprints, backlog, etc.)? This cannot be undone."))) return;
+    setClearing(true);
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/scrum/clear-demo/`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" } });
+      if (r.ok) { toast.success(pt("All Scrum data cleared")); fetchDashboard(); }
+      else { toast.error(pt("Failed to clear data")); }
+    } catch { toast.error(pt("Failed to clear data")); }
+    finally { setClearing(false); }
   };
 
   const nav = (path: string) => navigate(`/projects/${id}/scrum/${path}`);

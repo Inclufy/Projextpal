@@ -5,7 +5,8 @@ app_name = "kanban"
 from .views import (
     KanbanBoardViewSet, KanbanColumnViewSet, KanbanSwimlaneViewSet,
     KanbanCardViewSet, CardCommentViewSet, CardChecklistViewSet,
-    KanbanMetricsViewSet, KanbanDashboardView, WorkPolicyViewSet
+    KanbanMetricsViewSet, KanbanDashboardView, WorkPolicyViewSet,
+    KanbanSeedDemoView, KanbanClearDemoView,
 )
 
 
@@ -53,4 +54,8 @@ urlpatterns = [
     # WORK POLICIES
     path('projects/<int:project_id>/kanban/work-policies/', WorkPolicyViewSet.as_view({'get': 'list', 'post': 'create'}), name='work-policies-list'),
     path('projects/<int:project_id>/kanban/work-policies/<int:pk>/', WorkPolicyViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='work-policies-detail'),
+
+    # SEED DEMO
+    path('projects/<int:project_id>/kanban/seed-demo/', KanbanSeedDemoView.as_view(), name='kanban-seed-demo'),
+    path('projects/<int:project_id>/kanban/clear-demo/', KanbanClearDemoView.as_view(), name='kanban-clear-demo'),
 ]

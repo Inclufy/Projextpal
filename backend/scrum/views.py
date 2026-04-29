@@ -1025,3 +1025,31 @@ class ScrumSeedDemoView(APIView):
             'created': created,
             'message': f"Scrum demo data seeded for {project.name}",
         })
+
+
+class ScrumClearDemoView(APIView):
+    """Wipe all Scrum data for a project."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def post(self, request, project_id=None):
+        from django.db import transaction
+        from projects.models import Project
+
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+        deleted = {}
+        with transaction.atomic():
+            deleted['team'] = ScrumTeam.objects.filter(project=project).count()
+            ScrumTeam.objects.filter(project=project).delete()
+            deleted['sprints'] = Sprint.objects.filter(project=project).count()
+            Sprint.objects.filter(project=project).delete()  # cascades to items, planning, reviews, retros, standups, velocity, goals
+            try:
+                backlog = project.scrum_backlog
+                deleted['backlog_items'] = backlog.items.count()
+                backlog.delete()
+                deleted['backlog'] = 1
+            except ProductBacklog.DoesNotExist:
+                deleted['backlog'] = 0
+                deleted['backlog_items'] = 0
+            deleted['dod'] = DefinitionOfDone.objects.filter(project=project).count()
+            DefinitionOfDone.objects.filter(project=project).delete()
+        return Response({'success': True, 'deleted': deleted})
