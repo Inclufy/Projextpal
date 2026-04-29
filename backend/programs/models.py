@@ -43,6 +43,10 @@ class Program(models.Model):
         "governance.Portfolio", on_delete=models.SET_NULL, null=True, blank=True, related_name="programs"
     )
     name = models.CharField(max_length=255)
+    program_code = models.CharField(
+        max_length=64, blank=True, db_index=True,
+        help_text="Code used by finance/admin systems for invoice matching (e.g. 'PG-2026-001').",
+    )
     description = models.TextField(blank=True)
     strategic_objective = models.TextField(blank=True, help_text="Strategic objective this program supports")
     

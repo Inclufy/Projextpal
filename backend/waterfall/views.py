@@ -35,12 +35,35 @@ from .serializers import (
 User = get_user_model()
 
 
+def _gated_project_lookup(user, project_id):
+    """Look up a Project gated by membership / creator / superadmin.
+
+    P0 fix — previously the call was an unfiltered Project lookup which
+    allowed cross-tenant data access. Now:
+    - superadmin sees everything
+    - other users only see projects where they are an active team_member
+      or the creator
+    """
+    if not user.is_authenticated:
+        from rest_framework.exceptions import NotAuthenticated
+        raise NotAuthenticated()
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return get_object_or_404(Project, id=project_id)
+    return get_object_or_404(
+        Project.objects.filter(
+            Q(team_members__user=user, team_members__is_active=True)
+            | Q(created_by=user)
+        ).distinct(),
+        id=project_id,
+    )
+
+
 class WaterfallProjectMixin:
-    """Mixin to filter by project"""
+    """Mixin to filter by project (membership-gated)."""
     def get_project(self):
         project_id = self.kwargs.get('project_id')
-        return get_object_or_404(Project, id=project_id)
-    
+        return _gated_project_lookup(self.request.user, project_id)
+
     def get_queryset(self):
         return super().get_queryset().filter(project=self.get_project())
 
@@ -53,7 +76,7 @@ class WaterfallDashboardViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         
         # Check if initialized
         phases = WaterfallPhase.objects.filter(project=project).order_by('order')
@@ -118,7 +141,7 @@ class WaterfallDashboardViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):
         """Initialize Waterfall methodology with default phases"""
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         
         # Create default phases if not exist
         default_phases = [
@@ -764,12 +787,12 @@ class WaterfallBudgetViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         return Response(WaterfallBudgetSerializer(budget).data)
     
     def update(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         serializer = WaterfallBudgetSerializer(budget, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -784,14 +807,14 @@ class WaterfallBudgetItemViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget = WaterfallBudget.objects.filter(project=project).first()
         if budget:
             return WaterfallBudgetItem.objects.filter(budget=budget)
         return WaterfallBudgetItem.objects.none()
     
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
+        project = _gated_project_lookup(self.request.user, self.kwargs.get('project_id'))
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
 
@@ -848,7 +871,7 @@ class WaterfallSeedDemoView(APIView):
         from datetime import timedelta
         from django.db import transaction
         User = get_user_model()
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         team_pool = list(User.objects.filter(company=project.company)[:6]) or [request.user]
         created = {}
         today = date.today()
@@ -1267,7 +1290,7 @@ class WaterfallClearDemoView(APIView):
 
     def post(self, request, project_id=None):
         from django.db import transaction
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         deleted = {}
         with transaction.atomic():
             for label, qs in [

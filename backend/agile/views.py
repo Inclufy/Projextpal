@@ -9,6 +9,7 @@ from datetime import date
 
 from projects.models import Project
 from projects.permissions import MethodologyMatchesProjectPermission
+from django.db.models import Q as _DjangoQ
 from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
@@ -30,12 +31,28 @@ from .serializers import (
 User = get_user_model()
 
 
+def _gated_project_lookup(user, project_id):
+    """P0 fix — Project lookup gated by membership / creator / superadmin."""
+    if not user.is_authenticated:
+        from rest_framework.exceptions import NotAuthenticated
+        raise NotAuthenticated()
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return get_object_or_404(Project, id=project_id)
+    return get_object_or_404(
+        Project.objects.filter(
+            _DjangoQ(team_members__user=user, team_members__is_active=True)
+            | _DjangoQ(created_by=user)
+        ).distinct(),
+        id=project_id,
+    )
+
+
 class AgileProjectMixin:
-    """Mixin to filter by project"""
+    """Mixin to filter by project (membership-gated)."""
     def get_project(self):
         project_id = self.kwargs.get('project_id')
-        return get_object_or_404(Project, id=project_id)
-    
+        return _gated_project_lookup(self.request.user, project_id)
+
     def get_queryset(self):
         return super().get_queryset().filter(project=self.get_project())
 
@@ -48,7 +65,7 @@ class AgileDashboardViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         
         # Check if Agile is initialized
         has_initialized = AgileBacklogItem.objects.filter(project=project).exists()
@@ -125,7 +142,7 @@ class AgileDashboardViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):
         """Initialize Agile methodology for project"""
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         
         # Create default vision
         AgileProductVision.objects.get_or_create(project=project)
@@ -190,12 +207,12 @@ class AgileProductVisionViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         vision, _ = AgileProductVision.objects.get_or_create(project=project)
         return Response(AgileProductVisionSerializer(vision).data)
     
     def update(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         vision, _ = AgileProductVision.objects.get_or_create(project=project)
         serializer = AgileProductVisionSerializer(vision, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -424,7 +441,7 @@ class AgileDailyUpdateViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
+        project = _gated_project_lookup(self.request.user, self.kwargs.get("project_id"))
         iteration_id = self.request.data.get('iteration_id')
         iteration = get_object_or_404(AgileIteration, id=iteration_id) if iteration_id else None
         
@@ -484,12 +501,12 @@ class AgileBudgetViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def retrieve(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         return Response(AgileBudgetSerializer(budget).data)
     
     def update(self, request, project_id=None):
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer = AgileBudgetSerializer(budget, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -504,14 +521,14 @@ class AgileBudgetItemViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         budget = AgileBudget.objects.filter(project=project).first()
         if budget:
             return AgileBudgetItem.objects.filter(budget=budget)
         return AgileBudgetItem.objects.none()
     
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, id=self.kwargs.get('project_id'))
+        project = _gated_project_lookup(self.request.user, self.kwargs.get("project_id"))
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
 
@@ -544,7 +561,7 @@ class AgileSeedDemoView(viewsets.ViewSet):
         from datetime import timedelta
         from django.db import transaction
 
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         user = request.user
         company = getattr(user, 'company', None)
         team_pool = list(User.objects.filter(company=company)[:6]) if company else [user]
@@ -864,7 +881,7 @@ class AgileClearDemoView(viewsets.ViewSet):
 
     def create(self, request, project_id=None):
         from django.db import transaction
-        project = get_object_or_404(Project, id=project_id)
+        project = _gated_project_lookup(request.user, project_id)
         deleted = {}
         with transaction.atomic():
             deleted['team'] = AgileTeamMember.objects.filter(project=project).count()

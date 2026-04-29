@@ -57,24 +57,81 @@ from .serializers import (
     ProjectTeamWithRateSerializer,
 )
 
+def accessible_project_ids(user):
+    """Return the queryset of Project IDs the user is allowed to see.
+
+    A user sees a project if:
+      - they are a superadmin / is_superuser, OR
+      - they are an active ProjectTeam member, OR
+      - they are the creator (created_by).
+
+    This intentionally does NOT scope by user.company — it supports
+    cross-company collaboration (a freelancer added to Project X of Company Y
+    can see Project X even if their own user.company is different).
+    """
+    from django.db.models import Q
+    if not user.is_authenticated:
+        return Project.objects.none().values_list('id', flat=True)
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return Project.objects.all().values_list('id', flat=True)
+    return Project.objects.filter(
+        Q(team_members__user=user, team_members__is_active=True)
+        | Q(created_by=user)
+    ).values_list('id', flat=True).distinct()
+
+
 class CompanyScopedQuerysetMixin:
+    """Project-membership-scoped mixin (formerly company-scoped).
+
+    P1 visibility fix — was filtering only by user.company, which leaked all
+    tasks/milestones/time entries/expenses/etc. to every authenticated user
+    in the tenant regardless of project membership. Now each model is filtered
+    through the user's accessible projects.
+    """
+
     def get_queryset(self):
+        from django.db.models import Q
         base_qs = super().get_queryset()
         user = self.request.user
         if not user.is_authenticated:
             return base_qs.none()
-        if getattr(user, "company", None) is None:
-            return base_qs.none()
-        if base_qs.model is Project:
-            return base_qs.filter(company=user.company)
-        if base_qs.model is Milestone:
-            return base_qs.filter(project__company=user.company)
-        if base_qs.model is Task:
-            return base_qs.filter(milestone__project__company=user.company)
-        # ADD THIS:
+
+        # SuperAdmin sees everything (tenant-spanning operational role).
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return base_qs
+
+        accessible_ids = accessible_project_ids(user)
+
+        # Lookup table: model class -> project FK path (str) used for filter.
+        # Add a row here when a new project-scoped model gets a viewset.
+        project_path_map = {
+            Project: 'id__in',
+            Milestone: 'project_id__in',
+            Task: 'milestone__project_id__in',
+            Subtask: 'task__milestone__project_id__in',
+            Expense: 'project_id__in',
+            ProjectActivity: 'project_id__in',
+            ApprovalStage: 'project_id__in',
+            Risk: 'project_id__in',
+            ManualMitigation: 'risk__project_id__in',
+            ProjectEvent: 'project_id__in',
+        }
+        if base_qs.model in project_path_map:
+            return base_qs.filter(**{project_path_map[base_qs.model]: accessible_ids})
+
+        # TimeEntry: project FK + always allow user's own rows (so contractors
+        # keep seeing their own historical timesheets even if removed from
+        # the team).
         if base_qs.model is TimeEntry:
-            return base_qs.filter(project__company=user.company)
-        # Handle Newsletter model - filter by company through project or created_by
+            return base_qs.filter(
+                Q(project_id__in=accessible_ids) | Q(user=user)
+            ).distinct()
+
+        # Newsletter/MailingList/ExternalSubscriber: tenant-wide is acceptable
+        # because these are deliberately broadcast objects (not project-bound
+        # workflow data). Keep the original company filter.
+        if getattr(user, 'company', None) is None:
+            return base_qs.none()
         if (
             hasattr(base_qs.model, "_meta")
             and base_qs.model._meta.label == "newsletters.Newsletter"
@@ -83,16 +140,11 @@ class CompanyScopedQuerysetMixin:
                 models.Q(project__company=user.company)
                 | models.Q(project__isnull=True, created_by__company=user.company)
             )
-        # Handle MailingList model - filter by company
         if (
             hasattr(base_qs.model, "_meta")
-            and base_qs.model._meta.label == "newsletters.MailingList"
-        ):
-            return base_qs.filter(company=user.company)
-        # Handle ExternalSubscriber model - filter by company
-        if (
-            hasattr(base_qs.model, "_meta")
-            and base_qs.model._meta.label == "newsletters.ExternalSubscriber"
+            and base_qs.model._meta.label in (
+                "newsletters.MailingList", "newsletters.ExternalSubscriber",
+            )
         ):
             return base_qs.filter(company=user.company)
         return base_qs
@@ -1951,28 +2003,49 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProjectTeamRateViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
-    """ViewSet for managing team member hourly rates"""
-    
+class ProjectTeamRateViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing team member hourly rates.
+
+    P1 fix — was company-scoped which exposed every employee's hourly rate
+    to every admin/PM in the tenant. Now:
+    - superadmin: see all
+    - admin: see all rates in their company
+    - pm / project_manager: see rates only for projects they are a member of
+    - others: see only their own rate row
+    """
+
     queryset = ProjectTeam.objects.all().select_related(
-        "project",
-        "project__company",
-        "user",
-        "added_by",
+        "project", "project__company", "user", "added_by",
     )
     serializer_class = ProjectTeamWithRateSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrPM]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        user = self.request.user
+        if not user.is_authenticated:
+            return ProjectTeam.objects.none()
+
+        role = getattr(user, 'role', None)
+        if role == 'superadmin' or getattr(user, 'is_superuser', False):
+            qs = ProjectTeam.objects.all()
+        elif role == 'admin' and getattr(user, 'company', None):
+            qs = ProjectTeam.objects.filter(project__company=user.company)
+        elif role in ('pm', 'project_manager', 'program_manager'):
+            qs = ProjectTeam.objects.filter(project_id__in=accessible_project_ids(user))
+        else:
+            # team_member / contributor / reviewer / guest: see only your own rate
+            qs = ProjectTeam.objects.filter(user=user)
+
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-        
+
         program_id = self.request.query_params.get("program")
         if program_id:
             qs = qs.filter(project__program_id=program_id)
-        return qs.filter(is_active=True)
+        return qs.filter(is_active=True).select_related(
+            "project", "project__company", "user", "added_by",
+        )
 
     @action(detail=True, methods=["patch"])
     def update_rate(self, request, pk=None):
@@ -2019,28 +2092,32 @@ class BudgetCategoryViewSet(viewsets.ModelViewSet):
 
 
 class BudgetItemViewSet(viewsets.ModelViewSet):
-    """ViewSet for budget items"""
+    """ViewSet for budget items (P1 fix — membership-scoped)."""
     serializer_class = BudgetItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = BudgetItem.objects.filter(
-            project__company=self.request.user.company
-        )
-        
+        user = self.request.user
+        if not user.is_authenticated:
+            return BudgetItem.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            queryset = BudgetItem.objects.all()
+        else:
+            queryset = BudgetItem.objects.filter(project_id__in=accessible_project_ids(user))
+
         # Filters
         project_id = self.request.query_params.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        
+
         category_id = self.request.query_params.get('category_id')
         if category_id:
             queryset = queryset.filter(category_id=category_id)
-        
+
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        
+
         return queryset
 
     @action(detail=True, methods=['post'])

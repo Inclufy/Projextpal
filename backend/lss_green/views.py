@@ -13,10 +13,28 @@ def _get_company(user):
     return getattr(user, 'company', None)
 
 
+def _accessible_project_ids(user):
+    """P2 fix — projects the user is on (or all if superadmin)."""
+    from django.db.models import Q
+    if not user.is_authenticated:
+        return Project.objects.none().values_list('id', flat=True)
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return Project.objects.all().values_list('id', flat=True)
+    return Project.objects.filter(
+        Q(team_members__user=user, team_members__is_active=True)
+        | Q(created_by=user)
+    ).values_list('id', flat=True).distinct()
+
+
 def _verify_project_access(user, project_id):
-    """Verify the user's company owns the target project."""
-    company = _get_company(user)
-    if not company or not Project.objects.filter(id=project_id, company=company).exists():
+    """Verify the user is a team_member / creator / superadmin on the project."""
+    from django.db.models import Q
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return
+    if not Project.objects.filter(id=project_id).filter(
+        Q(team_members__user=user, team_members__is_active=True)
+        | Q(created_by=user)
+    ).exists():
         raise PermissionDenied("You do not have access to this project.")
 
 
@@ -31,7 +49,7 @@ class DMAICPhaseViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return DMAICPhase.objects.none()
-        queryset = DMAICPhase.objects.select_related('project').filter(project__company=company)
+        queryset = DMAICPhase.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -56,7 +74,7 @@ class LSSGreenMetricViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return LSSGreenMetric.objects.none()
-        queryset = LSSGreenMetric.objects.select_related('project').filter(project__company=company)
+        queryset = LSSGreenMetric.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -172,7 +190,7 @@ class LSSGreenMeasurementViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return LSSGreenMeasurement.objects.none()
-        queryset = LSSGreenMeasurement.objects.select_related('project').filter(project__company=company)
+        queryset = LSSGreenMeasurement.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)

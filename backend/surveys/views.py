@@ -71,11 +71,17 @@ class SurveyViewSet(viewsets.ModelViewSet):
                 # Admins see all surveys in their company
                 return company_surveys
             else:
-                # Regular users only see surveys they are specifically assigned to
+                # Regular users only see surveys they are specifically assigned to.
+                # P3 fix — was substring icontains on recipients_emails which
+                # would match 'bob@x.com' on a recipient 'bobby@x.com'. Use a
+                # comma-bounded regex to match the email exactly within the
+                # CSV string.
+                import re
+                email_re = rf'(^|,\s*){re.escape(user.email)}(\s*,|$)'
                 return company_surveys.filter(
-                    Q(recipients_emails__icontains=user.email) |  # User's email in recipients
-                    Q(invitations__user=user) |  # User has invitation
-                    Q(created_by=user)  # User created the survey
+                    Q(recipients_emails__iregex=email_re)
+                    | Q(invitations__user=user)
+                    | Q(created_by=user)
                 ).distinct()
         
         return queryset.none()
@@ -315,19 +321,27 @@ class SurveyResponseViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, CanViewSurveyResults]
     
     def get_queryset(self):
-        """Filter responses based on survey access"""
+        """Filter responses based on survey access.
+
+        P1 fix — was returning every SurveyResponse in the tenant.
+        Now respondents only see their own; survey owners + admins +
+        superadmin see responses to surveys they own.
+        """
         user = self.request.user
-        
         if user.role == 'superadmin':
             return SurveyResponse.objects.select_related('user', 'survey').prefetch_related('answers')
-        
-        # Filter based on survey access
+
         if hasattr(user, 'company') and user.company:
+            if user.role == 'admin':
+                # Admins see all responses for surveys in their company.
+                return SurveyResponse.objects.filter(
+                    survey__project__company=user.company
+                ).select_related('user', 'survey').prefetch_related('answers')
+            # Other users: their own responses + responses to surveys they own.
             return SurveyResponse.objects.filter(
-                survey__project__company=user.company
-            ).select_related('user', 'survey').prefetch_related('answers')
-        
-        return SurveyResponse.objects.none()
+                Q(user=user) | Q(survey__created_by=user)
+            ).select_related('user', 'survey').prefetch_related('answers').distinct()
+        return SurveyResponse.objects.filter(user=user).select_related('user', 'survey')
 
     @action(detail=False, methods=['get'])
     def my_responses(self, request):

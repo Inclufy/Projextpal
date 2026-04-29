@@ -60,6 +60,23 @@ class GovernanceBoardViewSet(viewsets.ModelViewSet):
     filterset_fields = ['board_type', 'is_active']
     search_fields = ['name', 'description']
 
+    def get_queryset(self):
+        # P0 fix — was returning all rows globally (cross-tenant leak).
+        from django.db.models import Q
+        user = self.request.user
+        if not user.is_authenticated:
+            return GovernanceBoard.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return GovernanceBoard.objects.all()
+        company = getattr(user, 'company', None)
+        if not company:
+            return GovernanceBoard.objects.none()
+        return GovernanceBoard.objects.filter(
+            Q(portfolio__company=company)
+            | Q(program__company=company)
+            | Q(project__company=company)
+        ).distinct()
+
 
 class BoardMemberViewSet(viewsets.ModelViewSet):
     queryset = BoardMember.objects.all()
@@ -68,6 +85,23 @@ class BoardMemberViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['board', 'role', 'is_active']
 
+    def get_queryset(self):
+        # P0 fix — was returning all rows globally.
+        from django.db.models import Q
+        user = self.request.user
+        if not user.is_authenticated:
+            return BoardMember.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return BoardMember.objects.all()
+        company = getattr(user, 'company', None)
+        if not company:
+            return BoardMember.objects.none()
+        return BoardMember.objects.filter(
+            Q(board__portfolio__company=company)
+            | Q(board__program__company=company)
+            | Q(board__project__company=company)
+        ).distinct()
+
 
 class GovernanceStakeholderViewSet(viewsets.ModelViewSet):
     queryset = GovernanceStakeholder.objects.all()
@@ -75,6 +109,18 @@ class GovernanceStakeholderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['role', 'influence_level', 'interest_level', 'is_active']
+
+    def get_queryset(self):
+        # P0 fix — was returning all rows globally.
+        user = self.request.user
+        if not user.is_authenticated:
+            return GovernanceStakeholder.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return GovernanceStakeholder.objects.all()
+        company = getattr(user, 'company', None)
+        if not company:
+            return GovernanceStakeholder.objects.none()
+        return GovernanceStakeholder.objects.filter(portfolio__company=company)
 
 
 # AI Report Generation

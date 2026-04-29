@@ -20,29 +20,54 @@ class ProgramViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter programs by user's company."""
+        """Filter programs by membership.
+
+        P1 fix — was returning all programmes in user.company. Now:
+        - superadmin: see all
+        - admin: see all programmes in their company
+        - others: see programmes where they are program_manager OR
+          executive_sponsor OR active ProgramTeam member OR creator OR
+          a team_member of one of the linked projects
+        """
         user = self.request.user
-        queryset = Program.objects.filter(company=user.company)
-        
+        if not user.is_authenticated:
+            return Program.objects.none()
+
+        role = getattr(user, 'role', None)
+        if role == 'superadmin' or getattr(user, 'is_superuser', False):
+            queryset = Program.objects.all()
+        elif role == 'admin' and getattr(user, 'company', None):
+            queryset = Program.objects.filter(company=user.company)
+        else:
+            company = getattr(user, 'company', None)
+            base = Program.objects.filter(company=company) if company else Program.objects.all()
+            queryset = base.filter(
+                Q(program_manager=user)
+                | Q(executive_sponsor=user)
+                | Q(created_by=user)
+                | Q(team_members__user=user, team_members__is_active=True)
+                | Q(projects__team_members__user=user, projects__team_members__is_active=True)
+            ).distinct()
+
         # Optional filtering
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        
+
         methodology = self.request.query_params.get('methodology')
         if methodology:
             queryset = queryset.filter(methodology=methodology)
-        
+
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(description__icontains=search)
             )
-        
+
         portfolio = self.request.query_params.get('portfolio')
         if portfolio:
             queryset = queryset.filter(portfolio_id=portfolio)
-        
+
         return queryset.select_related('program_manager', 'executive_sponsor', 'created_by')
 
     def get_serializer_class(self):

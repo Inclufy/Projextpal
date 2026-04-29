@@ -26,15 +26,21 @@ from .serializers import (
 
 
 class ProjectFilterMixin:
-    """Mixin to filter by project and company"""
-    
+    """Mixin to filter by project membership (P2 fix — was company-only)."""
+
     def get_project(self):
+        from django.db.models import Q
         from projects.models import Project
+        user = self.request.user
         project_id = self.kwargs.get('project_id')
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return get_object_or_404(Project, id=project_id)
         return get_object_or_404(
-            Project,
+            Project.objects.filter(
+                Q(team_members__user=user, team_members__is_active=True)
+                | Q(created_by=user)
+            ).distinct(),
             id=project_id,
-            company=self.request.user.company
         )
 
 

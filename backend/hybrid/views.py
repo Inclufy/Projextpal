@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db import models
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from projects.models import Project
@@ -16,10 +17,32 @@ def _get_company(user):
     return getattr(user, 'company', None)
 
 
+def _accessible_project_ids(user):
+    """P2 fix — projects the user is a member of (or creator), or all if superadmin."""
+    from django.db.models import Q
+    if not user.is_authenticated:
+        return Project.objects.none().values_list('id', flat=True)
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return Project.objects.all().values_list('id', flat=True)
+    return Project.objects.filter(
+        Q(team_members__user=user, team_members__is_active=True)
+        | Q(created_by=user)
+    ).values_list('id', flat=True).distinct()
+
+
 def _verify_project_access(user, project_id):
-    """Verify the user's company owns the target project."""
-    company = _get_company(user)
-    if not company or not Project.objects.filter(id=project_id, company=company).exists():
+    """Verify the user is a team_member / creator / superadmin on the project.
+
+    P2 fix — was company-only, allowing any tenant member to read any project.
+    """
+    if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+        return
+    if not Project.objects.filter(
+        id=project_id
+    ).filter(
+        models.Q(team_members__user=user, team_members__is_active=True)
+        | models.Q(created_by=user)
+    ).exists():
         raise PermissionDenied("You do not have access to this project.")
 
 
@@ -34,7 +57,7 @@ class HybridArtifactViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return HybridArtifact.objects.none()
-        queryset = HybridArtifact.objects.select_related('project').filter(project__company=company)
+        queryset = HybridArtifact.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -59,7 +82,7 @@ class HybridConfigurationViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return HybridConfiguration.objects.none()
-        queryset = HybridConfiguration.objects.select_related('project').filter(project__company=company)
+        queryset = HybridConfiguration.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -123,7 +146,7 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return PhaseMethodology.objects.none()
-        queryset = PhaseMethodology.objects.select_related('project').filter(project__company=company)
+        queryset = PhaseMethodology.objects.select_related('project').filter(project_id__in=_accessible_project_ids(self.request.user))
         project_id = self.kwargs.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)

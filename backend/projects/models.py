@@ -80,6 +80,10 @@ class Project(models.Model):
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True, related_name="linked_projects"
     )
     name = models.CharField(max_length=255)
+    project_code = models.CharField(
+        max_length=64, blank=True, db_index=True,
+        help_text="Code used by finance/admin systems for invoice matching (e.g. 'P-2026-001').",
+    )
     project_type = models.CharField(
         max_length=50, choices=PROJECT_TYPE_CHOICES, null=True, blank=True
     )
@@ -296,9 +300,9 @@ class Subtask(models.Model):
 
 class Expense(models.Model):
     STATUS_CHOICES = [
-        ("Pending", "Pending"),
-        ("Approved", "Approved"),
-        ("Paid", "Paid"),
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("paid", "Paid"),
     ]
 
     CATEGORY_CHOICES = [
@@ -315,7 +319,20 @@ class Expense(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     date = models.DateField()
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    # Optional links to finance app — string FKs to avoid circular imports.
+    vendor = models.ForeignKey(
+        "finance.Vendor",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="expenses",
+    )
+    invoice = models.ForeignKey(
+        "finance.Invoice",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="expenses",
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -1011,7 +1028,21 @@ class BudgetItem(models.Model):
     receipt_url = models.URLField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     rejection_reason = models.TextField(blank=True, null=True)
-    
+
+    # Optional links to finance app — string FKs to avoid circular imports.
+    vendor = models.ForeignKey(
+        'finance.Vendor',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='budget_items',
+    )
+    invoice = models.ForeignKey(
+        'finance.Invoice',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='budget_items',
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

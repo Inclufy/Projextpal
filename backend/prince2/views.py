@@ -25,23 +25,29 @@ from .serializers import (
 
 
 class ProjectFilterMixin:
-    """Mixin to filter by project and company - same as sixsigma"""
-    
+    """Mixin to filter by project membership (P2 fix — was company-only)."""
+
+    def _accessible_project_qs(self):
+        from django.db.models import Q
+        from projects.models import Project
+        user = self.request.user
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return Project.objects.all()
+        return Project.objects.filter(
+            Q(team_members__user=user, team_members__is_active=True)
+            | Q(created_by=user)
+        ).distinct()
+
     def get_project_queryset(self, model):
         project_id = self.kwargs.get('project_id')
         return model.objects.filter(
             project_id=project_id,
-            project__company=self.request.user.company
+            project__in=self._accessible_project_qs(),
         )
 
     def get_project(self):
-        from projects.models import Project
         project_id = self.kwargs.get('project_id')
-        return get_object_or_404(
-            Project,
-            id=project_id,
-            company=self.request.user.company
-        )
+        return get_object_or_404(self._accessible_project_qs(), id=project_id)
 
 
 # =============================================================================

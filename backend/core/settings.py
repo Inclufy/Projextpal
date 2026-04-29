@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "channels",
     "health",
     "accounts",
+    "finance",
     "projects",
     "subscriptions",
     "invoices",
