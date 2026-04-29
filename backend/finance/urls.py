@@ -10,6 +10,10 @@ from .views import (
     program_cost_summary,
     project_cost_summary,
 )
+from .sync_views import (
+    inclufy_finance_sync_trigger,
+    inclufy_finance_webhook_receive,
+)
 
 router = DefaultRouter()
 router.register(r"vendors", VendorViewSet, basename="finance-vendor")
@@ -21,4 +25,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("projects/<int:project_id>/cost-summary/", project_cost_summary, name="finance-project-cost-summary"),
     path("programs/<int:program_id>/cost-summary/", program_cost_summary, name="finance-program-cost-summary"),
+    # Inclufy Finance integration
+    path("sync/inclufy/", inclufy_finance_sync_trigger, name="finance-sync-inclufy"),
+    path("webhooks/inclufy/", inclufy_finance_webhook_receive, name="finance-webhook-inclufy"),
 ]

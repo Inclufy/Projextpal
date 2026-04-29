@@ -392,3 +392,22 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+
+# =============================================================================
+# Inclufy Finance integration
+# =============================================================================
+# When configured, ProjeXtPal can:
+#   - PULL suppliers/invoices/bookings from Inclufy Finance via Supabase REST
+#     (management command: `python manage.py sync_inclufy_finance`)
+#   - RECEIVE pushes from Inclufy Finance via the webhook endpoint
+#     (POST /api/v1/finance/webhooks/inclufy/ — auth via X-Inclufy-Signature
+#     HMAC or X-Inclufy-Webhook-Token shared secret)
+INCLUFY_FINANCE_SUPABASE_URL = os.environ.get("INCLUFY_FINANCE_SUPABASE_URL", "")
+INCLUFY_FINANCE_SUPABASE_SERVICE_KEY = os.environ.get("INCLUFY_FINANCE_SUPABASE_SERVICE_KEY", "")
+# Shared secret used by Inclufy Finance to sign webhook payloads.
+INCLUFY_FINANCE_WEBHOOK_SECRET = os.environ.get("INCLUFY_FINANCE_WEBHOOK_SECRET", "")
+# Optional: when ProjeXtPal pushes project_code updates back to Finance.
+INCLUFY_FINANCE_PUSH_ENABLED = (
+    os.environ.get("INCLUFY_FINANCE_PUSH_ENABLED", "false").lower() == "true"
+)
