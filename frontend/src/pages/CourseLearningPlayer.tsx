@@ -13,10 +13,11 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   ThumbsUp, ThumbsDown, Lightbulb, TrendingUp, TrendingDown, BarChart3, AlertCircle,
   Users, Calendar, Repeat, Rocket, FileCheck, Eye, Star,
   Medal, Flame, Check, XCircle, Save, Send, Sparkle, HelpCircle, CalendarDays, ListChecks, Code, Info , 
-  RefreshCw, ArrowDown, DollarSign, CheckCircle, Layers, AlertTriangle, ClipboardCheck, Package, CheckSquare, 
+  RefreshCw, ArrowDown, Euro, CheckCircle, Layers, AlertTriangle, ClipboardCheck, Package, CheckSquare, 
   UserCheck, FolderCheck, ShieldCheck, ShoppingCart, Scale, Wrench, ShoppingBag, Search, Building2, Handshake, 
   ShieldAlert, ClipboardList, Wallet, CreditCard, PiggyBank, Minus, Triangle, GitCompare,Tag} from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -502,9 +503,15 @@ const CourseLearningPlayer = () => {
 
   // Get course data
   const course = getCourseData(slug || '', isNL);
+  // Detect a real 404: slug didn't match any catalog course (getCourseData
+  // silently returns a "Welcome" fallback otherwise)
+  const courseNotFound = !getCourseById(slug || '');
 
   // Get all lessons flat
   const allLessons = course.modules.flatMap(m => m.lessons);
+  // Detect lesson 404: URL had a lesson id but it's not in this course
+  const lessonNotFound = !courseNotFound && !!lessonIdParam &&
+    !allLessons.some(l => l.id === lessonIdParam);
 
   // Initialize lesson from URL param
   useEffect(() => {
@@ -1511,6 +1518,36 @@ const markAsComplete = async () => {
   if (!user?.isLoggedIn) {
     navigate('/login');
     return null;
+  }
+  // Course or lesson not found — surface a polished 404 instead of silently
+  // falling back to a placeholder "Welcome" lesson.
+  if (courseNotFound || lessonNotFound) {
+    const title = courseNotFound
+      ? (isNL ? 'Cursus niet gevonden' : 'Course not found')
+      : (isNL ? 'Les niet gevonden' : 'Lesson not found');
+    const description = courseNotFound
+      ? (isNL
+        ? 'Deze cursus bestaat niet of is verplaatst. Bekijk de catalogus.'
+        : "This course doesn't exist or has moved. Browse the catalogue.")
+      : (isNL
+        ? 'Deze les is niet beschikbaar in de gekozen cursus.'
+        : 'This lesson is not available in the selected course.');
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <EmptyState
+            icon={BookOpen}
+            title={title}
+            description={description}
+            action={
+              <Button onClick={() => navigate('/academy')}>
+                {isNL ? 'Naar Academy' : 'Back to Academy'}
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
   }
   return (
     <div className="min-h-screen bg-background flex flex-col">

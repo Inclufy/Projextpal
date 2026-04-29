@@ -129,4 +129,7 @@ urlpatterns = [
     
     # Test endpoints
     path('test/<uuid:course_id>/', test_view.test_course_detail),
+
+    # Academy dashboard (slide 12 aggregator — enrollments / completions / certs)
+    path('dashboard/', views.academy_dashboard, name='academy-dashboard'),
 ]

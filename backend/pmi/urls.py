@@ -14,5 +14,5 @@ program_router.register(r'governance-boards', PMIGovernanceBoardViewSet, basenam
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('programs/<uuid:program_id>/', include(program_router.urls)),
+    path('programs/<int:program_id>/', include(program_router.urls)),
 ]

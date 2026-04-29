@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'hybrid_programme',
     'cross_methodology',
     'onboarding',
+    'integrations',
 ]
 
 MIDDLEWARE = [
@@ -138,6 +139,13 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Per-view throttling (e.g. forgot-password) uses ScopedRateThrottle.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "forgot_password": "3/10min",
+    },
 }
 
 

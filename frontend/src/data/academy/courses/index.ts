@@ -23,6 +23,7 @@ import { programManagementCourse, programManagementModules } from './program-man
 import { safeCourse, safeModules } from './safe';
 import { msProjectCourse, msProjectModules } from './ms-project';
 import { aiLiteracyCourse, aiLiteracyModules } from './ai-literacy';
+import { stakeholderManagementCourse, stakeholderManagementModules } from './stakeholder-management';
 
 // ============================================
 // RE-EXPORT INDIVIDUAL COURSES & MODULES
@@ -64,6 +65,9 @@ export {
   // AI Literacy
   aiLiteracyCourse,
   aiLiteracyModules,
+  // Stakeholder Management
+  stakeholderManagementCourse,
+  stakeholderManagementModules,
 };
 
 // ============================================
@@ -85,6 +89,7 @@ export const coursesWithContent: Course[] = [
   safeCourse,                // 3 modules, 17 lessons, ~16h
   msProjectCourse,           // 3 modules, 18 lessons, ~10h
   aiLiteracyCourse,          // 4 modules, 16 lessons, ~10h — NEW
+  stakeholderManagementCourse, // 3 modules, 14 lessons, ~8h — NEW
 ];
 
 // Main export - only courses with content
@@ -108,6 +113,8 @@ const courseModulesMap: Record<string, Module[]> = {
   'program-management-pro': programManagementModules,
   'safe-scaling-agile': safeModules,
   'ms-project-masterclass': msProjectModules,
+  'ai-literacy': aiLiteracyModules,
+  'stakeholder-management': stakeholderManagementModules,
 };
 
 // ============================================

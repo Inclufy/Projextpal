@@ -38,6 +38,12 @@ export interface QuizQuestion {
   options: string[];
   correctAnswer: number;
   explanation?: string;
+  // Optional EN companion fields — Dutch is primary house style; EN is fallback for en locale
+  questionEN?: string;
+  optionsEN?: string[];
+  explanationEN?: string;
+  // Bloom taxonomy level for adaptive difficulty surfacing
+  difficulty?: 'foundation' | 'application' | 'evaluation';
 }
 
 // ============================================

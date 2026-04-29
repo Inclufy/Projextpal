@@ -1116,6 +1116,34 @@ Agile transformatie:
       ],
     },
     {
+      id: 'ag-l-assignment',
+      title: 'Praktijkopdracht: Sprint Planning & Daily Standup',
+      titleNL: 'Praktijkopdracht: Sprint Planning & Daily Standup',
+      duration: '60:00',
+      type: 'assignment',
+      requires_admin_approval: true,
+      assignment: {
+        title: 'Faciliteer Sprint Planning en ontwerp een Daily Standup voor een 5-koppig team',
+        description: `Je bent Scrum Master van een nieuw Agile-team van 5 personen dat voor het eerst sprint planning gaat uitvoeren. Het product is een intern klantportaal; de Product Owner heeft een eerste Product Backlog opgesteld met 20 items.
+
+Gebruik de kennis uit de cursus om de volgende sprint-artefacten op te stellen.`,
+        deliverables: [
+          'Sprint Goal: één heldere zin die het doel van de sprint beschrijft (SMART, max. 40 woorden)',
+          'Sprint Backlog: 5-8 user stories met acceptatiecriteria (INVEST-format), geprioriteerd op businesswaarde',
+          'Definition of Done: 3-5 criteria die gelden voor alle stories in deze sprint',
+          'Daily Standup-script: template met de 3 vragen, timebox, en anti-patroon-waarschuwingen',
+        ],
+        rubric: [
+          { criterion: 'Sprint Goal concreet, meetbaar en team-gedragen', points: 20 },
+          { criterion: 'User stories voldoen aan INVEST-criteria', points: 25 },
+          { criterion: 'DoD realistisch en controleerbaar (geen vage criteria)', points: 20 },
+          { criterion: 'Daily Standup-script bruikbaar en tijdsbewust', points: 20 },
+          { criterion: 'Consistente Agile-terminologie en taal', points: 15 },
+        ],
+        submission_format: 'markdown',
+      },
+    },
+    {
       id: 'ag-l9',
       title: 'Final Exam',
       titleNL: 'Eindexamen',

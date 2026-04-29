@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder
+from .models import (
+    Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
+    Decision, Meeting,
+)
 
 
 class PortfolioSerializer(serializers.ModelSerializer):
@@ -97,5 +100,38 @@ class GovernanceStakeholderSerializer(serializers.ModelSerializer):
                 }
             )
             validated_data['user'] = user
-        
+
         return super().create(validated_data)
+
+
+class DecisionSerializer(serializers.ModelSerializer):
+    decided_by_name = serializers.SerializerMethodField()
+    decided_by_email = serializers.EmailField(source='decided_by.email', read_only=True)
+
+    class Meta:
+        model = Decision
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_decided_by_name(self, obj):
+        if obj.decided_by:
+            return obj.decided_by.get_full_name() or obj.decided_by.email
+        return None
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    facilitator_name = serializers.SerializerMethodField()
+    attendee_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Meeting
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_facilitator_name(self, obj):
+        if obj.facilitator:
+            return obj.facilitator.get_full_name() or obj.facilitator.email
+        return None
+
+    def get_attendee_count(self, obj):
+        return obj.attendees.count()

@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiService } from './apiService';
 import { API_CONFIG } from '../constants/config';
 
 interface LoginCredentials {
@@ -15,6 +15,15 @@ interface RegisterData {
   subscription_tier?: string;
 }
 
+/**
+ * Legacy auth service. Token storage is delegated to `apiService` (SecureStore).
+ *
+ * Prior to 2026-04-28 this service kept its own AsyncStorage tokens under
+ * `access_token` / `refresh_token`, which were not cleared on logout — a
+ * cross-account data-leak risk. All token reads/writes now go through
+ * `apiService.{getToken,setTokens,clearTokens}` which use the iOS Keychain /
+ * Android Keystore via expo-secure-store.
+ */
 class AuthService {
   private baseURL = API_CONFIG.BASE_URL;
 
@@ -24,7 +33,7 @@ class AuthService {
     };
 
     if (includeAuth) {
-      const token = await AsyncStorage.getItem('access_token');
+      const token = await apiService.getToken();
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
@@ -50,11 +59,8 @@ class AuthService {
         throw new Error(data.detail || data.error || 'Login failed');
       }
 
-      if (data.access) {
-        await AsyncStorage.setItem('access_token', data.access);
-      }
-      if (data.refresh) {
-        await AsyncStorage.setItem('refresh_token', data.refresh);
+      if (data.access && data.refresh) {
+        await apiService.setTokens(data.access, data.refresh);
       }
 
       return data;
@@ -208,8 +214,8 @@ class AuthService {
 
   async refreshToken() {
     try {
-      const refreshToken = await AsyncStorage.getItem('refresh_token');
-      
+      const refreshToken = await apiService.getRefreshToken();
+
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -230,7 +236,7 @@ class AuthService {
       }
 
       if (data.access) {
-        await AsyncStorage.setItem('access_token', data.access);
+        await apiService.setTokens(data.access, data.refresh || refreshToken);
       }
 
       return data;
@@ -242,7 +248,7 @@ class AuthService {
 
   async logout() {
     try {
-      await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
+      await apiService.clearTokens();
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -250,7 +256,7 @@ class AuthService {
   }
 
   async isAuthenticated(): Promise<boolean> {
-    const token = await AsyncStorage.getItem('access_token');
+    const token = await apiService.getToken();
     return !!token;
   }
 }

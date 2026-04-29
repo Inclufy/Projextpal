@@ -1,3 +1,12 @@
+# FIXME(mobile-push, 2026-04-28): Mobile audit flagged that
+# `POST /api/v1/auth/devices/register/` returns 404 — the endpoint does not
+# exist. To enable Expo push delivery, add a `DeviceTokenViewSet` here with
+# model fields: user (FK), token (CharField, unique), platform
+# (choices: ios/android), registered_at (auto_now_add), last_used_at,
+# is_active (default True). Wire
+# `path('devices/register/', DeviceTokenView.as_view())` in accounts/urls.py.
+# Mobile client payload: `{"token": "<expo_token>", "platform": "ios"|"android"}`.
+# See: src/services/pushService.ts (mobile).
 from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.decorators import action
@@ -296,6 +305,10 @@ class VerifyEmailView(APIView):
 # Forgot password view
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
+    # Rate-limit: 3 requests per 10 minutes per IP (configured in
+    # REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']['forgot_password']).
+    # 4th rapid call returns HTTP 429.
+    throttle_scope = 'forgot_password'
 
     def post(self, request):
         from django.core.mail import EmailMultiAlternatives

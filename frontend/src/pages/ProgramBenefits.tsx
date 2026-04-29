@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ProjectHeader } from '@/components/ProjectHeader';
-import { Award, TrendingUp, DollarSign, Target, CheckCircle2, Loader2, Plus, Clock } from 'lucide-react';
+import { Award, TrendingUp, Euro, Target, CheckCircle2, Loader2, Plus, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -168,7 +168,7 @@ const ProgramBenefits = () => {
                         <td className="py-3 font-medium">{benefit.name}</td>
                         <td className="py-3">
                           <Badge variant="outline">
-                            {benefit.type === 'financial' ? <DollarSign className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+                            {benefit.type === 'financial' ? <Euro className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
                             {benefit.type}
                           </Badge>
                         </td>

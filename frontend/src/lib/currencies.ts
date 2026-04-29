@@ -57,16 +57,31 @@ export const formatBudget = (
   return `${currency.symbol}${amount.toFixed(2)}`;
 };
 
-// Format with proper locale number formatting
+// Map app UI language to a BCP-47 locale for number/date formatting
+const languageToLocale = (language?: string): string | undefined => {
+  if (!language) return undefined;
+  const lc = language.toLowerCase();
+  if (lc === 'nl' || lc === 'nl-nl') return 'nl-NL';
+  if (lc === 'en') return 'en-US';
+  if (lc === 'en-gb' || lc === 'gb') return 'en-GB';
+  if (lc === 'ar' || lc.startsWith('ar-')) return lc === 'ar' ? 'ar-AE' : lc;
+  return language;
+};
+
+// Format with proper locale number formatting.
+// `language` overrides the currency's default locale so a NL user sees `€ 8.500.000,00`
+// and an EN user sees `€8,500,000.00` for the same EUR amount.
 export const formatBudgetDetailed = (
   amount: number,
-  currencyCode: CurrencyCode = 'EUR'
+  currencyCode: CurrencyCode = 'EUR',
+  language?: string
 ): string => {
   const currency = CURRENCIES[currencyCode];
-  return new Intl.NumberFormat(currency.locale, {
+  const locale = languageToLocale(language) ?? currency.locale;
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency.code,
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
 };

@@ -1279,6 +1279,35 @@ Project closure:
       ],
     },
     {
+      id: 'lss-l-assignment',
+      title: 'Praktijkopdracht: DMAIC — Hydraulisch Defecten Reductieproject',
+      titleNL: 'Praktijkopdracht: DMAIC — Hydraulisch Defecten Reductieproject',
+      duration: '120:00',
+      type: 'assignment',
+      requires_admin_approval: true,
+      assignment: {
+        title: 'Pas DMAIC toe op een hydraulisch defecten reductieproject',
+        description: `Een maakindustriebedrijf produceert hydraulische cilinders voor industriële machines. De afdeling kwaliteit meldt een defectpercentage van 4,2% — ver boven de target van 1,5%. De productiedirecteur heeft jou aangesteld als Green Belt om het probleem te analyseren en een duurzame verbetering te realiseren.
+
+Lever per DMAIC-fase de gevraagde documenten in.`,
+        deliverables: [
+          'Define — Project Charter met: probleemstelling, projectdoel (SMART), scope (in/out), tijdlijn, en Business Case',
+          'Measure — SIPOC-diagram + baseline-metrics (defectpercentage, Cp/Cpk als van toepassing, meetmethode)',
+          'Analyze — Fishbone-diagram (Ishikawa) met minimaal 6 categorieën en 3 oorzaken per categorie; top-3 root causes onderbouwd',
+          'Improve — FMEA met top-5 risico\'s (RPN-score = Severity × Occurrence × Detection) en bijbehorende verbetermaatregelen',
+          'Control — Controleplan met: 3 KPI\'s, meetfrequentie, verantwoordelijke, en reactieplan bij afwijking',
+        ],
+        rubric: [
+          { criterion: 'Project Charter volledig en SMART-geformuleerd', points: 15 },
+          { criterion: 'SIPOC correct ingevuld (alle 5 kolommen)', points: 15 },
+          { criterion: 'Fishbone alle 6 categorieën aanwezig en oorzaken relevant', points: 20 },
+          { criterion: 'FMEA met correcte RPN-berekening en prioritering', points: 25 },
+          { criterion: 'Controleplan uitvoerbaar en sluitend op de root causes', points: 25 },
+        ],
+        submission_format: 'markdown',
+      },
+    },
+    {
       id: 'lss-l9',
       title: 'Final Exam',
       titleNL: 'Eindexamen',

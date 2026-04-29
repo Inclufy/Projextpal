@@ -829,9 +829,9 @@ Cross-team review.
 - Resource balancering
 
 **6. Risk Review (maandelijks)**
-Identificeer en bespreek risico's.
-- Technische risico's
-- Dependency risico's
+Identificeer en bespreek risico\'s.
+- Technische risico\'s
+- Dependency risico\'s
 - Capaciteitsrisico's
 
 **7. Strategy Review (kwartaal)**
@@ -1060,6 +1060,34 @@ Continue verbetering:
         '5 Whys helps find root causes',
         'Experiments require a hypothesis, measurement, and timebox',
       ],
+    },
+    {
+      id: 'kb-l-assignment',
+      title: 'Praktijkopdracht: Ontwerp een Kanban-bord',
+      titleNL: 'Praktijkopdracht: Ontwerp een Kanban-bord',
+      duration: '60:00',
+      type: 'assignment',
+      requires_admin_approval: true,
+      assignment: {
+        title: 'Ontwerp een WIP-gelimiteerd Kanban-bord voor een 6-koppig devteam',
+        description: `Je bent Kanban-coach voor een softwareontwikkelteam van 6 personen dat vier typen werk beheert: nieuwe features, bug fixes, technische schuld, en urgente klantvragen (expedites). De huidige flow is onzichtbaar: niemand weet wat in behandeling is, wat geblokkeerd is, of wat de gemiddelde doorlooptijd is.
+
+Jouw taak is een volledig Kanban-systeemontwerp opleveren dat direct bruikbaar is.`,
+        deliverables: [
+          'Kolomstructuur van het bord: alle kolommen en sub-kolommen met namen en beschrijving per kolom (minimaal 5 kolommen)',
+          'WIP-limieten per kolom met onderbouwing (gebruik Little\'s Law of empirische redenering)',
+          'Blokkeer-policy: wat geldt als "geblokkeerd", hoe wordt het gemarkeerd, wie lost het op en binnen welke termijn?',
+          '1 Procesverbeteringsexperiment: hypothese, meetmethode, tijdbox, en succescriterium',
+        ],
+        rubric: [
+          { criterion: 'Kolomstructuur realistisch en volledig (alle 4 werktypen zichtbaar)', points: 25 },
+          { criterion: 'WIP-limieten onderbouwd met redenering', points: 25 },
+          { criterion: 'Blokkeer-policy concreet en uitvoerbaar', points: 20 },
+          { criterion: 'Experiment heeft duidelijke hypothese + meetmethode', points: 20 },
+          { criterion: 'Professionele presentatie en Nederlandstalige beschrijving', points: 10 },
+        ],
+        submission_format: 'markdown',
+      },
     },
     {
       id: 'kb-l9',

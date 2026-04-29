@@ -126,20 +126,36 @@ export default function QuizEngine({
       const data = await res.json();
       
       // Transform API response to frontend format
+      // Supports two field naming schemes:
+      //   API legacy:  text / textNL, options / optionsNL, explanation / explanationNL
+      //   Canonical (data/academy/types.ts QuizQuestion):
+      //                question (NL) / questionEN, options (NL) / optionsEN, explanation (NL) / explanationEN
       if (data.questions && Array.isArray(data.questions)) {
         const lang = language === 'nl' ? 'nl' : 'en';
-        const transformed = data.questions.map((q: any, idx: number) => ({
-          id: q.id || idx,
-          question: lang === 'nl' ? (q.textNL || q.text) : q.text,
-          type: q.type || 'single',
-          answers: (lang === 'nl' ? (q.optionsNL || q.options) : q.options || []).map((opt: string, i: number) => ({
-            id: i,
-            text: opt,
-            correct: i === q.correct
-          })),
-          explanation: lang === 'nl' ? (q.explanationNL || q.explanation || '') : (q.explanation || ''),
-          hint: lang === 'nl' ? (q.hintNL || q.hint) : q.hint, // ADDED: Hint support
-        }));
+        const transformed = data.questions.map((q: any, idx: number) => {
+          // Canonical NL-primary fields (question/options/explanation = NL; *EN = English fallback)
+          const nlQuestion = q.textNL ?? q.question;
+          const enQuestion = q.text ?? q.questionEN ?? nlQuestion;
+          const nlOptions = q.optionsNL ?? q.options ?? [];
+          const enOptions = q.optionsEN ?? q.options ?? nlOptions;
+          const nlExplanation = q.explanationNL ?? q.explanation ?? '';
+          const enExplanation = q.explanationEN ?? q.explanation ?? nlExplanation;
+
+          const chosenOptions: string[] = lang === 'nl' ? nlOptions : enOptions;
+          return {
+            id: q.id || idx,
+            question: lang === 'nl' ? nlQuestion : enQuestion,
+            type: q.type || 'single',
+            points: q.points ?? 1,
+            answers: chosenOptions.map((opt: string, i: number) => ({
+              id: i,
+              text: opt,
+              order: i,
+            })),
+            explanation: lang === 'nl' ? nlExplanation : enExplanation,
+            hint: lang === 'nl' ? (q.hintNL || q.hint) : (q.hintEN || q.hint),
+          };
+        });
         setQuestions(transformed);
       } else {
         setQuestions(generateSampleQuestions());

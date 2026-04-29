@@ -13,7 +13,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   ThumbsUp, ThumbsDown, Lightbulb, TrendingUp, TrendingDown, BarChart3, AlertCircle,
   Users, Calendar, Repeat, Rocket, FileCheck, Eye, Star,
   Medal, Flame, Check, XCircle, Save, Send, Sparkle, HelpCircle, CalendarDays, ListChecks, Code, Info , 
-  RefreshCw, ArrowDown, DollarSign, CheckCircle, Layers, AlertTriangle, ClipboardCheck, Package, CheckSquare, 
+  RefreshCw, ArrowDown, Euro, CheckCircle, Layers, AlertTriangle, ClipboardCheck, Package, CheckSquare, 
   UserCheck, FolderCheck, ShieldCheck, ShoppingCart, Scale, Wrench, ShoppingBag, Search, Building2, Handshake, 
   ShieldAlert, ClipboardList, Wallet, CreditCard, PiggyBank, Minus, Triangle, GitCompare} from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -1241,7 +1241,7 @@ const CourseLearningPlayer = () => {
                           <span className="text-sm font-medium">{isNL ? 'Tijd' : 'Time'}</span>
                         </div>
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <DollarSign className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                          <Euro className="w-6 h-6 text-green-600 mx-auto mb-2" />
                           <span className="text-sm font-medium">{isNL ? 'Kosten' : 'Cost'}</span>
                         </div>
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
@@ -2197,7 +2197,7 @@ const CourseLearningPlayer = () => {
                       
                       <div className="grid md:grid-cols-3 gap-3">
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-lg text-center">
-                          <DollarSign className="w-6 h-6 text-amber-600 mx-auto mb-2" />
+                          <Euro className="w-6 h-6 text-amber-600 mx-auto mb-2" />
                           <p className="font-semibold text-sm">{isNL ? 'Prijs & Betalingen' : 'Price & Payments'}</p>
                           <p className="text-xs text-muted-foreground mt-1">{isNL ? 'Tarieven, milestones' : 'Rates, milestones'}</p>
                         </div>

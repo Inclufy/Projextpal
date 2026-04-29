@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService } from '../services/apiService';
 import { API_CONFIG } from '../constants/config';
 
@@ -61,7 +62,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    // Clear SecureStore tokens (canonical store).
     await apiService.clearTokens();
+
+    // Defensive sweep: prior versions of authService.ts and
+    // subscriptionService.ts kept tokens / user-side caches in plain
+    // AsyncStorage. Even though both services now route through SecureStore,
+    // existing installs may still have residual AsyncStorage entries from a
+    // pre-migration session. Clear them on logout to prevent cross-account
+    // data leakage. Language preference (`@projextpal_language`) is
+    // intentionally preserved.
+    try {
+      await AsyncStorage.multiRemove([
+        'access_token',
+        'refresh_token',
+        'user',
+        'user_features',
+        'user_subscription',
+      ]);
+    } catch (e) {
+      // Non-fatal — SecureStore is the source of truth for auth.
+      console.warn('AsyncStorage cleanup on logout failed:', e);
+    }
+
     set({ user: null, token: null, isAuthenticated: false });
   },
 

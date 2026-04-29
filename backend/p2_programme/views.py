@@ -31,13 +31,17 @@ class P2BlueprintViewSet(viewsets.ModelViewSet):
         if not company:
             return P2Blueprint.objects.none()
         queryset = P2Blueprint.objects.select_related('programme', 'created_by').filter(programme__company=company)
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
         return queryset
 
     def perform_create(self, serializer):
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             _verify_programme_access(self.request.user, programme_id)
             serializer.save(programme_id=programme_id, created_by=self.request.user)
@@ -58,13 +62,17 @@ class P2ProgrammeProjectViewSet(viewsets.ModelViewSet):
         if not company:
             return P2ProgrammeProject.objects.none()
         queryset = P2ProgrammeProject.objects.select_related('programme', 'project_manager', 'blueprint').filter(programme__company=company)
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
         return queryset
 
     def perform_create(self, serializer):
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             _verify_programme_access(self.request.user, programme_id)
             serializer.save(programme_id=programme_id)

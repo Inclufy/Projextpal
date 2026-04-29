@@ -95,4 +95,9 @@ urlpatterns = [
 
     # Include router URLs
     path('', include(router.urls)),
+
+    # ============================================
+    # INTEGRATIONS / CRM KEYS / WEBHOOKS (Phase 1 scaffolding)
+    # ============================================
+    path('', include('integrations.urls')),
 ]

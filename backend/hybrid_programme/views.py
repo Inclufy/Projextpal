@@ -30,13 +30,17 @@ class HybridGovernanceConfigViewSet(viewsets.ModelViewSet):
         if not company:
             return HybridGovernanceConfig.objects.none()
         queryset = HybridGovernanceConfig.objects.select_related('programme').filter(programme__company=company)
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
         return queryset
 
     def perform_create(self, serializer):
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             _verify_programme_access(self.request.user, programme_id)
             serializer.save(programme_id=programme_id)
@@ -56,13 +60,17 @@ class HybridAdaptationViewSet(viewsets.ModelViewSet):
         if not company:
             return HybridAdaptation.objects.none()
         queryset = HybridAdaptation.objects.select_related('programme', 'approved_by').filter(programme__company=company)
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             queryset = queryset.filter(programme_id=programme_id)
         return queryset
 
     def perform_create(self, serializer):
-        programme_id = self.kwargs.get('programme_id')
+        # Accept either kwarg name during the transition from
+        # `programme_id` (legacy) to `program_id` (canonical).
+        programme_id = self.kwargs.get('program_id') or self.kwargs.get('programme_id')
         if programme_id:
             _verify_programme_access(self.request.user, programme_id)
             serializer.save(programme_id=programme_id)

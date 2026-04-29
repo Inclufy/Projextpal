@@ -1,99 +1,58 @@
-import { Platform } from 'react-native';
+/**
+ * @deprecated This module is a thin re-export shim around `src/services/api.ts`.
+ *
+ * Historical context: this file was the original mobile API config and diverged
+ * from the canonical `src/services/api.ts`. As of the 2026-04-28 mobile parity
+ * audit, 12 of its endpoints returned 404 in production. To eliminate the
+ * shadow-config maintenance hazard, we now re-export the canonical config.
+ *
+ * Prefer importing directly from `../services/api`:
+ *   import { API_CONFIG } from '../services/api';
+ *
+ * The endpoints below extend the canonical map with a small set of
+ * non-canonical-but-wired endpoints used only by `authService.ts`
+ * (forgot-password / reset-password / verify-email / change-password /
+ * update-profile / user-features / subscription tiers). Subscription endpoints
+ * not used post-pilot (USER_SUBSCRIPTION, CREATE_CHECKOUT) and dead admin
+ * endpoints have been dropped — callers should fail gracefully or be removed.
+ */
+import { API_CONFIG as CANONICAL_API_CONFIG, APP_CONFIG as CANONICAL_APP_CONFIG } from '../services/api';
 
-// API Configuration
 export const API_CONFIG = {
-  BASE_URL: __DEV__ 
-    ? Platform.OS === 'ios' 
-      ? 'http://localhost:8001'
-      : 'http://192.168.76.240:8001'
-    : 'https://projextpal.com',
+  ...CANONICAL_API_CONFIG,
   ENDPOINTS: {
-    // Auth - Existing
-    LOGIN: '/api/v1/auth/login/',
-    REGISTER: '/api/v1/auth/register/',
-    PROFILE: '/api/v1/auth/user/',
-    REFRESH: '/api/v1/auth/token/refresh/',
-    
-    // Auth - NEW endpoints
+    ...CANONICAL_API_CONFIG.ENDPOINTS,
+
+    // Auth extras still wired on backend (verified 2026-04-28)
     FORGOT_PASSWORD: '/api/v1/auth/forgot-password/',
     RESET_PASSWORD: (token: string) => `/api/v1/auth/reset-password/${token}/`,
     VERIFY_EMAIL: (token: string) => `/api/v1/auth/verify-email/${token}/`,
     RESEND_VERIFICATION: '/api/v1/auth/resend-verification/',
     CHANGE_PASSWORD: '/api/v1/auth/user/change-password/',
     UPDATE_PROFILE: '/api/v1/auth/user/update/',
-    
-    // Subscription - NEW
+
+    // Subscription read-side (works on backend)
     USER_FEATURES: '/api/v1/auth/user-features/',
     SUBSCRIPTION_TIERS: '/api/v1/auth/subscriptions/tiers/',
-    USER_SUBSCRIPTION: '/api/v1/auth/subscriptions/user/',
-    CREATE_CHECKOUT: '/api/v1/payments/create-checkout-session/',
-    
-    // Project Management
-    PROGRAMS: '/api/v1/programs/',
-    PROJECTS: '/api/v1/projects/',
-    
-    // Projects sub-resources
-    BUDGET: '/api/v1/projects/budget/',
-    BUDGET_OVERVIEW: '/api/v1/projects/budget/overview/',
-    BUDGET_CATEGORIES: '/api/v1/projects/budget-categories/',
-    BUDGET_ITEMS: '/api/v1/projects/budget-items/',
-    
-    RISKS: '/api/v1/projects/risks/',
-    TIME_ENTRIES: '/api/v1/projects/time-entries/',
-    MILESTONES: '/api/v1/projects/milestones/',
-    TASKS: '/api/v1/projects/tasks/',
-    EXPENSES: '/api/v1/projects/expenses/',
-    
-    // Programs sub-resources
-    PROGRAM_BUDGET: '/api/v1/programs/budget/',
-    PROGRAM_RISKS: '/api/v1/programs/risks/',
-    
-    // Academy
-    COURSES: '/api/v1/academy/courses/',
-    ENROLLMENTS: '/api/v1/academy/enrollments/',
-    COURSE_MODULES: (courseId: string) => `/api/v1/academy/courses/${courseId}/modules/`,
-    LESSONS: (moduleId: number) => `/api/v1/academy/modules/${moduleId}/lessons/`,
-    
-    // Teams
-    TEAMS: '/api/v1/teams/',
-    TEAM_MEMBERS: '/api/v1/teams/members/',
 
-    // Documents
-    DOCUMENTS: '/api/v1/documents/',
-
-    // Analytics
-    ANALYTICS: '/api/v1/analytics/',
-
-    // AI
-    AI_CHAT: '/api/v1/bot/chats/',
-    
-    // Admin
-    ADMIN_DASHBOARD_STATS: '/api/v1/admin/dashboard/stats/',
-    ADMIN_MODULES: '/api/v1/admin/modules/',
-    ADMIN_USERS: '/api/v1/admin/users/',
-    ADMIN_USERS_STATS: '/api/v1/admin/users/stats/',
-    ADMIN_USER_DETAIL: (id: number) => `/api/v1/admin/users/${id}/`,
-    ADMIN_ACTIVITY: '/api/v1/admin/activity/',
-    ADMIN_ACTIVITY_STATS: '/api/v1/admin/activity/stats/',
-    ADMIN_SYSTEM_INFO: '/api/v1/admin/system/info/',
-    ADMIN_SYSTEM_HEALTH: '/api/v1/admin/system/health/',
+    // Legacy alias: `BUDGET` once pointed at /api/v1/projects/budget/ (404).
+    // The working CRUD list endpoint is /budget-items/. Keep this alias so
+    // existing budget.ts callers don't break, but new code should import
+    // BUDGET_ITEMS directly from services/api.
+    BUDGET: CANONICAL_API_CONFIG.ENDPOINTS.BUDGET_ITEMS,
   },
-  
-  TIMEOUT: 10000,
 };
 
 export const APP_CONFIG = {
-  NAME: 'ProjeXtPal',
-  VERSION: '1.0.1',
-  BUNDLE_ID: 'com.inclufy.projextpal',
-  
+  ...CANONICAL_APP_CONFIG,
+
   // Deep linking
   SCHEME: 'projextpal',
   DEEP_LINK_PREFIX: 'projextpal://',
   UNIVERSAL_LINK_PREFIX: 'https://projextpal.com',
 };
 
-// Subscription Limits
+// Subscription Limits (kept for reference; trial gating is enforced server-side)
 export const SUBSCRIPTION_LIMITS = {
   trial: {
     max_users: 1,

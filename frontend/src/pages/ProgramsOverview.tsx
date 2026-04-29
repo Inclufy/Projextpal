@@ -10,7 +10,7 @@ import {
   Calendar,
   TrendingUp,
   AlertTriangle,
-  DollarSign,
+  Euro,
   FolderKanban,
   MoreHorizontal,
   Trash2,
@@ -810,7 +810,7 @@ Respond in this EXACT JSON format only, no other text:
 
                       <div className="grid gap-2">
                         <Label htmlFor="total_budget" className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <Euro className="h-4 w-4 text-muted-foreground" />
                           {t.programs.budget}
                         </Label>
                         <Input
@@ -926,7 +926,7 @@ Respond in this EXACT JSON format only, no other text:
                         )}
                         {formData.total_budget && (
                           <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <Euro className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">{formatCurrency(parseInt(formData.total_budget))}</span>
                           </div>
                         )}
@@ -1036,7 +1036,7 @@ Respond in this EXACT JSON format only, no other text:
                 <p className="text-sm text-muted-foreground">{t.programs.totalBudget}</p>
                 <p className="text-2xl font-bold">{formatCurrency(metrics.totalBudget)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
+              <Euro className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>

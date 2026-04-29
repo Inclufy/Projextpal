@@ -67,7 +67,7 @@ Alle belangrijke aspecten van het proces moeten zichtbaar zijn voor iedereen:
 - Het werk dat gedaan moet worden (Product Backlog)
 - Het werk in uitvoering (Sprint Backlog)
 - De voortgang (Burndown, Velocity)
-- Impediments en risico's
+- Impediments en risico\'s
 
 Zonder transparantie kun je niet effectief inspecteren.
 
@@ -196,7 +196,7 @@ Geen hiërarchie binnen het team - alle leden zijn gelijkwaardig.
 **De Product Owner**
 
 De Product Owner is verantwoordelijk voor het maximaliseren van de waarde van het 
-product en het werk van het Development Team.
+product en het werk van de Developers.
 
 Kernverantwoordelijkheden:
 - **Product Backlog beheren**: Items toevoegen, verfijnen, prioriteren
@@ -1460,6 +1460,75 @@ Bij uitdagingen:
           explanation: 'Een impediment is een obstakel dat het team hindert in het leveren van waarde.',
         },
       ],
+    },
+    {
+      id: 'scrum-l11b',
+      title: 'Practical Assignment: Facilitate a Sprint Planning',
+      titleNL: 'Praktijkopdracht: Faciliteer een Sprint Planning',
+      duration: '60:00',
+      type: 'assignment',
+      assignment: {
+        title: 'Faciliteer een Sprint Planning voor een fictief product',
+        description: `In deze opdracht pas je de Scrum Guide 2020 Sprint Planning structuur toe op
+een concreet product-scenario. Sprint Planning beantwoordt drie vragen:
+(1) Why is this Sprint valuable? (2) What can be Done this Sprint? (3) How will the work be done?
+
+**Het Scenario:**
+Je bent Scrum Master bij een team dat werkt aan ConnectFlow — een SaaS-tool voor
+projectcommunicatie. Het team bestaat uit 5 Developers, 1 Product Owner (Fatima Youssef),
+en jouzelf als Scrum Master. De Sprint-lengte is 2 weken. De teamcapaciteit voor deze Sprint
+is 160 story points beschikbaar (op basis van velocity: gemiddeld 38 SP per sprint, 4 Developers
+full-time + 1 Developer voor 50%).
+
+**Beschikbaar Product Backlog (na refinement, geprioriteerd):**
+| # | Item | Story Points | Prioriteit |
+|---|------|-------------|-----------|
+| 1 | Als gebruiker wil ik kunnen inloggen via SSO (SAML 2.0) | 13 | Must |
+| 2 | Als admin wil ik gebruikersrollen instellen (viewer/editor/admin) | 8 | Must |
+| 3 | Als gebruiker wil ik berichten kunnen archiveren | 5 | Should |
+| 4 | Als gebruiker wil ik bestanden (max 25 MB) uploaden in een thread | 8 | Should |
+| 5 | Als gebruiker wil ik e-mailnotificaties ontvangen bij @mentions | 5 | Should |
+| 6 | Als admin wil ik audit-logs exporteren naar CSV | 8 | Could |
+| 7 | Als gebruiker wil ik een donkere modus activeren | 3 | Could |
+| 8 | Als gebruiker wil ik threads kunnen filteren op label | 5 | Could |
+| 9 | Als gebruiker wil ik de app in het Nederlands kunnen gebruiken (i18n) | 13 | Won't |
+| 10 | Als admin wil ik SSO-configuratie testen via sandbox | 5 | Won't |
+
+**Jouw Opdracht:**
+Lever drie deliverables in die samen de Sprint Planning afronden:
+
+**Deliverable 1 — Sprint Goal (Scrum Guide 2020: "Why is this Sprint valuable?")**
+Formuleer één Sprint Goal in één zin. Het Sprint Goal moet:
+- Beschrijven welke waarde de Sprint levert voor de gebruiker of het bedrijf
+- Concreet genoeg zijn zodat het team weet wanneer de Sprint geslaagd is
+- Niet een takenlijst zijn, maar een doel dat cohesie geeft aan de Sprint Backlog
+
+**Deliverable 2 — Sprint Backlog (Scrum Guide 2020: "What can be Done?")**
+Selecteer 5–8 Product Backlog-items die het team in deze Sprint aanpakt.
+- Motiveer waarom je deze items selecteert (prioriteit, capaciteit, Sprint Goal-coherentie)
+- Bereken het totaal van de gekozen story points en vergelijk met de teamcapaciteit
+
+**Deliverable 3 — Definition of Done + How**
+- Stel een Definition of Done op met 3–5 criteria die gelden voor elk backlog-item
+  (voorbeelden: code review gedaan, unit tests ≥80% coverage, getest in staging)
+- Beschrijf kort hoe het team de eerste 2 items technisch wil aanpakken
+  (Scrum Guide 2020: "How will the work be done?" — taken die voortvloeien uit de backlog-items)
+
+**Referentie:** Scrum Guide 2020 (Schwaber & Sutherland) — Sprint Planning.`,
+        deliverables: [
+          'Sprint Goal — één zin, waarde-georiënteerd',
+          'Sprint Backlog — 5–8 geselecteerde items met totaal story points en capaciteitsmotivatie',
+          'Definition of Done — 3–5 criteria',
+          'How-sectie — technische aanpak voor minimaal 2 items',
+        ],
+        rubric: [
+          { criterion: 'Sprint Goal is waarde-georiënteerd, niet een takenlijst', points: 25 },
+          { criterion: 'Sprint Backlog-selectie sluit aan bij Sprint Goal en teamcapaciteit', points: 25 },
+          { criterion: 'Definition of Done is concreet en toepasbaar op alle items', points: 20 },
+          { criterion: 'How-sectie beschrijft tastbare taken die voortvloeien uit backlog-items', points: 20 },
+          { criterion: 'Correcte verwijzing naar Scrum Guide 2020 terminologie (Developers, accountabilities)', points: 10 },
+        ],
+      },
     },
     {
       id: 'scrum-l12',

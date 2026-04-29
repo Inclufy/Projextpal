@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Users, Building2, DollarSign, CreditCard, TrendingUp } from 'lucide-react';
+import { Users, Building2, Euro, CreditCard, TrendingUp } from 'lucide-react';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export const AdminDashboard: React.FC = () => {
@@ -22,7 +22,7 @@ export const AdminDashboard: React.FC = () => {
       gradient: 'from-blue-500 to-blue-600',
     },
     {
-      icon: DollarSign,
+      icon: Euro,
       label: t('dashboard.mrr'),
       value: '€350',
       change: '+35.3%',
@@ -107,7 +107,7 @@ export const AdminDashboard: React.FC = () => {
             {[
               { label: t('dashboard.newUser'), gradient: 'from-purple-500 to-pink-500', icon: Users },
               { label: t('dashboard.newOrganization'), gradient: 'from-blue-500 to-purple-500', icon: Building2 },
-              { label: t('dashboard.generateReport'), gradient: 'from-green-500 to-blue-500', icon: DollarSign },
+              { label: t('dashboard.generateReport'), gradient: 'from-green-500 to-blue-500', icon: Euro },
               { label: t('dashboard.systemConfig'), gradient: 'from-orange-500 to-pink-500', icon: CreditCard },
             ].map((action, index) => (
               <button

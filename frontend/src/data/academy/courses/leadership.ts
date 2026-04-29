@@ -184,7 +184,7 @@ Als manager:
 - Maak je planningen en volg taken op
 - Monitor je budget en resources
 - Zorg je voor kwaliteitsstandaarden
-- Beheer je risico's en issues
+- Beheer je risico\'s en issues
 - Rapporteer je aan stakeholders
 
 Als leider:
@@ -1202,7 +1202,7 @@ Hoe te ontwikkelen:
 
 **EQ in Projectmanagement**
 
-Laten we kijken hoe EQ zich manifesteert in PM scenario's:
+Laten we kijken hoe EQ zich manifesteert in PM scenario\'s:
 
 **Scenario 1: De Boze Stakeholder**
 
@@ -2300,7 +2300,7 @@ Creëert productieve kwetsbaarheid.
 Onderzoek toont deze gemeenschappelijke eigenschappen:
 
 **1. Psychologische Veiligheid**
-- Mensen voelen zich veilig om risico's te nemen
+- Mensen voelen zich veilig om risico\'s te nemen
 - Geen angst voor verlegenheid of afwijzing
 - Ieders stem wordt gehoord
 
@@ -4231,7 +4231,7 @@ Empower door autoriteit, informatie, resources en accountability te geven.`,
 
 Research shows: Intrinsic motivation is more powerful and sustainable!
 
-**Herzberg's Two-Factor Theory**
+**Herzberg\'s Two-Factor Theory**
 
 Frederick Herzberg identified two categories:
 
@@ -4256,7 +4256,7 @@ Actually drive motivation:
 
 **Implication:** You can't motivate just with salary raises. You need meaningful work, recognition, and growth opportunities.
 
-**Maslow's Hierarchy of Needs**
+**Maslow\'s Hierarchy of Needs**
 
 Abraham Maslow proposed five levels of needs:
 
@@ -4531,7 +4531,7 @@ Motivation is personal. Know your people.`,
 
 Onderzoek toont: Intrinsieke motivatie is krachtiger en duurzamer!
 
-**Herzberg's Twee-Factoren Theorie**
+**Herzberg\'s Twee-Factoren Theorie**
 
 Frederick Herzberg identificeerde twee categorieën:
 
@@ -4556,7 +4556,7 @@ Drijven daadwerkelijk motivatie:
 
 **Implicatie:** Je kunt niet alleen motiveren met salarisverhoging. Je hebt betekenisvol werk, erkenning en groeikansen nodig.
 
-**Maslow's Behoeftenhiërarchie**
+**Maslow\'s Behoeftenhiërarchie**
 
 Abraham Maslow stelde vijf niveaus van behoeften voor:
 
@@ -4653,7 +4653,7 @@ David McClelland identificeerde drie motivationele behoeften:
 **1. Behoefte aan Prestatie (nAch)**
 - Wens om uitdagende doelen te bereiken
 - Zoek feedback
-- Houden van matige risico's
+- Houden van matige risico\'s
 - Persoonlijke verantwoordelijkheid
 
 **Motiveer door:**
@@ -6236,7 +6236,7 @@ Elke stakeholder heeft nodig:
 **Welke informatie?**
 - Voortgang updates
 - Benodigde beslissingen
-- Issues en risico's
+- Issues en risico\'s
 - Prestaties
 
 **Hoe vaak?**
@@ -7877,6 +7877,279 @@ Onthoud: Je boodschap is belangrijk. Deel het met vertrouwen!`,
           size: '420 KB',
           description: 'Prepare for high-stakes presentations',
           descriptionNL: 'Bereid voor op high-stakes presentaties',
+        },
+      ],
+    },
+    {
+      id: 'lead-l-assignment',
+      title: 'Praktijkopdracht: Conflictresolutie tussen Projectmanagers',
+      titleNL: 'Praktijkopdracht: Conflictresolutie tussen Projectmanagers',
+      duration: '90:00',
+      type: 'assignment',
+      requires_admin_approval: true,
+      assignment: {
+        title: 'Los een resource-conflict op tussen twee projectmanagers met behulp van Thomas-Kilmann en BATNA',
+        description: `Projectmanager A (PM-A) leidt een strategisch ERP-migratieproject; PM-B leidt een klantgerichte portal-vernieuwing. Beiden claimen 80% van de tijd van dezelfde senior backend-developer voor de komende 6 weken. De lijnmanager weigert een prioriteitsbeslissing te nemen en vraagt jullie als leiderschapscoach om de situatie te faciliteren.
+
+Gebruik de technieken uit de cursus om een structurele oplossing te ontwerpen.`,
+        deliverables: [
+          'Thomas-Kilmann assessment: geef voor elk van de 5 conflictstijlen aan hoe PM-A en PM-B zich waarschijnlijk gedragen, met onderbouwing vanuit de situatiebeschrijving',
+          'BATNA per partij: wat is de best mogelijke alternatieve uitkomst als geen overeenstemming bereikt wordt? Hoe sterk is elke BATNA?',
+          'Communicatieplan: structuur voor een gezamenlijk gesprek (agenda, gespreksleider, grondregels, beslismethode)',
+          '1-op-1 gespreksscript: een rollenspelscript van minimaal 8 wisselende dialoogregels voor een gesprek tussen de mediator en PM-A',
+        ],
+        rubric: [
+          { criterion: 'Thomas-Kilmann analyse correct toegepast op de casus', points: 20 },
+          { criterion: 'BATNA voor beide partijen realistisch en geconcretiseerd', points: 20 },
+          { criterion: 'Communicatieplan bruikbaar en neutraal gefaciliteerd', points: 25 },
+          { criterion: 'Gespreksscript realistisch en toepast empathisch luisteren', points: 25 },
+          { criterion: 'Consistente leiderschapsterminologie uit de cursus', points: 10 },
+        ],
+        submission_format: 'markdown',
+      },
+    },
+    {
+      id: 'lead-l-exam',
+      title: 'Final Exam — Leadership for Project Managers',
+      titleNL: 'Eindexamen — Leiderschap voor Projectmanagers',
+      type: 'exam',
+      duration: '45:00',
+      videoUrl: '',
+      transcript: `Dit is het eindexamen van de cursus Leiderschap voor Projectmanagers.
+
+**Examen Informatie:**
+- 18 multiple choice vragen
+- 45 minuten tijd
+- 80% score nodig om te slagen (15 van 18 correct)
+- Gesloten boek examen
+
+**Onderwerpen:**
+- Manager vs. leider, leiderschapsstijlen, emotionele intelligentie (Module 1 — 6 vragen)
+- Teamdynamiek, conflictoplossing, delegeren, motivatie (Module 2 — 6 vragen)
+- Communicatie, stakeholdermanagement, onderhandelen, presenteren (Module 3 — 6 vragen)
+
+**Tips:**
+- Lees elke vraag volledig voordat je een antwoord kiest
+- Kies het antwoord dat het best aansluit op de behandelde leiderschapstheorieën
+- Let op situationele context in de vraagstelling
+
+Succes!`,
+      quiz: [
+        {
+          id: 'lead-exam-q1',
+          question: 'Situationeel leiderschap (Hersey & Blanchard) onderscheidt vier stijlen. Welke stijl past het best bij een medewerker met hoge competentie maar lage commitment (R3)?',
+          options: [
+            'S1 – Directing: veel taakinstructie, weinig ondersteuning',
+            'S2 – Coaching: veel taakinstructie én veel ondersteuning',
+            'S3 – Supporting: weinig taakinstructie, veel ondersteuning',
+            'S4 – Delegating: weinig taakinstructie, weinig ondersteuning',
+          ],
+          correctAnswer: 2,
+          explanation: 'R3 (hoge competentie, lage commitment) vraagt om S3 Supporting: de medewerker weet wat te doen maar heeft motivatie en vertrouwen nodig. De leider biedt emotionele steun en betrokkenheid, maar geeft weinig inhoudelijke taakinstructie omdat de competentie al aanwezig is.',
+        },
+        {
+          id: 'lead-exam-q2',
+          question: 'Wat is het fundamentele onderscheid tussen een manager en een leider in de context van projectmanagement?',
+          options: [
+            'Managers hebben een hogere hiërarchische positie dan leiders',
+            'Managers richten zich op het beheersen van processen en structuur; leiders richten zich op het inspireren van mensen en het uitstippelen van richting',
+            'Leiders zijn verantwoordelijk voor budgetten; managers voor teambuilding',
+            'Er is geen meaningful onderscheid — de termen zijn uitwisselbaar in moderne organisaties',
+          ],
+          correctAnswer: 1,
+          explanation: 'Het klassieke onderscheid (Kotter, Bennis) is dat managers complexiteit beheersen via plannen, budgetteren en controleren, terwijl leiders verandering produceren via visie, afstemming en motivatie. Effectieve projectmanagers combineren beide rollen — ze beheersen het project én inspireren het team.',
+        },
+        {
+          id: 'lead-exam-q3',
+          question: 'Welke van de volgende omschrijvingen definieert servant leadership het meest accuraat?',
+          options: [
+            'Een leiderschapsstijl waarbij de leider altijd toestemt met de wensen van het team om conflicten te vermijden',
+            'Een leiderschapsstijl waarbij de leider prioriteit geeft aan de behoeften van het team en de organisatie boven eigen belangen, met als doel anderen te laten groeien en bijdragen',
+            'Een leiderschapsstijl die exclusief van toepassing is op Scrum Masters in Agile-teams',
+            'Een leiderschapsstijl waarbij de leider alle beslissingen delegeert aan het team',
+          ],
+          correctAnswer: 1,
+          explanation: 'Servant leadership (Robert Greenleaf) stelt dat de leider in de eerste plaats dienaar is: hij of zij verwijdert obstakels, faciliteert groei, en stelt de behoeften van het team voorop. Dit staat los van autoriteitsverlies — de leider behoudt verantwoordelijkheid maar oefent invloed uit via empowerment, niet via controle.',
+        },
+        {
+          id: 'lead-exam-q4',
+          question: 'Emotionele intelligentie (EI) bestaat volgens Daniel Goleman uit vijf componenten. Welke van de volgende is de juiste combinatie?',
+          options: [
+            'IQ, Creativiteit, Empathie, Communicatie, Besluitvaardigheid',
+            'Zelfbewustzijn, Zelfregulatie, Motivatie, Empathie, Sociale vaardigheden',
+            'Moed, Integriteit, Veerkracht, Visie, Teamgerichtheid',
+            'Analytisch denken, Intuïtie, Empathie, Doorzettingsvermogen, Charme',
+          ],
+          correctAnswer: 1,
+          explanation: 'Daniel Goleman identificeerde vijf componenten van emotionele intelligentie: (1) Zelfbewustzijn — kennen van eigen emoties, (2) Zelfregulatie — beheersen van impulsieve reacties, (3) Motivatie — intrinsieke drive om te presteren, (4) Empathie — begrijpen van andermans emoties, en (5) Sociale vaardigheden — relaties effectief managen.',
+        },
+        {
+          id: 'lead-exam-q5',
+          question: 'Een projectmanager merkt dat een teamlid consistent laag presteert. Bij navraag blijkt het teamlid te worstelen met privéproblemen. Welke aanpak past het best bij emotioneel intelligent leiderschap?',
+          options: [
+            'Het teamlid onmiddellijk uit het project verwijderen om de planning te beschermen',
+            'De situatie negeren om de privacy van het teamlid te respecteren',
+            'Een vertrouwelijk gesprek voeren, begrip tonen, gezamenlijk kijken naar tijdelijke aanpassingen en monitoring inbouwen',
+            'De prestatieproblemen uitsluitend documenteren voor het HR-dossier',
+          ],
+          correctAnswer: 2,
+          explanation: 'Emotioneel intelligent leiderschap combineert empathie (begrijpen van de situatie) met zelfregulatie (niet impulsief escaleren) en sociale vaardigheden (constructief gesprek voeren). De juiste aanpak is een vertrouwelijk gesprek dat begrip toont, ruimte biedt voor een tijdelijke oplossing en tegelijk de projectvoortgang monitort.',
+        },
+        {
+          id: 'lead-exam-q6',
+          question: 'Welk kenmerk onderscheidt een transformationele leider het meest van een transactionele leider?',
+          options: [
+            'Transformationele leiders focussen op beloningen en straffen om gedrag te sturen; transactionele leiders inspireren via een gedeelde visie',
+            'Transformationele leiders inspireren via visie en intrinsieke motivatie; transactionele leiders sturen via beloningen, straffen en afspraken',
+            'Transformationele leiders werken alleen in start-ups; transactionele leiders in grote organisaties',
+            'Transformationele leiders zijn introvert; transactionele leiders zijn extravert',
+          ],
+          correctAnswer: 1,
+          explanation: 'Transformationeel leiderschap (Bass & Burns) richt zich op het inspireren van mensen via een meeslepende visie, het uitdagen van bestaande aannames en het stimuleren van persoonlijke groei. Transactioneel leiderschap stuurt gedrag via duidelijke afspraken, beloningen bij goed presteren en correctieve actie bij afwijkingen.',
+        },
+        {
+          id: 'lead-exam-q7',
+          question: 'Wat beschrijft de Tuckman-fase "Storming" het meest accuraat in de context van een projectteam?',
+          options: [
+            'De fase waarin teamleden hun rollen en processen afstemmen zonder noemenswaardige conflicten',
+            'De fase waarin interpersoonlijke conflicten, concurrentie en meningsverschillen over aanpak opkomen terwijl het team zijn werkwijze ontwikkelt',
+            'De fase waarin het team maximale productiviteit bereikt en zelfstandig werkt',
+            'De fase van teamontbinding aan het einde van het project',
+          ],
+          correctAnswer: 1,
+          explanation: 'In de Storming-fase (Tuckman, 1965) worden conflicten over werkwijze, rolverdeling en leiderschapsstijl zichtbaar. Dit is een normale en noodzakelijke fase — teams die Storming vermijden, bereiken zelden echte Norming en Performing. De projectmanager speelt een actieve rol in het faciliteren van constructieve conflictoplossing.',
+        },
+        {
+          id: 'lead-exam-q8',
+          question: 'Welke conflictoplossingsstrategie is het meest geschikt wanneer beide partijen sterke belangen hebben en een duurzame samenwerking vereist is?',
+          options: [
+            'Avoiding (vermijden) — conflict negeren totdat het vanzelf verdwijnt',
+            'Accommodating (aanpassen) — de andere partij volledig tegemoet komen',
+            'Collaborating (samenwerken) — gezamenlijk een oplossing zoeken die beide belangen honoreert',
+            'Forcing (dwingen) — de eigen positie doordrukken via autoriteit',
+          ],
+          correctAnswer: 2,
+          explanation: 'Collaborating (ook wel Confronting/Problem Solving in de PMBOK-context) is de meest effectieve strategie wanneer beide partijen sterke belangen hebben en een langdurige samenwerking noodzakelijk is. Het leidt tot win-win-uitkomsten maar vereist meer tijd en openheid dan andere strategieën.',
+        },
+        {
+          id: 'lead-exam-q9',
+          question: 'Maslow\'s behoeftehiërarchie stelt dat mensen naar hogere behoeften streven zodra lagere zijn vervuld. Welke behoefte staat op het hoogste niveau?',
+          options: [
+            'Veiligheidsbehoeften (zekerheid van werk, inkomen)',
+            'Sociale behoeften (verbondenheid, erbij horen)',
+            'Zelfactualisatie (realiseren van eigen potentieel)',
+            'Erkenningsbehoeften (status, prestige, waardering)',
+          ],
+          correctAnswer: 2,
+          explanation: 'In Maslow\'s hiërarchie (1943) staat Zelfactualisatie op het hoogste niveau: het realiseren van het eigen maximale potentieel. Hieronder staan achtereenvolgens fysiologische behoeften, veiligheidsbehoeften, sociale behoeften en erkenningsbehoeften. Projectmanagers die dit begrijpen kunnen teamleden effectiever motiveren door aan de juiste behoeftenlaag te appelleren.',
+        },
+        {
+          id: 'lead-exam-q10',
+          question: 'Herzberg\'s twee-factoren-theorie onderscheidt hygiënefactoren van motivatoren. Welke uitspraak is correct?',
+          options: [
+            'Hygiënefactoren zoals salaris en goede werkomstandigheden leiden direct tot hoge motivatie als ze aanwezig zijn',
+            'De afwezigheid van hygiënefactoren leidt tot ontevredenheid; hun aanwezigheid voorkomt ontevredenheid maar motiveert op zichzelf niet — echte motivatie komt van intrinsieke factoren zoals erkenning en groei',
+            'Motivatoren en hygiënefactoren zijn synoniemen in Herzberg\'s model',
+            'Herzberg stelde dat externe beloningen altijd effectiever zijn dan intrinsieke motivatie',
+          ],
+          correctAnswer: 1,
+          explanation: 'Herzberg (1959) onderscheidde twee sets factoren: hygiënefactoren (salaris, werkomstandigheden, beleid) die bij afwezigheid ontevredenheid veroorzaken maar bij aanwezigheid slechts dissatisfactie wegnemen, en motivatoren (erkenning, verantwoordelijkheid, groei) die actief motivatie opwekken. Een projectmanager die alleen hygiënefactoren aanpakt zal het team tevredenstellen maar niet inspireren.',
+        },
+        {
+          id: 'lead-exam-q11',
+          question: 'Welke actie is het MEEST effectief bij het delegeren van een complexe taak aan een ervaren teamlid?',
+          options: [
+            'De taak gedetailleerd stap-voor-stap beschrijven en dagelijks voortgang controleren',
+            'Het verwachte resultaat en de kaders helder definiëren, de nodige autoriteit en middelen overdragen, en de medewerker vervolgens autonoom laten werken met afgesproken checkpoints',
+            'De taak zelf uitvoeren om zeker te zijn van kwaliteit',
+            'De taak verdelen over het gehele team zodat niemand individueel verantwoordelijk is',
+          ],
+          correctAnswer: 1,
+          explanation: 'Effectief delegeren aan een ervaren medewerker betekent: het doel en de kaders helder stellen, de benodigde autoriteit en middelen overdragen, en dan vertrouwen geven om autonoom te werken. Micro-management ondermijnt de motivatie van ervaren medewerkers en is inefficiënt. Afgesproken checkpoints bewaken kwaliteit zonder autonomie te beperken.',
+        },
+        {
+          id: 'lead-exam-q12',
+          question: 'Een projectmanager moet een senior stakeholder overtuigen van een risicovolle aanpak. Welke communicatiestrategie is het meest effectief?',
+          options: [
+            'Een lang technisch rapport sturen met alle details en de stakeholder vragen dit door te nemen',
+            'De stakeholder benaderen vanuit zijn of haar perspectief: beknopt beginnen met businesswaarde en risico\'s, onderbouwen met data, en ruimte bieden voor vragen',
+            'Alle teamleden laten meeschrijven aan een gezamenlijk pleidooi',
+            'Wachten tot de stakeholder zelf om een update vraagt',
+          ],
+          correctAnswer: 1,
+          explanation: 'Senior stakeholders zijn doorgaans tijdbeperkt en resultaatgericht. De meest effectieve aanpak is de Pyramid Principle: begin met de conclusie (businesswaarde), onderbouw daarna met de key argumenten en data, en bied ruimte voor verdieping op verzoek. Beginnen vanuit de stakeholderbelangen verhoogt de receptiviteit.',
+        },
+        {
+          id: 'lead-exam-q13',
+          question: 'Wat is de definitie van een stakeholder in de context van projectmanagement (PMBOK 7)?',
+          options: [
+            'Uitsluitend de financier(s) van het project',
+            'Elk individu, elke groep of organisatie die invloed kan uitoefenen op het project of erdoor kan worden beïnvloed',
+            'Alleen de leden van het projectteam en de projectmanager',
+            'De stuurgroep en de opdrachtgever, exclusief externe partijen',
+          ],
+          correctAnswer: 1,
+          explanation: 'PMBOK 7 definieert stakeholders breed als individuen, groepen of organisaties die het project kunnen beïnvloeden of erdoor worden beïnvloed. Dit omvat interne en externe partijen: van het projectteam en de opdrachtgever tot leveranciers, overheden, eindgebruikers en omwonenden. Een smalle definitie leidt tot stakeholder surprises.',
+        },
+        {
+          id: 'lead-exam-q14',
+          question: 'Welke stap volgt logisch na het in kaart brengen van stakeholders in een stakeholderanalyse?',
+          options: [
+            'Onmiddellijk alle stakeholders een identiek communicatieplan sturen',
+            'Stakeholders categoriseren op basis van macht/interesse (of vergelijkbare dimensies) en per categorie een gerichte betrokkenheidsstrategie bepalen',
+            'Stakeholders met lage macht en interesse negeren om efficiëntie te maximaliseren',
+            'De volledige stakeholderlijst archiveren als het project eenmaal is gestart',
+          ],
+          correctAnswer: 1,
+          explanation: 'Na het identificeren van stakeholders worden ze geclassificeerd — vaak via de Power/Interest-matrix (Johnson & Scholes) of vergelijkbare modellen — zodat betrokkenheidsstrategieën kunnen worden gedifferentieerd: hoge macht/hoge interesse vraagt actieve betrokkenheid, hoge macht/lage interesse vraagt informatieverstrekking, etc.',
+        },
+        {
+          id: 'lead-exam-q15',
+          question: 'Wat is het BATNA-concept in onderhandeling en waarom is het belangrijk voor projectmanagers?',
+          options: [
+            'Best Alternative To a Negotiated Agreement — de sterkste alternatieve optie die je hebt als de onderhandeling mislukt; het bepaalt je ondergrens en onderhandelingsmacht',
+            'Basic Approach To Negotiation Agreement — een standaard stappenplan voor contractonderhandelingen',
+            'Budget Allocation Through Negotiation Advice — een financieel model voor projectbudgettering',
+            'Binding Agreement Through Neutral Arbitration — een juridisch mechanisme bij contractgeschillen',
+          ],
+          correctAnswer: 0,
+          explanation: 'BATNA (Best Alternative To a Negotiated Agreement, Fisher & Ury — Getting to Yes) is je beste alternatief als de onderhandeling geen overeenstemming oplevert. Kennis van je BATNA bepaalt je ondergrens: je accepteert geen deal die slechter is dan je BATNA. Een sterk BATNA geeft onderhandelingsmacht; een zwak BATNA verhoogt de druk om concessies te doen.',
+        },
+        {
+          id: 'lead-exam-q16',
+          question: 'Welk principe is het meest bepalend voor het geven van een overtuigende executive-presentatie?',
+          options: [
+            'Zo veel mogelijk informatie opnemen zodat de executives een volledig beeld krijgen',
+            'Beginnen met de conclusie of aanbeveling (top-down structuur), gevolgd door ondersteunende argumenten — conform de Pyramid Principle',
+            'Beginnen met een uitgebreid overzicht van de aanpak en methodologie voordat de bevindingen worden gepresenteerd',
+            'Alle slides voorzien van uitgebreide tekst zodat executives de presentatie ook zelfstandig kunnen lezen',
+          ],
+          correctAnswer: 1,
+          explanation: 'De Pyramid Principle (Barbara Minto) adviseert om te beginnen met de centrale boodschap of aanbeveling, gevolgd door de ondersteunende argumenten. Dit respecteert de beperkte aandacht van executives en maakt onmiddellijk duidelijk waarom de presentatie relevant is. Beginnen met details leidt tot aandachtsuitval voordat de kernboodschap is gebracht.',
+        },
+        {
+          id: 'lead-exam-q17',
+          question: 'Een teamlid weigert openlijk een beslissing van de projectmanager te accepteren tijdens een teamvergadering. Welke aanpak is het meest effectief?',
+          options: [
+            'Het teamlid onmiddellijk publiekelijk corrigeren om autoriteit te handhaven',
+            'De weerstand tijdens de vergadering erkennen, de vergadering continueren, en het teamlid daarna onder vier ogen spreken om de bezwaren serieus te bespreken',
+            'De beslissing intrekken om verdere weerstand te voorkomen',
+            'Het conflict negeren en hopen dat het vanzelf oplovert',
+          ],
+          correctAnswer: 1,
+          explanation: 'Publieke confrontatie beschaamt het teamlid en escaleert het conflict. Weerstand erkennen ("Ik hoor dat je bezwaren hebt — laten we dat na de vergadering bespreken") toont respect en beheerst de situatie. Het één-op-één gesprek biedt ruimte voor openheid en kan de kern van de bezwaren blootleggen, wat leidt tot betere beslissingen of draagvlak.',
+        },
+        {
+          id: 'lead-exam-q18',
+          question: 'Wat beschrijft het begrip "invloed zonder autoriteit" (influence without authority) in projectmanagement?',
+          options: [
+            'Het vermogen om mensen te manipuleren via informele druk en sociale uitsluiting',
+            'Het vermogen om anderen te bewegen naar gewenst gedrag of beslissingen door expertise, relaties, vertrouwen en overtuigende communicatie — zonder formele hiërarchische macht over die personen',
+            'Het feit dat projectmanagers altijd meer formele autoriteit moeten krijgen van het management',
+            'Een techniek die uitsluitend van toepassing is op externe leveranciers en contractanten',
+          ],
+          correctAnswer: 1,
+          explanation: 'Projectmanagers werken vaak in matrix-organisaties waarbij teamleden formeel aan functionele managers rapporteren. "Influence without authority" beschrijft de vaardigheid om effectief te sturen via expertise, relatieopbouw, vertrouwen en overtuigingskracht — zonder formele hiërarchische macht. Dit is een kerncompetentie voor projectleiders in moderne organisaties.',
         },
       ],
     },

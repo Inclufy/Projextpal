@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { 
   GraduationCap, Plus, Search, Filter, MoreHorizontal,
-  Edit, Trash2, Eye, Users, DollarSign, BookOpen,
+  Edit, Trash2, Eye, Users, Euro, BookOpen,
   Award, BarChart3, Download, AlertCircle, RefreshCw, 
   Loader2, FileText, Mail
 } from "lucide-react";
@@ -421,7 +421,7 @@ const AdminTrainingContent = () => {
                 <p className="text-2xl font-bold">€{totalRevenue.toLocaleString()}</p>
               </div>
               <div className="p-3 rounded-xl" style={{ backgroundColor: `${BRAND.green}15` }}>
-                <DollarSign className="w-6 h-6" style={{ color: BRAND.green }} />
+                <Euro className="w-6 h-6" style={{ color: BRAND.green }} />
               </div>
             </div>
           </CardContent>

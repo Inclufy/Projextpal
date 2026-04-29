@@ -71,6 +71,22 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         else:
             image_url = None
             
+        # Tenant-wide 2FA enforcement check.
+        # If the user's company has require_2fa=True and the user has
+        # no confirmed TOTP device, the client must redirect to
+        # 2FA enrolment before allowing access to the rest of the app.
+        require_2fa_enrollment = False
+        company = getattr(user, "company", None)
+        if company is not None and getattr(company, "require_2fa", False):
+            try:
+                from django_otp.plugins.otp_totp.models import TOTPDevice
+                has_confirmed_device = TOTPDevice.objects.filter(
+                    user=user, confirmed=True
+                ).exists()
+                require_2fa_enrollment = not has_confirmed_device
+            except Exception:
+                require_2fa_enrollment = False
+
         data["user"] = {
             "id": user.id,
             "email": user.email,
@@ -82,7 +98,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             "image": image_url,
             "role": user.role,
             "is_superuser": getattr(user, "is_superuser", False),
+            "require_2fa_enrollment": require_2fa_enrollment,
         }
+        data["require_2fa_enrollment"] = require_2fa_enrollment
         return data
 
 

@@ -19,6 +19,8 @@ from .views import (
     BudgetCategoryViewSet,
     BudgetItemViewSet,
     BudgetOverviewViewSet,
+    # Status-report auto-draft
+    status_report_auto_draft,
 )
 
 # Methodology views
@@ -59,4 +61,11 @@ urlpatterns = [
     path('methodologies/', MethodologyListView.as_view(), name='methodology-list'),
     path('methodologies/<str:code>/', MethodologyDetailView.as_view(), name='methodology-detail'),
     path('methodologies-templates/', MethodologyTemplateView.as_view(), name='methodology-templates'),
+
+    # Status-report auto-draft (returns a fresh draft, NOT persisted)
+    path(
+        '<int:project_id>/status-reports/auto-draft/',
+        status_report_auto_draft,
+        name='status-report-auto-draft',
+    ),
 ]

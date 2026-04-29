@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, DollarSign, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Euro, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const WaterfallBudget = () => {
@@ -38,9 +38,9 @@ const WaterfallBudget = () => {
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
-      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><DollarSign className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Budget")}</h1></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button></div>
+      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Euro className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Budget")}</h1></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button></div>
       <div className="grid grid-cols-3 gap-4"><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold">{formatCurrency(totalBudget)}</p></CardContent></Card><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Spent")}</p><p className="text-2xl font-bold">{formatCurrency(totalSpent)}</p><Progress value={pct} className="h-2 mt-2" /></CardContent></Card><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Remaining")}</p><p className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-500" : "text-green-500"}`}>{formatCurrency(totalBudget - totalSpent)}</p></CardContent></Card></div>
-      {items.length === 0 ? <Card className="p-8 text-center"><DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No budget items yet")}</h3></Card> : (
+      {items.length === 0 ? <Card className="p-8 text-center"><Euro className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No budget items yet")}</h3></Card> : (
         <Card><CardContent className="p-0"><div className="divide-y">{items.map(bi => (<div key={bi.id} className="flex items-center justify-between p-4 hover:bg-muted/50"><div><p className="font-medium">{bi.name}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{bi.category}</Badge><Badge variant={bi.status === "spent" ? "default" : "secondary"} className="text-xs">{bi.status}</Badge></div></div><div className="flex items-center gap-2"><span className="font-bold">{formatCurrency(parseFloat(bi.amount))}</span><Button variant="ghost" size="sm" onClick={() => openEdit(bi)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(bi.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>))}</div></CardContent></Card>
       )}
     </div>

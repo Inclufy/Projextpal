@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService } from './apiService';
 import { API_CONFIG } from '../constants/config';
 
@@ -26,7 +25,10 @@ class SubscriptionService {
   private baseURL = API_CONFIG.BASE_URL;
 
   private async getHeaders() {
-    const token = await AsyncStorage.getItem('access_token');
+    // Tokens are stored in SecureStore (iOS Keychain / Android Keystore) via
+    // apiService — never AsyncStorage. See logout() in authStore for the
+    // unified clear path.
+    const token = await apiService.getToken();
     return {
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : '',
@@ -85,55 +87,26 @@ class SubscriptionService {
 }
 
   async getUserSubscription() {
-    try {
-      const response = await fetch(
-        `${this.baseURL}${API_CONFIG.ENDPOINTS.USER_SUBSCRIPTION}`,
-        {
-          method: 'GET',
-          headers: await this.getHeaders(),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch subscription');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Get user subscription error:', error);
-      throw error;
-    }
+    // Backend endpoint /api/v1/auth/subscriptions/user/ returns 404 in production
+    // (dropped post-pilot). Subscription state is exposed via getUserFeatures()
+    // which derives `tier` from the user record. Returning null lets callers
+    // render the trial/free path without crashing.
+    console.warn('getUserSubscription is deprecated — use getUserFeatures().tier');
+    return null;
   }
 
-  async createCheckoutSession(data: {
+  async createCheckoutSession(_data: {
     plan_id: string;
     billing_cycle: 'monthly' | 'yearly';
     success_url?: string;
     cancel_url?: string;
   }) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}${API_CONFIG.ENDPOINTS.CREATE_CHECKOUT}`,
-        {
-          method: 'POST',
-          headers: await this.getHeaders(),
-          body: JSON.stringify(data),
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to create checkout session');
-      }
-
-      return responseData;
-    } catch (error) {
-      console.error('Create checkout session error:', error);
-      throw error;
-    }
+    // Stripe checkout is web-only for the current pilot. PricingScreen.tsx
+    // composes its own checkout URL inline; this stub exists so consumers
+    // that import the service don't break at compile time.
+    throw new Error(
+      'Checkout via mobile is unavailable — please complete the upgrade at projextpal.com/profile'
+    );
   }
 
   async canUseFeature(feature: string): Promise<boolean> {

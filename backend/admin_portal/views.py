@@ -195,16 +195,29 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         )
     
     def perform_destroy(self, instance):
+        """
+        Soft-delete: deactivate the user instead of hard-deleting.
+
+        Hard delete previously crashed with HTTP 500 because related FKs
+        (projects, programs, time_entries, audit logs, etc.) do not all
+        cascade. Setting is_active=False preserves referential integrity
+        while removing the user's ability to log in.
+        """
         email = instance.email
         company = instance.company
         user_id = instance.id
-        instance.delete()
+        instance.is_active = False
+        # Anonymize email so it can be reused if needed (preserve original for audit log)
+        if not instance.email.startswith('deleted+'):
+            instance.email = f"deleted+{instance.id}@projextpal.invalid"
+        instance.set_unusable_password()
+        instance.save(update_fields=['is_active', 'email', 'password'])
         log_action(
             user=self.request.user,
             action='user_deleted',
             category='user',
             severity='warning',
-            description=f"Deleted user {email}",
+            description=f"Soft-deleted user {email}",
             resource_type='user',
             resource_id=str(user_id),
             company=company,
@@ -252,6 +265,112 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         
         return Response({'status': 'activated', 'user': UserDetailSerializer(user).data})
     
+    @action(detail=True, methods=['post'], url_path='2fa/reset')
+    def reset_2fa(self, request, pk=None):
+        """
+        POST /api/v1/admin/users/<id>/2fa/reset/
+
+        Clears the user's TOTP devices (and any backup codes) so they
+        are forced to re-enrol 2FA on next login.
+        """
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+        try:
+            from django_otp.plugins.otp_static.models import StaticDevice
+        except ImportError:
+            StaticDevice = None
+
+        user = self.get_object()
+        TOTPDevice.objects.filter(user=user).delete()
+        if StaticDevice is not None:
+            StaticDevice.objects.filter(user=user).delete()
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='security',
+            severity='warning',
+            description=f"Reset 2FA for user {user.email}",
+            resource_type='user',
+            resource_id=str(user.id),
+            company=user.company,
+            request=request,
+        )
+        return Response({'status': '2fa_reset', 'user_id': user.id, 'email': user.email})
+
+    @action(detail=False, methods=['get'], url_path='export')
+    def export(self, request):
+        """
+        GET /api/v1/admin/users/export/
+
+        CSV stream of users. Query params:
+          ?role=        – filter by role
+          ?is_active=   – 'true' / 'false'
+          ?date_from=   – YYYY-MM-DD (date_joined >=)
+          ?date_to=     – YYYY-MM-DD (date_joined <=)
+        """
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        qs = User.objects.all().order_by('-date_joined')
+        role = request.query_params.get('role')
+        is_active = request.query_params.get('is_active')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+
+        if role:
+            qs = qs.filter(role=role)
+        if is_active is not None and is_active != '':
+            qs = qs.filter(is_active=str(is_active).lower() in ('1', 'true', 'yes'))
+        if date_from:
+            try:
+                qs = qs.filter(date_joined__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                qs = qs.filter(date_joined__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+            except ValueError:
+                pass
+
+        # Pre-compute 2FA status as a set lookup (one query)
+        users_with_2fa = set(
+            TOTPDevice.objects.filter(confirmed=True, user__in=qs).values_list('user_id', flat=True)
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="users_export.csv"'
+        writer = csv.writer(response)
+        writer.writerow([
+            'id', 'email', 'full_name', 'role',
+            'is_active', 'created_at', 'last_login', 'two_factor_enabled',
+        ])
+        for u in qs.iterator():
+            full_name = f'{u.first_name} {u.last_name}'.strip() or u.username
+            writer.writerow([
+                u.id,
+                u.email,
+                full_name,
+                u.role,
+                u.is_active,
+                u.date_joined.isoformat() if u.date_joined else '',
+                u.last_login.isoformat() if u.last_login else '',
+                u.id in users_with_2fa,
+            ])
+
+        log_action(
+            user=request.user,
+            action='data_exported',
+            category='admin',
+            description=f'Exported {qs.count()} users to CSV',
+            metadata={
+                'filters': {
+                    'role': role, 'is_active': is_active,
+                    'date_from': date_from, 'date_to': date_to,
+                }
+            },
+            request=request,
+        )
+        return response
+
     @action(detail=True, methods=['post'])
     def resend_invite(self, request, pk=None):
         """Resend invitation email"""
@@ -537,22 +656,86 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def subscription(self, request, pk=None):
-        """Get subscription details for a company"""
+        """
+        GET /api/v1/admin/tenants/<id>/subscription/
+
+        Returns a single summary object: plan, status, seats_used /
+        seats_max, next_invoice_date, last_payment_date.
+
+        Always 200 — when there is no active subscription we still
+        return a placeholder shape (status='none') so the admin UI
+        does not 404.
+        """
         company = self.get_object()
         subscription = company.subscriptions.filter(
             status__in=['active', 'trialing', 'past_due']
         ).first()
-        
+
+        seats_used = company.customuser_set.filter(is_active=True).count()
+
         if not subscription:
-            return Response({'detail': 'No active subscription'}, status=404)
-        
+            return Response({
+                'plan': None,
+                'status': 'none',
+                'seats_used': seats_used,
+                'seats_max': None,
+                'next_invoice_date': company.next_invoice_date,
+                'last_payment_date': company.last_payment_date,
+            })
+
+        plan = subscription.plan
         return Response({
             'id': str(subscription.id),
-            'plan': SubscriptionPlanListSerializer(subscription.plan).data,
+            'plan': SubscriptionPlanListSerializer(plan).data,
+            'plan_name': plan.name,
+            'plan_level': plan.plan_level,
             'status': subscription.status,
+            'billing_cycle': subscription.billing_cycle,
+            'seats_used': seats_used,
+            'seats_max': plan.max_users,
             'current_period_start': subscription.current_period_start,
             'current_period_end': subscription.current_period_end,
-            'cancel_at_period_end': subscription.cancel_at_period_end
+            'next_invoice_date': (
+                subscription.current_period_end
+                or company.next_invoice_date
+            ),
+            'last_payment_date': company.last_payment_date,
+            'cancel_at_period_end': subscription.cancel_at_period_end,
+        })
+
+    @action(detail=True, methods=['post'], url_path='2fa/enforce')
+    def enforce_2fa(self, request, pk=None):
+        """
+        POST /api/v1/admin/tenants/<id>/2fa/enforce/
+
+        Tenant-wide 2FA enforcement. Sets `Company.require_2fa = True`
+        so the login flow forces every user without a confirmed
+        TOTPDevice to enrol at next sign-in.
+        """
+        company = self.get_object()
+        company.require_2fa = bool(request.data.get('enabled', True))
+        company.require_2fa_enabled_at = timezone.now() if company.require_2fa else None
+        company.save(update_fields=['require_2fa', 'require_2fa_enabled_at'])
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='security',
+            severity='warning' if company.require_2fa else 'info',
+            description=(
+                f"{'Enabled' if company.require_2fa else 'Disabled'} "
+                f"tenant-wide 2FA enforcement for {company.name}"
+            ),
+            resource_type='company',
+            resource_id=str(company.id),
+            company=company,
+            request=request,
+        )
+
+        return Response({
+            'tenant_id': company.id,
+            'require_2fa': company.require_2fa,
+            'enabled_at': company.require_2fa_enabled_at,
         })
 
 
@@ -637,25 +820,120 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['description', 'user_email']
     ordering_fields = ['created_at']
     
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        
-        # Date filters
-        date_from = self.request.query_params.get('date_from')
-        date_to = self.request.query_params.get('date_to')
-        
+    def _apply_filters(self, queryset, params):
+        """Apply query-param filters shared by list & export endpoints."""
+        action_val = params.get('action')
+        if action_val:
+            queryset = queryset.filter(action=action_val)
+
+        category = params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        severity = params.get('severity')
+        if severity:
+            queryset = queryset.filter(severity=severity)
+
+        # Accept both `user` and `user_id`
+        user_id = params.get('user_id') or params.get('user')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+
+        resource_type = params.get('resource_type')
+        if resource_type:
+            queryset = queryset.filter(resource_type=resource_type)
+
+        resource_id = params.get('resource_id')
+        if resource_id:
+            queryset = queryset.filter(resource_id=resource_id)
+
+        company_id = params.get('company_id') or params.get('company')
+        if company_id:
+            queryset = queryset.filter(company_id=company_id)
+
+        date_from = params.get('date_from')
         if date_from:
             queryset = queryset.filter(created_at__date__gte=date_from)
+
+        date_to = params.get('date_to')
         if date_to:
             queryset = queryset.filter(created_at__date__lte=date_to)
-        
+
+        search = params.get('search') or params.get('q')
+        if search:
+            queryset = queryset.filter(
+                Q(description__icontains=search) | Q(user_email__icontains=search)
+            )
+
         return queryset
-    
+
+    def get_queryset(self):
+        queryset = self._apply_filters(super().get_queryset(), self.request.query_params)
+
+        # Optional `limit` for clients that want a hard cap (still paginated otherwise)
+        limit = self.request.query_params.get('limit')
+        if limit:
+            try:
+                queryset = queryset[: max(1, int(limit))]
+            except (TypeError, ValueError):
+                pass
+
+        return queryset
+
     @action(detail=False, methods=['get'])
     def export(self, request):
-        """Export logs as CSV"""
-        # TODO: Implement CSV export
-        return Response({'detail': 'Export functionality coming soon'})
+        """
+        Export audit logs as a streaming CSV file.
+
+        Honours the same filters as the list endpoint:
+        action, category, severity, user_id, resource_type, resource_id,
+        company_id, date_from, date_to, search, limit.
+        """
+        from django.http import StreamingHttpResponse
+
+        queryset = self._apply_filters(
+            AuditLog.objects.all().order_by('-created_at'),
+            request.query_params,
+        )
+
+        limit = request.query_params.get('limit')
+        if limit:
+            try:
+                queryset = queryset[: max(1, int(limit))]
+            except (TypeError, ValueError):
+                pass
+
+        class _Echo:
+            def write(self, value):
+                return value
+
+        writer = csv.writer(_Echo())
+        header = [
+            'id', 'created_at', 'action', 'category', 'severity',
+            'user_email', 'resource_type', 'resource_id',
+            'description', 'ip_address',
+        ]
+
+        def row_iter():
+            yield writer.writerow(header)
+            for log in queryset.iterator():
+                yield writer.writerow([
+                    str(log.id),
+                    log.created_at.isoformat() if log.created_at else '',
+                    log.action,
+                    log.category,
+                    log.severity,
+                    log.user_email or '',
+                    log.resource_type or '',
+                    log.resource_id or '',
+                    (log.description or '').replace('\n', ' '),
+                    getattr(log, 'ip_address', '') or '',
+                ])
+
+        filename = f"audit_logs_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        response = StreamingHttpResponse(row_iter(), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
 
 
 # ============================================================

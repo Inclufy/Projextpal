@@ -5,11 +5,16 @@ Generates 2-page PDF: Front (certificate) + Back (skills)
 
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
 import qrcode
 from io import BytesIO
+
+# Public verify URL — points at the SPA which calls
+# /api/v1/academy/verify/<code>/. Embedded in the QR.
+VERIFY_BASE_URL = 'https://projextpal.com/verify'
 
 
 class CertificateGenerator:
@@ -59,11 +64,33 @@ class CertificateGenerator:
         c.setFillColor(colors.HexColor('#D946EF'))
         c.drawCentredString(self.width/2, self.height - 130*mm, self.course.title.upper())
         
+        # Issued date
+        c.setFont("Helvetica", 12)
+        c.setFillColor(colors.black)
+        issued = self.cert.issued_at.strftime('%d %B %Y') if self.cert.issued_at else datetime.utcnow().strftime('%d %B %Y')
+        c.drawCentredString(self.width/2, self.height - 150*mm,
+                          f"Issued on {issued}")
+
         # Certificate Number
         c.setFont("Helvetica", 10)
-        c.setFillColor(colors.black)
-        c.drawCentredString(self.width/2, self.height - 160*mm, 
+        c.drawCentredString(self.width/2, self.height - 165*mm,
                           f"Certificate ID: {self.cert.certificate_number}")
+
+        # QR code linking to the public verify page. Drawn bottom-right
+        # so reviewers can scan it from a printed certificate.
+        verify_url = f"{VERIFY_BASE_URL}/{self.cert.verification_code}"
+        try:
+            qr_img = qrcode.make(verify_url)
+            buf = BytesIO()
+            qr_img.save(buf, format='PNG')
+            buf.seek(0)
+            c.drawImage(ImageReader(buf),
+                        self.width - 55*mm, 30*mm,
+                        width=30*mm, height=30*mm)
+            c.setFont("Helvetica", 8)
+            c.drawRightString(self.width - 25*mm, 25*mm, f"Verify: {verify_url}")
+        except Exception:  # noqa: BLE001 — QR is best-effort, don't fail the cert
+            pass
     
     def draw_skills_breakdown(self, c):
         """Draw skills breakdown on back page"""

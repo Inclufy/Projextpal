@@ -3,21 +3,42 @@ from .models import (
     Product,
     ProjectBrief, BusinessCase, BusinessCaseBenefit, BusinessCaseRisk,
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
-    ProjectBoard, ProjectBoardMember, HighlightReport, EndProjectReport,
-    LessonsLog, ProjectTolerance
+    ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
+    EndProjectReport, LessonsLog, ProjectTolerance,
 )
 
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
+    # Backward-compat alias: clients (frontend, mobile) may still send/expect
+    # `project_definition`. We map it onto the renamed `background` column.
+    project_definition = serializers.CharField(
+        source='background', required=False, allow_blank=True
+    )
+
     class Meta:
         model = ProjectBrief
-        fields = '__all__'
+        fields = [
+            'id', 'project',
+            'background', 'project_definition',  # both exposed
+            'project_approach', 'outline_business_case',
+            'project_objectives', 'project_scope', 'project_team_structure',
+            'constraints', 'assumptions',
+            'status', 'version', 'created_at', 'updated_at',
+        ]
         read_only_fields = ['project', 'created_at', 'updated_at']
         extra_kwargs = {
-            'project_definition': {'required': False, 'allow_blank': True},
+            'background': {'required': False, 'allow_blank': True},
             'project_approach': {'required': False, 'allow_blank': True},
             'outline_business_case': {'required': False, 'allow_blank': True},
         }
+
+    def to_internal_value(self, data):
+        # Accept either field name on input. If only the legacy alias is
+        # present, copy it onto `background` so validation/save stays clean.
+        if isinstance(data, dict) and 'project_definition' in data and 'background' not in data:
+            data = dict(data)
+            data['background'] = data['project_definition']
+        return super().to_internal_value(data)
 
 
 class BusinessCaseBenefitSerializer(serializers.ModelSerializer):
@@ -129,10 +150,30 @@ class ProjectBoardSerializer(serializers.ModelSerializer):
 
 class HighlightReportSerializer(serializers.ModelSerializer):
     stage_name = serializers.CharField(source='stage.name', read_only=True)
-    
+
     class Meta:
         model = HighlightReport
         fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class CheckpointReportSerializer(serializers.ModelSerializer):
+    work_package_title = serializers.CharField(
+        source='work_package.title', read_only=True, allow_null=True,
+    )
+    team_manager_name = serializers.CharField(
+        source='team_manager.get_full_name', read_only=True, allow_null=True,
+    )
+
+    class Meta:
+        model = CheckpointReport
+        fields = [
+            'id', 'project', 'work_package', 'work_package_title',
+            'period_start', 'period_end', 'status',
+            'products_completed', 'products_planned', 'risks_issues_summary',
+            'team_manager', 'team_manager_name',
+            'created_at', 'updated_at',
+        ]
         read_only_fields = ['project', 'created_at', 'updated_at']
 
 

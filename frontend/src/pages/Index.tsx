@@ -10,7 +10,7 @@ import {
   FolderKanban, 
   TrendingUp, 
   AlertTriangle, 
-  DollarSign, 
+  Euro, 
   Sparkles,
   ArrowRight,
   Target,
@@ -505,7 +505,7 @@ const Index = () => {
           <StatCard title={pt("Projects")} value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
           <StatCard title={pt("Active")} value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
           <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
-          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={Euro} color="amber" />
           <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle="Average Completion" icon={Target} color="emerald" />
         </div>
 

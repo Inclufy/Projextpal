@@ -3,6 +3,8 @@
 // ============================================
 // Complete PRINCE2 training with all 7 principles, themes, and processes
 // ============================================
+// TODO: PRINCE2 7th Edition (2023) update — sustainability theme, retired Project Support role, integrated themes/principles/processes. Tracked in catalog audit 2026-04-28.
+// ============================================
 
 import { Crown } from 'lucide-react';
 import { Course, Module } from '../types';
@@ -42,7 +44,7 @@ Britse overheid en wordt nu beheerd door AXELOS.
 - 1996: PRINCE2 gepubliceerd
 - 2009: Grote update - "Managing Successful Projects with PRINCE2"
 - 2017: PRINCE2 2017 Update
-- Vandaag: PRINCE2 6th Edition (2023)
+- Vandaag: PRINCE2 6th Edition (2017)
 
 **Waarom PRINCE2?**
 
@@ -106,7 +108,7 @@ Er zijn twee niveaus:
 
 We behandelen:
 - Alle 7 principes in detail
-- Alle 7 thema's met praktijkvoorbeelden
+- Alle 7 thema\'s met praktijkvoorbeelden
 - Alle 7 processen stap voor stap
 - Tailoring voor jouw context
 - Oefenexamens voor certificering
@@ -312,7 +314,7 @@ Wat kun je NIET tailoren?
       duration: '20:00',
       type: 'video',
       videoUrl: '',
-      transcript: `De 7 thema's beschrijven aspecten van projectmanagement die continu 
+      transcript: `De 7 thema\'s beschrijven aspecten van projectmanagement die continu 
 aandacht nodig hebben gedurende het project.
 
 **Wat zijn Thema's?**
@@ -335,7 +337,7 @@ Het Business Case thema zorgt dat het project waarde levert.
 Key questions:
 - Waarom doen we dit project?
 - Wat zijn de verwachte benefits?
-- Wat zijn de kosten en risico's?
+- Wat zijn de kosten en risico\'s?
 - Is dit nog steeds de beste investering?
 
 De Business Case wordt:
@@ -396,7 +398,7 @@ Product-based planning stappen:
 5. Identificeer activiteiten en afhankelijkheden
 6. Bereid schattingen voor
 7. Bereid de planning voor
-8. Analyseer risico's
+8. Analyseer risico\'s
 
 **Thema 5: Risk**
 
@@ -405,7 +407,7 @@ Het Risk thema managet onzekerheid.
 Risk = Effect of uncertainty on objectives
 
 De Risk Management procedure:
-1. Identify: Welke risico's zijn er?
+1. Identify: Welke risico\'s zijn er?
 2. Assess: Hoe waarschijnlijk? Wat is de impact?
 3. Plan: Hoe gaan we ermee om?
 4. Implement: Voer responses uit
@@ -449,7 +451,7 @@ Controls:
 
 **Hoe de Thema's Samenwerken**
 
-De thema's zijn geïntegreerd:
+De thema\'s zijn geïntegreerd:
 - Business Case rechtvaardigt de investering
 - Organization wijst verantwoordelijkheden toe
 - Quality definieert wat "goed" is
@@ -998,7 +1000,7 @@ Stappen:
 5. Identificeer activiteiten per product
 6. Maak schattingen
 7. Maak de schedule
-8. Analyseer risico's
+8. Analyseer risico\'s
 9. Documenteer aannames
 
 **Product Breakdown Structure**
@@ -1072,7 +1074,7 @@ Het Plans thema:
       duration: '20:00',
       type: 'video',
       videoUrl: '',
-      transcript: `In deze les behandelen we de laatste drie thema's: Risk, Change en Progress.
+      transcript: `In deze les behandelen we de laatste drie thema\'s: Risk, Change en Progress.
 
 **RISK THEMA**
 
@@ -1083,7 +1085,7 @@ Risk = Effect of uncertainty on objectives
 Kan positief (opportunity) of negatief (threat) zijn.
 
 **Risk Management Procedure:**
-1. **Identify**: Welke risico's zijn er?
+1. **Identify**: Welke risico\'s zijn er?
 2. **Assess**: Probability × Impact = Risk Score
 3. **Plan**: Kies een response strategie
 4. **Implement**: Voer de response uit
@@ -1104,7 +1106,7 @@ Kan positief (opportunity) of negatief (threat) zijn.
 - **Reject**: Negeer de opportunity
 
 **Risk Register:**
-Centrale log van alle risico's met:
+Centrale log van alle risico\'s met:
 - Risk ID en beschrijving
 - Probability en Impact scores
 - Response en eigenaar
@@ -1168,7 +1170,7 @@ Kunnen worden gezet op:
 
 **Samenvatting**
 
-De drie thema's werken samen:
+De drie thema\'s werken samen:
 - Risk identificeert onzekerheden
 - Change beheerst wijzigingen
 - Progress meet en rapporteert voortgang
@@ -1244,7 +1246,7 @@ iets te doen. Dit kan zijn:
 **2. Capture Previous Lessons**
 - Welke lessen zijn er van vergelijkbare projecten?
 - Wat ging goed/fout?
-- Welke risico's manifesteerden zich?
+- Welke risico\'s manifesteerden zich?
 
 Dit is toepassing van Principe 2: Learn from Experience.
 
@@ -1267,7 +1269,7 @@ Bevat:
 - Redenen voor het project
 - Verwachte benefits
 - Indicatieve kosten en tijdlijn
-- Grote risico's
+- Grote risico\'s
 
 **5. Select the Project Approach and Assemble the Project Brief**
 - Hoe gaan we het project aanpakken?
@@ -1367,7 +1369,7 @@ Kenmerken:
 **Activiteiten in IP**
 
 **1. Prepare the Risk Management Strategy**
-- Hoe gaan we met risico's om?
+- Hoe gaan we met risico\'s om?
 - Wie is verantwoordelijk?
 - Welke tools gebruiken we?
 
@@ -1635,7 +1637,7 @@ Regelmatige rapportage aan Board:
 - Escalaties indien nodig
 
 **6. Capture and Examine Issues and Risks**
-Nieuwe issues en risico's:
+Nieuwe issues en risico\'s:
 - Identificeren
 - Analyseren
 - Acties bepalen
@@ -1656,7 +1658,7 @@ Binnen toleranties:
 
 Team Manager rapporteert aan PM:
 - Voortgang op Work Package
-- Issues en risico's
+- Issues en risico\'s
 - Schattingen rest werk
 
 Frequentie: afgesproken per Work Package.
@@ -1667,7 +1669,7 @@ PM rapporteert aan Board:
 - Status (rood/amber/groen)
 - Voortgang vs. plan
 - Budget status
-- Issues en risico's
+- Issues en risico\'s
 - Vooruitblik
 
 Frequentie: typisch 2-wekelijks (afgesproken in PID).
@@ -1858,13 +1860,13 @@ Actuals vs. baseline:
 Is het project nog steeds gerechtvaardigd?
 - Zijn kosten nog steeds acceptabel?
 - Zijn benefits nog steeds haalbaar?
-- Zijn risico's acceptabel?
+- Zijn risico\'s acceptabel?
 
 **4. Report Stage End**
 End Stage Report aan de Board:
 - Prestaties van de afgelopen stage
 - Status van producten
-- Issues en risico's
+- Issues en risico\'s
 - Lessons learned
 
 **5. Produce an Exception Plan (indien nodig)**
@@ -1957,7 +1959,7 @@ CP mag NIET worden overgeslagen, ook niet bij voortijdig stoppen!
 **1. Prepare Planned Closure**
 - Controleer alle producten opgeleverd
 - Controleer acceptatie
-- Controleer openstaande issues/risico's
+- Controleer openstaande issues/risico\'s
 
 **2. Prepare Premature Closure**
 Als project wordt gestopt:
@@ -2163,7 +2165,7 @@ Dit wordt typisch vastgelegd in de PID.
 
 Tailoring:
 - Is aanpassen aan projectcontext
-- Mag processen, thema's, rollen en producten vereenvoudigen
+- Mag processen, thema\'s, rollen en producten vereenvoudigen
 - Mag principes NOOIT negeren
 - Wordt gedocumenteerd en goedgekeurd
 - Maakt PRINCE2 toepasbaar voor elk project`,
@@ -2234,6 +2236,64 @@ Tailoring:
           explanation: 'CP moet altijd worden uitgevoerd, ook bij voortijdig stoppen, voor lessons learned en administratieve afsluiting.',
         },
       ],
+    },
+    {
+      id: 'p2-l18b',
+      title: 'Practical Assignment: Write a Project Brief',
+      titleNL: 'Praktijkopdracht: Schrijf een Project Brief',
+      duration: '60:00',
+      type: 'assignment',
+      assignment: {
+        title: 'Stel een PRINCE2 Project Brief op',
+        description: `In deze opdracht pas je de kennis uit Modules 1–3 toe door een volledige
+PRINCE2 Project Brief op te stellen voor een fictief industrieel project.
+
+**Het Scenario:**
+Je bent aangesteld als Project Manager bij Meridian Industrial B.V., een middelgroot
+machinebouwbedrijf (350 medewerkers, €80 miljoen omzet). Het management wil de gehele
+productiehal overstappen op een nieuw Manufacturing Execution System (MES) om de
+productiefout-ratio van 3,8% terug te dringen naar onder 1%. Het project heeft een
+indicatief budget van €220.000 – €280.000 en een gewenste go-live binnen 12 maanden.
+
+**Beschikbare Informatie:**
+- Sponsor (Executive): COO (Caroline Visser)
+- Senior User: Hoofd Productie (Mark Hendrikx)
+- Senior Supplier: MES-leverancier Siemens Opcenter (extern)
+- Betrokken afdelingen: Productie, IT, Kwaliteit, Finance
+- Huidig probleem: 3,8% uitval door ontbrekende real-time procesdata; €420.000 jaarlijkse
+  verliezen door herbewerking en klachten
+- Risico's reeds gesignaleerd: legacy PLC-integratie onzeker, trainingstijd operators, data-
+  migratie van papieren werkorders
+
+**Jouw Opdracht:**
+Stel een PRINCE2-conforme Project Brief op volgens de structuur van PRINCE2 6th Edition
+§A.19 (Management Product: Project Brief). De brief moet de volgende secties bevatten:
+
+1. **Project Definition (Background)** — doel, gewenste uitkomst, scope in/out, aannames
+2. **Outline Business Case** — probleemstelling, verwachte baten (kwantitatief), kostenindicatie,
+   en tijdlijn van baten-realisatie
+3. **Project Approach** — gekozen aanpak (big bang vs. gefaseerde uitrol), tailoring-keuzes
+4. **Project Management Team** — Project Board (Executive, Senior User, Senior Supplier),
+   Project Manager, en minimaal één Team Manager-rol met rationale
+5. **References** — verwijs naar relevante PRINCE2 6th Ed secties en eventuele
+   organisatiedocumenten (Lessons Log, Business Policies)
+
+De brief mag 2–4 pagina's tekst zijn (of equivalent in het LMS-formulier).
+
+**Referentie:** PRINCE2 6th Edition (AXELOS, 2017), §A.19 — Project Brief.`,
+        deliverables: [
+          'Ingevulde Project Brief met alle 5 secties (§A.19)',
+          'Project Management Team-diagram of tabel met rollen en namen',
+        ],
+        rubric: [
+          { criterion: 'Project Definition dekt scope, doelstellingen en aannames volledig', points: 20 },
+          { criterion: 'Outline Business Case bevat meetbare baten en kostenschatting', points: 20 },
+          { criterion: 'Project Approach motiveert tailoring-keuzes (manage by stages, exceptions)', points: 20 },
+          { criterion: 'Project Management Team correct opgezet (Executive, SU, SS, PM)', points: 20 },
+          { criterion: 'Correcte verwijzing naar PRINCE2 §A.19 en relevante thema\'s', points: 10 },
+          { criterion: 'Professionele opmaak en taalgebruik', points: 10 },
+        ],
+      },
     },
     {
       id: 'p2-l19',
@@ -2312,8 +2372,8 @@ export const prince2Course: Course = {
   id: 'prince2-foundation',
   title: 'PRINCE2 Foundation & Practitioner',
   titleNL: 'PRINCE2 Foundation & Practitioner',
-  description: 'The complete PRINCE2 certification training. Learn the 7 principles, 7 themes, and 7 processes to manage projects in controlled environments.',
-  descriptionNL: 'De complete PRINCE2 certificeringstraining. Leer de 7 principes, 7 thema\'s en 7 processen om projecten in gecontroleerde omgevingen te managen.',
+  description: 'The complete PRINCE2 certification training. Learn the 7 principles, 7 themes, and 7 processes to manage projects in controlled environments. This course follows PRINCE2 6th Edition (2017). PRINCE2 7th Edition (2023) update planned.',
+  descriptionNL: 'De complete PRINCE2 certificeringstraining. Leer de 7 principes, 7 thema\'s en 7 processen om projecten in gecontroleerde omgevingen te managen. Deze cursus volgt PRINCE2 6e editie (2017). Update naar PRINCE2 7e editie (2023) gepland.',
   icon: Crown,
   color: BRAND.amber,
   gradient: `linear-gradient(135deg, ${BRAND.amber}, #D97706)`,

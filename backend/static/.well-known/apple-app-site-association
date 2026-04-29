@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.inclufy.projextpal",
+        "paths": [
+          "/dashboard",
+          "/projects/*",
+          "/programs/*",
+          "/academy",
+          "/academy/course/*",
+          "/login",
+          "/pricing",
+          "/subscription-success"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.inclufy.projextpal"]
+  }
+}

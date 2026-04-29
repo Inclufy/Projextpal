@@ -8,7 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, DollarSign, AlertTriangle } from "lucide-react";
+import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const Prince2BusinessCase = () => {
@@ -164,7 +164,7 @@ const Prince2BusinessCase = () => {
         {/* Benefits */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-green-500" /> {pt("Benefits")} ({bc?.benefits?.length || 0})</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Euro className="h-5 w-5 text-green-500" /> {pt("Benefits")} ({bc?.benefits?.length || 0})</CardTitle>
             <Button size="sm" onClick={() => setBenefitDialog(true)} disabled={!bc}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
           </CardHeader>
           <CardContent>

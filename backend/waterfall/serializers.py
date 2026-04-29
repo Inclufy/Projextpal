@@ -166,7 +166,7 @@ class WaterfallGanttTaskSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'phase', 'phase_name', 'name', 'start_date', 'end_date',
             'progress', 'dependencies', 'dependency_ids', 'assignee', 'assignee_name',
-            'is_milestone', 'order', 'status'
+            'is_milestone', 'is_critical', 'order', 'status'
         ]
     
     def get_dependency_ids(self, obj):

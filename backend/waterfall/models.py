@@ -294,6 +294,10 @@ class WaterfallGanttTask(models.Model):
     dependencies = models.ManyToManyField('self', blank=True, symmetrical=False)
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     is_milestone = models.BooleanField(default=False)
+    is_critical = models.BooleanField(
+        default=False,
+        help_text="Whether this task lies on the critical path (CPM / PMBoK schedule mgmt)."
+    )
     order = models.IntegerField(default=0)
     
     class Meta:
@@ -415,24 +419,113 @@ class WaterfallMaintenanceItem(models.Model):
 
 
 class WaterfallBudget(models.Model):
-    """Budget tracking for Waterfall projects"""
+    """Budget tracking for Waterfall projects.
+
+    EVM fields (PMBoK 7 §4.5 / Royce sequential phase-gated):
+      planned_value  (PV) — budgeted cost of work scheduled
+      earned_value   (EV) — budgeted cost of work performed
+      actual_cost    (AC) — actual cost of work performed
+    Computed properties: SV (EV-PV), CV (EV-AC), SPI (EV/PV), CPI (EV/AC).
+    """
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='waterfall_budget')
     total_budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default='EUR')
     contingency_percentage = models.IntegerField(default=10)
+
+    # EVM rolling snapshot (latest period)
+    planned_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    earned_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    actual_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return f"Budget for {self.project.name}"
-    
+
     @property
     def total_spent(self):
         return self.items.aggregate(total=models.Sum('actual_amount'))['total'] or 0
-    
+
     @property
     def remaining(self):
         return self.total_budget - self.total_spent
+
+    # ------------------------------------------------------------------
+    # EVM derived metrics
+    # ------------------------------------------------------------------
+    @property
+    def cost_variance(self):
+        """CV = EV - AC. Positive => under budget."""
+        return (self.earned_value or 0) - (self.actual_cost or 0)
+
+    @property
+    def schedule_variance(self):
+        """SV = EV - PV. Positive => ahead of schedule."""
+        return (self.earned_value or 0) - (self.planned_value or 0)
+
+    @property
+    def cpi(self):
+        """CPI = EV / AC. >1 => under budget."""
+        if not self.actual_cost:
+            return None
+        return float(self.earned_value or 0) / float(self.actual_cost)
+
+    @property
+    def spi(self):
+        """SPI = EV / PV. >1 => ahead of schedule."""
+        if not self.planned_value:
+            return None
+        return float(self.earned_value or 0) / float(self.planned_value)
+
+
+class EarnedValueRecord(models.Model):
+    """Per-reporting-period EVM snapshot for a Waterfall project.
+
+    PMBoK expects EVM measured every status reporting period (typically
+    weekly or per phase gate). This table is the historical series; the
+    WaterfallBudget fields hold the latest snapshot for fast lookup.
+    """
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='waterfall_evm_records'
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    planned_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    earned_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    actual_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    notes = models.TextField(blank=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-period_end']
+        unique_together = ['project', 'period_end']
+
+    def __str__(self):
+        return f"EVM {self.project_id} {self.period_end}"
+
+    @property
+    def cost_variance(self):
+        return (self.earned_value or 0) - (self.actual_cost or 0)
+
+    @property
+    def schedule_variance(self):
+        return (self.earned_value or 0) - (self.planned_value or 0)
+
+    @property
+    def cpi(self):
+        if not self.actual_cost:
+            return None
+        return float(self.earned_value or 0) / float(self.actual_cost)
+
+    @property
+    def spi(self):
+        if not self.planned_value:
+            return None
+        return float(self.earned_value or 0) / float(self.planned_value)
 
 
 class WaterfallBudgetItem(models.Model):

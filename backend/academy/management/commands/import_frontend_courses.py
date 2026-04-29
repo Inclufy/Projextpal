@@ -26,7 +26,14 @@ from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from academy.models import Course, CourseCategory, CourseModule, CourseLesson
+from academy.models import (
+    Course,
+    CourseCategory,
+    CourseModule,
+    CourseLesson,
+    Exam,
+    PracticeAssignment,
+)
 
 
 # Path to the frontend course-extractor script bundled with this package.
@@ -97,6 +104,25 @@ for (const f of files) {
         }
         let order = 0;
         for (const lb of blocks) {
+          // Best-effort raw quiz block (used by both quiz and exam lessons)
+          // Counts the JSON-ish array length for question count; full
+          // structure is preserved via raw text.
+          let quizQuestionCount = 0;
+          const qm = /\bquiz:\s*\[([\s\S]*?)\n\s*\]\s*,?/m.exec(lb);
+          if (qm) {
+            // Count top-level objects inside the quiz array.
+            const inner = qm[1];
+            let depth = 0;
+            for (let k = 0; k < inner.length; k++) {
+              const ch = inner[k];
+              if (ch === '{') {
+                if (depth === 0) quizQuestionCount++;
+                depth++;
+              } else if (ch === '}') {
+                depth--;
+              }
+            }
+          }
           mod.lessons.push({
             id: pluck(/\bid:\s*['"`]([^'"`]+)['"`]/, lb),
             title: pluck(/\btitle:\s*['"`]([^'"`]+)['"`]/, lb),
@@ -106,6 +132,12 @@ for (const f of files) {
             videoUrl: pluck(/\bvideoUrl:\s*['"`]([^'"`]*)['"`]/, lb) || '',
             transcript: pluck(/\btranscript:\s*`([\s\S]*?)`/, lb) || '',
             content: pluck(/\bcontent:\s*`([\s\S]*?)`/, lb) || '',
+            // Practice-specific fields (best-effort)
+            assignment: pluck(/\bassignment:\s*['"`]([^'"`]*)['"`]/, lb)
+              || pluck(/\bassignment:\s*`([\s\S]*?)`/, lb) || '',
+            rubric: pluck(/\brubric:\s*['"`]([^'"`]*)['"`]/, lb)
+              || pluck(/\brubric:\s*`([\s\S]*?)`/, lb) || '',
+            quizQuestionCount: quizQuestionCount,
             order: order++,
           });
         }
@@ -175,6 +207,8 @@ class Command(BaseCommand):
         )
 
         mods_created = lessons_created = 0
+        exams_created = practices_created = 0
+        warnings: list[str] = []
 
         with transaction.atomic():
             for fc in courses:
@@ -213,13 +247,14 @@ class Command(BaseCommand):
                         except (ValueError, IndexError):
                             mins = 10
 
+                        lesson_type = fl.get('type', 'video')
                         lesson, lc = CourseLesson.objects.update_or_create(
                             module=mod,
                             order=l_order,
                             defaults={
                                 'title': fl['title'],
                                 'title_nl': fl.get('titleNL') or fl['title'],
-                                'lesson_type': fl.get('type', 'video'),
+                                'lesson_type': lesson_type,
                                 'duration_minutes': mins,
                                 'video_url': fl.get('videoUrl', ''),
                                 'content': body,
@@ -228,6 +263,78 @@ class Command(BaseCommand):
                         )
                         if lc: lessons_created += 1
 
+                        # === Fix 2 — PracticeAssignment for practice lessons
+                        # The TS files describe practice exercises inline on
+                        # the lesson; we mirror that into a PracticeAssignment
+                        # row so Enrollment.certificate_eligibility() can gate
+                        # on admin-approved submissions.
+                        if lesson_type == 'practice':
+                            description = (
+                                fl.get('assignment')
+                                or body
+                                or 'Complete the practice exercise as described in the lesson.'
+                            )
+                            rubric_text = fl.get('rubric') or ''
+                            criteria = {'rubric': rubric_text} if rubric_text else {}
+                            _, pc = PracticeAssignment.objects.update_or_create(
+                                lesson=lesson,
+                                defaults={
+                                    'title': fl['title'],
+                                    'description': description,
+                                    'course': course,
+                                    'duration_minutes': mins,
+                                    'criteria': criteria,
+                                },
+                            )
+                            if pc: practices_created += 1
+
+                        # === Fix 3/4 — Exam row for exam lessons
+                        # Without a matching Exam row, the cert-eligibility
+                        # check treats the course as exam-free, and the
+                        # exam-taking UI has nothing to query.
+                        if lesson_type == 'exam':
+                            qcount = fl.get('quizQuestionCount') or 0
+                            _, ec = Exam.objects.update_or_create(
+                                course=course,
+                                module=mod,
+                                title=fl['title'],
+                                defaults={
+                                    'title_nl': fl.get('titleNL') or fl['title'],
+                                    'description': body[:2000],
+                                    'description_nl': body[:2000],
+                                    'passing_score': 80,
+                                    'time_limit': mins or 45,
+                                    'max_attempts': 3,
+                                    # Question content lives in the TS file
+                                    # next to the lesson; for now we record
+                                    # the count and let quiz_exam_api fetch
+                                    # the actual questions out of the lesson.
+                                    'questions': {'frontend_count': qcount},
+                                    'is_active': True,
+                                },
+                            )
+                            if ec: exams_created += 1
+
+                # === Fix 4 — sanity-check exam wiring per course
+                # If the course already has Exam rows but no exam-typed
+                # lessons (the historical state for SAFe / Program Mgmt /
+                # MS Project / Leadership before today's TS fix), warn so
+                # the QA gate can flag it.
+                has_exam_row = Exam.objects.filter(course=course).exists()
+                has_exam_lesson = CourseLesson.objects.filter(
+                    module__course=course, lesson_type='exam'
+                ).exists()
+                if has_exam_row and not has_exam_lesson:
+                    warnings.append(
+                        f'  WARN {course.slug}: has Exam row(s) but no '
+                        'exam-type lesson in modules. Update the TS file '
+                        'to include a {type:"exam"} lesson.'
+                    )
+
+        for w in warnings:
+            self.stdout.write(self.style.WARNING(w))
+
         self.stdout.write(self.style.SUCCESS(
-            f'Imported: {mods_created} modules, {lessons_created} lessons'
+            f'Imported: {mods_created} modules, {lessons_created} lessons, '
+            f'{practices_created} practice assignments, {exams_created} exams'
         ))

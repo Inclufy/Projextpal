@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum, Count, Avg
+from projects.permissions import MethodologyMatchesProjectPermission
 from .models import (
     # Define
     SIPOCDiagram, SIPOCItem, VoiceOfCustomer, ProjectCharter,
@@ -68,7 +69,7 @@ class ProjectFilterMixin:
 class SIPOCDiagramViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """SIPOC Diagram management"""
     serializer_class = SIPOCDiagramSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(SIPOCDiagram)
@@ -118,7 +119,7 @@ class SIPOCDiagramViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class SIPOCItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """SIPOC Item management"""
     serializer_class = SIPOCItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -131,7 +132,7 @@ class SIPOCItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class VoiceOfCustomerViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Voice of Customer (VOC) management"""
     serializer_class = VoiceOfCustomerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(VoiceOfCustomer)
@@ -154,7 +155,7 @@ class VoiceOfCustomerViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ProjectCharterViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Six Sigma Project Charter management"""
     serializer_class = ProjectCharterSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ProjectCharter)
@@ -182,7 +183,7 @@ class ProjectCharterViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class DataCollectionPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Data Collection Plan management"""
     serializer_class = DataCollectionPlanSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(DataCollectionPlan)
@@ -195,7 +196,7 @@ class DataCollectionPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class DataCollectionMetricViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Data Collection Metric management"""
     serializer_class = DataCollectionMetricSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -222,7 +223,7 @@ class DataCollectionMetricViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class MSAResultViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """MSA (Measurement System Analysis) Results management"""
     serializer_class = MSAResultSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(MSAResult)
@@ -235,7 +236,7 @@ class MSAResultViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class BaselineMetricViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Baseline Metrics management"""
     serializer_class = BaselineMetricSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(BaselineMetric)
@@ -269,7 +270,7 @@ class BaselineMetricViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class FishboneDiagramViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Fishbone (Ishikawa) Diagram management"""
     serializer_class = FishboneDiagramSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(FishboneDiagram)
@@ -282,7 +283,7 @@ class FishboneDiagramViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class FishboneCauseViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Fishbone Cause management"""
     serializer_class = FishboneCauseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -319,7 +320,7 @@ class FishboneCauseViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ParetoAnalysisViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Pareto Analysis management"""
     serializer_class = ParetoAnalysisSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ParetoAnalysis)
@@ -332,7 +333,7 @@ class ParetoAnalysisViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ParetoCategoryViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Pareto Category management"""
     serializer_class = ParetoCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -345,7 +346,7 @@ class ParetoCategoryViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class HypothesisTestViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Hypothesis Test management"""
     serializer_class = HypothesisTestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(HypothesisTest)
@@ -386,7 +387,7 @@ class HypothesisTestViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class SolutionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Solution management"""
     serializer_class = SolutionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(Solution)
@@ -428,7 +429,7 @@ class SolutionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class PilotPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Pilot Plan management"""
     serializer_class = PilotPlanSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -466,7 +467,7 @@ class PilotPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class FMEAViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """FMEA management"""
     serializer_class = FMEASerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(FMEA).order_by('-severity', '-occurrence')
@@ -499,7 +500,7 @@ class FMEAViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ImplementationPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Implementation Plan management"""
     serializer_class = ImplementationPlanSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ImplementationPlan)
@@ -534,7 +535,7 @@ class ImplementationPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ControlPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Control Plan management"""
     serializer_class = ControlPlanSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ControlPlan)
@@ -555,7 +556,7 @@ class ControlPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ControlPlanItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Control Plan Item management"""
     serializer_class = ControlPlanItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -567,7 +568,7 @@ class ControlPlanItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class ControlChartViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Control Chart management"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ControlChart)
@@ -641,7 +642,7 @@ class ControlChartViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ControlChartDataViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Control Chart Data management"""
     serializer_class = ControlChartDataSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -657,7 +658,7 @@ class ControlChartDataViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class TollgateReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Tollgate Review management"""
     serializer_class = TollgateReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(TollgateReview)
@@ -708,7 +709,7 @@ class TollgateReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 class ProjectClosureViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """Project Closure management"""
     serializer_class = ProjectClosureSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ProjectClosure)
@@ -732,7 +733,7 @@ class ProjectClosureViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class SixSigmaDashboardView(APIView):
     """Aggregated Six Sigma Dashboard for a project"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get(self, request, project_id):
         from projects.models import Project

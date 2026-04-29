@@ -7,7 +7,7 @@ class AgileReleaseTrain(models.Model):
     """Agile Release Train (ART) in SAFe"""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='safe_arts')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='safe_arts')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     team_count = models.IntegerField(default=0)
@@ -48,7 +48,7 @@ class ProgramIncrement(models.Model):
     """Program Increment (PI) in SAFe"""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='safe_pis')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='safe_pis')
     name = models.CharField(max_length=200)
     iteration_count = models.IntegerField(default=5)
     start_date = models.DateField(null=True, blank=True)

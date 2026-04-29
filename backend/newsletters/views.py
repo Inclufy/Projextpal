@@ -312,7 +312,9 @@ class NewsletterTemplateViewSet(viewsets.ModelViewSet):
 
     queryset = NewsletterTemplate.objects.all()
     serializer_class = NewsletterTemplateSerializer
-    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    # Superadmin must also be allowed — previously they hit 403 because
+    # HasRole("admin", "pm") excluded the "superadmin" role.
+    permission_classes = [IsAuthenticated, HasRole("superadmin", "admin", "pm")]
 
     def perform_create(self, serializer):
         """Create template with current user as creator"""
@@ -326,7 +328,7 @@ class MailingListViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         "company", "project", "created_by"
     )
     serializer_class = MailingListSerializer
-    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    permission_classes = [IsAuthenticated, HasRole("superadmin", "admin", "pm")]
     
     def get_queryset(self):
         """Filter mailing lists by user's company"""
@@ -423,7 +425,7 @@ class ExternalSubscriberViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSe
     
     queryset = ExternalSubscriber.objects.all().select_related("company")
     serializer_class = ExternalSubscriberSerializer
-    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    permission_classes = [IsAuthenticated, HasRole("superadmin", "admin", "pm")]
     
     def get_permissions(self):
         """Allow unauthenticated access for subscribe and unsubscribe actions"""
@@ -541,7 +543,7 @@ class GlobalNewsletterViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet)
     queryset = Newsletter.objects.all().select_related(
         "project", "project__company", "created_by"
     ).prefetch_related("mailing_lists")
-    permission_classes = [IsAuthenticated, HasRole("admin", "pm")]
+    permission_classes = [IsAuthenticated, HasRole("superadmin", "admin", "pm")]
     
     def get_queryset(self):
         """Filter newsletters by user's company"""

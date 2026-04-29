@@ -14,5 +14,10 @@ programme_router.register(r'adaptations', HybridAdaptationViewSet, basename='pro
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('programmes/<uuid:programme_id>/', include(programme_router.urls)),
+    # Canonical URL kwarg is `program_id` (singular, Django convention,
+    # matches Program model PK). The legacy `programmes/<programme_id>/`
+    # path is kept as a redirect-compat alias so existing clients keep
+    # working until they migrate.
+    path('programs/<int:program_id>/', include(programme_router.urls)),
+    path('programmes/<int:program_id>/', include(programme_router.urls)),
 ]

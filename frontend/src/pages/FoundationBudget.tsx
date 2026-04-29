@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, DollarSign } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Euro } from "lucide-react";
 import { toast } from "sonner";
 
 interface Expense {
@@ -176,7 +176,7 @@ const FoundationBudget = () => {
 
           {expenses.length === 0 ? (
             <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Euro className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">{pt("No expenses yet")}</h3>
               <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Add")} Expense</Button>
             </div>

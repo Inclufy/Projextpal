@@ -3,15 +3,21 @@ from django.conf import settings
 
 
 class ProjectBrief(models.Model):
-    """PRINCE2 Project Brief - Pre-project document"""
+    """PRINCE2 Project Brief - Pre-project document.
+
+    Note: the canonical PRINCE2 manual labels the opening narrative section
+    *Background*. The DB column is now `background`; `project_definition`
+    is preserved as a property alias for backward compatibility with
+    existing clients (frontend / mobile app).
+    """
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('submitted', 'Submitted'),
         ('approved', 'Approved'),
     ]
-    
+
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_briefs')
-    project_definition = models.TextField(blank=True, default='')
+    background = models.TextField(blank=True, default='')
     project_approach = models.TextField(blank=True, default='')
     outline_business_case = models.TextField(blank=True, default='')
     project_objectives = models.TextField(blank=True, null=True)
@@ -23,6 +29,15 @@ class ProjectBrief(models.Model):
     version = models.CharField(max_length=10, default='1.0')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def project_definition(self):
+        """Backward-compat alias for the renamed `background` field."""
+        return self.background
+
+    @project_definition.setter
+    def project_definition(self, value):
+        self.background = value
 
     class Meta:
         ordering = ['-created_at']
@@ -273,6 +288,66 @@ class ProjectBoardMember(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class CheckpointReport(models.Model):
+    """PRINCE2 Checkpoint Report (PRINCE2 6th Ed §A.3).
+
+    Produced by a Team Manager and sent to the Project Manager during a
+    work-package execution period. Distinct from a Highlight Report
+    (PM -> Project Board). Both are mandatory PRINCE2 management products.
+    """
+    STATUS_CHOICES = [
+        ('green', 'Green'),
+        ('amber', 'Amber'),
+        ('red', 'Red'),
+    ]
+
+    project = models.ForeignKey(
+        'projects.Project',
+        on_delete=models.CASCADE,
+        related_name='prince2_checkpoint_reports',
+    )
+    work_package = models.ForeignKey(
+        WorkPackage,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='checkpoint_reports',
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green')
+    products_completed = models.TextField(
+        blank=True,
+        help_text="Products completed during the reporting period.",
+    )
+    products_planned = models.TextField(
+        blank=True,
+        help_text="Products planned for the next reporting period.",
+    )
+    risks_issues_summary = models.TextField(
+        blank=True,
+        help_text="Risk and issue commentary for the period.",
+    )
+    team_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='prince2_checkpoint_reports_authored',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-period_end', '-created_at']
+
+    def __str__(self):
+        return (
+            f"Checkpoint {self.period_start}–{self.period_end} "
+            f"(project {self.project_id})"
+        )
+
+
 class HighlightReport(models.Model):
     """PRINCE2 Highlight Report"""
     STATUS_CHOICES = [
@@ -280,7 +355,7 @@ class HighlightReport(models.Model):
         ('amber', 'Amber'),
         ('red', 'Red'),
     ]
-    
+
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_highlight_reports')
     stage = models.ForeignKey(Stage, on_delete=models.CASCADE, related_name='highlight_reports', null=True, blank=True)
     report_date = models.DateField(null=True, blank=True)
@@ -299,6 +374,132 @@ class HighlightReport(models.Model):
 
     class Meta:
         ordering = ['-report_date']
+
+    # ------------------------------------------------------------------
+    # Auto-draft engine
+    # ------------------------------------------------------------------
+    def auto_draft_content(self, save=True):
+        """Synthesise highlight-report content from live project signals.
+
+        Pulls from:
+          - Project.status / overall health
+          - Recently-closed Tasks within [period_start, period_end]
+          - Upcoming Milestones (after period_end)
+          - Open Risks (severity-grouped)
+          - Blocked tasks (proxy for issues — no Issue model exists yet)
+
+        Populates `status_summary`, `work_completed`,
+        `work_planned_next_period`, `issues_summary`, `risks_summary`.
+        Returns the report instance (saved if `save=True`).
+        """
+        from datetime import date, timedelta
+        from django.db.models import Q
+
+        # Lazy imports to avoid circular dependency at module load time.
+        from projects.models import Task, Milestone, Risk
+
+        project = self.project
+        period_end = self.period_end or self.report_date or date.today()
+        period_start = self.period_start or (period_end - timedelta(days=7))
+
+        # --- Status summary ---------------------------------------------------
+        proj_status = getattr(project, 'status', None) or 'active'
+        # Risk-level health hint
+        open_risks = Risk.objects.filter(project=project, status='Open')
+        high_risks = open_risks.filter(level__in=['High']).count()
+        if high_risks >= 3:
+            health_hint = 'RED — multiple high-severity risks open'
+        elif high_risks >= 1:
+            health_hint = 'AMBER — at least one high-severity risk'
+        else:
+            health_hint = 'GREEN — no high-severity risks'
+        self.status_summary = (
+            f"Project '{project.name}' is currently {proj_status.upper()}. "
+            f"{health_hint}. Period covered: {period_start.isoformat()} → "
+            f"{period_end.isoformat()}."
+        )
+
+        # --- Work completed (recently-closed tasks in this period) ----------
+        completed_tasks = Task.objects.filter(
+            milestone__project=project,
+            status='done',
+            updated_at__date__gte=period_start,
+            updated_at__date__lte=period_end,
+        ).order_by('-updated_at')[:10]
+        if completed_tasks:
+            lines = [f"- {t.title}" for t in completed_tasks]
+            self.work_completed = (
+                f"{len(lines)} task(s) closed this period:\n" + "\n".join(lines)
+            )
+        else:
+            self.work_completed = "No tasks closed in this reporting period."
+
+        # --- Work planned next period (upcoming milestones) -----------------
+        next_window_end = period_end + timedelta(days=14)
+        upcoming = Milestone.objects.filter(
+            project=project,
+            end_date__gte=period_end,
+            end_date__lte=next_window_end,
+        ).exclude(status='completed').order_by('end_date')[:5]
+        if upcoming:
+            lines = [
+                f"- {m.name} (target {m.end_date.isoformat() if m.end_date else 'TBD'})"
+                for m in upcoming
+            ]
+            self.work_planned_next_period = (
+                f"{len(lines)} milestone(s) targeted in the next 14 days:\n"
+                + "\n".join(lines)
+            )
+        else:
+            self.work_planned_next_period = (
+                "No milestones scheduled in the next 14 days. Continue current "
+                "work-package execution."
+            )
+
+        # --- Issues summary (blocked tasks proxy) ---------------------------
+        blocked = Task.objects.filter(
+            milestone__project=project, status='blocked'
+        ).order_by('-updated_at')
+        blocked_count = blocked.count()
+        top3_blocked = list(blocked[:3].values_list('title', flat=True))
+        if blocked_count:
+            self.issues_summary = (
+                f"{blocked_count} blocked task(s) acting as open issues. "
+                f"Top 3: " + "; ".join(top3_blocked)
+            )
+        else:
+            self.issues_summary = "No blocking issues recorded this period."
+
+        # --- Risks summary ---------------------------------------------------
+        open_risk_count = open_risks.count()
+        by_level = {
+            'High': open_risks.filter(level='High').count(),
+            'Medium': open_risks.filter(level='Medium').count(),
+            'Low': open_risks.filter(level='Low').count(),
+        }
+        top3_risks = list(
+            open_risks.order_by('-created_at')[:3].values_list('name', flat=True)
+        )
+        risk_line = (
+            f"{open_risk_count} open risk(s) — "
+            f"High: {by_level['High']}, Medium: {by_level['Medium']}, "
+            f"Low: {by_level['Low']}."
+        )
+        if top3_risks:
+            risk_line += " Top 3: " + "; ".join(top3_risks)
+        self.risks_summary = risk_line
+
+        # Set overall_status from health_hint
+        if high_risks >= 3:
+            self.overall_status = 'red'
+        elif high_risks >= 1:
+            self.overall_status = 'amber'
+        else:
+            self.overall_status = 'green'
+
+        if save:
+            self.save()
+        return self
 
 
 class EndProjectReport(models.Model):

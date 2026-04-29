@@ -150,6 +150,13 @@ class CourseLesson(models.Model):
         ('quiz', 'Quiz'),
         ('assignment', 'Assignment'),
         ('download', 'Downloadable Resource'),
+        # Frontend TS course definitions also use these types; the importer
+        # passes them through verbatim. Listed here so admin/forms render
+        # them without "Choose a valid choice" errors.
+        ('exam', 'Exam'),
+        ('practice', 'Practice / Exercise'),
+        ('pdf', 'PDF Document'),
+        ('docx', 'DOCX Document'),
     ]
 
     VISUAL_TYPE_CHOICES = [

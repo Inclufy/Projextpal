@@ -2699,7 +2699,7 @@ Ontwerp    Ma-Vr  ████████
 Bouwen              Ma-Vr    ████████
 \`\`\`
 
-**Veelvoorkomende vertraging scenario's:**
+**Veelvoorkomende vertraging scenario\'s:**
 - Beton uitharden: "Giet beton" FS+2d "Verwijder bekisting"
 - Goedkeuring wacht: "Dien in voor goedkeuring" FS+5d "Begin werk"
 - Verzending: "Bestel apparatuur" FS+10d "Ontvang apparatuur"
@@ -2714,7 +2714,7 @@ Ontwerp    Ma-Vr  ████████
 Bouwen        Do-Wo    ████████ (start 2 dagen vroeg)
 \`\`\`
 
-**Veelvoorkomende voorsprong scenario's:**
+**Veelvoorkomende voorsprong scenario\'s:**
 - "Schrijf Gebruikershandleiding" FS-5d "Begin Review" (start review met gedeeltelijk concept)
 - "Ontwikkeling" FS-3d "Testen" (test vroege modules terwijl dev doorgaat)
 
@@ -2920,10 +2920,140 @@ Volgende: De Kritieke Pad Methode!`,
       type: 'video',
       duration: '12:00',
       videoUrl: '',
-      icon: 'DollarSign',
+      icon: 'Euro',
       keyTakeaways: [],
       keyTakeawaysEN: [],
       resources: [],
+    },
+    {
+      id: 'msp-l11b',
+      title: 'Quiz: Scheduling & Resources',
+      titleNL: 'Quiz: Planning & Resources',
+      type: 'quiz',
+      duration: '10:00',
+      icon: 'HelpCircle',
+      quiz: [
+        {
+          id: 'msp-q11',
+          question: 'Welk type taakafhankelijkheid wordt het meest gebruikt in MS Project (circa 80% van de gevallen)?',
+          questionNL: 'Welk type taakafhankelijkheid wordt het meest gebruikt in MS Project (circa 80% van de gevallen)?',
+          options: [
+            'Start-to-Start (SS)',
+            'Finish-to-Start (FS)',
+            'Finish-to-Finish (FF)',
+            'Start-to-Finish (SF)',
+          ],
+          optionsNL: [
+            'Start-to-Start (SS)',
+            'Finish-to-Start (FS)',
+            'Finish-to-Finish (FF)',
+            'Start-to-Finish (SF)',
+          ],
+          correctAnswer: 1,
+          explanation: 'Finish-to-Start (FS) is verreweg het meest gebruikte type: Taak B kan pas starten wanneer Taak A klaar is. Dit weerspiegelt de meeste real-world afhankelijkheden zoals "ontwerp moet klaar zijn voordat ontwikkeling begint".',
+          explanationNL: 'Finish-to-Start (FS) is verreweg het meest gebruikte type: Taak B kan pas starten wanneer Taak A klaar is. Dit weerspiegelt de meeste real-world afhankelijkheden zoals "ontwerp moet klaar zijn voordat ontwikkeling begint".',
+        },
+        {
+          id: 'msp-q12',
+          question: 'Je wilt dat twee taken tegelijk eindigen. Welk afhankelijkheidstype gebruik je?',
+          questionNL: 'Je wilt dat twee taken tegelijk eindigen. Welk afhankelijkheidstype gebruik je?',
+          options: [
+            'Finish-to-Start (FS)',
+            'Start-to-Start (SS)',
+            'Finish-to-Finish (FF)',
+            'Start-to-Finish (SF)',
+          ],
+          optionsNL: [
+            'Finish-to-Start (FS)',
+            'Start-to-Start (SS)',
+            'Finish-to-Finish (FF)',
+            'Start-to-Finish (SF)',
+          ],
+          correctAnswer: 2,
+          explanation: 'Finish-to-Finish (FF) zorgt ervoor dat Taak B eindigt op hetzelfde moment als Taak A. Voorbeeld: "Hoofdstukken schrijven" FF "Index aanmaken" — de index moet klaar zijn als het laatste hoofdstuk gereed is.',
+          explanationNL: 'Finish-to-Finish (FF) zorgt ervoor dat Taak B eindigt op hetzelfde moment als Taak A. Voorbeeld: "Hoofdstukken schrijven" FF "Index aanmaken" — de index moet klaar zijn als het laatste hoofdstuk gereed is.',
+        },
+        {
+          id: 'msp-q13',
+          question: 'Wat is een "lag" van +3d op een Finish-to-Start afhankelijkheid?',
+          questionNL: 'Wat is een "lag" van +3d op een Finish-to-Start afhankelijkheid?',
+          options: [
+            'Taak B start 3 dagen voor het einde van Taak A',
+            'Taak B start 3 werkdagen na het einde van Taak A',
+            'Taak A duurt 3 dagen langer',
+            'De totale projectduur wordt met 3 dagen verkort',
+          ],
+          optionsNL: [
+            'Taak B start 3 dagen voor het einde van Taak A',
+            'Taak B start 3 werkdagen na het einde van Taak A',
+            'Taak A duurt 3 dagen langer',
+            'De totale projectduur wordt met 3 dagen verkort',
+          ],
+          correctAnswer: 1,
+          explanation: 'Een positieve lag voegt een vertraging toe na de afhankelijkheid. Bij FS+3d wacht MS Project 3 werkdagen nadat Taak A klaar is voordat Taak B start. Typisch gebruik: wachten op betonharden, verzending of goedkeuring.',
+          explanationNL: 'Een positieve lag voegt een vertraging toe na de afhankelijkheid. Bij FS+3d wacht MS Project 3 werkdagen nadat Taak A klaar is voordat Taak B start. Typisch gebruik: wachten op betonharden, verzending of goedkeuring.',
+        },
+        {
+          id: 'msp-q14',
+          question: 'Wat is het kritieke pad in MS Project?',
+          questionNL: 'Wat is het kritieke pad in MS Project?',
+          options: [
+            'De set taken met de hoogste kosten',
+            'De langste reeks afhankelijke taken die de minimale projectduur bepaalt',
+            'De taken met de meeste toegewezen resources',
+            'De taken die al meer dan 50% voltooid zijn',
+          ],
+          optionsNL: [
+            'De set taken met de hoogste kosten',
+            'De langste reeks afhankelijke taken die de minimale projectduur bepaalt',
+            'De taken met de meeste toegewezen resources',
+            'De taken die al meer dan 50% voltooid zijn',
+          ],
+          correctAnswer: 1,
+          explanation: 'Het kritieke pad is de langste reeks van afhankelijke taken van projectstart tot -einde. Taken op het kritieke pad hebben nul float (slack): elke vertraging op een kritieke taak vertraagt direct de einddatum van het hele project.',
+          explanationNL: 'Het kritieke pad is de langste reeks van afhankelijke taken van projectstart tot -einde. Taken op het kritieke pad hebben nul float (slack): elke vertraging op een kritieke taak vertraagt direct de einddatum van het hele project.',
+        },
+        {
+          id: 'msp-q15',
+          question: 'Hoe activeer je de weergave van kritieke taken (rood gekleurd) in het Gantt-diagram?',
+          questionNL: 'Hoe activeer je de weergave van kritieke taken (rood gekleurd) in het Gantt-diagram?',
+          options: [
+            'Project tab → Projectinformatie → Kritiek pad instellen',
+            'Format tab → Kritieke taken aanvinken',
+            'View tab → Groeperen op kritieke taken',
+            'Task tab → Taakinformatie → Markeer als kritiek',
+          ],
+          optionsNL: [
+            'Project tab → Projectinformatie → Kritiek pad instellen',
+            'Format tab → Kritieke taken aanvinken',
+            'View tab → Groeperen op kritieke taken',
+            'Task tab → Taakinformatie → Markeer als kritiek',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via Format tab → "Kritieke taken" wordt het selectievakje ingeschakeld. MS Project kleurt alle kritieke taken automatisch rood in het Gantt-diagram, zodat je in één oogopslag ziet welke taken de projectduur bepalen.',
+          explanationNL: 'Via Format tab → "Kritieke taken" wordt het selectievakje ingeschakeld. MS Project kleurt alle kritieke taken automatisch rood in het Gantt-diagram, zodat je in één oogopslag ziet welke taken de projectduur bepalen.',
+        },
+        {
+          id: 'msp-q16',
+          question: 'Wat doet "Resource Leveling" in MS Project?',
+          questionNL: 'Wat doet "Resource Leveling" in MS Project?',
+          options: [
+            'Het verwijdert alle resourcetoewijzingen om opnieuw te beginnen',
+            'Het lost over-allocaties op door taakduur te verlengen of taken te splitsen',
+            'Het verhoogt het uurtarief van resources naar het gemiddelde',
+            'Het kopieert resourcetoewijzingen naar een ander project',
+          ],
+          optionsNL: [
+            'Het verwijdert alle resourcetoewijzingen om opnieuw te beginnen',
+            'Het lost over-allocaties op door taakduur te verlengen of taken te splitsen',
+            'Het verhoogt het uurtarief van resources naar het gemiddelde',
+            'Het kopieert resourcetoewijzingen naar een ander project',
+          ],
+          correctAnswer: 1,
+          explanation: 'Resource Leveling detecteert over-allocaties (een resource die op hetzelfde moment meer dan 100% is ingepland) en lost die op door taken te vertragen, de duur te verlengen of taken te splitsen. Dit kan de projecteinddatum verlengen. Bereikbaar via Resource tab → Nivelleren.',
+          explanationNL: 'Resource Leveling detecteert over-allocaties (een resource die op hetzelfde moment meer dan 100% is ingepland) en lost die op door taken te vertragen, de duur te verlengen of taken te splitsen. Dit kan de projecteinddatum verlengen. Bereikbaar via Resource tab → Nivelleren.',
+        },
+      ],
     },
   ],
 };
@@ -3006,7 +3136,402 @@ const module3: Module = {
       type: 'quiz',
       duration: '12:00',
       icon: 'HelpCircle',
-      quiz: [],
+      quiz: [
+        {
+          id: 'msp-q17',
+          question: 'Wat is het doel van een baseline in MS Project?',
+          questionNL: 'Wat is het doel van een baseline in MS Project?',
+          options: [
+            'De projectkalender vergrendelen zodat werktijden niet meer wijzigen',
+            'Een momentopname van het oorspronkelijke plan opslaan om afwijkingen te meten',
+            'Alle taken als voltooid markeren aan het einde van een fase',
+            'Resources toewijzen op basis van standaardtarieven',
+          ],
+          optionsNL: [
+            'De projectkalender vergrendelen zodat werktijden niet meer wijzigen',
+            'Een momentopname van het oorspronkelijke plan opslaan om afwijkingen te meten',
+            'Alle taken als voltooid markeren aan het einde van een fase',
+            'Resources toewijzen op basis van standaardtarieven',
+          ],
+          correctAnswer: 1,
+          explanation: 'Een baseline legt de originele geplande start, einde en kosten vast op het moment dat het project van start gaat. Tijdens de uitvoering vergelijkt MS Project de actuele waarden met deze baseline, zodat je variantie (bijv. uitloop of meerkosten) direct zichtbaar is. Je kunt tot 11 baselines opslaan (Baseline 0 t/m 10).',
+          explanationNL: 'Een baseline legt de originele geplande start, einde en kosten vast op het moment dat het project van start gaat. Tijdens de uitvoering vergelijkt MS Project de actuele waarden met deze baseline, zodat je variantie (bijv. uitloop of meerkosten) direct zichtbaar is. Je kunt tot 11 baselines opslaan (Baseline 0 t/m 10).',
+        },
+        {
+          id: 'msp-q18',
+          question: 'Via welk tabblad stel je een baseline in MS Project in?',
+          questionNL: 'Via welk tabblad stel je een baseline in MS Project in?',
+          options: [
+            'Task tab → Taakinformatie',
+            'Project tab → Baseline instellen',
+            'Format tab → Balkstijlen',
+            'View tab → Tabellen → Kosten',
+          ],
+          optionsNL: [
+            'Task tab → Taakinformatie',
+            'Project tab → Baseline instellen',
+            'Format tab → Balkstijlen',
+            'View tab → Tabellen → Kosten',
+          ],
+          correctAnswer: 1,
+          explanation: 'Baseline instellen bevindt zich onder Project tab → Schema-groep → "Baseline instellen". Hier kies je welke baseline (0 t/m 10) je wilt opslaan en of je dat voor het hele project of geselecteerde taken doet.',
+          explanationNL: 'Baseline instellen bevindt zich onder Project tab → Schema-groep → "Baseline instellen". Hier kies je welke baseline (0 t/m 10) je wilt opslaan en of je dat voor het hele project of geselecteerde taken doet.',
+        },
+        {
+          id: 'msp-q19',
+          question: 'Wat toont de Indicatorkolom (de kolom met icoontjes links van de taaknaam) in het Gantt-diagram?',
+          questionNL: 'Wat toont de Indicatorkolom (de kolom met icoontjes links van de taaknaam) in het Gantt-diagram?',
+          options: [
+            'De voortgangspercentage van elke taak',
+            'Icoontjes voor beperkingen, deadlines, notities en resourcewaarschuwingen',
+            'De prioriteit van elke taak op een schaal van 1 tot 1000',
+            'De kalender die aan de taak is gekoppeld',
+          ],
+          optionsNL: [
+            'De voortgangspercentage van elke taak',
+            'Icoontjes voor beperkingen, deadlines, notities en resourcewaarschuwingen',
+            'De prioriteit van elke taak op een schaal van 1 tot 1000',
+            'De kalender die aan de taak is gekoppeld',
+          ],
+          correctAnswer: 1,
+          explanation: 'De Indicatorkolom gebruikt kleine icoontjes om snel te communiceren: een potloodicoon betekent dat de taak een notitie heeft, een kalendericoon wijst op een beperking (constraint), een klokicoon toont een deadline, en een rood mannetje signaleert een over-allocatie van een resource.',
+          explanationNL: 'De Indicatorkolom gebruikt kleine icoontjes om snel te communiceren: een potloodicoon betekent dat de taak een notitie heeft, een kalendericoon wijst op een beperking (constraint), een klokicoon toont een deadline, en een rood mannetje signaleert een over-allocatie van een resource.',
+        },
+        {
+          id: 'msp-q20',
+          question: 'Waarvoor dienen de Kostentarieftabellen A t/m E (Cost Rate Tables) bij een resource in MS Project?',
+          questionNL: 'Waarvoor dienen de Kostentarieftabellen A t/m E (Cost Rate Tables) bij een resource in MS Project?',
+          options: [
+            'Om vijf valuta tegelijk op te slaan voor internationale projecten',
+            'Om per toewijzing een ander uurtarief voor dezelfde resource toe te passen',
+            'Om overuren automatisch te berekenen op basis van een vaste multiplier',
+            'Om de kosten van vijf afzonderlijke projecten in één resourceblad bij te houden',
+          ],
+          optionsNL: [
+            'Om vijf valuta tegelijk op te slaan voor internationale projecten',
+            'Om per toewijzing een ander uurtarief voor dezelfde resource toe te passen',
+            'Om overuren automatisch te berekenen op basis van een vaste multiplier',
+            'Om de kosten van vijf afzonderlijke projecten in één resourceblad bij te houden',
+          ],
+          correctAnswer: 1,
+          explanation: 'Elke resource heeft vijf Kostentarieftabellen (A t/m E). Hiermee kun je dezelfde resource op verschillende taken factureren tegen verschillende tarieven — bijv. Tabel A voor regulier werk op €75/uur en Tabel B voor advieswerk op €120/uur. Je selecteert de tabel per toewijzing via het Toewijzingsinformatie-dialoog.',
+          explanationNL: 'Elke resource heeft vijf Kostentarieftabellen (A t/m E). Hiermee kun je dezelfde resource op verschillende taken factureren tegen verschillende tarieven — bijv. Tabel A voor regulier werk op €75/uur en Tabel B voor advieswerk op €120/uur. Je selecteert de tabel per toewijzing via het Toewijzingsinformatie-dialoog.',
+        },
+        {
+          id: 'msp-q21',
+          question: 'Welke combinatie van weergave en tabel gebruik je om snel de kostenvariatie per taak te zien in MS Project?',
+          questionNL: 'Welke combinatie van weergave en tabel gebruik je om snel de kostenvariatie per taak te zien in MS Project?',
+          options: [
+            'Netwerkdiagram + Overzichtstabel',
+            'Gantt Diagram + Kostentabel',
+            'Team Planner + Werktabel',
+            'Kalenderweergave + Invoertabel',
+          ],
+          optionsNL: [
+            'Netwerkdiagram + Overzichtstabel',
+            'Gantt Diagram + Kostentabel',
+            'Team Planner + Werktabel',
+            'Kalenderweergave + Invoertabel',
+          ],
+          correctAnswer: 1,
+          explanation: 'Door de Kostentabel (View tab → Tabellen → Kosten) te activeren terwijl je in het Gantt Diagram zit, verschijnen kolommen als Vaste Kosten, Totale Kosten, Baseline Kosten en Kostenvariatie (= Totale Kosten − Baseline Kosten). Zo zie je met één blik waar het project over- of onderbudget loopt.',
+          explanationNL: 'Door de Kostentabel (View tab → Tabellen → Kosten) te activeren terwijl je in het Gantt Diagram zit, verschijnen kolommen als Vaste Kosten, Totale Kosten, Baseline Kosten en Kostenvariatie (= Totale Kosten − Baseline Kosten). Zo zie je met één blik waar het project over- of onderbudget loopt.',
+        },
+        {
+          id: 'msp-q22',
+          question: 'Hoe maak je een aangepast rapport in MS Project dat je ook de volgende keer kunt hergebruiken?',
+          questionNL: 'Hoe maak je een aangepast rapport in MS Project dat je ook de volgende keer kunt hergebruiken?',
+          options: [
+            'File tab → Opslaan als → PDF, dan telkens opnieuw aanpassen',
+            'Report tab → Nieuw → Leeg rapport, ontwerpen en opslaan in het projectbestand',
+            'View tab → Aangepaste weergaven → Exporteren naar Word',
+            'Format tab → Tekststijlen → Opslaan als sjabloon',
+          ],
+          optionsNL: [
+            'File tab → Opslaan als → PDF, dan telkens opnieuw aanpassen',
+            'Report tab → Nieuw → Leeg rapport, ontwerpen en opslaan in het projectbestand',
+            'View tab → Aangepaste weergaven → Exporteren naar Word',
+            'Format tab → Tekststijlen → Opslaan als sjabloon',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via Report tab → Nieuw → Leeg rapport kun je grafieken, tabellen en afbeeldingen slepen op een vrij canvas. Het rapport wordt opgeslagen in het .mpp-bestand en is direct beschikbaar elke keer dat je het project opent. Je kunt ook een Global.mpt aanpassen om rapporten projectoverstijgend beschikbaar te maken.',
+          explanationNL: 'Via Report tab → Nieuw → Leeg rapport kun je grafieken, tabellen en afbeeldingen slepen op een vrij canvas. Het rapport wordt opgeslagen in het .mpp-bestand en is direct beschikbaar elke keer dat je het project opent. Je kunt ook een Global.mpt aanpassen om rapporten projectoverstijgend beschikbaar te maken.',
+        },
+      ],
+    },
+    {
+      id: 'msp-l-assignment',
+      title: 'Praktijkopdracht: MS Project — Marketingcampagne',
+      titleNL: 'Praktijkopdracht: MS Project — Marketingcampagne',
+      duration: '90:00',
+      type: 'assignment',
+      requires_admin_approval: true,
+      assignment: {
+        title: 'Bouw een volledig Microsoft Project-bestand voor een 12-weekse marketingcampagne',
+        description: `Een marketingbureau voert een 12-weekse productlancering-campagne uit voor een klant. Als projectmanager ben jij verantwoordelijk voor het volledig inrichten van het MS Project-bestand zodat het management op elk moment de status kan opvragen.
+
+Lever het .mpp-bestand in (of een geëxporteerde PDF/screenshot-set als .mpp niet indienbaar is) samen met een korte toelichting.`,
+        deliverables: [
+          'Takenlijst met minimaal 15 taken verdeeld over 4 fases, inclusief Finish-to-Start (FS) en minimaal 2 Start-to-Start (SS) afhankelijkheden',
+          'Baseline opgeslagen na initiële planning (Baseline 0), zodat variantie berekend kan worden',
+          'Resource leveling toegepast: screenshot of beschrijving van de over-allocatieproblemen die opgelost zijn',
+          'Aangepaste Gantt-weergave met het kritieke pad visueel gemarkeerd (rode balk of aparte stijl)',
+          '3 kostenoverzichtsrapporten: totale projectkosten, kosten per resource, kosten per fase (als tabel of MS Project-rapport)',
+        ],
+        rubric: [
+          { criterion: 'Takenstructuur logisch, volledig en correct gesequenced', points: 20 },
+          { criterion: 'FS en SS afhankelijkheden correct gedefinieerd', points: 20 },
+          { criterion: 'Baseline aanwezig en variantie berekend', points: 20 },
+          { criterion: 'Kritieke pad correct geïdentificeerd', points: 20 },
+          { criterion: '3 kostenoverzichtsrapporten aanwezig en kloppend', points: 20 },
+        ],
+        submission_format: 'files',
+      },
+    },
+    {
+      id: 'msp-l-exam',
+      title: 'Final Exam — Microsoft Project Masterclass',
+      titleNL: 'Eindexamen — Microsoft Project Masterclass',
+      type: 'exam',
+      duration: '45:00',
+      videoUrl: '',
+      transcript: `Dit is het eindexamen van de Microsoft Project Masterclass.
+
+**Examen Informatie:**
+- 18 multiple choice vragen
+- 45 minuten tijd
+- 80% score nodig om te slagen (15 van 18 correct)
+- Gesloten boek examen
+
+**Onderwerpen:**
+- MS Project interface, projectaanmaak, kalenders, taken (Module 1 — 6 vragen)
+- Taakafhankelijkheden, kritiek pad, resources, baselines, kosten (Module 2 — 6 vragen)
+- Gantt-aanpassingen, aangepaste weergaven, rapportages, exporteren (Module 3 — 6 vragen)
+
+**Tips:**
+- Alle vragen betreffen de werking van MS Project als tool
+- Let op de exacte locatie van functies (tab, ribbon, dialoogvenster)
+- Bij twijfel: denk aan de standaard MS Project 365/2021-interface
+
+Succes!`,
+      quiz: [
+        {
+          id: 'msp-exam-q1',
+          question: 'Op welke tab in MS Project vind je de functie om een nieuw project aan te maken via een sjabloon?',
+          options: [
+            'View tab',
+            'File tab (Backstage view)',
+            'Task tab',
+            'Project tab',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via de File tab (Backstage view) kun je kiezen voor "Nieuw" en vervolgens een leeg project of een sjabloon starten. De Project tab biedt projecteigenschappen en -instellingen, maar het aanmaken van een nieuw project vindt altijd plaats via de Backstage view.',
+        },
+        {
+          id: 'msp-exam-q2',
+          question: 'Hoe stel je in MS Project in dat de organisatie op vrijdag vrij is (éénmalig, voor het hele project)?',
+          options: [
+            'Task tab → Eigenschappen → Kalender aanpassen',
+            'Project tab → Werktijden wijzigen → kies de projectkalender → markeer de specifieke vrijdag als vrije dag',
+            'View tab → Tijdschaal → Werktijdaanpassing',
+            'Resource tab → Resourceinformatie → Werkuren aanpassen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Éénmalige uitzonderingen in de werkkalender (zoals een vrije dag voor het hele project) worden ingesteld via Project tab → Werktijden wijzigen. Hier kies je de actieve projectkalender en voeg je een uitzondering toe op de specifieke datum. Resourcekalenders gelden alleen voor individuele resources, niet voor het hele project.',
+        },
+        {
+          id: 'msp-exam-q3',
+          question: 'Welk taakveldtype (task type) in MS Project zorgt ervoor dat de duur van een taak automatisch wordt herberekend wanneer je meer resources toewijst?',
+          options: [
+            'Fixed Units',
+            'Fixed Work',
+            'Fixed Duration',
+            'Auto Scheduled',
+          ],
+          correctAnswer: 1,
+          explanation: 'Bij Fixed Work blijft de hoeveelheid werk (in uren) constant. Als je meer resources toewijst, berekent MS Project de duur automatisch korter (meer mensen = kortere doorlooptijd). Fixed Units houdt het aantal resource-eenheden constant en herberekent werk of duur. Fixed Duration houdt de duur constant ongeacht resources.',
+        },
+        {
+          id: 'msp-exam-q4',
+          question: 'Wat is het verschil tussen een Finish-to-Start (FS) en een Start-to-Start (SS) taakafhankelijkheid in MS Project?',
+          options: [
+            'FS en SS zijn synoniemen in MS Project — beide betekenen dat taak B pas kan starten als taak A is beëindigd',
+            'FS: Taak B kan pas starten nadat taak A is afgerond. SS: Taak B kan starten zodra taak A is gestart, zonder te hoeven wachten op voltooiing van A',
+            'SS: Taak B kan pas starten nadat taak A is afgerond. FS: Taak B start gelijktijdig met taak A',
+            'FS wordt gebruikt voor geplande taken; SS voor automatisch geplande taken',
+          ],
+          correctAnswer: 1,
+          explanation: 'MS Project ondersteunt vier afhankelijkheidstypen: FS (standaard — B begint na voltooiing A), SS (B start zodra A start), FF (B eindigt zodra A eindigt), SF (B start pas nadat A is geëindigd). FS is de meest voorkomende. SS wordt gebruikt wanneer activiteiten parallel kunnen starten maar nog steeds van elkaar afhankelijk zijn.',
+        },
+        {
+          id: 'msp-exam-q5',
+          question: 'Hoe maak je een taak handmatig gepland (Manual Scheduling) in MS Project?',
+          options: [
+            'Rechtsklik op de taak → Taakinformatie → Algemeen → Manual',
+            'Selecteer de taak → Task tab → Tasks-groep → klik op "Manually Schedule"',
+            'View tab → Taakgebruik → Manual toggle',
+            'Project tab → Projectopties → Planningswijze → Manual',
+          ],
+          correctAnswer: 1,
+          explanation: 'In MS Project kun je een taak omzetten naar handmatig plannen via Task tab → Tasks-groep → Manually Schedule. Je kunt ook de planningswijze instellen bij het aanmaken van nieuwe taken (Auto Schedule vs. Manually Schedule is zichtbaar in de statusbalk onderaan). Handmatig geplande taken worden niet automatisch herberekend door de planner.',
+        },
+        {
+          id: 'msp-exam-q6',
+          question: 'Wat is een milestone in MS Project en hoe maak je er een aan?',
+          options: [
+            'Een milestone is een taak met een vaste resourcetoewijzing; aanmaken via Resource tab',
+            'Een milestone is een taak met een duur van 0 dagen die een belangrijk projectmoment markeert; aanmaken door de duur op 0 in te stellen of het vinkje "Markeerteken" in Taakinformatie aan te zetten',
+            'Een milestone is een samenvatting van alle taken in een fase; aanmaken via ingesprongen taken',
+            'Een milestone is een automatisch gegenereerd rapport aan het einde van elke fase',
+          ],
+          correctAnswer: 1,
+          explanation: 'In MS Project is een milestone een taak met duur = 0. Je maakt er een aan door de duur van een taak op "0d" in te stellen, of via Taakinformatie → Algemeen → "Markeerteken" aanvinken. Een milestone verschijnt als een zwart ruit-symbool in de Gantt-balk en heeft geen resourcetoewijzing.',
+        },
+        {
+          id: 'msp-exam-q7',
+          question: 'Wat is het kritieke pad (Critical Path) in MS Project en hoe maak je het zichtbaar?',
+          options: [
+            'Het kritieke pad is het kortste pad door het project; zichtbaar via Project tab → Statistieken',
+            'Het kritieke pad is de reeks taken met nul speling (total float = 0) die de vroegste einddatum van het project bepalen; zichtbaar via Format tab → Gantt Chart Style → Critical Tasks aanvinken',
+            'Het kritieke pad is het pad met de meest toegewezen resources; zichtbaar via Resource Usage view',
+            'Het kritieke pad wordt automatisch rood gemarkeerd zonder aanpassing van de instellingen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Het kritieke pad bestaat uit de reeks taken met total float = 0 die de vroegste einddatum van het project bepalen. Vertraging van één kritieke taak verschuift de einddatum van het hele project. In MS Project maak je het kritieke pad zichtbaar via Format tab (terwijl de Gantt-weergave actief is) → Gantt Chart Style-groep → "Critical Tasks" aanvinken. Kritieke taken worden dan rood gemarkeerd.',
+        },
+        {
+          id: 'msp-exam-q8',
+          question: 'Een resource heeft een toewijzing van 150% in een week in MS Project. Wat houdt dit in en welke tool gebruik je om dit op te lossen?',
+          options: [
+            'De resource is inactief; gebruik Resource tab → Toewijzingen beheren om de resource te activeren',
+            'De resource is overbelast (over-allocated) en heeft meer werk dan beschikbare uren in die week; gebruik Resource tab → Level Resources om resource leveling toe te passen',
+            'De resource heeft een bonustoewijzing van 50%; dit is normaal en vereist geen actie',
+            'De resource werkt in twee projecten tegelijk; oplossen via Project tab → Meerdere projecten samenvoegen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Een toewijzing van >100% in een periode betekent dat de resource meer werk is toegewezen dan er beschikbare uren zijn (over-allocation). MS Project markeert dit met een rood icoontje. Oplossing: Resource tab → Level Resources (automatisch), of handmatig taken spreiden via de Gantt-weergave. Automatische leveling kan de einddatum van het project beïnvloeden.',
+        },
+        {
+          id: 'msp-exam-q9',
+          question: 'Wat is een baseline in MS Project en wanneer sla je hem op?',
+          options: [
+            'Een baseline is een back-up van het projectbestand; je slaat hem op via File → Opslaan als',
+            'Een baseline is een opgeslagen momentopname van de oorspronkelijke planning (start, eind, werk en kosten per taak) waartegen je de werkelijke voortgang kunt vergelijken; je slaat hem op bij de start van de uitvoeringsfase, nadat het plan is goedgekeurd',
+            'Een baseline wordt automatisch opgeslagen bij elke wijziging in het project',
+            'Een baseline bevat alleen de resourcetoewijzingen, niet de taakdatums',
+          ],
+          correctAnswer: 1,
+          explanation: 'Een baseline (Project tab → Set Baseline) legt de oorspronkelijke planning vast: voor elke taak worden de geplande start, einde, werk en kosten bewaard. Na goedkeuring van het plan sla je de baseline op. Daarna kun je via Variance-velden en de Tracking Gantt de afwijkingen tussen plan en werkelijkheid zichtbaar maken.',
+        },
+        {
+          id: 'msp-exam-q10',
+          question: 'Hoe voer je de werkelijke voortgang in voor een taak in MS Project?',
+          options: [
+            'Project tab → Projectinformatie → Werkelijke Startdatum invullen',
+            'Selecteer de taak → Task tab → Schedule-groep → "Mark on Track" klikken voor 100% voortgang, of de % Complete veld direct invullen; voor gedetailleerde invoer: Taakinformatie → Bijhouden-tabblad',
+            'View tab → Taakgebruik → Werkelijke uren per dag invoeren in het spreadsheet-gedeelte',
+            'Format tab → Gantt-balken → Voortgangspercentage → Percentage invullen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Werkelijke voortgang invoer verloopt via Task tab → Schedule-groep: "Mark on Track" zet voortgang op 100%. Voor gedeeltelijke voortgang kun je het % Complete-veld in de Gantt-tabel direct bewerken. Voor nauwkeurige tijdregistratie (werkelijke start, einde, gewerkte uren) gebruik je Taakinformatie → Bijhouden-tabblad.',
+        },
+        {
+          id: 'msp-exam-q11',
+          question: 'Wat is het doel van de Tracking Gantt-weergave in MS Project?',
+          options: [
+            'Het weergeven van de resourcetoewijzingen per dag in een spreadsheetformaat',
+            'Het naast elkaar tonen van de baselineplanning (grijs) en de werkelijke/huidige planning (blauw/rood), zodat afwijkingen ten opzichte van het oorspronkelijke plan direct zichtbaar zijn',
+            'Het automatisch genereren van een voortgangsrapportage in PDF-formaat',
+            'Het weergeven van de kritieke taken gefilterd op alleen de taken die zijn vertraagd',
+          ],
+          correctAnswer: 1,
+          explanation: 'De Tracking Gantt (View tab → Gantt Chart → Tracking Gantt) toont twee Gantt-balken per taak: de baseline-balk (grijs, oorspronkelijke planning) en de huidige balk (blauw voor voortgang, rood voor kritieke taken). Dit maakt afwijkingen van de oorspronkelijke planning in één oogopslag zichtbaar.',
+        },
+        {
+          id: 'msp-exam-q12',
+          question: 'Hoe voeg je een kostentabel toe aan de Gantt-weergave in MS Project om de budgetkosten per taak te zien?',
+          options: [
+            'Insert tab → Tabel → Kosten',
+            'View tab → Tables → Cost',
+            'Format tab → Kolommen → Budget toevoegen',
+            'Project tab → Projectkosten → Tabel invoegen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via View tab → Tables → Cost schakel je de Cost-tabel in voor de actieve weergave. Deze tabel toont kolommen zoals Fixed Cost, Fixed Cost Accrual, Total Cost, Baseline Cost, Variance, Actual Cost en Remaining Cost per taak — essentieel voor budgetbewaking.',
+        },
+        {
+          id: 'msp-exam-q13',
+          question: 'Welke weergave in MS Project toont per resource welke taken zijn toegewezen, inclusief de uren per dag?',
+          options: [
+            'Gantt Chart',
+            'Resource Sheet',
+            'Resource Usage',
+            'Task Usage',
+          ],
+          correctAnswer: 2,
+          explanation: 'De Resource Usage-weergave (View tab → Resource Usage) toont per resource alle toegewezen taken met de geplande uren per tijdseenheid. Dit is de primaire weergave voor het analyseren van resourcebelasting en het identificeren van over-allocaties. Task Usage toont hetzelfde maar gegroepeerd per taak.',
+        },
+        {
+          id: 'msp-exam-q14',
+          question: 'Hoe maak je een aangepast filter in MS Project waarmee je alleen taken ziet die later zijn dan de baselinedatum?',
+          options: [
+            'Project tab → Sorteren → Afwijking → Positief',
+            'View tab → Filter → Nieuw filter → Finish is Greater Than Baseline Finish',
+            'Format tab → Tekststijlen → Filter op vertraging',
+            'Task tab → Groeperen → Vertraging',
+          ],
+          correctAnswer: 1,
+          explanation: 'Aangepaste filters maak je via View tab → Filter → More Filters → New. Je kunt een filter instellen op het veld "Finish Variance" (is groter dan 0) of "Finish" (is later dan "Baseline Finish"). Dit filter toont vervolgens alleen de taken die achter de oorspronkelijke planning lopen.',
+        },
+        {
+          id: 'msp-exam-q15',
+          question: 'Welke instelling gebruik je in MS Project om Gantt-balk-tekst aan te passen, zodat de taaknaam rechts van de balk en de duur links wordt weergegeven?',
+          options: [
+            'View tab → Tijdschaal → Tekstopties',
+            'Format tab → Bar Styles of Format tab → Format → Bar → Tab "Bar Text"',
+            'Task tab → Eigenschappen → Opmaak',
+            'File tab → Opties → Weergave → Balk-annotaties',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via Format tab → Bar Styles (voor alle taken van een bepaald type) of via Format tab → Format → Bar (voor een geselecteerde individuele balk) kun je op het tabblad "Bar Text" instellen welke velden links, rechts, boven, onder of in de Gantt-balk worden weergegeven.',
+        },
+        {
+          id: 'msp-exam-q16',
+          question: 'Hoe exporteer je een MS Project-planning naar Excel zonder verlies van taakstructuur?',
+          options: [
+            'File tab → Opslaan als → .xlsx; MS Project converteert automatisch alle velden',
+            'File tab → Exporteren → Excel Workbook → Export Wizard doorlopen waarbij je de te exporteren velden selecteert',
+            'View tab → Tijdschaal → Kopiëren naar klembord → Plakken in Excel',
+            'Report tab → Exporteren → Excel-indeling',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via File tab → Exporteren → Excel Workbook start de Export Wizard. Hierin selecteer je het gegevenstype (taken, resources, toewijzingen), het te exporteren velden en de indeling. Dit produceert een gestructureerde Excel-export met behoud van de taakvolgorde en -hiërarchie.',
+        },
+        {
+          id: 'msp-exam-q17',
+          question: 'Wat is het doel van de Global.mpt in MS Project?',
+          options: [
+            'Het is een back-upbestand dat automatisch wordt aangemaakt bij elke opslag',
+            'Het is het globale sjabloonbestand dat aangepaste weergaven, tabellen, filters, kalenders en rapporten beschikbaar maakt voor alle projecten op die pc',
+            'Het is het bestand dat MS Project gebruikt om licentiebeheer bij te houden',
+            'Het is een gedeeld bestand op de server voor multi-user samenwerking',
+          ],
+          correctAnswer: 1,
+          explanation: 'De Global.mpt is het "global template" van MS Project. Aangepaste weergaven, tabellen, filters, groepen, kalenders en rapporten die je via Organizer kopieert naar Global.mpt zijn beschikbaar in alle nieuwe en bestaande projecten op die pc. Dit maakt organisatiebrede standaardisatie van MS Project-instellingen mogelijk.',
+        },
+        {
+          id: 'msp-exam-q18',
+          question: 'Hoe maak je een herbruikbaar aangepast rapport in MS Project?',
+          options: [
+            'File tab → Opslaan als PDF → telkens opnieuw aanpassen',
+            'Report tab → New Report → Blank → rapport ontwerpen met tabellen en grafieken → opslaan in het projectbestand (of via Organizer naar Global.mpt voor hergebruik)',
+            'View tab → Aangepaste weergaven → Exporteren naar Word',
+            'Format tab → Tekststijlen → Opslaan als rapportsjabloon',
+          ],
+          correctAnswer: 1,
+          explanation: 'Via Report tab → New Report → Blank start je de visuele rapporteditor. Je sleept tabellen, grafieken en afbeeldingen op het canvas en configureert de databron. Het rapport wordt opgeslagen in het .mpp-bestand. Voor hergebruik in andere projecten kopieer je het via Organizer (File → Info → Organizer) naar de Global.mpt.',
+        },
+      ],
     },
     {
       id: 'msp-l18',

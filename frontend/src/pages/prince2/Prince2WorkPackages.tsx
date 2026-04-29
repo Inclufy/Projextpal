@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const Prince2WorkPackages = () => {
   const { pt } = usePageTranslations();
@@ -125,11 +126,13 @@ const Prince2WorkPackages = () => {
         </div>
 
         {workPackages.length === 0 ? (
-          <Card className="p-8 text-center">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{pt("No work packages yet")}</h3>
-            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Create")}</Button>
-          </Card>
+          <EmptyState
+            icon={Package}
+            title={pt("No work packages yet")}
+            action={
+              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Create")}</Button>
+            }
+          />
         ) : (
           <div className="space-y-3">
             {workPackages.map((wp) => (

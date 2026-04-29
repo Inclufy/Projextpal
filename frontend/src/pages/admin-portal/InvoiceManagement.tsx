@@ -53,7 +53,7 @@ import {
   XCircle,
   RefreshCw,
   Mail,
-  DollarSign,
+  Euro,
   Calendar,
   Eye,
   Zap,

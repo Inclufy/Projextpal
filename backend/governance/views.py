@@ -4,10 +4,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder
+from .models import (
+    Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
+    Decision, Meeting,
+)
 from .serializers import (
-    PortfolioSerializer, GovernanceBoardSerializer, 
-    BoardMemberSerializer, GovernanceStakeholderSerializer
+    PortfolioSerializer, GovernanceBoardSerializer,
+    BoardMemberSerializer, GovernanceStakeholderSerializer,
+    DecisionSerializer, MeetingSerializer,
 )
 
 
@@ -139,7 +143,19 @@ def generate_ai_report(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def ai_generate_text(request):
-    """Simple AI text generation endpoint."""
+    """
+    AI text generation endpoint (governance / programs / projects helpers).
+
+    Robustness rules to avoid Cloudflare 502s during live demos:
+      * Always return HTTP 200 with a structured payload — never let an
+        upstream LLM failure bubble up as a 502/504 to the edge. The frontend
+        treats a missing `response` field as "no AI suggestion" and falls
+        back to canned suggestions (see AISmartHelper.tsx).
+      * Hard-cap the upstream call at 25s — well under Cloudflare's ~100s
+        edge timeout, so the origin always answers in time even under jitter.
+      * Cap output at 800 tokens. Demo prompts ("Draft a Q2 steering agenda")
+        comfortably fit and finish well within the 25s budget.
+    """
     import logging
     import os
     import requests as http_requests
@@ -153,79 +169,125 @@ def ai_generate_text(request):
 
     api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.getenv('OPENAI_API_KEY')
     if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
-        logger.warning(f"OPENAI_API_KEY is not configured or is a test/placeholder key: {api_key[:10] if api_key else 'None'}...")
-        return Response(
-            {"error": "AI service is not configured. Please set a valid OPENAI_API_KEY."},
-            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+        logger.warning(
+            "ai_generate_text: OPENAI_API_KEY not configured or placeholder (%s...)",
+            (api_key[:10] if api_key else 'None'),
         )
+        # Return 200 with success:false so the frontend's graceful fallback
+        # path runs (it checks `data.response` and falls back if missing).
+        # This keeps Cloudflare green and the demo flowing.
+        return Response({
+            "success": False,
+            "response": None,
+            "error": "AI generation is temporarily unavailable. Manual entry available below.",
+            "available": False,
+        })
 
     try:
-        # Use direct OpenAI API call for reliability
         api_response = http_requests.post(
             'https://api.openai.com/v1/chat/completions',
             headers={
                 'Authorization': f'Bearer {api_key}',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             json={
                 'model': 'gpt-4o-mini',
                 'messages': [
                     {'role': 'system', 'content': 'You are a helpful project management expert. Respond concisely and professionally.'},
-                    {'role': 'user', 'content': prompt}
+                    {'role': 'user', 'content': prompt},
                 ],
                 'temperature': 0.7,
-                'max_tokens': 1500
+                'max_tokens': 800,
             },
-            timeout=60
+            # 25s keeps us comfortably under Cloudflare's ~100s edge cap and
+            # under any reasonable gunicorn worker timeout.
+            timeout=25,
         )
-
         api_response.raise_for_status()
         data = api_response.json()
-        content = data['choices'][0]['message']['content'].strip()
-        return Response({"response": content})
+        content = (data.get('choices') or [{}])[0].get('message', {}).get('content', '').strip()
+        if not content:
+            logger.warning("ai_generate_text: empty content from OpenAI")
+            return Response({
+                "success": False,
+                "response": None,
+                "error": "AI returned no content. Please try again or use a fallback suggestion.",
+            })
+        return Response({"success": True, "response": content})
+
     except http_requests.exceptions.Timeout:
-        logger.error("OpenAI API timeout")
-        return Response({"error": "AI service timeout, please try again"}, status=http_status.HTTP_504_GATEWAY_TIMEOUT)
+        logger.warning("ai_generate_text: OpenAI API timeout (>25s)")
+        return Response({
+            "success": False,
+            "response": None,
+            "error": "AI generation timed out. Please try a shorter prompt or use a fallback suggestion.",
+        })
     except http_requests.exceptions.RequestException as e:
-        logger.error(f"OpenAI API error: {e}")
-        return Response({"error": f"AI service error: {str(e)}"}, status=http_status.HTTP_502_BAD_GATEWAY)
+        logger.error("ai_generate_text: OpenAI API error: %s", e)
+        return Response({
+            "success": False,
+            "response": None,
+            "error": "AI service is temporarily unreachable. Manual entry available below.",
+        })
     except Exception as e:
-        logger.error(f"AI generate failed: {type(e).__name__}: {e}")
-        return Response(
-            {"error": f"AI service unavailable: {type(e).__name__}"},
-            status=http_status.HTTP_503_SERVICE_UNAVAILABLE,
-        )
+        # Catch-all so the endpoint NEVER 5xx's to Cloudflare during a demo.
+        logger.exception("ai_generate_text: unexpected failure: %s", type(e).__name__)
+        return Response({
+            "success": False,
+            "response": None,
+            "error": "AI generation failed unexpectedly. Manual entry available below.",
+        })
 
 
 # ---------------------------------------------------------------------------
-# Meeting / Decision stubs
-# The admin portal UI expects /api/v1/governance/meetings/ and /decisions/
-# endpoints for each board tab. No Meeting/Decision models exist yet, so these
-# stubs return an empty result set for GET and 501 Not Implemented for POST.
+# Decision + Meeting ViewSets
+# Real implementations backed by governance.Decision and governance.Meeting
+# models. Filterable by program so the admin portal Programme Board UI can
+# scope its lists per-programme.
 # ---------------------------------------------------------------------------
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def meetings_stub(request):
-    if request.method == 'GET':
-        return Response({"results": [], "count": 0})
-    return Response(
-        {
-            "error": "Meetings are not implemented yet.",
-            "detail": "No Meeting model exists. Track this at a future /api/v1/governance/meetings/ endpoint.",
-        },
-        status=http_status.HTTP_501_NOT_IMPLEMENTED,
-    )
+class DecisionViewSet(viewsets.ModelViewSet):
+    serializer_class = DecisionSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['program', 'status', 'impact']
+    search_fields = ['title', 'description']
+    ordering_fields = ['decided_at', 'created_at']
+
+    def get_queryset(self):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        qs = Decision.objects.all()
+        if company is not None:
+            qs = qs.filter(program__company=company)
+        return qs
+
+    def perform_create(self, serializer):
+        # Default decided_by to the requester if absent so demo POSTs that
+        # only carry program+title+description still create a valid record.
+        if not serializer.validated_data.get('decided_by'):
+            serializer.save(decided_by=self.request.user)
+        else:
+            serializer.save()
 
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def decisions_stub(request):
-    if request.method == 'GET':
-        return Response({"results": [], "count": 0})
-    return Response(
-        {
-            "error": "Decisions are not implemented yet.",
-            "detail": "No Decision model exists. Track this at a future /api/v1/governance/decisions/ endpoint.",
-        },
-        status=http_status.HTTP_501_NOT_IMPLEMENTED,
-    )
+class MeetingViewSet(viewsets.ModelViewSet):
+    serializer_class = MeetingSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['program', 'type', 'status']
+    search_fields = ['title', 'agenda', 'minutes']
+    ordering_fields = ['scheduled_at', 'created_at']
+
+    def get_queryset(self):
+        user = self.request.user
+        company = getattr(user, 'company', None)
+        qs = Meeting.objects.all()
+        if company is not None:
+            qs = qs.filter(program__company=company)
+        return qs
+
+    def perform_create(self, serializer):
+        if not serializer.validated_data.get('facilitator'):
+            serializer.save(facilitator=self.request.user)
+        else:
+            serializer.save()

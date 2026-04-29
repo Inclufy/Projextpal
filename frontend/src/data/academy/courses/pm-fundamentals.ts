@@ -38,7 +38,7 @@ Een project is een tijdelijke onderneming die wordt uitgevoerd om een uniek prod
 of resultaat te creëren. Laten we deze definitie ontleden:
 
 1. **Tijdelijk**: Elk project heeft een duidelijk begin en einde. Dit is fundamenteel anders 
-dan lopende operaties. Een fabriek die elke dag auto's produceert is geen project - dat is 
+dan lopende operaties. Een fabriek die elke dag auto\'s produceert is geen project - dat is 
 een operationeel proces. Maar het bouwen van die fabriek? Dat is wél een project.
 
 2. **Uniek**: Het resultaat van een project is op een of andere manier nieuw of anders. Zelfs 
@@ -615,7 +615,7 @@ Tussen fasen zitten vaak "gates" of beslismomenten:
 
 De vijf fasen van een project:
 1. **Initiatie**: Waarom? Business case, charter
-2. **Planning**: Hoe? WBS, planning, budget, risico's
+2. **Planning**: Hoe? WBS, planning, budget, risico\'s
 3. **Uitvoering**: Doen! Werk uitvoeren, team managen
 4. **Monitoring**: Controleren en bijsturen
 5. **Afsluiting**: Afronden, lessons learned, vieren`,
@@ -709,15 +709,15 @@ De vijf fasen van een project:
         },
         {
           id: 'q5',
-          question: 'Wat is een kenmerk van "dienend leiderschap"?',
+          question: 'Wat staat in het MIDDEN van de Triple Constraint-driehoek (IJzeren Driehoek)?',
           options: [
-            'De PM geeft strikte opdrachten aan het team',
-            'De PM ruimt obstakels uit de weg zodat het team kan presteren',
-            'De PM neemt alle beslissingen alleen',
-            'De PM focust primair op de eigen carrière',
+            'Scope',
+            'Risico',
+            'Kwaliteit',
+            'Communicatie',
           ],
-          correctAnswer: 1,
-          explanation: 'Bij dienend leiderschap staat de PM ten dienste van het team. De focus ligt op het creëren van een omgeving waarin het team kan excelleren.',
+          correctAnswer: 2,
+          explanation: 'In het midden van de Triple Constraint-driehoek staat Kwaliteit. De drie zijden zijn Scope, Tijd en Budget. Als je aan één zijde trekt, beïnvloedt dat de andere zijden én de kwaliteit in het midden.',
         },
         {
           id: 'q6',
@@ -733,15 +733,15 @@ De vijf fasen van een project:
         },
         {
           id: 'q7',
-          question: 'DMAIC is de kernmethodiek van welke aanpak?',
+          question: 'Welk kenmerk onderscheidt de Waterfall-methodologie het meest van Agile?',
           options: [
-            'Scrum',
-            'PRINCE2',
-            'Lean Six Sigma',
-            'Kanban',
+            'Waterfall werkt uitsluitend voor softwareprojecten',
+            'Waterfall heeft geen planningsfase',
+            'Waterfall werkt in korte iteraties met continue feedback',
+            'Bij Waterfall moet elke fase volledig afgesloten zijn voordat de volgende begint',
           ],
-          correctAnswer: 2,
-          explanation: 'DMAIC (Define, Measure, Analyze, Improve, Control) is de kernmethodiek van Lean Six Sigma.',
+          correctAnswer: 3,
+          explanation: 'Waterfall is een sequentiële aanpak waarbij elke fase (zoals analyse, ontwerp, bouw, test) volledig afgerond moet zijn voordat de volgende fase start. Dit verschilt fundamenteel van Agile, dat iteratief werkt met korte cycli en continue feedback.',
         },
         {
           id: 'q8',
@@ -882,7 +882,7 @@ Wie zijn de key stakeholders?
 - ...
 
 **9. Risico's en Aannames**
-De belangrijkste risico's en aannames waar het project op is gebaseerd.
+De belangrijkste risico\'s en aannames waar het project op is gebaseerd.
 
 **10. Goedkeuring/Handtekeningen**
 Formele goedkeuring door sponsor en andere beslissers.
@@ -1146,7 +1146,7 @@ Een business case is een document dat de rechtvaardiging voor een project beschr
 - Wat zijn de kosten?
 - Wat zijn de baten?
 - Waarom is dit de beste optie?
-- Wat zijn de risico's?
+- Wat zijn de risico\'s?
 
 Het is het zakelijke argument voor het project.
 
@@ -1238,7 +1238,7 @@ Een duidelijke aanbeveling: welke optie adviseer je en waarom?
 3. **Gebruik data**: Onderbouw met feiten en cijfers
 4. **Toon "do nothing"**: Wat als we niet investeren?
 5. **Kwantificeer waar mogelijk**: Cijfers overtuigen
-6. **Erken risico's**: Laat zien dat je ze begrijpt
+6. **Erken risico\'s**: Laat zien dat je ze begrijpt
 7. **Maak het visueel**: Grafieken en tabellen helpen
 
 **Veelgemaakte Fouten**
@@ -1256,7 +1256,7 @@ Een goede business case:
 - Vergelijkt opties (inclusief niets doen)
 - Kwantificeert kosten en baten
 - Bevat financiële analyse (ROI, NPV, payback)
-- Erkent risico's
+- Erkent risico\'s
 - Geeft een duidelijke aanbeveling`,
       keyTakeaways: [
         'The business case justifies the investment',
@@ -1477,7 +1477,7 @@ Stel een compleet projectcharter op dat bevat:
 5. Hoog-niveau planning met mijlpalen
 6. Indicatief budget
 7. Key stakeholders
-8. Top 5 risico's
+8. Top 5 risico\'s
 9. Kritische succesfactoren
 
 Gebruik het meegeleverde template en lever een document van 3-5 pagina's in.`,
@@ -1912,13 +1912,13 @@ De PERT-formule: **Schatting = (O + 4M + P) / 6**
 Een projectbudget is meer dan alleen de som van alle kostenramingen:
 
 1. **Kostenramingen per werkpakket** (uit je WBS)
-2. **+ Contingency Reserve** (5-15% voor bekende risico's)
+2. **+ Contingency Reserve** (5-15% voor bekende risico\'s)
 3. **= Cost Baseline** (de referentielijn voor monitoring)
-4. **+ Management Reserve** (5-10% voor onbekende risico's)
+4. **+ Management Reserve** (5-10% voor onbekende risico\'s)
 5. **= Totaal Projectbudget**
 
 Het verschil tussen contingency en management reserve is belangrijk:
-- **Contingency reserve**: Voor geïdentificeerde risico's (known unknowns). De PM mag dit inzetten.
+- **Contingency reserve**: Voor geïdentificeerde risico\'s (known unknowns). De PM mag dit inzetten.
 - **Management reserve**: Voor onvoorziene situaties (unknown unknowns). Alleen de sponsor
 kan dit vrijgeven.
 
@@ -1998,7 +1998,7 @@ al opgetreden.
 Risicomanagement is een continu proces met vijf stappen:
 
 **1. Risico-identificatie**
-Alle mogelijke risico's in kaart brengen. Technieken:
+Alle mogelijke risico\'s in kaart brengen. Technieken:
 - Brainstormsessies met het team
 - Checklist-analyse (uit eerdere projecten)
 - SWOT-analyse
@@ -2014,12 +2014,12 @@ Risico's prioriteren op basis van kans (probability) en impact:
 | **Medium** | Laag | Medium | Hoog |
 | **Laag** | Verwaarloosbaar | Laag | Medium |
 
-De risicoscore = Kans × Impact. Focus je op de risico's met de hoogste scores.
+De risicoscore = Kans × Impact. Focus je op de risico\'s met de hoogste scores.
 
 **3. Kwantitatieve Risico-analyse**
-Voor de belangrijkste risico's: bereken het financiële effect. Technieken:
+Voor de belangrijkste risico\'s: bereken het financiële effect. Technieken:
 - **EMV** (Expected Monetary Value) = Kans × Financieel Impact
-- **Monte Carlo simulatie**: Simuleer duizenden scenario's om de verdeling van mogelijke
+- **Monte Carlo simulatie**: Simuleer duizenden scenario\'s om de verdeling van mogelijke
 uitkomsten te zien
 - **Beslisboomanalyse**: Visualiseer keuzes en hun mogelijke uitkomsten
 
@@ -2037,14 +2037,14 @@ Voor bedreigingen heb je vier strategieën:
 | **Mitigeren** | Verklein kans of impact | Extra testen, training, backup systemen |
 | **Accepteren** | Bewust het risico accepteren | Bij lage kans/impact, budget als buffer |
 
-Voor kansen (positieve risico's):
+Voor kansen (positieve risico\'s):
 - **Exploiteren**: Zorg dat de kans zich voordoet
 - **Delen**: Partner met een andere partij
 - **Vergroten**: Vergroot de kans of impact
 - **Accepteren**: Pak het mee als het zich voordoet
 
 **5. Risico-monitoring en -beheersing**
-Continu monitoren, nieuwe risico's identificeren, en responses evalueren.
+Continu monitoren, nieuwe risico\'s identificeren, en responses evalueren.
 
 **Het Risicoregister**
 
@@ -2072,17 +2072,17 @@ risico-responses je kiest.
 **Veelgemaakte Fouten**
 
 1. **Risicomanagement als eenmalige activiteit**: Het is continu. Plan maandelijkse risk reviews.
-2. **Alleen negatieve risico's zien**: Vergeet de kansen niet — ze kunnen je project versnellen
+2. **Alleen negatieve risico\'s zien**: Vergeet de kansen niet — ze kunnen je project versnellen
 of verbeteren.
 3. **Geen eigenaar toewijzen**: Een risico zonder eigenaar wordt door niemand bewaakt.
 4. **Te laat beginnen**: Start risicomanagement in de initiatiefase, niet pas bij de uitvoering.
-5. **Risico's verbergen**: Creëer een cultuur waarin het veilig is om risico's te benoemen.
+5. **Risico's verbergen**: Creëer een cultuur waarin het veilig is om risico\'s te benoemen.
 
 **Praktische Tips**
 
 - Houd risicosessies kort en gefocust (max 1 uur)
 - Gebruik categorieën om volledigheid te waarborgen
-- Koppel risico's aan je WBS — elk werkpakket kan risico's hebben
+- Koppel risico\'s aan je WBS — elk werkpakket kan risico\'s hebben
 - Review het risicoregister bij elke statusmeeting
 - Vier het als een risico NIET optreedt — dat betekent dat je mitigatie werkte`,
       keyTakeaways: [
@@ -2181,7 +2181,7 @@ PM rol: Vier successen, faciliteer kennisoverdracht.
 
 **Motivatietheorieën voor PM's**
 
-**Herzberg's Twee-Factoren Theorie:**
+**Herzberg\'s Twee-Factoren Theorie:**
 
 Hygiëne factoren (voorkomen ontevredenheid):
 - Salaris
@@ -2326,7 +2326,7 @@ Een communicatieplan beantwoordt:
 | Stakeholder | Informatiebehoefte | Frequentie | Kanaal | Verantwoordelijke |
 |-------------|-------------------|------------|--------|-------------------|
 | Sponsor | Voortgang, issues, beslissingen | Wekelijks | 1-op-1 meeting | PM |
-| Stuurgroep | Status, risico's, gates | Maandelijks | Presentatie | PM |
+| Stuurgroep | Status, risico\'s, gates | Maandelijks | Presentatie | PM |
 | Team | Taken, prioriteiten, updates | Dagelijks | Standup | PM/Team |
 | Eindgebruikers | Voortgang, planning | Maandelijks | Nieuwsbrief | PMO |
 
@@ -2339,7 +2339,7 @@ Inhoud:
 - Overall status (rood/oranje/groen)
 - Voortgang vs. planning
 - Bereikte mijlpalen
-- Issues en risico's
+- Issues en risico\'s
 - Beslissingen nodig
 - Vooruitblik komende periode
 
@@ -2682,7 +2682,7 @@ De PM (of change manager) analyseert:
 - Impact op scope
 - Impact op planning
 - Impact op budget
-- Impact op risico's
+- Impact op risico\'s
 - Impact op kwaliteit
 - Afhankelijkheden
 

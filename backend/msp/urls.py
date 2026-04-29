@@ -14,6 +14,6 @@ program_router.register(r'tranches', MSPTrancheViewSet, basename='program-tranch
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('programs/<uuid:program_id>/', include(program_router.urls)),
-    path('programs/<uuid:program_id>/benefits/<uuid:benefit_pk>/realizations/', BenefitRealizationViewSet.as_view({'get': 'list', 'post': 'create'}), name='benefit-realization'),
+    path('programs/<int:program_id>/', include(program_router.urls)),
+    path('programs/<int:program_id>/benefits/<uuid:benefit_pk>/realizations/', BenefitRealizationViewSet.as_view({'get': 'list', 'post': 'create'}), name='benefit-realization'),
 ]

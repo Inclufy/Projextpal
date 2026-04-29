@@ -8,7 +8,7 @@ import {
   Plus,
   Building2,
   TrendingUp,
-  DollarSign,
+  Euro,
   Loader2,
   ClipboardList,
   Sparkles,
@@ -1005,7 +1005,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           </div>
                           <div>
                             <div className="flex items-center gap-1.5 mb-1">
-                              <DollarSign className="h-3.5 w-3.5 text-success" />
+                              <Euro className="h-3.5 w-3.5 text-success" />
                               <span className="text-xs font-medium text-muted-foreground">{pt("Savings")}:</span>
                             </div>
                             <p className="text-lg font-bold text-success">

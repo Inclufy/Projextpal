@@ -27,13 +27,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { 
-  Layers, FolderKanban, TrendingUp, DollarSign, Calendar, 
+  Layers, FolderKanban, TrendingUp, Euro, Calendar, 
   AlertTriangle, CheckCircle2, ArrowRight, Loader2, Plus,
   Edit, Trash2, ArrowLeft
 } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -222,7 +223,8 @@ const ProgramDashboard = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('nl-NL', {
+    const locale = language === 'nl' ? 'nl-NL' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -368,7 +370,7 @@ const ProgramDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-indigo-600" />
+              <Euro className="h-5 w-5 text-indigo-600" />
               Program Budget
             </CardTitle>
           </CardHeader>
@@ -404,14 +406,17 @@ const ProgramDashboard = () => {
           </CardHeader>
           <CardContent>
             {projects.length === 0 ? (
-              <div className="text-center py-8">
-                <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No projects in this program yet</p>
-                <Button onClick={() => navigate(`/projects/new?program=${id}`)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Project
-                </Button>
-              </div>
+              <EmptyState
+                asCard={false}
+                icon={FolderKanban}
+                title={language === 'nl' ? "Nog geen projecten in dit programma" : "No projects in this program yet"}
+                action={
+                  <Button onClick={() => navigate(`/projects/new?program=${id}`)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {language === 'nl' ? 'Voeg eerste project toe' : 'Add First Project'}
+                  </Button>
+                }
+              />
             ) : (
               <table className="w-full">
                 <thead>
@@ -478,10 +483,11 @@ const ProgramDashboard = () => {
           </CardHeader>
           <CardContent>
             {upcomingMilestones.length === 0 ? (
-              <div className="text-center py-8">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No upcoming milestones</p>
-              </div>
+              <EmptyState
+                asCard={false}
+                icon={Calendar}
+                title={language === 'nl' ? 'Geen aankomende mijlpalen' : 'No upcoming milestones'}
+              />
             ) : (
               <div className="space-y-3">
                 {upcomingMilestones.map((ms: any, i: number) => (

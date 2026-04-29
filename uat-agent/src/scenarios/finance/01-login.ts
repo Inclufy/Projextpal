@@ -10,7 +10,8 @@ const scenario: Scenario = {
     {
       name: 'Navigate to login page',
       action: async (ctx) => {
-        await ctx.page.goto(`${ctx.app.baseUrl}/login`);
+        // Inclufy Finance uses /auth for login (not /login)
+        await ctx.page.goto(`${ctx.app.baseUrl}/auth`);
         await ctx.page.waitForLoadState('networkidle');
         ctx.log('Login page loaded');
       },
@@ -18,8 +19,9 @@ const scenario: Scenario = {
     {
       name: 'Fill login form',
       action: async (ctx) => {
-        await ctx.page.fill('input[type="email"], input[name="email"], #email', ctx.app.credentials.email);
-        await ctx.page.fill('input[type="password"], input[name="password"], #password', ctx.app.credentials.password);
+        // Finance login inputs use id selectors: #email and #password
+        await ctx.page.fill('#email', ctx.app.credentials.email);
+        await ctx.page.fill('#password', ctx.app.credentials.password);
         ctx.log('Credentials entered');
       },
     },

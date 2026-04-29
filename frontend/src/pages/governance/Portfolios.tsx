@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Briefcase, TrendingUp, Users, DollarSign, Pencil, Trash2 } from "lucide-react";
+import { Plus, Briefcase, TrendingUp, Users, Euro, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -108,7 +108,7 @@ export default function Portfolios() {
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Portfolios")}</p><p className="text-2xl font-bold mt-1">{portfolios.length}</p></div><Briefcase className="h-8 w-8 text-purple-600" /></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Active")}</p><p className="text-2xl font-bold mt-1">{portfolios.filter(p => p.status === "active").length}</p></div><TrendingUp className="h-8 w-8 text-green-600" /></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Boards")}</p><p className="text-2xl font-bold mt-1">{portfolios.reduce((sum, p) => sum + p.total_boards, 0)}</p></div><Users className="h-8 w-8 text-blue-600" /></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">{formatCurrency(portfolios.reduce((sum, p) => sum + (Number(p.budget_allocated) || 0), 0))}</p></div><DollarSign className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold mt-1">{formatCurrency(portfolios.reduce((sum, p) => sum + (Number(p.budget_allocated) || 0), 0))}</p></div><Euro className="h-8 w-8 text-orange-600" /></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

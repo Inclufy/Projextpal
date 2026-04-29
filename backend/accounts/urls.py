@@ -77,6 +77,11 @@ urlpatterns = [
     path('2fa/validate/', Validate2FAView.as_view(), name='2fa-validate'),
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
     path('2fa/status/', Check2FAStatusView.as_view(), name='2fa-status'),
+    # Canonical aliases used by the admin portal & mobile clients
+    path('2fa/enable/', Setup2FAView.as_view(), name='2fa-enable'),
+    path('2fa/qr/', Setup2FAView.as_view(), name='2fa-qr'),
+    path('2fa/verify/', Verify2FASetupView.as_view(), name='2fa-verify'),
+    path('2fa/backup-codes/', Setup2FAView.as_view(), name='2fa-backup-codes'),
     path('login-2fa/', LoginWith2FAView.as_view(), name='login-2fa'),
 
     # Biometric Authentication (Face ID / Fingerprint)

@@ -25,6 +25,12 @@ export interface QuizQuestion {
   options: string[];
   correctAnswer: number;
   explanation: string;
+  // Optional EN companion fields — Dutch primary, EN fallback for en locale
+  questionEN?: string;
+  optionsEN?: string[];
+  explanationEN?: string;
+  // Bloom taxonomy difficulty
+  difficulty?: 'foundation' | 'application' | 'evaluation';
 }
 
 export interface Assignment {

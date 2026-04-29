@@ -527,6 +527,40 @@ class DoDChecklistCompletion(models.Model):
         return f"DoD {self.item_type} {self.item_id} - {self.completion_percentage}%"
 
 
+class DoDChecklistEntry(models.Model):
+    """Per-sprint, per-DoD-item completion ticking.
+
+    Lets the Scrum team check off Definition-of-Done criteria during the
+    Sprint Review. Scrum Guide 2020 — "Developers are required to conform
+    to the Definition of Done" — conformance requires per-criterion sign-off.
+    """
+    dod_item = models.ForeignKey(
+        DefinitionOfDone, on_delete=models.CASCADE, related_name='entries'
+    )
+    sprint = models.ForeignKey(
+        Sprint, on_delete=models.CASCADE, related_name='dod_entries'
+    )
+    completed = models.BooleanField(default=False)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dod_completions_marked',
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['dod_item', 'sprint']
+        ordering = ['sprint', 'dod_item__order']
+
+    def __str__(self):
+        return f"DoD {self.dod_item_id} / Sprint {self.sprint_id}: {self.completed}"
+
+
 class ScrumTeam(models.Model):
     """Scrum Team Configuration"""
     ROLE_CHOICES = [

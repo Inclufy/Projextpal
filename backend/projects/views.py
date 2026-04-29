@@ -2100,3 +2100,97 @@ class BudgetOverviewViewSet(viewsets.ViewSet):
 from rest_framework.decorators import api_view
 
 
+# ============================================
+# STATUS REPORT AUTO-DRAFT
+# ============================================
+from rest_framework.decorators import permission_classes as drf_permission_classes
+from django.shortcuts import get_object_or_404 as _gobj
+
+
+@api_view(['POST'])
+@drf_permission_classes([IsAuthenticated])
+def status_report_auto_draft(request, project_id):
+    """POST /api/v1/projects/<id>/status-reports/auto-draft/
+
+    Returns a *draft* status-report payload synthesised from live project
+    signals. Not persisted — the frontend prepopulates the create-form with
+    the returned dict so the user can review/edit before saving.
+    """
+    user = request.user
+    company = getattr(user, 'company', None)
+    qs = Project.objects.all()
+    if company is not None:
+        qs = qs.filter(company=company)
+    project = _gobj(qs, pk=project_id)
+
+    today = timezone.now().date()
+    period_start = today - timezone.timedelta(days=7) if hasattr(timezone, 'timedelta') else today
+    # timezone has no .timedelta on some Django versions — use datetime.timedelta
+    from datetime import timedelta as _td
+    period_start = today - _td(days=7)
+
+    total_tasks = Task.objects.filter(milestone__project=project).count()
+    done_tasks = Task.objects.filter(milestone__project=project, status='done').count()
+    blocked_tasks = Task.objects.filter(milestone__project=project, status='blocked').count()
+    in_progress = Task.objects.filter(milestone__project=project, status='in_progress').count()
+    progress_pct = int((done_tasks / total_tasks) * 100) if total_tasks else 0
+
+    open_risks = Risk.objects.filter(project=project, status='Open').count()
+    high_risks = Risk.objects.filter(project=project, status='Open', level='High').count()
+
+    recent_done = list(
+        Task.objects.filter(
+            milestone__project=project,
+            status='done',
+            updated_at__date__gte=period_start,
+        ).order_by('-updated_at').values_list('title', flat=True)[:5]
+    )
+    upcoming_milestones = list(
+        Milestone.objects.filter(project=project)
+        .exclude(status='completed')
+        .order_by('end_date')
+        .values_list('name', flat=True)[:5]
+    )
+
+    if blocked_tasks > 0 or high_risks > 0:
+        rag = 'amber' if (blocked_tasks <= 2 and high_risks <= 1) else 'red'
+        narrative_status = 'In Progress'
+    else:
+        rag = 'green'
+        narrative_status = 'In Progress' if in_progress else 'Not Started'
+
+    summary_lines = [
+        f"Period {period_start.isoformat()} → {today.isoformat()}.",
+        f"Progress: {progress_pct}% ({done_tasks}/{total_tasks} tasks done).",
+        f"In flight: {in_progress} task(s); blocked: {blocked_tasks}.",
+        f"Open risks: {open_risks} (high: {high_risks}).",
+    ]
+    if recent_done:
+        summary_lines.append("Recent wins: " + "; ".join(recent_done))
+    if upcoming_milestones:
+        summary_lines.append("Next up: " + "; ".join(upcoming_milestones))
+
+    draft = {
+        'project': project.id,
+        'project_name': project.name,
+        'status': narrative_status,
+        'progress': progress_pct,
+        'last_updated': today.isoformat(),
+        'rag': rag,
+        'period_start': period_start.isoformat(),
+        'period_end': today.isoformat(),
+        'summary': "\n".join(summary_lines),
+        'recent_completed_tasks': recent_done,
+        'upcoming_milestones': upcoming_milestones,
+        'metrics': {
+            'total_tasks': total_tasks,
+            'done_tasks': done_tasks,
+            'in_progress_tasks': in_progress,
+            'blocked_tasks': blocked_tasks,
+            'open_risks': open_risks,
+            'high_risks': high_risks,
+        },
+        'is_draft': True,
+        'persisted': False,
+    }
+    return Response(draft)

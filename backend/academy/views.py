@@ -1826,3 +1826,87 @@ Respond ONLY with JSON (no markdown):
             "confidence": 0.5,
             "reasoning": f"Fallback due to error: {str(e)}"
         }, status=200)
+
+
+# ============================================================================
+# Academy Dashboard
+# Slide 12 of the Phase-1 deck references /api/v1/academy/dashboard/. The
+# endpoint did not exist; this is a simple aggregator with the same dict
+# shape as the portfolio dashboard for frontend consistency.
+# ============================================================================
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def academy_dashboard(request):
+    """GET /api/v1/academy/dashboard/
+
+    Returns aggregate learning metrics for the requester's company:
+      - total_enrollments
+      - active_learners (distinct users with quiz / lesson activity in last 30d)
+      - completed_courses (enrollments in 'completed' state)
+      - certificates_issued
+      - average_quiz_score (percentage, across all attempts)
+
+    Shape mirrors /api/v1/admin/stats/ (top-level `overview` dict + per-section
+    breakdowns) so the frontend can reuse its dashboard components.
+    """
+    from datetime import timedelta
+    from django.db.models import Avg, Q
+
+    user = request.user
+    company = getattr(user, 'company', None)
+
+    enrollments_qs = Enrollment.objects.all()
+    certificates_qs = Certificate.objects.all()
+    quiz_qs = QuizAttempt.objects.all()
+
+    # Optional company scope: enrollments aren't always attached to a Company,
+    # so we filter by the requester's company emails when available, else
+    # fall back to global counts (super-admin view).
+    if company is not None and getattr(user, 'role', None) != 'superadmin':
+        # Scope by users who belong to this company. Enrollments without a user
+        # FK still count if their email matches a company member.
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        company_user_ids = list(
+            UserModel.objects.filter(company=company).values_list('id', flat=True)
+        )
+        company_emails = list(
+            UserModel.objects.filter(company=company).values_list('email', flat=True)
+        )
+        enrollments_qs = enrollments_qs.filter(
+            Q(user_id__in=company_user_ids) | Q(email__in=company_emails)
+        )
+        certificates_qs = certificates_qs.filter(enrollment__in=enrollments_qs)
+        quiz_qs = quiz_qs.filter(enrollment__in=enrollments_qs)
+
+    total_enrollments = enrollments_qs.count()
+    completed_courses = enrollments_qs.filter(status='completed').count()
+    certificates_issued = certificates_qs.count()
+
+    last_30 = timezone.now() - timedelta(days=30)
+    active_learners = (
+        quiz_qs.filter(started_at__gte=last_30)
+        .values('enrollment__user_id')
+        .distinct()
+        .count()
+    )
+
+    avg_pct_agg = quiz_qs.exclude(max_score=0).aggregate(
+        avg_score=Avg(models.F('score') * 100.0 / models.F('max_score'))
+    )
+    avg_quiz_score = round(avg_pct_agg['avg_score'] or 0, 1)
+
+    return Response({
+        'overview': {
+            'total_enrollments': total_enrollments,
+            'active_learners': active_learners,
+            'completed_courses': completed_courses,
+            'certificates_issued': certificates_issued,
+            'average_quiz_score': avg_quiz_score,
+        },
+        'meta': {
+            'generated_at': timezone.now().isoformat(),
+            'window_days': 30,
+            'scope': 'company' if (company is not None and getattr(user, 'role', None) != 'superadmin') else 'global',
+        },
+    })
