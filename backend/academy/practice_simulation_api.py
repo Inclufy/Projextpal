@@ -26,6 +26,7 @@ from .models import (
     PracticeAssignment, PracticeSubmission,
     CourseLesson, Enrollment,
     Skill, UserSkill, SkillActivity,
+    LessonSkillMapping,
 )
 
 
@@ -80,9 +81,14 @@ def submit_practice(request, practice_id):
         replaced = False
 
     # Award skill points for the effort (not for the outcome — final
-    # grading happens when admin reviews)
+    # grading happens when admin reviews). LessonSkillMapping.lesson_id is a
+    # CharField, not an FK, so CourseLesson has no skill_mappings reverse
+    # manager — query the mapping table directly.
     if assignment.lesson:
-        for mapping in assignment.lesson.skill_mappings.all():
+        mappings = LessonSkillMapping.objects.filter(
+            lesson_id=str(assignment.lesson.id)
+        ).select_related('skill')
+        for mapping in mappings:
             skill = mapping.skill
             user_skill, _ = UserSkill.objects.get_or_create(
                 user=request.user, skill=skill, defaults={'points': 0}
@@ -133,7 +139,10 @@ def submit_simulation(request):
         lesson = None
 
     if correct and lesson:
-        for mapping in lesson.skill_mappings.all():
+        mappings = LessonSkillMapping.objects.filter(
+            lesson_id=str(lesson.id)
+        ).select_related('skill')
+        for mapping in mappings:
             skill = mapping.skill
             user_skill, _ = UserSkill.objects.get_or_create(
                 user=request.user, skill=skill, defaults={'points': 0}

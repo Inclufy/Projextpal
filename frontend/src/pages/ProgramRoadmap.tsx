@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ const COLORS = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500',
 
 const ProgramRoadmap = () => {
   const location = useLocation();
+  const { language } = useLanguage();
+  const isNL = language === 'nl';
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -103,18 +106,26 @@ const ProgramRoadmap = () => {
           <div>
             {(() => {
               // ProgramRoadmap serves 6 sidebar tabs: roadmap, milestones,
-              // schedule, dependencies, tranches, transitions.
+              // schedule, dependencies, tranches, transitions. Each has a
+              // full EN + NL title/subtitle pair for locale parity.
               const parts = location.pathname.split('/').filter(Boolean);
               const last = parts[parts.length - 1] ?? 'roadmap';
-              const TAB: Record<string, [string, string]> = {
-                roadmap:      ['Program Roadmap',        'Long-term delivery roadmap across tranches'],
-                milestones:   ['Program Milestones',     'Key delivery milestones across the program'],
-                schedule:     ['Program Schedule',       'Consolidated schedule of all in-flight projects'],
-                dependencies: ['Cross-Project Dependencies', 'How projects block or enable each other'],
-                tranches:     ['Tranche Plan',           'MSP / PRINCE2 tranche breakdown'],
-                transitions:  ['Transitions',            'Handover from tranche to business-as-usual'],
+              const TAB: Record<string, { en: [string, string]; nl: [string, string] }> = {
+                roadmap:      { en: ['Program Roadmap',              'Long-term delivery roadmap across tranches'],
+                                nl: ['Programma Routekaart',         'Lange-termijn leveringsplan over tranches'] },
+                milestones:   { en: ['Program Milestones',           'Key delivery milestones across the program'],
+                                nl: ['Programma Mijlpalen',          'Belangrijke leveringsmijlpalen in het programma'] },
+                schedule:     { en: ['Program Schedule',             'Consolidated schedule of all in-flight projects'],
+                                nl: ['Programma Planning',           'Geconsolideerde planning van alle lopende projecten'] },
+                dependencies: { en: ['Cross-Project Dependencies',   'How projects block or enable each other'],
+                                nl: ['Afhankelijkheden tussen Projecten','Hoe projecten elkaar blokkeren of mogelijk maken'] },
+                tranches:     { en: ['Tranche Plan',                 'MSP / PRINCE2 tranche breakdown'],
+                                nl: ['Tranche Plan',                 'MSP / PRINCE2 tranche-indeling'] },
+                transitions:  { en: ['Transitions',                  'Handover from tranche to business-as-usual'],
+                                nl: ['Transities',                   'Overdracht van tranche naar dagelijkse operatie'] },
               };
-              const [title, sub] = TAB[last] ?? TAB.roadmap;
+              const info = TAB[last] ?? TAB.roadmap;
+              const [title, sub] = isNL ? info.nl : info.en;
               return (
                 <>
                   <h1 className="text-2xl font-bold flex items-center gap-2">

@@ -14,7 +14,7 @@ class P2Blueprint(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    programme = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='p2_blueprints')
+    programme = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='p2_blueprints')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     version = models.CharField(max_length=20, default='1.0')
@@ -53,7 +53,7 @@ class P2ProgrammeProject(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    programme = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='p2_projects')
+    programme = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='p2_projects')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     methodology = models.CharField(max_length=20, choices=METHODOLOGY_CHOICES, default='prince2')

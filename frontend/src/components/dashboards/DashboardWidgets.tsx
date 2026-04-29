@@ -268,24 +268,24 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
     .map(([m]) => m);
 
   // Map methodologies to recommended course categories
-  const courseRecommendations: { methodology: string; title: string; subtitle: string; icon: any; color: string; gradient: string }[] = [];
+  const courseRecommendations: { methodology: string; title: string; subtitle: string; slug: string; icon: any; color: string; gradient: string }[] = [];
 
   const addRecommendation = (methodology: string) => {
     const config = methodologyConfig[methodology] || methodologyConfig['hybrid'];
     const Icon = config.icon;
 
-    const courseMap: Record<string, { title: string; subtitle: string }> = {
-      'prince2': { title: 'PRINCE2 Foundation & Practitioner', subtitle: isNL ? 'Gestructureerd projectmanagement' : 'Structured project management' },
-      'scrum': { title: 'Professional Scrum Master', subtitle: isNL ? 'Agile team management' : 'Agile team management' },
-      'kanban': { title: 'Kanban System Design', subtitle: isNL ? 'Flow-gebaseerd werken' : 'Flow-based work management' },
-      'agile': { title: 'Agile Project Management', subtitle: isNL ? 'Iteratief projectbeheer' : 'Iterative project delivery' },
-      'waterfall': { title: 'Waterfall Planning Mastery', subtitle: isNL ? 'Planmatig projectbeheer' : 'Sequential project planning' },
-      'lean_six_sigma_green': { title: 'Lean Six Sigma Green Belt', subtitle: isNL ? 'Procesverbetering' : 'Process improvement' },
-      'lean_six_sigma_black': { title: 'Lean Six Sigma Black Belt', subtitle: isNL ? 'Geavanceerde procesverbetering' : 'Advanced process improvement' },
-      'safe': { title: 'SAFe Agilist', subtitle: isNL ? 'Enterprise agility' : 'Enterprise agility' },
-      'msp': { title: 'MSP Programme Management', subtitle: isNL ? 'Programmabeheer' : 'Programme management' },
-      'pmi': { title: 'PMP Certification Prep', subtitle: isNL ? 'PMI standaarden' : 'PMI standards' },
-      'hybrid': { title: 'Hybrid Project Management', subtitle: isNL ? 'Beste van beide werelden' : 'Best of both worlds' },
+    const courseMap: Record<string, { title: string; subtitle: string; slug: string }> = {
+      'prince2': { title: 'PRINCE2 Foundation & Practitioner', subtitle: isNL ? 'Gestructureerd projectmanagement' : 'Structured project management', slug: 'prince2-foundation' },
+      'scrum': { title: 'Professional Scrum Master', subtitle: isNL ? 'Agile team management' : 'Agile team management', slug: 'scrum-master' },
+      'kanban': { title: 'Kanban System Design', subtitle: isNL ? 'Flow-gebaseerd werken' : 'Flow-based work management', slug: 'kanban-practitioner' },
+      'agile': { title: 'Agile Project Management', subtitle: isNL ? 'Iteratief projectbeheer' : 'Iterative project delivery', slug: 'agile-fundamentals' },
+      'waterfall': { title: 'Waterfall Planning Mastery', subtitle: isNL ? 'Planmatig projectbeheer' : 'Sequential project planning', slug: 'waterfall-pm' },
+      'lean_six_sigma_green': { title: 'Lean Six Sigma Green Belt', subtitle: isNL ? 'Procesverbetering' : 'Process improvement', slug: 'lean-six-sigma' },
+      'lean_six_sigma_black': { title: 'Lean Six Sigma Black Belt', subtitle: isNL ? 'Geavanceerde procesverbetering' : 'Advanced process improvement', slug: 'lean-six-sigma' },
+      'safe': { title: 'SAFe Agilist', subtitle: isNL ? 'Enterprise agility' : 'Enterprise agility', slug: 'safe-scaling-agile' },
+      'msp': { title: 'MSP Programme Management', subtitle: isNL ? 'Programmabeheer' : 'Programme management', slug: 'program-management-pro' },
+      'pmi': { title: 'PMP Certification Prep', subtitle: isNL ? 'PMI standaarden' : 'PMI standards', slug: 'pm-fundamentals' },
+      'hybrid': { title: 'Hybrid Project Management', subtitle: isNL ? 'Beste van beide werelden' : 'Best of both worlds', slug: 'pm-fundamentals' },
     };
 
     const info = courseMap[methodology] || courseMap['hybrid'];
@@ -293,6 +293,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
       methodology,
       title: info.title,
       subtitle: info.subtitle,
+      slug: info.slug,
       icon: Icon,
       color: config.color,
       gradient: config.bgColor,
@@ -342,7 +343,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
             <div
               key={idx}
               className={`group flex items-center gap-3 p-3.5 rounded-xl ${course.gradient} ring-1 ring-purple-100/50 dark:ring-purple-800/30 hover:shadow-md transition-all duration-200 cursor-pointer`}
-              onClick={() => navigate(`/academy?methodology=${course.methodology}`)}
+              onClick={() => navigate(`/academy/course/${course.slug}`)}
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
                 <Icon className={`h-5 w-5 ${course.color}`} />

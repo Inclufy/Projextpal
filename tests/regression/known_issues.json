@@ -1,0 +1,565 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-04-29",
+  "description": "Catalog of known/historic bugs in ProjeXtPal. Each entry is a regression test the agent re-runs to confirm the fix still holds. Add new issues as they are discovered; never delete entries — change status to 'fixed_verified' or 'wontfix' instead.",
+  "status_values": {
+    "open": "Bug exists, not yet fixed",
+    "fix_pending_deploy": "Fix is in code but backend not yet redeployed",
+    "fixed_verified": "Fix is live and regression test passes",
+    "wontfix": "Documented as by-design or out of scope",
+    "blocked": "Cannot fix without external dependency"
+  },
+  "issues": [
+
+    {
+      "id": "BUG-001",
+      "title": "Survey creation 400 — nested QuestionSerializer requires survey FK",
+      "severity": "P1",
+      "area": "surveys",
+      "endpoint": "POST /api/v1/surveys/survey/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {"name": "Test", "description": "", "questions": [{"text": "Q1", "question_type": "open_text", "required": true}]},
+      "expected_response_contains": ["id", "questions"],
+      "previous_error_contains": ["This field is required", "survey"],
+      "root_cause": "QuestionSerializer.Meta.fields included 'survey' as writable; DRF demanded it during nested validation even though create() sets it server-side.",
+      "fix_location": "backend/surveys/serializers.py:18 — added read_only_fields = ['id', 'survey']",
+      "found": "2026-04-29",
+      "found_by": "user — projextpal.com/post-project survey form",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-002",
+      "title": "Frontend calls non-existent /api/v1/users/ → 404",
+      "severity": "P2",
+      "area": "frontend",
+      "endpoint": "GET /api/v1/users/",
+      "method": "GET",
+      "expected_status": 404,
+      "previous_status": 404,
+      "expected_behavior": "Endpoint must not be called from frontend. The route does not exist; correct route is /api/v1/auth/company-users/",
+      "root_cause": "FoundationTeam.tsx:60 used the wrong URL.",
+      "fix_location": "frontend/src/pages/FoundationTeam.tsx:60 — changed to /api/v1/auth/company-users/",
+      "regression_check": "Grep frontend/src for '/api/v1/users/' — must return zero matches.",
+      "found": "2026-04-29",
+      "found_by": "user — DevTools console on /post-project",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-003",
+      "title": "Frontend hits non-existent /api/v1/projects/{id}/tasks/ → 404",
+      "severity": "P2",
+      "area": "frontend",
+      "endpoint": "GET /api/v1/projects/{id}/tasks/",
+      "method": "GET",
+      "expected_status": 404,
+      "previous_status": 404,
+      "expected_behavior": "Correct shape is /api/v1/projects/tasks/?project={id}. TaskViewSet supports the project query param.",
+      "root_cause": "ProjectTimeline.tsx:24, AgileIterationBoard.tsx:49, AgileBacklog.tsx:47 called wrong URL shape.",
+      "fix_location": "frontend: ProjectTimeline.tsx, AgileIterationBoard.tsx, AgileBacklog.tsx — all switched to /projects/tasks/?project=${projectId}.",
+      "regression_check": "Grep frontend/src for '/projects/${projectId}/tasks/' (no methodology prefix) — must return zero matches.",
+      "found": "2026-04-29",
+      "found_by": "user — DevTools console on /post-project",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-004",
+      "title": "Frontend hits non-existent /api/v1/projects/{id}/milestones/ → 404",
+      "severity": "P2",
+      "area": "frontend",
+      "endpoint": "GET /api/v1/projects/{id}/milestones/",
+      "method": "GET",
+      "expected_status": 404,
+      "previous_status": 404,
+      "expected_behavior": "Correct shape is /api/v1/projects/milestones/?project={id}.",
+      "root_cause": "ProjectMilestones.tsx:15 called wrong URL shape.",
+      "fix_location": "frontend/src/pages/ProjectMilestones.tsx:15 — switched to /projects/milestones/?project=${projectId}.",
+      "regression_check": "Grep frontend/src for '/projects/${projectId}/milestones/' — must return zero matches.",
+      "found": "2026-04-29",
+      "found_by": "user — DevTools console on /post-project",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-005",
+      "title": "Invitation creation returns 500 — admin invite flow broken",
+      "severity": "P1",
+      "area": "auth",
+      "endpoint": "POST /api/v1/auth/invitations/create/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 500,
+      "request_body": {"email": "test+invite@example.com", "role": "contributor"},
+      "root_cause": "TeamInvitation.token has unique=True; the view passed token='' on create, so the second invite ever raised IntegrityError. Email subject also crashed when neither project nor program was set (NoneType.name).",
+      "fix_location": "backend/accounts/invitation_views.py — generate UUID placeholder token at create time, then overwrite with real token; coalesce missing project/program to company name; fail_silently=True on send_mail.",
+      "found": "2026-04-29",
+      "found_by": "admin-portal-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-006",
+      "title": "Public pricing endpoint 500 — anon visitors can't load pricing page",
+      "severity": "P1",
+      "area": "subscriptions",
+      "endpoint": "GET /api/v1/subscriptions/plans/public/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "auth": "anon",
+      "root_cause": "View accessed plan.description, plan.billing_type, plan.storage_gb, plan.level — none of which exist on the Plan model. Real fields: plan.plan_type, plan.storage_limit_gb, plan.plan_level. AttributeError on first iteration → 500.",
+      "fix_location": "backend/subscriptions/checkout_views.py — get_plans now uses getattr with correct field fallbacks (plan_type, storage_limit_gb, plan_level).",
+      "found": "2026-04-29",
+      "found_by": "admin-portal-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-007",
+      "title": "Biometric/passkey status crashes 500",
+      "severity": "P2",
+      "area": "auth",
+      "endpoint": "GET /api/v1/auth/biometric/status/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "root_cause": "BiometricCredential model existed in models_biometric.py but was never imported in models.py and never migrated, so the underlying biometric_credentials table did not exist. Every query 500'd.",
+      "fix_location": "backend/accounts/models.py — re-export BiometricCredential so Django auto-discovers it. backend/accounts/migrations/0011_biometriccredential.py — schema migration. backend/accounts/biometric.py — wrapped both views in try/except so they degrade gracefully if migration not yet run.",
+      "found": "2026-04-29",
+      "found_by": "admin-portal-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-008",
+      "title": "Biometric credentials list 500",
+      "severity": "P2",
+      "area": "auth",
+      "endpoint": "GET /api/v1/auth/biometric/credentials/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "root_cause": "Same as BUG-007 — biometric_credentials table missing.",
+      "fix_location": "Fixed together with BUG-007 (model registration + migration + try/except guard).",
+      "found": "2026-04-29",
+      "found_by": "admin-portal-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-009",
+      "title": "MSP benefit POST rejects own program FK — wrong model in FK",
+      "severity": "P1",
+      "area": "msp",
+      "endpoint": "POST /api/v1/msp/programs/{program_id}/benefits/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "previous_error_contains": ["Invalid pk", "object does not exist"],
+      "root_cause": "MSPBenefit.program, MSPTranche.program, P2Blueprint.programme, P2ProgrammeProject.programme, HybridGovernanceConfig.programme, HybridAdaptation.programme — all 6 FKs pointed at projects.Project instead of programs.Program.",
+      "fix_location": "backend/msp/models.py + backend/p2_programme/models.py + backend/hybrid_programme/models.py — all FKs corrected to programs.Program. Migrations: msp/0002_fix_program_fk, p2_programme/0002_fix_programme_fk, hybrid_programme/0002_fix_programme_fk.",
+      "found": "2026-04-29",
+      "found_by": "program-manager-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-010",
+      "title": "Governance Meeting POST requires program FK that should be optional",
+      "severity": "P2",
+      "area": "governance",
+      "endpoint": "POST /api/v1/governance/meetings/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "previous_error_contains": ["program", "This field is required"],
+      "root_cause": "governance.Meeting.program was non-nullable FK. Tenant-wide cross-program meetings were impossible.",
+      "fix_location": "backend/governance/models.py — Meeting.program now null=True, blank=True. Migration: governance/0004_meeting_decision_program_nullable.",
+      "found": "2026-04-29",
+      "found_by": "program-manager-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-011",
+      "title": "Governance Decision POST requires program FK that should be optional",
+      "severity": "P2",
+      "area": "governance",
+      "endpoint": "POST /api/v1/governance/decisions/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "root_cause": "Same as BUG-010 — governance.Decision.program was non-nullable FK.",
+      "fix_location": "backend/governance/models.py — Decision.program now null=True, blank=True. Same migration as BUG-010.",
+      "found": "2026-04-29",
+      "found_by": "program-manager-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-012",
+      "title": "P2-Programme + Hybrid-Programme are dead routers — enum missing",
+      "severity": "P2",
+      "area": "programs",
+      "endpoint": "POST /api/v1/programs/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {"methodology": "p2-programme", "name": "test"},
+      "previous_error_contains": ["not a valid choice"],
+      "root_cause": "Program.METHODOLOGY_CHOICES had only safe/msp/pmi/prince2_programme/hybrid. The dedicated p2_programme/ and hybrid_programme/ routers were unreachable because no program could be created with those methodologies.",
+      "fix_location": "backend/programs/models.py — added 'p2_programme' and 'hybrid_programme' to METHODOLOGY_CHOICES. Note: the URL routes still use the slug forms with hyphens; the frontend should map p2-programme ↔ p2_programme and hybrid-programme ↔ hybrid_programme when creating.",
+      "found": "2026-04-29",
+      "found_by": "program-manager-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-013",
+      "title": "Certificate verify endpoint requires authentication — public verifier broken",
+      "severity": "P1",
+      "area": "academy",
+      "endpoint": "GET /api/v1/academy/certificate/verify/{verification_code}/",
+      "method": "GET",
+      "auth": "anon",
+      "expected_status": 200,
+      "previous_status": 401,
+      "root_cause": "verify_certificate view had no @permission_classes decorator, so it inherited the project-default IsAuthenticated. Employers cannot verify certificates without an account.",
+      "fix_location": "backend/academy/certificate_api.py — added @permission_classes([AllowAny]) to verify_certificate.",
+      "found": "2026-04-29",
+      "found_by": "academy-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-014",
+      "title": "Practice submit 500 for assignments linked to a lesson",
+      "severity": "P1",
+      "area": "academy",
+      "endpoint": "POST /api/v1/academy/practice/{assignment_id}/submit/",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 500,
+      "root_cause": "practice_simulation_api.submit_practice line 85 called assignment.lesson.skill_mappings.all(). LessonSkillMapping.lesson_id is a CharField (not FK), so CourseLesson has no skill_mappings reverse manager → AttributeError.",
+      "fix_location": "backend/academy/practice_simulation_api.py — replaced reverse-manager access with explicit LessonSkillMapping.objects.filter(lesson_id=str(lesson.id)).select_related('skill').",
+      "found": "2026-04-29",
+      "found_by": "academy-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-015",
+      "title": "Simulation submit 500 when valid lesson_id is passed",
+      "severity": "P2",
+      "area": "academy",
+      "endpoint": "POST /api/v1/academy/simulation/submit/",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 500,
+      "request_body": {"lesson_id": 165, "correct": true},
+      "root_cause": "Same skill_mappings AttributeError as BUG-014, at practice_simulation_api.py:136. Triggered when lesson_id is set + correct=True.",
+      "fix_location": "backend/academy/practice_simulation_api.py — fixed together with BUG-014 using direct LessonSkillMapping.filter(lesson_id=str(lesson.id)).",
+      "found": "2026-04-29",
+      "found_by": "academy-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-016",
+      "title": "lss-black missing dmaic-phases route → 404",
+      "severity": "P3",
+      "area": "lss",
+      "endpoint": "GET /api/v1/lss-black/projects/{id}/dmaic-phases/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 404,
+      "root_cause": "lss_black/urls.py only registered hypothesis-tests, doe, control-plans, spc-charts. dmaic-phases route was missing.",
+      "fix_location": "backend/lss_black/urls.py — registered DMAICPhaseViewSet (reused from lss_green) on both the global and project-scoped routers.",
+      "found": "2026-04-29",
+      "found_by": "reports-dashboards-chats-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-017",
+      "title": "academy/ai/generate-practice expects camelCase lessonTitle (schema inconsistency)",
+      "severity": "P3",
+      "area": "academy",
+      "endpoint": "POST /api/v1/academy/ai/generate-practice/",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 400,
+      "request_body": {"lesson_id": 1, "course_id": 1, "topic": "test"},
+      "previous_error_contains": ["lessonTitle is required"],
+      "root_cause": "generate-practice required lessonTitle (camelCase) while all other generate-* endpoints used snake_case. Frontend had to pass lessonTitle — inconsistent.",
+      "fix_location": "backend/academy/ai_views.py — ai_generate_practice now accepts either lessonTitle/courseTitle/lessonContent (camelCase) or lesson_title/course_title/lesson_content (snake_case).",
+      "found": "2026-04-29",
+      "found_by": "reports-dashboards-chats-tester",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-018",
+      "title": "Program team-assign endpoint missing — POST /api/v1/programs/{id}/team/add/ → 404",
+      "severity": "P1",
+      "area": "programs",
+      "endpoint": "POST /api/v1/programs/{id}/team/add/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 404,
+      "request_body": {"user_id": 1, "role": "Project Manager"},
+      "expected_response_contains": ["id", "user_id", "user_name", "role"],
+      "root_cause": "ProgramViewSet had no team/add @action; the frontend Team page assumed parity with the project-level endpoint. There was also no ProgramTeam model.",
+      "fix_location": "backend/programs/models.py — added ProgramTeam model; backend/programs/migrations/0004_programteam.py; backend/programs/serializers.py — added ProgramTeamSerializer; backend/programs/views.py — added get_team, add_team_member, remove_team_member actions on ProgramViewSet.",
+      "regression_check": "POST with valid user_id returns 201 with team member object. GET /api/v1/programs/{id}/team/ returns the member list. DELETE /api/v1/programs/{id}/team/remove/{member_id}/ returns 204.",
+      "found": "2026-04-29",
+      "found_by": "user — projextpal.com/team page, 'Toewijzen aan Programma' dialog",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-019",
+      "title": "Role-based feature gates ignore user role — PM/program_manager locked out of their core features on free plan",
+      "severity": "P1",
+      "area": "frontend-auth",
+      "endpoint": "n/a — client-side gate",
+      "method": "n/a",
+      "expected_status": null,
+      "previous_status": null,
+      "expected_behavior": "A user whose role IS the feature must always reach it: program_manager → /programs + governance; project_manager / pm → /team + /post-project + /tijdregistratie; admin → admin features. Subscription tier does not override this.",
+      "root_cause": "hasFeature() in useUserFeatures.ts checked only subscription features, not user role. Sidebar items showed lock + 'Upgrade Required' toast even for users whose role required the feature.",
+      "fix_location": "frontend/src/hooks/useUserFeatures.ts — added FEATURE_ROLE_GRANTS map and roleGrantsFeature() check before subscription lookup. Affects sidebar lock + route-level FeatureGuard.",
+      "regression_check": "Login as a user with role=program_manager on a Starter plan: sidebar 'Programma's' must NOT show lock; navigating /programs must NOT show 'Feature Not Available'. Same for project_manager + Team/Post Project/Time Tracking.",
+      "found": "2026-04-29",
+      "found_by": "user — reda@inclufy.com locked out of /programs as program_manager on Starter plan",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-020",
+      "title": "Duplicate icon on dashboard headers — Sparkles + emoji rendered together",
+      "severity": "P3",
+      "area": "frontend-ui",
+      "endpoint": "n/a — UI",
+      "method": "n/a",
+      "expected_status": null,
+      "previous_status": null,
+      "expected_behavior": "Each dashboard header shows only the Sparkles icon plus the AI-Powered badge.",
+      "root_cause": "ExecutiveDashboard / ProgramManagerDashboard / ProjectManagerDashboard headers had both <Sparkles /> AND a 🎯/📋/📊 emoji prefixed in the title text.",
+      "fix_location": "frontend/src/components/dashboards/{Executive,ProgramManager,ProjectManager}Dashboard.tsx — emoji removed from the title span.",
+      "regression_check": "Grep frontend/src for '🎯 ProjeXtPal\\|📋 \\|📊 ' inside dashboard files — must return zero matches.",
+      "found": "2026-04-29",
+      "found_by": "user — visible duplicate icon on portfolio dashboard header",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "BUG-021",
+      "title": "Recommended Courses widget routes to /academy filter instead of specific course",
+      "severity": "P2",
+      "area": "frontend-ui",
+      "endpoint": "n/a — UI navigation",
+      "method": "n/a",
+      "expected_status": null,
+      "previous_status": null,
+      "expected_behavior": "Clicking a recommended course card navigates directly to /academy/course/{slug}, not /academy?methodology=X.",
+      "root_cause": "DashboardWidgets.tsx onClick used navigate('/academy?methodology=' + course.methodology) instead of /academy/course/{slug}. courseMap had no slug field.",
+      "fix_location": "frontend/src/components/dashboards/DashboardWidgets.tsx — added slug to courseMap (per methodology), threaded slug through courseRecommendations, switched onClick to navigate('/academy/course/' + course.slug).",
+      "regression_check": "Click any recommended course on the dashboard — URL must become /academy/course/{slug} matching the methodology, and the course detail page must render.",
+      "found": "2026-04-29",
+      "found_by": "user — dashboard recommended courses redirected to algemene academy page",
+      "status": "fix_pending_deploy"
+    },
+
+    {
+      "id": "INFRA-001",
+      "title": "Health endpoint reports 503 — channels (Redis) credentials misconfigured",
+      "severity": "P3",
+      "area": "infra",
+      "endpoint": "GET /health/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 503,
+      "previous_error_contains": ["channels", "invalid username-password pair"],
+      "root_cause": "Redis/channel-layer credentials misconfiguration. Database, cache, db_connections all healthy. WebSocket-dependent features (real-time chat, notifications) may be affected.",
+      "fix_location": "TODO — infrastructure config, not code",
+      "found": "2026-04-29",
+      "found_by": "admin-portal-tester",
+      "status": "blocked"
+    },
+
+    {
+      "id": "HISTORIC-001",
+      "title": "ai-insights 500 on Decimal*float TypeError",
+      "severity": "P2",
+      "area": "projects",
+      "endpoint": "GET /api/v1/projects/{id}/ai-insights/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "root_cause": "Mixed Decimal and float arithmetic in ai-insights computation.",
+      "fix_location": "Fixed in commit abf236c0",
+      "regression_check": "Endpoint must return 200 with analysis dict (budget_risk, timeline_risk).",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-002",
+      "title": "BudgetCategory spent/remaining computation incorrect",
+      "severity": "P2",
+      "area": "projects",
+      "endpoint": "GET /api/v1/projects/budget-categories/",
+      "method": "GET",
+      "expected_status": 200,
+      "fix_location": "Fixed in commit ad4a0a0d",
+      "regression_check": "Each budget category must include accurate 'spent' and 'remaining' fields.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-003",
+      "title": "Surveys questions endpoint returned 500",
+      "severity": "P1",
+      "area": "surveys",
+      "endpoint": "GET /api/v1/surveys/survey/{id}/questions/",
+      "method": "GET",
+      "expected_status": 200,
+      "fix_location": "Fixed in commit 1704d076",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-004",
+      "title": "PRINCE2 / programs / governance UUID-vs-int route mismatch on 3 routers",
+      "severity": "P1",
+      "area": "programs",
+      "fix_location": "Fixed in commit 6b0b0dae",
+      "regression_check": "All program sub-routers (safe, msp, pmi, prince2_programme, hybrid) must accept int program_id without UUID errors.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-005",
+      "title": "Email-send failures returned 500 on auth endpoints",
+      "severity": "P2",
+      "area": "auth",
+      "fix_location": "Fixed in commit 41637c77",
+      "regression_check": "Auth endpoints (register, password-reset) must not 500 when SMTP is unavailable.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-006",
+      "title": "Academy 500→404 when lesson/enrollment/certificate not found",
+      "severity": "P2",
+      "area": "academy",
+      "fix_location": "Fixed in commit 4b8b22ce",
+      "regression_check": "Calling /lessons/999999/, /enrollments/999999/, /certificates/by-id/999999/ must return 404 not 500.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-007",
+      "title": "Academy AI course generation crashed without default category",
+      "severity": "P2",
+      "area": "academy",
+      "fix_location": "Fixed in commit 0c1b38a6",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-008",
+      "title": "Onboarding /api/v1/onboarding/status/ returned bare 500",
+      "severity": "P3",
+      "area": "onboarding",
+      "endpoint": "GET /api/v1/onboarding/status/",
+      "fix_location": "Fixed in commit ed4816a1",
+      "regression_check": "Endpoint must return 200 with degraded payload when underlying service fails.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-009",
+      "title": "Academy admin skill + exam create 500s",
+      "severity": "P1",
+      "area": "academy",
+      "fix_location": "Fixed in commit d3250833",
+      "regression_check": "POST /api/v1/academy/admin/skills/create/ and POST /api/v1/academy/admin/exams/create/ must return 201.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-010",
+      "title": "PATCH /api/v1/auth/user/ returned 405 — profile edits rejected",
+      "severity": "P1",
+      "area": "auth",
+      "endpoint": "PATCH /api/v1/auth/user/",
+      "method": "PATCH",
+      "fix_location": "By design — CurrentUserView (/auth/user/) is GET+POST only. Profile edits go through /auth/user/update/ (UpdateOwnProfileView) which accepts PUT and PATCH.",
+      "regression_check": "Frontend must PATCH /api/v1/auth/user/update/, not /api/v1/auth/user/. 405 on the bare /user/ endpoint is intentional.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "wontfix"
+    },
+
+    {
+      "id": "HISTORIC-011",
+      "title": "Mobile-breaking COURSE_MODULES + LESSONS nested 404s",
+      "severity": "P1",
+      "area": "academy-mobile",
+      "fix_location": "Reverted in commit 136dc5fc — needs mobile-only investigation. Web academy works (academy-tester confirms 187 lessons / 39 modules / 13 courses listable). Defer to mobile-app-tester run before next mobile release.",
+      "regression_check": "Run mobile-app-tester on the academy course list + nested modules/lessons screens.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "blocked"
+    },
+
+    {
+      "id": "HISTORIC-012",
+      "title": "Task progress field empty when project has no subtasks",
+      "severity": "P3",
+      "area": "projects",
+      "fix_location": "Fixed in commit 909d90da — falls back to status",
+      "regression_check": "Project tasks without subtasks must still report progress (derived from status).",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    },
+
+    {
+      "id": "HISTORIC-013",
+      "title": "CRM API keys not accessible to superadmin",
+      "severity": "P2",
+      "area": "auth",
+      "endpoint": "GET /api/v1/auth/crm-api-keys/",
+      "fix_location": "Fixed in commit 4439ecb5",
+      "regression_check": "Superadmin must receive 200 with CRM API key list.",
+      "found": "historic",
+      "found_by": "git log",
+      "status": "fixed_verified"
+    }
+
+  ]
+}

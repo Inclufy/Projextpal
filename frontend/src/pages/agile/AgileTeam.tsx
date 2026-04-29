@@ -16,6 +16,7 @@ const AgileTeam = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [members, setMembers] = useState<any[]>([]);
+  const [companyUsers, setCompanyUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -27,7 +28,16 @@ const AgileTeam = () => {
   const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
   const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/agile/team/`, { headers }); if (r.ok) { const d = await r.json(); setMembers(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
-  useEffect(() => { fetchData(); }, [id]);
+  const fetchCompanyUsers = async () => {
+    try {
+      const r = await fetch(`/api/v1/auth/company-users/members/`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        setCompanyUsers(Array.isArray(d) ? d : d.results || []);
+      }
+    } catch (err) { console.error(err); }
+  };
+  useEffect(() => { fetchData(); fetchCompanyUsers(); }, [id]);
 
   const openCreate = () => { setEditing(null); setForm({ user_email: "", role: "developer", skills: "" }); setDialogOpen(true); };
   const openEdit = (m: any) => { setEditing(m); setForm({ user_email: m.user_email || "", role: m.role || "developer", skills: Array.isArray(m.skills) ? m.skills.join(", ") : (m.skills || "") }); setDialogOpen(true); };
@@ -70,7 +80,7 @@ const AgileTeam = () => {
       </div>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Member</DialogTitle><DialogDescription>{editing ? pt("Edit team member details") : pt("Add a new team member by email")}</DialogDescription></DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-2"><Label>{pt("Email")} *</Label><Input type="email" placeholder="user@example.com" value={form.user_email} onChange={(e) => setForm({ ...form, user_email: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Team Member")} *</Label>{editing ? (<Input type="email" value={form.user_email} disabled />) : (<Select value={form.user_email} onValueChange={(v) => setForm({ ...form, user_email: v })}><SelectTrigger><SelectValue placeholder={pt("Select a member")} /></SelectTrigger><SelectContent>{companyUsers.length === 0 ? (<SelectItem value="none" disabled>{pt("No team members available")}</SelectItem>) : (companyUsers.filter((u: any) => !members.some((m: any) => m.user_email === u.email)).map((u: any) => (<SelectItem key={u.id} value={u.email}>{u.name || u.email}{u.name && u.email ? ` — ${u.email}` : ''}</SelectItem>)))}</SelectContent></Select>)}</div>
           <div className="space-y-2"><Label>{pt("Role")}</Label><Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="product_owner">Product Owner</SelectItem><SelectItem value="tech_lead">Tech Lead</SelectItem><SelectItem value="developer">Developer</SelectItem><SelectItem value="designer">Designer</SelectItem><SelectItem value="qa">QA Engineer</SelectItem><SelectItem value="devops">DevOps</SelectItem><SelectItem value="analyst">Business Analyst</SelectItem></SelectContent></Select></div>
           <div className="space-y-2"><Label>Skills</Label><Input placeholder="e.g. React, Python, DevOps" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} /></div>
           <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>

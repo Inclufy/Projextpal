@@ -46,7 +46,7 @@ const fetchIterationData = async (projectId: string) => {
   }
   
   // Get tasks
-  const tasksResponse = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/`, {
+  const tasksResponse = await fetch(`${API_BASE_URL}/projects/tasks/?project=${projectId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   

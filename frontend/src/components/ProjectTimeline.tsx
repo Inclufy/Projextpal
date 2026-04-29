@@ -21,7 +21,7 @@ interface Task {
 
 const fetchProjectTasks = async (projectId: string) => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/`, {
+  const response = await fetch(`${API_BASE_URL}/projects/tasks/?project=${projectId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) return [];

@@ -79,7 +79,13 @@ const callAI = async (prompt: string): Promise<string> => {
     });
     if (!response.ok) throw new Error("AI service unavailable");
     const data = await response.json();
-    return data.response || "";
+    // Backend returns 200 with {success:false, response:null, error:"..."} when
+    // OPENAI_API_KEY is missing or OpenAI is unreachable. Treat those as failures
+    // so callers don't show "generated!" with empty fields.
+    if (data.success === false || !data.response) {
+      throw new Error(data.error || "AI service unavailable");
+    }
+    return data.response;
   } catch (error) {
     console.error("AI call failed:", error);
     throw error;
@@ -230,7 +236,7 @@ const CreateProgram = () => {
     queryKey: ["team-members"],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/v1/auth/company-users/members", {
+        const response = await fetch("/api/v1/auth/company-users/members/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
@@ -402,32 +408,34 @@ Respond in this exact JSON format:
 Be specific and professional. Use the context to determine appropriate methodology, timeline, and budget.`;
 
       const response = await callAI(prompt);
-      
+
       const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        
-        // Calculate dates
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + (parsed.durationMonths || 12));
-        
-        setFormData(prev => ({
-          ...prev,
-          name: parsed.name || prev.name,
-          description: parsed.description || prev.description,
-          strategicObjective: parsed.strategicObjective || prev.strategicObjective,
-          methodology: parsed.methodology || prev.methodology,
-          startDate: startDate.toISOString().split('T')[0],
-          targetEndDate: endDate.toISOString().split('T')[0],
-          totalBudget: parsed.estimatedBudget?.toString() || prev.totalBudget,
-        }));
-        
-        setAiGenerateOpen(false);
-        toast.success(pt("Program details generated! Review and adjust as needed."));
+      if (!jsonMatch) {
+        throw new Error("AI returned no parsable JSON");
       }
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Calculate dates
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + (parsed.durationMonths || 12));
+
+      setFormData(prev => ({
+        ...prev,
+        name: parsed.name || prev.name,
+        description: parsed.description || prev.description,
+        strategicObjective: parsed.strategicObjective || prev.strategicObjective,
+        methodology: parsed.methodology || prev.methodology,
+        startDate: startDate.toISOString().split('T')[0],
+        targetEndDate: endDate.toISOString().split('T')[0],
+        totalBudget: parsed.estimatedBudget?.toString() || prev.totalBudget,
+      }));
+
+      setAiGenerateOpen(false);
+      toast.success(pt("Program details generated! Review and adjust as needed."));
     } catch (error) {
-      toast.error(pt("AI generation temporarily unavailable"));
+      const msg = error instanceof Error ? error.message : "";
+      toast.error(msg || pt("AI generation temporarily unavailable"));
     } finally {
       setAiLoading(false);
     }
@@ -450,7 +458,8 @@ Be specific and professional. Use the context to determine appropriate methodolo
       setFormData(prev => ({ ...prev, description: response.trim() }));
       toast.success(pt("Description generated!"));
     } catch (error) {
-      toast.error(pt("Could not generate description"));
+      const msg = error instanceof Error ? error.message : "";
+      toast.error(msg || pt("Could not generate description"));
     } finally {
       setAiLoading(false);
     }
@@ -475,7 +484,8 @@ Be specific and professional. Use the context to determine appropriate methodolo
       setFormData(prev => ({ ...prev, strategicObjective: response.trim() }));
       toast.success(pt("Strategic objective generated!"));
     } catch (error) {
-      toast.error(pt("Could not generate objective"));
+      const msg = error instanceof Error ? error.message : "";
+      toast.error(msg || pt("Could not generate objective"));
     } finally {
       setAiLoading(false);
     }
@@ -986,7 +996,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           {teamMembers.length > 0 ? (
                             teamMembers.map((member: any) => (
                               <SelectItem key={member.id} value={member.id.toString()}>
-                                {member.first_name} {member.last_name} - {member.email}
+                                {member.name || member.email} {member.email && member.name ? `- ${member.email}` : ''}
                               </SelectItem>
                             ))
                           ) : (
@@ -1010,7 +1020,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                           {teamMembers.length > 0 ? (
                             teamMembers.map((member: any) => (
                               <SelectItem key={member.id} value={member.id.toString()}>
-                                {member.first_name} {member.last_name}
+                                {member.name || member.email}
                               </SelectItem>
                             ))
                           ) : (
@@ -1197,8 +1207,11 @@ Be specific and professional. Use the context to determine appropriate methodolo
                         <div>
                           <p className="text-sm text-muted-foreground">{pt("Program Manager")}</p>
                           <p className="font-medium">
-                            {formData.programManagerId 
-                              ? teamMembers.find((m: any) => m.id.toString() === formData.programManagerId)?.first_name || 'Selected'
+                            {formData.programManagerId
+                              ? (() => {
+                                  const m = teamMembers.find((x: any) => x.id.toString() === formData.programManagerId);
+                                  return m?.name || m?.email || 'Selected';
+                                })()
                               : pt('Not assigned')}
                           </p>
                         </div>

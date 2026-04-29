@@ -9,6 +9,8 @@ from .views import (
     ProgramBudgetCategoryViewSet,
     ProgramBudgetItemViewSet,
     ProgramBudgetOverviewViewSet,
+    ProgramSeedDemoView,
+    ProgramClearDemoView,
 )
 
 # Router
@@ -37,6 +39,10 @@ urlpatterns = [
     path('<int:pk>/budget/overview/',
          ProgramBudgetOverviewViewSet.as_view({'get': 'retrieve'}),
          name='program-budget-overview'),
+
+    # Demo seed/clear (admins, PMs, programme managers only)
+    path('<int:pk>/seed-demo/', ProgramSeedDemoView.as_view(), name='program-seed-demo'),
+    path('<int:pk>/clear-demo/', ProgramClearDemoView.as_view(), name='program-clear-demo'),
 
     # Nested routes for benefits
     path('<int:program_pk>/benefits/',

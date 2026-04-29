@@ -19,7 +19,7 @@ import {
   FolderKanban,
   TrendingUp,
   AlertTriangle,
-  DollarSign,
+  Euro,
   Sparkles,
   ArrowRight,
   Target,
@@ -360,7 +360,7 @@ const ExecutiveDashboard: React.FC = () => {
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
-            <span>🎯 ProjeXtPal {t.app.dashboardTitle}</span>
+            <span>ProjeXtPal {t.app.dashboardTitle}</span>
             <Badge className="ml-1 bg-green-500 text-white text-xs">AI-Powered</Badge>
           </div>
 
@@ -404,7 +404,7 @@ const ExecutiveDashboard: React.FC = () => {
           <StatCard title={pt("Projects")} value={totalProjects} subtitle={t.app.totalProjects} icon={FolderKanban} color="blue" />
           <StatCard title={pt("Active")} value={activeProjects} subtitle={t.app.inProgress} icon={Activity} color="emerald" trend="up" trendValue="+12%" />
           <StatCard title={pt("At Risk")} value={atRiskProjects} subtitle={t.app.requiresAttention} icon={AlertTriangle} color="red" />
-          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={DollarSign} color="amber" />
+          <StatCard title={pt("Budget")} value={formatBudget(totalBudget, currencyCode)} subtitle={t.app.totalAllocated} icon={Euro} color="amber" />
           <StatCard title={pt("Progress")} value={`${avgProgress}%`} subtitle={pt("Average Completion")} icon={Target} color="emerald" />
         </div>
 

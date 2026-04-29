@@ -1,13 +1,37 @@
 from rest_framework import serializers
 from .models import (
-    Program, 
-    ProgramBenefit, 
-    ProgramRisk, 
+    Program,
+    ProgramBenefit,
+    ProgramRisk,
     ProgramMilestone,
     ProgramBudget,
     ProgramBudgetCategory,
-    ProgramBudgetItem
+    ProgramBudgetItem,
+    ProgramTeam,
 )
+
+
+class ProgramTeamSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    added_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProgramTeam
+        fields = [
+            'id', 'program', 'user', 'user_id', 'user_name', 'user_email',
+            'role', 'added_by', 'added_by_name', 'added_at', 'is_active',
+        ]
+        read_only_fields = ['id', 'program', 'added_by', 'added_at']
+
+    def get_user_name(self, obj):
+        return obj.user.get_full_name() or obj.user.email
+
+    def get_added_by_name(self, obj):
+        if not obj.added_by:
+            return None
+        return obj.added_by.get_full_name() or obj.added_by.email
 
 
 class ProgramBenefitSerializer(serializers.ModelSerializer):

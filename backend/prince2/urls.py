@@ -8,9 +8,11 @@ from .views import (
     BusinessCaseRiskViewSet, ProjectInitiationDocumentViewSet,
     StageViewSet, StagePlanViewSet, StageGateViewSet, WorkPackageViewSet,
     ProjectBoardViewSet, ProjectBoardMemberViewSet, HighlightReportViewSet,
+    CheckpointReportViewSet,
     EndProjectReportViewSet, LessonsLogViewSet, ProjectToleranceViewSet,
     Prince2DashboardView,
     ProjectBriefComputedView, ProjectClosureComputedView,
+    Prince2SeedDemoView, Prince2ClearDemoView,
 )
 
 
@@ -256,9 +258,36 @@ urlpatterns = [
         name='prince2-highlight-list'
     ),
     path(
+        'projects/<int:project_id>/prince2/highlight-reports/auto_draft/',
+        HighlightReportViewSet.as_view({'post': 'auto_draft'}),
+        name='prince2-highlight-auto-draft'
+    ),
+    path(
         'projects/<int:project_id>/prince2/highlight-reports/<int:pk>/',
         HighlightReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='prince2-highlight-detail'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/highlight-reports/<int:pk>/generate/',
+        HighlightReportViewSet.as_view({'post': 'generate'}),
+        name='prince2-highlight-generate'
+    ),
+
+    # =========================================================================
+    # CHECKPOINT REPORTS (PRINCE2 6th Ed §A.3)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/checkpoint-reports/',
+        CheckpointReportViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-checkpoint-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/checkpoint-reports/<int:pk>/',
+        CheckpointReportViewSet.as_view({
+            'get': 'retrieve', 'put': 'update',
+            'patch': 'partial_update', 'delete': 'destroy',
+        }),
+        name='prince2-checkpoint-detail'
     ),
 
     path(
@@ -376,5 +405,15 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/dashboard/',
         Prince2DashboardView.as_view(),
         name='prince2-dashboard'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/seed-demo/',
+        Prince2SeedDemoView.as_view(),
+        name='prince2-seed-demo'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/clear-demo/',
+        Prince2ClearDemoView.as_view(),
+        name='prince2-clear-demo'
     ),
 ]

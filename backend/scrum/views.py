@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Sum, Avg, Max
 from django.db import IntegrityError
+from projects.permissions import MethodologyMatchesProjectPermission
 # NEW (CORRECT):
 from .models import (
     ProductBacklog, BacklogItem, Sprint, SprintBurndown,
@@ -50,7 +51,7 @@ class ProjectFilterMixin:
 
 class ProductBacklogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = ProductBacklogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -97,7 +98,7 @@ class ProductBacklogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = BacklogItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -299,7 +300,7 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class SprintViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(Sprint)
@@ -386,7 +387,7 @@ class SprintViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class DailyStandupViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = DailyStandupSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -417,7 +418,7 @@ class DailyStandupViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class SprintReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -429,7 +430,7 @@ class SprintReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class SprintRetrospectiveViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintRetrospectiveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -445,7 +446,7 @@ class SprintRetrospectiveViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class VelocityViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = VelocitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(Velocity)
@@ -463,7 +464,7 @@ class VelocityViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class DefinitionOfDoneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = DefinitionOfDoneSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(DefinitionOfDone)
@@ -548,7 +549,7 @@ class DefinitionOfDoneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class ScrumTeamViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = ScrumTeamSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         return self.get_project_queryset(ScrumTeam)
@@ -557,13 +558,48 @@ class ScrumTeamViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         project = self.get_project()
         serializer.save(project=project)
 
+    def list(self, request, project_id=None, *args, **kwargs):
+        """Return Scrum-specific team rows; if none exist, fall back to the
+        generic ProjectTeam so methodology-specific tabs aren't empty when
+        only the unified team is populated.
+        """
+        scrum_qs = self.get_queryset()
+        if scrum_qs.exists():
+            return Response(ScrumTeamSerializer(scrum_qs, many=True).data)
+
+        # Fallback: synthesise read-only rows from the generic ProjectTeam
+        # so the Scrum team tab matches the unified team. Default role is
+        # "developer" (Scrum Guide 2020 — Developers is the catch-all
+        # accountability when no explicit role mapping exists).
+        from projects.models import ProjectTeam
+        generic = ProjectTeam.objects.filter(
+            project_id=project_id,
+            project__company=request.user.company,
+            is_active=True,
+        ).select_related('user')
+        payload = [
+            {
+                'id': None,
+                'project': int(project_id) if project_id else None,
+                'user': pt.user_id,
+                'user_name': pt.user.get_full_name(),
+                'user_email': pt.user.email,
+                'role': 'developer',
+                'capacity_per_sprint': None,
+                'created_at': pt.added_at,
+                '_source': 'generic_project_team',
+            }
+            for pt in generic
+        ]
+        return Response(payload)
+
 # =============================================================================
 # SPRINT GOAL, PLANNING, INCREMENT (NEW)
 # =============================================================================
 
 class SprintGoalViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintGoalSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -578,7 +614,7 @@ class SprintGoalViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class SprintPlanningViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintPlanningSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -606,7 +642,7 @@ class SprintPlanningViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class IncrementViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = IncrementSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -631,7 +667,7 @@ class IncrementViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class DoDChecklistCompletionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = DoDChecklistCompletionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
@@ -646,7 +682,7 @@ class DoDChecklistCompletionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
 class ScrumDashboardView(APIView):
     """Scrum Dashboard for a project"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get(self, request, project_id):
         from projects.models import Project
@@ -664,7 +700,9 @@ class ScrumDashboardView(APIView):
             'project_name': project.name,
             'active_sprint': None,
             'sprint_progress': 0,
-            'sprint_total': 0,
+            'sprint_total': 0,                # total COUNT of sprints (frontend reads this)
+            'active_sprint_story_points': 0,  # story points of the active sprint
+            'sprints_total': 0,               # kept for backward compatibility (== sprint_total)
             'backlog_items_count': 0,
             'backlog_ready_count': 0,
             'total_story_points': 0,
@@ -675,11 +713,23 @@ class ScrumDashboardView(APIView):
         }
 
         try:
-            active_sprint = Sprint.objects.filter(project=project, status='active').first()
+            # Sprint Guide 2020 — distinct concepts:
+            #   sprint_progress              -> story-point progress for the
+            #     currently active sprint (completed)
+            #   active_sprint_story_points   -> total story points of the
+            #     currently active sprint
+            #   sprint_total / sprints_total -> total COUNT of sprints across
+            #     the project's life (for the dashboard "X sprints" tile).
+            #     Frontend reads `sprint_total` and expects the count.
+            project_sprints = Sprint.objects.filter(project_id=project_id)
+            dashboard_data['sprint_total'] = project_sprints.count()
+            dashboard_data['sprints_total'] = project_sprints.count()
+
+            active_sprint = project_sprints.filter(status='active').first()
             if active_sprint:
                 dashboard_data['active_sprint'] = SprintSerializer(active_sprint).data
                 dashboard_data['sprint_progress'] = active_sprint.completed_story_points or 0
-                dashboard_data['sprint_total'] = active_sprint.total_story_points or 0
+                dashboard_data['active_sprint_story_points'] = active_sprint.total_story_points or 0
         except Exception:
             pass
 
@@ -718,7 +768,7 @@ class ScrumDashboardView(APIView):
 
 class ScrumBoardView(APIView):
     """Read-only Scrum board: backlog grouped by status + active sprint."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get(self, request, project_id):
         from projects.models import Project
@@ -755,3 +805,259 @@ class ScrumBoardView(APIView):
             'active_sprint': SprintSerializer(active_sprint).data if active_sprint else None,
             'backlog_by_status': backlog_by_status,
         })
+
+
+class ScrumSeedDemoView(APIView):
+    """One-shot demo seeder for every Scrum sub-tab. Idempotent.
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
+
+    def post(self, request, project_id=None):
+        from datetime import date, timedelta
+        from django.contrib.auth import get_user_model
+        from django.db import transaction
+        from projects.models import Project
+
+        User = get_user_model()
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+        company = request.user.company
+        team_pool = list(User.objects.filter(company=company)[:6]) or [request.user]
+        created = {}
+        today = date.today()
+
+        with transaction.atomic():
+            # ---- Team ----
+            roles = ['product_owner', 'scrum_master', 'developer', 'developer', 'developer', 'stakeholder']
+            team_count = 0
+            for idx, member in enumerate(team_pool):
+                _, was_created = ScrumTeam.objects.get_or_create(
+                    project=project, user=member,
+                    defaults={'role': roles[idx % len(roles)], 'capacity_per_sprint': 8 if roles[idx % len(roles)] == 'developer' else 0},
+                )
+                if was_created:
+                    team_count += 1
+            created['team'] = team_count
+
+            # ---- Product Backlog + Sprints + Items ----
+            backlog, _ = ProductBacklog.objects.get_or_create(
+                project=project,
+                defaults={
+                    'vision': f"Deliver measurable outcomes for {project.name} customers within two quarters.",
+                    'description': "Product backlog covering MVP scope and the first post-launch enhancements.",
+                },
+            )
+
+            sprints = list(Sprint.objects.filter(project=project).order_by('number'))
+            if len(sprints) < 2:
+                sp1 = Sprint.objects.create(
+                    project=project, name='Sprint 1', number=1,
+                    goal='Ship onboarding + auth hardening',
+                    start_date=today - timedelta(days=21),
+                    end_date=today - timedelta(days=7),
+                    status='completed', team_capacity=24,
+                    went_well='Onboarding shipped early. No prod incidents.',
+                    to_improve='Estimation off on auth tasks.',
+                    action_items='Add buffer for security work.',
+                )
+                sp2 = Sprint.objects.create(
+                    project=project, name='Sprint 2', number=2,
+                    goal='Reporting dashboard MVP + first AI helper',
+                    start_date=today - timedelta(days=6),
+                    end_date=today + timedelta(days=8),
+                    status='active', team_capacity=28,
+                )
+                sprints = [sp1, sp2]
+                created['sprints'] = 2
+            else:
+                created['sprints'] = 0
+
+            # ---- Backlog items ----
+            backlog_count = 0
+            if not BacklogItem.objects.filter(backlog=backlog).exists():
+                items_seed = [
+                    ('Onboarding flow — happy path', 'user_story', 'high', 'done', 5, sprints[0]),
+                    ('Email magic-link verification', 'user_story', 'high', 'done', 3, sprints[0]),
+                    ('Bug: signup rejects + symbol in email', 'bug', 'critical', 'done', 2, sprints[0]),
+                    ('First-login welcome tour', 'user_story', 'medium', 'in_progress', 5, sprints[1]),
+                    ('Velocity widget on dashboard', 'user_story', 'high', 'in_progress', 8, sprints[1]),
+                    ('Burndown chart per sprint', 'user_story', 'high', 'ready', 5, sprints[1]),
+                    ('Spike: GPT-4 vs Claude for triage', 'spike', 'medium', 'done', 3, sprints[0]),
+                    ('Auto-summarize standup blockers', 'user_story', 'medium', 'ready', 8, sprints[1]),
+                    ('Suggest acceptance criteria from title', 'user_story', 'low', 'new', 5, None),
+                    ('Mobile read-only project list', 'user_story', 'low', 'new', 5, None),
+                    ('Push notifications for sprint events', 'user_story', 'low', 'new', 3, None),
+                    ('Export reports to PDF', 'user_story', 'medium', 'new', 8, None),
+                ]
+                for order, (title, kind, prio, status, points, sprint) in enumerate(items_seed):
+                    BacklogItem.objects.create(
+                        backlog=backlog, item_type=kind, title=title,
+                        description=f"As a user I want {title.lower()} so I can deliver value.",
+                        acceptance_criteria="Given X\nWhen Y\nThen Z",
+                        story_points=points, priority=prio, status=status,
+                        order=order, sprint=sprint,
+                        assignee=team_pool[order % len(team_pool)],
+                        reporter=team_pool[0],
+                    )
+                    backlog_count += 1
+            created['backlog_items'] = backlog_count
+
+            # ---- Sprint Goals ----
+            goals_count = 0
+            for sp in sprints:
+                if not hasattr(sp, 'sprint_goal'):
+                    SprintGoal.objects.create(
+                        sprint=sp, description=sp.goal or 'Deliver sprint commitments',
+                        success_criteria=['All committed stories Done', 'No critical bugs in demo', 'Sprint review held with stakeholders'],
+                        is_achieved=(sp.status == 'completed'),
+                        created_by=team_pool[0],
+                    )
+                    goals_count += 1
+            created['sprint_goals'] = goals_count
+
+            # ---- Sprint Planning ----
+            planning_count = 0
+            for sp in sprints:
+                if not hasattr(sp, 'planning_meeting') and sp.start_date:
+                    SprintPlanning.objects.create(
+                        sprint=sp,
+                        scheduled_date=timezone.make_aware(timezone.datetime.combine(sp.start_date, timezone.datetime.min.time().replace(hour=10))),
+                        duration_minutes=120,
+                        status='completed' if sp.status in ('active', 'completed') else 'scheduled',
+                        team_capacity=sp.team_capacity, committed_story_points=sp.team_capacity or 0,
+                        facilitator=team_pool[1] if len(team_pool) > 1 else team_pool[0],
+                    )
+                    planning_count += 1
+            created['planning_meetings'] = planning_count
+
+            # ---- Daily Standups for active sprint ----
+            standup_count = 0
+            active_sprint = next((s for s in sprints if s.status == 'active'), None)
+            if active_sprint and not DailyStandup.objects.filter(sprint=active_sprint).exists():
+                yesterdays = ['Velocity widget data layer', 'Reviewed PR for burndown', 'Pairing on AI prompt', 'Bug bash — 4 found', 'Mobile nav sketch', 'Cypress runners on staging']
+                todays = ['Wire widget into dashboard', 'Address PR comments', 'Continue prompt tuning', 'Triage and assign bugs', 'Mobile nav v2', 'Validate cypress green']
+                blockers = ['', 'Waiting on staging deploy', '', '', 'Need design tokens', '']
+                for d_offset in range(3):
+                    d = today - timedelta(days=d_offset)
+                    if active_sprint.start_date and d < active_sprint.start_date:
+                        continue
+                    su = DailyStandup.objects.create(
+                        sprint=active_sprint, date=d,
+                        notes='Team focused, on-track for sprint goal.',
+                        blockers='See individual updates.',
+                    )
+                    for idx, member in enumerate(team_pool):
+                        StandupUpdate.objects.create(
+                            standup=su, user=member,
+                            yesterday=yesterdays[idx % len(yesterdays)],
+                            today=todays[idx % len(todays)],
+                            blockers=blockers[idx % len(blockers)],
+                        )
+                    standup_count += 1
+            created['standups'] = standup_count
+
+            # ---- Sprint Review + Retrospective for completed sprint ----
+            review_count = 0
+            retro_count = 0
+            completed_sprint = next((s for s in sprints if s.status == 'completed'), None)
+            if completed_sprint:
+                if not SprintReview.objects.filter(sprint=completed_sprint).exists():
+                    SprintReview.objects.create(
+                        sprint=completed_sprint, date=completed_sprint.end_date,
+                        completed_story_points=completed_sprint.completed_story_points,
+                        sprint_goal_achieved=True,
+                        demo_notes='Demoed onboarding flow + magic-link auth. All scenarios passed live.',
+                        stakeholder_feedback='Positive — request to extend tour to settings page.',
+                        action_items=[
+                            {'item': 'Add settings tour follow-up story', 'owner': 'PO'},
+                            {'item': 'Schedule security review', 'owner': 'Tech Lead'},
+                        ],
+                        facilitator=team_pool[0],
+                    )
+                    review_count = 1
+
+                if not SprintRetrospective.objects.filter(sprint=completed_sprint).exists():
+                    SprintRetrospective.objects.create(
+                        sprint=completed_sprint, date=completed_sprint.end_date,
+                        went_well='Onboarding shipped on day 12.\nPairing reduced review time.\nNo prod incidents.',
+                        to_improve='Estimation was off on auth hardening.\nStandups ran long Mon/Wed.',
+                        action_items='Time-box standups to 10 min.\nAdd buffer for security work next sprint.',
+                        team_morale=4,
+                    )
+                    retro_count = 1
+            created['reviews'] = review_count
+            created['retros'] = retro_count
+
+            # ---- Velocity ----
+            velocity_count = 0
+            for sp in sprints:
+                if not hasattr(sp, 'velocity'):
+                    Velocity.objects.create(
+                        project=project, sprint=sp,
+                        committed_points=sp.team_capacity or 0,
+                        completed_points=22 if sp.status == 'completed' else (sp.completed_story_points or 0),
+                    )
+                    velocity_count += 1
+            created['velocity'] = velocity_count
+
+            # ---- Definition of Done ----
+            dod_count = 0
+            if not DefinitionOfDone.objects.filter(project=project).exists():
+                dod_seed = [
+                    ('Code reviewed by at least 1 peer', 'project'),
+                    ('All unit tests pass on CI', 'project'),
+                    ('E2E happy-path test added or updated', 'project'),
+                    ('User-facing copy reviewed by PO', 'sprint'),
+                    ('Updated docs in /docs or inline', 'project'),
+                    ('No new ESLint or TS errors', 'project'),
+                    ('Demo recorded or shown in standup', 'sprint'),
+                    ('Security checklist (XSS, authz, PII) passed', 'project'),
+                ]
+                for order, (item, scope) in enumerate(dod_seed):
+                    DefinitionOfDone.objects.create(
+                        project=project, item=item, scope=scope,
+                        name='Project DoD', order=order, is_active=True,
+                    )
+                    dod_count += 1
+            created['dod'] = dod_count
+
+        return Response({
+            'success': True,
+            'project_id': project.id,
+            'created': created,
+            'message': f"Scrum demo data seeded for {project.name}",
+        })
+
+
+class ScrumClearDemoView(APIView):
+    """Wipe all Scrum data for a project.
+
+    Restricted to admins, project managers and program managers.
+    """
+    from accounts.permissions import HasRole
+    permission_classes = [HasRole("superadmin", "admin", "pm", "program_manager"), MethodologyMatchesProjectPermission]
+
+    def post(self, request, project_id=None):
+        from django.db import transaction
+        from projects.models import Project
+
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+        deleted = {}
+        with transaction.atomic():
+            deleted['team'] = ScrumTeam.objects.filter(project=project).count()
+            ScrumTeam.objects.filter(project=project).delete()
+            deleted['sprints'] = Sprint.objects.filter(project=project).count()
+            Sprint.objects.filter(project=project).delete()  # cascades to items, planning, reviews, retros, standups, velocity, goals
+            try:
+                backlog = project.scrum_backlog
+                deleted['backlog_items'] = backlog.items.count()
+                backlog.delete()
+                deleted['backlog'] = 1
+            except ProductBacklog.DoesNotExist:
+                deleted['backlog'] = 0
+                deleted['backlog_items'] = 0
+            deleted['dod'] = DefinitionOfDone.objects.filter(project=project).count()
+            DefinitionOfDone.objects.filter(project=project).delete()
+        return Response({'success': True, 'deleted': deleted})

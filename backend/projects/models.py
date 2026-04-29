@@ -61,6 +61,15 @@ class Project(models.Model):
         ("cancelled", "Cancelled"),
     ]
 
+    CURRENCY_CHOICES = [
+        ("EUR", "Euro"),
+        ("USD", "US Dollar"),
+        ("GBP", "British Pound"),
+        ("AED", "UAE Dirham"),
+        ("SAR", "Saudi Riyal"),
+        ("MAD", "Moroccan Dirham"),
+    ]
+
     company = models.ForeignKey(
         "accounts.Company", on_delete=models.CASCADE, related_name="projects"
     )
@@ -78,6 +87,7 @@ class Project(models.Model):
         max_length=50, choices=METHODOLOGY_CHOICES, null=True, blank=True
     )
     budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="EUR")
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(blank=True)

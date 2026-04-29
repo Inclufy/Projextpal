@@ -1,3 +1,4 @@
+import uuid
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -26,8 +27,15 @@ class CreateInvitationView(APIView):
         
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Create invitation
+
+        # Normalize empty-string ids from the form to None so the FK is nullable
+        project_id = project_id or None
+        program_id = program_id or None
+
+        # Create invitation with a unique placeholder token. The real token is
+        # generated below using the row id and overwrites this placeholder.
+        # Without a unique placeholder, the second invite ever would crash with
+        # IntegrityError on the unique constraint of token.
         invitation = TeamInvitation.objects.create(
             email=email,
             role=role,
@@ -35,34 +43,36 @@ class CreateInvitationView(APIView):
             project_id=project_id,
             program_id=program_id,
             message=message,
-            token=''  # Will be set after creation
+            token=f'pending-{uuid.uuid4()}',
         )
-        
-        # Generate token
+
+        # Generate the real token now that we have an id
         token = generate_invitation_token(invitation.id, email)
         invitation.token = token
         invitation.save()
-        
-        # Send email
+
+        # Build invitation link
         invitation_link = f"{settings.FRONTEND_URL}/invite/{token}"
-        
-        context = {
-            'inviter_name': request.user.get_full_name() or request.user.email,
-            'project_name': invitation.project.name if invitation.project else None,
-            'program_name': invitation.program.name if invitation.program else None,
-            'invitation_link': invitation_link,
-            'message': message,
-            'role': role,
-        }
-        
-        # Send email
+
+        # Resolve a human-readable target name for the email subject. If neither
+        # project nor program is linked (a generic company invite), fall back to
+        # the company name.
+        target_name = None
+        if invitation.project:
+            target_name = invitation.project.name
+        elif invitation.program:
+            target_name = invitation.program.name
+        else:
+            company = getattr(request.user, 'company', None)
+            target_name = getattr(company, 'name', None) or 'ProjeXtPal'
+
         try:
             send_mail(
-                subject=f'Je bent uitgenodigd voor {invitation.project.name if invitation.project else invitation.program.name}',
+                subject=f'Je bent uitgenodigd voor {target_name}',
                 message=f'{request.user.get_full_name() or request.user.email} heeft je uitgenodigd. Klik op: {invitation_link}',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
-                fail_silently=False,
+                fail_silently=True,
             )
         except Exception as e:
             print(f"Email send error: {e}")

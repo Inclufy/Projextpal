@@ -23,6 +23,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = [
             "id", "survey", "text", "question_type", "required", "order", "choices"
         ]
+        read_only_fields = ["id", "survey"]
 
     def validate_choices(self, value):
         """Validate choices for multiple choice questions"""

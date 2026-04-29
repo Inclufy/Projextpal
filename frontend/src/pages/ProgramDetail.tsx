@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DemoControls } from "@/components/DemoControls";
 import {
   ArrowLeft,
   Edit,
   Trash2,
   Loader2,
   Calendar,
-  DollarSign,
+  Euro,
   Users,
   FolderKanban,
   Target,
@@ -54,6 +55,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CURRENCIES, type CurrencyCode } from "@/lib/currencies";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -81,6 +84,26 @@ const fetchProgramProjects = async (id: string) => {
   });
   if (!response.ok) return [];
   return response.json();
+};
+
+const fetchProgramMilestones = async (id: string) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`/api/v1/programs/${id}/milestones/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data) ? data : data.results || [];
+};
+
+const fetchProgramRisks = async (id: string) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`/api/v1/programs/${id}/risks/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data) ? data : data.results || [];
 };
 
 const deleteProgram = async (id: string) => {
@@ -129,6 +152,7 @@ const ProgramDetail = () => {
     name: "",
     description: "",
     total_budget: "",
+    currency: "EUR",
     strategic_objective: "",
   });
 
@@ -148,6 +172,18 @@ const ProgramDetail = () => {
   const { data: projects = [] } = useQuery({
     queryKey: ["program-projects", id],
     queryFn: () => fetchProgramProjects(id!),
+    enabled: !!id,
+  });
+
+  const { data: milestones = [] } = useQuery({
+    queryKey: ["program-milestones", id],
+    queryFn: () => fetchProgramMilestones(id!),
+    enabled: !!id,
+  });
+
+  const { data: risks = [] } = useQuery({
+    queryKey: ["program-risks", id],
+    queryFn: () => fetchProgramRisks(id!),
     enabled: !!id,
   });
 
@@ -239,6 +275,7 @@ const ProgramDetail = () => {
         name: program.name || "",
         description: program.description || "",
         total_budget: program.total_budget?.toString() || "",
+        currency: program.currency || "EUR",
         strategic_objective: program.strategic_objective || "",
       });
     }
@@ -252,6 +289,7 @@ const ProgramDetail = () => {
         name: editFormData.name,
         description: editFormData.description,
         total_budget: parseFloat(editFormData.total_budget) || 0,
+        currency: editFormData.currency,
         strategic_objective: editFormData.strategic_objective,
       },
     });
@@ -285,11 +323,13 @@ const ProgramDetail = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, getCurrencyFromLanguage(language));
+  const programCurrency = (program?.currency as CurrencyCode) || getCurrencyFromLanguage(language);
+  const formatCurrency = (amount: number) => formatBudgetDetailed(amount || 0, programCurrency, language);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('nl-NL', {
+    const locale = language === 'nl' ? 'nl-NL' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -342,6 +382,19 @@ const ProgramDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {id && (
+            <DemoControls
+              entityId={id}
+              seedUrl={`/api/v1/programs/${id}/seed-demo/`}
+              clearUrl={`/api/v1/programs/${id}/clear-demo/`}
+              onChanged={() => {
+                queryClient.invalidateQueries({ queryKey: ["program", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-projects", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-milestones", id] });
+                queryClient.invalidateQueries({ queryKey: ["program-risks", id] });
+              }}
+            />
+          )}
           <Button variant="outline" onClick={handleEditClick}>
             <Edit className="h-4 w-4 mr-2" />
             {pt("Edit")}
@@ -399,7 +452,7 @@ const ProgramDetail = () => {
                 <p className="text-sm text-muted-foreground">{pt("Total Budget")}</p>
                 <p className="text-2xl font-bold">{formatCurrency(program.total_budget)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
+              <Euro className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -410,7 +463,7 @@ const ProgramDetail = () => {
                 <p className="text-sm text-muted-foreground">{pt("Spent")}</p>
                 <p className="text-2xl font-bold">{formatCurrency(program.spent_budget)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-amber-500" />
+              <Euro className="h-8 w-8 text-amber-500" />
             </div>
           </CardContent>
         </Card>
@@ -443,8 +496,8 @@ const ProgramDetail = () => {
         <TabsList>
           <TabsTrigger value="overview">{pt("Overview")}</TabsTrigger>
           <TabsTrigger value="projects">{pt("Projects")} ({projects.length})</TabsTrigger>
-          <TabsTrigger value="timeline">{pt("Timeline")}</TabsTrigger>
-          <TabsTrigger value="risks">{pt("Risks & Issues")}</TabsTrigger>
+          <TabsTrigger value="timeline">{pt("Timeline")} ({milestones.length})</TabsTrigger>
+          <TabsTrigger value="risks">{pt("Risks & Issues")} ({risks.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -619,23 +672,124 @@ const ProgramDetail = () => {
         </TabsContent>
 
         <TabsContent value="timeline">
-          <Card className="p-8 text-center">
-            <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{pt("Timeline View")}</h3>
-            <p className="text-muted-foreground">
-              {pt("Program timeline visualization coming soon")}
-            </p>
-          </Card>
+          {milestones.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">{pt("No milestones yet")}</h3>
+              <p className="text-muted-foreground">
+                {pt("Add milestones to track key program dates and deliverables.")}
+              </p>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{pt("Program Milestones")}</CardTitle>
+                <CardDescription>{pt("Key dates and deliverables")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {milestones.map((m: any) => {
+                    const statusColor =
+                      m.status === "completed" ? "bg-emerald-100 text-emerald-700" :
+                      m.status === "in_progress" ? "bg-blue-100 text-blue-700" :
+                      m.status === "delayed" ? "bg-rose-100 text-rose-700" :
+                      "bg-slate-100 text-slate-700";
+                    return (
+                      <div key={m.id} className="flex items-start gap-4 p-3 rounded-md border">
+                        <div className="mt-1">
+                          {m.status === "completed" ? (
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                          ) : (
+                            <Clock className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">{m.name}</p>
+                            <Badge className={cn("capitalize", statusColor)} variant="outline">
+                              {pt(m.status.replace("_", " "))}
+                            </Badge>
+                          </div>
+                          {m.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{m.description}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {pt("Target")}: {formatDate(m.target_date)}
+                            {m.actual_date && ` • ${pt("Completed")}: ${formatDate(m.actual_date)}`}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="risks">
-          <Card className="p-8 text-center">
-            <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{pt("Risks & Issues")}</h3>
-            <p className="text-muted-foreground">
-              {pt("Risk management features coming soon")}
-            </p>
-          </Card>
+          {risks.length === 0 ? (
+            <Card className="p-8 text-center">
+              <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">{pt("No risks logged")}</h3>
+              <p className="text-muted-foreground">
+                {pt("Capture program-level risks with impact, probability and mitigation.")}
+              </p>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{pt("Program Risks & Issues")}</CardTitle>
+                <CardDescription>{pt("Impact, probability and mitigation")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {risks.map((r: any) => {
+                    const impactColor =
+                      r.impact === "high" ? "bg-rose-100 text-rose-700" :
+                      r.impact === "medium" ? "bg-amber-100 text-amber-700" :
+                      "bg-emerald-100 text-emerald-700";
+                    const statusColor =
+                      r.status === "mitigated" || r.status === "closed" ? "bg-emerald-100 text-emerald-700" :
+                      r.status === "mitigating" ? "bg-blue-100 text-blue-700" :
+                      "bg-slate-100 text-slate-700";
+                    return (
+                      <div key={r.id} className="flex items-start gap-4 p-3 rounded-md border">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium">{r.name}</p>
+                            <div className="flex gap-2">
+                              <Badge className={cn("capitalize", impactColor)} variant="outline">
+                                {pt("Impact")}: {pt(r.impact)}
+                              </Badge>
+                              <Badge variant="outline" className="capitalize">
+                                {pt("Prob")}: {pt(r.probability)}
+                              </Badge>
+                              <Badge className={cn("capitalize", statusColor)} variant="outline">
+                                {pt(r.status)}
+                              </Badge>
+                            </div>
+                          </div>
+                          {r.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{r.description}</p>
+                          )}
+                          {r.mitigation_plan && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              <span className="font-medium">{pt("Mitigation")}:</span> {r.mitigation_plan}
+                            </p>
+                          )}
+                          {r.owner_name && (
+                            <p className="text-xs text-muted-foreground mt-1">{pt("Owner")}: {r.owner_name}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -745,14 +899,34 @@ const ProgramDetail = () => {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-budget">{pt("Total Budget")} (€)</Label>
-              <Input
-                id="edit-budget"
-                type="number"
-                value={editFormData.total_budget}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="edit-budget">{pt("Total Budget")}</Label>
+                <Input
+                  id="edit-budget"
+                  type="number"
+                  value={editFormData.total_budget}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, total_budget: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-currency">{pt("Currency")}</Label>
+                <Select
+                  value={editFormData.currency}
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, currency: value }))}
+                >
+                  <SelectTrigger id="edit-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(CURRENCIES).map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.symbol} {c.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-objective">{pt("Strategic Objective")}</Label>

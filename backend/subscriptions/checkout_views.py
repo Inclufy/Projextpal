@@ -284,25 +284,25 @@ def checkout_success(request):
 @permission_classes([AllowAny])
 def get_plans(request):
     """
-    Get all active subscription plans.
+    Get all active subscription plans (public — used by the pricing page).
     """
     plans = Plan.objects.filter(is_active=True).order_by('price')
-    
+
     data = []
     for plan in plans:
         data.append({
             'id': plan.id,
             'name': plan.name,
-            'description': plan.description,
+            'description': getattr(plan, 'description', '') or '',
             'price': float(plan.price),
-            'billing_type': plan.billing_type,
+            'billing_type': getattr(plan, 'plan_type', None) or getattr(plan, 'billing_type', 'monthly'),
             'max_users': plan.max_users,
             'max_projects': plan.max_projects,
-            'storage_gb': plan.storage_gb,
+            'storage_gb': getattr(plan, 'storage_limit_gb', None) or getattr(plan, 'storage_gb', None),
             'includes_academy': getattr(plan, 'includes_academy', False),
-            'features': getattr(plan, 'features', []),
+            'features': getattr(plan, 'features', []) or [],
             'is_popular': getattr(plan, 'is_popular', False),
-            'level': plan.level,
+            'level': getattr(plan, 'plan_level', None) or getattr(plan, 'level', ''),
         })
-    
+
     return Response(data)

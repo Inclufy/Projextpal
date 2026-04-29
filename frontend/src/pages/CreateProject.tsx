@@ -468,6 +468,8 @@ Be specific and professional. Use the context to determine appropriate methodolo
       payload.budget = parseFloat(formData.budget);
     }
 
+    payload.currency = formData.currency;
+
     if (formData.objectives) {
       payload.objectives = formData.objectives;
     }

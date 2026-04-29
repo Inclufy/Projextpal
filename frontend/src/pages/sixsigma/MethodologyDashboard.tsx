@@ -8,6 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Target, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { DemoControls } from "@/components/DemoControls";
 
 interface DashboardData {
   current_phase?: string;
@@ -22,6 +23,7 @@ const MethodologyDashboard = () => {
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [projectMethodology, setProjectMethodology] = useState<string>("lss-green");
 
   const fetchDashboard = useCallback(async () => {
     if (!id) return;
@@ -34,6 +36,19 @@ const MethodologyDashboard = () => {
     } finally {
       setLoading(false);
     }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    // Determine which methodology slug to use for seed/clear endpoints.
+    const token = localStorage.getItem("access_token");
+    fetch(`/api/v1/projects/${id}/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(p => {
+        if (p?.methodology === "lss-black") setProjectMethodology("lss-black");
+        else setProjectMethodology("lss-green");
+      })
+      .catch(() => {});
   }, [id]);
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
@@ -81,7 +96,10 @@ const MethodologyDashboard = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-lg bg-emerald-600 flex items-center justify-center"><Target className="h-5 w-5 text-white" /></div><div><h1 className="text-2xl font-bold">Six Sigma Dashboard</h1><p className="text-sm text-muted-foreground">DMAIC Methodology</p></div></div>
-          <Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button>
+          <div className="flex gap-2">
+            {id && <DemoControls entityId={id} methodology={projectMethodology} onChanged={fetchDashboard} />}
+            <Button variant="outline" onClick={fetchDashboard} className="gap-2"><RefreshCw className="h-4 w-4" /> {pt("Refresh")}</Button>
+          </div>
         </div>
 
         {d.current_phase && (

@@ -507,6 +507,34 @@ const TimeTracking = () => {
     });
   }, [enrichedTimeEntries]);
 
+  // Monthly view = last ~30 days bucketed into 5 ISO-weeks (Mon→Sun).
+  const monthlyData = useMemo(() => {
+    const buckets: { name: string; start: Date; end: Date; minutes: number }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // Anchor end to most recent Sunday
+    const endOfThisWeek = new Date(today);
+    endOfThisWeek.setDate(today.getDate() + (7 - ((today.getDay() + 6) % 7) - 1)); // Sunday
+    for (let i = 4; i >= 0; i--) {
+      const end = new Date(endOfThisWeek);
+      end.setDate(endOfThisWeek.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(end.getDate() - 6);
+      buckets.push({
+        name: `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+        start, end, minutes: 0,
+      });
+    }
+    enrichedTimeEntries.forEach((e: any) => {
+      const d = new Date(e.date);
+      if (Number.isNaN(d.getTime())) return;
+      d.setHours(0, 0, 0, 0);
+      const bucket = buckets.find(b => d >= b.start && d <= b.end);
+      if (bucket) bucket.minutes += e.durationMinutes;
+    });
+    return buckets.map(b => ({ name: b.name, hours: Math.round((b.minutes / 60) * 10) / 10 }));
+  }, [enrichedTimeEntries]);
+
   const totalHours = useMemo(() => {
     return Math.round((enrichedTimeEntries.reduce((sum, e) => sum + e.durationMinutes, 0) / 60) * 10) / 10;
   }, [enrichedTimeEntries]);
@@ -683,40 +711,6 @@ Respond in JSON format only, no other text:
     setAiSuggestedEntry(null);
   };
 
-  const handleAIReport = async () => {
-    setAiLoading(true);
-    setAiResponse("");
-    
-    try {
-      const entrySummary = enrichedTimeEntries.slice(0, 30).map(e => ({
-        project: e.projectName,
-        task: e.taskName,
-        duration: e.duration,
-        date: e.date,
-        teamMember: e.teamMemberName,
-      }));
-
-      const prompt = `Generate a professional weekly time report:
-
-Time Entries: ${JSON.stringify(entrySummary, null, 2)}
-Total Hours: ${totalHours}h
-Projects: ${projectDistribution.map(p => `${p.name} (${p.hours}h)`).join(", ")}
-
-Generate a report with:
-## Weekly Time Report Summary
-### Overview
-### Time Breakdown by Project
-### Key Accomplishments
-### Recommendations for Next Week`;
-
-      const response = await callAI(prompt);
-      setAiResponse(response);
-    } catch (error) {
-      toast.error(t.common.aiUnavailable);
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   // Loading state
   if (projectsLoading || entriesLoading) {
@@ -895,63 +889,176 @@ Generate a report with:
           <Dialog open={aiReportOpen} onOpenChange={setAiReportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
-                <FileText className="h-4 w-4 text-purple-500" />
-                {tt.aiReport}
+                <FileText className="h-4 w-4 text-primary" />
+                {pt("Weekly Report")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-purple-500" />
-                  {tt.aiWeeklyReport}
+                  <FileText className="h-5 w-5 text-primary" />
+                  {pt("Weekly Time Report")}
                 </DialogTitle>
-                <DialogDescription>{tt.aiReportDesc}</DialogDescription>
+                <DialogDescription>
+                  {pt("A clean breakdown of your logged time — projects, days, and top tasks.")}
+                </DialogDescription>
               </DialogHeader>
-              <div className="py-4">
-                {!aiResponse && !aiLoading && (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground mb-4">
-                      Generate a professional report from {enrichedTimeEntries.length} time entries.
-                    </p>
-                    <Button onClick={handleAIReport}>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      {tt.generateReport}
-                    </Button>
-                  </div>
-                )}
-                {aiLoading && (
-                  <div className="text-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-purple-500 mb-4" />
-                    <p className="text-muted-foreground">{tt.generatingReport}</p>
-                  </div>
-                )}
-                {aiResponse && (
-                  <div className="bg-muted/50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">
-                      {aiResponse}
+
+              {(() => {
+                const dailyAvg = totalHours > 0 ? Math.round((totalHours / 7) * 10) / 10 : 0;
+                const sortedProjects = [...projectDistribution].sort((a, b) => b.hours - a.hours);
+                const taskAgg: Record<string, { hours: number; project: string }> = {};
+                enrichedTimeEntries.forEach((e: any) => {
+                  const key = `${e.projectName}::${e.taskName || pt('Untitled')}`;
+                  if (!taskAgg[key]) taskAgg[key] = { hours: 0, project: e.projectName };
+                  taskAgg[key].hours += e.durationMinutes / 60;
+                });
+                const topTasks = Object.entries(taskAgg)
+                  .map(([k, v]) => ({ name: k.split('::')[1], project: v.project, hours: Math.round(v.hours * 10) / 10 }))
+                  .sort((a, b) => b.hours - a.hours)
+                  .slice(0, 5);
+                const draftCount = enrichedTimeEntries.filter((e: any) => e.status === 'draft').length;
+                const today = new Date();
+                const weekStart = new Date(today); weekStart.setDate(today.getDate() - 6);
+                const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const buildPlainText = () => {
+                  const lines: string[] = [];
+                  lines.push(`Weekly Time Report — ${fmt(weekStart)} to ${fmt(today)}`);
+                  lines.push(`Total: ${totalHours}h • Daily avg: ${dailyAvg}h • Entries: ${enrichedTimeEntries.length}`);
+                  lines.push('');
+                  lines.push('By project:');
+                  sortedProjects.forEach(p => {
+                    const pct = totalHours > 0 ? Math.round((p.hours / totalHours) * 100) : 0;
+                    lines.push(`  • ${p.name}: ${p.hours}h (${pct}%)`);
+                  });
+                  lines.push('');
+                  lines.push('By day:');
+                  dailyData.forEach(d => lines.push(`  • ${d.name}: ${d.hours}h`));
+                  if (topTasks.length) {
+                    lines.push('');
+                    lines.push('Top tasks:');
+                    topTasks.forEach(t => lines.push(`  • ${t.name} (${t.project}) — ${t.hours}h`));
+                  }
+                  if (draftCount > 0) lines.push(`\n${draftCount} draft entries pending submission.`);
+                  return lines.join('\n');
+                };
+
+                return (
+                  <div className="py-2 space-y-4 max-h-[70vh] overflow-y-auto">
+                    {/* Summary card */}
+                    <div className="rounded-lg border p-4 bg-muted/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-sm text-muted-foreground">{pt("Period")}</p>
+                          <p className="font-semibold">{fmt(weekStart)} — {fmt(today)}</p>
+                        </div>
+                        {draftCount > 0 && (
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                            {draftCount} {pt("drafts")}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{pt("Total")}</p>
+                          <p className="text-2xl font-bold">{totalHours}h</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">{pt("Daily avg")}</p>
+                          <p className="text-2xl font-bold">{dailyAvg}h</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">{pt("Entries")}</p>
+                          <p className="text-2xl font-bold">{enrichedTimeEntries.length}</p>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Project breakdown */}
+                    {sortedProjects.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2">{pt("By Project")}</h4>
+                        <div className="space-y-2">
+                          {sortedProjects.map(p => {
+                            const pct = totalHours > 0 ? Math.round((p.hours / totalHours) * 100) : 0;
+                            return (
+                              <div key={p.name} className="space-y-1">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium truncate">{p.name}</span>
+                                  <span className="text-muted-foreground tabular-nums">{p.hours}h • {pct}%</span>
+                                </div>
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                  <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Daily breakdown */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">{pt("By Day")}</h4>
+                      <div className="grid grid-cols-7 gap-1">
+                        {dailyData.map(d => {
+                          const max = Math.max(...dailyData.map(x => x.hours), 1);
+                          const h = (d.hours / max) * 60;
+                          return (
+                            <div key={d.name} className="flex flex-col items-center gap-1">
+                              <div className="h-16 w-full flex items-end">
+                                <div className="w-full bg-primary/80 rounded-t" style={{ height: `${Math.max(h, 2)}px` }} />
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">{d.name}</p>
+                              <p className="text-[11px] font-medium tabular-nums">{d.hours}h</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Top tasks */}
+                    {topTasks.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2">{pt("Top Tasks")}</h4>
+                        <div className="rounded-md border divide-y">
+                          {topTasks.map((t, i) => (
+                            <div key={i} className="flex items-center justify-between p-2 text-sm">
+                              <div className="min-w-0">
+                                <p className="font-medium truncate">{t.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{t.project}</p>
+                              </div>
+                              <span className="font-semibold tabular-nums shrink-0 ml-3">{t.hours}h</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {enrichedTimeEntries.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        {pt("No time entries logged yet.")}
+                      </div>
+                    )}
+
+                    <DialogFooter className="gap-2 pt-2">
+                      <Button variant="outline" onClick={() => {
+                        navigator.clipboard.writeText(buildPlainText());
+                        toast.success(pt("Copied to clipboard"));
+                      }}>
+                        {pt("Copy as text")}
+                      </Button>
+                      <Button variant="outline" onClick={() => window.print()}>
+                        {pt("Print")}
+                      </Button>
+                      <Button variant="outline" onClick={() => setAiReportOpen(false)}>
+                        {pt("Close")}
+                      </Button>
+                    </DialogFooter>
                   </div>
-                )}
-              </div>
-              <DialogFooter>
-                {aiResponse && (
-                  <>
-                    <Button variant="outline" onClick={() => {
-                      navigator.clipboard.writeText(aiResponse);
-                      toast.success(pt("Copied to clipboard"));
-                    }}>
-                      {tt.copyReport}
-                    </Button>
-                    <Button variant="outline" onClick={() => { setAiResponse(""); handleAIReport(); }}>
-                      {tt.regenerate}
-                    </Button>
-                  </>
-                )}
-                <Button variant="outline" onClick={() => setAiReportOpen(false)}>
-                  {tt.close}
-                </Button>
-              </DialogFooter>
+                );
+              })()}
             </DialogContent>
           </Dialog>
 
@@ -1188,7 +1295,7 @@ Generate a report with:
               {reportPeriod === "weekly" ? tt.dailyHours : tt.weeklyHours}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={dailyData}>
+              <BarChart data={reportPeriod === "weekly" ? dailyData : monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="name" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />

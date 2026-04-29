@@ -18,6 +18,8 @@ from .views import (
     AgileBudgetViewSet,
     AgileBudgetItemViewSet,
     DefinitionOfDoneViewSet,
+    AgileSeedDemoView,
+    AgileClearDemoView,
 )
 
 # Create a router for viewsets
@@ -36,7 +38,17 @@ urlpatterns = [
         AgileDashboardViewSet.as_view({'post': 'initialize'}),
         name='agile-initialize'
     ),
-    
+    path(
+        'projects/<int:project_id>/agile/seed-demo/',
+        AgileSeedDemoView.as_view({'post': 'create'}),
+        name='agile-seed-demo'
+    ),
+    path(
+        'projects/<int:project_id>/agile/clear-demo/',
+        AgileClearDemoView.as_view({'post': 'create'}),
+        name='agile-clear-demo'
+    ),
+
     # Team
     path(
         'projects/<int:project_id>/agile/team/',
