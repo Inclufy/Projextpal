@@ -507,6 +507,34 @@ const TimeTracking = () => {
     });
   }, [enrichedTimeEntries]);
 
+  // Monthly view = last ~30 days bucketed into 5 ISO-weeks (Mon→Sun).
+  const monthlyData = useMemo(() => {
+    const buckets: { name: string; start: Date; end: Date; minutes: number }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // Anchor end to most recent Sunday
+    const endOfThisWeek = new Date(today);
+    endOfThisWeek.setDate(today.getDate() + (7 - ((today.getDay() + 6) % 7) - 1)); // Sunday
+    for (let i = 4; i >= 0; i--) {
+      const end = new Date(endOfThisWeek);
+      end.setDate(endOfThisWeek.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(end.getDate() - 6);
+      buckets.push({
+        name: `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+        start, end, minutes: 0,
+      });
+    }
+    enrichedTimeEntries.forEach((e: any) => {
+      const d = new Date(e.date);
+      if (Number.isNaN(d.getTime())) return;
+      d.setHours(0, 0, 0, 0);
+      const bucket = buckets.find(b => d >= b.start && d <= b.end);
+      if (bucket) bucket.minutes += e.durationMinutes;
+    });
+    return buckets.map(b => ({ name: b.name, hours: Math.round((b.minutes / 60) * 10) / 10 }));
+  }, [enrichedTimeEntries]);
+
   const totalHours = useMemo(() => {
     return Math.round((enrichedTimeEntries.reduce((sum, e) => sum + e.durationMinutes, 0) / 60) * 10) / 10;
   }, [enrichedTimeEntries]);
@@ -1267,7 +1295,7 @@ Respond in JSON format only, no other text:
               {reportPeriod === "weekly" ? tt.dailyHours : tt.weeklyHours}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={dailyData}>
+              <BarChart data={reportPeriod === "weekly" ? dailyData : monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="name" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
