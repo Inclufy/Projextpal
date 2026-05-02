@@ -57,23 +57,36 @@ from .serializers import (
     ProjectTeamWithRateSerializer,
 )
 
+# Operationele rollen die per definitie de hele eigen company beheren.
+# Voor deze rollen geldt company-wide toegang i.p.v. strikte project-membership;
+# privacy van hourly rates / sub-objecten blijft separaat geregeld
+# (ProjectTeamRate filter + per-veld permissions). De membership-scoping uit
+# 9707b2ff blijft staan voor contributor / reviewer / guest.
+COMPANY_WIDE_ROLES = frozenset({"admin", "pm", "program_manager"})
+
+
 def accessible_project_ids(user):
     """Return the queryset of Project IDs the user is allowed to see.
 
     A user sees a project if:
-      - they are a superadmin / is_superuser, OR
+      - they are a superadmin / is_superuser → all projects, OR
+      - they have a company-wide role (admin/pm/program_manager) → all projects
+        in their own company, OR
       - they are an active ProjectTeam member, OR
       - they are the creator (created_by).
 
-    This intentionally does NOT scope by user.company — it supports
-    cross-company collaboration (a freelancer added to Project X of Company Y
-    can see Project X even if their own user.company is different).
+    Cross-company collaboration: a freelancer (contributor/reviewer/guest)
+    added to Project X of Company Y can see Project X via the membership path
+    even if their own user.company differs.
     """
     from django.db.models import Q
     if not user.is_authenticated:
         return Project.objects.none().values_list('id', flat=True)
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return Project.objects.all().values_list('id', flat=True)
+    if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
+        return Project.objects.filter(company_id=user.company_id)\
+            .values_list('id', flat=True)
     return Project.objects.filter(
         Q(team_members__user=user, team_members__is_active=True)
         | Q(created_by=user)
@@ -175,41 +188,38 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return [IsAuthenticated(), IsAdminOrPM()]
 
     def get_queryset(self):
-        """Filter projects based on team membership - supports cross-company collaboration."""
+        """Filter projects op rol + (membership of cross-company)."""
         from django.db.models import Q
 
         user = self.request.user
-        
+
         if not user.is_authenticated:
             return Project.objects.none()
 
-        # SuperAdmins see everything
-        if user.role == "superadmin":
-            qs = Project.objects.all()
-            portfolio = self.request.query_params.get('portfolio')
-            if portfolio:
-                qs = qs.filter(portfolio_id=portfolio)
-            program = self.request.query_params.get('program')
-            if program:
-                qs = qs.filter(program_id=program)
-            return qs
+        base = Project.objects.select_related("company", "created_by")\
+            .prefetch_related("team_members")
 
-        # For ALL other users: show projects where they are team members OR creators
-        # This allows freelancers/consultants to work across multiple companies
-        # NOTE: We bypass CompanyScopedQuerysetMixin to allow cross-company access
-        qs = Project.objects.filter(
-            Q(team_members__user=user, team_members__is_active=True)
-            | Q(created_by=user)
-        ).select_related("company", "created_by").prefetch_related("team_members").distinct()
-        
+        if user.role == "superadmin":
+            qs = base.all()
+        elif user.role in COMPANY_WIDE_ROLES and getattr(user, "company_id", None):
+            # admin/pm/program_manager — alle projecten van eigen company
+            qs = base.filter(company_id=user.company_id)
+        else:
+            # contributor/reviewer/guest of geen company → membership-gebaseerd
+            # (ondersteunt cross-company collaboration voor freelancers)
+            qs = base.filter(
+                Q(team_members__user=user, team_members__is_active=True)
+                | Q(created_by=user)
+            ).distinct()
+
         portfolio = self.request.query_params.get('portfolio')
         if portfolio:
             qs = qs.filter(portfolio_id=portfolio)
-        
+
         program = self.request.query_params.get('program')
         if program:
             qs = qs.filter(program_id=program)
-        
+
         return qs
 
     def perform_create(self, serializer):

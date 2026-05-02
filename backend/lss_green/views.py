@@ -12,17 +12,28 @@ from .serializers import (
 )
 
 
+# Locally redefined to avoid potential circular imports with projects.views.
+# Mirror of projects.views.COMPANY_WIDE_ROLES — keep in sync.
+COMPANY_WIDE_ROLES = frozenset({"admin", "pm", "program_manager"})
+
+
 def _get_company(user):
     return getattr(user, 'company', None)
 
 
 def _accessible_project_ids(user):
-    """P2 fix — projects the user is on (or all if superadmin)."""
+    """P2 fix — projects the user is on (or all if superadmin).
+
+    Sachin-regression fix: company-wide roles (admin/pm/program_manager) see
+    all projects within their own company, mirroring projects.views behaviour.
+    """
     from django.db.models import Q
     if not user.is_authenticated:
         return Project.objects.none().values_list('id', flat=True)
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return Project.objects.all().values_list('id', flat=True)
+    if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
+        return Project.objects.filter(company_id=user.company_id).values_list('id', flat=True)
     return Project.objects.filter(
         Q(team_members__user=user, team_members__is_active=True)
         | Q(created_by=user)
@@ -30,10 +41,17 @@ def _accessible_project_ids(user):
 
 
 def _verify_project_access(user, project_id):
-    """Verify the user is a team_member / creator / superadmin on the project."""
+    """Verify the user is a team_member / creator / superadmin on the project.
+
+    Sachin-regression fix: company-wide roles (admin/pm/program_manager) are
+    allowed for any project within their own company.
+    """
     from django.db.models import Q
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return
+    if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
+        if Project.objects.filter(id=project_id, company_id=user.company_id).exists():
+            return
     if not Project.objects.filter(id=project_id).filter(
         Q(team_members__user=user, team_members__is_active=True)
         | Q(created_by=user)
