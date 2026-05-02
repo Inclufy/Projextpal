@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -9,10 +10,30 @@ from .models import StatusReport, TrainingMaterial, ReportingItem, Meeting
 from .serializers import StatusReportSerializer, TrainingMaterialSerializer , ReportingItemSerializer , MeetingSerializer, MeetingOccurrenceSerializer
 
 
+def _company_scoped(qs, user):
+    """P0 cross-tenant fix — was returning every project's rows globally.
+
+    All four communication models are scoped via `project.company`. Filter
+    by the requesting user's company. Superadmin/superuser sees everything.
+    """
+    if not user.is_authenticated:
+        return qs.none()
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return qs
+    company_id = getattr(user, "company_id", None)
+    if not company_id:
+        return qs.none()
+    return qs.filter(project__company_id=company_id)
+
+
 class StatusReportViewSet(viewsets.ModelViewSet):
     queryset = StatusReport.objects.all()
     serializer_class = StatusReportSerializer
-    
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _company_scoped(StatusReport.objects.all(), self.request.user)
+
     def list(self, request):
         queryset = self.get_queryset()
         project_id = request.query_params.get('project')
@@ -35,23 +56,23 @@ class StatusReportViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, pk=None):
-        report = get_object_or_404(StatusReport, pk=pk)
+        report = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(report, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def partial_update(self, request, pk=None):
-        report = get_object_or_404(StatusReport, pk=pk)
+        report = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(report, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def destroy(self, request, pk=None):
-        report = get_object_or_404(StatusReport, pk=pk)
+        report = get_object_or_404(self.get_queryset(), pk=pk)
         report.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -59,6 +80,10 @@ class StatusReportViewSet(viewsets.ModelViewSet):
 class TrainingMaterialViewSet(viewsets.ModelViewSet):
     queryset = TrainingMaterial.objects.all()
     serializer_class = TrainingMaterialSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _company_scoped(TrainingMaterial.objects.all(), self.request.user)
 
     def list(self, request):
         queryset = self.get_queryset()
@@ -82,7 +107,7 @@ class TrainingMaterialViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
-        material = get_object_or_404(TrainingMaterial, pk=pk)
+        material = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(material, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -90,7 +115,7 @@ class TrainingMaterialViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
-        material = get_object_or_404(TrainingMaterial, pk=pk)
+        material = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(material, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -98,7 +123,7 @@ class TrainingMaterialViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
-        material = get_object_or_404(TrainingMaterial, pk=pk)
+        material = get_object_or_404(self.get_queryset(), pk=pk)
         material.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -107,6 +132,10 @@ class ReportingItemViewSet(viewsets.ModelViewSet):
     queryset = ReportingItem.objects.all()
     serializer_class = ReportingItemSerializer
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _company_scoped(ReportingItem.objects.all(), self.request.user)
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
@@ -120,7 +149,7 @@ class ReportingItemViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        item = get_object_or_404(ReportingItem, pk=pk)
+        item = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(item, context={'request': request})
         return Response(serializer.data)
 
@@ -131,14 +160,14 @@ class ReportingItemViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request, pk=None):
-        item = get_object_or_404(ReportingItem, pk=pk)
+        item = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = self.get_serializer(item, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
-        item = get_object_or_404(ReportingItem, pk=pk)
+        item = get_object_or_404(self.get_queryset(), pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -147,9 +176,10 @@ class ReportingItemViewSet(viewsets.ModelViewSet):
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = _company_scoped(Meeting.objects.all(), self.request.user)
         project_id = self.request.query_params.get('project')
         if project_id:
             qs = qs.filter(project_id=project_id)

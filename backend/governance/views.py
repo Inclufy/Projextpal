@@ -300,12 +300,18 @@ class DecisionViewSet(viewsets.ModelViewSet):
     ordering_fields = ['decided_at', 'created_at']
 
     def get_queryset(self):
+        # P0 cross-tenant fix — was returning Decision.objects.all() when the
+        # requesting user had no company (cross-tenant leak). Superadmin keeps
+        # tenant-spanning visibility; everyone else MUST be company-scoped.
         user = self.request.user
+        if not user.is_authenticated:
+            return Decision.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return Decision.objects.all()
         company = getattr(user, 'company', None)
-        qs = Decision.objects.all()
-        if company is not None:
-            qs = qs.filter(program__company=company)
-        return qs
+        if not company:
+            return Decision.objects.none()
+        return Decision.objects.filter(program__company=company)
 
     def perform_create(self, serializer):
         # Default decided_by to the requester if absent so demo POSTs that
@@ -325,12 +331,18 @@ class MeetingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['scheduled_at', 'created_at']
 
     def get_queryset(self):
+        # P0 cross-tenant fix — was returning Meeting.objects.all() when the
+        # requesting user had no company (cross-tenant leak). Superadmin keeps
+        # tenant-spanning visibility; everyone else MUST be company-scoped.
         user = self.request.user
+        if not user.is_authenticated:
+            return Meeting.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return Meeting.objects.all()
         company = getattr(user, 'company', None)
-        qs = Meeting.objects.all()
-        if company is not None:
-            qs = qs.filter(program__company=company)
-        return qs
+        if not company:
+            return Meeting.objects.none()
+        return Meeting.objects.filter(program__company=company)
 
     def perform_create(self, serializer):
         if not serializer.validated_data.get('facilitator'):

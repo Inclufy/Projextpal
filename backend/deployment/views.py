@@ -11,6 +11,10 @@ from .serializers import (
 )
 
 
+def _is_superadmin(user):
+    return getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)
+
+
 class DeploymentPlanViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Deployment Plan CRUD operations.
@@ -21,16 +25,21 @@ class DeploymentPlanViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter by project if provided."""
+        # P0 cross-tenant fix — previously when the user had no company, the
+        # company-scope clause was silently skipped and the queryset returned
+        # every tenant's deployment plans. Now: superadmin sees all, no-company
+        # users see nothing, everyone else is scoped to their company.
+        user = self.request.user
         queryset = super().get_queryset()
-        project_id = self.request.query_params.get('project')
+        if not _is_superadmin(user):
+            company = getattr(user, "company", None)
+            if not company:
+                return queryset.none()
+            queryset = queryset.filter(project__company=company)
 
+        project_id = self.request.query_params.get('project')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-
-        # Filter by company
-        if hasattr(self.request.user, 'company') and self.request.user.company:
-            queryset = queryset.filter(project__company=self.request.user.company)
-
         return queryset
 
     def perform_create(self, serializer):
@@ -48,18 +57,18 @@ class StrategyItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter by deployment_plan if provided."""
+        # P0 cross-tenant fix — see DeploymentPlanViewSet.
+        user = self.request.user
         queryset = super().get_queryset()
-        deployment_plan_id = self.request.query_params.get('deployment_plan')
+        if not _is_superadmin(user):
+            company = getattr(user, "company", None)
+            if not company:
+                return queryset.none()
+            queryset = queryset.filter(deployment_plan__project__company=company)
 
+        deployment_plan_id = self.request.query_params.get('deployment_plan')
         if deployment_plan_id:
             queryset = queryset.filter(deployment_plan_id=deployment_plan_id)
-
-        # Filter by company through deployment_plan
-        if hasattr(self.request.user, 'company') and self.request.user.company:
-            queryset = queryset.filter(
-                deployment_plan__project__company=self.request.user.company
-            )
-
         return queryset
 
 
@@ -73,18 +82,18 @@ class RolloutPhaseViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter by deployment_plan if provided."""
+        # P0 cross-tenant fix — see DeploymentPlanViewSet.
+        user = self.request.user
         queryset = super().get_queryset()
-        deployment_plan_id = self.request.query_params.get('deployment_plan')
+        if not _is_superadmin(user):
+            company = getattr(user, "company", None)
+            if not company:
+                return queryset.none()
+            queryset = queryset.filter(deployment_plan__project__company=company)
 
+        deployment_plan_id = self.request.query_params.get('deployment_plan')
         if deployment_plan_id:
             queryset = queryset.filter(deployment_plan_id=deployment_plan_id)
-
-        # Filter by company through deployment_plan
-        if hasattr(self.request.user, 'company') and self.request.user.company:
-            queryset = queryset.filter(
-                deployment_plan__project__company=self.request.user.company
-            )
-
         return queryset
 
 
@@ -98,16 +107,18 @@ class PhaseTaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Filter by rollout_phase if provided."""
+        # P0 cross-tenant fix — see DeploymentPlanViewSet.
+        user = self.request.user
         queryset = super().get_queryset()
-        rollout_phase_id = self.request.query_params.get('rollout_phase')
-
-        if rollout_phase_id:
-            queryset = queryset.filter(rollout_phase_id=rollout_phase_id)
-
-        # Filter by company through rollout_phase
-        if hasattr(self.request.user, 'company') and self.request.user.company:
+        if not _is_superadmin(user):
+            company = getattr(user, "company", None)
+            if not company:
+                return queryset.none()
             queryset = queryset.filter(
-                rollout_phase__deployment_plan__project__company=self.request.user.company
+                rollout_phase__deployment_plan__project__company=company
             )
 
+        rollout_phase_id = self.request.query_params.get('rollout_phase')
+        if rollout_phase_id:
+            queryset = queryset.filter(rollout_phase_id=rollout_phase_id)
         return queryset

@@ -1,10 +1,17 @@
 from django.db import models
 from rest_framework import viewsets, serializers
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import HasRole
 from .models import Course, CourseModule, CourseLesson, Enrollment
+
+# P1 fix — academy content is global (not per-tenant), but write endpoints
+# must be restricted to admins/superadmins. The @api_view CRUD endpoints below
+# previously fell back to DEFAULT_PERMISSION_CLASSES = [IsAuthenticated], so
+# any authenticated tenant user could edit / delete courses, modules, lessons.
+IsAcademyEditor = HasRole("superadmin", "admin")
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,9 +60,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
 
     def get_permissions(self):
+        # P1 fix — writes only required IsAuthenticated, so any tenant user
+        # could mutate the global academy catalog. Restrict writes to
+        # admin/superadmin.
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), IsAcademyEditor()]
 
     def get_object(self):
         """Look up by UUID primary key OR by slug, whichever the URL
@@ -83,9 +93,10 @@ class CourseModuleViewSet(viewsets.ModelViewSet):
     serializer_class = CourseModuleSerializer
 
     def get_permissions(self):
+        # P1 fix — same as CourseViewSet (admin/superadmin-only writes).
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), IsAcademyEditor()]
 
     def get_queryset(self):
         queryset = CourseModule.objects.all()
@@ -97,8 +108,15 @@ class CourseModuleViewSet(viewsets.ModelViewSet):
 class CourseLessonViewSet(viewsets.ModelViewSet):
     queryset = CourseLesson.objects.all()
     serializer_class = CourseLessonSerializer
-    permission_classes = [AllowAny]
-    
+
+    def get_permissions(self):
+        # P1 fix — was AllowAny on every action including create/update/delete,
+        # so anonymous users could mutate academy lessons. Reads stay public
+        # (course catalog browsing); writes require admin/superadmin.
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated(), IsAcademyEditor()]
+
     def get_queryset(self):
         queryset = CourseLesson.objects.all()
         module_id = self.request.query_params.get('module')
@@ -140,6 +158,7 @@ class CourseLessonViewSet(viewsets.ModelViewSet):
 # ===== CRUD endpoints for EnhancedCourseBuilder =====
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def course_update(request, pk):
     """PATCH /api/v1/academy/courses/{id}/update/"""
     try:
@@ -154,6 +173,7 @@ def course_update(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def course_delete(request, pk):
     """DELETE /api/v1/academy/courses/{id}/delete/"""
     try:
@@ -165,6 +185,7 @@ def course_delete(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def course_create_module(request, pk):
     """POST /api/v1/academy/courses/{id}/modules/create/"""
     try:
@@ -181,6 +202,7 @@ def course_create_module(request, pk):
 
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def module_update(request, pk):
     """PATCH /api/v1/academy/modules/{id}/update/"""
     try:
@@ -195,6 +217,7 @@ def module_update(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def module_delete(request, pk):
     """DELETE /api/v1/academy/modules/{id}/delete/"""
     try:
@@ -206,6 +229,7 @@ def module_delete(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def module_create_lesson(request, pk):
     """POST /api/v1/academy/modules/{id}/lessons/create/"""
     try:
@@ -222,6 +246,7 @@ def module_create_lesson(request, pk):
 
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def lesson_update(request, pk):
     """PATCH /api/v1/academy/lessons/{id}/update/"""
     try:
@@ -236,6 +261,7 @@ def lesson_update(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAcademyEditor])
 def lesson_delete(request, pk):
     """DELETE /api/v1/academy/lessons/{id}/delete/"""
     try:

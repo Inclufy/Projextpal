@@ -537,13 +537,24 @@ class DefinitionOfDoneViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        # P0 cross-tenant fix — was returning DoD rows for any project_id in
+        # the URL with no membership/company check, so any authenticated user
+        # could read /agile/projects/<other_company_project_id>/dod/. Reuse
+        # the gated lookup helper used by the rest of this app.
         project_id = self.kwargs.get('project_id')
-        return DefinitionOfDone.objects.filter(project_id=project_id)
+        if not project_id:
+            return DefinitionOfDone.objects.none()
+        try:
+            project = _gated_project_lookup(self.request.user, project_id)
+        except Exception:
+            return DefinitionOfDone.objects.none()
+        return DefinitionOfDone.objects.filter(project=project)
 
     def perform_create(self, serializer):
         project_id = self.kwargs.get('project_id')
-        from projects.models import Project
-        serializer.save(project=Project.objects.get(id=project_id))
+        # Use the gated lookup so creates can't target other tenants either.
+        project = _gated_project_lookup(self.request.user, project_id)
+        serializer.save(project=project)
 
 
 class AgileSeedDemoView(viewsets.ViewSet):
