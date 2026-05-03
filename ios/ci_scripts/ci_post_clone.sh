@@ -25,4 +25,13 @@ echo "=== Installing CocoaPods ==="
 cd ios
 pod install
 
+# Workspace-path bridge: the App Store Connect Xcode Cloud workflow has its
+# primary workspace path set to "ProjeXtPal.xcworkspace" (repo root), but the
+# Expo project nests it at ios/ProjeXtPal.xcworkspace. Without this symlink
+# xcodebuild fails with "Workspace ProjeXtPal.xcworkspace does not exist".
+# `ln -sfn` is idempotent so re-runs are safe.
+cd "$CI_PRIMARY_REPOSITORY_PATH"
+ln -sfn ios/ProjeXtPal.xcworkspace ProjeXtPal.xcworkspace
+echo "=== Workspace symlink: $(readlink ProjeXtPal.xcworkspace) ==="
+
 echo "=== ci_post_clone.sh complete ==="
