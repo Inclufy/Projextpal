@@ -1,26 +1,38 @@
 #!/bin/sh
 set -e
+set -x
 
-echo "=== Xcode Cloud ci_post_clone.sh (ProjeXtPal) ==="
+phase() {
+  set +x
+  echo ""
+  echo "::group::$1"
+  echo "=== [Phase] $1 ==="
+  set -x
+}
 
-# Navigate to project root
+phase "ci_post_clone start (ProjeXtPal — root variant)"
+date
+sw_vers || true
+xcodebuild -version || true
+
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 echo "Working directory: $(pwd)"
+ls -la
 
-# Install Node.js — only fall back to Homebrew if Node isn't already on PATH.
-# `brew install` on an already-present formula sometimes exits non-zero on
-# Xcode Cloud images and kills the script under `set -e`.
+phase "Node + npm setup"
 if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-  echo "=== Node already installed: $(node --version) | npm: $(npm --version) ==="
+  echo "Node already installed: $(node --version) | npm: $(npm --version)"
 else
-  echo "=== Installing Node.js via Homebrew ==="
+  echo "Installing Node.js via Homebrew"
   brew install node || { echo "brew install node failed"; exit 1; }
   echo "Node: $(node --version) | npm: $(npm --version)"
 fi
 
-# Install dependencies
-echo "=== Installing npm dependencies ==="
-CI=1 npm ci
+phase "npm dependencies"
+if ! CI=1 npm ci; then
+  echo "WARN: npm ci failed (likely lockfile drift) — falling back to npm install"
+  CI=1 npm install
+fi
 
 # Set Supabase env vars
 echo "=== Setting environment variables ==="
@@ -35,15 +47,15 @@ if [ -z "${SENTRY_ORG:-}" ] || [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
   echo "Sentry source-map upload disabled (no SENTRY_ORG / SENTRY_AUTH_TOKEN)"
 fi
 
-# Run expo prebuild — DO NOT use --clean. The ios/ folder is committed and
-# contains hand-edited Podfile/entitlements/signing config. --clean would
-# wipe those customisations and regenerate from app.json.
-echo "=== Running Expo prebuild (preserving committed ios/) ==="
+phase "Expo prebuild (preserve committed ios/)"
 npx expo prebuild --platform ios --no-install
 
-# Install CocoaPods
-echo "=== Installing CocoaPods ==="
+phase "CocoaPods install"
 cd ios
+echo "react-native version in package.json:"
+grep '"react-native"' "$CI_PRIMARY_REPOSITORY_PATH/package.json" || true
+echo "First few RN-pinned pods in Podfile.lock:"
+grep -E "FBLazyVector|RCTDeprecation|React-Core-prebuilt" Podfile.lock | head -5 || true
 pod install
 
 # Workspace-path bridge: App Store Connect workflow points at
