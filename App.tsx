@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import type { LinkingOptions } from '@react-navigation/native';
+import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LanguageProvider } from './src/contexts/LanguageContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { registerForPushNotificationsAsync } from './src/services/pushService';
@@ -89,6 +91,42 @@ export default function App() {
         onClose={() => setShakeSheetVisible(false)}
         routeName={routeName}
       />
+      {!shakeSheetVisible && (
+        <TouchableOpacity
+          accessibilityLabel="Probleem melden"
+          onPress={() => setShakeSheetVisible(true)}
+          activeOpacity={0.85}
+          style={styles.fab}
+        >
+          <MaterialIcons name="report-problem" size={22} color="#fff" />
+          <Text style={styles.fabLabel}>Issue</Text>
+        </TouchableOpacity>
+      )}
     </LanguageProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: Platform.OS === 'ios' ? 100 : 80,
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  fabLabel: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});
