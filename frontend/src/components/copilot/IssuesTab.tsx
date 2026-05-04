@@ -24,12 +24,18 @@ import {
   Bug,
   Camera,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Clipboard,
   FileImage,
+  GitCommit,
+  Lightbulb,
   Loader2,
+  MessageCircle,
   Plus,
   RefreshCw,
   Send,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -49,11 +55,14 @@ import { useAuth } from "@/contexts";
 import {
   type IssueAttachment,
   type IssueCategory,
+  type ProductIssueComment,
   type ProductIssueRecord,
+  addComment,
   captureEnvironment,
   createIssue,
   defaultCategoryForModule,
   detectProjeXtPalModuleFromPath,
+  fetchIssueDetail,
   fileToAttachment,
   listRecentIssues,
   priorityBadgeClass,
@@ -545,6 +554,13 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 /* ─── IssueRow ────────────────────────────────────────────────────────── */
 
 function IssueRow({ issue }: { issue: ProductIssueRecord }) {
+  const [expanded, setExpanded] = useState(false);
+  const [comments, setComments] = useState<ProductIssueComment[] | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const { toast } = useToast();
+
   const created = new Date(issue.created_at);
   const ago = relativeTime(created);
   const moduleCtx =
@@ -552,11 +568,65 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
       ? (issue.environment.module_context as string)
       : null;
 
+  async function toggleExpand() {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    setExpanded(true);
+    if (comments === null) {
+      setLoadingDetail(true);
+      try {
+        const detail = await fetchIssueDetail(issue.id);
+        setComments(detail.comments);
+      } catch {
+        setComments([]);
+      } finally {
+        setLoadingDetail(false);
+      }
+    }
+  }
+
+  async function handleAddComment() {
+    if (!newComment.trim()) return;
+    setPostingComment(true);
+    try {
+      await addComment(issue.id, newComment.trim());
+      const detail = await fetchIssueDetail(issue.id);
+      setComments(detail.comments);
+      setNewComment("");
+      toast({ title: "Reactie verstuurd" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ title: "Versturen mislukt", description: msg, variant: "destructive" });
+    } finally {
+      setPostingComment(false);
+    }
+  }
+
+  const tri = (issue.agent_triage_result ?? {}) as Record<string, unknown>;
+  const triReasoning = typeof tri.reasoning === "string" ? tri.reasoning : null;
+  const triFix = typeof tri.suggested_fix_area === "string" ? tri.suggested_fix_area : null;
+  const triLinkedCommits = Array.isArray(tri.linked_commits)
+    ? (tri.linked_commits as string[])
+    : null;
+
   return (
-    <div className="p-2.5 border border-gray-100 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+    <div className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden hover:border-purple-200 dark:hover:border-purple-900 transition-colors">
+      {/* Compact summary row — clickable */}
+      <button
+        type="button"
+        onClick={toggleExpand}
+        className="w-full p-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
+            {expanded ? (
+              <ChevronDown className="h-3 w-3 text-gray-400 shrink-0" />
+            ) : (
+              <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
+            )}
             {issue.priority && (
               <span
                 className={`text-[10px] px-1.5 py-0 rounded font-bold ${priorityBadgeClass(issue.priority)}`}
@@ -590,6 +660,117 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
         </div>
         <span className="text-[10px] text-gray-500 shrink-0 mt-0.5">{ago}</span>
       </div>
+      </button>
+
+      {/* Expanded detail panel */}
+      {expanded && (
+        <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-900/40 p-3 space-y-3 text-[11px]">
+          {issue.description && (
+            <div>
+              <p className="font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Beschrijving</p>
+              <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{issue.description}</p>
+            </div>
+          )}
+
+          {issue.resolution_summary && (
+            <div className="rounded p-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50">
+              <p className="font-semibold text-green-800 dark:text-green-200 mb-0.5 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" />
+                Resolution
+              </p>
+              <p className="text-green-700 dark:text-green-300 whitespace-pre-wrap">{issue.resolution_summary}</p>
+            </div>
+          )}
+
+          {(triReasoning || triFix || triLinkedCommits) && (
+            <div className="rounded p-2 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50">
+              <p className="font-semibold text-purple-800 dark:text-purple-200 mb-1 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                Agent triage
+              </p>
+              {triReasoning && (
+                <p className="text-gray-700 dark:text-gray-300 mb-1">{triReasoning}</p>
+              )}
+              {triFix && (
+                <div className="flex items-start gap-1 mt-1">
+                  <Lightbulb className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
+                  <span className="text-amber-800 dark:text-amber-200 font-mono">{triFix}</span>
+                </div>
+              )}
+              {triLinkedCommits && triLinkedCommits.length > 0 && (
+                <div className="flex items-start gap-1 mt-1">
+                  <GitCommit className="h-3 w-3 text-blue-500 mt-0.5 shrink-0" />
+                  <span className="text-blue-700 dark:text-blue-300 font-mono">
+                    {triLinkedCommits.join(", ")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Comments */}
+          <div>
+            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
+              <MessageCircle className="h-3 w-3" />
+              Reacties {comments && `(${comments.length})`}
+            </p>
+            {loadingDetail ? (
+              <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
+            ) : comments && comments.length === 0 ? (
+              <p className="text-gray-400 italic">Nog geen reacties</p>
+            ) : comments ? (
+              <div className="space-y-2">
+                {comments.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`rounded p-2 ${
+                      c.is_triage_step
+                        ? "bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40"
+                        : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300">
+                        {c.author}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        {relativeTime(new Date(c.created_at))}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Add comment form */}
+            <div className="mt-2 flex gap-1">
+              <Input
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Reactie toevoegen..."
+                className="text-[11px] h-7 flex-1"
+                disabled={postingComment}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAddComment();
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                className="h-7 px-2 bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={postingComment || !newComment.trim()}
+                onClick={handleAddComment}
+                type="button"
+              >
+                {postingComment ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

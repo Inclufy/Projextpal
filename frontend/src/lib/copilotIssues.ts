@@ -77,9 +77,21 @@ export interface ProductIssueRecord {
   triaged_by: string;
   reproduction_attempted_at: string | null;
   reproduction_result: string;
+  reproduction_log?: unknown[];
   resolution_summary: string;
+  agent_triage_result?: Record<string, unknown> | null;
+  linked_pr_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductIssueComment {
+  id: number;
+  issue: number;
+  author: string;
+  body: string;
+  is_triage_step: boolean;
+  created_at: string;
 }
 
 export interface CreateIssueInput {
@@ -222,6 +234,17 @@ export async function listRecentIssues(
 
 export function addComment(issueId: number, body: string): Promise<unknown> {
   return api.post(`/product-issues/${issueId}/comment/`, { body });
+}
+
+/** Fetch full issue (Django detail response includes nested comments). */
+export async function fetchIssueDetail(
+  issueId: number
+): Promise<{ issue: ProductIssueRecord; comments: ProductIssueComment[] }> {
+  const issue = await api.get<ProductIssueRecord & { comments?: ProductIssueComment[] }>(
+    `/product-issues/${issueId}/`
+  );
+  const comments = issue.comments ?? [];
+  return { issue, comments };
 }
 
 /* ─── File / clipboard helpers ─────────────────────────────────────────── */

@@ -328,7 +328,7 @@ const AppHeader = () => {
           size="icon"
           onClick={() => openWithTab("chat")}
           title="AI Copilot"
-          className={copilotOpen ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700" : ""}
+          className={copilotOpen ? "bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white hover:from-purple-600 hover:to-fuchsia-700" : ""}
         >
           <Sparkles className="h-5 w-5" />
         </Button>
