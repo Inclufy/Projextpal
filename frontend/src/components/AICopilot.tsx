@@ -2,6 +2,7 @@
 // AI Project Co-pilot — vaste sidebar rechts (320px) — paars thema
 
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   X,
   Send,
@@ -17,9 +18,12 @@ import {
   Users,
   Calendar,
   BarChart3,
+  MessageSquare,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { IssuesTab } from '@/components/copilot/IssuesTab';
 
 interface Message {
   id: string;
@@ -53,11 +57,15 @@ const SUGGESTIONS = [
   { icon: Calendar, title: 'Maandrapportage', desc: 'Maak een maandelijks projectvoortgangsrapport' },
 ];
 
+type CopilotTab = 'chat' | 'issues';
+
 export default function AICopilot({ isOpen, onClose, initialContext, onContextConsumed }: AICopilotProps) {
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<CopilotTab>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const contextProcessedRef = useRef<string | null>(null);
@@ -216,6 +224,38 @@ export default function AICopilot({ isOpen, onClose, initialContext, onContextCo
         </div>
       </div>
 
+      {/* Tab bar */}
+      <div className="shrink-0 flex border-b border-gray-200 dark:border-gray-800">
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all border-b-2',
+            activeTab === 'chat'
+              ? 'border-purple-500 text-purple-600 bg-purple-50/50 dark:bg-purple-950/20'
+              : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+          )}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          Chat
+        </button>
+        <button
+          onClick={() => setActiveTab('issues')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all border-b-2',
+            activeTab === 'issues'
+              ? 'border-purple-500 text-purple-600 bg-purple-50/50 dark:bg-purple-950/20'
+              : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+          )}
+        >
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Issues
+        </button>
+      </div>
+
+      {activeTab === 'issues' ? (
+        <IssuesTab pathname={location.pathname} isActive={activeTab === 'issues'} />
+      ) : (
+      <>
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {!hasMessages ? (
@@ -353,6 +393,8 @@ export default function AICopilot({ isOpen, onClose, initialContext, onContextCo
           ProjeXtPal AI Copilot &middot; Powered by AI
         </p>
       </div>
+      </>
+      )}
     </aside>
   );
 }
