@@ -358,12 +358,16 @@ const AppHeader = () => {
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <CopilotProvider>
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      {/* h-screen + overflow-hidden locks the shell to viewport height so
+          inner panels (main + AI Copilot sidebar) scroll independently and
+          the page itself never scrolls. Previously min-h-screen allowed the
+          AI Copilot's chat/issues content to push the body past the viewport. */}
+      <div className="h-screen flex w-full overflow-hidden">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 h-screen">
           <AppHeader />
-          <div className="flex-1 flex overflow-hidden">
-            <main className="flex-1 overflow-auto">{children}</main>
+          <div className="flex-1 flex min-h-0 overflow-hidden">
+            <main className="flex-1 overflow-auto min-w-0">{children}</main>
             <AICopilotSidebar />
           </div>
         </div>

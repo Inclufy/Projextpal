@@ -759,7 +759,7 @@ export default function AICopilotSidebar() {
 
   return (
     <>
-      <div className={cn("h-full border-l border-border bg-card flex flex-col transition-all duration-300 relative", sidebarWidth)}>
+      <div className={cn("h-full max-h-full min-h-0 border-l border-border bg-card flex flex-col transition-all duration-300 relative overflow-hidden", sidebarWidth)}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
           <div className="flex items-center gap-3">
