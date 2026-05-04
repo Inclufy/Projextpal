@@ -63,6 +63,10 @@ import {
 interface IssuesTabProps {
   pathname: string;
   isActive: boolean;
+  /** Optional prefill from chat — when provided, switches to form mode
+   *  with title/description pre-populated and clears via onPrefillConsumed. */
+  prefill?: { title: string; description: string } | null;
+  onPrefillConsumed?: () => void;
 }
 
 const CATEGORY_OPTIONS: { value: IssueCategory; label: string }[] = [
@@ -78,7 +82,7 @@ const CATEGORY_OPTIONS: { value: IssueCategory; label: string }[] = [
   { value: "other", label: "Anders" },
 ];
 
-export function IssuesTab({ pathname, isActive }: IssuesTabProps) {
+export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: IssuesTabProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const companyId = user?.company ?? null;
@@ -111,6 +115,17 @@ export function IssuesTab({ pathname, isActive }: IssuesTabProps) {
   useEffect(() => {
     setCategory(defaultCategoryForModule(detectProjeXtPalModuleFromPath(pathname)));
   }, [pathname]);
+
+  // Apply chat-driven prefill: switches to form mode, fills title +
+  // description from the chat context, then clears the prefill state.
+  useEffect(() => {
+    if (!isActive || !prefill) return;
+    setTitle(prefill.title);
+    setDescription(prefill.description);
+    setMode("form");
+    onPrefillConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, prefill]);
 
   async function refreshList() {
     if (!companyId) return;

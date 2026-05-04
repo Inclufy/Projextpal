@@ -487,8 +487,45 @@ export default function AICopilotSidebar() {
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [activeForm, setActiveForm] = useState<any>(null);
+  // Pre-fill payload for the Issues tab. When chat detects an issue-intent
+  // and user clicks "Maak hier een issue van", we lift the prefill to this
+  // state and switch to the Issues tab; the IssuesTab reads it once.
+  const [issuePrefill, setIssuePrefill] = useState<{ title: string; description: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  /** Detect issue-report intent from a user message. Conservative — only
+   *  matches clear bug/error words to avoid false positives in normal chat. */
+  const isIssueIntent = (text: string): boolean => {
+    if (!text) return false;
+    const t = text.toLowerCase();
+    const triggers = [
+      "probleem", "issue", "bug", "fout", "foutmelding", "error", "crash",
+      "werkt niet", "kan niet", "lukt niet", "broken", "doesn't work",
+      "stuck", "freezes", "hangt", "vastloop",
+    ];
+    return triggers.some((w) => t.includes(w));
+  };
+
+  /** Extract a short title (first 60 chars of first line) and full body
+   *  (last few user messages) for pre-filling the issue form. */
+  const buildIssuePrefillFromChat = (sourceText?: string) => {
+    const lastUserMsgs = messages
+      .filter((m) => m.role === "user")
+      .slice(-3)
+      .map((m) => m.content);
+    const seed = sourceText ?? lastUserMsgs[lastUserMsgs.length - 1] ?? "";
+    const firstLine = seed.split("\n")[0] || seed;
+    return {
+      title: firstLine.slice(0, 100).trim(),
+      description: [...lastUserMsgs, sourceText].filter(Boolean).join("\n\n").slice(0, 4000),
+    };
+  };
+
+  const openIssueFromChat = (sourceText?: string) => {
+    setIssuePrefill(buildIssuePrefillFromChat(sourceText));
+    setActiveTab("issues");
+  };
 
   // Resolve current path for guide
   const currentPath = "/" + location.pathname.split("/").filter(Boolean)[0];
@@ -769,7 +806,12 @@ export default function AICopilotSidebar() {
 
         {/* Content */}
         {activeTab === "issues" ? (
-          <IssuesTab pathname={location.pathname} isActive={activeTab === "issues"} />
+          <IssuesTab
+            pathname={location.pathname}
+            isActive={activeTab === "issues"}
+            prefill={issuePrefill}
+            onPrefillConsumed={() => setIssuePrefill(null)}
+          />
         ) : activeTab === "setup" ? (
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-4">
@@ -829,6 +871,20 @@ export default function AICopilotSidebar() {
                             <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors mt-1 flex-shrink-0" />
                           </button>
                         ))}
+                        {/* Issue-melden suggestion (option A) — direct shortcut to the Issues tab. */}
+                        <button
+                          onClick={() => { setIssuePrefill(null); setActiveTab("issues"); }}
+                          className="w-full flex items-start gap-3 p-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-all text-left group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{isNl ? "Probleem melden" : "Report a problem"}</p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2">{isNl ? "Werkt iets niet zoals verwacht? Stuur het naar onze AI-triage." : "Something not working? Send it to our AI triage."}</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-amber-600 transition-colors mt-1 flex-shrink-0" />
+                        </button>
                       </div>
                     </div>
                     <div>
@@ -845,9 +901,25 @@ export default function AICopilotSidebar() {
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    {messages.map((message) => (
-                      <AIMessageRenderer key={message.id} message={{ id: message.id, role: message.role, content: message.content }} onCopy={handleCopyMessage} onFeedback={handleFeedback} showActions={message.role === "assistant"} />
-                    ))}
+                    {messages.map((message, idx) => {
+                      const prevUserMsg = idx > 0 && messages[idx - 1].role === "user" ? messages[idx - 1].content : "";
+                      const showIssueCta = message.role === "assistant" && isIssueIntent(prevUserMsg);
+                      return (
+                        <div key={message.id}>
+                          <AIMessageRenderer message={{ id: message.id, role: message.role, content: message.content }} onCopy={handleCopyMessage} onFeedback={handleFeedback} showActions={message.role === "assistant"} />
+                          {showIssueCta && (
+                            <button
+                              onClick={() => openIssueFromChat(prevUserMsg)}
+                              className="ml-9 mt-1 mb-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-[11px] font-medium text-amber-800 dark:text-amber-200 transition-colors"
+                              type="button"
+                            >
+                              <AlertTriangle className="h-3 w-3" />
+                              {isNl ? "📋 Maak hier een issue van" : "📋 File this as an issue"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                     {activeForm && (<div className="mt-3"><DynamicForm schema={activeForm} onSubmit={handleFormSubmit} onCancel={handleFormCancel} /></div>)}
                     {isSending && (
                       <div className="flex items-start gap-2 mt-3">
