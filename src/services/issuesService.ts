@@ -121,7 +121,9 @@ export function captureMobileEnvironment(
 
 export async function getCurrentCompanyId(): Promise<number | null> {
   try {
-    const me = await apiService.get<{ company?: number | null }>('/users/me/');
+    // BASE_URL on prod is https://projextpal.com (no /api/v1 suffix), so
+    // every endpoint must include the /api/v1/ prefix explicitly.
+    const me = await apiService.get<{ company?: number | null }>('/api/v1/users/me/');
     return me?.company ?? null;
   } catch {
     return null;
@@ -142,5 +144,5 @@ export async function createIssueFromMobile(
         ? { ...env, attachments_inline: attachments }
         : env,
   };
-  return apiService.post<CreatedIssue>('/product-issues/', payload);
+  return apiService.post<CreatedIssue>('/api/v1/product-issues/', payload);
 }
