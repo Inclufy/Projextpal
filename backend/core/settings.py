@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'cross_methodology',
     'onboarding',
     'integrations',
+    'product_issues',  # NEW: user-feedback + auto-CI issue capture
 ]
 
 MIDDLEWARE = [

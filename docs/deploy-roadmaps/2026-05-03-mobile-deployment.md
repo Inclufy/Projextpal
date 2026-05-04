@@ -27,6 +27,8 @@
 | 5 | EAS-auth + project-link | `eas whoami; cat eas.json \| jq .build.production` | Logged in als `inclufy`, profile bevat env+ascAppId |
 | 6 | Lokaal type-check | `npx tsc --noEmit` | exit 0 |
 | 7 | **PM-feature coverage stable** ⭐ | Run `pm-feature-validator` agent op `backend/` | Geen `YES`-required regressies t.o.v. laatste baseline; coverage% per actieve methodology niet gedaald |
+| 8 | **Data-leak audit clean** ⭐ | Run `data-leak-hunter` agent op gewijzigde dirs | 0 P0 cross-tenant leaks; bestaande P1 niet erger |
+| 9 | **Issue triage backlog clean** ⭐ | Run `issue-triage-validator` (last 7d) | 0 open P0 ProductIssues; nieuwe auto-CI issues zijn ofwel resolved ofwel onder triage |
 
 Als check 1 of 2 faalt: `npx expo install --fix` resp. `npm install`. Pull-apart commits per fix-categorie. Push **GitHub-only** (zie sectie 5).
 

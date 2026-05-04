@@ -36,19 +36,15 @@ Closes top gaps from PM-feature-validator inventory (baseline 2026-04-29):
 
 ## Pre-deploy gate (verplicht)
 
-### 1. **Run `pm-feature-validator` agent** ⭐ — release-readiness check
+### 1. **Pre-deploy agent-gates** ⭐ (alle 3 verplicht)
 
-In de Claude-CLI of via een tweede sessie:
-```
-Run pm-feature-validator agent op /Users/samiloukile/Projects/projextpal/backend
-```
+Run elk in volgorde via Claude-CLI of subagent-call:
 
-**Acceptatie-criteria voor deploy**:
-- ❌ **Geen `YES`-required PMBOK feature in `general` met severity HIGH** mag verloren zijn t.o.v. baseline
-- ❌ **Coverage van actieve methodologieën** mag niet dalen (regressie-detector)
-- ✅ Top-10 gap-lijst onveranderd of gekrompen — anders documenteer waarom
-
-Output bewaren in `docs/deploy-roadmaps/validator-runs/2026-05-04.md` voor audit.
+| # | Agent | Repo-arg | Pass-criterium | Output naar |
+|---|---|---|---|---|
+| 1a | `pm-feature-validator` | `/Users/samiloukile/Projects/projextpal/backend` | Geen `YES`-required PMBOK regressie; coverage gelijk of hoger; top-10 gap-lijst niet gegroeid | `validator-runs/<datum>-pm.md` |
+| 1b | `data-leak-hunter` | gewijzigde apps in `backend/` | 0 P0 cross-tenant leaks; bestaande P1 niet erger | `validator-runs/<datum>-leaks.md` |
+| 1c | `issue-triage-validator` | last 7d ProductIssue backlog | 0 open P0; nieuwe auto-CI issues triaged | `validator-runs/<datum>-issues.md` |
 
 ### 2. Code-quality
 ```bash

@@ -28,13 +28,15 @@
 
 ## B. Pre-deploy checks
 
-### PM-feature coverage gate ⭐
-Run de **`pm-feature-validator`**-agent (~/.claude/agents/pm-feature-validator.md) tegen `backend/`. Acceptatie:
-- **Geen `YES`-required PMBOK feature** (severity HIGH) regressie t.o.v. baseline (zie `2026-05-04-pm-best-practice-features.md`)
-- **Coverage van actieve methodologieën** mag niet dalen
-- Output bewaren in `docs/deploy-roadmaps/validator-runs/<datum>.md` voor audit
+### Pre-deploy agent-gates ⭐ (alle 3 verplicht)
 
-Toegevoegd als terugkerende deploy-gate sinds 2026-05-04.
+| Agent | Wat checkt | Pass-criterium | Toegevoegd |
+|---|---|---|---|
+| **`pm-feature-validator`** (~/.claude/agents/) | Coverage % per methodologie, gap-lijst | Geen `YES`-required PMBOK regressie; coverage gelijk of hoger | 2026-05-04 |
+| **`data-leak-hunter`** (~/.claude/agents/) | Cross-tenant leaks, missing RLS, weak permission_classes | 0 P0 leaks in nieuwe code; bestaande P1 niet erger | 2026-05-04 |
+| **`issue-triage-validator`** (~/.claude/agents/) | Open ProductIssue backlog van laatste 7d | 0 onresolved P0; nieuwe issues van laatste deploy zijn triaged | 2026-05-04 |
+
+Output bewaren in `docs/deploy-roadmaps/validator-runs/<datum>.md` voor audit.
 
 ### DB-migraties
 - 10 gewijzigde files zijn allemaal `views.py` (academy, agile, communication, deployment, governance, integrations, hybrid, lss_black, lss_green, projects).
