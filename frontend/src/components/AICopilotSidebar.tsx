@@ -614,16 +614,16 @@ export default function AICopilotSidebar() {
     <ScrollArea className="flex-1">
       <div className="p-4 space-y-4">
         {/* Page header */}
-        <div className="rounded-lg bg-gradient-to-r from-emerald-600/10 to-teal-600/10 border border-emerald-200 dark:border-emerald-800/50 p-4">
+        <div className="rounded-lg bg-gradient-to-r from-purple-600/10 to-fuchsia-600/10 border border-purple-200 dark:border-purple-800/50 p-4">
           <div className="flex items-center gap-2 mb-1">
-            <Info className="h-4 w-4 text-emerald-600" />
+            <Info className="h-4 w-4 text-purple-600" />
             <h4 className="text-sm font-semibold text-foreground">{guide.pageTitle}</h4>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">{guide.pageDescription}</p>
           {guide.tourSteps.length > 0 && (
             <Button
               size="sm"
-              className="mt-3 text-xs bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
+              className="mt-3 text-xs bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700"
               onClick={() => setIsTourOpen(true)}
             >
               <Play className="h-3 w-3 mr-1.5" />
@@ -642,8 +642,8 @@ export default function AICopilotSidebar() {
               const Icon = feature.icon;
               return (
                 <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg border border-border hover:bg-accent/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon className="h-3.5 w-3.5 text-emerald-600" />
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-3.5 w-3.5 text-purple-600" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-foreground">{feature.title}</p>
@@ -665,13 +665,13 @@ export default function AICopilotSidebar() {
           {guide.howTos.map((howTo, i) => (
             <div key={i} className="rounded-lg border border-border p-3 space-y-2">
               <div className="flex items-center gap-1.5">
-                <ArrowRight className="h-3 w-3 text-emerald-500" />
+                <ArrowRight className="h-3 w-3 text-purple-500" />
                 <p className="text-xs font-semibold text-foreground">{howTo.title}</p>
               </div>
               <ol className="space-y-1 ml-4">
                 {howTo.steps.map((step, j) => (
                   <li key={j} className="flex items-start gap-2 text-[10px] text-muted-foreground">
-                    <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 text-[9px] font-bold mt-0.5">{j + 1}</span>
+                    <span className="w-4 h-4 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 text-[9px] font-bold mt-0.5">{j + 1}</span>
                     <span className="leading-relaxed">{step}</span>
                   </li>
                 ))}
@@ -714,11 +714,11 @@ export default function AICopilotSidebar() {
               {RELATED_PAGES[currentPath].map((link, i) => {
                 const LinkIcon = link.icon;
                 return (
-                  <button key={i} className="flex items-center gap-2.5 p-2 rounded-lg border border-border hover:bg-accent/50 hover:border-emerald-300 transition-all text-left group cursor-pointer w-full" onClick={() => navigate(link.path)}>
-                    <div className="w-6 h-6 rounded-md bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center shrink-0 transition-colors">
-                      <LinkIcon className="h-3 w-3 text-emerald-600" />
+                  <button key={i} className="flex items-center gap-2.5 p-2 rounded-lg border border-border hover:bg-accent/50 hover:border-purple-300 transition-all text-left group cursor-pointer w-full" onClick={() => navigate(link.path)}>
+                    <div className="w-6 h-6 rounded-md bg-purple-500/10 group-hover:bg-purple-500/20 flex items-center justify-center shrink-0 transition-colors">
+                      <LinkIcon className="h-3 w-3 text-purple-600" />
                     </div>
-                    <span className="text-xs font-medium text-foreground group-hover:text-emerald-600 transition-colors">{link.label}</span>
+                    <span className="text-xs font-medium text-foreground group-hover:text-purple-600 transition-colors">{link.label}</span>
                     <ExternalLink className="h-2.5 w-2.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 );
@@ -742,8 +742,8 @@ export default function AICopilotSidebar() {
                     const SitemapIcon = link.icon;
                     const isCurrentPage = currentPath === link.path;
                     return (
-                      <button key={li} className={cn("flex items-center gap-1.5 p-1.5 rounded-md text-left transition-all cursor-pointer text-[10px]", isCurrentPage ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-800/50" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground")} onClick={() => !isCurrentPage && navigate(link.path)}>
-                        <SitemapIcon className={cn("h-3 w-3 shrink-0", isCurrentPage ? "text-emerald-600" : "text-muted-foreground")} />
+                      <button key={li} className={cn("flex items-center gap-1.5 p-1.5 rounded-md text-left transition-all cursor-pointer text-[10px]", isCurrentPage ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 font-semibold border border-purple-200 dark:border-purple-800/50" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground")} onClick={() => !isCurrentPage && navigate(link.path)}>
+                        <SitemapIcon className={cn("h-3 w-3 shrink-0", isCurrentPage ? "text-purple-600" : "text-muted-foreground")} />
                         <span className="truncate">{link.label}</span>
                       </button>
                     );
@@ -763,13 +763,13 @@ export default function AICopilotSidebar() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center shadow-sm">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm text-foreground">AI Copilot</span>
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">Online</Badge>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0">Online</Badge>
               </div>
               <span className="text-[11px] text-muted-foreground">ProjeXtPal AI</span>
             </div>
@@ -786,19 +786,19 @@ export default function AICopilotSidebar() {
 
         {/* Tab bar */}
         <div className="flex border-b border-border bg-muted/30">
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "chat" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("chat")}>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "chat" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("chat")}>
             <MessageSquare className="h-3.5 w-3.5" />
             Chat
           </button>
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "guide" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("guide")}>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "guide" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("guide")}>
             <HelpCircle className="h-3.5 w-3.5" />
             {isNl ? "Gids" : "Guide"}
           </button>
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
             <Settings className="h-3.5 w-3.5" />
             Setup
           </button>
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "issues" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("issues")}>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "issues" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("issues")}>
             <AlertTriangle className="h-3.5 w-3.5" />
             Issues
           </button>
@@ -834,14 +834,14 @@ export default function AICopilotSidebar() {
                   <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />
                 </button>
                 <button onClick={() => navigate("/demo-environment")} className="w-full flex items-center gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent/50 hover:border-purple-300 transition-all text-left group">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <Play className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <Play className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{isNl ? "Demo Omgeving" : "Demo Environment"}</p>
                     <p className="text-[11px] text-muted-foreground">{isNl ? "Genereer demo data" : "Generate demo data"}</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-emerald-600" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />
                 </button>
               </div>
             </div>
@@ -855,7 +855,7 @@ export default function AICopilotSidebar() {
                 {messages.length === 0 ? (
                   <div className="space-y-6">
                     <div className="text-center pt-6 pb-2">
-                      <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg">
+                      <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-purple-400 to-fuchsia-500 shadow-lg">
                         <Sparkles className="h-8 w-8 text-white" />
                       </div>
                       <h3 className="text-base font-semibold text-foreground mb-1">{isNl ? "Hallo! Ik ben uw AI Copilot" : "Hello! I'm your AI Copilot"}</h3>
@@ -923,7 +923,7 @@ export default function AICopilotSidebar() {
                     {activeForm && (<div className="mt-3"><DynamicForm schema={activeForm} onSubmit={handleFormSubmit} onCancel={handleFormCancel} /></div>)}
                     {isSending && (
                       <div className="flex items-start gap-2 mt-3">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0"><Loader2 className="h-4 w-4 text-white animate-spin" /></div>
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center flex-shrink-0"><Loader2 className="h-4 w-4 text-white animate-spin" /></div>
                         <div className="bg-muted/50 rounded-lg px-3 py-2">
                           <div className="flex items-center gap-1.5">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -952,7 +952,7 @@ export default function AICopilotSidebar() {
             <div className="p-3 border-t border-border bg-card">
               <div className="flex items-center gap-2">
                 <Input ref={inputRef} value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyPress={(e) => e.key === "Enter" && !isSending && !activeForm && handleSendMessage()} placeholder={isNl ? "Stel een vraag..." : "Ask a question..."} disabled={isSending || !!activeForm} className="h-10 text-sm bg-background" />
-                <Button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isSending || !!activeForm} size="icon" className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white">
+                <Button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isSending || !!activeForm} size="icon" className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 text-white">
                   {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
