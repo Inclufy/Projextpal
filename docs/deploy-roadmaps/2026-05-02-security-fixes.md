@@ -28,6 +28,14 @@
 
 ## B. Pre-deploy checks
 
+### PM-feature coverage gate ⭐
+Run de **`pm-feature-validator`**-agent (~/.claude/agents/pm-feature-validator.md) tegen `backend/`. Acceptatie:
+- **Geen `YES`-required PMBOK feature** (severity HIGH) regressie t.o.v. baseline (zie `2026-05-04-pm-best-practice-features.md`)
+- **Coverage van actieve methodologieën** mag niet dalen
+- Output bewaren in `docs/deploy-roadmaps/validator-runs/<datum>.md` voor audit
+
+Toegevoegd als terugkerende deploy-gate sinds 2026-05-04.
+
 ### DB-migraties
 - 10 gewijzigde files zijn allemaal `views.py` (academy, agile, communication, deployment, governance, integrations, hybrid, lss_black, lss_green, projects).
 - **Geen models gewijzigd door deze commits → geen migraties getriggerd door deze deploy.**

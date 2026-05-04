@@ -26,6 +26,7 @@
 | 4 | Android compileSdk | `grep compileSdkVersion mobile/app.json` | `36` (sinds 2026-05) |
 | 5 | EAS-auth + project-link | `eas whoami; cat eas.json \| jq .build.production` | Logged in als `inclufy`, profile bevat env+ascAppId |
 | 6 | Lokaal type-check | `npx tsc --noEmit` | exit 0 |
+| 7 | **PM-feature coverage stable** ⭐ | Run `pm-feature-validator` agent op `backend/` | Geen `YES`-required regressies t.o.v. laatste baseline; coverage% per actieve methodology niet gedaald |
 
 Als check 1 of 2 faalt: `npx expo install --fix` resp. `npm install`. Pull-apart commits per fix-categorie. Push **GitHub-only** (zie sectie 5).
 

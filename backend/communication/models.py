@@ -14,13 +14,17 @@ class StatusReport(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
     progress = models.IntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
     last_updated = models.DateField()
+    # Bijlagen: KPI-dashboards (PDF), executive summaries, screenshots
+    attachments = models.ManyToManyField(
+        'projects.Upload', blank=True, related_name='+'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'status_reports'
         ordering = ['-created_at']
@@ -147,6 +151,11 @@ class Meeting(models.Model):
     location = models.CharField(max_length=255, blank=True)
     agenda = models.JSONField(default=list, blank=True)         # list[str]
     participants = models.JSONField(default=list, blank=True)   # list[str]
+
+    # Bijlagen: agenda-PDF, presentaties, minutes, vergader-decks
+    attachments = models.ManyToManyField(
+        'projects.Upload', blank=True, related_name='+'
+    )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="scheduled")
     created_at = models.DateTimeField(auto_now_add=True)

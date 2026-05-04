@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 
 
 class Project(models.Model):
@@ -521,6 +522,13 @@ class Risk(models.Model):
         blank=True,
         related_name="created_risks",
     )
+    # Optional supporting evidence (FMEA-doc, vendor letter, BCG matrix
+    # screenshots, etc.). Reuses the existing generic Upload model.
+    attachments = models.ManyToManyField(
+        "projects.Upload",
+        blank=True,
+        related_name="+",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -584,6 +592,13 @@ class ManualMitigation(models.Model):
         null=True,
         blank=True,
         related_name="created_manual_mitigations",
+    )
+    # Mitigation supporting docs: vendor quotes, decision memos,
+    # remediation runbooks, action-plan PDFs.
+    attachments = models.ManyToManyField(
+        "projects.Upload",
+        blank=True,
+        related_name="+",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1092,3 +1107,271 @@ class ProjectBudget(models.Model):
         """Calculate remaining budget"""
         return float(self.total_budget) - float(self.total_spent)
     
+
+# ============================================================================
+# RAID-Log completion: Assumption + Issue (Risk + Dependency already exist)
+# ============================================================================
+#
+# PMBOK 7 / PRINCE2 7 best practice: every project tracks a RAID-log:
+#   R - Risks         (already: projects.Risk)
+#   A - Assumptions   (NEW: this model)
+#   I - Issues        (NEW: this model)
+#   D - Dependencies  (already: charater.Dependency)
+#
+# Without A and I a project team has no formal place to register "we are
+# assuming the vendor delivers in week 6" or "production deploy is blocked
+# by stalled DBA approval". Both are critical artifacts for steering-com
+# governance.
+
+class Assumption(models.Model):
+    """RAID-log Assumption — a stated belief the project plan depends on."""
+
+    VALIDATION_CHOICES = [
+        ("Unvalidated", "Unvalidated"),
+        ("Validated", "Validated"),
+        ("Invalidated", "Invalidated"),
+    ]
+    IMPACT_CHOICES = [
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="assumptions"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    impact = models.CharField(max_length=20, choices=IMPACT_CHOICES, default="Medium")
+    validation_status = models.CharField(
+        max_length=20, choices=VALIDATION_CHOICES, default="Unvalidated"
+    )
+    validation_target_date = models.DateField(null=True, blank=True)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    validated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="validated_assumptions",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_assumptions",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_assumptions",
+    )
+    attachments = models.ManyToManyField(
+        "projects.Upload", blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.validation_status})"
+
+
+class Issue(models.Model):
+    """RAID-log Issue — a problem that has materialised and needs action."""
+
+    SEVERITY_CHOICES = [
+        ("Blocker", "Blocker"),
+        ("Critical", "Critical"),
+        ("Major", "Major"),
+        ("Minor", "Minor"),
+    ]
+    STATUS_CHOICES = [
+        ("Open", "Open"),
+        ("In Progress", "In Progress"),
+        ("Resolved", "Resolved"),
+        ("Closed", "Closed"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="issues"
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    severity = models.CharField(
+        max_length=20, choices=SEVERITY_CHOICES, default="Major"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Open")
+    raised_date = models.DateField(default=timezone.now)
+    target_resolution_date = models.DateField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution = models.TextField(blank=True)
+    # Optional escalation: link to another model (Risk that materialised, etc.)
+    related_risk = models.ForeignKey(
+        Risk,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="materialised_issues",
+        help_text="If this issue is a risk that materialised, link the original Risk",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_issues",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_issues",
+    )
+    attachments = models.ManyToManyField(
+        "projects.Upload", blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-severity", "-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.severity}, {self.status})"
+
+
+# ============================================================================
+# Lessons Learned register — PMBOK / PRINCE2 / MSP requirement
+# ============================================================================
+#
+# A formal register that captures what worked, what didn't, and what to do
+# differently next time. Critical for organisational learning and gate
+# reviews (PRINCE2 stage end, MSP tranche review, retrospectives).
+
+class LessonLearned(models.Model):
+    """Single lesson captured during or after a project."""
+
+    CATEGORY_CHOICES = [
+        ("Process", "Process"),
+        ("Technical", "Technical"),
+        ("Stakeholder", "Stakeholder"),
+        ("Resource", "Resource"),
+        ("Communication", "Communication"),
+        ("Risk", "Risk"),
+        ("Quality", "Quality"),
+        ("Schedule", "Schedule"),
+        ("Cost", "Cost"),
+        ("Other", "Other"),
+    ]
+    SENTIMENT_CHOICES = [
+        ("positive", "Positive (what worked)"),
+        ("negative", "Negative (what didn't)"),
+        ("neutral", "Neutral (observation)"),
+    ]
+    APPLICABILITY_CHOICES = [
+        ("project", "This project only"),
+        ("portfolio", "Portfolio-wide"),
+        ("organisation", "Organisation-wide"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="lessons_learned"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    sentiment = models.CharField(
+        max_length=20, choices=SENTIMENT_CHOICES, default="neutral"
+    )
+    recommended_action = models.TextField(
+        blank=True,
+        help_text="What to do (or not do) next time based on this lesson",
+    )
+    applicable_to = models.CharField(
+        max_length=20, choices=APPLICABILITY_CHOICES, default="project"
+    )
+    captured_during_phase = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Methodology phase: e.g. 'Sprint 5 retro', 'Stage 2 closure', 'DMAIC Control'",
+    )
+    captured_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="captured_lessons",
+    )
+    attachments = models.ManyToManyField(
+        "projects.Upload", blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.category}, {self.sentiment})"
+
+
+# ============================================================================
+# Definition of Done — Scrum/Agile/Hybrid requirement
+# ============================================================================
+#
+# Scrum Guide 2020 calls DoD a "commitment" of the Increment. Without a
+# formal DoD model the team has no consistent, queryable acceptance bar —
+# only ad-hoc text in tickets. This model lets you scope DoD per project
+# (org-wide default) or per scope (sprint/feature/epic) and reference it
+# from increments / acceptance checks.
+
+class DefinitionOfDone(models.Model):
+    """Definition of Done criteria, optionally scoped to sprint/feature."""
+
+    SCOPE_CHOICES = [
+        ("project", "Project-wide"),
+        ("sprint", "Sprint-specific"),
+        ("feature", "Feature-specific"),
+        ("epic", "Epic-specific"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="definitions_of_done"
+    )
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default="project")
+    scope_reference = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Free-form ID/name of the sprint/feature/epic this DoD applies to",
+    )
+    title = models.CharField(max_length=255, default="Definition of Done")
+    criteria = models.JSONField(
+        default=list,
+        help_text="List of acceptance criteria strings; checked off per increment",
+    )
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_definitions_of_done",
+    )
+    attachments = models.ManyToManyField(
+        "projects.Upload", blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_active", "scope", "-created_at"]
+
+    def __str__(self):
+        return f"DoD: {self.title} ({self.scope})"
