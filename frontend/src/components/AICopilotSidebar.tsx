@@ -56,9 +56,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
+import { IssuesTab } from "@/components/copilot/IssuesTab";
 
 /* ─── Types ─── */
-type CopilotTab = "chat" | "guide" | "setup";
+type CopilotTab = "chat" | "guide" | "setup" | "issues";
 
 interface Message {
   id: string;
@@ -760,10 +761,16 @@ export default function AICopilotSidebar() {
             <Settings className="h-3.5 w-3.5" />
             Setup
           </button>
+          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "issues" ? "border-emerald-600 text-emerald-700 dark:text-emerald-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("issues")}>
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Issues
+          </button>
         </div>
 
         {/* Content */}
-        {activeTab === "setup" ? (
+        {activeTab === "issues" ? (
+          <IssuesTab pathname={location.pathname} isActive={activeTab === "issues"} />
+        ) : activeTab === "setup" ? (
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-4">
               <div className="text-center pt-4 pb-2">
