@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import type { LinkingOptions } from '@react-navigation/native';
 import { LanguageProvider } from './src/contexts/LanguageContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { registerForPushNotificationsAsync } from './src/services/pushService';
+import { useShakeToReport } from './src/hooks/useShakeToReport';
+import { ShakeReportSheet } from './src/components/ShakeReportSheet';
 
 // Deep link routing.
 //
@@ -45,17 +47,48 @@ const linking: LinkingOptions<ReactNavigation.RootParamList> = {
 };
 
 export default function App() {
+  const navigationRef = useNavigationContainerRef();
+  const [routeName, setRouteName] = useState<string | null>(null);
+  const [shakeSheetVisible, setShakeSheetVisible] = useState(false);
+  const routeNameRef = useRef<string | null>(null);
+
   useEffect(() => {
     // Fire-and-forget — the service swallows errors so the app boots even if
     // permissions are denied or the backend endpoint is still 404.
     registerForPushNotificationsAsync();
   }, []);
 
+  // Shake-to-report — opens a bottom sheet that POSTs to /product-issues/.
+  useShakeToReport({
+    enabled: !shakeSheetVisible,
+    onShake: () => setShakeSheetVisible(true),
+  });
+
   return (
     <LanguageProvider>
-      <NavigationContainer linking={linking}>
+      <NavigationContainer
+        ref={navigationRef}
+        linking={linking}
+        onReady={() => {
+          const r = navigationRef.getCurrentRoute()?.name ?? null;
+          routeNameRef.current = r;
+          setRouteName(r);
+        }}
+        onStateChange={() => {
+          const r = navigationRef.getCurrentRoute()?.name ?? null;
+          if (r !== routeNameRef.current) {
+            routeNameRef.current = r;
+            setRouteName(r);
+          }
+        }}
+      >
         <AppNavigator />
       </NavigationContainer>
+      <ShakeReportSheet
+        visible={shakeSheetVisible}
+        onClose={() => setShakeSheetVisible(false)}
+        routeName={routeName}
+      />
     </LanguageProvider>
   );
 }
