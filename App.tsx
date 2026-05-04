@@ -98,8 +98,7 @@ export default function App() {
           activeOpacity={0.85}
           style={styles.fab}
         >
-          <MaterialIcons name="report-problem" size={22} color="#fff" />
-          <Text style={styles.fabLabel}>Issue</Text>
+          <MaterialIcons name="report-problem" size={20} color="#fff" />
         </TouchableOpacity>
       )}
     </LanguageProvider>
@@ -108,16 +107,18 @@ export default function App() {
 
 const styles = StyleSheet.create({
   fab: {
+    // Small icon-only circle, bottom-right above the tab-bar AND the
+    // "Snelle acties" row on Home so it doesn't overlap content.
+    // ~240px from the bottom on iOS clears both UI elements.
     position: 'absolute',
-    right: 16,
-    bottom: Platform.OS === 'ios' ? 100 : 80,
-    backgroundColor: '#7c3aed',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 24,
-    flexDirection: 'row',
+    right: 14,
+    bottom: Platform.OS === 'ios' ? 240 : 200,
+    backgroundColor: 'rgba(124, 58, 237, 0.9)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
