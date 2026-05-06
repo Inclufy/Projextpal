@@ -18,6 +18,11 @@ from .serializers import (
     OnboardingProfileSerializer,
 )
 from .demo_data import generate_demo_projects
+from accounts.models import VerificationToken
+from accounts.serializers import send_verification_email
+from subscriptions.models import SubscriptionPlan, CompanySubscription
+from admin_portal.models import log_action
+from django.contrib.auth import get_user_model
 
 
 def call_openai(messages, temperature=0.7, max_tokens=4000):
@@ -263,6 +268,67 @@ class SaveOnboardingView(APIView):
                 industry=demo_industry,
                 methodology=data.get('default_methodology', 'agile'),
             )
+
+        # Subscription plan — optional, only if user picked one in the wizard.
+        plan_id = data.get('plan_id') or ''
+        if plan_id and plan_id != 'none':
+            try:
+                plan = SubscriptionPlan.objects.get(id=plan_id)
+                CompanySubscription.objects.update_or_create(
+                    company=company,
+                    defaults={
+                        'plan': plan,
+                        'status': 'trialing',
+                        'billing_cycle': data.get('billing_cycle') or 'monthly',
+                        'payment_method': 'stripe',
+                    },
+                )
+                company.is_subscribed = True
+                company.save(update_fields=['is_subscribed'])
+            except SubscriptionPlan.DoesNotExist:
+                pass
+
+        # Additional team invites — create inactive users with verification
+        # tokens so they receive an email and can set their own password.
+        UserModel = get_user_model()
+        for inv in (data.get('additional_invites') or []):
+            email = (inv.get('email') or '').strip().lower()
+            if not email or UserModel.objects.filter(email=email).exists():
+                continue
+            invitee = UserModel.objects.create(
+                email=email,
+                username=email.split('@')[0],
+                company=company,
+                role=inv.get('role') or 'guest',
+                is_active=False,
+            )
+            try:
+                token = VerificationToken.objects.create(user=invitee)
+                send_verification_email(invitee, token)
+            except Exception:
+                pass
+
+        # Legal consents — append to audit log for GDPR compliance.
+        if data.get('accept_tos') or data.get('accept_dpa') or data.get('accept_gdpr'):
+            try:
+                log_action(
+                    user=user,
+                    action='settings_updated',
+                    category='security',
+                    severity='info',
+                    description=(
+                        f"Onboarding consents recorded: "
+                        f"tos={bool(data.get('accept_tos'))}, "
+                        f"dpa={bool(data.get('accept_dpa'))}, "
+                        f"gdpr={bool(data.get('accept_gdpr'))}"
+                    ),
+                    resource_type='company',
+                    resource_id=str(company.id),
+                    company=company,
+                    request=request,
+                )
+            except Exception:
+                pass
 
         return Response(
             {

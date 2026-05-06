@@ -71,6 +71,8 @@ const TenantProvisioning = () => {
   // Branding
   const [primaryColor, setPrimaryColor] = useState("#7C3AED");
   const [customDomain, setCustomDomain] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
 
   // Plan & billing
   const [planId, setPlanId] = useState("");
@@ -90,6 +92,12 @@ const TenantProvisioning = () => {
   // Security
   const [require2fa, setRequire2fa] = useState(false);
 
+  // Seed
+  const [seedDemoData, setSeedDemoData] = useState(false);
+
+  // Notifications
+  const [sendInvites, setSendInvites] = useState(true);
+
   useEffect(() => {
     fetch("/api/v1/admin/plans/", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.ok ? r.json() : [])
@@ -100,10 +108,54 @@ const TenantProvisioning = () => {
   const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
+  const onLogoSelected = (f: File | null) => {
+    setLogoFile(f);
+    if (f) {
+      const reader = new FileReader();
+      reader.onload = (e) => setLogoPreview((e.target?.result as string) || "");
+      reader.readAsDataURL(f);
+    } else setLogoPreview("");
+  };
+
   const addInvite = () => setInvites([...invites, { email: "", role: "pm" }]);
   const updateInvite = (i: number, patch: Partial<Invite>) =>
     setInvites(invites.map((inv, idx) => idx === i ? { ...inv, ...patch } : inv));
   const removeInvite = (i: number) => setInvites(invites.filter((_, idx) => idx !== i));
+
+  // Accepts CSV text or freshly pasted list of emails (one per line, optionally
+  // "email,role"). Skips invalid lines silently — admin can review the rendered
+  // list afterwards.
+  const importInvitesFromText = (text: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const parsed: Invite[] = [];
+    for (const raw of text.split(/[\n,;]+/)) {
+      const line = raw.trim();
+      if (!line) continue;
+      const [emailPart, rolePart] = line.includes(",") ? line.split(",", 2) : [line, ""];
+      const email = emailPart.trim().toLowerCase();
+      if (!re.test(email)) continue;
+      const role = (rolePart || "").trim().toLowerCase();
+      const validRoles = ["admin", "pm", "program_manager", "contibuter", "reviewer", "guest"];
+      parsed.push({ email, role: validRoles.includes(role) ? role : "pm" });
+    }
+    if (parsed.length === 0) {
+      toast.error("No valid emails found");
+      return;
+    }
+    // Dedupe against existing invites + owner email.
+    const existing = new Set([ownerEmail.toLowerCase(), ...invites.map((i) => i.email.toLowerCase())]);
+    const fresh = parsed.filter((p) => !existing.has(p.email));
+    setInvites([...invites, ...fresh]);
+    toast.success(`${fresh.length} invite${fresh.length === 1 ? "" : "s"} added`);
+  };
+
+  const handleCsvUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => importInvitesFromText(String(reader.result || ""));
+    reader.readAsText(file);
+  };
+
+  const [bulkText, setBulkText] = useState("");
 
   const validate = () => {
     if (!name.trim()) { toast.error("Organization name is required"); setActiveTab("basics"); return false; }
@@ -134,6 +186,8 @@ const TenantProvisioning = () => {
         billing_cycle: billingCycle,
         subscription_status: subStatus,
         require_2fa: require2fa,
+        seed_demo_data: seedDemoData,
+        send_invites: sendInvites,
         additional_invites: validInvites,
         onboarding_data: {
           program_methodologies: programMethods,
@@ -144,13 +198,24 @@ const TenantProvisioning = () => {
       const r = await fetch("/api/v1/admin/tenants/provision/", {
         method: "POST", headers, body: JSON.stringify(body),
       });
-      if (r.ok) {
-        toast.success("Tenant provisioned");
-        navigate("/admin/tenants");
-      } else {
+      if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         toast.error(err.detail || "Provisioning failed");
+        return;
       }
+      const created = await r.json();
+      if (logoFile && created?.id) {
+        const fd = new FormData();
+        fd.append("file", logoFile);
+        const lr = await fetch(`/api/v1/admin/tenants/${created.id}/upload-logo/`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+        if (!lr.ok) toast.warning("Tenant created, but logo upload failed");
+      }
+      toast.success("Tenant provisioned");
+      navigate("/admin/tenants");
     } catch {
       toast.error("Provisioning failed");
     } finally {
@@ -198,9 +263,23 @@ const TenantProvisioning = () => {
 
         <TabsContent value="branding" className="mt-6">
           <Section icon={Palette} title="Branding">
+            <div className="space-y-2">
+              <Label>Logo</Label>
+              <div className="flex items-center gap-4">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="logo preview" className="w-20 h-20 rounded-lg object-contain border bg-white p-1" />
+                ) : (
+                  <div className="w-20 h-20 rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground"><Building2 className="h-6 w-6" /></div>
+                )}
+                <div className="flex flex-col gap-2">
+                  <Input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={(e) => onLogoSelected(e.target.files?.[0] || null)} className="max-w-xs" />
+                  {logoFile && <Button variant="outline" size="sm" onClick={() => onLogoSelected(null)}><Trash2 className="h-3 w-3 mr-1" />Remove</Button>}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">PNG, JPG, SVG, or WebP. Uploaded after tenant creation.</p>
+            </div>
             <div className="space-y-2"><Label>Primary color</Label><div className="flex items-center gap-3"><Input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-20 h-10 cursor-pointer p-1" /><Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} placeholder="#7C3AED" className="max-w-xs" /></div></div>
             <div className="space-y-2"><Label>Custom domain</Label><Input value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} placeholder="acme.projextpal.com" /><p className="text-xs text-muted-foreground">Optional. Tenant admin can configure DNS later.</p></div>
-            <p className="text-xs text-muted-foreground">Logo upload is available after creation in tenant settings.</p>
           </Section>
         </TabsContent>
 
@@ -227,6 +306,16 @@ const TenantProvisioning = () => {
             <p className="text-xs text-muted-foreground">Owner is created inactive. They receive a verification email and set their own password.</p>
           </Section>
           <Section icon={Plus} title="Additional team members (optional)">
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+              <Label className="text-xs">Bulk import — CSV or paste emails</Label>
+              <Textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder={"alice@acme.com,pm\nbob@acme.com,admin\ncarol@acme.com"} rows={3} className="text-xs font-mono" />
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => { importInvitesFromText(bulkText); setBulkText(""); }} disabled={!bulkText.trim()}>Add from text</Button>
+                <span className="text-xs text-muted-foreground">or</span>
+                <Input type="file" accept=".csv,text/csv,text/plain" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvUpload(f); e.currentTarget.value = ""; }} className="max-w-xs h-8 text-xs" />
+              </div>
+              <p className="text-[11px] text-muted-foreground">Format: <code>email,role</code> per line. Roles: admin, pm, program_manager, contibuter, reviewer, guest. Default role is pm.</p>
+            </div>
             {invites.map((inv, i) => (
               <div key={i} className="grid grid-cols-[1fr_140px_40px] gap-2 items-end">
                 <div className="space-y-1"><Label className="text-xs">Email</Label><Input type="email" value={inv.email} onChange={(e) => updateInvite(i, { email: e.target.value })} placeholder="user@acme.com" /></div>
@@ -250,11 +339,23 @@ const TenantProvisioning = () => {
             ))}</div>
             <p className="text-xs text-muted-foreground">Selected methodologies become available for new projects in this tenant.</p>
           </Section>
+          <Section icon={CheckCircle2} title="Demo data">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Seed sample projects</Label>
+                <p className="text-xs text-muted-foreground">Creates one starter project per selected project methodology so the tenant dashboard is not empty on day one.</p>
+              </div>
+              <Switch checked={seedDemoData} onCheckedChange={setSeedDemoData} />
+            </div>
+          </Section>
         </TabsContent>
 
-        <TabsContent value="security" className="mt-6">
+        <TabsContent value="security" className="mt-6 space-y-4">
           <Section icon={Shield} title="Security policy">
             <div className="flex items-center justify-between"><div><Label>Enforce 2FA tenant-wide</Label><p className="text-xs text-muted-foreground">All users must enrol 2FA at next login.</p></div><Switch checked={require2fa} onCheckedChange={setRequire2fa} /></div>
+          </Section>
+          <Section icon={CheckCircle2} title="Notifications">
+            <div className="flex items-center justify-between"><div><Label>Send verification emails on provision</Label><p className="text-xs text-muted-foreground">Owner and additional invitees receive an email with a link to verify their account and set a password. Disable for silent setup.</p></div><Switch checked={sendInvites} onCheckedChange={setSendInvites} /></div>
           </Section>
         </TabsContent>
 
@@ -274,6 +375,8 @@ const TenantProvisioning = () => {
               <dt className="text-muted-foreground">Program methodologies</dt><dd>{programMethods.length ? programMethods.join(", ") : "—"}</dd>
               <dt className="text-muted-foreground">Project methodologies</dt><dd>{projectMethods.length ? projectMethods.join(", ") : "—"}</dd>
               <dt className="text-muted-foreground">2FA enforced</dt><dd>{require2fa ? "Yes" : "No"}</dd>
+              <dt className="text-muted-foreground">Seed demo data</dt><dd>{seedDemoData ? "Yes" : "No"}</dd>
+              <dt className="text-muted-foreground">Logo</dt><dd>{logoFile ? logoFile.name : "—"}</dd>
             </dl>
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => navigate("/admin/tenants")}>Cancel</Button>
