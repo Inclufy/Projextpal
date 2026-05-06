@@ -21,7 +21,7 @@
 - [ ] Tenant "Recare" aangemaakt in Admin Portal — *P*
 - [ ] Subscription plan geactiveerd — *P*
 - [ ] Subdomein/branding gecontroleerd — *P*
-- [ ] Elise uitgenodigd als eerste tenant-admin — *P*
+- [x] Elise uitgenodigd als eerste tenant-admin — *P* · done 2026-05-06
 - [ ] Welkomstmail + inloglink ontvangen en getest — *R*
 
 ### 0.2 Voorbereiding kickoff
