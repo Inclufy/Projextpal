@@ -31,6 +31,7 @@ const OrganizationManagement = () => {
   useEffect(() => { fetchOrgs(); }, []);
 
   const openEdit = (o: any) => { setEditing(o); setForm({ name: o.name || "", domain: o.domain || "", plan: o.plan?.name || o.plan || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ name: "", domain: "", plan: "" }); setDialogOpen(true); };
   const handleSave = async () => {
     if (!form.name) { toast.error("Naam verplicht"); return; }
     setSubmitting(true);
@@ -48,6 +49,7 @@ const OrganizationManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3"><Building2 className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">Organizations</h1><Badge variant="outline">{orgs.length}</Badge></div>
+        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Organization</Button>
       </div>
 
       <div className="flex gap-2"><Input placeholder="Search organizations..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && fetchOrgs()} className="max-w-sm" /><Button variant="outline" onClick={fetchOrgs}><Search className="h-4 w-4" /></Button></div>
