@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Recare × ProjeXtPal — Kickoff & Onboarding</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-2: #111a35;
+    --ink: #f4f6fb;
+    --ink-dim: #a9b3cc;
+    --accent: #6c8cff;
+    --accent-2: #8be3c9;
+    --warn: #ffb86b;
+    --line: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: radial-gradient(1200px 800px at 20% 10%, #1a2347 0%, var(--bg) 60%);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+  }
+  .deck { position: relative; width: 100vw; height: 100vh; }
+  .slide {
+    position: absolute; inset: 0;
+    padding: 64px 80px 80px;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    animation: fade .4s ease;
+  }
+  .slide.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow {
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 56px; line-height: 1.05; margin: 0 0 16px;
+    font-weight: 700; letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: 38px; line-height: 1.1; margin: 0 0 24px;
+    font-weight: 700; letter-spacing: -0.01em;
+  }
+  h3 { font-size: 20px; margin: 0 0 8px; font-weight: 600; }
+  p, li { color: var(--ink-dim); font-size: 18px; line-height: 1.55; }
+  strong { color: var(--ink); font-weight: 600; }
+
+  .lede { font-size: 22px; max-width: 880px; }
+
+  .grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    margin-top: 8px;
+  }
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+  .card .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: rgba(108,140,255,0.14);
+    color: var(--accent);
+    font-weight: 700; font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .card.accent { border-color: rgba(108,140,255,0.4); }
+  .card.green .num { background: rgba(139,227,201,0.14); color: var(--accent-2); }
+  .card.warn  .num { background: rgba(255,184,107,0.14); color: var(--warn); }
+
+  ul.clean { list-style: none; padding: 0; margin: 8px 0 0; }
+  ul.clean li { padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  ul.clean li:last-child { border-bottom: 0; }
+
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(108,140,255,0.12);
+    color: var(--accent);
+    font-size: 12px; font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .footer {
+    position: absolute; left: 80px; right: 80px; bottom: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--ink-dim); font-size: 13px;
+  }
+  .footer .brand { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .nav {
+    position: fixed; bottom: 20px; right: 20px;
+    display: flex; gap: 8px; z-index: 10;
+  }
+  .nav button {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: 1px solid var(--line);
+    background: rgba(255,255,255,0.04); color: var(--ink);
+    cursor: pointer; font-size: 16px;
+    transition: background .2s;
+  }
+  .nav button:hover { background: rgba(255,255,255,0.1); }
+  .progress {
+    position: fixed; top: 0; left: 0;
+    height: 3px; background: var(--accent);
+    transition: width .3s;
+    z-index: 11;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 12px;
+  }
+  .timeline .stage {
+    background: var(--bg-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .timeline .stage.s2 { border-color: var(--accent-2); }
+  .timeline .stage.s3 { border-color: var(--warn); }
+  .timeline .stage h3 { color: var(--ink); }
+
+  .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 8px; }
+  .kpi .stat {
+    background: var(--bg-2);
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid var(--line);
+  }
+  .kpi .num-big {
+    font-size: 40px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .kpi .lbl { color: var(--ink-dim); font-size: 14px; margin-top: 4px; }
+
+  .table-like {
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .row {
+    display: grid; grid-template-columns: 200px 1fr;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .k { color: var(--ink); font-weight: 600; }
+  .row .v { color: var(--ink-dim); }
+
+  .hint { color: var(--ink-dim); font-size: 13px; margin-top: 8px; }
+  kbd {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 7px; border-radius: 6px; font-size: 12px;
+    border: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1: Title -->
+  <section class="slide active">
+    <div class="eyebrow">Kickoff · {{datum}}</div>
+    <h1>Recare × ProjeXtPal</h1>
+    <p class="lede">Van aftrap naar productie — een gestructureerde onboarding voor Elise &amp; team.</p>
+    <div class="footer">
+      <div class="brand"><div class="dot"></div> ProjeXtPal Onboarding</div>
+      <div>Gebruik <kbd>←</kbd> <kbd>→</kbd> om te navigeren</div>
+    </div>
+  </section>
+
+  <!-- 2: Doel -->
+  <section class="slide">
+    <div class="eyebrow">Waarom we hier zijn</div>
+    <h2>Doel van vandaag</h2>
+    <div class="grid">
+      <div class="card accent"><div class="num">1</div><h3>Wederzijds beeld</h3><p>Begrijpen wat Recare wil bereiken met ProjeXtPal: governance, methodiek, rapportage en training.</p></div>
+      <div class="card green"><div class="num">2</div><h3>Werkende basis</h3><p>De tenant is geconfigureerd, Elise is admin, en we hebben minstens één pilot-project live.</p></div>
+      <div class="card warn"><div class="num">3</div><h3>Heldere planning</h3><p>30 / 60 / 90 dagen plan met meetbare succescriteria en duidelijke vervolgafspraken.</p></div>
+    </div>
+  </section>
+
+  <!-- 3: Agenda -->
+  <section class="slide">
+    <div class="eyebrow">90 minuten</div>
+    <h2>Agenda kickoff</h2>
+    <div class="table-like">
+      <div class="row"><div class="k">10 min</div><div class="v">Kennismaking &amp; doelen voor de eerste 90 dagen</div></div>
+      <div class="row"><div class="k">30 min</div><div class="v">Live onboarding wizard — bedrijfsanalyse, configuratie, AI-setup</div></div>
+      <div class="row"><div class="k">20 min</div><div class="v">Eerste pilot-project opzetten met echte data</div></div>
+      <div class="row"><div class="k">10 min</div><div class="v">Rollen, users &amp; permissies</div></div>
+      <div class="row"><div class="k">10 min</div><div class="v">Academy, AI Coach &amp; support kanalen</div></div>
+      <div class="row"><div class="k">10 min</div><div class="v">Vervolgafspraken &amp; action log</div></div>
+    </div>
+  </section>
+
+  <!-- 4: Drie fasen -->
+  <section class="slide">
+    <div class="eyebrow">Aanpak</div>
+    <h2>Van kickoff naar productie in drie fasen</h2>
+    <div class="timeline">
+      <div class="stage">
+        <span class="pill">Fase 1</span>
+        <h3>Voorbereiding</h3>
+        <p>Tenant aanmaken, intake-vragen beantwoorden, methodiek-voorkeur bepalen. <strong>Vóór de kickoff.</strong></p>
+      </div>
+      <div class="stage s2">
+        <span class="pill" style="background:rgba(139,227,201,0.14);color:var(--accent-2)">Fase 2</span>
+        <h3>Configuratie &amp; pilot</h3>
+        <p>Onboarding wizard, AI-setup, eerste pilot-project, key users uitnodigen. <strong>Week 1.</strong></p>
+      </div>
+      <div class="stage s3">
+        <span class="pill" style="background:rgba(255,184,107,0.14);color:var(--warn)">Fase 3</span>
+        <h3>Adoptie &amp; uitrol</h3>
+        <p>30/60/90-dagen reviews, rapportage, opschalen naar het volledige team. <strong>Maand 1–3.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5: Onboarding wizard -->
+  <section class="slide">
+    <div class="eyebrow">Live in de tool</div>
+    <h2>De onboarding wizard — drie stappen</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="num">1</div>
+        <h3>Bedrijfsanalyse</h3>
+        <p>AI analyseert de Recare-website en stelt sector, omvang, project-types en methodiek voor. Wij valideren samen met Elise.</p>
+      </div>
+      <div class="card">
+        <div class="num">2</div>
+        <h3>Configuratie</h3>
+        <p>Methodologie, team-rollen, valuta, tijdregistratie, risk &amp; governance modules aan/uit.</p>
+      </div>
+      <div class="card">
+        <div class="num">3</div>
+        <h3>AI setup-suggestie</h3>
+        <p>Fasen, deliverables, governance, risk-categorieën, project-templates — bevestigen of aanpassen.</p>
+      </div>
+    </div>
+    <p class="hint">Resultaat: een werkende tenant met passende methodiek en demo-data om mee te oefenen.</p>
+  </section>
+
+  <!-- 6: Intake — overzicht -->
+  <section class="slide">
+    <div class="eyebrow">Voorbereiding</div>
+    <h2>Intake-vragen — 13 domeinen</h2>
+    <div class="grid">
+      <div class="card"><div class="num">01</div><h3>Organisatie &amp; tenant</h3><p>Naam, KvK, taal, valuta, subdomein.</p></div>
+      <div class="card"><div class="num">02</div><h3>Users &amp; rollen</h3><p>Admins, key users, rol-mapping.</p></div>
+      <div class="card"><div class="num">03</div><h3>Authenticatie &amp; security</h3><p>2FA, SSO, IP-whitelist, AVG.</p></div>
+      <div class="card"><div class="num">04</div><h3>Methodiek</h3><p>PRINCE2, Agile, Hybrid — of mix.</p></div>
+      <div class="card"><div class="num">05</div><h3>Governance &amp; rapportage</h3><p>Boards, KPI's, escalatie, retentie.</p></div>
+      <div class="card"><div class="num">06</div><h3>Financieel &amp; tijd</h3><p>Tarieven, budget, boekhoudkoppeling.</p></div>
+      <div class="card"><div class="num">07</div><h3>Risico &amp; compliance</h3><p>NEN 7510, ISO 27001, AVG.</p></div>
+      <div class="card"><div class="num">08</div><h3>Portfolio &amp; programma</h3><p>Aantal projecten, benefits tracking.</p></div>
+      <div class="card"><div class="num">09</div><h3>Integraties</h3><p>M365, Teams, SharePoint, Power BI.</p></div>
+      <div class="card"><div class="num">10</div><h3>Academy &amp; enablement</h3><p>Verplichte cursussen, certificering.</p></div>
+      <div class="card"><div class="num">11</div><h3>Data-migratie</h3><p>Import vs clean start, peildatum.</p></div>
+      <div class="card"><div class="num">12</div><h3>Go-live &amp; support</h3><p>Pilot, SLA, supportkanaal.</p></div>
+      <div class="card"><div class="num">13</div><h3>Succescriteria</h3><p>Meetbare doelen 30/60/90 dagen.</p></div>
+    </div>
+  </section>
+
+  <!-- 7: Top 5 vragen voor morgen -->
+  <section class="slide">
+    <div class="eyebrow">Focus voor morgen</div>
+    <h2>De vijf vragen die we direct beantwoorden</h2>
+    <ul class="clean">
+      <li><strong>1.</strong> Wie is naast Elise tenant-admin, en welke 3–5 sleutelusers nodigen we deze week uit?</li>
+      <li><strong>2.</strong> Welke methodologie wordt de standaard — en zijn er afwijkende project-types?</li>
+      <li><strong>3.</strong> Welk lopend Recare-project gebruiken we als pilot in de kickoff?</li>
+      <li><strong>4.</strong> Welk authenticatie-model: ProjeXtPal-login + 2FA of SSO via Microsoft Entra?</li>
+      <li><strong>5.</strong> Wat is voor Recare een meetbaar resultaat ná 30 dagen?</li>
+    </ul>
+  </section>
+
+  <!-- 8: Security & compliance -->
+  <section class="slide">
+    <div class="eyebrow">Productie-readiness</div>
+    <h2>Security, compliance &amp; data</h2>
+    <div class="two-col">
+      <div>
+        <h3>Toegang</h3>
+        <ul class="clean">
+          <li>2FA verplicht voor admins en finance-rollen</li>
+          <li>SSO via Microsoft Entra ID — claim mapping</li>
+          <li>Sessie-timeout en wachtwoord-policy</li>
+          <li>Optioneel: IP-whitelisting</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compliance</h3>
+        <ul class="clean">
+          <li>Verwerkersovereenkomst (AVG) getekend</li>
+          <li>NEN 7510 / ISO 27001 alignement (zorgsector)</li>
+          <li>Audit-log retentie afgestemd</li>
+          <li>Data-locatie EU bevestigd</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9: Pilot-project -->
+  <section class="slide">
+    <div class="eyebrow">Werken met echte data</div>
+    <h2>Het pilot-project is het ankerpunt</h2>
+    <div class="grid">
+      <div class="card accent"><div class="num">A</div><h3>Scope</h3><p>Eén bestaand of startend project van Recare — geen demo.</p></div>
+      <div class="card"><div class="num">B</div><h3>Setup</h3><p>Team, milestones, budget, risico's en deliverables ingericht.</p></div>
+      <div class="card"><div class="num">C</div><h3>Eerste rapport</h3><p>Status report binnen 5 dagen genereren en delen met sponsor.</p></div>
+      <div class="card green"><div class="num">D</div><h3>Leerdoel</h3><p>Elise kan zelfstandig een nieuw project opzetten en de tool aan haar team uitleggen.</p></div>
+    </div>
+  </section>
+
+  <!-- 10: 30 / 60 / 90 -->
+  <section class="slide">
+    <div class="eyebrow">Roadmap</div>
+    <h2>30 / 60 / 90 dagen</h2>
+    <div class="timeline">
+      <div class="stage">
+        <span class="pill">30 dagen</span>
+        <h3>Fundament</h3>
+        <ul class="clean">
+          <li>Tenant + key users live</li>
+          <li>Pilot-project actief</li>
+          <li>Eerste status report gedeeld</li>
+        </ul>
+      </div>
+      <div class="stage s2">
+        <span class="pill" style="background:rgba(139,227,201,0.14);color:var(--accent-2)">60 dagen</span>
+        <h3>Verbreden</h3>
+        <ul class="clean">
+          <li>2–3 projecten in productie</li>
+          <li>Governance board ingericht</li>
+          <li>Academy-rollout naar PM-team</li>
+        </ul>
+      </div>
+      <div class="stage s3">
+        <span class="pill" style="background:rgba(255,184,107,0.14);color:var(--warn)">90 dagen</span>
+        <h3>Opschalen</h3>
+        <ul class="clean">
+          <li>Volledig team onboard</li>
+          <li>Portfolio-rapportage live</li>
+          <li>Eerste business review met sponsor</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11: KPI's -->
+  <section class="slide">
+    <div class="eyebrow">Hoe meten we succes?</div>
+    <h2>Adoptie-KPI's</h2>
+    <div class="kpi">
+      <div class="stat"><div class="num-big">≥ 80%</div><div class="lbl">Active users dag 30</div></div>
+      <div class="stat"><div class="num-big">≥ 3</div><div class="lbl">Projecten met &gt;5 tasks</div></div>
+      <div class="stat"><div class="num-big">100%</div><div class="lbl">PM's met PRINCE2/Agile module</div></div>
+      <div class="stat"><div class="num-big">&lt; 24u</div><div class="lbl">Support response tijd</div></div>
+    </div>
+    <p class="hint">Gemonitord via het CSM-dashboard — wekelijkse check-in eerste maand.</p>
+  </section>
+
+  <!-- 12: Risico's -->
+  <section class="slide">
+    <div class="eyebrow">Wat kan misgaan?</div>
+    <h2>Risico's &amp; mitigatie</h2>
+    <div class="table-like">
+      <div class="row"><div class="k">Lage adoptie</div><div class="v">Werk vanaf dag 1 met een echt project; wekelijkse check-in eerste maand.</div></div>
+      <div class="row"><div class="k">Methodiek-mismatch</div><div class="v">Hybrid-template als vangnet; herzien na 30 dagen pilot.</div></div>
+      <div class="row"><div class="k">SSO/IT-blokkade</div><div class="v">Start met standaard login + 2FA; SSO parallel inrichten in week 2.</div></div>
+      <div class="row"><div class="k">Data-migratie complexer dan gedacht</div><div class="v">Clean start voor pilot; historische data in latere fase.</div></div>
+      <div class="row"><div class="k">Sponsor verliest interesse</div><div class="v">30-dagen review met tastbaar status report &amp; KPI-overzicht.</div></div>
+    </div>
+  </section>
+
+  <!-- 13: Volgende stappen -->
+  <section class="slide">
+    <div class="eyebrow">Direct na deze sessie</div>
+    <h2>Volgende stappen</h2>
+    <div class="grid">
+      <div class="card accent"><div class="num">→</div><h3>Vandaag</h3><p>Action log delen, key users uitnodigen, pilot-project inrichten.</p></div>
+      <div class="card"><div class="num">→</div><h3>Deze week</h3><p>Discovery-sessie 2 uur voor de overige intake-domeinen.</p></div>
+      <div class="card"><div class="num">→</div><h3>Week 2</h3><p>Eerste status report, governance board inrichten, Academy-toegang.</p></div>
+      <div class="card green"><div class="num">→</div><h3>Maand 1</h3><p>30-dagen review met Elise + sponsor, KPI-evaluatie, go/no-go uitrol.</p></div>
+    </div>
+  </section>
+
+  <!-- 14: Closing -->
+  <section class="slide">
+    <div class="eyebrow">Tot morgen</div>
+    <h1>Klaar voor de aftrap.</h1>
+    <p class="lede">Met Elise als drijvende kracht en een werkende pilot binnen één week zetten we Recare snel in productie — en bouwen we vanaf dag één aan adoptie.</p>
+    <div class="footer">
+      <div class="brand"><div class="dot"></div> ProjeXtPal · Onboarding plan Recare</div>
+      <div>v1.0 · {{datum}}</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Vorige">‹</button>
+  <button id="next" aria-label="Volgende">›</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progress = document.getElementById('progress');
+  let i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+  }
+  document.getElementById('next').onclick = () => show(i + 1);
+  document.getElementById('prev').onclick = () => show(i - 1);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') show(i + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   show(i - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End')  show(slides.length - 1);
+  });
+  show(0);
+</script>
+</body>
+</html>
