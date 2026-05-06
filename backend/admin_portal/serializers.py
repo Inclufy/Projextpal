@@ -185,8 +185,11 @@ class CompanyListSerializer(serializers.ModelSerializer):
         model = Company
         fields = [
             'id', 'name', 'description', 'is_subscribed',
-            'user_count', 'subscription_status', 'plan_name', 
+            'user_count', 'subscription_status', 'plan_name',
             'billing_cycle', 'payment_method', 'owner',
+            'logo', 'primary_color', 'custom_domain',
+            'industry', 'organization_size', 'timezone', 'locale', 'currency',
+            'onboarding_completed', 'onboarding_completed_at',
             'created_at', 'updated_at'
         ]
     
@@ -236,6 +239,10 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'is_subscribed',
             'users', 'subscription', 'usage',
+            'logo', 'primary_color', 'custom_domain',
+            'industry', 'organization_size', 'timezone', 'locale', 'currency',
+            'onboarding_completed', 'onboarding_completed_at', 'onboarding_data',
+            'require_2fa',
             'created_at', 'updated_at'
         ]
     
@@ -288,7 +295,11 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Company
-        fields = ['name', 'description', 'owner_email']
+        fields = [
+            'name', 'description', 'owner_email',
+            'logo', 'primary_color', 'custom_domain',
+            'industry', 'organization_size', 'timezone', 'locale', 'currency',
+        ]
     
     def create(self, validated_data):
         owner_email = validated_data.pop('owner_email', None)

@@ -1,6 +1,6 @@
 // src/pages/OnboardingWizard.tsx
 // ProjeXtPal Onboarding Wizard — Purpose, Governance, Programs, Projects, Academy & Certifications
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,23 @@ interface OnboardingData {
   certificationInterests: string[];
   certificationTimeline: string;
   currentCertifications: string[];
+  // Step 7: Plan
+  planId: string;
+  billingCycle: string;
+  // Step 8: Team
+  teamInvites: { email: string; role: string }[];
+  // Step 9: Legal
+  acceptTos: boolean;
+  acceptDpa: boolean;
+  acceptGdpr: boolean;
+}
+
+interface PlanOption {
+  id: string;
+  name: string;
+  price_monthly?: number;
+  price_yearly?: number;
+  max_users?: number;
 }
 
 // ============================================
@@ -81,6 +98,9 @@ const translations = {
       { label: 'Projecten', shortLabel: 'Projecten' },
       { label: 'Academy', shortLabel: 'Academy' },
       { label: 'Certificeringen', shortLabel: 'Cert.' },
+      { label: 'Abonnement', shortLabel: 'Plan' },
+      { label: 'Team', shortLabel: 'Team' },
+      { label: 'Voorwaarden', shortLabel: 'Voorw.' },
       { label: 'Klaar!', shortLabel: 'Klaar!' },
     ],
     step1: {
@@ -130,6 +150,38 @@ const translations = {
       certificationTimeline: 'Wanneer wilt u beginnen?',
       currentCertifications: 'Huidige certificeringen',
     },
+    stepPlan: {
+      title: 'Kies uw abonnement',
+      subtitle: 'Selecteer een plan — u kunt altijd later upgraden of downgraden',
+      billingCycle: 'Facturatiecyclus',
+      monthly: 'Maandelijks',
+      yearly: 'Jaarlijks',
+      noPlan: 'Geen plan kiezen — beslis later',
+      perMonth: '/maand',
+      perYear: '/jaar',
+      upTo: 'Tot',
+      users: 'gebruikers',
+    },
+    stepTeam: {
+      title: 'Nodig uw team uit',
+      subtitle: 'Voeg collega\'s toe — zij ontvangen een verificatie-email om hun account te activeren',
+      addMember: 'Teamlid toevoegen',
+      email: 'E-mailadres',
+      role: 'Rol',
+      remove: 'Verwijderen',
+      skipText: 'Geen haast? U kunt teamleden later uitnodigen vanuit het dashboard.',
+    },
+    stepLegal: {
+      title: 'Voorwaarden',
+      subtitle: 'Lees en accepteer onze voorwaarden om verder te gaan',
+      tosLabel: 'Ik accepteer de Algemene Voorwaarden',
+      tosLink: 'Lees voorwaarden',
+      dpaLabel: 'Ik accepteer de Verwerkersovereenkomst (AVG/DPA)',
+      dpaLink: 'Lees DPA',
+      gdprLabel: 'Ik geef toestemming voor verwerking van persoonsgegevens conform de AVG',
+      gdprLink: 'Lees privacybeleid',
+      required: 'Acceptatie is verplicht om door te gaan',
+    },
     step7: {
       title: 'U bent klaar!',
       subtitle: 'Uw ProjeXtPal omgeving is geconfigureerd en klaar voor gebruik',
@@ -159,6 +211,9 @@ const translations = {
       { label: 'Projects', shortLabel: 'Projects' },
       { label: 'Academy', shortLabel: 'Academy' },
       { label: 'Certifications', shortLabel: 'Cert.' },
+      { label: 'Plan', shortLabel: 'Plan' },
+      { label: 'Team', shortLabel: 'Team' },
+      { label: 'Legal', shortLabel: 'Legal' },
       { label: 'Done!', shortLabel: 'Done!' },
     ],
     step1: {
@@ -207,6 +262,38 @@ const translations = {
       certificationInterests: 'Certification Interests',
       certificationTimeline: 'When do you want to start?',
       currentCertifications: 'Current Certifications',
+    },
+    stepPlan: {
+      title: 'Choose your subscription plan',
+      subtitle: 'Pick a plan — you can always upgrade or downgrade later',
+      billingCycle: 'Billing cycle',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      noPlan: 'Skip plan — decide later',
+      perMonth: '/mo',
+      perYear: '/yr',
+      upTo: 'Up to',
+      users: 'users',
+    },
+    stepTeam: {
+      title: 'Invite your team',
+      subtitle: 'Add colleagues — they receive a verification email to activate their account',
+      addMember: 'Add team member',
+      email: 'Email address',
+      role: 'Role',
+      remove: 'Remove',
+      skipText: 'Not in a rush? You can invite team members later from the dashboard.',
+    },
+    stepLegal: {
+      title: 'Legal & consent',
+      subtitle: 'Read and accept our terms to proceed',
+      tosLabel: 'I accept the Terms of Service',
+      tosLink: 'Read terms',
+      dpaLabel: 'I accept the Data Processing Agreement (GDPR/DPA)',
+      dpaLink: 'Read DPA',
+      gdprLabel: 'I consent to processing of personal data in accordance with GDPR',
+      gdprLink: 'Read privacy policy',
+      required: 'Acceptance is required to continue',
     },
     step7: {
       title: "You're all set!",
@@ -429,7 +516,7 @@ const currentCertificationOptions: Record<string, string[]> = {
 // ============================================
 // Step Icons
 // ============================================
-const stepIcons = [Target, Shield, Layers, FolderKanban, GraduationCap, Award, CheckCircle2];
+const stepIcons = [Target, Shield, Layers, FolderKanban, GraduationCap, Award, Briefcase, Users, FileText, CheckCircle2];
 
 // ============================================
 // Chip Selector Component
@@ -571,15 +658,36 @@ const OnboardingWizard = () => {
     certificationInterests: [],
     certificationTimeline: '',
     currentCertifications: [],
+    planId: '',
+    billingCycle: 'monthly',
+    teamInvites: [],
+    acceptTos: false,
+    acceptDpa: false,
+    acceptGdpr: false,
   });
 
-  const totalSteps = 7;
+  const [plans, setPlans] = useState<PlanOption[]>([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    fetch('/api/v1/subscriptions/plans/', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setPlans(Array.isArray(d) ? d : d.results || []))
+      .catch(() => setPlans([]));
+  }, []);
+
+  const totalSteps = 10;
 
   const updateData = (field: keyof OnboardingData, value: any) => {
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleNext = () => {
+    // Legal step is the 9th (index 8) — block forward navigation until all
+    // three consent checkboxes are ticked, otherwise the backend audit log
+    // would have invalid acceptance records.
+    if (currentStep === 8 && !(data.acceptTos && data.acceptDpa && data.acceptGdpr)) return;
     if (currentStep < totalSteps - 1) setCurrentStep((s) => s + 1);
   };
 
@@ -587,13 +695,64 @@ const OnboardingWizard = () => {
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   };
 
-  const handleComplete = () => {
+  const persistToBackend = async (extra: Record<string, any> = {}) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    const sizeMap: Record<string, string> = {
+      '1-10 employees': 'small', '11-50 employees': 'small',
+      '51-200 employees': 'medium', '201-1,000 employees': 'large',
+      '1,000+ employees': 'enterprise',
+      '1-10 medewerkers': 'small', '11-50 medewerkers': 'small',
+      '51-200 medewerkers': 'medium', '201-1000 medewerkers': 'large',
+      '1000+ medewerkers': 'enterprise',
+    };
+    const payload = {
+      company_name: data.organizationName || 'My Organization',
+      industry: '',
+      country: lang === 'nl' ? 'NL' : 'US',
+      description: data.primaryPurpose || '',
+      default_methodology: data.projectMethodologies[0] || 'agile',
+      project_types: data.projectTypes,
+      team_roles: [],
+      company_size: sizeMap[data.organizationSize] || 'small',
+      currency: lang === 'nl' ? 'EUR' : 'USD',
+      locale: lang,
+      time_tracking_enabled: true,
+      risk_management_enabled: true,
+      governance_enabled: data.governanceNeeds.length > 0 || data.portfolioManagement,
+      plan_id: data.planId || '',
+      billing_cycle: data.billingCycle,
+      additional_invites: data.teamInvites.filter((i) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i.email)
+      ),
+      accept_tos: data.acceptTos,
+      accept_dpa: data.acceptDpa,
+      accept_gdpr: data.acceptGdpr,
+      // Send the full wizard payload so the backend can store it raw on
+      // Company.onboarding_data for replay / audit / future seed jobs.
+      wizard_data: data,
+      ...extra,
+    };
+    try {
+      await fetch('/api/v1/onboarding/complete/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error('onboarding persist failed', err);
+    }
+  };
+
+  const handleComplete = async () => {
+    await persistToBackend();
     localStorage.setItem('onboarding_completed', 'true');
     localStorage.setItem('onboarding_data', JSON.stringify(data));
     navigate('/dashboard');
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await persistToBackend({ skipped: true });
     localStorage.setItem('onboarding_completed', 'true');
     localStorage.setItem('onboarding_skipped', 'true');
     navigate('/dashboard');
@@ -997,6 +1156,173 @@ const OnboardingWizard = () => {
   );
 
   // ============================================
+  // Step Plan: Subscription
+  // ============================================
+  const renderStepPlan = () => {
+    const tp = (t as any).stepPlan;
+    return (
+      <div className="space-y-6">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => updateData('billingCycle', 'monthly')}
+            className={cn('px-4 py-2 rounded-lg text-sm font-medium border transition',
+              data.billingCycle === 'monthly'
+                ? 'bg-purple-600 border-purple-500 text-white'
+                : 'bg-slate-800/50 border-slate-700 text-slate-300')}
+          >{tp.monthly}</button>
+          <button
+            type="button"
+            onClick={() => updateData('billingCycle', 'yearly')}
+            className={cn('px-4 py-2 rounded-lg text-sm font-medium border transition',
+              data.billingCycle === 'yearly'
+                ? 'bg-purple-600 border-purple-500 text-white'
+                : 'bg-slate-800/50 border-slate-700 text-slate-300')}
+          >{tp.yearly}</button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {plans.map((p) => {
+            const price = data.billingCycle === 'yearly' ? p.price_yearly : p.price_monthly;
+            const isActive = data.planId === String(p.id);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => updateData('planId', String(p.id))}
+                className={cn(
+                  'text-left p-5 rounded-xl border transition',
+                  isActive
+                    ? 'bg-purple-600/20 border-purple-500 shadow-lg shadow-purple-500/20'
+                    : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-700/30'
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-white">{p.name}</span>
+                  {isActive && <CheckCircle2 className="w-4 h-4 text-purple-400" />}
+                </div>
+                {price != null && (
+                  <p className="text-2xl font-bold text-white">€{price}<span className="text-sm font-normal text-slate-400">{data.billingCycle === 'yearly' ? tp.perYear : tp.perMonth}</span></p>
+                )}
+                {p.max_users != null && <p className="text-xs text-slate-400 mt-1">{tp.upTo} {p.max_users} {tp.users}</p>}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => updateData('planId', '')}
+            className={cn(
+              'text-left p-5 rounded-xl border transition',
+              !data.planId
+                ? 'bg-purple-600/20 border-purple-500'
+                : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-700/30'
+            )}
+          >
+            <span className="font-semibold text-white">{tp.noPlan}</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================
+  // Step Team: Invites
+  // ============================================
+  const renderStepTeam = () => {
+    const tt = (t as any).stepTeam;
+    const roleOptions = [
+      { v: 'admin', l: 'Admin' },
+      { v: 'pm', l: 'Project Manager' },
+      { v: 'program_manager', l: 'Program Manager' },
+      { v: 'contibuter', l: 'Contributor' },
+      { v: 'reviewer', l: 'Reviewer' },
+      { v: 'guest', l: 'Guest' },
+    ];
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-slate-400">{tt.skipText}</p>
+        {data.teamInvites.map((inv, i) => (
+          <div key={i} className="grid grid-cols-[1fr_180px_40px] gap-2 items-end">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">{tt.email}</label>
+              <Input
+                type="email"
+                value={inv.email}
+                onChange={(e) => {
+                  const next = [...data.teamInvites];
+                  next[i] = { ...next[i], email: e.target.value };
+                  updateData('teamInvites', next);
+                }}
+                placeholder="user@company.com"
+                className="bg-slate-800/50 border-slate-700 text-white h-10"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">{tt.role}</label>
+              <select
+                value={inv.role}
+                onChange={(e) => {
+                  const next = [...data.teamInvites];
+                  next[i] = { ...next[i], role: e.target.value };
+                  updateData('teamInvites', next);
+                }}
+                className="w-full h-10 px-3 rounded-md bg-slate-800/50 border border-slate-700 text-white text-sm"
+              >
+                {roleOptions.map((r) => <option key={r.v} value={r.v}>{r.l}</option>)}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={() => updateData('teamInvites', data.teamInvites.filter((_, idx) => idx !== i))}
+              className="h-10 w-10 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 flex items-center justify-center"
+              aria-label={tt.remove}
+            >&times;</button>
+          </div>
+        ))}
+        <Button
+          variant="outline"
+          onClick={() => updateData('teamInvites', [...data.teamInvites, { email: '', role: 'pm' }])}
+          className="border-slate-700 text-slate-300 hover:bg-slate-800"
+        >
+          <Users className="w-4 h-4 mr-2" />{tt.addMember}
+        </Button>
+      </div>
+    );
+  };
+
+  // ============================================
+  // Step Legal: Terms & consent
+  // ============================================
+  const renderStepLegal = () => {
+    const tl = (t as any).stepLegal;
+    const Box = ({ checked, onChange, label, link }: { checked: boolean; onChange: (v: boolean) => void; label: string; link: string }) => (
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500 cursor-pointer"
+        />
+        <div className="flex-1">
+          <p className="text-sm text-white">{label}</p>
+          <a href="#" target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:text-purple-300 underline">{link}</a>
+        </div>
+      </div>
+    );
+    const allAccepted = data.acceptTos && data.acceptDpa && data.acceptGdpr;
+    return (
+      <div className="space-y-4">
+        <Box checked={data.acceptTos} onChange={(v) => updateData('acceptTos', v)} label={tl.tosLabel} link={tl.tosLink} />
+        <Box checked={data.acceptDpa} onChange={(v) => updateData('acceptDpa', v)} label={tl.dpaLabel} link={tl.dpaLink} />
+        <Box checked={data.acceptGdpr} onChange={(v) => updateData('acceptGdpr', v)} label={tl.gdprLabel} link={tl.gdprLink} />
+        {!allAccepted && (
+          <p className="text-xs text-amber-400 text-center">{tl.required}</p>
+        )}
+      </div>
+    );
+  };
+
+  // ============================================
   // Step 7: Summary / Done
   // ============================================
   const renderStep7 = () => (
@@ -1115,12 +1441,16 @@ const OnboardingWizard = () => {
 
   const stepRenderers = [
     renderStep1, renderStep2, renderStep3, renderStep4,
-    renderStep5, renderStep6, renderStep7,
+    renderStep5, renderStep6,
+    renderStepPlan, renderStepTeam, renderStepLegal,
+    renderStep7,
   ];
 
   const stepTitles = [
     t.step1, t.step2, t.step3, t.step4,
-    t.step5, t.step6, t.step7,
+    t.step5, t.step6,
+    (t as any).stepPlan, (t as any).stepTeam, (t as any).stepLegal,
+    t.step7,
   ];
 
   const currentStepData = stepTitles[currentStep];
