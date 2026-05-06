@@ -176,6 +176,27 @@
     padding: 2px 7px; border-radius: 6px; font-size: 12px;
     border: 1px solid var(--line);
   }
+
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    html, body {
+      background: var(--bg) !important;
+      height: auto !important; overflow: visible !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .deck { position: static !important; width: 1280px !important; height: auto !important; }
+    .slide {
+      display: flex !important;
+      position: relative !important; inset: auto !important;
+      width: 1280px !important; height: 720px !important;
+      page-break-after: always; break-after: page;
+      animation: none !important;
+      background: radial-gradient(1200px 800px at 20% 10%, #1a2347 0%, var(--bg) 60%);
+    }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    .nav, .progress { display: none !important; }
+  }
 </style>
 </head>
 <body>

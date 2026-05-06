@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<title>Recare × ProjeXtPal — Implementatie Checklist tot Go-Live</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a2138;
+    font-size: 11pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1 {
+    font-size: 22pt; margin: 0 0 6pt; color: #0b1020;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 14pt; margin: 18pt 0 6pt; color: #0b1020;
+    border-bottom: 2px solid #6c8cff; padding-bottom: 4pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt; margin: 10pt 0 4pt; color: #1a2138;
+    page-break-after: avoid;
+  }
+  .lede { color: #4a5573; font-size: 10pt; margin: 0 0 12pt; }
+  .meta {
+    background: #f3f5fb;
+    border-left: 3px solid #6c8cff;
+    padding: 8pt 12pt;
+    margin: 10pt 0 16pt;
+    font-size: 9.5pt;
+    color: #4a5573;
+    border-radius: 4pt;
+  }
+  ul { margin: 4pt 0 8pt; padding-left: 18pt; }
+  li { margin: 2pt 0; }
+  .check { list-style: none; padding-left: 0; }
+  .check li {
+    padding: 2pt 0 2pt 22pt;
+    position: relative;
+    page-break-inside: avoid;
+  }
+  .check li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 5pt;
+    width: 11pt; height: 11pt;
+    border: 1.2pt solid #4a5573;
+    border-radius: 2pt;
+    background: white;
+  }
+  .owner {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 8.5pt;
+    padding: 1pt 5pt;
+    border-radius: 3pt;
+    margin-right: 4pt;
+    color: white;
+  }
+  .o-r  { background: #6c8cff; }
+  .o-p  { background: #2bb673; }
+  .o-rp { background: #b06cff; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 6pt 0 12pt;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 1px solid #d8deef;
+    padding: 6pt 9pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3f5fb;
+    font-weight: 600;
+    color: #1a2138;
+  }
+  .legend {
+    display: flex; gap: 10pt; flex-wrap: wrap;
+    font-size: 9pt; color: #4a5573;
+    margin-bottom: 12pt;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 4pt; }
+  .phase {
+    page-break-inside: avoid;
+    margin-bottom: 6pt;
+  }
+  .footer-note {
+    margin-top: 18pt;
+    font-size: 9pt; color: #6b748f;
+    border-top: 1px solid #d8deef;
+    padding-top: 8pt;
+  }
+  hr {
+    border: 0; border-top: 1px dashed #d8deef; margin: 14pt 0;
+  }
+  .pagebreak { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Recare × ProjeXtPal</h1>
+<p class="lede">Implementatie Checklist tot Go-Live · Versie 1.0</p>
+
+<div class="meta">
+  <strong>Eigenaar:</strong> Elise (Recare PM) + ProjeXtPal CSM &nbsp;·&nbsp;
+  <strong>Status:</strong> levend document — bijwerken na elke milestone.
+</div>
+
+<div class="legend">
+  <span><span class="owner o-r">R</span> Recare</span>
+  <span><span class="owner o-p">P</span> ProjeXtPal</span>
+  <span><span class="owner o-rp">R+P</span> Gezamenlijk</span>
+</div>
+
+<h2>Fase 0 — Vóór de kickoff (D-1)</h2>
+
+<div class="phase">
+<h3>0.1 Tenant &amp; accounts</h3>
+<ul class="check">
+  <li>Tenant "Recare" aangemaakt in Admin Portal <span class="owner o-p">P</span></li>
+  <li>Subscription plan geactiveerd <span class="owner o-p">P</span></li>
+  <li>Subdomein/branding gecontroleerd <span class="owner o-p">P</span></li>
+  <li>Elise uitgenodigd als eerste tenant-admin <span class="owner o-p">P</span></li>
+  <li>Welkomstmail + inloglink ontvangen en getest <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>0.2 Voorbereiding kickoff</h3>
+<ul class="check">
+  <li>Agenda 90 min gedeeld met Elise <span class="owner o-p">P</span></li>
+  <li>1-pager "Wat brengt ProjeXtPal" verstuurd <span class="owner o-p">P</span></li>
+  <li>Elise heeft 1–2 lopende projecten geselecteerd als pilot-case <span class="owner o-r">R</span></li>
+  <li>Recare-website getest in onboarding analyse-endpoint <span class="owner o-p">P</span></li>
+  <li>Handmatige fallback-data klaargezet <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<h2>Fase 1 — Kickoff sessie (Dag 0)</h2>
+
+<div class="phase">
+<h3>1.1 Doelen vastleggen</h3>
+<ul class="check">
+  <li>Drie succescriteria voor 90 dagen vastgelegd <span class="owner o-rp">R+P</span></li>
+  <li>Sponsor binnen Recare benoemd <span class="owner o-r">R</span></li>
+  <li>Action log aangemaakt en gedeeld <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>1.2 Onboarding wizard doorlopen</h3>
+<ul class="check">
+  <li>Fase 1 — Bedrijfsanalyse: AI-resultaat gevalideerd door Elise <span class="owner o-rp">R+P</span></li>
+  <li>Fase 2 — Methodologie gekozen (PRINCE2 / Agile / Hybrid / …) <span class="owner o-r">R</span></li>
+  <li>Fase 2 — Team-rollen gedefinieerd <span class="owner o-r">R</span></li>
+  <li>Fase 2 — EUR, time tracking, risk, governance modules ingesteld <span class="owner o-rp">R+P</span></li>
+  <li>Fase 3 — Setup-suggestie bevestigd (fasen, deliverables, governance, risks) <span class="owner o-rp">R+P</span></li>
+  <li>Demo-data gegenereerd voor oefenproject <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>1.3 Pilot-project opzetten</h3>
+<ul class="check">
+  <li>Echt Recare-project aangemaakt (geen demo) <span class="owner o-rp">R+P</span></li>
+  <li>Scope, milestones, fasen ingericht <span class="owner o-r">R</span></li>
+  <li>Team toegevoegd <span class="owner o-r">R</span></li>
+  <li>Eerste 5–10 tasks aangemaakt <span class="owner o-r">R</span></li>
+  <li>Risico-register met minimaal 3 risks <span class="owner o-r">R</span></li>
+  <li>Budget ingevoerd <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>1.4 Vervolgafspraken</h3>
+<ul class="check">
+  <li>Wekelijkse check-in 30 min ingepland eerste maand <span class="owner o-rp">R+P</span></li>
+  <li>Discovery-sessie 2u in week 1 ingepland <span class="owner o-rp">R+P</span></li>
+  <li>30-dagen review met sponsor ingepland <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>Fase 2 — Discovery &amp; configuratie (Week 1)</h2>
+
+<div class="phase">
+<h3>2.1 Organisatie &amp; tenant</h3>
+<ul class="check">
+  <li>Officiële naam, KvK, BTW, factuuradres ingevoerd <span class="owner o-r">R</span></li>
+  <li>Tijdzone Europe/Amsterdam bevestigd <span class="owner o-p">P</span></li>
+  <li>Voorkeurstaal per user-groep (NL/EN) afgestemd <span class="owner o-r">R</span></li>
+  <li>Eén tenant of meerdere business units besluit <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.2 Users &amp; rollen</h3>
+<ul class="check">
+  <li>Back-up tenant-admin aangewezen <span class="owner o-r">R</span></li>
+  <li>Rol-mapping gedefinieerd (PM, teamlid, viewer, sponsor, finance) <span class="owner o-rp">R+P</span></li>
+  <li>Eventuele custom rollen aangemaakt <span class="owner o-p">P</span></li>
+  <li>Permission matrix gedeeld en goedgekeurd <span class="owner o-r">R</span></li>
+  <li>Sleutelusers (3–5) uitgenodigd en ingelogd <span class="owner o-rp">R+P</span></li>
+  <li>Aparte permissies finance-data ingesteld <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.3 Authenticatie &amp; security</h3>
+<ul class="check">
+  <li>2FA-policy bepaald <span class="owner o-rp">R+P</span></li>
+  <li>2FA voor admins geactiveerd <span class="owner o-r">R</span></li>
+  <li>SSO-besluit: ProjeXtPal-login of Microsoft Entra/Google <span class="owner o-r">R</span></li>
+  <li>SSO-tenant ID + claim mapping geleverd <span class="owner o-r">R</span></li>
+  <li>SSO ingericht en getest met testaccount <span class="owner o-p">P</span></li>
+  <li>Wachtwoordbeleid bevestigd <span class="owner o-p">P</span></li>
+  <li>Sessie-timeout ingesteld <span class="owner o-p">P</span></li>
+  <li>IP-whitelist (optioneel) ingericht <span class="owner o-p">P</span></li>
+  <li>Verwerkersovereenkomst (AVG) getekend <span class="owner o-rp">R+P</span></li>
+  <li>Data-locatie EU bevestigd <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.4 Methodiek &amp; projectstructuur</h3>
+<ul class="check">
+  <li>Standaard-methodologie bevestigd <span class="owner o-r">R</span></li>
+  <li>Per project-type evt. afwijkende methodiek vastgelegd <span class="owner o-r">R</span></li>
+  <li>Verplichte fases/stages gedefinieerd <span class="owner o-rp">R+P</span></li>
+  <li>Standaard deliverables per fase ingericht <span class="owner o-p">P</span></li>
+  <li>Bestaande Recare-templates geïmporteerd <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.5 Governance &amp; rapportage</h3>
+<ul class="check">
+  <li>Governance boards aangemaakt <span class="owner o-p">P</span></li>
+  <li>Stakeholders per board gekoppeld <span class="owner o-r">R</span></li>
+  <li>Rapportage-frequentie ingesteld <span class="owner o-rp">R+P</span></li>
+  <li>KPI-set voor management dashboard bevestigd <span class="owner o-r">R</span></li>
+  <li>Escalatiepaden vastgelegd <span class="owner o-r">R</span></li>
+  <li>Audit-log retentie geconfigureerd <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.6 Financieel &amp; tijdregistratie</h3>
+<ul class="check">
+  <li>Tijdregistratie-modus (dagelijks/wekelijks) ingesteld <span class="owner o-r">R</span></li>
+  <li>Standaard uurtarieven per rol of persoon ingevoerd <span class="owner o-r">R</span></li>
+  <li>Budget-bewaking (hard stop / waarschuwing) ingesteld <span class="owner o-r">R</span></li>
+  <li>Boekhoudkoppeling besluit (Exact / AFAS / Twinfield / geen) <span class="owner o-r">R</span></li>
+  <li>Koppeling getest <span class="owner o-p">P</span></li>
+  <li>Facturatie-flow afgestemd <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.7 Risico, kwaliteit &amp; compliance</h3>
+<ul class="check">
+  <li>Risk-categorieën gedefinieerd <span class="owner o-rp">R+P</span></li>
+  <li>Risk scoring matrix (3×3 / 5×5 / custom) ingesteld <span class="owner o-r">R</span></li>
+  <li>Compliance-frameworks gekoppeld (NEN 7510, ISO 27001, AVG, WTZa) <span class="owner o-rp">R+P</span></li>
+  <li>Documentbeheer-strategie bepaald <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.8 Portfolio &amp; programma</h3>
+<ul class="check">
+  <li>Programma's/portfolio's structuur opgezet <span class="owner o-rp">R+P</span></li>
+  <li>Active projects geïnventariseerd <span class="owner o-r">R</span></li>
+  <li>Stakeholder-management niveau bepaald <span class="owner o-r">R</span></li>
+  <li>Benefits realisation tracking aan/uit <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.9 Integraties</h3>
+<ul class="check">
+  <li>Mail/calendar gekoppeld (M365 / Google Workspace) <span class="owner o-p">P</span></li>
+  <li>Chat-integratie (Teams / Slack) <span class="owner o-p">P</span></li>
+  <li>Document storage gekoppeld (SharePoint / OneDrive / Drive) <span class="owner o-p">P</span></li>
+  <li>HR/IdP user provisioning ingericht <span class="owner o-p">P</span></li>
+  <li>BI-toegang (Power BI) via reporting-API <span class="owner o-p">P</span></li>
+  <li>CRM API keys aangemaakt en gedeeld <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>2.10 Academy &amp; enablement</h3>
+<ul class="check">
+  <li>Verplichte cursussen gedefinieerd (PRINCE2 Foundation, Agile basics, …) <span class="owner o-r">R</span></li>
+  <li>Eigen content-import besluit <span class="owner o-rp">R+P</span></li>
+  <li>Certificeringseis voor PM-rol bevestigd <span class="owner o-r">R</span></li>
+  <li>Trainings-rollout plan opgesteld <span class="owner o-rp">R+P</span></li>
+  <li>Eerste cursus toegewezen aan Elise + key users <span class="owner o-p">P</span></li>
+</ul>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>Fase 3 — Data &amp; content (Week 2)</h2>
+
+<div class="phase">
+<h3>3.1 Data-migratie</h3>
+<ul class="check">
+  <li>Importstrategie bevestigd (CSV / Excel / Jira-export / clean start) <span class="owner o-rp">R+P</span></li>
+  <li>Peildatum cut-over vastgelegd <span class="owner o-r">R</span></li>
+  <li>Templates voor data-import aangeleverd <span class="owner o-p">P</span></li>
+  <li>Recare-export geleverd <span class="owner o-r">R</span></li>
+  <li>Test-import in staging <span class="owner o-p">P</span></li>
+  <li>Validatie-rapport gedeeld en goedgekeurd <span class="owner o-rp">R+P</span></li>
+  <li>Productie-import uitgevoerd <span class="owner o-p">P</span></li>
+  <li>Steekproef-controle door Elise <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>3.2 Pilot uitbreiden</h3>
+<ul class="check">
+  <li>Pilot draait stabiel met dagelijkse activiteit <span class="owner o-r">R</span></li>
+  <li>Eerste status report gegenereerd <span class="owner o-r">R</span></li>
+  <li>Status report gedeeld met sponsor <span class="owner o-r">R</span></li>
+  <li>Tweede project aangemaakt <span class="owner o-r">R</span></li>
+  <li>Lessons-learned uit week 1 verwerkt <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>3.3 Governance live</h3>
+<ul class="check">
+  <li>Eerste governance board-meeting ingepland <span class="owner o-r">R</span></li>
+  <li>Decision log getest <span class="owner o-r">R</span></li>
+  <li>AI Coach gebruikt voor minimaal 1 vraag <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<h2>Fase 4 — User Acceptance Test (Week 3)</h2>
+
+<div class="phase">
+<h3>4.1 UAT scope</h3>
+<ul class="check">
+  <li>UAT-scenario's opgesteld <span class="owner o-rp">R+P</span></li>
+  <li>UAT-team van 3–5 users aangewezen <span class="owner o-r">R</span></li>
+  <li>UAT-window vastgelegd (3–5 werkdagen) <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>4.2 UAT uitvoering</h3>
+<ul class="check">
+  <li>Login + 2FA/SSO <span class="owner o-r">R</span></li>
+  <li>Project CRUD <span class="owner o-r">R</span></li>
+  <li>Task management <span class="owner o-r">R</span></li>
+  <li>Time entries <span class="owner o-r">R</span></li>
+  <li>Risk register <span class="owner o-r">R</span></li>
+  <li>Budget tracking <span class="owner o-r">R</span></li>
+  <li>Status reports <span class="owner o-r">R</span></li>
+  <li>Governance board + decision <span class="owner o-r">R</span></li>
+  <li>Academy cursus + quiz <span class="owner o-r">R</span></li>
+  <li>AI Coach <span class="owner o-r">R</span></li>
+  <li>Mobile app (indien in scope) <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>4.3 UAT afronding</h3>
+<ul class="check">
+  <li>Findings gelogd in issue-tracker <span class="owner o-rp">R+P</span></li>
+  <li>Blocker-issues opgelost <span class="owner o-p">P</span></li>
+  <li>Non-blockers ingepland in roadmap <span class="owner o-p">P</span></li>
+  <li>UAT sign-off door Elise + sponsor <span class="owner o-r">R</span></li>
+</ul>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>Fase 5 — Go-live readiness (Week 4)</h2>
+
+<div class="phase">
+<h3>5.1 Productie-checks</h3>
+<ul class="check">
+  <li>Backup &amp; restore procedure getest <span class="owner o-p">P</span></li>
+  <li>Monitoring &amp; alerting actief <span class="owner o-p">P</span></li>
+  <li>Performance baseline gemeten <span class="owner o-p">P</span></li>
+  <li>SLA-document getekend <span class="owner o-rp">R+P</span></li>
+  <li>Supportkanaal actief <span class="owner o-p">P</span></li>
+  <li>Escalation contact-list compleet <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>5.2 Communicatie</h3>
+<ul class="check">
+  <li>Interne aankondiging Recare opgesteld <span class="owner o-r">R</span></li>
+  <li>FAQ-document gedeeld <span class="owner o-p">P</span></li>
+  <li>Trainingsmaterialen gepubliceerd in Academy <span class="owner o-p">P</span></li>
+  <li>Live training-sessies ingepland <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<div class="phase">
+<h3>5.3 Final sign-off</h3>
+<ul class="check">
+  <li>Alle UAT-blockers gesloten <span class="owner o-p">P</span></li>
+  <li>Sponsor formele go-live goedkeuring <span class="owner o-r">R</span></li>
+  <li>Datum en tijdstip go-live afgesproken <span class="owner o-rp">R+P</span></li>
+  <li>War-room (Teams/Slack) ingericht voor go-live dag <span class="owner o-rp">R+P</span></li>
+</ul>
+</div>
+
+<h2>Fase 6 — Go-Live (Dag G)</h2>
+<ul class="check">
+  <li>War-room actief <span class="owner o-rp">R+P</span></li>
+  <li>Productie-tenant final check (users, permissies, data) <span class="owner o-p">P</span></li>
+  <li>Aankondiging verstuurd naar gehele Recare-team <span class="owner o-r">R</span></li>
+  <li>Eerste login-wave gemonitord (eerste 2u) <span class="owner o-p">P</span></li>
+  <li>Support-tickets actief gevolgd <span class="owner o-p">P</span></li>
+  <li>Smoke-test 5 kernfuncties uitgevoerd <span class="owner o-p">P</span></li>
+  <li>Go-live status melding aan sponsor <span class="owner o-r">R</span></li>
+  <li>War-room afgesloten met retrospective <span class="owner o-rp">R+P</span></li>
+</ul>
+
+<h2>Fase 7 — Hypercare (Week 1–2 na go-live)</h2>
+<ul class="check">
+  <li>Dagelijkse stand-up tussen Elise en CSM <span class="owner o-rp">R+P</span></li>
+  <li>Dashboard adoptie-metrics gemonitord <span class="owner o-p">P</span></li>
+  <li>Quick fixes uitgerold (binnen 24u) <span class="owner o-p">P</span></li>
+  <li>Support-tickets analyse en oplossing <span class="owner o-p">P</span></li>
+  <li>7-dagen review met sponsor <span class="owner o-rp">R+P</span></li>
+  <li>Hypercare-exit besluit <span class="owner o-rp">R+P</span></li>
+</ul>
+
+<div class="pagebreak"></div>
+
+<h2>Succescriteria — Go-live klaar als…</h2>
+<ul class="check">
+  <li>Tenant en SSO werken stabiel</li>
+  <li>Minimaal 1 pilot-project draait met dagelijkse activiteit</li>
+  <li>Status report en governance board zijn aantoonbaar gebruikt</li>
+  <li>UAT is afgetekend door Elise + sponsor</li>
+  <li>SLA en verwerkersovereenkomst zijn getekend</li>
+  <li>Hypercare-team en supportkanaal zijn paraat</li>
+  <li>30/60/90 dagen review-momenten staan in de agenda</li>
+</ul>
+
+<h2>Adoptie-KPI's (eerste 30 dagen)</h2>
+<table>
+  <thead><tr><th style="width:55%">KPI</th><th>Doel</th></tr></thead>
+  <tbody>
+    <tr><td>Active users</td><td>≥ 80%</td></tr>
+    <tr><td>Projecten met &gt;5 tasks</td><td>≥ 3</td></tr>
+    <tr><td>PM's met afgeronde Academy-module</td><td>100%</td></tr>
+    <tr><td>Support response tijd</td><td>&lt; 24u</td></tr>
+    <tr><td>Status reports uitgegeven</td><td>≥ 4</td></tr>
+    <tr><td>Governance decisions vastgelegd</td><td>≥ 2</td></tr>
+  </tbody>
+</table>
+
+<h2>Risico's &amp; mitigatie</h2>
+<table>
+  <thead><tr><th style="width:35%">Risico</th><th>Mitigatie</th></tr></thead>
+  <tbody>
+    <tr><td>Lage adoptie</td><td>Werken met echte projecten vanaf dag 1 + wekelijkse check-ins</td></tr>
+    <tr><td>Methodiek-mismatch</td><td>Hybrid-template als vangnet, herzien na 30 dagen</td></tr>
+    <tr><td>SSO/IT-blokkade</td><td>Start met standaard login + 2FA, SSO parallel inrichten</td></tr>
+    <tr><td>Data-migratie complexer dan gedacht</td><td>Clean start voor pilot, historische data later</td></tr>
+    <tr><td>Sponsor verliest interesse</td><td>30-dagen review met tastbaar status report + KPI's</td></tr>
+    <tr><td>Compliance-vragen onverwacht</td><td>Verwerkersovereenkomst en NEN 7510 alignement vooraf</td></tr>
+  </tbody>
+</table>
+
+<div class="footer-note">
+  Versie 1.0 · Eigenaar: ProjeXtPal CSM · Bijwerken na elke milestone-review.
+</div>
+
+</body>
+</html>
