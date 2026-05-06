@@ -738,6 +738,129 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
             'enabled_at': company.require_2fa_enabled_at,
         })
 
+    @action(detail=False, methods=['post'], url_path='provision')
+    def provision(self, request):
+        """
+        POST /api/v1/admin/tenants/provision/
+
+        Full tenant provisioning for the admin-led onboarding flow.
+
+        Body shape:
+        {
+          "name": "Acme Corp",                       # required
+          "description": "...",
+          "industry": "Construction",
+          "organization_size": "51-200 employees",
+          "timezone": "Europe/Amsterdam",
+          "locale": "en",
+          "currency": "EUR",
+          "primary_color": "#7C3AED",
+          "custom_domain": "acme.projextpal.com",
+
+          "owner_email": "admin@acme.com",           # required — first admin
+          "owner_first_name": "Jane",
+          "owner_last_name": "Doe",
+
+          "plan_id": "<uuid>",                       # optional — assign plan
+          "billing_cycle": "monthly",
+          "subscription_status": "trialing",
+
+          "require_2fa": true,
+          "additional_invites": [
+            {"email": "x@acme.com", "role": "pm"}
+          ],
+          "onboarding_data": { ...full wizard answers... }
+        }
+
+        Returns the created tenant detail.
+        """
+        data = request.data or {}
+        name = (data.get('name') or '').strip()
+        owner_email = (data.get('owner_email') or '').strip().lower()
+
+        if not name:
+            return Response({'detail': 'name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not owner_email:
+            return Response({'detail': 'owner_email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1) Company
+        company = Company.objects.create(
+            name=name,
+            description=data.get('description') or '',
+            industry=data.get('industry') or None,
+            organization_size=data.get('organization_size') or None,
+            timezone=data.get('timezone') or 'Europe/Amsterdam',
+            locale=data.get('locale') or 'en',
+            currency=data.get('currency') or 'EUR',
+            primary_color=data.get('primary_color') or None,
+            custom_domain=data.get('custom_domain') or None,
+            require_2fa=bool(data.get('require_2fa', False)),
+            require_2fa_enabled_at=timezone.now() if data.get('require_2fa') else None,
+            onboarding_data=data.get('onboarding_data') or None,
+            onboarding_completed=True,
+            onboarding_completed_at=timezone.now(),
+        )
+
+        # 2) Owner user (inactive — must verify email)
+        owner = None
+        if not User.objects.filter(email=owner_email).exists():
+            owner = User.objects.create(
+                email=owner_email,
+                username=owner_email.split('@')[0],
+                first_name=data.get('owner_first_name') or '',
+                last_name=data.get('owner_last_name') or '',
+                company=company,
+                role='admin',
+                is_active=False,
+            )
+
+        # 3) Subscription
+        plan_id = data.get('plan_id')
+        if plan_id and plan_id != 'none':
+            try:
+                plan = SubscriptionPlan.objects.get(id=plan_id)
+                CompanySubscription.objects.create(
+                    company=company,
+                    plan=plan,
+                    status=data.get('subscription_status') or 'trialing',
+                    billing_cycle=data.get('billing_cycle') or 'monthly',
+                    payment_method=data.get('payment_method') or 'manual',
+                )
+                company.is_subscribed = True
+                company.save(update_fields=['is_subscribed'])
+            except SubscriptionPlan.DoesNotExist:
+                pass
+
+        # 4) Additional invites — create inactive users so the admin can resend
+        # invites later from the user management page.
+        for inv in (data.get('additional_invites') or []):
+            email = (inv.get('email') or '').strip().lower()
+            if not email or User.objects.filter(email=email).exists():
+                continue
+            User.objects.create(
+                email=email,
+                username=email.split('@')[0],
+                company=company,
+                role=inv.get('role') or 'guest',
+                is_active=False,
+            )
+
+        # 5) Audit log
+        log_action(
+            user=request.user,
+            action='company_created',
+            category='company',
+            severity='info',
+            description=f"Provisioned tenant {company.name} via admin portal",
+            resource_type='company',
+            resource_id=str(company.id),
+            company=company,
+            request=request,
+        )
+
+        serializer = CompanyDetailSerializer(company, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 # ============================================================
 # SUBSCRIPTION PLAN VIEWSET

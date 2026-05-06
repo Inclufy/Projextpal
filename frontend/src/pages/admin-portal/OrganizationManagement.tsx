@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { Loader2, Plus, Building2, Pencil, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
 const OrganizationManagement = () => {
+  const navigate = useNavigate();
   const [orgs, setOrgs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -31,7 +33,7 @@ const OrganizationManagement = () => {
   useEffect(() => { fetchOrgs(); }, []);
 
   const openEdit = (o: any) => { setEditing(o); setForm({ name: o.name || "", domain: o.domain || "", plan: o.plan?.name || o.plan || "" }); setDialogOpen(true); };
-  const openCreate = () => { setEditing(null); setForm({ name: "", domain: "", plan: "" }); setDialogOpen(true); };
+  const openCreate = () => navigate("/admin/tenants/new");
   const handleSave = async () => {
     if (!form.name) { toast.error("Naam verplicht"); return; }
     setSubmitting(true);

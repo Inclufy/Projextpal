@@ -207,8 +207,24 @@ class SaveOnboardingView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Update company name
+        # Update company core fields so the tenant has its preferences
+        # persisted even if the OnboardingProfile shape changes later.
         company.name = data['company_name']
+        if data.get('industry'):
+            company.industry = data['industry']
+        if data.get('company_size'):
+            company.organization_size = data['company_size']
+        if data.get('currency'):
+            company.currency = data['currency']
+        if data.get('timezone'):
+            company.timezone = data['timezone']
+        if data.get('locale'):
+            company.locale = data['locale']
+        if data.get('primary_color'):
+            company.primary_color = data['primary_color']
+        company.onboarding_completed = True
+        company.onboarding_completed_at = timezone.now()
+        company.onboarding_data = request.data
         company.save()
 
         # Create or update OnboardingProfile

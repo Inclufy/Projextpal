@@ -587,13 +587,56 @@ const OnboardingWizard = () => {
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   };
 
-  const handleComplete = () => {
+  const persistToBackend = async (extra: Record<string, any> = {}) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    const sizeMap: Record<string, string> = {
+      '1-10 employees': 'small', '11-50 employees': 'small',
+      '51-200 employees': 'medium', '201-1,000 employees': 'large',
+      '1,000+ employees': 'enterprise',
+      '1-10 medewerkers': 'small', '11-50 medewerkers': 'small',
+      '51-200 medewerkers': 'medium', '201-1000 medewerkers': 'large',
+      '1000+ medewerkers': 'enterprise',
+    };
+    const payload = {
+      company_name: data.organizationName || 'My Organization',
+      industry: '',
+      country: lang === 'nl' ? 'NL' : 'US',
+      description: data.primaryPurpose || '',
+      default_methodology: data.projectMethodologies[0] || 'agile',
+      project_types: data.projectTypes,
+      team_roles: [],
+      company_size: sizeMap[data.organizationSize] || 'small',
+      currency: lang === 'nl' ? 'EUR' : 'USD',
+      locale: lang,
+      time_tracking_enabled: true,
+      risk_management_enabled: true,
+      governance_enabled: data.governanceNeeds.length > 0 || data.portfolioManagement,
+      // Send the full wizard payload so the backend can store it raw on
+      // Company.onboarding_data for replay / audit / future seed jobs.
+      wizard_data: data,
+      ...extra,
+    };
+    try {
+      await fetch('/api/v1/onboarding/complete/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error('onboarding persist failed', err);
+    }
+  };
+
+  const handleComplete = async () => {
+    await persistToBackend();
     localStorage.setItem('onboarding_completed', 'true');
     localStorage.setItem('onboarding_data', JSON.stringify(data));
     navigate('/dashboard');
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await persistToBackend({ skipped: true });
     localStorage.setItem('onboarding_completed', 'true');
     localStorage.setItem('onboarding_skipped', 'true');
     navigate('/dashboard');

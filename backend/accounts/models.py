@@ -13,6 +13,23 @@ class Company(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_subscribed = models.BooleanField(default=False)
 
+    # Branding
+    logo = models.ImageField(upload_to="company_logos/", null=True, blank=True)
+    primary_color = models.CharField(max_length=7, null=True, blank=True, help_text="Hex color, e.g. #7C3AED")
+    custom_domain = models.CharField(max_length=255, null=True, blank=True)
+
+    # Tenant defaults
+    industry = models.CharField(max_length=100, null=True, blank=True)
+    organization_size = models.CharField(max_length=50, null=True, blank=True)
+    timezone = models.CharField(max_length=64, default="Europe/Amsterdam")
+    locale = models.CharField(max_length=10, default="en")
+    currency = models.CharField(max_length=3, default="EUR")
+
+    # Onboarding state — set by self-service wizard or admin provisioning page
+    onboarding_completed = models.BooleanField(default=False)
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
+    onboarding_data = models.JSONField(null=True, blank=True, help_text="Raw onboarding answers for audit/replay.")
+
     # Tenant-wide 2FA enforcement
     # When True, every user in the tenant must enrol 2FA at next login.
     # The login flow checks `not has_2fa(user) and user.company.require_2fa`
