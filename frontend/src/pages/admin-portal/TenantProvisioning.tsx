@@ -50,6 +50,13 @@ const PROJECT_METHODS = [
 
 type Invite = { email: string; role: string };
 
+// Defined outside the component so React treats it as a stable type across
+// re-renders. Defining it inside would unmount/remount on every keystroke
+// and steal focus from any nested input.
+const Section = ({ icon: Icon, title, children }: any) => (
+  <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base"><Icon className="h-5 w-5 text-purple-500" />{title}</CardTitle></CardHeader><CardContent className="space-y-4">{children}</CardContent></Card>
+);
+
 const TenantProvisioning = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("access_token");
@@ -222,10 +229,6 @@ const TenantProvisioning = () => {
       setSubmitting(false);
     }
   };
-
-  const Section = ({ icon: Icon, title, children }: any) => (
-    <Card><CardHeader><CardTitle className="flex items-center gap-2 text-base"><Icon className="h-5 w-5 text-purple-500" />{title}</CardTitle></CardHeader><CardContent className="space-y-4">{children}</CardContent></Card>
-  );
 
   return (
     <div className="space-y-6">
