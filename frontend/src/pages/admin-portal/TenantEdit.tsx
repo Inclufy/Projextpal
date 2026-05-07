@@ -83,6 +83,7 @@ const TenantEdit = () => {
   const [programMethods, setProgramMethods] = useState<string[]>([]);
   const [projectMethods, setProjectMethods] = useState<string[]>([]);
   const [savingMethods, setSavingMethods] = useState(false);
+  const [tenantData, setTenantData] = useState<any>(null);
 
   const loadUsers = async () => {
     if (!id) return;
@@ -269,18 +270,18 @@ const TenantEdit = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-6 w-full">
-          <TabsTrigger value="basics"><Building2 className="h-4 w-4 mr-1" />Basics</TabsTrigger>
-          <TabsTrigger value="branding"><Palette className="h-4 w-4 mr-1" />Branding</TabsTrigger>
-          <TabsTrigger value="plan"><CreditCard className="h-4 w-4 mr-1" />Plan</TabsTrigger>
-          <TabsTrigger value="users"><UsersIcon className="h-4 w-4 mr-1" />Users</TabsTrigger>
-          <TabsTrigger value="methodology"><Layers className="h-4 w-4 mr-1" />Methodology</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="h-4 w-4 mr-1" />Security</TabsTrigger>
+          <TabsTrigger value="basics"><Building2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Basics</span></TabsTrigger>
+          <TabsTrigger value="branding"><Palette className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Branding</span></TabsTrigger>
+          <TabsTrigger value="plan"><CreditCard className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Plan</span></TabsTrigger>
+          <TabsTrigger value="users"><UsersIcon className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Users</span></TabsTrigger>
+          <TabsTrigger value="methodology"><Layers className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Methodology</span></TabsTrigger>
+          <TabsTrigger value="security"><Shield className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Security</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="basics" className="mt-6">
           <Section icon={Building2} title="Tenant basics">
-            <div className="space-y-2"><Label>Organization name *</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
+            <div className="space-y-2"><Label htmlFor="edit-name">Organization name *</Label><Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="edit-description">Description</Label><Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Industry</Label><Select value={industry} onValueChange={setIndustry}><SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger><SelectContent>{INDUSTRIES.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Organization size</Label><Select value={orgSize} onValueChange={setOrgSize}><SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger><SelectContent>{ORG_SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>

@@ -65,6 +65,7 @@ const TenantProvisioning = () => {
   const [activeTab, setActiveTab] = useState("basics");
   const [submitting, setSubmitting] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
 
   // Basics
   const [name, setName] = useState("");
@@ -109,7 +110,8 @@ const TenantProvisioning = () => {
     fetch("/api/v1/admin/plans/", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.ok ? r.json() : [])
       .then((d) => setPlans(Array.isArray(d) ? d : d.results || []))
-      .catch(() => setPlans([]));
+      .catch(() => setPlans([]))
+      .finally(() => setPlansLoading(false));
   }, []);
 
   const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
@@ -129,21 +131,29 @@ const TenantProvisioning = () => {
     setInvites(invites.map((inv, idx) => idx === i ? { ...inv, ...patch } : inv));
   const removeInvite = (i: number) => setInvites(invites.filter((_, idx) => idx !== i));
 
-  // Accepts CSV text or freshly pasted list of emails (one per line, optionally
-  // "email,role"). Skips invalid lines silently — admin can review the rendered
-  // list afterwards.
+  // Accepts CSV text or freshly pasted list of emails. One row per line,
+  // optionally "email,role". The previous splitter cut on commas first which
+  // turned "alice@a.com,admin" into two tokens and silently dropped the role
+  // — every row ended up as default "pm". Now we split rows on newlines/
+  // semicolons only, then split each row on the first comma.
   const importInvitesFromText = (text: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const parsed: Invite[] = [];
-    for (const raw of text.split(/[\n,;]+/)) {
+    for (const raw of text.split(/[\n;]+/)) {
       const line = raw.trim();
       if (!line) continue;
-      const [emailPart, rolePart] = line.includes(",") ? line.split(",", 2) : [line, ""];
+      const commaIdx = line.indexOf(",");
+      const emailPart = commaIdx >= 0 ? line.slice(0, commaIdx) : line;
+      const rolePart = commaIdx >= 0 ? line.slice(commaIdx + 1) : "";
       const email = emailPart.trim().toLowerCase();
       if (!re.test(email)) continue;
-      const role = (rolePart || "").trim().toLowerCase();
-      const validRoles = ["admin", "pm", "program_manager", "contibuter", "reviewer", "guest"];
-      parsed.push({ email, role: validRoles.includes(role) ? role : "pm" });
+      const role = rolePart.trim().toLowerCase();
+      const validRoles = ["admin", "pm", "program_manager", "contibuter", "contributor", "reviewer", "guest"];
+      // Accept both spellings — backend ROLE_CHOICES still uses 'contibuter'
+      // (typo in the model). Map the corrected spelling so admins typing
+      // 'contributor' in bulk import don't lose data.
+      const finalRole = role === "contributor" ? "contibuter" : role;
+      parsed.push({ email, role: validRoles.includes(role) ? finalRole : "pm" });
     }
     if (parsed.length === 0) {
       toast.error("No valid emails found");
@@ -239,19 +249,19 @@ const TenantProvisioning = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-7 w-full">
-          <TabsTrigger value="basics"><Building2 className="h-4 w-4 mr-1" />Basics</TabsTrigger>
-          <TabsTrigger value="branding"><Palette className="h-4 w-4 mr-1" />Branding</TabsTrigger>
-          <TabsTrigger value="plan"><CreditCard className="h-4 w-4 mr-1" />Plan</TabsTrigger>
-          <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />Users</TabsTrigger>
-          <TabsTrigger value="methodology"><Layers className="h-4 w-4 mr-1" />Methodology</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="h-4 w-4 mr-1" />Security</TabsTrigger>
-          <TabsTrigger value="review"><CheckCircle2 className="h-4 w-4 mr-1" />Review</TabsTrigger>
+          <TabsTrigger value="basics"><Building2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Basics</span></TabsTrigger>
+          <TabsTrigger value="branding"><Palette className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Branding</span></TabsTrigger>
+          <TabsTrigger value="plan"><CreditCard className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Plan</span></TabsTrigger>
+          <TabsTrigger value="users"><Users className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Users</span></TabsTrigger>
+          <TabsTrigger value="methodology"><Layers className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Methodology</span></TabsTrigger>
+          <TabsTrigger value="security"><Shield className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Security</span></TabsTrigger>
+          <TabsTrigger value="review"><CheckCircle2 className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Review</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="basics" className="mt-6">
           <Section icon={Building2} title="Tenant basics">
-            <div className="space-y-2"><Label>Organization name *</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Corp" /></div>
-            <div className="space-y-2"><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description of the organization" rows={3} /></div>
+            <div className="space-y-2"><Label htmlFor="org-name">Organization name *</Label><Input id="org-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Corp" /></div>
+            <div className="space-y-2"><Label htmlFor="org-description">Description</Label><Textarea id="org-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description of the organization" rows={3} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Industry</Label><Select value={industry} onValueChange={setIndustry}><SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger><SelectContent>{INDUSTRIES.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Organization size</Label><Select value={orgSize} onValueChange={setOrgSize}><SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger><SelectContent>{ORG_SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
@@ -288,7 +298,7 @@ const TenantProvisioning = () => {
 
         <TabsContent value="plan" className="mt-6">
           <Section icon={CreditCard} title="Subscription plan">
-            <div className="space-y-2"><Label>Plan</Label><Select value={planId} onValueChange={setPlanId}><SelectTrigger><SelectValue placeholder="No plan (configure later)" /></SelectTrigger><SelectContent>{plans.map((p) => <SelectItem key={p.id} value={String(p.id)}>{p.name}{p.price_monthly ? ` — €${p.price_monthly}/mo` : ""}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Plan</Label><Select value={planId} onValueChange={setPlanId} disabled={plansLoading}><SelectTrigger><SelectValue placeholder={plansLoading ? "Loading plans…" : "No plan (configure later)"} /></SelectTrigger><SelectContent>{plans.length === 0 && !plansLoading ? <p className="text-sm text-muted-foreground p-2">No plans configured yet. Add one in <a href="/admin/plans" className="text-purple-500 hover:underline">Plans &amp; Pricing</a>.</p> : plans.map((p) => <SelectItem key={p.id} value={String(p.id)}>{p.name}{p.price_monthly ? ` — €${p.price_monthly}/mo` : ""}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Billing cycle</Label><Select value={billingCycle} onValueChange={setBillingCycle}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="monthly">Monthly</SelectItem><SelectItem value="yearly">Yearly</SelectItem></SelectContent></Select></div>
               <div className="space-y-2"><Label>Status</Label><Select value={subStatus} onValueChange={setSubStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="trialing">Trialing</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="past_due">Past due</SelectItem></SelectContent></Select></div>
@@ -300,10 +310,10 @@ const TenantProvisioning = () => {
         <TabsContent value="users" className="mt-6 space-y-4">
           <Section icon={Users} title="Owner / first admin">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Email *</Label><Input type="email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="admin@acme.com" /></div>
+              <div className="space-y-2"><Label htmlFor="owner-email">Email *</Label><Input id="owner-email" type="email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="admin@acme.com" /></div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2"><Label>First name</Label><Input value={ownerFirstName} onChange={(e) => setOwnerFirstName(e.target.value)} /></div>
-                <div className="space-y-2"><Label>Last name</Label><Input value={ownerLastName} onChange={(e) => setOwnerLastName(e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="owner-first">First name</Label><Input id="owner-first" value={ownerFirstName} onChange={(e) => setOwnerFirstName(e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="owner-last">Last name</Label><Input id="owner-last" value={ownerLastName} onChange={(e) => setOwnerLastName(e.target.value)} /></div>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Owner is created inactive. They receive a verification email and set their own password.</p>
@@ -317,12 +327,12 @@ const TenantProvisioning = () => {
                 <span className="text-xs text-muted-foreground">or</span>
                 <Input type="file" accept=".csv,text/csv,text/plain" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvUpload(f); e.currentTarget.value = ""; }} className="max-w-xs h-8 text-xs" />
               </div>
-              <p className="text-[11px] text-muted-foreground">Format: <code>email,role</code> per line. Roles: admin, pm, program_manager, contibuter, reviewer, guest. Default role is pm.</p>
+              <p className="text-[11px] text-muted-foreground">Format: <code>email,role</code> per line. Roles: admin, pm, program_manager, contributor, reviewer, guest. Default role is pm.</p>
             </div>
             {invites.map((inv, i) => (
               <div key={i} className="grid grid-cols-[1fr_140px_40px] gap-2 items-end">
                 <div className="space-y-1"><Label className="text-xs">Email</Label><Input type="email" value={inv.email} onChange={(e) => updateInvite(i, { email: e.target.value })} placeholder="user@acme.com" /></div>
-                <div className="space-y-1"><Label className="text-xs">Role</Label><Select value={inv.role} onValueChange={(v) => updateInvite(i, { role: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Admin</SelectItem><SelectItem value="pm">Project Manager</SelectItem><SelectItem value="program_manager">Program Manager</SelectItem><SelectItem value="contibuter">Contributor</SelectItem><SelectItem value="reviewer">Reviewer</SelectItem><SelectItem value="guest">Guest</SelectItem></SelectContent></Select></div>
+                <div className="space-y-1"><Label className="text-xs">Role</Label><Select value={inv.role} onValueChange={(v) => updateInvite(i, { role: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Admin</SelectItem><SelectItem value="pm">Project Manager</SelectItem><SelectItem value="program_manager">Program Manager</SelectItem><SelectItem value="contributor">Contributor</SelectItem><SelectItem value="reviewer">Reviewer</SelectItem><SelectItem value="guest">Guest</SelectItem></SelectContent></Select></div>
                 <Button variant="ghost" size="icon" onClick={() => removeInvite(i)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
               </div>
             ))}

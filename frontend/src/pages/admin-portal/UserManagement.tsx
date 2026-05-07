@@ -406,7 +406,7 @@ export default function UserManagement() {
         const err = await response.json().catch(() => ({}));
         throw new Error(err.detail || 'Failed to set password');
       }
-      toast.success(pt(`Password set. ${user.email} is now active and can log in.`));
+      toast.success(`${pt("Password set for")} ${user.email}`);
       fetchUsers();
     } catch (err: any) {
       toast.error(err.message);
