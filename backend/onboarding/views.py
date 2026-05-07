@@ -1,14 +1,18 @@
 import json
+import logging
 import re
 import requests
 from datetime import datetime
 
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+logger = logging.getLogger(__name__)
 
 from .models import OnboardingProfile
 from .serializers import (
@@ -212,129 +216,160 @@ class SaveOnboardingView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Update company core fields so the tenant has its preferences
-        # persisted even if the OnboardingProfile shape changes later.
-        company.name = data['company_name']
-        if data.get('industry'):
-            company.industry = data['industry']
-        if data.get('company_size'):
-            company.organization_size = data['company_size']
-        if data.get('currency'):
-            company.currency = data['currency']
-        if data.get('timezone'):
-            company.timezone = data['timezone']
-        if data.get('locale'):
-            company.locale = data['locale']
-        if data.get('primary_color'):
-            company.primary_color = data['primary_color']
-        company.onboarding_completed = True
-        company.onboarding_completed_at = timezone.now()
-        company.onboarding_data = request.data
-        company.save()
-
-        # Create or update OnboardingProfile
-        profile, created = OnboardingProfile.objects.update_or_create(
-            company=company,
-            defaults={
-                'created_by': user,
-                'company_name': data['company_name'],
-                'website': data.get('website', ''),
-                'industry': data.get('industry', ''),
-                'country': data.get('country', 'NL'),
-                'description': data.get('description', ''),
-                'default_methodology': data.get('default_methodology', 'agile'),
-                'project_types': data.get('project_types', ['software']),
-                'team_roles': data.get('team_roles', []),
-                'company_size': data.get('company_size', 'small'),
-                'currency': data.get('currency', 'EUR'),
-                'time_tracking_enabled': data.get('time_tracking_enabled', True),
-                'risk_management_enabled': data.get('risk_management_enabled', True),
-                'governance_enabled': data.get('governance_enabled', True),
-                'setup_suggestion': data.get('setup_suggestion'),
-                'methodology_confirmed': True,
-                'roles_confirmed': True,
-                'templates_confirmed': True,
-                'onboarding_completed': True,
-                'completed_at': timezone.now(),
-            },
-        )
-
-        # Generate demo data if requested
-        if data.get('generate_demo_data', False):
-            demo_industry = data.get('demo_industry', '') or data.get('industry', '')
-            generate_demo_projects(
-                company=company,
-                user=user,
-                industry=demo_industry,
-                methodology=data.get('default_methodology', 'agile'),
-            )
-
-        # Subscription plan — optional, only if user picked one in the wizard.
-        plan_id = data.get('plan_id') or ''
-        if plan_id and plan_id != 'none':
-            try:
-                plan = SubscriptionPlan.objects.get(id=plan_id)
-                CompanySubscription.objects.update_or_create(
-                    company=company,
-                    defaults={
-                        'plan': plan,
-                        'status': 'trialing',
-                        'billing_cycle': data.get('billing_cycle') or 'monthly',
-                        'payment_method': 'stripe',
-                    },
-                )
-                company.is_subscribed = True
-                company.save(update_fields=['is_subscribed'])
-            except SubscriptionPlan.DoesNotExist:
-                pass
-
-        # Additional team invites — create inactive users with verification
-        # tokens so they receive an email and can set their own password.
+        # Persist all DB writes atomically — if subscription save or invite
+        # creation crashes mid-way, we don't want a half-onboarded Company.
+        # Email sending happens AFTER the transaction commits so a slow or
+        # failing SMTP can't hold a DB transaction open.
+        invitees_to_email = []
         UserModel = get_user_model()
-        for inv in (data.get('additional_invites') or []):
-            email = (inv.get('email') or '').strip().lower()
-            if not email or UserModel.objects.filter(email=email).exists():
-                continue
-            invitee = UserModel.objects.create(
-                email=email,
-                username=email.split('@')[0],
+
+        with transaction.atomic():
+            # Update company core fields so the tenant has its preferences
+            # persisted even if the OnboardingProfile shape changes later.
+            company.name = data['company_name']
+            if data.get('industry'):
+                company.industry = data['industry']
+            if data.get('company_size'):
+                company.organization_size = data['company_size']
+            if data.get('currency'):
+                company.currency = data['currency']
+            if data.get('timezone'):
+                company.timezone = data['timezone']
+            if data.get('locale'):
+                company.locale = data['locale']
+            if data.get('primary_color'):
+                company.primary_color = data['primary_color']
+            company.onboarding_completed = True
+            company.onboarding_completed_at = timezone.now()
+            # Store the structured wizard payload only — request.data also
+            # carries flat duplicates of every field which made the JSON
+            # field grow unbounded as the wizard added steps.
+            company.onboarding_data = request.data.get('wizard_data') or {
+                k: v for k, v in request.data.items() if k != 'wizard_data'
+            }
+            company.save()
+
+            profile, created = OnboardingProfile.objects.update_or_create(
                 company=company,
-                role=inv.get('role') or 'guest',
-                is_active=False,
+                defaults={
+                    'created_by': user,
+                    'company_name': data['company_name'],
+                    'website': data.get('website', ''),
+                    'industry': data.get('industry', ''),
+                    'country': data.get('country', 'NL'),
+                    'description': data.get('description', ''),
+                    'default_methodology': data.get('default_methodology', 'agile'),
+                    'project_types': data.get('project_types', ['software']),
+                    'team_roles': data.get('team_roles', []),
+                    'company_size': data.get('company_size', 'small'),
+                    'currency': data.get('currency', 'EUR'),
+                    'time_tracking_enabled': data.get('time_tracking_enabled', True),
+                    'risk_management_enabled': data.get('risk_management_enabled', True),
+                    'governance_enabled': data.get('governance_enabled', True),
+                    'setup_suggestion': data.get('setup_suggestion'),
+                    'methodology_confirmed': True,
+                    'roles_confirmed': True,
+                    'templates_confirmed': True,
+                    'onboarding_completed': True,
+                    'completed_at': timezone.now(),
+                },
             )
-            try:
+
+            if data.get('generate_demo_data', False):
+                demo_industry = data.get('demo_industry', '') or data.get('industry', '')
+                generate_demo_projects(
+                    company=company,
+                    user=user,
+                    industry=demo_industry,
+                    methodology=data.get('default_methodology', 'agile'),
+                )
+
+            # Subscription plan — optional, only if user picked one.
+            plan_id = data.get('plan_id') or ''
+            if plan_id and plan_id != 'none':
+                try:
+                    plan = SubscriptionPlan.objects.get(id=plan_id)
+                    CompanySubscription.objects.update_or_create(
+                        company=company,
+                        defaults={
+                            'plan': plan,
+                            'status': 'trialing',
+                            'billing_cycle': data.get('billing_cycle') or 'monthly',
+                            'payment_method': 'stripe',
+                        },
+                    )
+                    company.is_subscribed = True
+                    company.save(update_fields=['is_subscribed'])
+                except SubscriptionPlan.DoesNotExist:
+                    logger.warning(
+                        "Onboarding: plan_id=%s not found for company=%s; skipping subscription",
+                        plan_id, company.id,
+                    )
+
+            # Create invitees + their verification tokens inside the txn so
+            # a partial run leaves no dangling user rows. Email sending is
+            # deferred to after commit.
+            for inv in (data.get('additional_invites') or []):
+                email = (inv.get('email') or '').strip().lower()
+                if not email or UserModel.objects.filter(email=email).exists():
+                    continue
+                invitee = UserModel.objects.create(
+                    email=email,
+                    username=email.split('@')[0],
+                    company=company,
+                    role=inv.get('role') or 'guest',
+                    is_active=False,
+                )
                 token = VerificationToken.objects.create(user=invitee)
+                invitees_to_email.append((invitee, token))
+
+            # GDPR/TOS consents — audit-log inside txn so consent + onboarding
+            # land or roll back together.
+            if data.get('accept_tos') or data.get('accept_dpa') or data.get('accept_gdpr'):
+                try:
+                    log_action(
+                        user=user,
+                        action='settings_updated',
+                        category='security',
+                        severity='info',
+                        description=(
+                            f"Onboarding consents recorded: "
+                            f"tos={bool(data.get('accept_tos'))}, "
+                            f"dpa={bool(data.get('accept_dpa'))}, "
+                            f"gdpr={bool(data.get('accept_gdpr'))}"
+                        ),
+                        resource_type='company',
+                        resource_id=str(company.id),
+                        company=company,
+                        request=request,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Onboarding: failed to record consent audit log for company=%s",
+                        company.id,
+                    )
+
+        # ---- post-commit work: email sending ----
+        # SMTP is slow/flaky; deferred so it can't block or rollback the txn.
+        # Failures are logged so we don't silently swallow undeliverable invites.
+        email_failures = []
+        for invitee, token in invitees_to_email:
+            try:
                 send_verification_email(invitee, token)
             except Exception:
-                pass
-
-        # Legal consents — append to audit log for GDPR compliance.
-        if data.get('accept_tos') or data.get('accept_dpa') or data.get('accept_gdpr'):
-            try:
-                log_action(
-                    user=user,
-                    action='settings_updated',
-                    category='security',
-                    severity='info',
-                    description=(
-                        f"Onboarding consents recorded: "
-                        f"tos={bool(data.get('accept_tos'))}, "
-                        f"dpa={bool(data.get('accept_dpa'))}, "
-                        f"gdpr={bool(data.get('accept_gdpr'))}"
-                    ),
-                    resource_type='company',
-                    resource_id=str(company.id),
-                    company=company,
-                    request=request,
+                logger.exception(
+                    "Onboarding: failed to send invite email to %s (company=%s)",
+                    invitee.email, company.id,
                 )
-            except Exception:
-                pass
+                email_failures.append(invitee.email)
 
         return Response(
             {
                 'message': 'Onboarding completed successfully',
                 'onboarding_completed': True,
                 'profile_id': profile.id,
+                'invites_sent': len(invitees_to_email) - len(email_failures),
+                'invite_email_failures': email_failures,
             },
             status=status.HTTP_200_OK,
         )
