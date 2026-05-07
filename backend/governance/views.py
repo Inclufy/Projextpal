@@ -26,9 +26,12 @@ class PortfolioViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'superadmin':
-            return Portfolio.objects.all()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
         company = getattr(user, 'company', None)
+        if user.role == 'superadmin':
+            if all_tenants or not company:
+                return Portfolio.objects.all()
+            return Portfolio.objects.filter(company=company)
         if not company:
             return Portfolio.objects.none()
         return Portfolio.objects.filter(company=company)
@@ -91,9 +94,11 @@ class BoardMemberViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return BoardMember.objects.none()
-        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
-            return BoardMember.objects.all()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
         company = getattr(user, 'company', None)
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin and (all_tenants or not company):
+            return BoardMember.objects.all()
         if not company:
             return BoardMember.objects.none()
         return BoardMember.objects.filter(
@@ -301,14 +306,16 @@ class DecisionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # P0 cross-tenant fix — was returning Decision.objects.all() when the
-        # requesting user had no company (cross-tenant leak). Superadmin keeps
-        # tenant-spanning visibility; everyone else MUST be company-scoped.
+        # requesting user had no company (cross-tenant leak). Superadmin
+        # defaults to own-company; cross-tenant view via ?all_tenants=1.
         user = self.request.user
         if not user.is_authenticated:
             return Decision.objects.none()
-        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
-            return Decision.objects.all()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
         company = getattr(user, 'company', None)
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin and (all_tenants or not company):
+            return Decision.objects.all()
         if not company:
             return Decision.objects.none()
         return Decision.objects.filter(program__company=company)
@@ -332,14 +339,16 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # P0 cross-tenant fix — was returning Meeting.objects.all() when the
-        # requesting user had no company (cross-tenant leak). Superadmin keeps
-        # tenant-spanning visibility; everyone else MUST be company-scoped.
+        # requesting user had no company (cross-tenant leak). Superadmin
+        # defaults to own-company; cross-tenant view via ?all_tenants=1.
         user = self.request.user
         if not user.is_authenticated:
             return Meeting.objects.none()
-        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
-            return Meeting.objects.all()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
         company = getattr(user, 'company', None)
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin and (all_tenants or not company):
+            return Meeting.objects.all()
         if not company:
             return Meeting.objects.none()
         return Meeting.objects.filter(program__company=company)

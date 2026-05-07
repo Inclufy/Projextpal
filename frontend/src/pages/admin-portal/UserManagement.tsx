@@ -383,6 +383,36 @@ export default function UserManagement() {
     }
   };
 
+  // SuperAdmin override: set a temporary password directly without going
+  // through email. Use when SMTP is broken or the customer needs to log in
+  // urgently. Communicate the temp password out-of-band (call/whatsapp/SMS).
+  const handleSetPassword = async (user: User) => {
+    const pw = window.prompt(
+      `Set a temporary password for ${user.email}\n\nMinimum 8 characters. The user will be activated immediately and can log in with this password.`,
+      ''
+    );
+    if (pw === null) return;
+    if (pw.length < 8) {
+      toast.error(pt("Password must be at least 8 characters"));
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${user.id}/set-password/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ password: pw }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to set password');
+      }
+      toast.success(`${pt("Password set for")} ${user.email}`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       email: '',
@@ -715,6 +745,10 @@ export default function UserManagement() {
                             <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                               <KeyRound className="mr-2 h-4 w-4" />
                               {pt("Reset Password")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSetPassword(user)}>
+                              <KeyRound className="mr-2 h-4 w-4" />
+                              {pt("Set Password Manually")}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {

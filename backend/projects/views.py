@@ -199,8 +199,21 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         base = Project.objects.select_related("company", "created_by")\
             .prefetch_related("team_members")
 
+        # SuperAdmin behoudt cross-tenant visibility, maar alleen wanneer
+        # ze er expliciet om vragen via ?all_tenants=1 (bijv. vanuit het
+        # Admin Portal). Default scope is hun eigen company, anders zien ze
+        # in hun gewone dashboard alle tenants door elkaar — wat verwarrend
+        # is en lijkt op een data-leak.
+        all_tenants = self.request.query_params.get("all_tenants") in ("1", "true", "yes")
         if user.role == "superadmin":
-            qs = base.all()
+            if all_tenants or not getattr(user, "company_id", None):
+                # Either explicitly requested, or a legacy SuperAdmin with no
+                # company assigned — fall back to platform-wide visibility
+                # rather than dropping into the membership branch which would
+                # silently return a near-empty list.
+                qs = base.all()
+            else:
+                qs = base.filter(company_id=user.company_id)
         elif user.role in COMPANY_WIDE_ROLES and getattr(user, "company_id", None):
             # admin/pm/program_manager — alle projecten van eigen company
             qs = base.filter(company_id=user.company_id)

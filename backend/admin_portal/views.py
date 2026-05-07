@@ -21,7 +21,8 @@ from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
 from django.utils import timezone
 
-from accounts.models import Company
+from accounts.models import Company, VerificationToken
+from accounts.serializers import send_verification_email
 from subscriptions.models import SubscriptionPlan, CompanySubscription
 from projects.models import Project, TimeEntry
 from .models import AuditLog, SystemSetting, ClientApiKey, CloudProviderConfig, log_action, initialize_default_settings
@@ -373,23 +374,88 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def resend_invite(self, request, pk=None):
-        """Resend invitation email"""
-        user = self.get_object()
+        """
+        POST /api/v1/admin/users/<id>/resend_invite/
 
-        # TODO: Implement actual email sending
+        Generates a fresh VerificationToken and sends the same activation
+        email the user originally received during provisioning. Use this when
+        SMTP was misconfigured at provision time, the user lost the email,
+        or the previous token expired.
+        """
+        from accounts.models import VerificationToken
+        from accounts.serializers import send_verification_email
+
+        user = self.get_object()
+        # Invalidate any earlier unused tokens so an intercepted/forwarded
+        # old verification link cannot be used after the admin issues a new
+        # one. Only the freshest token stays valid.
+        VerificationToken.objects.filter(user=user, is_used=False).update(is_used=True)
+        token = VerificationToken.objects.create(user=user)
+        sent = False
+        try:
+            send_verification_email(user, token)
+            sent = True
+        except Exception as e:
+            return Response(
+                {'status': 'error', 'detail': f'Email send failed: {e}'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
         log_action(
             user=request.user,
             action='user_invited',
             category='user',
-            description=f"Resent invitation to {user.email}",
+            description=f"Resent verification email to {user.email}",
             resource_type='user',
             resource_id=str(user.id),
             company=user.company,
-            request=request
+            request=request,
         )
+        return Response({'status': 'invite_sent', 'email': user.email, 'sent': sent})
 
-        return Response({'status': 'invite_sent', 'email': user.email})
+    @action(detail=True, methods=['post'], url_path='set-password')
+    def set_password(self, request, pk=None):
+        """
+        POST /api/v1/admin/users/<id>/set-password/
+        Body: { "password": "..." }
+
+        SuperAdmin override: sets the user's password directly and activates
+        them. Use when SMTP is broken or the customer wants a temp password
+        to log in immediately. The password should be communicated to the
+        user out-of-band (call, whatsapp, secure note) — never email.
+        """
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjValidationError
+
+        user = self.get_object()
+        password = request.data.get('password') or ''
+        # Run the platform's full password policy (MinimumLength, CommonPassword,
+        # NumericPassword, UserAttributeSimilarity from settings.AUTH_PASSWORD_VALIDATORS)
+        # so a SuperAdmin cannot bypass the same rules a self-service reset
+        # would enforce — e.g. setting "12345678" or "password123".
+        try:
+            validate_password(password, user=user)
+        except DjValidationError as exc:
+            return Response(
+                {'detail': ' '.join(exc.messages)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.set_password(password)
+        user.is_active = True
+        user.save(update_fields=['password', 'is_active'])
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='security',
+            severity='warning',
+            description=f"SuperAdmin set a new password for {user.email} and activated the account",
+            resource_type='user',
+            resource_id=str(user.id),
+            company=user.company,
+            request=request,
+        )
+        return Response({'status': 'password_set', 'email': user.email, 'is_active': True})
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def import_users(self, request):
@@ -737,6 +803,193 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
             'require_2fa': company.require_2fa,
             'enabled_at': company.require_2fa_enabled_at,
         })
+
+    @action(detail=False, methods=['post'], url_path='provision')
+    def provision(self, request):
+        """
+        POST /api/v1/admin/tenants/provision/
+
+        Full tenant provisioning for the admin-led onboarding flow.
+
+        Body shape:
+        {
+          "name": "Acme Corp",                       # required
+          "description": "...",
+          "industry": "Construction",
+          "organization_size": "51-200 employees",
+          "timezone": "Europe/Amsterdam",
+          "locale": "en",
+          "currency": "EUR",
+          "primary_color": "#7C3AED",
+          "custom_domain": "acme.projextpal.com",
+
+          "owner_email": "admin@acme.com",           # required — first admin
+          "owner_first_name": "Jane",
+          "owner_last_name": "Doe",
+
+          "plan_id": "<uuid>",                       # optional — assign plan
+          "billing_cycle": "monthly",
+          "subscription_status": "trialing",
+
+          "require_2fa": true,
+          "additional_invites": [
+            {"email": "x@acme.com", "role": "pm"}
+          ],
+          "onboarding_data": { ...full wizard answers... }
+        }
+
+        Returns the created tenant detail.
+        """
+        data = request.data or {}
+        name = (data.get('name') or '').strip()
+        owner_email = (data.get('owner_email') or '').strip().lower()
+
+        if not name:
+            return Response({'detail': 'name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not owner_email:
+            return Response({'detail': 'owner_email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1) Company
+        company = Company.objects.create(
+            name=name,
+            description=data.get('description') or '',
+            industry=data.get('industry') or None,
+            organization_size=data.get('organization_size') or None,
+            timezone=data.get('timezone') or 'Europe/Amsterdam',
+            locale=data.get('locale') or 'en',
+            currency=data.get('currency') or 'EUR',
+            primary_color=data.get('primary_color') or None,
+            custom_domain=data.get('custom_domain') or None,
+            require_2fa=bool(data.get('require_2fa', False)),
+            require_2fa_enabled_at=timezone.now() if data.get('require_2fa') else None,
+            onboarding_data=data.get('onboarding_data') or None,
+            onboarding_completed=True,
+            onboarding_completed_at=timezone.now(),
+        )
+
+        # 2) Owner user (inactive — must verify email)
+        owner = None
+        send_emails = bool(data.get('send_invites', True))
+        if not User.objects.filter(email=owner_email).exists():
+            owner = User.objects.create(
+                email=owner_email,
+                username=owner_email.split('@')[0],
+                first_name=data.get('owner_first_name') or '',
+                last_name=data.get('owner_last_name') or '',
+                company=company,
+                role='admin',
+                is_active=False,
+            )
+            if send_emails:
+                try:
+                    token = VerificationToken.objects.create(user=owner)
+                    send_verification_email(owner, token)
+                except Exception:
+                    # Email is best-effort — admin can resend later from
+                    # the user management page.
+                    pass
+
+        # 3) Subscription
+        plan_id = data.get('plan_id')
+        if plan_id and plan_id != 'none':
+            try:
+                plan = SubscriptionPlan.objects.get(id=plan_id)
+                CompanySubscription.objects.create(
+                    company=company,
+                    plan=plan,
+                    status=data.get('subscription_status') or 'trialing',
+                    billing_cycle=data.get('billing_cycle') or 'monthly',
+                    payment_method=data.get('payment_method') or 'manual',
+                )
+                company.is_subscribed = True
+                company.save(update_fields=['is_subscribed'])
+            except SubscriptionPlan.DoesNotExist:
+                pass
+
+        # 4) Additional invites — create inactive users + send each their own
+        # verification email so they can pick a password.
+        for inv in (data.get('additional_invites') or []):
+            email = (inv.get('email') or '').strip().lower()
+            if not email or User.objects.filter(email=email).exists():
+                continue
+            invitee = User.objects.create(
+                email=email,
+                username=email.split('@')[0],
+                company=company,
+                role=inv.get('role') or 'guest',
+                is_active=False,
+            )
+            if send_emails:
+                try:
+                    token = VerificationToken.objects.create(user=invitee)
+                    send_verification_email(invitee, token)
+                except Exception:
+                    pass
+
+        # 5) Optional demo data seed — creates one starter project per
+        # chosen methodology so the new tenant lands on a populated dashboard
+        # instead of an empty one.
+        if data.get('seed_demo_data') and owner:
+            try:
+                from onboarding.demo_data import generate_demo_projects
+                methodologies = (
+                    (data.get('onboarding_data') or {}).get('project_methodologies')
+                    or ['agile']
+                )
+                for m in methodologies[:3]:  # cap at 3 to avoid clutter
+                    generate_demo_projects(
+                        company=company,
+                        user=owner,
+                        industry=company.industry or '',
+                        methodology=m,
+                    )
+            except Exception:
+                # Seeding is best-effort — never fail provisioning over it.
+                pass
+
+        # 6) Audit log
+        log_action(
+            user=request.user,
+            action='company_created',
+            category='company',
+            severity='info',
+            description=f"Provisioned tenant {company.name} via admin portal",
+            resource_type='company',
+            resource_id=str(company.id),
+            company=company,
+            request=request,
+        )
+
+        serializer = CompanyDetailSerializer(company, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='upload-logo',
+            parser_classes=[MultiPartParser, FormParser])
+    def upload_logo(self, request, pk=None):
+        """
+        POST /api/v1/admin/tenants/<id>/upload-logo/
+
+        Multipart form upload for the tenant logo. Body: file=<binary>.
+        Returns the updated company detail.
+        """
+        company = self.get_object()
+        logo = request.FILES.get('file') or request.FILES.get('logo')
+        if not logo:
+            return Response({'detail': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        company.logo = logo
+        company.save(update_fields=['logo', 'updated_at'])
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='company',
+            description=f"Uploaded logo for {company.name}",
+            resource_type='company',
+            resource_id=str(company.id),
+            company=company,
+            request=request,
+        )
+        serializer = CompanyDetailSerializer(company, context={'request': request})
+        return Response(serializer.data)
 
 
 # ============================================================

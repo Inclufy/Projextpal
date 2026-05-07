@@ -46,6 +46,9 @@ class OnboardingCompleteSerializer(serializers.Serializer):
     )
     company_size = serializers.CharField(default='small')
     currency = serializers.CharField(default='EUR')
+    timezone = serializers.CharField(required=False, allow_blank=True, default='')
+    locale = serializers.CharField(required=False, allow_blank=True, default='')
+    primary_color = serializers.CharField(required=False, allow_blank=True, default='')
     time_tracking_enabled = serializers.BooleanField(default=True)
     risk_management_enabled = serializers.BooleanField(default=True)
     governance_enabled = serializers.BooleanField(default=True)
@@ -56,6 +59,23 @@ class OnboardingCompleteSerializer(serializers.Serializer):
     # Demo data
     generate_demo_data = serializers.BooleanField(default=False)
     demo_industry = serializers.CharField(required=False, allow_blank=True, default='')
+
+    # Plan & billing — optional plan selection during self-service onboarding.
+    plan_id = serializers.CharField(required=False, allow_blank=True, default='')
+    billing_cycle = serializers.CharField(required=False, allow_blank=True, default='monthly')
+
+    # Additional team invites — created as inactive users with verification
+    # tokens so they can pick a password.
+    additional_invites = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        default=list,
+    )
+
+    # Legal consents — recorded in audit log for GDPR compliance.
+    accept_tos = serializers.BooleanField(default=False)
+    accept_dpa = serializers.BooleanField(default=False)
+    accept_gdpr = serializers.BooleanField(default=False)
 
 
 class OnboardingProfileSerializer(serializers.ModelSerializer):
