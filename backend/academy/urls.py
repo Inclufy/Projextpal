@@ -69,6 +69,7 @@ urlpatterns = [
     path('ai/generate-practice/', ai_views.ai_generate_practice, name='ai-generate-practice'),
 
     # Certificate Generation
+    path('certificates/', certificate_api.list_my_certificates, name='my-certificates'),
     path('certificate/generate/<uuid:enrollment_id>/', certificate_api.generate_certificate),
     path('certificate/<uuid:certificate_id>/download/', certificate_api.download_certificate),
     path('certificate/verify/<str:verification_code>/', certificate_api.verify_certificate),

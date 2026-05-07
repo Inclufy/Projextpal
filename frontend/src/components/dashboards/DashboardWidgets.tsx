@@ -149,6 +149,7 @@ export const CertificationsWidget: React.FC = () => {
     queryKey: ["my-certificates"],
     queryFn: fetchCertificates,
     staleTime: 5 * 60 * 1000,
+    enabled: typeof window !== 'undefined' && !!localStorage.getItem('access_token'),
   });
 
   const certs = Array.isArray(certificates) ? certificates : (certificates as any)?.results || [];

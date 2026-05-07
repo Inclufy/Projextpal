@@ -170,6 +170,39 @@ def download_certificate(request, certificate_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_my_certificates(request):
+    """GET /academy/certificates/ — current user's earned certificates.
+
+    Used by the dashboard CertificationsWidget. Returns a flat list — empty
+    list is a valid response, never a 404, so the widget can render its
+    "no certs yet" empty state without surfacing a console error.
+    """
+    certs = (
+        Certificate.objects
+        .filter(enrollment__user=request.user)
+        .select_related('enrollment', 'enrollment__course')
+        .order_by('-issued_at')
+    )
+
+    data = []
+    for c in certs:
+        course = getattr(c.enrollment, 'course', None)
+        data.append({
+            'id': str(c.id),
+            'certificate_id': str(c.id),
+            'certificate_number': c.certificate_number,
+            'enrollment_id': str(c.enrollment_id),
+            'course_id': str(course.id) if course else None,
+            'course_title': course.title if course else None,
+            'issued_at': c.issued_at.isoformat(),
+            'verification_code': c.verification_code,
+            'total_score': c.total_score,
+        })
+    return Response(data)
+
+
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def verify_certificate(request, verification_code):
     """Verify certificate by code (public — used by employers without an account)."""

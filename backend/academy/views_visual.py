@@ -62,7 +62,12 @@ class LessonVisualViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         except CourseLesson.DoesNotExist:
-            return Response({'error': f'Lesson not found: {lesson_id}'}, status=404)
+            # Frontend academy uses local string IDs (l1, l2…) parsed to ints
+            # that don't always match a DB-backed CourseLesson. Treat as a
+            # valid empty state — same as missing LessonVisual — so the
+            # client falls back to localStorage / template visuals without
+            # surfacing a 404 in the console.
+            return Response({}, status=200)
         except LessonVisual.DoesNotExist:
             # Visual is optional - return empty object instead of error
             return Response({}, status=200)
