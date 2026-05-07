@@ -32,7 +32,7 @@ const OrganizationManagement = () => {
   };
   useEffect(() => { fetchOrgs(); }, []);
 
-  const openEdit = (o: any) => { setEditing(o); setForm({ name: o.name || "", domain: o.domain || "", plan: o.plan?.name || o.plan || "" }); setDialogOpen(true); };
+  const openEdit = (o: any) => navigate(`/admin/tenants/${o.id}/edit`);
   const openCreate = () => navigate("/admin/tenants/new");
   const handleSave = async () => {
     if (!form.name) { toast.error("Naam verplicht"); return; }
