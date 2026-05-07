@@ -374,23 +374,75 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def resend_invite(self, request, pk=None):
-        """Resend invitation email"""
-        user = self.get_object()
+        """
+        POST /api/v1/admin/users/<id>/resend_invite/
 
-        # TODO: Implement actual email sending
+        Generates a fresh VerificationToken and sends the same activation
+        email the user originally received during provisioning. Use this when
+        SMTP was misconfigured at provision time, the user lost the email,
+        or the previous token expired.
+        """
+        from accounts.models import VerificationToken
+        from accounts.serializers import send_verification_email
+
+        user = self.get_object()
+        token = VerificationToken.objects.create(user=user)
+        sent = False
+        try:
+            send_verification_email(user, token)
+            sent = True
+        except Exception as e:
+            return Response(
+                {'status': 'error', 'detail': f'Email send failed: {e}'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
         log_action(
             user=request.user,
             action='user_invited',
             category='user',
-            description=f"Resent invitation to {user.email}",
+            description=f"Resent verification email to {user.email}",
             resource_type='user',
             resource_id=str(user.id),
             company=user.company,
-            request=request
+            request=request,
         )
+        return Response({'status': 'invite_sent', 'email': user.email, 'sent': sent})
 
-        return Response({'status': 'invite_sent', 'email': user.email})
+    @action(detail=True, methods=['post'], url_path='set-password')
+    def set_password(self, request, pk=None):
+        """
+        POST /api/v1/admin/users/<id>/set-password/
+        Body: { "password": "..." }
+
+        SuperAdmin override: sets the user's password directly and activates
+        them. Use when SMTP is broken or the customer wants a temp password
+        to log in immediately. The password should be communicated to the
+        user out-of-band (call, whatsapp, secure note) — never email.
+        """
+        user = self.get_object()
+        password = request.data.get('password') or ''
+        if len(password) < 8:
+            return Response(
+                {'detail': 'Password must be at least 8 characters'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.set_password(password)
+        user.is_active = True
+        user.save(update_fields=['password', 'is_active'])
+
+        log_action(
+            user=request.user,
+            action='settings_updated',
+            category='security',
+            severity='warning',
+            description=f"SuperAdmin set a new password for {user.email} and activated the account",
+            resource_type='user',
+            resource_id=str(user.id),
+            company=user.company,
+            request=request,
+        )
+        return Response({'status': 'password_set', 'email': user.email, 'is_active': True})
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def import_users(self, request):

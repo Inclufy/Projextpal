@@ -236,6 +236,7 @@ import AdminDashboard from './pages/admin-portal/AdminDashboard';
 import UserManagement from './pages/admin-portal/UserManagement';
 import TenantManagement from './pages/admin-portal/OrganizationManagement';
 import TenantProvisioning from './pages/admin-portal/TenantProvisioning';
+import TenantEdit from './pages/admin-portal/TenantEdit';
 import IntegrationManagement from './pages/admin-portal/IntegrationManagement';
 import AuditLogs from './pages/admin-portal/AuditLogs';
 import SystemSettings from './pages/admin-portal/SystemSettings';
@@ -480,6 +481,7 @@ const App = () => (
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tenants" element={<TenantManagement />} />
                 <Route path="tenants/new" element={<TenantProvisioning />} />
+                <Route path="tenants/:id/edit" element={<TenantEdit />} />
                 <Route path="integrations" element={<IntegrationManagement />} />
                 <Route path="plans" element={<PlanManagement />} /> 
                 <Route path="settings" element={<SystemSettings />} />
