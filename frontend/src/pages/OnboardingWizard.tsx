@@ -1295,26 +1295,28 @@ const OnboardingWizard = () => {
   // ============================================
   const renderStepLegal = () => {
     const tl = (t as any).stepLegal;
-    const Box = ({ checked, onChange, label, link }: { checked: boolean; onChange: (v: boolean) => void; label: string; link: string }) => (
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500 cursor-pointer"
-        />
-        <div className="flex-1">
-          <p className="text-sm text-white">{label}</p>
-          <a href="#" target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:text-purple-300 underline">{link}</a>
-        </div>
-      </div>
-    );
     const allAccepted = data.acceptTos && data.acceptDpa && data.acceptGdpr;
+    const consents: Array<{ key: 'acceptTos' | 'acceptDpa' | 'acceptGdpr'; label: string; link: string }> = [
+      { key: 'acceptTos', label: tl.tosLabel, link: tl.tosLink },
+      { key: 'acceptDpa', label: tl.dpaLabel, link: tl.dpaLink },
+      { key: 'acceptGdpr', label: tl.gdprLabel, link: tl.gdprLink },
+    ];
     return (
       <div className="space-y-4">
-        <Box checked={data.acceptTos} onChange={(v) => updateData('acceptTos', v)} label={tl.tosLabel} link={tl.tosLink} />
-        <Box checked={data.acceptDpa} onChange={(v) => updateData('acceptDpa', v)} label={tl.dpaLabel} link={tl.dpaLink} />
-        <Box checked={data.acceptGdpr} onChange={(v) => updateData('acceptGdpr', v)} label={tl.gdprLabel} link={tl.gdprLink} />
+        {consents.map(({ key, label, link }) => (
+          <div key={key} className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
+            <input
+              type="checkbox"
+              checked={data[key]}
+              onChange={(e) => updateData(key, e.target.checked)}
+              className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-900 text-purple-600 focus:ring-purple-500 cursor-pointer"
+            />
+            <div className="flex-1">
+              <p className="text-sm text-white">{label}</p>
+              <a href="#" target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:text-purple-300 underline">{link}</a>
+            </div>
+          </div>
+        ))}
         {!allAccepted && (
           <p className="text-xs text-amber-400 text-center">{tl.required}</p>
         )}
