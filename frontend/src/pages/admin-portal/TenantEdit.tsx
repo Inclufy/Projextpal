@@ -158,8 +158,6 @@ const TenantEdit = () => {
     } finally { setSavingMethods(false); }
   };
 
-  const [tenantData, setTenantData] = useState<any>(null);
-
   useEffect(() => {
     fetch(`/api/v1/admin/plans/`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.ok ? r.json() : [])
