@@ -4,23 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Building2, Pencil, Search, Users } from "lucide-react";
-import { toast } from "sonner";
 
 const OrganizationManagement = () => {
   const navigate = useNavigate();
   const [orgs, setOrgs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", domain: "", plan: "" });
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
-  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
   const fetchOrgs = async () => {
     setLoading(true);
@@ -34,16 +26,6 @@ const OrganizationManagement = () => {
 
   const openEdit = (o: any) => navigate(`/admin/tenants/${o.id}/edit`);
   const openCreate = () => navigate("/admin/tenants/new");
-  const handleSave = async () => {
-    if (!form.name) { toast.error("Naam verplicht"); return; }
-    setSubmitting(true);
-    try {
-      const url = editing ? `/api/v1/admin/tenants/${editing.id}/` : `/api/v1/admin/tenants/`;
-      const method = editing ? "PATCH" : "POST";
-      const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
-      if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchOrgs(); } else toast.error("Opslaan mislukt");
-    } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); }
-  };
 
   const filtered = search ? orgs.filter(o => o.name?.toLowerCase().includes(search.toLowerCase()) || o.domain?.toLowerCase().includes(search.toLowerCase())) : orgs;
 
@@ -72,14 +54,6 @@ const OrganizationManagement = () => {
           </CardContent></Card>
         ))}</div>
       )}
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Edit" : "Add"} Organization</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2"><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Domain</Label><Input value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value })} placeholder="company.com" /></div>
-          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Save</Button></div>
-        </div>
-      </DialogContent></Dialog>
     </div>
   );
 };

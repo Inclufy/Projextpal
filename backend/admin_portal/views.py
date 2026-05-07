@@ -386,6 +386,10 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         from accounts.serializers import send_verification_email
 
         user = self.get_object()
+        # Invalidate any earlier unused tokens so an intercepted/forwarded
+        # old verification link cannot be used after the admin issues a new
+        # one. Only the freshest token stays valid.
+        VerificationToken.objects.filter(user=user, is_used=False).update(is_used=True)
         token = VerificationToken.objects.create(user=user)
         sent = False
         try:
@@ -420,11 +424,20 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         to log in immediately. The password should be communicated to the
         user out-of-band (call, whatsapp, secure note) — never email.
         """
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjValidationError
+
         user = self.get_object()
         password = request.data.get('password') or ''
-        if len(password) < 8:
+        # Run the platform's full password policy (MinimumLength, CommonPassword,
+        # NumericPassword, UserAttributeSimilarity from settings.AUTH_PASSWORD_VALIDATORS)
+        # so a SuperAdmin cannot bypass the same rules a self-service reset
+        # would enforce — e.g. setting "12345678" or "password123".
+        try:
+            validate_password(password, user=user)
+        except DjValidationError as exc:
             return Response(
-                {'detail': 'Password must be at least 8 characters'},
+                {'detail': ' '.join(exc.messages)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user.set_password(password)

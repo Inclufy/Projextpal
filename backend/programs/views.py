@@ -34,8 +34,14 @@ class ProgramViewSet(viewsets.ModelViewSet):
             return Program.objects.none()
 
         role = getattr(user, 'role', None)
+        # SuperAdmin defaults to own-company scope to keep the regular
+        # dashboard tenant-coherent. Cross-tenant view via ?all_tenants=1.
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
         if role == 'superadmin' or getattr(user, 'is_superuser', False):
-            queryset = Program.objects.all()
+            if all_tenants or not getattr(user, 'company_id', None):
+                queryset = Program.objects.all()
+            else:
+                queryset = Program.objects.filter(company_id=user.company_id)
         elif role == 'admin' and getattr(user, 'company', None):
             queryset = Program.objects.filter(company=user.company)
         else:
