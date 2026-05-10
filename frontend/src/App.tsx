@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,233 +21,233 @@ import FeatureGuard from '@/components/FeatureGuard';
 import { CopilotProvider, useCopilot } from "@/contexts/CopilotContext";
 import AICopilotSidebar from "@/components/AICopilotSidebar";
 
-import Registrations from '@/pages/admin-portal/Registrations';
+const Registrations = lazy(() => import('@/pages/admin-portal/Registrations'));
 
 // Existing Page Imports
-import Index from "./pages/Index";
-import ReportsPage from "./pages/reports/ReportsPage";
-import CreatePortfolio from "./pages/governance/CreatePortfolio";
-import CreateBoard from "./pages/governance/CreateBoard";
-import BoardDetail from "./pages/governance/BoardDetail";
-import CreateStakeholder from "./pages/governance/CreateStakeholder";
-import Portfolios from "./pages/governance/Portfolios";
-import PortfolioDetail from "./pages/governance/PortfolioDetail";
-import GovernanceBoards from "./pages/governance/GovernanceBoards";
-import Stakeholders from "./pages/governance/Stakeholders";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import DemoRequests from './pages/admin/DemoRequests';
-import Signup from "./pages/Signup"; 
-import TrialPending from "./pages/TrialPending";
-import VerifyEmail from "./pages/VerifyEmail";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Pricing from "./pages/Pricing";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import AIAssistant from "./pages/AIAssistant";
-import Team from "./pages/Team";
-import PostProject from "./pages/PostProject";
-import Surveys from "./pages/Surveys";
-import ProjectsOverview from "./pages/ProjectsOverview";
-import ProjectDetail from "./pages/ProjectDetail";
-import ProjectTimeline from "./pages/ProjectTimeline";
-import Checkout from "./pages/Checkout";
-import CheckoutSuccess from "./pages/AcademyCheckoutSuccess";
-import CheckoutCancel from "./pages/CheckoutCancel";
-import ProjectMilestones from "./pages/ProjectMilestones";
-import FoundationOverview from "./pages/FoundationOverview";
-import FoundationWorkflow from "./pages/FoundationWorkflow";
-import FoundationCharter from "./pages/FoundationCharter";
-import FoundationTeam from "./pages/FoundationTeam";
-import FoundationBudget from "./pages/FoundationBudget";
-import PlanningTasks from "./pages/PlanningTasks";
-import PlanningRaci from "./pages/PlanningRaci";
-import PlanningDependencies from "./pages/PlanningDependencies";
-import PlanningCalendar from "./pages/PlanningCalendar";
-import PlanningWorkflowDiagram from "./pages/PlanningWorkflowDiagram";
-import PlanningSystemIntegration from "./pages/PlanningSystemIntegration";
-import PlanningRisks from "./pages/PlanningRisks";
-import ExecutionStakeholders from "./pages/ExecutionStakeholders";
-import ExecutionNewsletters from "./pages/ExecutionNewsletters";
-import ExecutionStatusReporting from "./pages/ExecutionStatusReporting";
-import ExecutionMeeting from "./pages/ExecutionMeeting";
-import ExecutionReporting from "./pages/ExecutionReporting";
-import ExecutionGovernance from "./pages/ExecutionGovernance";
-import ExecutionDeployment from "./pages/ExecutionDeployment";
-import MonitoringAllDocuments from "./pages/MonitoringAllDocuments";
-import MonitoringStages from "./pages/MonitoringStages";
-import MonitoringMilestones from "./pages/MonitoringMilestones";
-import MonitoringTraining from "./pages/MonitoringTraining";
-import TrainingMarketplace from "./pages/TrainingMarketplace";
-import CourseDetail from "./pages/CourseDetail";
-import CourseCheckout from "./pages/CourseCheckout";
-import CourseLearningPlayer from "./pages/CourseLearningPlayer";
-import RequestQuote from "./pages/RequestQuote";
-import MonitoringLessonsSurveys from "./pages/MonitoringLessonsSurveys";
-import TimeTracking from "./pages/TimeTracking";
-import CreateProject from "./pages/CreateProject";
-import NotFound from "./pages/NotFound";
-import IntentSelection from "./pages/IntentSelection";
-import RegistrationConfirmation from "./pages/RegistrationConfirmation";
-import Demo from './pages/Demo';
-import OnboardingWizard from './pages/OnboardingWizard';
-import DemoEnvironment from './pages/DemoEnvironment';
-import SetupOnboarding from './pages/SetupOnboarding';
+const Index = lazy(() => import("./pages/Index"));
+const ReportsPage = lazy(() => import("./pages/reports/ReportsPage"));
+const CreatePortfolio = lazy(() => import("./pages/governance/CreatePortfolio"));
+const CreateBoard = lazy(() => import("./pages/governance/CreateBoard"));
+const BoardDetail = lazy(() => import("./pages/governance/BoardDetail"));
+const CreateStakeholder = lazy(() => import("./pages/governance/CreateStakeholder"));
+const Portfolios = lazy(() => import("./pages/governance/Portfolios"));
+const PortfolioDetail = lazy(() => import("./pages/governance/PortfolioDetail"));
+const GovernanceBoards = lazy(() => import("./pages/governance/GovernanceBoards"));
+const Stakeholders = lazy(() => import("./pages/governance/Stakeholders"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./pages/Login"));
+const DemoRequests = lazy(() => import('./pages/admin/DemoRequests'));
+const Signup = lazy(() => import("./pages/Signup")); 
+const TrialPending = lazy(() => import("./pages/TrialPending"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
+const AIAssistant = lazy(() => import("./pages/AIAssistant"));
+const Team = lazy(() => import("./pages/Team"));
+const PostProject = lazy(() => import("./pages/PostProject"));
+const Surveys = lazy(() => import("./pages/Surveys"));
+const ProjectsOverview = lazy(() => import("./pages/ProjectsOverview"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const ProjectTimeline = lazy(() => import("./pages/ProjectTimeline"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazy(() => import("./pages/AcademyCheckoutSuccess"));
+const CheckoutCancel = lazy(() => import("./pages/CheckoutCancel"));
+const ProjectMilestones = lazy(() => import("./pages/ProjectMilestones"));
+const FoundationOverview = lazy(() => import("./pages/FoundationOverview"));
+const FoundationWorkflow = lazy(() => import("./pages/FoundationWorkflow"));
+const FoundationCharter = lazy(() => import("./pages/FoundationCharter"));
+const FoundationTeam = lazy(() => import("./pages/FoundationTeam"));
+const FoundationBudget = lazy(() => import("./pages/FoundationBudget"));
+const PlanningTasks = lazy(() => import("./pages/PlanningTasks"));
+const PlanningRaci = lazy(() => import("./pages/PlanningRaci"));
+const PlanningDependencies = lazy(() => import("./pages/PlanningDependencies"));
+const PlanningCalendar = lazy(() => import("./pages/PlanningCalendar"));
+const PlanningWorkflowDiagram = lazy(() => import("./pages/PlanningWorkflowDiagram"));
+const PlanningSystemIntegration = lazy(() => import("./pages/PlanningSystemIntegration"));
+const PlanningRisks = lazy(() => import("./pages/PlanningRisks"));
+const ExecutionStakeholders = lazy(() => import("./pages/ExecutionStakeholders"));
+const ExecutionNewsletters = lazy(() => import("./pages/ExecutionNewsletters"));
+const ExecutionStatusReporting = lazy(() => import("./pages/ExecutionStatusReporting"));
+const ExecutionMeeting = lazy(() => import("./pages/ExecutionMeeting"));
+const ExecutionReporting = lazy(() => import("./pages/ExecutionReporting"));
+const ExecutionGovernance = lazy(() => import("./pages/ExecutionGovernance"));
+const ExecutionDeployment = lazy(() => import("./pages/ExecutionDeployment"));
+const MonitoringAllDocuments = lazy(() => import("./pages/MonitoringAllDocuments"));
+const MonitoringStages = lazy(() => import("./pages/MonitoringStages"));
+const MonitoringMilestones = lazy(() => import("./pages/MonitoringMilestones"));
+const MonitoringTraining = lazy(() => import("./pages/MonitoringTraining"));
+const TrainingMarketplace = lazy(() => import("./pages/TrainingMarketplace"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const CourseCheckout = lazy(() => import("./pages/CourseCheckout"));
+const CourseLearningPlayer = lazy(() => import("./pages/CourseLearningPlayer"));
+const RequestQuote = lazy(() => import("./pages/RequestQuote"));
+const MonitoringLessonsSurveys = lazy(() => import("./pages/MonitoringLessonsSurveys"));
+const TimeTracking = lazy(() => import("./pages/TimeTracking"));
+const CreateProject = lazy(() => import("./pages/CreateProject"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const IntentSelection = lazy(() => import("./pages/IntentSelection"));
+const RegistrationConfirmation = lazy(() => import("./pages/RegistrationConfirmation"));
+const Demo = lazy(() => import('./pages/Demo'));
+const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
+const DemoEnvironment = lazy(() => import('./pages/DemoEnvironment'));
+const SetupOnboarding = lazy(() => import('./pages/SetupOnboarding'));
 
 // Program Page Imports
-import ProgramsOverview from "./pages/ProgramsOverview";
-import CreateProgram from "./pages/CreateProgram";
-import ProgramDashboard from "./pages/ProgramDashboard";
-import ProgramBenefits from "./pages/ProgramBenefits";
-import ProgramGovernance from "./pages/ProgramGovernance";
-import ProgramResources from "./pages/ProgramResources";
-import ProgramRoadmap from "./pages/ProgramRoadmap";
-import ProgramDetail from "./pages/ProgramDetail";
+const ProgramsOverview = lazy(() => import("./pages/ProgramsOverview"));
+const CreateProgram = lazy(() => import("./pages/CreateProgram"));
+const ProgramDashboard = lazy(() => import("./pages/ProgramDashboard"));
+const ProgramBenefits = lazy(() => import("./pages/ProgramBenefits"));
+const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
+const ProgramResources = lazy(() => import("./pages/ProgramResources"));
+const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
+const ProgramDetail = lazy(() => import("./pages/ProgramDetail"));
 
 // Six Sigma / Lean Six Sigma Page Imports
-import SixSigmaSIPOC from "./pages/sixsigma/SixSigmaSIPOC";
-import SixSigmaFishbone from "./pages/sixsigma/SixSigmaFishbone";
-import SixSigmaPareto from "./pages/sixsigma/SixSigmaPareto";
-import SixSigmaControlChart from "./pages/sixsigma/SixSigmaControlChart";
-import SixSigmaDataCollection from "./pages/sixsigma/SixSigmaDataCollection";
-import SixSigmaImprove from "./pages/sixsigma/SixSigmaImprove";
-import LeanSixSigmaDMAIC from "./pages/sixsigma/LeanSixSigmaDMAIC";
-import SixSigmaVOC from "./pages/sixsigma/SixSigmaVOC";
-import SixSigmaHypothesis from "./pages/sixsigma/SixSigmaHypothesis";
-import SixSigmaSolutions from "./pages/sixsigma/SixSigmaSolutions";
-import SixSigmaFMEA from "./pages/sixsigma/SixSigmaFMEA";
-import SixSigmaPilot from "./pages/sixsigma/SixSigmaPilot";
-import SixSigmaImplementation from "./pages/sixsigma/SixSigmaImplementation";
-import SixSigmaControlPlan from "./pages/sixsigma/SixSigmaControlPlan";
-import SixSigmaTollgate from "./pages/sixsigma/SixSigmaTollgate";
-import SixSigmaClosure from "./pages/sixsigma/SixSigmaClosure";
-import SixSigmaBaseline from "./pages/sixsigma/SixSigmaBaseline";
-import SixSigmaMSA from "./pages/sixsigma/SixSigmaMSA";
-import SixSigmaRegression from "./pages/sixsigma/SixSigmaRegression";
-import SixSigmaRootCause from "./pages/sixsigma/SixSigmaRootCause";
-import SixSigmaSPC from "./pages/sixsigma/SixSigmaSPC";
-import SixSigmaMonitoring from "./pages/sixsigma/SixSigmaMonitoring";
+const SixSigmaSIPOC = lazy(() => import("./pages/sixsigma/SixSigmaSIPOC"));
+const SixSigmaFishbone = lazy(() => import("./pages/sixsigma/SixSigmaFishbone"));
+const SixSigmaPareto = lazy(() => import("./pages/sixsigma/SixSigmaPareto"));
+const SixSigmaControlChart = lazy(() => import("./pages/sixsigma/SixSigmaControlChart"));
+const SixSigmaDataCollection = lazy(() => import("./pages/sixsigma/SixSigmaDataCollection"));
+const SixSigmaImprove = lazy(() => import("./pages/sixsigma/SixSigmaImprove"));
+const LeanSixSigmaDMAIC = lazy(() => import("./pages/sixsigma/LeanSixSigmaDMAIC"));
+const SixSigmaVOC = lazy(() => import("./pages/sixsigma/SixSigmaVOC"));
+const SixSigmaHypothesis = lazy(() => import("./pages/sixsigma/SixSigmaHypothesis"));
+const SixSigmaSolutions = lazy(() => import("./pages/sixsigma/SixSigmaSolutions"));
+const SixSigmaFMEA = lazy(() => import("./pages/sixsigma/SixSigmaFMEA"));
+const SixSigmaPilot = lazy(() => import("./pages/sixsigma/SixSigmaPilot"));
+const SixSigmaImplementation = lazy(() => import("./pages/sixsigma/SixSigmaImplementation"));
+const SixSigmaControlPlan = lazy(() => import("./pages/sixsigma/SixSigmaControlPlan"));
+const SixSigmaTollgate = lazy(() => import("./pages/sixsigma/SixSigmaTollgate"));
+const SixSigmaClosure = lazy(() => import("./pages/sixsigma/SixSigmaClosure"));
+const SixSigmaBaseline = lazy(() => import("./pages/sixsigma/SixSigmaBaseline"));
+const SixSigmaMSA = lazy(() => import("./pages/sixsigma/SixSigmaMSA"));
+const SixSigmaRegression = lazy(() => import("./pages/sixsigma/SixSigmaRegression"));
+const SixSigmaRootCause = lazy(() => import("./pages/sixsigma/SixSigmaRootCause"));
+const SixSigmaSPC = lazy(() => import("./pages/sixsigma/SixSigmaSPC"));
+const SixSigmaMonitoring = lazy(() => import("./pages/sixsigma/SixSigmaMonitoring"));
 
 // PRINCE2 Methodology Page Imports
-import Prince2Dashboard from "./pages/prince2/Prince2Dashboard";
-import Prince2ProjectBoard from "./pages/prince2/Prince2ProjectBoard";
-import Prince2StageGate from "./pages/prince2/Prince2StageGate";
-import Prince2BusinessCase from "./pages/prince2/Prince2BusinessCase";
-import Prince2HighlightReport from "./pages/prince2/Prince2HighlightReport";
-import Prince2StagePlan from "./pages/prince2/Prince2StagePlan";
-import Prince2WorkPackages from "./pages/prince2/Prince2WorkPackages";
-import Prince2ProjectBrief from "./pages/prince2/Prince2ProjectBrief";
-import Prince2Tolerances from "./pages/prince2/Prince2Tolerances";
-import Prince2Governance from "./pages/prince2/Prince2Governance";
-import Prince2ProjectClosure from "./pages/prince2/Prince2ProjectClosure";
+const Prince2Dashboard = lazy(() => import("./pages/prince2/Prince2Dashboard"));
+const Prince2ProjectBoard = lazy(() => import("./pages/prince2/Prince2ProjectBoard"));
+const Prince2StageGate = lazy(() => import("./pages/prince2/Prince2StageGate"));
+const Prince2BusinessCase = lazy(() => import("./pages/prince2/Prince2BusinessCase"));
+const Prince2HighlightReport = lazy(() => import("./pages/prince2/Prince2HighlightReport"));
+const Prince2StagePlan = lazy(() => import("./pages/prince2/Prince2StagePlan"));
+const Prince2WorkPackages = lazy(() => import("./pages/prince2/Prince2WorkPackages"));
+const Prince2ProjectBrief = lazy(() => import("./pages/prince2/Prince2ProjectBrief"));
+const Prince2Tolerances = lazy(() => import("./pages/prince2/Prince2Tolerances"));
+const Prince2Governance = lazy(() => import("./pages/prince2/Prince2Governance"));
+const Prince2ProjectClosure = lazy(() => import("./pages/prince2/Prince2ProjectClosure"));
 
 // Scrum Pages
-import ScrumOverview from './pages/scrum/ScrumOverview';
-import ScrumTeam from './pages/scrum/ScrumTeam';
-import ScrumBudget from './pages/scrum/ScrumBudget';
-import ScrumBacklog from './pages/scrum/ScrumBacklog';
-import ScrumSprintBoard from './pages/scrum/ScrumSprintBoard';
-import ScrumVelocity from './pages/scrum/ScrumVelocity';
-import ScrumDefinitionOfDone from './pages/scrum/ScrumDefinitionOfDone';
-import ScrumDailyStandup from './pages/scrum/ScrumDailyStandup';
-import ScrumRetrospective from './pages/scrum/ScrumRetrospective';
-import ScrumSprintPlanning from '@/pages/scrum/ScrumSprintPlanning';
-import ScrumSprintReview from '@/pages/scrum/ScrumSprintReview';
-import ScrumIncrements from '@/pages/scrum/ScrumIncrements';
+const ScrumOverview = lazy(() => import('./pages/scrum/ScrumOverview'));
+const ScrumTeam = lazy(() => import('./pages/scrum/ScrumTeam'));
+const ScrumBudget = lazy(() => import('./pages/scrum/ScrumBudget'));
+const ScrumBacklog = lazy(() => import('./pages/scrum/ScrumBacklog'));
+const ScrumSprintBoard = lazy(() => import('./pages/scrum/ScrumSprintBoard'));
+const ScrumVelocity = lazy(() => import('./pages/scrum/ScrumVelocity'));
+const ScrumDefinitionOfDone = lazy(() => import('./pages/scrum/ScrumDefinitionOfDone'));
+const ScrumDailyStandup = lazy(() => import('./pages/scrum/ScrumDailyStandup'));
+const ScrumRetrospective = lazy(() => import('./pages/scrum/ScrumRetrospective'));
+const ScrumSprintPlanning = lazy(() => import('@/pages/scrum/ScrumSprintPlanning'));
+const ScrumSprintReview = lazy(() => import('@/pages/scrum/ScrumSprintReview'));
+const ScrumIncrements = lazy(() => import('@/pages/scrum/ScrumIncrements'));
 
 // Kanban Pages
-import KanbanOverview from './pages/kanban/KanbanOverview';
-import KanbanTeam from './pages/kanban/KanbanTeam';
-import KanbanBudget from './pages/kanban/KanbanBudget';
-import KanbanBoardConfiguration from './pages/kanban/KanbanBoardConfiguration';
-import KanbanWIPLimits from './pages/kanban/KanbanWIPLimits';
-import KanbanBoard from './pages/kanban/KanbanBoard';
-import KanbanFlowMetrics from './pages/kanban/KanbanFlowMetrics';
-import KanbanCFD from './pages/kanban/KanbanCFD';
-import KanbanContinuousImprovement from './pages/kanban/KanbanContinuousImprovement';
-import KanbanWorkItems from './pages/kanban/KanbanWorkItems';
-import KanbanBlockedItems from './pages/kanban/KanbanBlockedItems';
-import KanbanWorkPolicies from './pages/kanban/KanbanWorkPolicies';
+const KanbanOverview = lazy(() => import('./pages/kanban/KanbanOverview'));
+const KanbanTeam = lazy(() => import('./pages/kanban/KanbanTeam'));
+const KanbanBudget = lazy(() => import('./pages/kanban/KanbanBudget'));
+const KanbanBoardConfiguration = lazy(() => import('./pages/kanban/KanbanBoardConfiguration'));
+const KanbanWIPLimits = lazy(() => import('./pages/kanban/KanbanWIPLimits'));
+const KanbanBoard = lazy(() => import('./pages/kanban/KanbanBoard'));
+const KanbanFlowMetrics = lazy(() => import('./pages/kanban/KanbanFlowMetrics'));
+const KanbanCFD = lazy(() => import('./pages/kanban/KanbanCFD'));
+const KanbanContinuousImprovement = lazy(() => import('./pages/kanban/KanbanContinuousImprovement'));
+const KanbanWorkItems = lazy(() => import('./pages/kanban/KanbanWorkItems'));
+const KanbanBlockedItems = lazy(() => import('./pages/kanban/KanbanBlockedItems'));
+const KanbanWorkPolicies = lazy(() => import('./pages/kanban/KanbanWorkPolicies'));
 
 // Agile imports
-import AgileOverview from './pages/agile/AgileOverview';
-import AgileTeam from './pages/agile/AgileTeam';
-import AgileBudget from './pages/agile/AgileBudget';
-import AgileProductVision from './pages/agile/AgileProductVision';
-import AgileUserPersonas from './pages/agile/AgileUserPersonas';
-import AgileBacklog from './pages/agile/AgileBacklog';
-import AgileIterationBoard from './pages/agile/AgileIterationBoard';
-import AgileReleasePlanning from './pages/agile/AgileReleasePlanning';
-import AgileDailyProgress from './pages/agile/AgileDailyProgress';
-import AgileRetrospective from './pages/agile/AgileRetrospective';
-import AgileVelocity from './pages/agile/AgileVelocity';
-import AgileDefinitionOfDone from './pages/agile/AgileDefinitionOfDone';
+const AgileOverview = lazy(() => import('./pages/agile/AgileOverview'));
+const AgileTeam = lazy(() => import('./pages/agile/AgileTeam'));
+const AgileBudget = lazy(() => import('./pages/agile/AgileBudget'));
+const AgileProductVision = lazy(() => import('./pages/agile/AgileProductVision'));
+const AgileUserPersonas = lazy(() => import('./pages/agile/AgileUserPersonas'));
+const AgileBacklog = lazy(() => import('./pages/agile/AgileBacklog'));
+const AgileIterationBoard = lazy(() => import('./pages/agile/AgileIterationBoard'));
+const AgileReleasePlanning = lazy(() => import('./pages/agile/AgileReleasePlanning'));
+const AgileDailyProgress = lazy(() => import('./pages/agile/AgileDailyProgress'));
+const AgileRetrospective = lazy(() => import('./pages/agile/AgileRetrospective'));
+const AgileVelocity = lazy(() => import('./pages/agile/AgileVelocity'));
+const AgileDefinitionOfDone = lazy(() => import('./pages/agile/AgileDefinitionOfDone'));
 
 // LSS Green imports
-import LSSGreenOverview from './pages/lss-green/LSSGreenOverview';
-import LSSGreenPhases from './pages/lss-green/LSSGreenPhases';
-import LSSGreenTasks from './pages/lss-green/LSSGreenTasks';
-import LSSGreenTimeline from './pages/lss-green/LSSGreenTimeline';
-import LSSGreenMetrics from './pages/lss-green/LSSGreenMetrics';
-import LSSGreenMeasurements from './pages/lss-green/LSSGreenMeasurements';
+const LSSGreenOverview = lazy(() => import('./pages/lss-green/LSSGreenOverview'));
+const LSSGreenPhases = lazy(() => import('./pages/lss-green/LSSGreenPhases'));
+const LSSGreenTasks = lazy(() => import('./pages/lss-green/LSSGreenTasks'));
+const LSSGreenTimeline = lazy(() => import('./pages/lss-green/LSSGreenTimeline'));
+const LSSGreenMetrics = lazy(() => import('./pages/lss-green/LSSGreenMetrics'));
+const LSSGreenMeasurements = lazy(() => import('./pages/lss-green/LSSGreenMeasurements'));
 
 // LSS Black imports
-import LSSBlackOverview from './pages/lss-black/LSSBlackOverview';
-import LSSBlackPhases from './pages/lss-black/LSSBlackPhases';
-import LSSBlackTasks from './pages/lss-black/LSSBlackTasks';
-import LSSBlackTimeline from './pages/lss-black/LSSBlackTimeline';
-import LSSBlackHypothesisTests from './pages/lss-black/LSSBlackHypothesisTests';
-import LSSBlackDOE from './pages/lss-black/LSSBlackDOE';
-import LSSBlackControlPlans from './pages/lss-black/LSSBlackControlPlans';
-import LSSBlackSPCCharts from './pages/lss-black/LSSBlackSPCCharts';
+const LSSBlackOverview = lazy(() => import('./pages/lss-black/LSSBlackOverview'));
+const LSSBlackPhases = lazy(() => import('./pages/lss-black/LSSBlackPhases'));
+const LSSBlackTasks = lazy(() => import('./pages/lss-black/LSSBlackTasks'));
+const LSSBlackTimeline = lazy(() => import('./pages/lss-black/LSSBlackTimeline'));
+const LSSBlackHypothesisTests = lazy(() => import('./pages/lss-black/LSSBlackHypothesisTests'));
+const LSSBlackDOE = lazy(() => import('./pages/lss-black/LSSBlackDOE'));
+const LSSBlackControlPlans = lazy(() => import('./pages/lss-black/LSSBlackControlPlans'));
+const LSSBlackSPCCharts = lazy(() => import('./pages/lss-black/LSSBlackSPCCharts'));
 
 // Hybrid imports
-import HybridOverview from './pages/hybrid/HybridOverview';
-import HybridPhases from './pages/hybrid/HybridPhases';
-import HybridTasks from './pages/hybrid/HybridTasks';
-import HybridTimeline from './pages/hybrid/HybridTimeline';
-import HybridArtifacts from './pages/hybrid/HybridArtifacts';
-import HybridConfiguration from './pages/hybrid/HybridConfiguration';
+const HybridOverview = lazy(() => import('./pages/hybrid/HybridOverview'));
+const HybridPhases = lazy(() => import('./pages/hybrid/HybridPhases'));
+const HybridTasks = lazy(() => import('./pages/hybrid/HybridTasks'));
+const HybridTimeline = lazy(() => import('./pages/hybrid/HybridTimeline'));
+const HybridArtifacts = lazy(() => import('./pages/hybrid/HybridArtifacts'));
+const HybridConfiguration = lazy(() => import('./pages/hybrid/HybridConfiguration'));
 
 // Waterfall imports
-import WaterfallOverview from './pages/waterfall/WaterfallOverview';
-import WaterfallTeam from './pages/waterfall/WaterfallTeam';
-import WaterfallBudget from './pages/waterfall/WaterfallBudget';
-import WaterfallRequirements from './pages/waterfall/WaterfallRequirements';
-import WaterfallDesign from './pages/waterfall/WaterfallDesign';
-import WaterfallDevelopment from './pages/waterfall/WaterfallDevelopment';
-import WaterfallTesting from './pages/waterfall/WaterfallTesting';
-import WaterfallDeployment from './pages/waterfall/WaterfallDeployment';
-import WaterfallMaintenance from './pages/waterfall/WaterfallMaintenance';
-import WaterfallGantt from './pages/waterfall/WaterfallGantt';
-import WaterfallMilestones from './pages/waterfall/WaterfallMilestones';
-import WaterfallChangeRequests from './pages/waterfall/WaterfallChangeRequests';
-import WaterfallPhaseGate from './pages/waterfall/WaterfallPhaseGate';
-import WaterfallRisks from './pages/waterfall/WaterfallRisks';
-import WaterfallIssues from './pages/waterfall/WaterfallIssues';
-import WaterfallDeliverables from './pages/waterfall/WaterfallDeliverables';
-import WaterfallBaselines from './pages/waterfall/WaterfallBaselines';
+const WaterfallOverview = lazy(() => import('./pages/waterfall/WaterfallOverview'));
+const WaterfallTeam = lazy(() => import('./pages/waterfall/WaterfallTeam'));
+const WaterfallBudget = lazy(() => import('./pages/waterfall/WaterfallBudget'));
+const WaterfallRequirements = lazy(() => import('./pages/waterfall/WaterfallRequirements'));
+const WaterfallDesign = lazy(() => import('./pages/waterfall/WaterfallDesign'));
+const WaterfallDevelopment = lazy(() => import('./pages/waterfall/WaterfallDevelopment'));
+const WaterfallTesting = lazy(() => import('./pages/waterfall/WaterfallTesting'));
+const WaterfallDeployment = lazy(() => import('./pages/waterfall/WaterfallDeployment'));
+const WaterfallMaintenance = lazy(() => import('./pages/waterfall/WaterfallMaintenance'));
+const WaterfallGantt = lazy(() => import('./pages/waterfall/WaterfallGantt'));
+const WaterfallMilestones = lazy(() => import('./pages/waterfall/WaterfallMilestones'));
+const WaterfallChangeRequests = lazy(() => import('./pages/waterfall/WaterfallChangeRequests'));
+const WaterfallPhaseGate = lazy(() => import('./pages/waterfall/WaterfallPhaseGate'));
+const WaterfallRisks = lazy(() => import('./pages/waterfall/WaterfallRisks'));
+const WaterfallIssues = lazy(() => import('./pages/waterfall/WaterfallIssues'));
+const WaterfallDeliverables = lazy(() => import('./pages/waterfall/WaterfallDeliverables'));
+const WaterfallBaselines = lazy(() => import('./pages/waterfall/WaterfallBaselines'));
 
 // ============================================
 // Admin Portal Imports
 // ============================================
-import AdminPortalLayout from './pages/admin-portal/AdminPortalLayout';
-import AdminDashboard from './pages/admin-portal/AdminDashboard';
-import UserManagement from './pages/admin-portal/UserManagement';
-import TenantManagement from './pages/admin-portal/OrganizationManagement';
-import TenantProvisioning from './pages/admin-portal/TenantProvisioning';
-import TenantEdit from './pages/admin-portal/TenantEdit';
-import IntegrationManagement from './pages/admin-portal/IntegrationManagement';
-import AuditLogs from './pages/admin-portal/AuditLogs';
-import SystemSettings from './pages/admin-portal/SystemSettings';
-import PlanManagement from '@/pages/admin/PlanManagement';
-import TwoFactorAuth from "./pages/settings/TwoFactorAuth";
-import BiometricAuth from "./pages/settings/BiometricAuth";
-import AdminTrainingManagement from '@/pages/admin-portal/AdminTrainingManagement';
-import InvoiceManagement from '@/pages/admin-portal/InvoiceManagement';
-import SubscriptionManagement from '@/pages/admin-portal/SubscriptionManagement';
-import MonitoringDashboard from '@/pages/admin-portal/MonitoringDashboard';
+const AdminPortalLayout = lazy(() => import('./pages/admin-portal/AdminPortalLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin-portal/AdminDashboard'));
+const UserManagement = lazy(() => import('./pages/admin-portal/UserManagement'));
+const TenantManagement = lazy(() => import('./pages/admin-portal/OrganizationManagement'));
+const TenantProvisioning = lazy(() => import('./pages/admin-portal/TenantProvisioning'));
+const TenantEdit = lazy(() => import('./pages/admin-portal/TenantEdit'));
+const IntegrationManagement = lazy(() => import('./pages/admin-portal/IntegrationManagement'));
+const AuditLogs = lazy(() => import('./pages/admin-portal/AuditLogs'));
+const SystemSettings = lazy(() => import('./pages/admin-portal/SystemSettings'));
+const PlanManagement = lazy(() => import('@/pages/admin/PlanManagement'));
+const TwoFactorAuth = lazy(() => import("./pages/settings/TwoFactorAuth"));
+const BiometricAuth = lazy(() => import("./pages/settings/BiometricAuth"));
+const AdminTrainingManagement = lazy(() => import('@/pages/admin-portal/AdminTrainingManagement'));
+const InvoiceManagement = lazy(() => import('@/pages/admin-portal/InvoiceManagement'));
+const SubscriptionManagement = lazy(() => import('@/pages/admin-portal/SubscriptionManagement'));
+const MonitoringDashboard = lazy(() => import('@/pages/admin-portal/MonitoringDashboard'));
 
 // ============================================
 // Query Client
@@ -451,7 +452,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-            <Routes>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading…</div>}><Routes>
               {/* ============================================ */}
               {/* Public Routes - Landing & Login              */}
               {/* ============================================ */}
@@ -950,7 +951,7 @@ const App = () => (
 
               {/* Catch-all - MUST be last */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+            </Routes></Suspense>
         </TooltipProvider>
       </AuthProvider>
   </QueryClientProvider>

@@ -62,13 +62,20 @@ jobs:
       - run: npm run build
       - name: Bundle size guard
         run: |
-          # Flag main bundle >3 MB as failure (current baseline ~5 MB pending refactor).
-          # Adjust threshold downward as code-splitting work progresses.
-          MAIN=$(find dist/assets -name "index-*.js" -not -name "*.map" | head -1)
-          SIZE=$(stat -f%z "$MAIN" 2>/dev/null || stat -c%s "$MAIN" 2>/dev/null)
-          echo "Main bundle: $MAIN — $SIZE bytes"
-          if [ "$SIZE" -gt 5500000 ]; then
-            echo "::error::Main bundle ${SIZE} bytes exceeds 5.5 MB regression cap"
+          # Cap combined size of all index-*.js entry chunks (excludes lazy
+          # page chunks + vendor chunks). Post code-split baseline: ~1.5 MB.
+          # Cap at 2 MB to catch regressions without blocking small growth.
+          # If lazy() unwinds, the main chunk balloons back to 5 MB and trips this.
+          TOTAL=0
+          for f in dist/assets/index-*.js; do
+            [ -f "$f" ] || continue
+            S=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null)
+            TOTAL=$((TOTAL + S))
+            echo "  $f: $S bytes"
+          done
+          echo "Combined index-*.js: $TOTAL bytes"
+          if [ "$TOTAL" -gt 2000000 ]; then
+            echo "::error::Combined index-*.js ${TOTAL} bytes exceeds 2 MB regression cap. Did lazy() routing unwind?"
             exit 1
           fi
 
