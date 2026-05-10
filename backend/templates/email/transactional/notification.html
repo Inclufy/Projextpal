@@ -1,0 +1,21 @@
+{% extends "email/base.html" %}
+{% block content %}
+  <h1>{{ title_override|default:i18n.subject }}</h1>
+  <p>{{ greeting|default:i18n.greeting|default:"" }}</p>
+  {% if body_override %}
+    <p>{{ body_override }}</p>
+  {% endif %}
+
+  {% if url %}
+    <div class="btn-wrap">
+      <a href="{{ url }}" class="btn">{{ i18n.cta }}</a>
+    </div>
+
+    <p style="margin-top:8px;font-size:14px;color:#6b5b8a;">{{ i18n.fallback_intro }}</p>
+    <div class="btn-fallback">{{ url }}</div>
+  {% endif %}
+
+  <div class="info-card">
+    {{ i18n.info }}
+  </div>
+{% endblock %}

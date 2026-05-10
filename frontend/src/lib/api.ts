@@ -140,4 +140,41 @@ export const programsApi = {
   getResources: (programId: string | number) => api.get<any[]>(`/programs/${programId}/resources/`),
 };
 
+// Notifications API
+export interface Notification {
+  id: number;
+  kind: 'task_assigned' | 'comment_mention' | 'project_member_added' | 'deadline_approaching';
+  title: string;
+  body: string;
+  target_url: string;
+  payload: Record<string, unknown>;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationPreferences {
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+  email_task_assigned: boolean;
+  email_comment_mention: boolean;
+  email_project_member_added: boolean;
+  email_deadline_approaching: boolean;
+  updated_at: string;
+}
+
+export const notificationsApi = {
+  list: (unreadOnly = false) =>
+    api.get<{ results?: Notification[] } | Notification[]>(
+      '/notifications/',
+      unreadOnly ? { unread: '1' } : undefined,
+    ),
+  unreadCount: () => api.get<{ unread: number }>('/notifications/unread-count/'),
+  markRead: (id: number) => api.post<Notification>(`/notifications/${id}/read/`, {}),
+  markAllRead: () => api.post<{ marked: number }>('/notifications/mark-all-read/', {}),
+  getPreferences: () => api.get<NotificationPreferences>('/notifications/preferences/'),
+  updatePreferences: (data: Partial<NotificationPreferences>) =>
+    api.patch<NotificationPreferences>('/notifications/preferences/', data),
+};
+
 export default api;

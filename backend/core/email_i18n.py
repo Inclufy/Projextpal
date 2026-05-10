@@ -161,6 +161,32 @@ _TEMPLATES = {
             "info": "Vous avez déjà accepté cette invitation ? Vous pouvez ignorer cet e-mail.",
         },
     },
+    # ---- Notification engine (4 events) ----
+    # All 4 share the same template; the per-kind strings drive the subject + CTA label.
+    "notification_task_assigned": {
+        "en": {"subject": "New task assigned to you", "cta": "Open task", "info": "You can manage your notification preferences in account settings."},
+        "nl": {"subject": "Nieuwe taak aan jou toegewezen", "cta": "Open taak", "info": "Je kunt je notificatievoorkeuren beheren in je accountinstellingen."},
+        "ar": {"subject": "تم تعيين مهمة جديدة لك", "cta": "افتح المهمة", "info": "يمكنك إدارة تفضيلات الإشعارات في إعدادات الحساب."},
+        "fr": {"subject": "Nouvelle tâche qui vous est assignée", "cta": "Ouvrir la tâche", "info": "Vous pouvez gérer vos préférences de notification dans les paramètres du compte."},
+    },
+    "notification_comment_mention": {
+        "en": {"subject": "You were mentioned in a comment", "cta": "View comment", "info": "You can manage your notification preferences in account settings."},
+        "nl": {"subject": "Je bent genoemd in een opmerking", "cta": "Bekijk opmerking", "info": "Je kunt je notificatievoorkeuren beheren in je accountinstellingen."},
+        "ar": {"subject": "تم ذكرك في تعليق", "cta": "عرض التعليق", "info": "يمكنك إدارة تفضيلات الإشعارات في إعدادات الحساب."},
+        "fr": {"subject": "Vous avez été mentionné dans un commentaire", "cta": "Voir le commentaire", "info": "Vous pouvez gérer vos préférences de notification dans les paramètres du compte."},
+    },
+    "notification_project_member_added": {
+        "en": {"subject": "You've been added to a project", "cta": "Open project", "info": "You can manage your notification preferences in account settings."},
+        "nl": {"subject": "Je bent toegevoegd aan een project", "cta": "Open project", "info": "Je kunt je notificatievoorkeuren beheren in je accountinstellingen."},
+        "ar": {"subject": "تمت إضافتك إلى مشروع", "cta": "افتح المشروع", "info": "يمكنك إدارة تفضيلات الإشعارات في إعدادات الحساب."},
+        "fr": {"subject": "Vous avez été ajouté à un projet", "cta": "Ouvrir le projet", "info": "Vous pouvez gérer vos préférences de notification dans les paramètres du compte."},
+    },
+    "notification_deadline_approaching": {
+        "en": {"subject": "Deadline approaching", "cta": "Open task", "info": "You can manage your notification preferences in account settings."},
+        "nl": {"subject": "Deadline nadert", "cta": "Open taak", "info": "Je kunt je notificatievoorkeuren beheren in je accountinstellingen."},
+        "ar": {"subject": "اقتراب الموعد النهائي", "cta": "افتح المهمة", "info": "يمكنك إدارة تفضيلات الإشعارات في إعدادات الحساب."},
+        "fr": {"subject": "Échéance approchant", "cta": "Ouvrir la tâche", "info": "Vous pouvez gérer vos préférences de notification dans les paramètres du compte."},
+    },
     "invoice": {
         "en": {
             "subject": "Invoice {number} from ProjeXtPal",

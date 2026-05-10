@@ -647,3 +647,50 @@ docker exec -i backend python3 manage.py shell \
 
 If either gate fails, roll back with `git revert <sha> && docker compose up -d --force-recreate --no-deps backend`.
 
+---
+
+## 🔔 Notification Engine (added 2026-05-10, Solid v1)
+
+App: `backend/notifications/` — wires 4 in-product events into branded i18n emails (using the existing `core.email_send` helper) AND an in-app bell-icon UI.
+
+| Event | Source | Trigger |
+|------|--------|---------|
+| Task assigned | `projects.Task` | post_save when `assigned_to` changes |
+| Comment mention | `kanban.CardComment` | post_save, parses `@username` |
+| Project member added | `projects.ProjectTeam` | post_save on create with `is_active=True` |
+| Deadline approaching | `projects.Task.due_date` | daily cron via `manage.py send_deadline_notifications` |
+
+### Deploy steps
+
+```bash
+# 1. Run migration (notifications app is new)
+docker exec projextpal-backend-prod python3 manage.py makemigrations notifications
+docker exec projextpal-backend-prod python3 manage.py migrate notifications
+
+# 2. Tests should pass
+docker exec projextpal-backend-prod python3 manage.py test notifications -v 2
+
+# 3. Wire the cron for deadlines (host cron, not container)
+# Add to /etc/cron.d/projextpal:
+#   30 7 * * * docker exec projextpal-backend-prod python3 manage.py send_deadline_notifications
+
+# 4. Frontend integration (manual, not blocking)
+# Mount <NotificationBell /> in the navbar where the user-menu lives.
+# Component is at frontend/src/components/NotificationBell.tsx — drop-in.
+```
+
+### REST endpoints
+
+```
+GET    /api/v1/notifications/                  list (?unread=1)
+GET    /api/v1/notifications/unread-count/     bell-badge count
+POST   /api/v1/notifications/{id}/read/        mark single as read
+POST   /api/v1/notifications/mark-all-read/    mark all
+GET    /api/v1/notifications/preferences/      current user prefs
+PATCH  /api/v1/notifications/preferences/      update
+```
+
+### Per-user opt-out
+
+`NotificationPreference` table — defaults to all-on. Users disable individual events via the preferences endpoint. Opt-out suppresses email but in-app bell still receives it.
+

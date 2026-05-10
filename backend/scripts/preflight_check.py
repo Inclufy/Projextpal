@@ -31,6 +31,8 @@ from django.db import connection, transaction
 CRITICAL_TABLES = [
     "accounts_company",
     "accounts_customuser",
+    "notifications_notification",
+    "notifications_notificationpreference",
 ]
 
 
@@ -183,6 +185,67 @@ def check_email_config() -> list[str]:
 
 
 # ----------------------------------------------------------------------
+# 5. NOTIFICATION DISPATCHER (rolled-back insert + email render)
+# ----------------------------------------------------------------------
+
+def check_notification_dispatcher() -> list[str]:
+    issues = []
+    print("→ Notification engine check (rolled back)")
+    from accounts.models import CustomUser
+    from django.db import transaction
+    from django.template.loader import render_to_string
+
+    # 1. Render check — all 4 notification kinds
+    from core.email_i18n import SUPPORTED_LANGS, get_email_context
+    kinds = [
+        "notification_task_assigned",
+        "notification_comment_mention",
+        "notification_project_member_added",
+        "notification_deadline_approaching",
+    ]
+    for k in kinds:
+        for lang in SUPPORTED_LANGS:
+            try:
+                ctx = get_email_context(k, lang=lang, name="X")
+                ctx["url"] = "https://projextpal.com/x"
+                ctx["expires_text"] = ""
+                html = render_to_string("email/transactional/notification.html", ctx)
+                if "ProjeXtPal" not in html:
+                    issues.append(f"  ✗ {k}/{lang}: missing brand wordmark")
+            except Exception as e:
+                issues.append(f"  ✗ {k}/{lang}: {type(e).__name__}: {e}")
+
+    # 2. Dispatcher creates a Notification row (rolled back)
+    sentinel_email = "preflight+notify@projextpal.test"
+    try:
+        with transaction.atomic():
+            user = CustomUser.objects.create(
+                username=sentinel_email, email=sentinel_email, is_active=False, role="admin",
+            )
+            from notifications.dispatcher import dispatch
+            from notifications.models import NotificationKind
+            n = dispatch(
+                recipient=user,
+                kind=NotificationKind.TASK_ASSIGNED,
+                title="preflight",
+                target_url="https://projextpal.com/preflight",
+                send_email=False,
+            )
+            if not n or not n.pk:
+                issues.append("  ✗ dispatcher returned no Notification row")
+            raise transaction.TransactionManagementError("__preflight_rollback__")
+    except transaction.TransactionManagementError as e:
+        if "__preflight_rollback__" not in str(e):
+            issues.append(f"  ✗ Unexpected dispatcher tx error: {e}")
+    except Exception as e:
+        issues.append(f"  ✗ Notification dispatcher failed: {type(e).__name__}: {e}")
+
+    if not issues:
+        print(f"  ✓ {len(kinds) * len(SUPPORTED_LANGS)} variants render + dispatcher healthy")
+    return issues
+
+
+# ----------------------------------------------------------------------
 # RUN ALL
 # ----------------------------------------------------------------------
 
@@ -192,7 +255,7 @@ def main() -> int:
     print("=" * 60)
 
     all_issues: list[str] = []
-    for fn in (check_email_config, check_schema_drift, check_signup_insert, check_email_render):
+    for fn in (check_email_config, check_schema_drift, check_signup_insert, check_email_render, check_notification_dispatcher):
         try:
             all_issues.extend(fn())
         except Exception as e:
