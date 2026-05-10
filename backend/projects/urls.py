@@ -48,15 +48,23 @@ router.register(r'budget-items', BudgetItemViewSet, basename='budget-item')
 router.register(r"", ProjectViewSet, basename="project")  # ← MOVED TO END
 
 urlpatterns = [
-    path("", include(router.urls)),
-    path("", include("projects.document_urls")),
-    path("", include("projects.training_material_urls")),
-    
+    # IMPORTANT: explicit paths must be matched BEFORE the router catch-all
+    # (`router.register(r"", ProjectViewSet)` generates a `<pk>/` pattern
+    # that would otherwise grab "methodologies", "documents", etc. as if
+    # they were project IDs and return 404).
+
     # Budget overview (custom route)
     path('budget/overview/', BudgetOverviewViewSet.as_view({'get': 'list'}), name='budget-overview'),
-    
+
     # Methodology URLs
     path('methodologies/', MethodologyListView.as_view(), name='methodology-list'),
     path('methodologies/<str:code>/', MethodologyDetailView.as_view(), name='methodology-detail'),
     path('methodologies-templates/', MethodologyTemplateView.as_view(), name='methodology-templates'),
+
+    # Documents and training materials
+    path("", include("projects.document_urls")),
+    path("", include("projects.training_material_urls")),
+
+    # Catch-all router (projects/<pk>/) goes LAST
+    path("", include(router.urls)),
 ]

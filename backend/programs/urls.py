@@ -12,11 +12,15 @@ from .views import (
 )
 
 # Router
+# IMPORTANT: register specific prefixes BEFORE the empty-prefix catch-all,
+# otherwise ProgramViewSet's <pk>/ pattern would match "budget" as if it
+# were a program ID and return 404. (Same fix pattern as projects/urls.py.)
 router = DefaultRouter()
-router.register(r'', ProgramViewSet, basename='program')
 router.register(r'budget', ProgramBudgetViewSet, basename='program-budget')
 router.register(r'budget-categories', ProgramBudgetCategoryViewSet, basename='program-budget-category')
 router.register(r'budget-items', ProgramBudgetItemViewSet, basename='program-budget-item')
+# Catch-all (programs/<pk>/) registered LAST
+router.register(r'', ProgramViewSet, basename='program')
 
 urlpatterns = [
     path('', include(router.urls)),
