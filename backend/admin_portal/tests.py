@@ -137,6 +137,67 @@ class AdminUserResendInviteTest(TestCase):
         self.assertIn("ProjeXtPal", mail.outbox[0].subject)
 
 
+class AdminPortalTabsSmokeTest(TestCase):
+    """One test per Admin Portal tab — hits the primary GET endpoint and
+    asserts it responds with 200 (or 404 if not implemented — flagged but
+    not failed, so we know which features need work).
+
+    Catches the class of bug found on 2026-05-10 where the Admin Portal
+    UI calls endpoints that the backend doesn't expose."""
+
+    # endpoint → (tab label, "blocker" if true makes the test fail on 500)
+    TAB_ENDPOINTS = [
+        ("/api/v1/admin/stats/",            "Dashboard"),
+        ("/api/v1/admin/users/",            "Users"),
+        ("/api/v1/admin/tenants/",          "Organizations"),
+        ("/api/v1/admin/plans/",            "Plans & Pricing"),
+        ("/api/v1/admin/logs/",             "Audit Logs"),
+        ("/api/v1/admin/invoices/",         "Invoices"),
+        ("/api/v1/admin/invoice-settings/", "Invoice settings"),
+        ("/api/v1/admin/settings/",         "Settings"),
+        ("/api/v1/admin/training/courses/",     "Training/Courses"),
+        ("/api/v1/admin/training/enrollments/", "Training/Enrollments"),
+        ("/api/v1/admin/training/quotes/",      "Training/Quotes"),
+        ("/api/v1/admin/training/analytics/",   "Training/Analytics"),
+    ]
+
+    def setUp(self):
+        self.company = Company.objects.create(name="adminsmoke")
+        self.admin = User.objects.create_user(
+            username="su@example.com", email="su@example.com",
+            password="x", first_name="Super", role="superadmin",
+            company=self.company, is_active=True, is_staff=True, is_superuser=True,
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(self.admin)
+
+    def test_no_admin_endpoint_5xxs(self):
+        """A 500 on any admin endpoint is a demo blocker — fail loudly."""
+        five_xx = []
+        for path, label in self.TAB_ENDPOINTS:
+            r = self.client.get(path)
+            if r.status_code >= 500:
+                five_xx.append(f"{label} ({path}) → {r.status_code}\n  {r.content[:200]}")
+        self.assertEqual(five_xx, [],
+            "Admin portal tabs returning 5xx — these are demo blockers:\n" + "\n".join(five_xx))
+
+    def test_no_admin_endpoint_404s(self):
+        """A 404 on a tab means the page will appear empty/broken to admins.
+        We flag these but treat them as warnings (some endpoints may be
+        placeholders for unbuilt features). Update this list as the
+        backend grows."""
+        not_found = []
+        for path, label in self.TAB_ENDPOINTS:
+            r = self.client.get(path)
+            if r.status_code == 404:
+                not_found.append(f"{label} ({path})")
+        # Whitelist of endpoints we know are not yet implemented:
+        EXPECTED_MISSING: set[str] = set()
+        unexpected = [p for p in not_found if p.split(" ")[0] not in EXPECTED_MISSING]
+        self.assertEqual(unexpected, [],
+            f"Admin portal tabs returning 404 unexpectedly:\n" + "\n".join(unexpected))
+
+
 class AdminUserPermissionTest(TestCase):
     """Non-admin users must NOT be able to call password actions."""
 
