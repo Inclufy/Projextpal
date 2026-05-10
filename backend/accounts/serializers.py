@@ -142,7 +142,7 @@ class PublicAdminRegisterSerializer(serializers.Serializer):
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
-            image=validated_data.get("profile_image", None),
+            profile_image=validated_data.get("image", None),
             first_name=validated_data.get("first_name", ""),
             is_active=False,
             role="admin",
@@ -219,7 +219,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
-            image=validated_data.get("profile_image", None),
+            profile_image=validated_data.get("profile_image", None),
             first_name=validated_data.get("first_name", ""),
             is_active=False,
             role=validated_data.get("role", "pm"),
