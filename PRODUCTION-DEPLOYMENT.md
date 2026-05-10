@@ -694,3 +694,124 @@ PATCH  /api/v1/notifications/preferences/      update
 
 `NotificationPreference` table — defaults to all-on. Users disable individual events via the preferences endpoint. Opt-out suppresses email but in-app bell still receives it.
 
+---
+
+## 💾 Backup & Disaster Recovery (added 2026-05-10)
+
+### Strategy
+
+Three-tier rotation managed by `backend/scripts/backup.sh`:
+
+| Tier | Schedule | Retention | Location |
+|------|----------|-----------|----------|
+| Daily | Every day 03:00 | 7 days | `~/projextpal-backups/daily/` |
+| Weekly | Sunday 04:00 | 4 weeks | `~/projextpal-backups/weekly/` |
+| Monthly | 1st of month 05:00 | 12 months | `~/projextpal-backups/monthly/` |
+| Verify | 1st of month 06:00 | — | restore-into-sandbox sanity check |
+| Off-site | (configure in script) | — | iCloud / rclone / external drive |
+
+### Initial setup
+
+```bash
+# 1. Make script executable
+chmod +x /Users/sami/projextpal/backend/scripts/backup.sh
+
+# 2. Run once manually to sanity-check
+/Users/sami/projextpal/backend/scripts/backup.sh
+
+# 3. Verify a test restore works
+/Users/sami/projextpal/backend/scripts/backup.sh --verify
+
+# 4. Install host crontab
+crontab -e
+# paste these 4 lines:
+0 3 * * *   /Users/sami/projextpal/backend/scripts/backup.sh
+0 4 * * 0   /Users/sami/projextpal/backend/scripts/backup.sh --weekly
+0 5 1 * *   /Users/sami/projextpal/backend/scripts/backup.sh --monthly
+0 6 1 * *   /Users/sami/projextpal/backend/scripts/backup.sh --verify
+
+# 5. Verify cron is active
+crontab -l
+```
+
+### Off-site copy (recommended)
+
+Edit `backend/scripts/backup.sh`, uncomment ONE option in the "Optional: copy to off-site location" block:
+
+- **iCloud Drive** — zero setup, ~5GB free. Backup automatically syncs to all your Apple devices.
+- **rclone to cloud** — most flexible. `brew install rclone && rclone config` then point to S3 / Backblaze B2 / Google Drive.
+- **External drive** — only copies when the drive is plugged in. Good for "cold" / ransomware-resilient backups.
+
+For a single live customer with EU GDPR concerns, iCloud Drive (Ireland data center) is the easiest compliant choice.
+
+### Restore — single backup
+
+```bash
+# Identify the snapshot you want
+ls -lh ~/projextpal-backups/daily/
+
+# Restore (DESTRUCTIVE — overwrites current production DB)
+docker exec -i projextpal-postgres-prod psql -U projextpal -d postgres \
+    -c "DROP DATABASE IF EXISTS projextpal_old; ALTER DATABASE projextpal RENAME TO projextpal_old;"
+docker exec -i projextpal-postgres-prod psql -U projextpal -d postgres \
+    -c "CREATE DATABASE projextpal;"
+gunzip -c ~/projextpal-backups/daily/projextpal-YYYYMMDD-HHMM.sql.gz | \
+    docker exec -i projextpal-postgres-prod psql -U projextpal -d projextpal
+
+docker compose -f docker-compose.production.yml restart backend
+docker exec -i projextpal-backend-prod python3 manage.py shell \
+    -c "exec(open('scripts/preflight_check.py').read())"
+```
+
+The renamed `projextpal_old` stays as a safety net. Drop it after you verify the restore: `DROP DATABASE projextpal_old;`
+
+### Verification — periodic restore drill
+
+The cron entry `0 6 1 * * .../backup.sh --verify` does this monthly:
+- Picks the latest daily backup
+- Restores it into a sandbox database `projextpal_verify_<timestamp>`
+- Counts rows in `accounts_company`
+- Drops the sandbox
+
+If verify fails, the cron job exits non-zero — the system mailer (or whatever alerting you wire in) should pick it up.
+
+### Encryption at rest (GDPR)
+
+Default backup files are gzipped but NOT encrypted. For GDPR compliance with EU customer data, add GPG encryption:
+
+```bash
+# Generate a backup key once:
+gpg --gen-key   # follow the prompts; use a strong passphrase
+
+# Edit backup.sh — wrap the pg_dump pipeline:
+# OLD: docker exec ... pg_dump | gzip > "$TARGET"
+# NEW: docker exec ... pg_dump | gzip | gpg --encrypt --recipient backup@inclufy.com > "$TARGET.gpg"
+
+# Restore needs the matching private key:
+# gpg --decrypt backup.sql.gz.gpg | gunzip | docker exec -i ... psql ...
+```
+
+Store the GPG private key + passphrase OFFLINE (1Password / hardware key). Without them, encrypted backups are useless.
+
+### Incident response runbook
+
+| Symptom | Action |
+|---------|--------|
+| Backend 500 on every request | Check `docker logs projextpal-backend-prod` — usually schema drift, not data loss. Don't restore. |
+| Specific user reports "data missing" | Don't restore. Check `accounts_company` + `accounts_customuser` — data probably still there, view filter bug. |
+| Database file corrupted (rare) | Stop backend → rename current DB → restore latest daily → restart → preflight |
+| Ransomware on Mac Studio | Air-gapped restore: pull off-site snapshot → restore on a fresh machine |
+
+### Backup status check (daily)
+
+```bash
+# When did the last backup run? Did it succeed?
+tail -5 ~/projextpal-backups/backup.log
+
+# Total backup disk usage
+du -sh ~/projextpal-backups/*
+
+# Largest backups (sanity check on growth)
+find ~/projextpal-backups -name "*.sql.gz" -exec ls -lh {} \; | sort -k5 -h | tail -5
+```
+
