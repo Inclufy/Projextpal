@@ -151,7 +151,6 @@ export function detectProjeXtPalModuleFromPath(pathname: string): string | null 
     "/settings": "settings",
     "/checkout": "billing",
     "/pricing": "billing",
-    "/post-project": "projects",
     "/training": "academy",
     "/surveys": "surveys",
     "/demo": "demo",
