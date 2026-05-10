@@ -124,7 +124,7 @@ ALTER TABLE agile_agilebacklogitem ALTER COLUMN acceptance_criteria SET DEFAULT 
 ALTER TABLE agile_agilebacklogitem ALTER COLUMN item_type SET DEFAULT 'story';
 ALTER TABLE agile_agilebacklogitem ALTER COLUMN priority SET DEFAULT 'medium';
 ALTER TABLE agile_agilebacklogitem ALTER COLUMN status SET DEFAULT 'todo';
-ALTER TABLE agile_agilebacklogitem ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE agile_agilebacklogitem ALTER COLUMN "order" SET DEFAULT 0;
 
 ALTER TABLE agile_agilebudget ALTER COLUMN total_budget SET DEFAULT 0;
 ALTER TABLE agile_agilebudget ALTER COLUMN currency SET DEFAULT 'EUR';
@@ -142,7 +142,7 @@ ALTER TABLE agile_agiledailyupdate ALTER COLUMN blockers SET DEFAULT '';
 ALTER TABLE agile_agileepic ALTER COLUMN description SET DEFAULT '';
 ALTER TABLE agile_agileepic ALTER COLUMN priority SET DEFAULT 'medium';
 ALTER TABLE agile_agileepic ALTER COLUMN color SET DEFAULT '#7c3aed';
-ALTER TABLE agile_agileepic ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE agile_agileepic ALTER COLUMN "order" SET DEFAULT 0;
 
 ALTER TABLE agile_agileiteration ALTER COLUMN goal SET DEFAULT '';
 ALTER TABLE agile_agileiteration ALTER COLUMN start_date SET DEFAULT CURRENT_DATE;
@@ -154,7 +154,7 @@ ALTER TABLE agile_agileiteration ALTER COLUMN velocity_completed SET DEFAULT 0;
 ALTER TABLE agile_agileproductgoal ALTER COLUMN description SET DEFAULT '';
 ALTER TABLE agile_agileproductgoal ALTER COLUMN priority SET DEFAULT 'medium';
 ALTER TABLE agile_agileproductgoal ALTER COLUMN status SET DEFAULT 'open';
-ALTER TABLE agile_agileproductgoal ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE agile_agileproductgoal ALTER COLUMN "order" SET DEFAULT 0;
 
 ALTER TABLE agile_agileproductvision ALTER COLUMN vision_statement SET DEFAULT '';
 ALTER TABLE agile_agileproductvision ALTER COLUMN target_audience SET DEFAULT '';
@@ -289,20 +289,20 @@ ALTER TABLE execution_stakeholder ALTER COLUMN governance_type SET DEFAULT 'stak
 -- ===== kanban (vaak gebruikt voor visualisatie) =====
 ALTER TABLE kanban_kanbancard ALTER COLUMN card_type SET DEFAULT 'story';
 ALTER TABLE kanban_kanbancard ALTER COLUMN priority SET DEFAULT 'medium';
-ALTER TABLE kanban_kanbancard ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE kanban_kanbancard ALTER COLUMN "order" SET DEFAULT 0;
 ALTER TABLE kanban_kanbancard ALTER COLUMN entered_column_at SET DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE kanban_kanbancard ALTER COLUMN is_blocked SET DEFAULT false;
 
 ALTER TABLE kanban_kanbancolumn ALTER COLUMN column_type SET DEFAULT 'general';
-ALTER TABLE kanban_kanbancolumn ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE kanban_kanbancolumn ALTER COLUMN "order" SET DEFAULT 0;
 ALTER TABLE kanban_kanbancolumn ALTER COLUMN color SET DEFAULT '#7c3aed';
 ALTER TABLE kanban_kanbancolumn ALTER COLUMN is_done_column SET DEFAULT false;
 
-ALTER TABLE kanban_kanbanswimlane ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE kanban_kanbanswimlane ALTER COLUMN "order" SET DEFAULT 0;
 ALTER TABLE kanban_kanbanswimlane ALTER COLUMN color SET DEFAULT '#7c3aed';
 ALTER TABLE kanban_kanbanswimlane ALTER COLUMN is_default SET DEFAULT false;
 
-ALTER TABLE kanban_cardchecklist ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE kanban_cardchecklist ALTER COLUMN "order" SET DEFAULT 0;
 
 ALTER TABLE kanban_cardcomment ALTER COLUMN content SET DEFAULT '';
 
@@ -310,18 +310,18 @@ ALTER TABLE kanban_cardhistory ALTER COLUMN moved_at SET DEFAULT CURRENT_TIMESTA
 
 ALTER TABLE kanban_checklistitem ALTER COLUMN text SET DEFAULT '';
 ALTER TABLE kanban_checklistitem ALTER COLUMN is_completed SET DEFAULT false;
-ALTER TABLE kanban_checklistitem ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE kanban_checklistitem ALTER COLUMN "order" SET DEFAULT 0;
 
 -- ===== scrum (mogelijk voor demo, voor zekerheid) =====
 ALTER TABLE scrum_backlogitem ALTER COLUMN item_type SET DEFAULT 'story';
 ALTER TABLE scrum_backlogitem ALTER COLUMN priority SET DEFAULT 'medium';
 ALTER TABLE scrum_backlogitem ALTER COLUMN status SET DEFAULT 'todo';
-ALTER TABLE scrum_backlogitem ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE scrum_backlogitem ALTER COLUMN "order" SET DEFAULT 0;
 
 ALTER TABLE scrum_dailystandup ALTER COLUMN date SET DEFAULT CURRENT_DATE;
 
 ALTER TABLE scrum_definitionofdone ALTER COLUMN item SET DEFAULT '';
-ALTER TABLE scrum_definitionofdone ALTER COLUMN order SET DEFAULT 0;
+ALTER TABLE scrum_definitionofdone ALTER COLUMN "order" SET DEFAULT 0;
 ALTER TABLE scrum_definitionofdone ALTER COLUMN checklist SET DEFAULT '[]'::jsonb;
 
 ALTER TABLE scrum_scrumteam ALTER COLUMN role SET DEFAULT 'developer';

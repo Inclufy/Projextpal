@@ -290,19 +290,25 @@ def get_plans(request):
     
     data = []
     for plan in plans:
+        # Use only attributes the model actually exposes — avoid hard-coded
+        # references to fields that may have been renamed/removed (description,
+        # billing_type, etc.) so this endpoint stays public-safe.
         data.append({
             'id': plan.id,
-            'name': plan.name,
-            'description': plan.description,
-            'price': float(plan.price),
-            'billing_type': plan.billing_type,
-            'max_users': plan.max_users,
-            'max_projects': plan.max_projects,
-            'storage_gb': plan.storage_gb,
+            'name': getattr(plan, 'name', ''),
+            'description': getattr(plan, 'description', ''),
+            'price': float(getattr(plan, 'price', 0) or 0),
+            'billing_type': getattr(plan, 'billing_type', getattr(plan, 'billing_cycle', 'monthly')),
+            'max_users': getattr(plan, 'max_users', None),
+            'max_projects': getattr(plan, 'max_projects', None),
+            'storage_gb': getattr(plan, 'storage_gb', getattr(plan, 'storage_limit_gb', None)),
             'includes_academy': getattr(plan, 'includes_academy', False),
-            'features': getattr(plan, 'features', []),
+            'features': (
+                getattr(plan, 'features') if isinstance(getattr(plan, 'features', None), list)
+                else (getattr(plan, 'features', '').split(',') if getattr(plan, 'features', None) else [])
+            ),
             'is_popular': getattr(plan, 'is_popular', False),
-            'level': plan.level,
+            'level': getattr(plan, 'level', getattr(plan, 'plan_level', 'basic')),
         })
     
     return Response(data)
