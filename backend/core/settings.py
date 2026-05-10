@@ -396,6 +396,58 @@ LOGGING = {
 
 
 # =============================================================================
+# Production security hardening
+# =============================================================================
+# These settings address Django's `manage.py check --deploy` warnings
+# (security.W004 / W008 / W012 / W016). They are gated behind DEBUG=False
+# so local dev (HTTP, no TLS) keeps working.
+#
+# W009 (weak SECRET_KEY) is enforced at startup below — in production we
+# fail fast rather than booting with a placeholder key.
+if not DEBUG:
+    # W004 — HTTP Strict Transport Security: 1 year, with subdomains + preload.
+    # Override with SECURE_HSTS_SECONDS=0 in env if you need to roll back.
+    SECURE_HSTS_SECONDS = decouple.config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = decouple.config(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True, cast=bool
+    )
+    SECURE_HSTS_PRELOAD = decouple.config("SECURE_HSTS_PRELOAD", default=True, cast=bool)
+
+    # W008 — redirect all HTTP to HTTPS at the Django layer (belt-and-suspenders;
+    # the load balancer should also do this).
+    SECURE_SSL_REDIRECT = decouple.config("SECURE_SSL_REDIRECT", default=True, cast=bool)
+    # When behind a reverse proxy (Caddy, nginx, ALB) that terminates TLS,
+    # trust the X-Forwarded-Proto header so SECURE_SSL_REDIRECT works correctly.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    # W012 / W016 — cookies only over HTTPS.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Hardening defaults that the deploy-check doesn't flag but are best practice.
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
+
+    # W009 — fail fast on weak keys in production. Django's check uses the same
+    # rule; surfacing it as an ImproperlyConfigured prevents accidental
+    # deploys with a dev placeholder.
+    from django.core.exceptions import ImproperlyConfigured
+
+    if (
+        SECRET_KEY.startswith("django-insecure-")
+        or len(SECRET_KEY) < 50
+        or len(set(SECRET_KEY)) < 5
+    ):
+        raise ImproperlyConfigured(
+            "SECRET_KEY is weak (django-insecure- prefix, <50 chars, or <5 "
+            "unique chars). Generate a strong key: "
+            "`python -c 'from django.core.management.utils import "
+            "get_random_secret_key; print(get_random_secret_key())'`"
+        )
+
+
+# =============================================================================
 # Inclufy Finance integration
 # =============================================================================
 # When configured, ProjeXtPal can:
