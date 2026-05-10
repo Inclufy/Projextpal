@@ -3,11 +3,15 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import type { LinkingOptions } from '@react-navigation/native';
 import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { initSentry } from './src/lib/sentry';
 import { LanguageProvider } from './src/contexts/LanguageContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { registerForPushNotificationsAsync } from './src/services/pushService';
 import { useShakeToReport } from './src/hooks/useShakeToReport';
 import { ShakeReportSheet } from './src/components/ShakeReportSheet';
+
+// Init Sentry at module-load time so boot crashes are captured.
+initSentry();
 
 // Deep link routing.
 //
