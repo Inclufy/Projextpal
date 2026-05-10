@@ -429,25 +429,39 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         
         return invoice
     
-    def _send_invoice_email(self, invoice, email=None, subject=None, 
+    def _send_invoice_email(self, invoice, email=None, subject=None,
                            message=None, send_copy_to=None):
         """Send invoice via email"""
         from django.core.mail import EmailMessage
         from django.template.loader import render_to_string
         from django.conf import settings as django_settings
-        
+        from core.email_i18n import get_email_context
+
         if not email:
             email = invoice.customer_email
-        
+
+        # i18n context — language can come from customer.language later;
+        # default to English for now.
+        lang = getattr(invoice, "customer_language", None) or getattr(
+            getattr(invoice, "customer", None), "language", None
+        )
+        i18n_ctx = get_email_context(
+            "invoice",
+            lang=lang,
+            number=invoice.invoice_number,
+            name=invoice.customer_name,
+            due_date=invoice.due_date.strftime("%d %B %Y") if invoice.due_date else "",
+        )
+
         if not subject:
-            subject = f"Invoice {invoice.invoice_number} from Inclufy"
-        
-        # Render email template
+            subject = i18n_ctx["subject"] or f"Invoice {invoice.invoice_number} from ProjeXtPal"
+
         context = {
-            'invoice': invoice,
-            'custom_message': message,
+            **i18n_ctx,
+            "invoice": invoice,
+            "custom_message": message,
         }
-        
+
         html_message = render_to_string('invoices/email/invoice_email.html', context)
         
         # Create email
