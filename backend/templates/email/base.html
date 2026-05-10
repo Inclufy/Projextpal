@@ -1,0 +1,183 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}" dir="{{ direction|default:'ltr' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{ subject|default:"ProjeXtPal" }}</title>
+  <style>
+    /* ----- Reset ----- */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+    /* ----- Brand tokens (ProjeXtPal HSL 270 60% 50%) ----- */
+    :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #faf7fe;
+      color: #2a1f3d;
+      line-height: 1.5;
+    }
+
+    .wrapper { width: 100%; background-color: #faf7fe; padding: 32px 16px; }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08);
+    }
+
+    /* ----- Header ----- */
+    .header {
+      background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+      padding: 32px 32px 28px;
+      text-align: {{ direction_align|default:'left' }};
+    }
+    .logo {
+      display: inline-block;
+      vertical-align: middle;
+      margin-{% if direction == 'rtl' %}left{% else %}right{% endif %}: 12px;
+      width: 40px; height: 40px;
+      background-color: rgba(255,255,255,0.18);
+      border-radius: 10px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 22px;
+      line-height: 40px;
+      text-align: center;
+      letter-spacing: -1px;
+    }
+    .wordmark {
+      display: inline-block;
+      vertical-align: middle;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.3px;
+    }
+    .wordmark .accent { color: #f5d0fe; }
+
+    /* ----- Content ----- */
+    .content { padding: 36px 36px 28px; color: #2a1f3d; font-size: 16px; }
+    .content h1 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a0f2e;
+      letter-spacing: -0.4px;
+    }
+    .content p { margin: 0 0 16px; color: #3d2d5c; }
+    .content strong { color: #1a0f2e; }
+
+    /* ----- CTA button ----- */
+    .btn-wrap { text-align: center; margin: 28px 0; }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+    }
+    .btn-fallback {
+      margin: 16px 0;
+      padding: 12px;
+      background-color: #f5f0ff;
+      border-radius: 8px;
+      word-break: break-all;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: #5b21b6;
+    }
+
+    /* ----- Info card ----- */
+    .info-card {
+      background-color: #f8f5ff;
+      border-{% if direction == 'rtl' %}right{% else %}left{% endif %}: 4px solid #8b5cf6;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      color: #3d2d5c;
+      font-size: 14px;
+    }
+
+    /* ----- Footer ----- */
+    .footer {
+      padding: 24px 36px 32px;
+      border-top: 1px solid #ede9fe;
+      color: #6b5b8a;
+      font-size: 13px;
+      text-align: center;
+    }
+    .footer p { margin: 4px 0; }
+    .footer a { color: #7c3aed; text-decoration: none; }
+
+    /* ----- Mobile ----- */
+    @media only screen and (max-width: 600px) {
+      .wrapper { padding: 16px 8px !important; }
+      .container { border-radius: 12px !important; }
+      .header { padding: 24px 24px 20px !important; }
+      .content { padding: 28px 24px 20px !important; font-size: 15px !important; }
+      .content h1 { font-size: 21px !important; }
+      .footer { padding: 20px 24px 24px !important; }
+      .btn { display: block !important; padding: 14px 20px !important; }
+    }
+
+    /* ----- Dark mode ----- */
+    @media (prefers-color-scheme: dark) {
+      body, .wrapper { background-color: #0f0a1f !important; color: #e9e0ff !important; }
+      .container { background-color: #1c1430 !important; box-shadow: 0 4px 32px rgba(0,0,0,0.4) !important; }
+      .content { color: #e9e0ff !important; }
+      .content h1 { color: #ffffff !important; }
+      .content p { color: #c9bce3 !important; }
+      .content strong { color: #ffffff !important; }
+      .info-card { background-color: #2a1d44 !important; color: #c9bce3 !important; }
+      .btn-fallback { background-color: #2a1d44 !important; color: #c4b5fd !important; }
+      .footer { border-top-color: #2a1d44 !important; color: #9b8bb8 !important; }
+      .footer a { color: #c4b5fd !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <table role="presentation" class="container" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;">
+      <tr>
+        <td class="header">
+          <span class="logo">P</span><span class="wordmark">Proje<span class="accent">X</span>tPal</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="content">
+          {% block content %}{% endblock %}
+        </td>
+      </tr>
+      <tr>
+        <td class="footer">
+          <p>{{ i18n.footer_tagline }}</p>
+          <p>
+            <a href="mailto:support@inclufy.com">support@inclufy.com</a>
+            &nbsp;·&nbsp;
+            <a href="https://projextpal.com">projextpal.com</a>
+          </p>
+          <p style="margin-top:12px;font-size:11px;color:#9b8bb8;">
+            {{ i18n.footer_automated }}
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

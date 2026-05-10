@@ -24,14 +24,14 @@ ENROLLMENT_CONFIRMATION_HTML = """
   <style>
     body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }}
     .container {{ max-width: 600px; margin: 0 auto; background: white; }}
-    .header {{ background: linear-gradient(135deg, #8B5CF6, #D946EF); padding: 40px 30px; text-align: center; }}
+    .header {{ background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px 30px; text-align: center; }}
     .header h1 {{ color: white; margin: 0; font-size: 28px; }}
     .header p {{ color: rgba(255,255,255,0.9); margin: 10px 0 0 0; }}
     .content {{ padding: 40px 30px; }}
     .course-card {{ background: #f8f5ff; border-radius: 12px; padding: 24px; margin: 20px 0; border-left: 4px solid #8B5CF6; }}
     .course-title {{ font-size: 20px; font-weight: bold; color: #1a1a1a; margin: 0 0 8px 0; }}
     .course-meta {{ color: #666; font-size: 14px; }}
-    .btn {{ display: inline-block; background: linear-gradient(135deg, #8B5CF6, #D946EF); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }}
+    .btn {{ display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }}
     .steps {{ margin: 30px 0; }}
     .step {{ display: flex; align-items: flex-start; margin: 16px 0; }}
     .step-number {{ background: #8B5CF6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 16px; flex-shrink: 0; }}
@@ -208,7 +208,7 @@ QUOTE_REQUEST_CONFIRMATION_HTML = """
   <style>
     body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }}
     .container {{ max-width: 600px; margin: 0 auto; background: white; }}
-    .header {{ background: linear-gradient(135deg, #8B5CF6, #D946EF); padding: 40px 30px; text-align: center; }}
+    .header {{ background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); padding: 40px 30px; text-align: center; }}
     .header h1 {{ color: white; margin: 0; font-size: 24px; }}
     .content {{ padding: 40px 30px; }}
     .info-box {{ background: #f8f5ff; border-radius: 12px; padding: 24px; margin: 20px 0; }}

@@ -577,8 +577,73 @@ redis:
 
 ---
 
-**Deployment Date:** 2025-01-22  
-**Version:** 1.0  
+**Deployment Date:** 2025-01-22
+**Version:** 1.0
 **Status:** Production Ready ✅
 
 **Need help?** Check logs, review troubleshooting section, or contact support.
+
+---
+
+## 🛡️ Pre-/Post-Deploy Smoke Test (added 2026-05-10)
+
+Every deploy must pass these gates before traffic is routed. They live in
+`backend/scripts/preflight_check.py` and `backend/accounts/tests.py`.
+
+### Pre-deploy (CI or local before merge)
+
+```bash
+# Inside the backend container or a clean Django env:
+python3 manage.py test accounts -v 2
+```
+
+What it covers:
+
+| Test | Catches |
+|------|---------|
+| `CompanyInsertSmokeTest.test_company_create_minimal_succeeds` | DB schema drift on `accounts_company` (NOT NULL columns the model doesn't know about) |
+| `BrandedEmailSendTest.test_verify_email_renders_html_with_brand` | Broken template inheritance, missing brand tokens, plain-text leak |
+| `BrandedEmailSendTest.test_supported_langs_all_render` | Missing translations for any of `en/nl/ar/fr` |
+| `BrandedEmailSendTest.test_arabic_renders_rtl_root` | RTL handling regression |
+| `SignupViewIntegrationTest.test_signup_creates_company_user_and_branded_mail` | End-to-end signup → branded mail in one flow |
+
+### Post-deploy (after `docker compose up -d --force-recreate`)
+
+```bash
+docker exec -i projextpal-backend-prod python3 manage.py shell \
+    -c "exec(open('scripts/preflight_check.py').read())"
+```
+
+The preflight script runs 4 production-side checks:
+
+1. **Email config** — backend isn't `console`, password is ASCII, FROM is valid
+2. **Schema drift detector** — for `accounts_company` and `accounts_customuser`, lists every NOT-NULL column that has neither a model field nor a DB default. **This is the exact check that would have caught the 2026-05-10 outage.**
+3. **Signup integrity** — actually inserts a sentinel `Company` + `CustomUser` inside `transaction.atomic()` and rolls back. If the schema is broken, this fails loudly without leaving artefacts.
+4. **Email render** — renders all 12 transactional variants (3 templates × 4 langs) and checks the brand wordmark is present in each.
+
+Exit code is non-zero on any failure, so this can be wired as a deploy gate.
+
+### Known production incidents this catches
+
+| Date | Incident | Caught by |
+|------|----------|-----------|
+| 2026-05-10 | `NotNullViolation: column "require_2fa"` on signup. DB had 21 columns, model had 5. | `check_schema_drift` in preflight + `test_company_create_minimal_succeeds` |
+| 2026-05-10 | `UnicodeEncodeError: '€'` in SMTP auth. SMTP password contained `€`. | `check_email_config` non-ASCII detection |
+| 2026-05-10 | Email FROM = `testuser-1@inclufy.com` (test mailbox in production). | `check_email_config` validates FROM domain alignment |
+| 2026-05-10 | Plain-text mails for signup verify, password reset, admin invite. | `BrandedEmailSendTest` enforces HTML alternative + brand tokens |
+
+### Deploy roadmap addition
+
+When updating `deploy.sh` or CI, add **before** routing traffic:
+
+```bash
+# Pre-deploy: tests must pass on the candidate branch
+docker exec backend python3 manage.py test accounts -v 2 || { echo "FAIL: tests"; exit 1; }
+
+# Post-deploy: preflight on the running container
+docker exec -i backend python3 manage.py shell \
+  -c "exec(open('scripts/preflight_check.py').read())" || { echo "FAIL: preflight"; exit 1; }
+```
+
+If either gate fails, roll back with `git revert <sha> && docker compose up -d --force-recreate --no-deps backend`.
+

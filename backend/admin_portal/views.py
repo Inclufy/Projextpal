@@ -3,11 +3,14 @@
 # API views for admin portal endpoints
 # ============================================================
 
+import logging
+
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
@@ -15,7 +18,10 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 
-from accounts.models import Company
+from accounts.models import Company, VerificationToken
+from core.email_send import send_branded_email
+
+logger = logging.getLogger(__name__)
 from subscriptions.models import SubscriptionPlan, CompanySubscription
 from .models import AuditLog, SystemSetting, log_action
 from .serializers import (
@@ -243,11 +249,27 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def resend_invite(self, request, pk=None):
-        """Resend invitation email"""
+        """Resend invitation email with a fresh verification token."""
         user = self.get_object()
-        
-        # TODO: Implement actual email sending
-        
+
+        token = VerificationToken.objects.create(user=user)
+        verification_url = f"{settings.FRONTEND_URL}/verify-email/{token.token}/"
+
+        try:
+            send_branded_email(
+                template_key="admin_invite",
+                recipient=user.email,
+                lang=getattr(user, "language", None),
+                url=verification_url,
+                name=user.first_name or user.email,
+                expires_in_hours=24,
+            )
+        except Exception:
+            return Response(
+                {'error': 'Failed to send invitation email'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
         log_action(
             user=request.user,
             action='user_invited',
@@ -258,7 +280,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             company=user.company,
             request=request
         )
-        
+
         return Response({'status': 'invite_sent', 'email': user.email})
 
 
