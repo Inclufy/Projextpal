@@ -123,13 +123,18 @@ rotate "$WEEKLY_DIR" "$WEEKLY_KEEP"
 rotate "$MONTHLY_DIR" "$MONTHLY_KEEP"
 
 # ---------------------------------------------------------------------
-# Optional: copy to off-site location
-# (Uncomment ONE of the options below after you've configured it.)
+# Off-site copy — iCloud Drive (default, EU servers via Apple's Ireland DC)
 # ---------------------------------------------------------------------
-#
-# Option A — iCloud Drive (zero setup if iCloud Drive is enabled):
-# OFFSITE="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/projextpal-backups"
-# mkdir -p "$OFFSITE/daily" && cp "$TARGET" "$OFFSITE/daily/" && log "Copied to iCloud"
+OFFSITE="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/projextpal-backups"
+if mkdir -p "$OFFSITE/daily" 2>/dev/null && cp "$TARGET" "$OFFSITE/daily/" 2>/dev/null; then
+    log "Copied to iCloud Drive ($OFFSITE/daily/)"
+    if [[ "${1:-}" == "--weekly"  ]]; then mkdir -p "$OFFSITE/weekly"  && cp "$TARGET" "$OFFSITE/weekly/"  2>/dev/null || true; fi
+    if [[ "${1:-}" == "--monthly" ]]; then mkdir -p "$OFFSITE/monthly" && cp "$TARGET" "$OFFSITE/monthly/" 2>/dev/null || true; fi
+else
+    log "WARN: iCloud Drive copy failed (drive offline?) — local backup is still safe"
+fi
+
+# Other off-site options (commented — pick if you prefer over iCloud):
 #
 # Option B — rclone to S3 / B2 / GDrive (requires `brew install rclone` + config):
 # rclone copy "$TARGET" "remote:projextpal-backups/daily/" && log "Synced to remote"
