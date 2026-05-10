@@ -7,13 +7,16 @@ import { COLORS } from '../../constants/colors';
 export const AcademyScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [selectedTab, setSelectedTab] = useState('all');
 
+  // CRKBO-registered tracks: AI Geletterdheid | Soft Skills | Projectmanagement
   const courses = [
-    { id: '1', title: 'PRINCE2 Foundation', duration: '40u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'shield-checkmark', gradient: ['#8B5CF6', '#A855F7'] },
-    { id: '2', title: 'Agile & Scrum Mastery', duration: '32u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'flash', gradient: ['#3B82F6', '#2563EB'] },
-    { id: '3', title: 'Project Management Fundamentals', duration: '25u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'bar-chart', gradient: ['#10B981', '#059669'] },
-    { id: '4', title: 'Leadership & Team Management', duration: '30u', level: 'Advanced', price: 'Gratis', progress: 0, icon: 'people', gradient: ['#F59E0B', '#D97706'] },
-    { id: '5', title: 'Risk Management Professional', duration: '28u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'shield', gradient: ['#EC4899', '#F472B6'] },
-    { id: '6', title: 'Budget & Financial Planning', duration: '22u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'wallet', gradient: ['#14B8A6', '#06B6D4'] },
+    { id: '1', title: 'AI Geletterdheid voor Professionals', duration: '20u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'sparkles', gradient: ['#001f3a', '#005681'], crkbo: true },
+    { id: '2', title: 'Soft Skills voor de Digitale Werkplek', duration: '25u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'people', gradient: ['#56a632', '#005681'], crkbo: true },
+    { id: '3', title: 'Project Management Fundamentals', duration: '25u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'bar-chart', gradient: ['#005681', '#001f3a'], crkbo: true },
+    { id: '4', title: 'PRINCE2 Foundation', duration: '40u', level: 'Beginner', price: 'Gratis', progress: 0, icon: 'shield-checkmark', gradient: ['#8B5CF6', '#A855F7'] },
+    { id: '5', title: 'Agile & Scrum Mastery', duration: '32u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'flash', gradient: ['#3B82F6', '#2563EB'] },
+    { id: '6', title: 'Leadership & Team Management', duration: '30u', level: 'Advanced', price: 'Gratis', progress: 0, icon: 'people', gradient: ['#F59E0B', '#D97706'] },
+    { id: '7', title: 'Risk Management Professional', duration: '28u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'shield', gradient: ['#EC4899', '#F472B6'] },
+    { id: '8', title: 'Budget & Financial Planning', duration: '22u', level: 'Intermediate', price: 'Gratis', progress: 0, icon: 'wallet', gradient: ['#14B8A6', '#06B6D4'] },
   ];
 
   const tabs = [

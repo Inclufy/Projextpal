@@ -14,13 +14,16 @@ from academy.models import (
 
 @pytest.fixture
 def category(db):
-    return CourseCategory.objects.create(
-        name="Project Management",
+    cat, _ = CourseCategory.objects.get_or_create(
         slug="project-management",
-        description="PM courses",
-        icon="briefcase",
-        order=1,
+        defaults={
+            "name": "Project Management",
+            "description": "PM courses",
+            "icon": "briefcase",
+            "order": 1,
+        },
     )
+    return cat
 
 
 @pytest.fixture

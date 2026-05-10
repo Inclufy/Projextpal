@@ -53,14 +53,17 @@ def api_client():
 
 @pytest.fixture
 def category(db):
-    """Create a course category."""
-    return CourseCategory.objects.create(
-        name="Project Management",
+    """Create a course category (or reuse the one seeded by migration 0014)."""
+    cat, _ = CourseCategory.objects.get_or_create(
         slug="project-management",
-        description="PM courses",
-        icon="briefcase",
-        order=1,
+        defaults={
+            "name": "Project Management",
+            "description": "PM courses",
+            "icon": "briefcase",
+            "order": 1,
+        },
     )
+    return cat
 
 
 @pytest.fixture
