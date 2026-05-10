@@ -283,6 +283,88 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
         return Response({'status': 'invite_sent', 'email': user.email})
 
+    @action(detail=True, methods=['post'], url_path='reset-password')
+    def reset_password(self, request, pk=None):
+        """Admin triggers a branded password-reset email for the target user.
+
+        The user receives the same `password_reset` mail as the self-service
+        "Forgot password?" flow, so the link is single-use and time-limited.
+        """
+        from accounts.models import PasswordResetToken
+
+        user = self.get_object()
+        token = PasswordResetToken.objects.create(user=user)
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token.token}/"
+
+        try:
+            send_branded_email(
+                template_key="password_reset",
+                recipient=user.email,
+                lang=getattr(user, "language", None),
+                url=reset_url,
+                name=user.first_name or user.email,
+                expires_in_hours=1,
+            )
+        except Exception:
+            logger.exception("Admin-triggered password reset email failed for %s", user.email)
+            return Response(
+                {'error': 'Failed to send password-reset email'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        log_action(
+            user=request.user,
+            action='admin_password_reset',
+            category='user',
+            severity='warning',
+            description=f"Admin triggered password reset for {user.email}",
+            resource_type='user',
+            resource_id=str(user.id),
+            company=user.company,
+            request=request,
+        )
+        return Response({'status': 'reset_email_sent', 'email': user.email})
+
+    @action(detail=True, methods=['post'], url_path='set-password')
+    def set_password(self, request, pk=None):
+        """Admin manually sets a new password for the target user.
+
+        Body: {"password": "..."}  (min 8 chars)
+        Side effect: user is also activated (is_active=True).
+        Use case: admin onboards a customer in person and gives them a
+        starter password to log in directly, bypassing the verify-email
+        flow.
+        """
+        user = self.get_object()
+        new_password = (request.data or {}).get('password', '')
+
+        if not isinstance(new_password, str) or len(new_password) < 8:
+            return Response(
+                {'error': 'Password must be at least 8 characters'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.is_active = True
+        user.save(update_fields=['password', 'is_active'])
+
+        log_action(
+            user=request.user,
+            action='admin_set_password',
+            category='user',
+            severity='warning',
+            description=f"Admin manually set password for {user.email}",
+            resource_type='user',
+            resource_id=str(user.id),
+            company=user.company,
+            request=request,
+        )
+        return Response({
+            'status': 'password_set',
+            'email': user.email,
+            'is_active': user.is_active,
+        })
+
 
 # ============================================================
 # COMPANY (TENANT) MANAGEMENT VIEWSET

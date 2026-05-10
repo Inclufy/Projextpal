@@ -179,4 +179,50 @@ else:
 
 print()
 print("=" * 70)
+print("Phase 4: Admin action smoke (POST, against sentinel user)")
+print("=" * 70)
+
+# Smoke-test the admin-user POST actions that 404'd in production on
+# 2026-05-10. We need a target user — create a sentinel inside a
+# transaction we roll back, so we don't pollute prod data.
+from django.db import transaction
+
+ADMIN_ACTIONS = [
+    ("resend_invite", {}, (200, 502)),  # 502 acceptable if SMTP unconfigured
+    ("reset-password", {}, (200, 502)),
+    ("set-password", {"password": "PreflightTest123!"}, (200, 502)),
+]
+
+if getattr(user, "role", None) != "superadmin":
+    print("  (skipped — current user is not superadmin)")
+else:
+    try:
+        with transaction.atomic():
+            sentinel = User.objects.create_user(
+                username="preflight+admin-action@projextpal.test",
+                email="preflight+admin-action@projextpal.test",
+                password="ignored",
+                first_name="Preflight",
+                role="admin",
+                company=user.company,
+                is_active=False,
+            )
+            for action, body, ok_codes in ADMIN_ACTIONS:
+                url = f"/api/v1/admin/users/{sentinel.pk}/{action}/"
+                try:
+                    response = client.post(url, body, content_type="application/json")
+                    sc = response.status_code
+                    label = "✓" if sc in ok_codes else "✗"
+                    print(f"  {label} POST {url}  →  {sc}")
+                except Exception as e:
+                    print(f"  ✗ POST {url}  →  {type(e).__name__}: {e}")
+            raise transaction.TransactionManagementError("__rollback__")
+    except transaction.TransactionManagementError as e:
+        if "__rollback__" not in str(e):
+            print(f"  ✗ Unexpected tx error: {e}")
+    except Exception as e:
+        print(f"  ✗ Admin action smoke failed: {type(e).__name__}: {e}")
+
+print()
+print("=" * 70)
 print("Health scan complete.")
