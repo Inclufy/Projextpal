@@ -246,18 +246,22 @@ class CompanyUsersView(APIView):
         users = (
             User.objects.filter(company=company)
             .only(
-                "id", "first_name", "email", "role", "is_active", "image", "date_joined"
+                "id", "first_name", "email", "role", "is_active", "profile_image", "date_joined"
             )
             .order_by("first_name", "email")
         )
         data = []
         for u in users:
             image_url = None
-            if getattr(u, "image", None):
+            img_field = getattr(u, "profile_image", None)
+            if img_field:
                 try:
-                    image_url = request.build_absolute_uri(u.image.url)
+                    image_url = request.build_absolute_uri(img_field.url)
                 except Exception:
-                    image_url = u.image.url
+                    try:
+                        image_url = img_field.url
+                    except Exception:
+                        image_url = None
             data.append(
                 {
                     "id": u.id,
@@ -1050,7 +1054,10 @@ class PlanViewSet(viewsets.ModelViewSet):
                 'max_users': plan.max_users if hasattr(plan, 'max_users') else None,
                 'max_projects': plan.max_projects if hasattr(plan, 'max_projects') else None,
                 'storage_limit_gb': float(plan.storage_limit_gb) if hasattr(plan, 'storage_limit_gb') and plan.storage_limit_gb else None,
-                'features': plan.features.split(',') if hasattr(plan, 'features') and plan.features else [],
+                'features': (
+                    plan.features if isinstance(getattr(plan, 'features', None), list)
+                    else (plan.features.split(',') if hasattr(plan, 'features') and plan.features else [])
+                ),
                 'is_active': plan.is_active if hasattr(plan, 'is_active') else True,
                 'is_popular': plan.is_popular if hasattr(plan, 'is_popular') else False,
                 'priority_support': plan.priority_support if hasattr(plan, 'priority_support') else False,

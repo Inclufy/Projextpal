@@ -7,14 +7,21 @@ def HasRole(*roles):
     authenticated user has one of the required roles.
 
     Usage: permission_classes = [HasRole("admin")]
+
+    Note: superadmin is always allowed (system-wide override) regardless of
+    whether it appears in `roles`. This matches IsCompanyAdmin /
+    IsAdminOrSuperAdmin in admin_portal/permissions.py and prevents the
+    common bug where every endpoint must remember to add "superadmin"
+    explicitly to its role list.
     """
 
     class _HasRolePermission(BasePermission):
         def has_permission(self, request, view):
-            return (
-                IsAuthenticated().has_permission(request, view)
-                and hasattr(request.user, "role")
-                and request.user.role in roles
-            )
+            if not IsAuthenticated().has_permission(request, view):
+                return False
+            user_role = getattr(request.user, "role", None)
+            if user_role == "superadmin":
+                return True
+            return user_role in roles
 
     return _HasRolePermission
