@@ -1,7 +1,6 @@
 {% extends "email/base.html" %}
 {% block content %}
   <h1>{{ title_override|default:i18n.subject }}</h1>
-  <p>{{ greeting|default:i18n.greeting|default:"" }}</p>
   {% if body_override %}
     <p>{{ body_override }}</p>
   {% endif %}
