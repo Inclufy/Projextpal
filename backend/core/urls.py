@@ -38,6 +38,7 @@ urlpatterns = [
     path("api/v1/workflow/", include("workflow.urls")),
     path("api/v1/academy/", include("academy.urls")),
     path("api/v1/admin/", include("admin_portal.urls")),
+    path("api/v1/notifications/", include("notifications.urls")),
     
     # Methodologies
     path("api/v1/", include("agile.urls")),

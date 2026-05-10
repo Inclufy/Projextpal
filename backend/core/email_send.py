@@ -35,6 +35,13 @@ _TEMPLATE_PATHS = {
     "verify_email": "email/transactional/verify_email.html",
     "password_reset": "email/transactional/password_reset.html",
     "admin_invite": "email/transactional/admin_invite.html",
+    # All 4 notification kinds share one template; the i18n strings drive
+    # subject + CTA label per kind, and title_override / body_override carry
+    # the per-event title/body produced by the dispatcher.
+    "notification_task_assigned": "email/transactional/notification.html",
+    "notification_comment_mention": "email/transactional/notification.html",
+    "notification_project_member_added": "email/transactional/notification.html",
+    "notification_deadline_approaching": "email/transactional/notification.html",
 }
 
 
@@ -111,7 +118,13 @@ def send_branded_email(
 
     html_body = render_to_string(_TEMPLATE_PATHS[template_key], ctx)
     text_body = _build_plain_text(ctx)
-    subject = ctx["subject"] or "ProjeXtPal"
+    # For per-event notifications we let the dispatcher's title win over the
+    # generic i18n subject ("New task assigned to you" → "Task assigned: <name>")
+    subject = (
+        extra_format_kwargs.get("title_override")
+        or ctx["subject"]
+        or "ProjeXtPal"
+    )
 
     msg = EmailMultiAlternatives(
         subject=subject,
