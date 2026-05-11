@@ -18,6 +18,46 @@ ALLOWED_HOSTS = decouple.config(
 )
 
 
+# =============================================================================
+# Sentry (backend error tracking)
+# =============================================================================
+# Initialized at import time so unhandled exceptions during startup
+# (e.g. broken migrations, settings errors) are also captured. Gated on
+# SENTRY_DSN env var so local dev / CI without a DSN remain silent.
+SENTRY_DSN = decouple.config("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=True,
+            ),
+            LoggingIntegration(level=None, event_level=None),
+        ],
+        # Send 10% of traces in prod, all in dev. Tune via env var.
+        traces_sample_rate=decouple.config(
+            "SENTRY_TRACES_SAMPLE_RATE",
+            default=(1.0 if DEBUG else 0.1),
+            cast=float,
+        ),
+        # Tag releases for source-map / commit linking.
+        release=decouple.config("SENTRY_RELEASE", default=None),
+        environment=decouple.config(
+            "SENTRY_ENVIRONMENT",
+            default=("development" if DEBUG else "production"),
+        ),
+        # Default behavior: send PII (req.user.id etc) — disable if user
+        # objects can contain sensitive PII you don't want shipped to Sentry.
+        send_default_pii=False,
+    )
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -294,18 +334,27 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
 
 # CORS allowed origins for frontend
 # Note: FRONTEND_URL is already set via decouple.config() above
+# Production hosts (https only in prod via Cloudflare's Always-Use-HTTPS):
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8083",
-    "http://localhost:5173",
-    "http://projextpal.com",
     "https://projextpal.com",
-    "http://www.projextpal.com",
     "https://www.projextpal.com",
-    "http://inclufy.co",
     "https://inclufy.co",
-    "http://app.inclufy.co",
     "https://app.inclufy.co",
 ]
+
+# Development hosts (localhost dev servers + insecure http fallbacks) only when DEBUG=True.
+# Production must never accept localhost origins — they don't exist there and
+# would only be exploitable in attacks that forge the Origin header.
+if DEBUG:
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:8083",
+        "http://localhost:5173",
+        "http://projextpal.com",
+        "http://www.projextpal.com",
+        "http://inclufy.co",
+        "http://app.inclufy.co",
+    ]
+
 CORS_ALLOW_CREDENTIALS = True
 
 # Logging configuration
