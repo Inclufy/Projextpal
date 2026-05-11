@@ -104,6 +104,9 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
           push: true
+          build-args: |
+            VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+            VITE_APP_VERSION=${{ github.sha }}
           tags: |
             ghcr.io/${{ steps.image.outputs.name }}-web:${{ github.sha }}
             ghcr.io/${{ steps.image.outputs.name }}-web:latest

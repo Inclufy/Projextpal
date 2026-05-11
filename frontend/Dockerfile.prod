@@ -10,6 +10,16 @@ COPY . .
 ENV VITE_BACKEND_URL=https://projextpal.com/api/v1
 ENV VITE_API_URL=https://projextpal.com/api/v1
 
+# Sentry DSN — passed in by CI via --build-arg from the VITE_SENTRY_DSN secret.
+# Vite bakes import.meta.env.VITE_* into the bundle at build time, so this
+# must be present during `npm run build` (not at container runtime).
+ARG VITE_SENTRY_DSN=""
+ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
+
+# App version — surfaced in Sentry as `release` for source-map matching.
+ARG VITE_APP_VERSION=""
+ENV VITE_APP_VERSION=${VITE_APP_VERSION}
+
 RUN npm run build
 
 FROM nginx:alpine
