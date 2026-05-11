@@ -147,6 +147,10 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "forgot_password": "3/10min",
+        # Public landing-page chatbot — defense-in-depth with Cloudflare WAF
+        # rate-limit. Caps anonymous OpenAI calls at 20/hour per IP at the
+        # Django layer (Cloudflare is plan-tier limited to 10s windows).
+        "public_chat": "20/hour",
     },
 }
 
