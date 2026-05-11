@@ -4,6 +4,8 @@
     "slug": "projextpal",
     "version": "1.1.0",
     "orientation": "portrait",
+    "privacyPolicyUrl": "https://inclufy.com/privacy",
+    "supportUrl": "https://inclufy.com/support",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
