@@ -3,14 +3,14 @@ import json
 import re
 import requests
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def ai_curate_course(request):
     print("\n" + "="*50)
     print("AI CURATE COURSE CALLED")
@@ -74,7 +74,7 @@ def ai_curate_course(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def ai_generate_module(request):
     return Response({'error': 'Not implemented'}, status=501)
 
@@ -122,7 +122,7 @@ Provide feedback after answers. Answer in English. Max 200 words."""
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def ai_coach_message(request):
     """AI Coach endpoint - personalized learning assistant for academy lessons"""
     try:
@@ -223,7 +223,7 @@ Answer ONLY in valid JSON format. Answer in English."""
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def ai_generate_practice(request):
     """Generate a personalized practice assignment based on sector and role"""
     try:
