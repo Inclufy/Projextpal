@@ -113,6 +113,13 @@ urlpatterns = [
     path("company-api-keys/<str:provider>/", CompanyApiKeysView.as_view(), name="company_api_key_detail"),
 ]
 
+# GDPR endpoints (Art. 15 + Art. 17) — see accounts/gdpr.py for design notes.
+from .gdpr import DataExportView, AccountDeleteView  # noqa: E402
+urlpatterns += [
+    path("me/export/", DataExportView.as_view(), name="gdpr_data_export"),
+    path("me/delete/", AccountDeleteView.as_view(), name="gdpr_account_delete"),
+]
+
 urlpatterns += router.urls
 # Team Invitations
 from .invitation_views import CreateInvitationView, AcceptInvitationView, ListInvitationsView
