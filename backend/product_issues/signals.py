@@ -171,6 +171,57 @@ def _issue_url(issue: ProductIssue) -> str:
     return f"{base}/dashboard?issue={issue.id}"
 
 
+def _detect_client(env) -> str:
+    """Detect whether the issue was reported from a web or mobile client.
+
+    Inspects `environment` JSONField for explicit signals first, then falls
+    back to UA heuristics. Mirrors the same logic in the Supabase edge
+    function (supabase/functions/product-issue-lifecycle/index.ts) so AMOS,
+    Finance, and ProjeXtPal all produce subjects in the same `· Web` /
+    `· Mobile` shape.
+
+    Returns "Web", "Mobile", or "" if origin can't be determined.
+    """
+    if not env or not isinstance(env, dict):
+        return ""
+
+    # Explicit signals win
+    client = str(env.get("client") or env.get("client_type") or "").lower()
+    if client in ("mobile", "ios", "android"):
+        return "Mobile"
+    if client in ("web", "browser"):
+        return "Web"
+
+    # Platform field next
+    platform = str(env.get("platform") or "").lower()
+    if platform in ("ios", "android"):
+        return "Mobile"
+
+    # UA heuristic
+    ua = str(env.get("user_agent") or env.get("userAgent") or "")
+    import re
+    if re.search(r"Expo|ReactNative|React Native|InclufyGO|com\.inclufy", ua, re.IGNORECASE):
+        return "Mobile"
+    if ua:
+        return "Web"
+    return ""
+
+
+def _client_suffix(env) -> str:
+    """Return ` · Mobile` / ` · Web` / `` for use in email subject prefixes."""
+    c = _detect_client(env)
+    return f" · {c}" if c else ""
+
+
+def _app_prefix(issue: ProductIssue) -> str:
+    """Return the bracketed app prefix for email subjects.
+
+    e.g. `[ProjeXtPal · Mobile]` or `[ProjeXtPal · Web]` or `[ProjeXtPal]`
+    when client origin can't be determined.
+    """
+    return f"[ProjeXtPal{_client_suffix(getattr(issue, 'environment', None))}]"
+
+
 def _send_email_safe(
     *,
     subject: str,
@@ -289,7 +340,7 @@ def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kw
 # ---------------------------------------------------------------------------
 
 def _notify_admins_new_issue(issue: ProductIssue, issue_url: str) -> None:
-    subject = f"[ProjeXtPal] Nieuwe issue: {issue.title[:80]}"
+    subject = f"{_app_prefix(issue)} Nieuwe issue: {issue.title[:80]}"
     reporter_name = issue.reporter.email if issue.reporter else "(anonymous / system)"
     company_name = issue.company.name if issue.company_id else "(no company)"
 
@@ -324,7 +375,7 @@ def _notify_reporter_progress(issue: ProductIssue, issue_url: str, old_status: s
     if not issue.reporter or not issue.reporter.email:
         return
     new_status = issue.get_status_display()
-    subject = f"[ProjeXtPal] Update over jouw issue: {issue.title[:60]}"
+    subject = f"{_app_prefix(issue)} Update over jouw issue: {issue.title[:60]}"
     text = (
         f"Hallo {issue.reporter.first_name or 'daar'},\n\n"
         f"Je gemelde issue '{issue.title}' is nu in status: {new_status}.\n"
@@ -352,7 +403,7 @@ def _notify_reporter_progress(issue: ProductIssue, issue_url: str, old_status: s
 def _notify_reporter_resolved(issue: ProductIssue, issue_url: str) -> None:
     if not issue.reporter or not issue.reporter.email:
         return
-    subject = f"[ProjeXtPal] Opgelost: {issue.title[:70]}"
+    subject = f"{_app_prefix(issue)} Opgelost: {issue.title[:70]}"
     resolution = issue.resolution_summary or "(geen samenvatting beschikbaar — vraag support voor details)"
 
     text = (
@@ -411,7 +462,10 @@ def _notify_superadmin_escalation(issue: ProductIssue, issue_url: str, reason: s
         else "(not attempted)"
     )
 
-    subject = f"[ProjeXtPal — AI ESCALATIE] {issue.title[:70]}"
+    # Escalation prefix puts `— AI ESCALATIE` inside the brackets to match
+    # the Supabase edge function format and keep the visual urgency.
+    suffix = _client_suffix(getattr(issue, "environment", None))
+    subject = f"[ProjeXtPal{suffix} — AI ESCALATIE] {issue.title[:70]}"
 
     text = (
         f"AI-triage escalatie naar superadmin.\n\n"
@@ -482,7 +536,7 @@ def _notify_superadmin_escalation(issue: ProductIssue, issue_url: str, reason: s
 
 
 def _notify_admins_progress(issue: ProductIssue, issue_url: str, new_status_display: str) -> None:
-    subject = f"[ProjeXtPal] Issue → {new_status_display}: {issue.title[:60]}"
+    subject = f"{_app_prefix(issue)} Issue → {new_status_display}: {issue.title[:60]}"
     text = (
         f"Issue status gewijzigd.\n\n"
         f"Titel: {issue.title}\n"
