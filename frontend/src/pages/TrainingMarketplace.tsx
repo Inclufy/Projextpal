@@ -621,8 +621,8 @@ const TrainingMarketplace = () => {
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold text-foreground">{rating}</span>
                 </div>
-                <span>•</span>
-                <span>{students.toLocaleString()} {content.labels.students}</span>
+                {/* Students-counter verborgen tot werkelijke cursistenaantallen beschikbaar
+                    zijn (CRKBO eis 1a/1b: waarheidsgetrouwe informatie). */}
               </div>
             </div>
           </div>

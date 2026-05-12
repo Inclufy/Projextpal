@@ -856,10 +856,8 @@ const CourseDetail = () => {
                   <span className="font-bold text-gray-900 dark:text-white">{safeCourse.rating}</span>
                   <span className="text-gray-500">({safeCourse.reviewCount.toLocaleString()} {isNL ? 'beoordelingen' : 'reviews'})</span>
                 </div>
-                <div className="flex items-center gap-1 text-gray-500">
-                  <Users className="h-4 w-4" />
-                  <span>{safeCourse.students.toLocaleString()} {isNL ? 'studenten' : 'students'}</span>
-                </div>
+                {/* Students-counter verborgen tot werkelijke cursistenaantallen beschikbaar
+                    zijn (CRKBO eis 1a/1b: waarheidsgetrouwe informatie). */}
                 <Badge variant="outline" className="text-gray-600">
                   {safeCourse.difficulty}
                 </Badge>
@@ -970,10 +968,8 @@ const CourseDetail = () => {
                         <Star className="h-4 w-4 text-yellow-400" />
                         {safeCourse.instructor.rating}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {safeCourse.instructor.students.toLocaleString()}
-                      </span>
+                      {/* Instructor students-counter verborgen tot werkelijke cursistenaantallen
+                          beschikbaar zijn (CRKBO eis 1a/1b: waarheidsgetrouwe informatie). */}
                       <span className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4" />
                         {safeCourse.instructor.courses} {isNL ? 'cursussen' : 'courses'}
