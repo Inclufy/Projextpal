@@ -96,41 +96,52 @@ class UserCreateSerializer(serializers.ModelSerializer):
         ]
     
     def create(self, validated_data):
+        # See accounts/serializers.py:AdminCreateUserSerializer.create for the
+        # same atomic + non-fatal-email pattern (fix committed 04c5a824 on
+        # 2026-05-12). Avoids a half-provisioned user row when SMTP fails.
+        from django.db import transaction
+        with transaction.atomic():
+            return self._create_atomic(validated_data)
+
+    def _create_atomic(self, validated_data):
+        import logging
+        logger = logging.getLogger(__name__)
+
         send_invite = validated_data.pop('send_invite', True)
         password = validated_data.pop('password', None)
-        
+
         # Generate username from email if not provided
         if not validated_data.get('username'):
             validated_data['username'] = validated_data['email'].split('@')[0]
-        
+
         user = User(**validated_data)
-        
+
         if password:
             user.set_password(password)
         else:
             # Set unusable password - user will need to set via invite
             user.set_unusable_password()
             user.is_active = False
-        
+
         user.save()
-        
+
         # Send invite email if send_invite is True
         if send_invite and not password:
             from accounts.models import VerificationToken
             from django.core.mail import EmailMultiAlternatives
             from django.template.loader import render_to_string
             from django.conf import settings
-            
+
             # Create verification token
             verification_token = VerificationToken.objects.create(user=user)
             verification_url = f"{settings.FRONTEND_URL}/verify-email/{verification_token.token}/"
-            
+
             # Render HTML template
             html_content = render_to_string("emails/verify_email.html", {
                 "first_name": user.first_name or user.email.split('@')[0],
                 "verification_url": verification_url,
             })
-            
+
             # Plain text fallback
             text_content = f"""Hi {user.first_name or user.email.split('@')[0]},
 
@@ -142,17 +153,29 @@ This link expires in 24 hours.
 
 Best regards,
 The ProjeXtPal Team"""
-            
-            # Send email with both HTML and text
-            email = EmailMultiAlternatives(
-                subject="Welcome to ProjeXtPal - Set Your Password",
-                body=text_content,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
-                to=[user.email],
-            )
-            email.attach_alternative(html_content, "text/html")
-            email.send()
-        
+
+            # Send email with both HTML and text — non-fatal: if SMTP fails,
+            # the user row remains (within the atomic) and admin can resend
+            # the invite manually instead of failing the whole creation.
+            try:
+                email = EmailMultiAlternatives(
+                    subject="Welcome to ProjeXtPal - Set Your Password",
+                    body=text_content,
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
+                    to=[user.email],
+                )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+            except Exception as exc:
+                logger.warning(
+                    "Invite email send failed for user %s (id=%s); user "
+                    "was still created. Admin can resend invite manually. "
+                    "Error: %s",
+                    user.email,
+                    user.id,
+                    exc,
+                )
+
         return user
 
 

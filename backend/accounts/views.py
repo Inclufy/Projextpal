@@ -600,16 +600,30 @@ If you did not request this reset, please contact your administrator.
 Best regards,
 The ProjeXtPal Team"""
         
-        email = EmailMultiAlternatives(
-            subject="Password Reset Requested by Administrator",
-            body=text_content,
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
-            to=[user.email],
-        )
-        email.send()
-        
+        # Non-fatal: SMTP failures should not break the admin flow. Token row
+        # exists; admin can resend or share the URL directly. Same pattern as
+        # accounts/serializers.py:AdminCreateUserSerializer (commit 04c5a824).
+        import logging
+        _logger = logging.getLogger(__name__)
+        email_status = "sent"
+        try:
+            email = EmailMultiAlternatives(
+                subject="Password Reset Requested by Administrator",
+                body=text_content,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
+                to=[user.email],
+            )
+            email.send()
+        except Exception as exc:
+            _logger.warning(
+                "Admin-triggered password-reset email failed for %s. "
+                "Token row exists; admin can share URL directly. Error: %s",
+                user.email, exc,
+            )
+            email_status = "queued (delivery deferred)"
+
         return Response(
-            {"message": f"Password reset email sent to {user.email}"},
+            {"message": f"Password reset email {email_status} to {user.email}"},
             status=status.HTTP_200_OK,
         )
 

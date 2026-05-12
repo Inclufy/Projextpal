@@ -114,6 +114,9 @@ class ForgotPasswordSerializer(serializers.Serializer):
         return value
 
     def save(self):
+        import logging
+        logger = logging.getLogger(__name__)
+
         email = self.validated_data["email"]
         user = CustomUser.objects.get(email=email)
 
@@ -121,17 +124,25 @@ class ForgotPasswordSerializer(serializers.Serializer):
         reset_token = PasswordResetToken.objects.create(user=user)
 
         token_url = f"reset-password/{reset_token.token}/"
-
-        # Send reset email
         reset_url = f"{settings.FRONTEND_URL}/{token_url}"
 
-        # Send reset email
-        send_mail(
-            subject="Reset Your Password",
-            message=f"Click the link to reset your password: {reset_url}\nThis link expires in 1 hour.",
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            recipient_list=[user.email],
-        )
+        # Send reset email — non-fatal: if SMTP fails, the token still exists
+        # and the user can re-request a reset. Throwing here returns 500 to
+        # the caller which leaks "this email exists in our system" to attackers
+        # AND blocks legitimate users when the SMTP provider has a hiccup.
+        try:
+            send_mail(
+                subject="Reset Your Password",
+                message=f"Click the link to reset your password: {reset_url}\nThis link expires in 1 hour.",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[user.email],
+            )
+        except Exception as exc:
+            logger.warning(
+                "Password reset email failed for %s (token=%s). "
+                "User can re-request. Error: %s",
+                user.email, reset_token.token, exc,
+            )
 
 
 # Reset password serializer
