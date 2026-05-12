@@ -43,20 +43,119 @@ logger = logging.getLogger(__name__)
 def _admin_emails() -> list[str]:
     """Return the list of admin email addresses to notify on new + progress.
 
-    Reads `PRODUCT_ISSUE_ADMIN_NOTIFY_EMAILS` env var (comma-separated).
-    Falls back to DEFAULT_FROM_EMAIL or 'sami@inclufy.com'.
+    Merges two sources:
+      1. `PRODUCT_ISSUE_ADMIN_NOTIFY_EMAILS` env var (comma-separated extras)
+      2. DB query: every CustomUser with role='superadmin' OR is_superuser=True
+
+    Superadmins are ALWAYS notified — they cannot opt out via env var
+    omission. This guarantees the platform owner sees every new issue
+    regardless of config drift.
+
+    De-duplicated, lowercased, empties stripped.
     """
+    emails: set[str] = set()
+
+    # 1. Env-var extras (multi-admin list)
     raw = getattr(settings, "PRODUCT_ISSUE_ADMIN_NOTIFY_EMAILS", "") or ""
-    emails = [e.strip() for e in raw.split(",") if e.strip()]
+    for e in raw.split(","):
+        e = e.strip().lower()
+        if e:
+            emails.add(e)
+
+    # 2. Active superadmins from DB. Done lazily so the import order of
+    # apps.ready() doesn't bite. Use the auth user model (settings.AUTH_USER_MODEL)
+    # so this stays portable across the ecosystem.
+    try:
+        from django.contrib.auth import get_user_model
+        from django.db.models import Q
+        User = get_user_model()
+        superadmin_emails = (
+            User.objects.filter(
+                Q(role="superadmin") | Q(is_superuser=True),
+                is_active=True,
+            )
+            .exclude(email="")
+            .values_list("email", flat=True)
+        )
+        for e in superadmin_emails:
+            emails.add(str(e).strip().lower())
+    except Exception as exc:
+        logger.warning("ProductIssue notify: could not query superadmins: %s", exc)
+
+    # 3. Final fallback — never send a notification into the void
     if not emails:
-        fallback = getattr(settings, "DEFAULT_FROM_EMAIL", "") or "sami@inclufy.com"
-        # If DEFAULT_FROM_EMAIL is a display-name form ("ProjeXtPal <noreply@inclufy.com>"),
-        # extract the bare email. Otherwise route admin notifications to sami@.
-        if "<" in fallback and ">" in fallback:
-            emails = ["sami@inclufy.com"]
-        else:
-            emails = [fallback]
-    return emails
+        emails.add("sami@inclufy.com")
+
+    return sorted(emails)
+
+
+def _superadmin_emails() -> list[str]:
+    """Return ONLY the superadmin emails — used for escalation routing.
+
+    Different from `_admin_emails()`: this is the subset that handles
+    issues the AI triage agent cannot resolve. Routing to this list
+    surfaces the "human attention required" pile clearly.
+    """
+    try:
+        from django.contrib.auth import get_user_model
+        from django.db.models import Q
+        User = get_user_model()
+        emails = (
+            User.objects.filter(
+                Q(role="superadmin") | Q(is_superuser=True),
+                is_active=True,
+            )
+            .exclude(email="")
+            .values_list("email", flat=True)
+        )
+        out = sorted({str(e).strip().lower() for e in emails if e})
+        return out or ["sami@inclufy.com"]
+    except Exception as exc:
+        logger.warning("ProductIssue notify: superadmin lookup failed: %s", exc)
+        return ["sami@inclufy.com"]
+
+
+def _needs_human_escalation(issue: ProductIssue, old_status: str | None) -> tuple[bool, str]:
+    """Decide whether this transition warrants a superadmin escalation email.
+
+    Returns (should_escalate, reason). Reason is a one-line explanation
+    shown in the escalation email so the human knows WHY it landed in
+    their inbox.
+
+    Triggers (any one):
+      a) reproduction_result == 'cannot-reproduce' → agent gave up
+      b) reproduction_result == 'needs-data' → agent needs production sample
+      c) status changed to 'needs-info' → agent flagged human input required
+      d) priority == 'P0' (blocker) — always escalate regardless of agent
+      e) classification == 'security' or category == 'security' — never
+         leave a security report sitting in the auto-triage queue
+
+    We only fire on STATE CHANGE (not every save) to avoid spam — if
+    status / priority / reproduction_result didn't change, return False.
+    """
+    # Only consider this a trigger if something MATERIAL changed
+    changed = old_status != issue.status
+
+    # a + b: reproduction failed at the agent level
+    if issue.reproduction_result in ("cannot-reproduce", "needs-data") and changed:
+        return True, (
+            f"AI triage kon issue niet reproduceren (resultaat: "
+            f"{issue.get_reproduction_result_display()})"
+        )
+
+    # c: agent flagged "needs more info from reporter"
+    if issue.status == "needs-info" and old_status != "needs-info":
+        return True, "AI triage heeft extra informatie nodig van de reporter"
+
+    # d: blocker priority — always to superadmin
+    if issue.priority == "P0" and changed:
+        return True, "Priority = P0 (blocker) — automatische escalatie"
+
+    # e: security flag — never leave in auto-queue
+    if (issue.classification == "security" or issue.category == "security") and changed:
+        return True, "Security-classificatie — escalatie naar superadmin verplicht"
+
+    return False, ""
 
 
 def _issue_url(issue: ProductIssue) -> str:
@@ -147,19 +246,32 @@ def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kw
     # ── 1. NEW issue submitted ────────────────────────────────────────────
     if created:
         _notify_admins_new_issue(issue, issue_url)
+        # Brand-new P0 / security issues also escalate immediately
+        should_escalate, reason = _needs_human_escalation(issue, old_status=None)
+        if should_escalate:
+            _notify_superadmin_escalation(issue, issue_url, reason)
         return
 
-    # ── 2. Status changed? ────────────────────────────────────────────────
+    # ── 2. Escalation to superadmin (if AI can't resolve) ─────────────────
+    # Always check this BEFORE the status-change branch so we never miss
+    # a transition that lands the issue in a "needs human" state.
+    should_escalate, reason = _needs_human_escalation(issue, old_status)
+    if should_escalate:
+        _notify_superadmin_escalation(issue, issue_url, reason)
+        # Don't return — we still want the normal status-change email
+        # to go to reporter + admin watchlist below.
+
+    # ── 3. Status changed? ────────────────────────────────────────────────
     if old_status == issue.status:
         return  # nothing of consequence changed
 
-    # 2a. RESOLVED → notify reporter (closing email)
+    # 3a. RESOLVED → notify reporter (closing email)
     if issue.status == "resolved":
         _notify_reporter_resolved(issue, issue_url)
         _notify_admins_progress(issue, issue_url, "Resolved")
         return
 
-    # 2b. Status progressed (new → triaging → in_review → in_progress, etc.)
+    # 3b. Status progressed (new → triaging → in_review → in_progress, etc.)
     # Notify reporter "we're on it" + admins for visibility.
     _notify_reporter_progress(issue, issue_url, old_status)
     _notify_admins_progress(issue, issue_url, issue.get_status_display())
@@ -264,6 +376,101 @@ def _notify_reporter_resolved(issue: ProductIssue, issue_url: str) -> None:
     _send_email_safe(
         subject=subject, text_body=text, html_body=html,
         to=[issue.reporter.email],
+    )
+
+
+def _notify_superadmin_escalation(issue: ProductIssue, issue_url: str, reason: str) -> None:
+    """Send an URGENT escalation email to all active superadmins.
+
+    Fires when the AI triage agent cannot resolve the issue (cannot-reproduce,
+    needs-data, needs-info) OR the priority is P0 (blocker) OR the
+    classification is security. Distinct from the regular admin-progress
+    email — uses a red accent + 'AI escalatie' subject prefix so it stands
+    out in the inbox.
+    """
+    targets = _superadmin_emails()
+    if not targets:
+        return
+
+    reporter_email = issue.reporter.email if issue.reporter else "(anonymous / system)"
+    company_name = issue.company.name if issue.company_id else "(no company)"
+    priority_display = issue.get_priority_display() if issue.priority else "(not set)"
+    classification_display = (
+        issue.get_classification_display() if issue.classification else "(not set)"
+    )
+    repro_display = (
+        issue.get_reproduction_result_display()
+        if issue.reproduction_result
+        else "(not attempted)"
+    )
+
+    subject = f"[ProjeXtPal — AI ESCALATIE] {issue.title[:70]}"
+
+    text = (
+        f"AI-triage escalatie naar superadmin.\n\n"
+        f"Reden: {reason}\n\n"
+        f"--- Issue details ---\n"
+        f"Titel:           {issue.title}\n"
+        f"Status:          {issue.get_status_display()}\n"
+        f"Priority:        {priority_display}\n"
+        f"Classification:  {classification_display}\n"
+        f"Reproduction:    {repro_display}\n"
+        f"Reporter:        {reporter_email}\n"
+        f"Company:         {company_name}\n"
+        f"Source:          {issue.get_source_display()}\n\n"
+        f"--- Beschrijving ---\n"
+        f"{issue.description or '(geen beschrijving)'}\n\n"
+        f"Open issue: {issue_url}\n\n"
+        f"De AI-triage agent kon dit niet zelfstandig afhandelen — "
+        f"menselijke beoordeling nodig.\n"
+    )
+
+    description_html = (issue.description or "(geen beschrijving)").replace("\n", "<br>")
+    html_body = f"""
+      <p style="font-size: 15px; color: #b91c1c; font-weight: 600;">
+        ⚠️ AI-triage agent kan dit issue niet zelfstandig oplossen — menselijke beoordeling nodig
+      </p>
+      <p style="font-size: 14px; background: #fef2f2; border-left: 3px solid #ef4444; padding: 12px 16px; margin: 16px 0;">
+        <strong>Reden:</strong> {reason}
+      </p>
+      <table style="width:100%; font-size:14px; border-collapse:collapse; margin: 16px 0;">
+        <tr><td style="padding:6px 0; color:#6b7280; width:140px;">Titel</td><td style="padding:6px 0;"><strong>{issue.title}</strong></td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Status</td><td style="padding:6px 0;"><span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:600;">{issue.get_status_display()}</span></td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Priority</td><td style="padding:6px 0;">{priority_display}</td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Classification</td><td style="padding:6px 0;">{classification_display}</td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Reproduction</td><td style="padding:6px 0;">{repro_display}</td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Reporter</td><td style="padding:6px 0;">{reporter_email}</td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Company</td><td style="padding:6px 0;">{company_name}</td></tr>
+        <tr><td style="padding:6px 0; color:#6b7280;">Source</td><td style="padding:6px 0;">{issue.get_source_display()}</td></tr>
+      </table>
+      <p style="font-size: 13px; color: #6b7280; margin-top: 12px;"><strong>Beschrijving</strong></p>
+      <p style="font-size: 13px; color: #374151; background: #f9fafb; padding: 12px; border-radius: 6px; line-height: 1.6;">
+        {description_html}
+      </p>
+    """
+    # Use a custom red-accent wrapper for visual urgency
+    html = f"""<!DOCTYPE html>
+<html><body style="font-family: -apple-system, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; color: #1a1a1a;">
+  <div style="background: linear-gradient(135deg, #b91c1c, #ef4444); color: white; padding: 28px 24px; border-radius: 12px 12px 0 0;">
+    <h1 style="margin: 0; font-size: 22px;">AI Escalatie — Superadmin actie nodig</h1>
+    <p style="margin: 8px 0 0; opacity: 0.95; font-size: 14px;">Auto-triage kon dit issue niet afhandelen</p>
+  </div>
+  <div style="background: #fafafa; padding: 32px 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+    {html_body}
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="{issue_url}" style="background: #b91c1c; color: white; padding: 13px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 14px;">Open issue voor beoordeling →</a>
+    </div>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+    <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+      Deze mail gaat ALLEEN naar actieve superadmins. Andere admins zien dit issue ook in hun normale notificaties.<br>
+      ProjeXtPal · Inclufy
+    </p>
+  </div>
+</body></html>"""
+
+    _send_email_safe(
+        subject=subject, text_body=text, html_body=html,
+        to=targets,
     )
 
 
