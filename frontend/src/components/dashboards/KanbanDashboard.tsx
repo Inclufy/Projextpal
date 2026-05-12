@@ -1,82 +1,46 @@
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
-  Columns, Clock, TrendingUp, AlertTriangle, CheckCircle2,
-  Timer, BarChart3, ArrowRight
+  Columns, Clock, TrendingUp, AlertTriangle,
+  Timer, BarChart3, Loader2
 } from 'lucide-react';
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { kanbanApi } from '@/lib/kanbanApi';
 
 interface KanbanDashboardProps {
   project: any;
 }
 
 const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
-  const { pt } = usePageTranslations();
+  const projectId = project?.id;
 
-  const columns = [
-    { 
-      name: pt('Backlog'),
-      color: 'bg-gray-100',
-      textColor: 'text-gray-700',
-      wipLimit: null,
-      items: [
-        { id: 1, title: 'Research competitor features', priority: 'low', daysInColumn: 5 },
-        { id: 2, title: 'Design system updates', priority: 'medium', daysInColumn: 3 },
-        { id: 3, title: 'API documentation', priority: 'low', daysInColumn: 7 },
-      ]
-    },
-    {
-      name: pt('Ready'),
-      color: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      wipLimit: 5,
-      items: [
-        { id: 4, title: 'User profile page', priority: 'high', daysInColumn: 2 },
-        { id: 5, title: 'Notification system', priority: 'medium', daysInColumn: 1 },
-      ]
-    },
-    {
-      name: pt('In Progress'),
-      color: 'bg-yellow-50',
-      textColor: 'text-yellow-700',
-      wipLimit: 3,
-      items: [
-        { id: 6, title: 'Dashboard analytics', priority: 'high', daysInColumn: 3, assignee: 'JD' },
-        { id: 7, title: 'Payment integration', priority: 'high', daysInColumn: 4, assignee: 'SM', blocked: true },
-      ]
-    },
-    {
-      name: pt('Review'),
-      color: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      wipLimit: 3,
-      items: [
-        { id: 8, title: 'Email templates', priority: 'medium', daysInColumn: 1, assignee: 'AK' },
-      ]
-    },
-    {
-      name: pt('Done'),
-      color: 'bg-green-50',
-      textColor: 'text-green-700',
-      wipLimit: null,
-      items: [
-        { id: 9, title: 'Login flow', priority: 'high', daysInColumn: 0 },
-        { id: 10, title: 'Database schema', priority: 'high', daysInColumn: 0 },
-        { id: 11, title: 'CI/CD pipeline', priority: 'medium', daysInColumn: 0 },
-      ]
-    },
-  ];
+  // Fetch real data from backend (no hardcoded mock data)
+  const { data: dashboard, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['kanban', 'dashboard', projectId],
+    queryFn: () => kanbanApi.dashboard.get(projectId),
+    enabled: !!projectId,
+  });
 
+  if (dashboardLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  const columns = dashboard?.columns ?? [];
   const metrics = {
-    avgLeadTime: 8.5,
-    avgCycleTime: 4.2,
-    throughput: 12,
-    blockedItems: 1,
+    avgLeadTime: dashboard?.avg_lead_time ?? null,
+    avgCycleTime: dashboard?.avg_cycle_time ?? null,
+    throughput: dashboard?.cards_completed_today ?? 0,
+    blockedItems: dashboard?.blocked_count ?? 0,
+    totalCards: dashboard?.total_cards ?? 0,
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
+      case 'critical':
       case 'high': return 'bg-red-100 text-red-700 border-red-200';
       case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'low': return 'bg-green-100 text-green-700 border-green-200';
@@ -84,9 +48,51 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
     }
   };
 
-  const isOverWip = (column: typeof columns[0]) => {
-    return column.wipLimit && column.items.length > column.wipLimit;
+  const getColumnBg = (column: any) => {
+    switch (column.column_type) {
+      case 'backlog': return 'bg-gray-100';
+      case 'todo': return 'bg-blue-50';
+      case 'in_progress': return 'bg-yellow-50';
+      case 'review': return 'bg-purple-50';
+      case 'done': return 'bg-green-50';
+      default: return 'bg-gray-50';
+    }
   };
+
+  const getColumnText = (column: any) => {
+    switch (column.column_type) {
+      case 'backlog': return 'text-gray-700';
+      case 'todo': return 'text-blue-700';
+      case 'in_progress': return 'text-yellow-700';
+      case 'review': return 'text-purple-700';
+      case 'done': return 'text-green-700';
+      default: return 'text-gray-700';
+    }
+  };
+
+  // No board yet — empty state
+  if (!dashboard?.has_board) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg p-6 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            <Columns className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Kanban Board</h2>
+          </div>
+          <p className="text-blue-100">Continuous flow with WIP limits</p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Columns className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-medium">No Kanban board yet</h3>
+            <p className="text-muted-foreground mt-2">
+              Initialize a Kanban board from the Kanban page to get started.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -96,18 +102,20 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Columns className="h-6 w-6" />
-              <h2 className="text-2xl font-bold">{pt('Kanban Board')}</h2>
+              <h2 className="text-2xl font-bold">Kanban Board</h2>
             </div>
-            <p className="text-blue-100">{pt('Continuous flow with WIP limits')}</p>
+            <p className="text-blue-100">Continuous flow with WIP limits</p>
           </div>
           <div className="flex gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold">{metrics.throughput}</div>
-              <div className="text-blue-100 text-sm">{pt('Items/Week')}</div>
+              <div className="text-blue-100 text-sm">Completed Today</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">{metrics.avgCycleTime}d</div>
-              <div className="text-blue-100 text-sm">{pt('Avg Cycle Time')}</div>
+              <div className="text-3xl font-bold">
+                {metrics.avgCycleTime != null ? `${metrics.avgCycleTime.toFixed(1)}h` : '—'}
+              </div>
+              <div className="text-blue-100 text-sm">Avg Cycle Time</div>
             </div>
           </div>
         </div>
@@ -122,8 +130,10 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
                 <Timer className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{metrics.avgLeadTime}d</p>
-                <p className="text-sm text-muted-foreground">{pt('Lead Time')}</p>
+                <p className="text-2xl font-bold">
+                  {metrics.avgLeadTime != null ? `${metrics.avgLeadTime.toFixed(1)}h` : '—'}
+                </p>
+                <p className="text-sm text-muted-foreground">Lead Time</p>
               </div>
             </div>
           </CardContent>
@@ -135,8 +145,10 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
                 <Clock className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{metrics.avgCycleTime}d</p>
-                <p className="text-sm text-muted-foreground">{pt('Cycle Time')}</p>
+                <p className="text-2xl font-bold">
+                  {metrics.avgCycleTime != null ? `${metrics.avgCycleTime.toFixed(1)}h` : '—'}
+                </p>
+                <p className="text-sm text-muted-foreground">Cycle Time</p>
               </div>
             </div>
           </CardContent>
@@ -148,8 +160,8 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{metrics.throughput}</p>
-                <p className="text-sm text-muted-foreground">{pt('Throughput/Week')}</p>
+                <p className="text-2xl font-bold">{metrics.totalCards}</p>
+                <p className="text-sm text-muted-foreground">Total Cards</p>
               </div>
             </div>
           </CardContent>
@@ -162,7 +174,7 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{metrics.blockedItems}</p>
-                <p className="text-sm text-muted-foreground">{pt('Blocked Items')}</p>
+                <p className="text-sm text-muted-foreground">Blocked Items</p>
               </div>
             </div>
           </CardContent>
@@ -174,99 +186,89 @@ const KanbanDashboard = ({ project }: KanbanDashboardProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Columns className="h-5 w-5" />
-            {pt('Work Items')}
+            Work Items
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {columns.map((column, colIndex) => (
-              <div 
-                key={column.name} 
-                className={`flex-shrink-0 w-64 rounded-lg p-3 ${column.color} ${isOverWip(column) ? 'ring-2 ring-red-500' : ''}`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className={`font-semibold ${column.textColor}`}>{column.name}</h3>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={isOverWip(column) ? 'destructive' : 'secondary'}>
-                      {column.items.length}
-                      {column.wipLimit && `/${column.wipLimit}`}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {isOverWip(column) && (
-                  <div className="bg-red-100 text-red-700 text-xs p-2 rounded mb-3 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {pt('WIP limit exceeded!')}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  {column.items.map(item => (
-                    <div 
-                      key={item.id} 
-                      className={`bg-white p-3 rounded-lg shadow-sm border ${item.blocked ? 'border-red-300 bg-red-50' : ''}`}
-                    >
-                      {item.blocked && (
-                        <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
-                          <AlertTriangle className="h-3 w-3" />
-                          {pt('Blocked')}
-                        </div>
-                      )}
-                      <p className="text-sm font-medium">{item.title}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <Badge className={`text-xs ${getPriorityColor(item.priority)}`}>
-                          {pt(item.priority)}
-                        </Badge>
-                        <div className="flex items-center gap-2">
-                          {item.daysInColumn > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              {item.daysInColumn}d
-                            </span>
-                          )}
-                          {item.assignee && (
-                            <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-xs">
-                              {item.assignee}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+          {columns.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              No columns configured yet — set up columns from the Kanban Board Configuration page.
+            </p>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {columns.map((column: any) => {
+                const cards = column.cards ?? [];
+                const isOverWip = column.is_wip_exceeded;
+                return (
+                  <div
+                    key={column.id}
+                    className={`flex-shrink-0 w-64 rounded-lg p-3 ${getColumnBg(column)} ${isOverWip ? 'ring-2 ring-red-500' : ''}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className={`font-semibold ${getColumnText(column)}`}>{column.name}</h3>
+                      <Badge variant={isOverWip ? 'destructive' : 'secondary'}>
+                        {column.cards_count ?? cards.length}
+                        {column.wip_limit && `/${column.wip_limit}`}
+                      </Badge>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+
+                    {isOverWip && (
+                      <div className="bg-red-100 text-red-700 text-xs p-2 rounded mb-3 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        WIP limit exceeded!
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      {cards.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic text-center py-2">No cards</p>
+                      ) : (
+                        cards.map((card: any) => (
+                          <div
+                            key={card.id}
+                            className={`bg-white p-3 rounded-lg shadow-sm border ${card.is_blocked ? 'border-red-300 bg-red-50' : ''}`}
+                          >
+                            {card.is_blocked && (
+                              <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                                <AlertTriangle className="h-3 w-3" />
+                                Blocked
+                              </div>
+                            )}
+                            <p className="text-sm font-medium">{card.title}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <Badge className={`text-xs ${getPriorityColor(card.priority)}`}>
+                                {card.priority}
+                              </Badge>
+                              {card.assignee_name && (
+                                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-xs">
+                                  {card.assignee_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Cumulative Flow Diagram */}
+      {/* Cumulative Flow Diagram — TODO: wire to backend endpoint /kanban/cumulative-flow/ */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            {pt('Cumulative Flow Diagram')}
+            Cumulative Flow Diagram
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-48 flex items-end gap-1">
-            {[...Array(14)].map((_, i) => (
-              <div key={i} className="flex-1 flex flex-col">
-                <div className="bg-green-400 h-8 rounded-t" />
-                <div className="bg-purple-400" style={{ height: `${10 + Math.random() * 10}px` }} />
-                <div className="bg-yellow-400" style={{ height: `${15 + Math.random() * 10}px` }} />
-                <div className="bg-blue-400" style={{ height: `${10 + Math.random() * 10}px` }} />
-                <div className="bg-gray-400" style={{ height: `${20 + Math.random() * 15}px` }} />
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center gap-4 mt-4 text-sm flex-wrap">
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-gray-400 rounded" /><span>{pt('Backlog')}</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-400 rounded" /><span>{pt('Ready')}</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded" /><span>{pt('In Progress')}</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-400 rounded" /><span>{pt('Review')}</span></div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-400 rounded" /><span>{pt('Done')}</span></div>
-          </div>
+          <p className="text-sm text-muted-foreground text-center py-6">
+            Cumulative flow diagram will appear here once enough historical data has been collected.
+          </p>
         </CardContent>
       </Card>
     </div>

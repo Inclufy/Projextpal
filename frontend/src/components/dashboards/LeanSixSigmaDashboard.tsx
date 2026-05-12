@@ -1,77 +1,86 @@
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import {
-  Target, CheckCircle2, Clock, AlertCircle, TrendingUp,
-  BarChart3, Activity, Award, ArrowRight
+  Target, CheckCircle2, Clock,
+  BarChart3, Activity, Award, ArrowRight, Loader2
 } from 'lucide-react';
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { sixsigmaApi } from '@/lib/sixsigmaApi';
 
 interface LeanSixSigmaDashboardProps {
   project: any;
   level?: 'green' | 'black';
 }
 
+const DMAIC_PHASES = [
+  {
+    phase: 'Define',
+    deliverables: ['Project Charter', 'SIPOC', 'Voice of Customer'],
+  },
+  {
+    phase: 'Measure',
+    deliverables: ['Data Collection Plan', 'MSA', 'Process Capability'],
+  },
+  {
+    phase: 'Analyze',
+    deliverables: ['Root Cause Analysis', 'Fishbone Diagram', 'Pareto Chart', 'Hypothesis Tests'],
+  },
+  {
+    phase: 'Improve',
+    deliverables: ['Solution Design', 'Pilot Plan', 'Implementation'],
+  },
+  {
+    phase: 'Control',
+    deliverables: ['Control Plan', 'SPC Charts', 'Documentation'],
+  },
+];
+
 const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboardProps) => {
-  const { pt } = usePageTranslations();
-
-  const dmaic = [
-    { 
-      phase: pt('Define'),
-      status: 'completed',
-      progress: 100,
-      deliverables: ['Project Charter', 'SIPOC', 'Voice of Customer'],
-      completedDeliverables: 3
-    },
-    {
-      phase: pt('Measure'),
-      status: 'completed',
-      progress: 100,
-      deliverables: ['Data Collection Plan', 'MSA', 'Process Capability'],
-      completedDeliverables: 3
-    },
-    {
-      phase: pt('Analyze'),
-      status: 'current',
-      progress: 60,
-      deliverables: ['Root Cause Analysis', 'Fishbone Diagram', 'Pareto Chart', 'Hypothesis Tests'],
-      completedDeliverables: 2
-    },
-    {
-      phase: pt('Improve'),
-      status: 'upcoming',
-      progress: 0,
-      deliverables: ['Solution Design', 'Pilot Plan', 'Implementation'],
-      completedDeliverables: 0
-    },
-    {
-      phase: pt('Control'),
-      status: 'upcoming',
-      progress: 0,
-      deliverables: ['Control Plan', 'SPC Charts', 'Documentation'],
-      completedDeliverables: 0
-    },
-  ];
-
-  const metrics = {
-    baselineSigma: 2.1,
-    currentSigma: 3.4,
-    targetSigma: 4.0,
-    defectRate: { before: 30.8, current: 6.7, target: 0.62 },
-    savings: { projected: 150000, realized: 85000 },
-  };
-
-  const tollgates = [
-    { name: 'Tollgate 1 - Define', status: 'passed', date: '2025-10-15' },
-    { name: 'Tollgate 2 - Measure', status: 'passed', date: '2025-11-01' },
-    { name: 'Tollgate 3 - Analyze', status: 'pending', date: null },
-    { name: 'Tollgate 4 - Improve', status: 'upcoming', date: null },
-    { name: 'Tollgate 5 - Control', status: 'upcoming', date: null },
-  ];
-
-  const currentPhase = dmaic.find(p => p.status === 'current');
+  const projectId = project?.id;
   const isBlackBelt = level === 'black';
+
+  // Fetch real data from backend (no hardcoded mock data)
+  const { data: dashboard, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['sixsigma', 'dashboard', projectId],
+    queryFn: () => sixsigmaApi.dashboard.get(projectId),
+    enabled: !!projectId,
+  });
+
+  if (dashboardLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+      </div>
+    );
+  }
+
+  // Derive DMAIC phase status from real backend data
+  const currentPhase = (dashboard?.current_phase ?? 'define').toLowerCase();
+  const phaseOrder = ['define', 'measure', 'analyze', 'improve', 'control'];
+  const currentIndex = Math.max(0, phaseOrder.indexOf(currentPhase));
+
+  const dmaic = DMAIC_PHASES.map((p, i) => ({
+    ...p,
+    status: i < currentIndex ? 'completed' : i === currentIndex ? 'current' : 'upcoming',
+    progress: i < currentIndex ? 100 : i === currentIndex ? 50 : 0,
+  }));
+
+  // Derive tollgate list from real backend dictionary
+  const tollgateStatus = dashboard?.tollgate_status ?? {};
+  const tollgates = phaseOrder.map((phase, i) => {
+    const status = tollgateStatus[phase] ?? (i < currentIndex ? 'passed' : i === currentIndex ? 'pending' : 'upcoming');
+    return {
+      name: `Tollgate ${i + 1} - ${phase.charAt(0).toUpperCase()}${phase.slice(1)}`,
+      status,
+      date: null as string | null,
+    };
+  });
+
+  const baselineMetrics = dashboard?.baseline_metrics ?? [];
+  const hasMetrics = baselineMetrics.length > 0;
+
+  const currentPhaseData = dmaic.find((p) => p.status === 'current');
 
   return (
     <div className="space-y-6">
@@ -82,76 +91,70 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-6 w-6" />
               <h2 className="text-2xl font-bold">
-                {pt('Lean Six Sigma')} {isBlackBelt ? `(${pt('Black Belt')})` : `(${pt('Green Belt')})`}
+                Lean Six Sigma {isBlackBelt ? '(Black Belt)' : '(Green Belt)'}
               </h2>
             </div>
             <p className={isBlackBelt ? 'text-gray-300' : 'text-green-100'}>
-              {pt('DMAIC Process Improvement')}
+              DMAIC Process Improvement
             </p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
               <Award className={`h-8 w-8 ${isBlackBelt ? 'text-yellow-400' : 'text-green-200'}`} />
               <div>
-                <div className="text-3xl font-bold">{metrics.currentSigma}σ</div>
-                <div className={isBlackBelt ? 'text-gray-300' : 'text-green-100'}>{pt('Current Level')}</div>
+                <div className="text-3xl font-bold capitalize">{currentPhase}</div>
+                <div className={isBlackBelt ? 'text-gray-300' : 'text-green-100'}>Current Phase</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sigma Level Progress */}
+      {/* Sigma Level / Baseline Metrics */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            {pt('Sigma Level Improvement')}
+            Baseline Metrics
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-8">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-2">
-                <span>{pt('Baseline')}: {metrics.baselineSigma}σ</span>
-                <span>{pt('Current')}: {metrics.currentSigma}σ</span>
-                <span>{pt('Target')}: {metrics.targetSigma}σ</span>
-              </div>
-              <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className="absolute h-full bg-red-400 rounded-l-full"
-                  style={{ width: `${(metrics.baselineSigma / 6) * 100}%` }}
-                />
-                <div 
-                  className={`absolute h-full ${isBlackBelt ? 'bg-gray-700' : 'bg-green-500'} rounded-l-full transition-all`}
-                  style={{ width: `${(metrics.currentSigma / 6) * 100}%` }}
-                />
-                <div 
-                  className="absolute h-full w-1 bg-yellow-500"
-                  style={{ left: `${(metrics.targetSigma / 6) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>1σ</span>
-                <span>2σ</span>
-                <span>3σ</span>
-                <span>4σ</span>
-                <span>5σ</span>
-                <span>6σ</span>
-              </div>
+          {!hasMetrics ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              No baseline metrics defined yet — add them from the Six Sigma Baseline page.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {baselineMetrics.slice(0, 3).map((m: any) => (
+                <div key={m.id} className="p-4 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium">{m.metric_name}</p>
+                      <p className="text-xs text-muted-foreground">{m.metric_type} · {m.unit_of_measure}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-red-500">{m.baseline_value}</p>
+                      <p className="text-xs text-muted-foreground">Baseline</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-green-500">{m.target_value}</p>
+                      <p className="text-xs text-muted-foreground">Target</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <p className="text-3xl font-bold text-green-600">+{(metrics.currentSigma - metrics.baselineSigma).toFixed(1)}σ</p>
-              <p className="text-sm text-muted-foreground">{pt('Improvement')}</p>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
       {/* DMAIC Progress */}
       <Card>
         <CardHeader>
-          <CardTitle>{pt('DMAIC Progress')}</CardTitle>
+          <CardTitle>DMAIC Progress</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -170,9 +173,6 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
                     {phase.phase.charAt(0)}
                   </div>
                   <p className="text-sm font-medium">{phase.phase}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {phase.completedDeliverables}/{phase.deliverables.length}
-                  </p>
                   {phase.status === 'current' && (
                     <Progress value={phase.progress} className="mt-2 h-1" />
                   )}
@@ -188,14 +188,14 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
         </CardContent>
       </Card>
 
-      {/* Tollgates & Metrics */}
+      {/* Tollgates & Open Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Tollgate Reviews */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              {pt('Tollgate Reviews')}
+              Tollgate Reviews
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -203,7 +203,7 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
               {tollgates.map((tollgate) => (
                 <div key={tollgate.name} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    {tollgate.status === 'passed' ? (
+                    {tollgate.status === 'passed' || tollgate.status === 'approved' ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                     ) : tollgate.status === 'pending' ? (
                       <Clock className="h-5 w-5 text-yellow-500" />
@@ -212,17 +212,14 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
                     )}
                     <div>
                       <p className="text-sm font-medium">{tollgate.name}</p>
-                      {tollgate.date && (
-                        <p className="text-xs text-muted-foreground">{tollgate.date}</p>
-                      )}
                     </div>
                   </div>
                   <Badge className={
-                    tollgate.status === 'passed' ? 'bg-green-100 text-green-700' :
+                    tollgate.status === 'passed' || tollgate.status === 'approved' ? 'bg-green-100 text-green-700' :
                     tollgate.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-gray-100 text-gray-700'
                   }>
-                    {pt(tollgate.status)}
+                    {tollgate.status}
                   </Badge>
                 </div>
               ))}
@@ -230,57 +227,27 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
           </CardContent>
         </Card>
 
-        {/* Key Metrics */}
+        {/* Open Actions / Risks */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              {pt('Key Metrics')}
+              Project Health
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-muted-foreground">{pt('Defect Rate')} (%)</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-red-500">{metrics.defectRate.before}%</p>
-                    <p className="text-xs text-muted-foreground">{pt('Before')}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-yellow-500">{metrics.defectRate.current}%</p>
-                    <p className="text-xs text-muted-foreground">{pt('Current')}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-green-500">{metrics.defectRate.target}%</p>
-                    <p className="text-xs text-muted-foreground">{pt('Target')}</p>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">Open Actions</p>
+                <p className="text-2xl font-bold">{dashboard?.open_actions ?? 0}</p>
               </div>
-
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{pt('Projected Savings')}</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      ${metrics.savings.projected.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">{pt('Realized')}</p>
-                    <p className="text-xl font-bold text-green-500">
-                      ${metrics.savings.realized.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <Progress 
-                  value={(metrics.savings.realized / metrics.savings.projected) * 100} 
-                  className="mt-3 h-2"
-                />
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Active Risks</p>
+                <p className="text-2xl font-bold">{(dashboard?.risks ?? []).length}</p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Key Improvements</p>
+                <p className="text-2xl font-bold">{(dashboard?.key_improvements ?? []).length}</p>
               </div>
             </div>
           </CardContent>
@@ -288,36 +255,32 @@ const LeanSixSigmaDashboard = ({ project, level = 'green' }: LeanSixSigmaDashboa
       </div>
 
       {/* Current Phase Deliverables */}
-      {currentPhase && (
+      {currentPhaseData && (
         <Card>
           <CardHeader>
-            <CardTitle>{pt('Current Phase')}: {currentPhase.phase}</CardTitle>
+            <CardTitle>Current Phase: {currentPhaseData.phase}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {currentPhase.deliverables.map((deliverable, i) => (
-                <div 
+              {currentPhaseData.deliverables.map((deliverable) => (
+                <div
                   key={deliverable}
-                  className={`p-4 rounded-lg border ${
-                    i < currentPhase.completedDeliverables 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
+                  className="p-4 rounded-lg border bg-gray-50 border-gray-200"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    {i < currentPhase.completedDeliverables ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-gray-400" />
-                    )}
+                    <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-sm font-medium">{deliverable}</span>
                   </div>
                 </div>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Complete each deliverable from the corresponding Six Sigma page.
+            </p>
           </CardContent>
         </Card>
       )}
+
     </div>
   );
 };
