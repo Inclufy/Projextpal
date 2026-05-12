@@ -12,7 +12,9 @@
 |---|---|---|
 | `backend/` | Django + DRF + Postgres + Redis | API server (`api.projextpal.com`) |
 | `frontend/` | React + Vite | Web SPA (`projextpal.com`) |
-| `mobile/` | Expo (React Native) | iOS + Android, on App Store |
+| `src/` (⚠️ NOT `mobile/`) | Expo (React Native) | iOS + Android, on App Store |
+
+**⚠️ Gotcha**: The mobile Expo source lives at the **repo root** under `src/`, NOT in a `mobile/` subfolder. The `mobile/` directory is empty/legacy. Don't waste time scanning `mobile/`. Mobile-specific configs: `app.json`, `eas.json`, `ci_post_clone.sh` at repo root. Mobile dependencies share `package.json` with the frontend.
 
 **Production URL**: `https://projextpal.com` (front), `https://api.projextpal.com` (back-direct), `https://www.projextpal.com` (front alias).
 
@@ -160,6 +162,29 @@ See `memory/incident_recovery_runbook.md` for runbooks per outage type:
 ## 11. Known live customer
 
 As of 2026-05-12: **`zanjabil@inclufy.com`** is onboarded and live. Their data is in `projextpal_postgres_data` volume on Mac Studio. **Backup before any DB operation that could lose this.**
+
+---
+
+## 11b. product_issues_productissue schema gotcha
+
+The Django model `product_issues.ProductIssue` requires a NOT NULL `company` FK. When creating issues via `manage.py shell` (e.g. for testing), pass `company=` explicitly:
+
+```python
+from product_issues.models import ProductIssue
+from companies.models import Company
+issue = ProductIssue.objects.create(
+    title='...',
+    description='...',
+    status='new',          # allowed: new/triaging/needs-info/accepted/in-progress/resolved/wont-fix/duplicate/closed
+    priority='P2',         # allowed: P0/P1/P2/P3 (or null)
+    source='user',         # allowed: user/auto-test-ci/auto-test-runtime/agent-scan
+    capture_method='manual_form',
+    environment={'client': 'web', 'user_agent': 'Mozilla/5.0 Chrome'},
+    company=Company.objects.first(),   # REQUIRED
+)
+```
+
+In normal API flow (POST /api/product-issues/), the view auto-fills company from `request.user.profile.company`. The constraint is multi-tenant by design.
 
 ---
 
