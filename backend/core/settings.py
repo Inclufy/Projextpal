@@ -254,6 +254,14 @@ EMAIL_HOST_USER = decouple.config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = decouple.config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = decouple.config("DEFAULT_FROM_EMAIL")
 
+# Comma-separated list of email addresses to notify when ProductIssues are
+# created, transition status, or get resolved. See product_issues/signals.py.
+# Falls back to sami@inclufy.com if unset.
+PRODUCT_ISSUE_ADMIN_NOTIFY_EMAILS = decouple.config(
+    "PRODUCT_ISSUE_ADMIN_NOTIFY_EMAILS",
+    default="sami@inclufy.com",
+)
+
 FRONTEND_URL = decouple.config("FRONTEND_URL")
 BASE_URL = decouple.config("BASE_URL")
 
