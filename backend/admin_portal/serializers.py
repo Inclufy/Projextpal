@@ -161,7 +161,7 @@ The ProjeXtPal Team"""
                 email = EmailMultiAlternatives(
                     subject="Welcome to ProjeXtPal - Set Your Password",
                     body=text_content,
-                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "support@projextpal.com"),
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "support@inclufy.com"),
                     to=[user.email],
                 )
                 email.attach_alternative(html_content, "text/html")

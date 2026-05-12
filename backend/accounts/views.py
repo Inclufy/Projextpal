@@ -610,7 +610,7 @@ The ProjeXtPal Team"""
             email = EmailMultiAlternatives(
                 subject="Password Reset Requested by Administrator",
                 body=text_content,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "support@projextpal.com"),
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "support@inclufy.com"),
                 to=[user.email],
             )
             email.send()
