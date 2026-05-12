@@ -159,9 +159,16 @@ def _needs_human_escalation(issue: ProductIssue, old_status: str | None) -> tupl
 
 
 def _issue_url(issue: ProductIssue) -> str:
-    """Absolute URL to the issue page (admin portal)."""
+    """Absolute URL where the recipient can view the issue.
+
+    NOTE: nginx routes `/admin/` to Django backend (port 8001), so we can NOT
+    link to `/admin/issues/<id>` even though that's the conceptual admin path
+    — the SPA never gets a chance. Use `/dashboard?issue=<id>` instead, which
+    goes through the frontend nginx and lets React Router + AI Copilot
+    Issues panel surface the relevant issue.
+    """
     base = getattr(settings, "FRONTEND_URL", "https://projextpal.com").rstrip("/")
-    return f"{base}/admin/issues/{issue.id}"
+    return f"{base}/dashboard?issue={issue.id}"
 
 
 def _send_email_safe(
