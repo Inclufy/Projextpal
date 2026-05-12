@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,154 +7,99 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { COLORS } from '../../constants/colors';
+import { risksService } from '../../services/risks';
+import type { Risk } from '../../types';
 
 type RiskDetailRouteParams = {
   RiskDetail: { riskId: string };
 };
-
-interface MitigationAction {
-  id: string;
-  description: string;
-  owner: string;
-  dueDate: string;
-  status: 'pending' | 'in_progress' | 'completed';
-}
-
-interface RiskData {
-  id: string;
-  title: string;
-  description: string;
-  project: string;
-  category: string;
-  probability: 'low' | 'medium' | 'high';
-  impact: 'low' | 'medium' | 'high';
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  owner: string;
-  identifiedDate: string;
-  status: 'open' | 'mitigating' | 'closed';
-  mitigationPlan: string;
-  actions: MitigationAction[];
-}
 
 export const RiskDetailScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RiskDetailRouteParams, 'RiskDetail'>>();
   const { t, isNL } = useLanguage();
   const [loading, setLoading] = useState(true);
-  const [risk, setRisk] = useState<RiskData | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [risk, setRisk] = useState<Risk | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRisk = useCallback(async () => {
+    const riskId = route.params?.riskId;
+    if (!riskId) {
+      setError(isNL ? 'Geen risico geselecteerd' : 'No risk selected');
+      setLoading(false);
+      return;
+    }
+    try {
+      setError(null);
+      const data = await risksService.getRisk(riskId);
+      setRisk(data);
+    } catch (e) {
+      console.error('Failed to load risk:', e);
+      setError(isNL ? 'Kon risico niet laden' : 'Could not load risk');
+      setRisk(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [route.params?.riskId, isNL]);
 
   useEffect(() => {
-    loadRiskData();
-  }, []);
+    loadRisk();
+  }, [loadRisk]);
 
-  const loadRiskData = async () => {
-    // Simulated API call - replace with actual API
-    setTimeout(() => {
-      setRisk({
-        id: route.params?.riskId || '1',
-        title: isNL ? 'Budget Overschrijding' : 'Budget Overrun',
-        description: isNL 
-          ? 'Er is een risico dat het projectbudget wordt overschreden door onvoorziene kosten en scope creep.'
-          : 'There is a risk that the project budget will be exceeded due to unforeseen costs and scope creep.',
-        project: 'Digital Transformation',
-        category: isNL ? 'Financieel' : 'Financial',
-        probability: 'medium',
-        impact: 'high',
-        riskLevel: 'high',
-        owner: 'Jan de Vries',
-        identifiedDate: '2024-01-15',
-        status: 'mitigating',
-        mitigationPlan: isNL 
-          ? 'Implementeer strikte budget monitoring en wekelijkse reviews. Zet een change control process op voor scope wijzigingen.'
-          : 'Implement strict budget monitoring and weekly reviews. Set up a change control process for scope changes.',
-        actions: [
-          {
-            id: '1',
-            description: isNL ? 'Wekelijkse budget review meetings opzetten' : 'Set up weekly budget review meetings',
-            owner: 'Jan de Vries',
-            dueDate: '2024-01-20',
-            status: 'completed',
-          },
-          {
-            id: '2',
-            description: isNL ? 'Change control process documenteren' : 'Document change control process',
-            owner: 'Maria Bakker',
-            dueDate: '2024-01-25',
-            status: 'in_progress',
-          },
-          {
-            id: '3',
-            description: isNL ? 'Budget tracking dashboard implementeren' : 'Implement budget tracking dashboard',
-            owner: 'Pieter Jansen',
-            dueDate: '2024-02-01',
-            status: 'pending',
-          },
-        ],
-      });
-      setLoading(false);
-    }, 500);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadRisk();
+    setRefreshing(false);
+  }, [loadRisk]);
+
+  const normalize = (v: string | undefined | null) => (v || '').toString().toLowerCase();
+
+  const getRiskLevelColor = (level: string | undefined | null) => {
+    const v = normalize(level);
+    if (v === 'very high' || v === 'critical') return COLORS.red;
+    if (v === 'high') return COLORS.orange;
+    if (v === 'medium') return COLORS.yellow;
+    if (v === 'low' || v === 'very low') return COLORS.green;
+    return COLORS.gray[400];
   };
 
-  const getRiskLevelColor = (level: string) => {
-    switch (level) {
-      case 'critical':
-        return COLORS.red;
-      case 'high':
-        return COLORS.orange;
-      case 'medium':
-        return COLORS.yellow;
-      case 'low':
-        return COLORS.green;
-      default:
-        return COLORS.gray[400];
-    }
-  };
-
-  const getRiskLevelLabel = (level: string) => {
-    switch (level) {
-      case 'critical':
-        return isNL ? 'Kritiek' : 'Critical';
+  const getRiskLevelLabel = (level: string | undefined | null) => {
+    const v = normalize(level);
+    switch (v) {
+      case 'very high':
+        return isNL ? 'Zeer hoog' : 'Very High';
       case 'high':
         return t.high;
       case 'medium':
         return t.medium;
       case 'low':
         return t.low;
+      case 'very low':
+        return isNL ? 'Zeer laag' : 'Very Low';
+      case 'critical':
+        return isNL ? 'Kritiek' : 'Critical';
       default:
-        return level;
+        return level || '';
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return COLORS.green;
-      case 'in_progress':
-        return COLORS.blue;
-      case 'pending':
-        return COLORS.orange;
-      default:
-        return COLORS.gray[400];
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return t.completed;
-      case 'in_progress':
-        return t.inProgress;
-      case 'pending':
-        return t.pending;
-      default:
-        return status;
-    }
+  // Derive overall risk level from score (1-25) when present, otherwise from impact.
+  const deriveRiskLevel = (r: Risk): string => {
+    const score = r.score ?? 0;
+    if (score >= 20) return 'Very High';
+    if (score >= 15) return 'High';
+    if (score >= 8) return 'Medium';
+    if (score > 0) return 'Low';
+    // Fallback: highest of probability/impact
+    return r.impact || r.probability || 'Low';
   };
 
   if (loading) {
@@ -165,16 +110,48 @@ export const RiskDetailScreen: React.FC = () => {
     );
   }
 
-  if (!risk) {
+  if (error || !risk) {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={48} color={COLORS.red} />
-        <Text style={styles.errorText}>{t.error}</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <LinearGradient
+          colors={[COLORS.gray[600], COLORS.gray[800]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>{t.riskDetails}</Text>
+          </View>
+          <View style={styles.menuButton} />
+        </LinearGradient>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="shield-outline" size={64} color={COLORS.gray[300]} />
+          <Text style={styles.emptyTitle}>
+            {error || (isNL ? 'Geen risico gevonden' : 'No risk found')}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {isNL
+              ? 'Probeer terug te gaan en een ander risico te selecteren.'
+              : 'Try going back and selecting a different risk.'}
+          </Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadRisk}>
+            <Text style={styles.retryButtonText}>
+              {isNL ? 'Opnieuw proberen' : 'Try again'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  const riskColor = getRiskLevelColor(risk.riskLevel);
+  const overallLevel = deriveRiskLevel(risk);
+  const riskColor = getRiskLevelColor(overallLevel);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -196,7 +173,7 @@ export const RiskDetailScreen: React.FC = () => {
           <View style={styles.riskLevelBadge}>
             <Ionicons name="warning" size={14} color={COLORS.white} />
             <Text style={styles.riskLevelText}>
-              {getRiskLevelLabel(risk.riskLevel)}
+              {getRiskLevelLabel(overallLevel)}
             </Text>
           </View>
         </View>
@@ -205,22 +182,38 @@ export const RiskDetailScreen: React.FC = () => {
         </TouchableOpacity>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.purple]}
+          />
+        }
+      >
         {/* Risk Info Card */}
         <View style={styles.riskCard}>
           <Text style={styles.riskTitle}>{risk.title}</Text>
-          <Text style={styles.riskDescription}>{risk.description}</Text>
+          {risk.description ? (
+            <Text style={styles.riskDescription}>{risk.description}</Text>
+          ) : null}
 
           {/* Project & Category */}
           <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Ionicons name="folder-outline" size={16} color={COLORS.gray[500]} />
-              <Text style={styles.metaText}>{risk.project}</Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Ionicons name="pricetag-outline" size={16} color={COLORS.gray[500]} />
-              <Text style={styles.metaText}>{risk.category}</Text>
-            </View>
+            {risk.project?.name ? (
+              <View style={styles.metaItem}>
+                <Ionicons name="folder-outline" size={16} color={COLORS.gray[500]} />
+                <Text style={styles.metaText}>{risk.project.name}</Text>
+              </View>
+            ) : null}
+            {risk.category ? (
+              <View style={styles.metaItem}>
+                <Ionicons name="pricetag-outline" size={16} color={COLORS.gray[500]} />
+                <Text style={styles.metaText}>{risk.category}</Text>
+              </View>
+            ) : null}
           </View>
         </View>
 
@@ -255,85 +248,61 @@ export const RiskDetailScreen: React.FC = () => {
                 <Ionicons name="warning" size={24} color={COLORS.white} />
               </View>
               <Text style={[styles.riskLevelLarge, { color: riskColor }]}>
-                {getRiskLevelLabel(risk.riskLevel)} {isNL ? 'Risico' : 'Risk'}
+                {getRiskLevelLabel(overallLevel)} {isNL ? 'Risico' : 'Risk'}
               </Text>
             </View>
           </View>
         </View>
 
         {/* Owner & Date */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isNL ? 'Details' : 'Details'}</Text>
-          <View style={styles.detailsCard}>
-            <View style={styles.detailRow}>
-              <View style={styles.detailIcon}>
-                <Ionicons name="person-outline" size={18} color={COLORS.purple} />
-              </View>
-              <View style={styles.detailContent}>
-                <Text style={styles.detailLabel}>
-                  {isNL ? 'Eigenaar' : 'Owner'}
-                </Text>
-                <Text style={styles.detailValue}>{risk.owner}</Text>
-              </View>
-            </View>
-            <View style={styles.detailDivider} />
-            <View style={styles.detailRow}>
-              <View style={styles.detailIcon}>
-                <Ionicons name="calendar-outline" size={18} color={COLORS.purple} />
-              </View>
-              <View style={styles.detailContent}>
-                <Text style={styles.detailLabel}>
-                  {isNL ? 'Geïdentificeerd' : 'Identified'}
-                </Text>
-                <Text style={styles.detailValue}>
-                  {new Date(risk.identifiedDate).toLocaleDateString(isNL ? 'nl-NL' : 'en-US')}
-                </Text>
-              </View>
+        {(risk.owner?.name || risk.identifiedDate) ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{isNL ? 'Details' : 'Details'}</Text>
+            <View style={styles.detailsCard}>
+              {risk.owner?.name ? (
+                <View style={styles.detailRow}>
+                  <View style={styles.detailIcon}>
+                    <Ionicons name="person-outline" size={18} color={COLORS.purple} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>
+                      {isNL ? 'Eigenaar' : 'Owner'}
+                    </Text>
+                    <Text style={styles.detailValue}>{risk.owner.name}</Text>
+                  </View>
+                </View>
+              ) : null}
+              {risk.owner?.name && risk.identifiedDate ? (
+                <View style={styles.detailDivider} />
+              ) : null}
+              {risk.identifiedDate ? (
+                <View style={styles.detailRow}>
+                  <View style={styles.detailIcon}>
+                    <Ionicons name="calendar-outline" size={18} color={COLORS.purple} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>
+                      {isNL ? 'Geïdentificeerd' : 'Identified'}
+                    </Text>
+                    <Text style={styles.detailValue}>
+                      {new Date(risk.identifiedDate).toLocaleDateString(isNL ? 'nl-NL' : 'en-US')}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
             </View>
           </View>
-        </View>
+        ) : null}
 
         {/* Mitigation Plan */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t.mitigation}</Text>
-          <View style={styles.mitigationCard}>
-            <Text style={styles.mitigationText}>{risk.mitigationPlan}</Text>
-          </View>
-        </View>
-
-        {/* Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isNL ? 'Acties' : 'Actions'}
-          </Text>
-          {risk.actions.map((action) => (
-            <View key={action.id} style={styles.actionCard}>
-              <View style={styles.actionHeader}>
-                <View style={[
-                  styles.actionStatus,
-                  { backgroundColor: `${getStatusColor(action.status)}15` }
-                ]}>
-                  <Text style={[styles.actionStatusText, { color: getStatusColor(action.status) }]}>
-                    {getStatusLabel(action.status)}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.actionDescription}>{action.description}</Text>
-              <View style={styles.actionMeta}>
-                <View style={styles.actionMetaItem}>
-                  <Ionicons name="person-outline" size={14} color={COLORS.gray[500]} />
-                  <Text style={styles.actionMetaText}>{action.owner}</Text>
-                </View>
-                <View style={styles.actionMetaItem}>
-                  <Ionicons name="calendar-outline" size={14} color={COLORS.gray[500]} />
-                  <Text style={styles.actionMetaText}>
-                    {new Date(action.dueDate).toLocaleDateString(isNL ? 'nl-NL' : 'en-US')}
-                  </Text>
-                </View>
-              </View>
+        {risk.mitigation ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t.mitigation}</Text>
+            <View style={styles.mitigationCard}>
+              <Text style={styles.mitigationText}>{risk.mitigation}</Text>
             </View>
-          ))}
-        </View>
+          </View>
+        ) : null}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -352,16 +321,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.gray[50],
   },
-  errorContainer: {
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.gray[50],
+    paddingHorizontal: 32,
   },
-  errorText: {
+  emptyTitle: {
     marginTop: 16,
-    fontSize: 16,
-    color: COLORS.gray[600],
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.gray[700],
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.gray[500],
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 24,
+    backgroundColor: COLORS.purple,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -566,49 +556,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray[700],
     lineHeight: 22,
-  },
-  actionCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  actionHeader: {
-    marginBottom: 8,
-  },
-  actionStatus: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  actionStatusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  actionDescription: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.gray[800],
-    marginBottom: 12,
-  },
-  actionMeta: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  actionMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionMetaText: {
-    fontSize: 13,
-    color: COLORS.gray[500],
-    marginLeft: 4,
   },
   bottomSpacer: {
     height: 40,
