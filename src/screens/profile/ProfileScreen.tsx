@@ -17,6 +17,9 @@ import { useAuthStore } from '../../store/authStore';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { apiService } from '../../services/apiService';
 import { authService } from '../../services/auth';
+import { coursesService } from '../../services/coursesService';
+import { projectsService } from '../../services/projectsService';
+import { timeTrackingService } from '../../services/timeTrackingService';
 import { CommonActions } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -44,24 +47,38 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
 
   const loadStats = async () => {
     try {
-      // Replace with actual API call when available
-      // const response = await apiClient.get('/users/me/stats/');
-      // setStats(response.data);
-      
-      // Simulated data for now
-      setTimeout(() => {
-        setStats({
-          courses_enrolled: 5,
-          courses_completed: 3,
-          certificates: 2,
-          streak_days: 12,
-          total_hours: 48,
-          projects_count: 7,
-        });
-        setLoading(false);
-      }, 500);
+      setLoading(true);
+      const [courses, projects, weekEntries] = await Promise.all([
+        coursesService.getEnrolledCourses().catch(() => [] as any[]),
+        projectsService.getProjects().catch(() => [] as any[]),
+        timeTrackingService.getCurrentWeekEntries().catch(() => [] as any[]),
+      ]);
+
+      const coursesCompleted = courses.filter((c: any) => c.completed || c.progress >= 100).length;
+      const totalHours = weekEntries.reduce(
+        (sum: number, e: any) => sum + (e.hours || 0),
+        0
+      );
+
+      setStats({
+        courses_enrolled: courses.length,
+        courses_completed: coursesCompleted,
+        certificates: coursesCompleted,
+        streak_days: 0,
+        total_hours: Math.round(totalHours),
+        projects_count: projects.length,
+      });
     } catch (error) {
       console.error('Failed to load stats:', error);
+      setStats({
+        courses_enrolled: 0,
+        courses_completed: 0,
+        certificates: 0,
+        streak_days: 0,
+        total_hours: 0,
+        projects_count: 0,
+      });
+    } finally {
       setLoading(false);
     }
   };
