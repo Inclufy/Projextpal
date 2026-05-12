@@ -30,36 +30,18 @@ export const ProjectDetailScreen: React.FC<{ navigation: any; route: any }> = ({
   // Check if current user is manager (can approve hours)
   const isManager = user?.role === 'manager' || user?.role === 'admin' || project?.manager_id === user?.id;
 
-  // ✅ Translated activities
-  const activities = [
-    { 
-      id: '1', 
-      type: 'task', 
-      icon: 'checkmark-circle', 
-      color: '#10B981', 
-      title: t('projectDetail.activity.taskCompleted'), 
-      description: 'Requirements document finalized', 
-      time: '2u geleden' 
-    },
-    { 
-      id: '2', 
-      type: 'comment', 
-      icon: 'chatbubble', 
-      color: '#3B82F6', 
-      title: t('projectDetail.activity.newComment'), 
-      description: 'John commented on design phase', 
-      time: '4u geleden' 
-    },
-    { 
-      id: '3', 
-      type: 'upload', 
-      icon: 'document', 
-      color: '#8B5CF6', 
-      title: t('projectDetail.activity.documentAdded'), 
-      description: 'Project charter uploaded', 
-      time: 'Gisteren' 
-    },
-  ];
+  // Activity feed: backend endpoint is not yet wired. Until a real
+  // /projects/<id>/activity/ feed exists, we render an empty state rather
+  // than fabricating "John commented on design phase" etc.
+  const activities: Array<{
+    id: string;
+    type: string;
+    icon: string;
+    color: string;
+    title: string;
+    description: string;
+    time: string;
+  }> = [];
 
   useEffect(() => {
     loadData();
@@ -549,18 +531,29 @@ export const ProjectDetailScreen: React.FC<{ navigation: any; route: any }> = ({
         {activeTab === 'activity' && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('projectDetail.activity.recent')}</Text>
-            {activities.map((activity) => (
-              <View key={activity.id} style={styles.activityCard}>
-                <View style={[styles.activityIcon, { backgroundColor: activity.color + '20' }]}>
-                  <Ionicons name={activity.icon as any} size={20} color={activity.color} />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>{activity.title}</Text>
-                  <Text style={styles.activityDescription}>{activity.description}</Text>
-                  <Text style={styles.activityTime}>{activity.time}</Text>
-                </View>
+            {activities.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="time-outline" size={48} color="#D1D5DB" />
+                <Text style={styles.emptyText}>
+                  {i18n.language === 'nl'
+                    ? 'Nog geen activiteit'
+                    : 'No activity yet'}
+                </Text>
               </View>
-            ))}
+            ) : (
+              activities.map((activity) => (
+                <View key={activity.id} style={styles.activityCard}>
+                  <View style={[styles.activityIcon, { backgroundColor: activity.color + '20' }]}>
+                    <Ionicons name={activity.icon as any} size={20} color={activity.color} />
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityTitle}>{activity.title}</Text>
+                    <Text style={styles.activityDescription}>{activity.description}</Text>
+                    <Text style={styles.activityTime}>{activity.time}</Text>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         )}
 
