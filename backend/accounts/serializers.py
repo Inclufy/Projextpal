@@ -338,12 +338,23 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        # Wrap in atomic so an email-send failure rolls back the user row,
+        # preventing the "first call 500, retry returns 400 (email exists)"
+        # bug that left half-provisioned users in the DB.
+        from django.db import transaction
+        with transaction.atomic():
+            return self._create_atomic(validated_data)
+
+    def _create_atomic(self, validated_data):
+        import logging
+        logger = logging.getLogger(__name__)
+
         send_invite = validated_data.pop('send_invite', True)
         password = validated_data.pop('password', None)
-        
+
         request = self.context.get("request")
         admin_user: CustomUser = request.user  # type: ignore
-        
+
         user = CustomUser(
             username=validated_data["email"],
             email=validated_data["email"],
@@ -354,13 +365,13 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             role=validated_data.get("role", "pm"),
             company=admin_user.company,
         )
-        
+
         if password:
             user.set_password(password)
         else:
             # Set unusable password - user will set via invite
             user.set_unusable_password()
-        
+
         user.save()
 
         # Send invite email if send_invite is True
@@ -389,16 +400,31 @@ This link expires in 24 hours.
 Best regards,
 The ProjeXtPal Team"""
             
-            # Send email with both HTML and text
-            email = EmailMultiAlternatives(
-                subject="Welcome to ProjeXtPal - Set Your Password",
-                body=text_content,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
-                to=[user.email],
-            )
-            email.attach_alternative(html_content, "text/html")
-            email.send()
-        
+            # Send email with both HTML and text.
+            # Non-fatal: if SMTP fails (provider outage, rate-limit, bad
+            # template), the user is still created — admin can manually
+            # resend the invite from the UI. The previous code threw 500
+            # here AFTER user.save() succeeded, leaving a half-provisioned
+            # row that blocked retries with "email already exists".
+            try:
+                email = EmailMultiAlternatives(
+                    subject="Welcome to ProjeXtPal - Set Your Password",
+                    body=text_content,
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@projextpal.com"),
+                    to=[user.email],
+                )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+            except Exception as exc:
+                logger.warning(
+                    "Invite email send failed for user %s (id=%s); user "
+                    "was still created. Admin can resend invite manually. "
+                    "Error: %s",
+                    user.email,
+                    user.id,
+                    exc,
+                )
+
         return user
 
 
