@@ -837,6 +837,8 @@
       "found": "2026-05-18",
       "found_by": "user — AI Copilot Issues report + /admin/users screenshot",
       "related": "AdminUserViewSet at backend/admin_portal/views.py:147 — queryset is User.objects.all().order_by('-date_joined') with no is_active filter; if hypothesis (a) or (c) holds, the row is in the queryset and the bug is actually frontend pagination or per-tenant scoping rather than a Django filter.",
+      "workaround_applied": "2026-05-18 — admin re-created Sachin's account under a fresh email. New account is visible in /admin/users and Sachin can log in. The ORIGINAL row was never inspected via the diagnostic_query above, so the root cause (is_active flag, Registration-only row, or soft-deleted ghost) is STILL unknown.",
+      "next_action": "monitor_for_recurrence — if any future user reports the same 'created but invisible + cannot log in' symptom, run diagnostic_query against THEIR email BEFORE re-creating the account. Once a real DB state is captured (CustomUser is_active=False / Registration-only / deleted+N ghost), this entry can be flipped from open to fix_pending_deploy with a real one-line fix in either AdminUserViewSet.get_queryset OR the email-verification flow that sets is_active back to True.",
       "status": "open"
     },
 
