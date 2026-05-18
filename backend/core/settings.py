@@ -186,7 +186,9 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "forgot_password": "3/10min",
+        # DRF's parse_rate only accepts single-letter periods (s/m/h/d),
+        # so "3/10min" is invalid and raises KeyError: '1' on every call.
+        "forgot_password": "3/hour",
         # Public landing-page chatbot — defense-in-depth with Cloudflare WAF
         # rate-limit. Caps anonymous OpenAI calls at 20/hour per IP at the
         # Django layer (Cloudflare is plan-tier limited to 10s windows).
