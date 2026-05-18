@@ -860,6 +860,26 @@
       "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-9",
       "verified_live": "2026-05-18 — unauth curl returned 401 (not 500) on both agile + waterfall budget-items endpoints after deploy of 1b84d5b7",
       "status": "fixed_verified"
+    },
+
+    {
+      "id": "BUG-034",
+      "title": "Frontend container ships no Cache-Control headers — open tabs see blank page after every redeploy",
+      "severity": "P1",
+      "area": "frontend",
+      "endpoint": "GET https://projextpal.com/ (any SPA route)",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 200,
+      "previous_symptom": "After a frontend redeploy, browser tabs that had visited the site earlier in the day showed a blank /dashboard with two console errors: 'Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of text/html'. The cached HTML referenced bundle hashes (e.g. index-OkX0ZHE.js, vendor-2veEG-fO.js) that no longer existed in the new image. nginx try_files fell back to index.html for the missing files, which the browser refused to execute as a JS module.",
+      "root_cause": "frontend/Dockerfile.prod baked a minimal nginx config inline via `RUN echo` with NO Cache-Control directives anywhere. Browsers heuristically cached index.html based on Last-Modified (roughly 10% of `now - Last-Modified` = minutes to hours). Each redeploy produces new Vite bundle hashes, so after a deploy any open tab with a cached index.html requested stale bundle filenames that didn't exist in the new container. nginx then served index.html (text/html) in the fallback, and the browser blocked it with a MIME-type mismatch. Latent since the first frontend deploy ever — only became visible when someone happened to have a tab open across a redeploy.",
+      "fix_location": "frontend/nginx-spa.conf (new file) + frontend/Dockerfile.prod (now COPYs the config). Cache rules: /assets/* gets `Cache-Control: public, max-age=31536000, immutable` plus `try_files $uri =404` so missing assets surface as a real 404 instead of an HTML fallback. Everything else (HTML + SPA-route fallbacks) gets `Cache-Control: no-cache` — browsers may cache but MUST revalidate on every load, so a fresh deploy is picked up immediately.",
+      "fix_commit": "PR #24 (fix/frontend-cache-control)",
+      "regression_check": "After ANY frontend redeploy: curl -I https://projextpal.com/ must return `Cache-Control: no-cache`. curl -I https://projextpal.com/assets/<any-real-hashed-bundle>.js must return `Cache-Control: public, max-age=31536000, immutable`. curl https://projextpal.com/assets/index-DOES-NOT-EXIST.js must return HTTP 404 (NOT 200 with text/html). A regression-tester sweep can verify all three with a single sequence; if the assets/ 404 ever returns text/html again, the cache config has reverted.",
+      "diagnostic_command": "curl -sS -D - https://projextpal.com/ -o /dev/null | grep -i cache-control",
+      "found": "2026-05-18",
+      "found_by": "user — screenshot of blank /dashboard after PR #23 deploy",
+      "status": "fix_pending_deploy"
     }
 
   ]
