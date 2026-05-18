@@ -812,11 +812,12 @@
       "previous_symptom": "Frontend spinner stays on 'Versturen...' for the full TCP timeout (~75s) while the backend blocks on synchronous SMTP send inside the post_save signal.",
       "hypothesis": "backend/product_issues/signals.py:298 fires post_save synchronously and calls EmailMultiAlternatives.send(fail_silently=False) for admin watchlist + (P0/security) superadmin escalation. If Resend SMTP is slow or unreachable the whole HTTP request blocks. Compounded when the body is large (~1.6MB base64 image inline).",
       "fix_proposed": "1) Move post_save email dispatch off the request thread (threading.Thread, Django Q, or Celery). 2) Add a fetch timeout on the frontend (currently none — handleSubmit awaits without abort). 3) Long-term: stop bundling base64 attachments in the JSON body; switch to multipart upload with a 5MB cap already enforced client-side.",
-      "fix_location": "TBD — likely backend/product_issues/signals.py + frontend/src/components/copilot/IssuesTab.tsx + frontend/src/lib/copilotIssues.ts",
-      "regression_check": "POST /api/v1/product-issues/ with a body containing environment.attachments_inline of ~1.5MB must return 201 within 5s. Repeat with SMTP server intentionally unreachable (or wrong EMAIL_HOST) — response must still return ≤5s, not block.",
+      "fix_location": "backend/product_issues/signals.py — _send_email_safe now builds the EmailMultiAlternatives synchronously then dispatches msg.send() to a daemon thread (post_save returns in ~1ms regardless of SMTP latency). backend/core/settings.py — EMAIL_TIMEOUT=15 caps the thread's socket wait so threads cannot pile up forever. frontend/src/lib/api.ts — ApiClient.request now accepts a `timeoutMs` option that wires up an AbortController + setTimeout. frontend/src/lib/copilotIssues.ts — createIssue passes timeoutMs=15000.",
+      "fix_commit": "PR #22 (fix/bug-031-async-email-and-timeout)",
+      "regression_check": "POST /api/v1/product-issues/ with a body containing environment.attachments_inline of ~1.5MB must return 201 within 5s. Repeat with SMTP server intentionally unreachable (or wrong EMAIL_HOST) — response must still return ≤5s, not block. Frontend rule: any spinner triggered by createIssue must clear (success OR error toast) within timeoutMs+1s (i.e. ≤16s in the worst case) — never spin indefinitely.",
       "found": "2026-05-18",
       "found_by": "user — screenshot of stuck 'Versturen...' button in AI Copilot Issues tab",
-      "status": "open"
+      "status": "fix_pending_deploy"
     },
 
     {

@@ -271,6 +271,10 @@ EMAIL_PORT = int(decouple.config("EMAIL_PORT"))
 EMAIL_USE_TLS = decouple.config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_HOST_USER = decouple.config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = decouple.config("EMAIL_HOST_PASSWORD")
+# Hard cap on SMTP socket wait. Default is None (= forever), which previously
+# allowed a hung Resend connection to wedge background email threads and pile
+# up unbounded daemon threads when many issues were created. See BUG-031.
+EMAIL_TIMEOUT = decouple.config("EMAIL_TIMEOUT", default=15, cast=int)
 DEFAULT_FROM_EMAIL = decouple.config("DEFAULT_FROM_EMAIL")
 
 # Comma-separated list of email addresses to notify when ProductIssues are

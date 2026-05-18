@@ -216,8 +216,16 @@ export function captureEnvironment(
 
 /* ─── API ────────────────────────────────────────────────────────────────── */
 
+/** 15-second timeout cap so the UI can't sit on "Versturen..." forever
+ *  when the backend's synchronous email step (now backgrounded via
+ *  threading) ever wedges again, OR when a >1MB base64 attachment
+ *  body genuinely takes a while. See BUG-031. */
+const CREATE_ISSUE_TIMEOUT_MS = 15_000;
+
 export function createIssue(input: CreateIssueInput): Promise<ProductIssueRecord> {
-  return api.post<ProductIssueRecord>("/product-issues/", input);
+  return api.post<ProductIssueRecord>("/product-issues/", input, {
+    timeoutMs: CREATE_ISSUE_TIMEOUT_MS,
+  });
 }
 
 export async function listRecentIssues(
