@@ -837,6 +837,27 @@
       "found_by": "user — AI Copilot Issues report + /admin/users screenshot",
       "related": "AdminUserViewSet at backend/admin_portal/views.py:147 — queryset is User.objects.all().order_by('-date_joined') with no is_active filter; if hypothesis (a) or (c) holds, the row is in the queryset and the bug is actually frontend pagination or per-tenant scoping rather than a Django filter.",
       "status": "open"
+    },
+
+    {
+      "id": "BUG-033",
+      "title": "Agile + Waterfall budget-items endpoints 500 with NameError: name 'request' is not defined",
+      "severity": "P0",
+      "area": "projects",
+      "endpoint": "GET /api/v1/projects/{project_id}/agile/budget/items/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "request_body": null,
+      "expected_response_contains": [],
+      "previous_error_contains": ["NameError", "request", "is not defined"],
+      "root_cause": "AgileBudgetItemViewSet.get_queryset (backend/agile/views.py:524) called `_gated_project_lookup(request.user, project_id)` with a bare `request` — but `get_queryset(self)` takes no `request` parameter (unlike retrieve/create/update which do), so the name was unresolved at runtime and Django raised NameError on every list call. The very next method on the same viewset (perform_create) used `self.request.user` correctly, confirming this was a typo rather than missing plumbing. Identical copy-paste bug on WaterfallBudgetItemViewSet.get_queryset (backend/waterfall/views.py:810).",
+      "fix_location": "backend/agile/views.py:524 + backend/waterfall/views.py:810 — `request.user` → `self.request.user`.",
+      "fix_commit": "PR #19 (hotfix/agile-budget-items-bare-request)",
+      "regression_check": "Authenticated GET /api/v1/projects/<id>/agile/budget/items/ AND /api/v1/projects/<id>/waterfall/budget/items/ must return 200 / 403 / 404 — never 500 with NameError. Scan rule for future: grep `def get_queryset\\(self\\):` blocks for bare `request\\.` references — must be 0 across backend/**/*.py.",
+      "found": "2026-05-18",
+      "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-9",
+      "status": "fix_pending_deploy"
     }
 
   ]
