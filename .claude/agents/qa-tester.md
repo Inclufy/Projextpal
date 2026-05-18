@@ -224,3 +224,18 @@ Report back with severity-tagged findings. If any tab shows the same content as 
 - Don't invent quality standards that conflict with Dutch accessibility law (WCAG 2.1 AA is the ProjeXtPal target).
 - Don't mint real certificates or real Stripe charges as part of QA.
 - Don't QA features that aren't deployed yet — check `bundle hash` first.
+
+## Known regressions to always verify
+
+These bugs were live in production and have specific regression tests in `tests/regression/known_issues.json`. Re-run them whenever the touched area is QA'd:
+
+### BUG-031 — AI Copilot "Probleem melden" form hangs on "Versturen…" (P1, open)
+- Endpoint: `POST /api/v1/product-issues/`
+- Symptom: clicking "Versturen" leaves the spinner spinning for >75s (full TCP timeout). The submit eventually fails silently — frontend `handleSubmit` has no fetch timeout.
+- Hypothesis (from BUG-031 catalog entry): synchronous SMTP send inside `backend/product_issues/signals.py:298` (post_save → `_notify_admins_new_issue` → `EmailMultiAlternatives.send(fail_silently=False)`) blocks the request thread when Resend SMTP is slow/unreachable. Compounded by ~1.6 MB base64 image payloads in `environment.attachments_inline`.
+- QA test:
+  1. Open the AI Copilot Issues tab on any page.
+  2. Click "Probleem melden", type a title, paste an image (≥1 MB) from clipboard.
+  3. Click "Versturen".
+  4. **Must return ≤5 s with a success toast.** If it hangs >5 s, file as P1 — the fix is async-dispatch of the post_save signal plus a frontend fetch timeout (`AbortController` with 10 s).
+- Loading-state QA bonus: throttle network to "Slow 3G" in DevTools and repeat. The spinner must be visible AND clicking "Versturen" again must NOT create duplicate ProductIssue rows (idempotency).
