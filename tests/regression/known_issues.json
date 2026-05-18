@@ -758,6 +758,85 @@
       "found": "historic",
       "found_by": "git log",
       "status": "fixed_verified"
+    },
+
+    {
+      "id": "BUG-030",
+      "title": "Forgot-password endpoint 500s because of invalid DRF throttle rate '3/10min'",
+      "severity": "P0",
+      "area": "auth",
+      "endpoint": "POST /api/v1/auth/forgot-password/",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 500,
+      "request_body": {"email": "regression-bug030@example.com"},
+      "expected_response_contains": ["message"],
+      "previous_error_contains": ["KeyError", "1"],
+      "root_cause": "DEFAULT_THROTTLE_RATES['forgot_password'] = '3/10min'. DRF's SimpleRateThrottle.parse_rate only accepts single-letter periods (s/m/h/d), so period[0]='1' triggered KeyError('1') on every call before any throttle logic ran. ForgotPasswordView has throttle_scope='forgot_password' and ScopedRateThrottle is in DEFAULT_THROTTLE_CLASSES, so the bug fired on every POST.",
+      "fix_location": "backend/core/settings.py:189 — '3/10min' → '3/hour'. backend/accounts/views.py:308 — comment updated to match.",
+      "fix_commit": "30daf78a (hotfix(backend): fix invalid forgot_password throttle rate '3/10min', PR #16)",
+      "regression_check": "POST /api/v1/auth/forgot-password/ with valid body must return 200 with a 'message' field. A burst of >3 requests from same IP must eventually return 429.",
+      "found": "2026-05-18",
+      "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-8",
+      "verified_live": "2026-05-18 — curl returned 200; burst eventually returned 429",
+      "status": "fixed_verified",
+      "notes": "Secondary finding (not blocking): gunicorn runs 4 workers and Django's CACHES backend defaults to per-process LocMemCache, so each worker tracks its own throttle counter. Effective rate is ~3×workers/hour rather than the configured 3/hour. To make the rate exact, point CACHES['default'] at the existing projextpal-redis-prod container."
+    },
+
+    {
+      "id": "BUG-031",
+      "title": "AI Copilot 'Probleem melden' form hangs on 'Versturen...' indefinitely",
+      "severity": "P1",
+      "area": "product_issues",
+      "endpoint": "POST /api/v1/product-issues/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": "stalled (no response within frontend's timeout window)",
+      "request_body_shape": {
+        "company": "<companyId>",
+        "title": "Test issue",
+        "description": "Repro for BUG-031",
+        "category": "ui",
+        "environment": {
+          "attachments_inline": [
+            {
+              "name": "screenshot.png",
+              "mime": "image/png",
+              "size_bytes": 1217000,
+              "data_url": "data:image/png;base64,<~1.6MB base64 payload>"
+            }
+          ]
+        },
+        "capture_method": "paste_clipboard"
+      },
+      "previous_symptom": "Frontend spinner stays on 'Versturen...' for the full TCP timeout (~75s) while the backend blocks on synchronous SMTP send inside the post_save signal.",
+      "hypothesis": "backend/product_issues/signals.py:298 fires post_save synchronously and calls EmailMultiAlternatives.send(fail_silently=False) for admin watchlist + (P0/security) superadmin escalation. If Resend SMTP is slow or unreachable the whole HTTP request blocks. Compounded when the body is large (~1.6MB base64 image inline).",
+      "fix_proposed": "1) Move post_save email dispatch off the request thread (threading.Thread, Django Q, or Celery). 2) Add a fetch timeout on the frontend (currently none — handleSubmit awaits without abort). 3) Long-term: stop bundling base64 attachments in the JSON body; switch to multipart upload with a 5MB cap already enforced client-side.",
+      "fix_location": "TBD — likely backend/product_issues/signals.py + frontend/src/components/copilot/IssuesTab.tsx + frontend/src/lib/copilotIssues.ts",
+      "regression_check": "POST /api/v1/product-issues/ with a body containing environment.attachments_inline of ~1.5MB must return 201 within 5s. Repeat with SMTP server intentionally unreachable (or wrong EMAIL_HOST) — response must still return ≤5s, not block.",
+      "found": "2026-05-18",
+      "found_by": "user — screenshot of stuck 'Versturen...' button in AI Copilot Issues tab",
+      "status": "open"
+    },
+
+    {
+      "id": "BUG-032",
+      "title": "User 'Sachin' missing from /admin/users despite existing in backend",
+      "severity": "P1",
+      "area": "admin_portal",
+      "endpoint": "GET /api/v1/admin/users/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 200,
+      "previous_symptom": "Total Users = 7; user 'Sachin' (created earlier, visible in Django admin /admin/) does not appear in any page of the admin-portal User Management list. Affected user also cannot log in.",
+      "hypothesis": "Three candidates pending DB diagnosis: (a) row exists in CustomUser with is_active=False from an unfinished email-verification flow; (b) row exists only in accounts.Registration, never promoted to CustomUser; (c) row was soft-deleted via AdminUserViewSet.perform_destroy and now lives as 'deleted+<id>@projextpal.invalid' with is_active=False.",
+      "diagnostic_query": "docker exec projextpal-backend-prod python manage.py shell -c \"from django.contrib.auth import get_user_model; from accounts.models import Registration; U=get_user_model(); print('CustomUser:', list(U.objects.filter(email__icontains='sachin').values('id','email','is_active','company_id','role'))); print('Registration:', list(Registration.objects.filter(email__icontains='sachin').values()))\"",
+      "fix_location": "TBD — depends on diagnosis. Likely a 1-line fix to is_active or an email-verification flow tweak.",
+      "regression_check": "After creating a fresh user via POST /api/v1/admin/users/, that user MUST appear in the very next GET /api/v1/admin/users/ response (no email-verification gate on visibility). Also: GET /api/v1/admin/users/?search=<email> must return exactly that user.",
+      "found": "2026-05-18",
+      "found_by": "user — AI Copilot Issues report + /admin/users screenshot",
+      "related": "AdminUserViewSet at backend/admin_portal/views.py:147 — queryset is User.objects.all().order_by('-date_joined') with no is_active filter; if hypothesis (a) or (c) holds, the row is in the queryset and the bug is actually frontend pagination or per-tenant scoping rather than a Django filter.",
+      "status": "open"
     }
 
   ]
