@@ -32,6 +32,7 @@ import {
   Lightbulb,
   Loader2,
   MessageCircle,
+  Monitor,
   Plus,
   RefreshCw,
   Send,
@@ -234,7 +235,11 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
     e.target.value = "";
   }
 
-  async function handlePaste(e: ClipboardEvent<HTMLTextAreaElement>) {
+  // Paste-anywhere — listens on the form-root <div> so an image on the
+  // clipboard is captured whether the focus is in the title input, the
+  // description textarea, or anywhere else on the form. Plain text paste
+  // is left untouched (only image MIME types trigger preventDefault).
+  async function handlePaste(e: ClipboardEvent<HTMLDivElement>) {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of Array.from(items)) {
@@ -250,6 +255,107 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           });
         }
       }
+    }
+  }
+
+  // In-browser screenshot capture via the Screen Capture API. Opens the
+  // browser's native screen-picker (tab / window / screen), grabs a single
+  // frame into a canvas, encodes as PNG, and attaches. Bypasses the OS
+  // screenshot-tool → save → upload friction.
+  //
+  // Browser support: Chrome / Edge / Firefox / Safari ≥ 13.1 on desktop.
+  // Not available on iOS Safari — user falls back to "Bestand kiezen" or
+  // clipboard paste from the iOS screenshot toolbar.
+  async function handleCaptureScreenshot() {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getDisplayMedia) {
+      toast({
+        title: "Schermafbeelding niet ondersteund",
+        description:
+          "Je browser ondersteunt de Screen Capture API niet. Gebruik 'Bestand kiezen' of plak een screenshot vanaf je klembord.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+      const track = stream.getVideoTracks()[0];
+      if (!track) throw new Error("Geen videotrack ontvangen");
+
+      // Draw a single frame to a canvas via a transient <video>. Using the
+      // ImageCapture API would be cleaner but it's Chrome-only — the
+      // canvas path works in every browser that supports getDisplayMedia.
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.muted = true;
+      await new Promise<void>((resolve, reject) => {
+        const onLoaded = () => {
+          video.removeEventListener("loadedmetadata", onLoaded);
+          resolve();
+        };
+        const onError = () => {
+          video.removeEventListener("error", onError);
+          reject(new Error("Kon videostream niet laden"));
+        };
+        video.addEventListener("loadedmetadata", onLoaded);
+        video.addEventListener("error", onError);
+      });
+      await video.play();
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas context niet beschikbaar");
+      ctx.drawImage(video, 0, 0);
+
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png")
+      );
+      if (!blob) throw new Error("Kon schermafbeelding niet coderen");
+
+      const now = new Date();
+      const stamp =
+        `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}` +
+        `_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+      const file = new File([blob], `screenshot-${stamp}.png`, {
+        type: "image/png",
+      });
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Schermafbeelding te groot",
+          description: `${Math.round(file.size / 1024)} KB > 5 MB — kies een kleiner gebied of een lager-resolutie scherm.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const att = await fileToAttachment(file);
+      setAttachments((prev) => [...prev, att]);
+      toast({
+        title: "Schermafbeelding toegevoegd",
+        description: file.name,
+      });
+    } catch (err) {
+      // NotAllowedError = user clicked Cancel in the screen-picker — silent.
+      if (err instanceof DOMException && err.name === "NotAllowedError") {
+        return;
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({
+        title: "Schermafbeelding mislukt",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      // Always stop the screen-share track so the browser's "X is sharing
+      // your screen" indicator disappears immediately.
+      if (stream) stream.getTracks().forEach((t) => t.stop());
     }
   }
 
@@ -327,7 +433,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
   /* ─── Render: form mode ────────────────────────────────────────────── */
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0" onPaste={handlePaste}>
       <div className="shrink-0 px-3 py-2 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-purple-50/40 dark:bg-purple-900/10">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
@@ -397,14 +503,13 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
             id="issue-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            onPaste={handlePaste}
-            placeholder="Wat probeer je te doen? Wat zie je? Plak hier ook screenshots — die worden automatisch toegevoegd."
+            placeholder="Wat probeer je te doen? Wat zie je?"
             className="text-xs mt-1 resize-none"
             rows={4}
           />
           <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
             <Clipboard className="h-2.5 w-2.5" />
-            Tip: plak een screenshot direct in dit veld.
+            Tip: plak een screenshot ergens op dit formulier (Cmd/Ctrl + V) — die wordt automatisch toegevoegd.
           </p>
         </div>
 
@@ -471,7 +576,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               <span className="ml-1 text-gray-500">({attachments.length})</span>
             )}
           </Label>
-          <div className="flex gap-2 mt-1">
+          <div className="flex gap-2 mt-1 flex-wrap">
             <Button
               type="button"
               variant="outline"
@@ -481,6 +586,17 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
             >
               <Camera className="h-3 w-3 mr-1" />
               Bestand kiezen
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-xs h-7"
+              onClick={handleCaptureScreenshot}
+              title="Open de schermkiezer en maak direct een screenshot — geen OS-tool nodig."
+            >
+              <Monitor className="h-3 w-3 mr-1" />
+              Schermafbeelding maken
             </Button>
             <input
               ref={fileInputRef}
