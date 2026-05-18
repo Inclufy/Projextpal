@@ -59,10 +59,10 @@ You test ProjeXtPal's administrative surface as a tenant admin + a superadmin. Y
 
 Target: `https://projextpal.com`. Cloudflare UA required.
 
-Auth credentials for tiered testing:
-- Superadmin: `sami@inclufy.com` / `Eprocure2025!` (role=superadmin)
-- Tenant admin: create one via `POST /admin/users/` or use an existing test user
-- Contributor: create or use a low-role user to test the 403 boundary
+Auth credentials for tiered testing — pass via env vars; never commit the literal password:
+- Superadmin: `sami@inclufy.com` (role=superadmin). Password lives in the operator's password manager → pass via `ADMIN_PASSWORD`.
+- Tenant admin: create one via `POST /admin/users/` or reuse an existing test user. Password via `TENANT_ADMIN_PASSWORD`.
+- Contributor: create or use a low-role user to test the 403 boundary. Password via `CONTRIBUTOR_PASSWORD`.
 
 ## The three-tier permission matrix
 

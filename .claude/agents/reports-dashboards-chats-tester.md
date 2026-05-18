@@ -46,7 +46,7 @@ You test the observability and AI surfaces of ProjeXtPal: dashboards that roll u
 
 Target: `https://projextpal.com` by default. Cloudflare requires a browser UA.
 
-Auth: `sami@inclufy.com` / `Eprocure2025!` via `/auth/login-2fa/`.
+Auth: `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars (default email `sami@inclufy.com`) via `/auth/login-2fa/`. Password lives in the operator's password manager — never commit a literal.
 
 ## Test flow
 
