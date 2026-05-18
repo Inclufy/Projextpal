@@ -188,9 +188,28 @@ SUMMARY
 2. Does `/admin/users/<id>/` leak fields like `is_superuser`, `stripe_customer_id` to a tenant admin?
 3. Does the audit log itself have PII it shouldn't (passwords, tokens)?
 4. Does `/admin/logs/?user=<id>` let a tenant admin see another tenant's user activity?
-5. Is `/api/v1/auth/forgot-password/` rate-limited? (test 20 rapid calls, expect 429 eventually)
+5. Is `/api/v1/auth/forgot-password/` rate-limited at the configured rate? Burst 4 unauthenticated POSTs from the same IP; calls 1–3 must return 200, call 4 must return 429. If 4 still returns 200, the throttle cache backend regressed back to per-worker LocMemCache (see BUG-030 in `tests/regression/known_issues.json`).
 
 If any of those answer badly, it's a HIGH severity finding.
+
+## Known regressions to always verify
+
+These bugs were live in production and have specific regression tests in `tests/regression/known_issues.json`. Re-run them whenever the admin portal is touched:
+
+### BUG-030 — forgot-password throttle (P0, fixed_verified)
+- Endpoint: `POST /api/v1/auth/forgot-password/`
+- Symptom: invalid DRF rate `'3/10min'` raised `KeyError: '1'` on every call → 500.
+- Test: burst 4 POSTs from same IP with body `{"email":"regression-bug030@example.com"}`. Expect `200, 200, 200, 429`. If you see `200, 200, 200, 200` the Redis CACHES wiring regressed (each gunicorn worker would have its own bucket). If you see 500, the rate-string regressed back to the broken form.
+
+### BUG-032 — user-list completeness (P1, open)
+- Endpoint: `GET /api/v1/admin/users/`
+- Symptom: user created in the backend (visible in Django `/admin/`) is missing from the admin-portal listing.
+- Test: create a fresh user via `POST /api/v1/admin/users/` with a unique email. Immediately `GET /api/v1/admin/users/?search=<that_email>`. The just-created user MUST appear in `results`. If the response is empty:
+  - `docker exec projextpal-backend-prod python manage.py shell -c "from django.contrib.auth import get_user_model; U=get_user_model(); print(list(U.objects.filter(email='<that_email>').values('id','email','is_active','company_id','role')))"`
+  - Three failure modes documented in BUG-032: `is_active=False`, only in `accounts.Registration`, or soft-deleted as `deleted+<id>@projextpal.invalid`.
+
+### BUG-005 — invitation creation 500 (P1)
+Already covered by `tests/e2e/admin_portal_full.py`; included here so the catalog cross-reference is intact.
 
 ## Reuse existing scripts
 
