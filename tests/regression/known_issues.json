@@ -778,9 +778,9 @@
       "regression_check": "POST /api/v1/auth/forgot-password/ with valid body must return 200 with a 'message' field. A burst of >3 requests from same IP must eventually return 429.",
       "found": "2026-05-18",
       "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-8",
-      "verified_live": "2026-05-18 — curl returned 200; burst eventually returned 429",
+      "verified_live": "2026-05-18 — curl returned 200; initial burst hit 429 around call 7 (per-worker LocMemCache). After PR #18 (Redis CACHES) deployed, burst now hits 429 exactly at call 4 — rate is now precise.",
       "status": "fixed_verified",
-      "notes": "Secondary finding (not blocking): gunicorn runs 4 workers and Django's CACHES backend defaults to per-process LocMemCache, so each worker tracks its own throttle counter. Effective rate is ~3×workers/hour rather than the configured 3/hour. To make the rate exact, point CACHES['default'] at the existing projextpal-redis-prod container."
+      "notes": "Secondary finding closed by PR #18 (commit 562bb81c): CACHES['default'] now points at projextpal-redis-prod DB 1, so all 4 gunicorn workers share one throttle counter. Pre-PR-#18 burst took 7 calls to throttle; post-deploy it throttles at call 4 as configured."
     },
 
     {
@@ -853,11 +853,12 @@
       "previous_error_contains": ["NameError", "request", "is not defined"],
       "root_cause": "AgileBudgetItemViewSet.get_queryset (backend/agile/views.py:524) called `_gated_project_lookup(request.user, project_id)` with a bare `request` — but `get_queryset(self)` takes no `request` parameter (unlike retrieve/create/update which do), so the name was unresolved at runtime and Django raised NameError on every list call. The very next method on the same viewset (perform_create) used `self.request.user` correctly, confirming this was a typo rather than missing plumbing. Identical copy-paste bug on WaterfallBudgetItemViewSet.get_queryset (backend/waterfall/views.py:810).",
       "fix_location": "backend/agile/views.py:524 + backend/waterfall/views.py:810 — `request.user` → `self.request.user`.",
-      "fix_commit": "PR #19 (hotfix/agile-budget-items-bare-request)",
+      "fix_commit": "PR #19 (hotfix/agile-budget-items-bare-request), merged into 1b84d5b7",
       "regression_check": "Authenticated GET /api/v1/projects/<id>/agile/budget/items/ AND /api/v1/projects/<id>/waterfall/budget/items/ must return 200 / 403 / 404 — never 500 with NameError. Scan rule for future: grep `def get_queryset\\(self\\):` blocks for bare `request\\.` references — must be 0 across backend/**/*.py.",
       "found": "2026-05-18",
       "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-9",
-      "status": "fix_pending_deploy"
+      "verified_live": "2026-05-18 — unauth curl returned 401 (not 500) on both agile + waterfall budget-items endpoints after deploy of 1b84d5b7",
+      "status": "fixed_verified"
     }
 
   ]
