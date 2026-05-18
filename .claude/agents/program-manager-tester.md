@@ -39,7 +39,7 @@ You test ProjeXtPal from the perspective of a Program Manager / PMO running mult
 
 Target: `https://projextpal.com` by default; override via `BASE_URL`.
 
-Auth: `POST /api/v1/auth/login-2fa/` with `sami@inclufy.com` / `Eprocure2025!`.
+Auth: `POST /api/v1/auth/login-2fa/` with email `sami@inclufy.com` + password from the `ADMIN_PASSWORD` env var (lives in the operator's password manager — never commit a literal).
 
 Cloudflare 403 on default Python UA — always set:
 ```

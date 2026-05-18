@@ -34,7 +34,7 @@ Plus **project-wide tabs** that appear on every project regardless of methodolog
 
 Target: `https://projextpal.com` by default; override via `BASE_URL`.
 
-Auth: `POST /api/v1/auth/login-2fa/` with `sami@inclufy.com` / `Eprocure2025!` (or `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars).
+Auth: `POST /api/v1/auth/login-2fa/` with `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars (default email `sami@inclufy.com`; password lives in the operator's password manager — never commit a literal).
 
 Cloudflare rejects Python's default UA with 403. Always set:
 ```

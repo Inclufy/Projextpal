@@ -28,7 +28,7 @@
 
 ## 2. CRM scenario — execution log (UPDATED — now executed end-to-end via API)
 
-**Credentials used**: `sami@inclufy.com` / `Eprocure2025!` (superadmin / `is_superuser: true`)
+**Credentials used**: `sami@inclufy.com` (superadmin / `is_superuser: true`) — password from `ADMIN_PASSWORD` env var, not committed.
 
 | Step | Target | Result | Evidence |
 |---|---|---|---|
@@ -84,7 +84,7 @@
 
 #### Bug #1b — Login form submits wrong payload (browser autofill race condition)
 - **Where:** [frontend/src/pages/Login.tsx](frontend/src/pages/Login.tsx) `handleSubmit`
-- **Observed:** Same credentials (`sami@inclufy.com` / `Eprocure2025!`) tested two ways on the same page:
+- **Observed:** Same credentials (superadmin `sami@inclufy.com`; password redacted) tested two ways on the same page:
   - Typed into the inputs via MCP, clicked Sign In → `POST /login-2fa/ → 401`
   - Sent via `fetch()` from DevTools console with identical body → `POST /login-2fa/ → 200` with JWT.
 - **Root cause (likely):** React state (`email`, `password`) gets out of sync with the input DOM value because Chrome's password autofill updates the DOM without firing the React onChange. When you type on top of the autofilled field, the React state retains the old value. On submit, the handler POSTs the stale React state, not the current DOM value.

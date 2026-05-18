@@ -66,7 +66,7 @@ Mobile caches GET responses via `@react-native-async-storage/async-storage`. The
 
 Target: `https://projextpal.com`. Same Cloudflare UA + SSL setup as the web tests (see `tests/e2e/common.py`).
 
-Auth: `sami@inclufy.com` / `Eprocure2025!` (or env vars).
+Auth: `sami@inclufy.com`; password via `ADMIN_PASSWORD` env var (never commit a literal — see tests/e2e/common.py for the loader).
 
 ## Run sequence
 

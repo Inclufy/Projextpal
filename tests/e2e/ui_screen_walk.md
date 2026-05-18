@@ -20,7 +20,7 @@ Use the `mcp__Claude_in_Chrome__*` MCP tools:
 
 - User is logged into https://projextpal.com (session cookie present).
 - If not, first navigate to `/signin`, fill the form, submit.
-- Expected user: `sami@inclufy.com` / `Eprocure2025!`.
+- Expected user: `sami@inclufy.com`; password from `ADMIN_PASSWORD` env var (never commit a literal — the previous default leaked publicly via this file).
 
 ## Per-methodology walk
 
