@@ -158,6 +158,23 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Shared cache backend — used by DRF throttling so every gunicorn worker
+# reads/writes the same counter. With the previous (default) LocMemCache
+# each worker had its own throttle bucket, making the effective rate
+# `workers × configured/hour` instead of the configured rate (see BUG-030).
+# Uses the same Redis container as Channels; DB 1 keeps the namespace
+# separated from pub/sub keys.
+_REDIS_PW = os.environ.get("REDIS_PASSWORD") or ""
+_REDIS_AUTH = f":{_REDIS_PW}@" if _REDIS_PW else ""
+_REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+_REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{_REDIS_AUTH}{_REDIS_HOST}:{_REDIS_PORT}/1",
+    },
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
