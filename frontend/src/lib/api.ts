@@ -12,27 +12,59 @@ class ApiClient {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    options: RequestInit & { timeoutMs?: number } = {},
+  ): Promise<T> {
+    // If the caller passed timeoutMs, install an AbortController so a slow
+    // / hung backend can't leave the UI spinning forever (see BUG-031).
+    const { timeoutMs, ...fetchOptions } = options;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    if (timeoutMs && timeoutMs > 0 && !fetchOptions.signal) {
+      const controller = new AbortController();
+      fetchOptions.signal = controller.signal;
+      timeoutHandle = setTimeout(() => {
+        controller.abort(
+          new DOMException(
+            `Request timed out after ${timeoutMs}ms`,
+            'TimeoutError',
+          ),
+        );
+      }, timeoutMs);
+    }
+
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...this.getAuthHeaders(),
-      ...(options.headers as Record<string, string> || {}),
+      ...(fetchOptions.headers as Record<string, string> || {}),
     };
-    const response = await fetch(url, { ...options, headers });
-    if (response.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user_data');
-      window.location.href = '/login';
-      throw new Error('Session expired');
+
+    try {
+      const response = await fetch(url, { ...fetchOptions, headers });
+      if (response.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_data');
+        window.location.href = '/login';
+        throw new Error('Session expired');
+      }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || `API Error: ${response.status}`);
+      }
+      if (response.status === 204) return {} as T;
+      return response.json();
+    } catch (err) {
+      // Surface the timeout with a recognisable message so callers can
+      // distinguish "server is slow" from a real backend error.
+      if (err instanceof DOMException && err.name === 'TimeoutError') {
+        throw new Error(`Request timed out after ${timeoutMs}ms`);
+      }
+      throw err;
+    } finally {
+      if (timeoutHandle) clearTimeout(timeoutHandle);
     }
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || errorData.message || `API Error: ${response.status}`);
-    }
-    if (response.status === 204) return {} as T;
-    return response.json();
   }
 
   get<T>(endpoint: string, params?: Record<string, string | number | boolean>): Promise<T> {
@@ -46,24 +78,39 @@ class ApiClient {
     return this.request<T>(url, { method: 'GET' });
   }
 
-  post<T>(endpoint: string, data?: unknown): Promise<T> {
+  post<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: { timeoutMs?: number; signal?: AbortSignal },
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      ...(options ?? {}),
     });
   }
 
-  put<T>(endpoint: string, data?: unknown): Promise<T> {
+  put<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: { timeoutMs?: number; signal?: AbortSignal },
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
+      ...(options ?? {}),
     });
   }
 
-  patch<T>(endpoint: string, data?: unknown): Promise<T> {
+  patch<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: { timeoutMs?: number; signal?: AbortSignal },
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
+      ...(options ?? {}),
     });
   }
 
