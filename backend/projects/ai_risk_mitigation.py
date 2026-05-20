@@ -7,10 +7,12 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from django.conf import settings
 
+from core.llm_keys import get_langchain_openai_kwargs
+
 logger = logging.getLogger(__name__)
 
 
-def generate_ai_mitigation(risk_data):
+def generate_ai_mitigation(risk_data, company=None):
     """
     Generate AI-powered mitigation plan for a given risk.
 
@@ -34,11 +36,22 @@ def generate_ai_mitigation(risk_data):
             - effectiveness: Effectiveness percentage
     """
     try:
-        # Initialize OpenAI LLM
+        # Initialize OpenAI LLM via BYO key resolver (falls back to
+        # settings.OPENAI_API_KEY when no company-level key is set).
+        llm_kwargs = get_langchain_openai_kwargs(company)
+        if not llm_kwargs:
+            # No key available — surface a clear error to the caller.
+            return {
+                "error": (
+                    "No OpenAI key configured for this company. Set one in "
+                    "Settings → API Keys, or have an admin configure the "
+                    "platform default."
+                ),
+            }
         llm = ChatOpenAI(
             temperature=0.7,
             model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
+            **llm_kwargs,
         )
 
         # Create the prompt template

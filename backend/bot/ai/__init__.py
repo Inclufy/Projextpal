@@ -104,10 +104,17 @@ class AgentState(TypedDict):
 
 class ERPAIAgent:
     def __init__(self, tools: List = None, user=None):
+        # BYO key resolver — uses the user's company key if configured,
+        # falls back to settings.OPENAI_API_KEY.
+        from core.llm_keys import get_langchain_openai_kwargs
+        company = getattr(user, "company", None) if user else None
+        llm_kwargs = get_langchain_openai_kwargs(company)
+        if not llm_kwargs:
+            llm_kwargs = {"openai_api_key": settings.OPENAI_API_KEY}
         self.llm = ChatOpenAI(
             temperature=0.3,
             model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
+            **llm_kwargs,
         )
 
         self.user = user

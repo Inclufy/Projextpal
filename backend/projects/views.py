@@ -194,13 +194,15 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="export/project-plan.docx")
     def export_project_plan(self, request, pk=None):
-        """Yanmar-template Project Plan DOCX for this project."""
+        """Project Plan DOCX (template selectable via ?template= or per-company default)."""
         from django.http import HttpResponse
         from django.utils.text import slugify
-        from .exports_project_plan import render_project_plan_docx
+        from .export_templates import pick_template
 
         project = self.get_object()
-        docx_bytes = render_project_plan_docx(project)
+        template_name = request.query_params.get("template", "")
+        renderer = pick_template(project.company, template_name, kind="project_plan_docx")
+        docx_bytes = renderer(project)
         filename = f"{slugify(project.name) or 'project'}-project-plan.docx"
         response = HttpResponse(
             docx_bytes,
@@ -276,6 +278,102 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             ),
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
+
+    @action(detail=True, methods=["get"], url_path="budget-rollup")
+    def budget_rollup(self, request, pk=None):
+        """
+        Yanmar "one-view" budget rollup:
+        Budget × Internal × External × Paid × Outstanding × ETC × Contingency × Variance.
+
+        Internal spend  = SUM(TimeEntry.hours × ProjectTeam.hourly_rate)
+        External spend  = SUM(Invoice.amount)             where vendor != null
+        Paid            = SUM(Invoice.amount_paid)
+        Outstanding     = External - Paid
+        ETC + Contingency + Variance come from ProjectBudget.
+        """
+        from decimal import Decimal
+        from django.db.models import F, Sum, Value, DecimalField
+        from django.db.models.functions import Coalesce
+
+        project = self.get_object()
+        currency = getattr(project, "currency", "EUR") or "EUR"
+
+        # Budget side
+        budget = float(getattr(project, "budget", 0) or 0)
+        etc = 0.0
+        contingency = 0.0
+        try:
+            pb = project.project_budget
+            etc = float(pb.etc or 0)
+            contingency = float(pb.contingency or 0)
+        except Exception:
+            pass
+
+        # Internal spend — TimeEntry × hourly_rate
+        internal = 0.0
+        try:
+            from .models import TimeEntry
+            te_qs = TimeEntry.objects.filter(project=project)
+            # ProjectTeam.hourly_rate is per (project, user) -- join.
+            rows = te_qs.values("user_id").annotate(hrs=Sum("hours"))
+            from .models import ProjectTeam
+            rates = {
+                pt.user_id: float(pt.hourly_rate or 0)
+                for pt in ProjectTeam.objects.filter(project=project)
+            }
+            for r in rows:
+                rate = rates.get(r["user_id"], 0.0)
+                internal += float(r["hrs"] or 0) * rate
+        except Exception:
+            pass
+
+        # External spend — Invoice / Expense
+        external = 0.0
+        paid = 0.0
+        try:
+            from invoices.models import Invoice  # type: ignore
+            inv_qs = Invoice.objects.filter(project=project)
+            external = float(
+                inv_qs.aggregate(s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())))["s"] or 0
+            )
+            paid = float(
+                inv_qs.filter(status="paid").aggregate(
+                    s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField()))
+                )["s"] or 0
+            )
+        except Exception:
+            # Fallback: use Expense model if Invoice isn't accessible.
+            from .models import Expense
+            ex_qs = Expense.objects.filter(project=project)
+            external = float(
+                ex_qs.aggregate(s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())))["s"] or 0
+            )
+            paid = float(
+                ex_qs.filter(status="paid").aggregate(
+                    s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField()))
+                )["s"] or 0
+            )
+
+        outstanding = max(0.0, external - paid)
+        actuals = internal + external
+        variance = budget - (actuals + etc)
+
+        return Response({
+            "currency": currency,
+            "budget": budget,
+            "etc": etc,
+            "contingency": contingency,
+            "internal": internal,
+            "external": external,
+            "paid": paid,
+            "outstanding": outstanding,
+            "actuals": actuals,
+            "variance": variance,
+            "budget_used_pct": (
+                int(round((actuals / budget) * 100)) if budget else 0
+            ),
+            "as_of": __import__("datetime").date.today().isoformat(),
+        })
 
     @action(detail=True, methods=["get"], url_path="task-kpi")
     def task_kpi(self, request, pk=None):
@@ -1766,8 +1864,11 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                     ),
                 }
 
-                # Generate AI mitigation
-                ai_plan = generate_ai_mitigation(risk_data)
+                # Generate AI mitigation — uses company's BYO key if configured.
+                ai_plan = generate_ai_mitigation(
+                    risk_data,
+                    company=getattr(risk.project, "company", None) if risk.project else None,
+                )
 
                 # Create AI mitigation with generated data
                 AIMitigation.objects.create(
@@ -1861,8 +1962,11 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 ),
             }
 
-            # Generate AI mitigation
-            ai_plan = generate_ai_mitigation(risk_data)
+            # Generate AI mitigation — uses company's BYO key if configured.
+            ai_plan = generate_ai_mitigation(
+                risk_data,
+                company=getattr(risk.project, "company", None) if risk.project else None,
+            )
 
             # Update or create AI mitigation
             ai_mitigation, created = AIMitigation.objects.update_or_create(

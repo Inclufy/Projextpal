@@ -49,6 +49,23 @@ FILES=(
   "backend/core/llm_keys.py:/app/core/llm_keys.py"
   "backend/projects/migrations/0016_project_signoff.py:/app/projects/migrations/0016_project_signoff.py"
   "backend/projects/migrations/0017_projectmembership.py:/app/projects/migrations/0017_projectmembership.py"
+
+  # ---- Sprint 3 ----
+  "backend/projects/ai_risk_mitigation.py:/app/projects/ai_risk_mitigation.py"
+  "backend/projects/exports_project_plan.py:/app/projects/exports_project_plan.py"
+  "backend/projects/export_templates/__init__.py:/app/projects/export_templates/__init__.py"
+  "backend/projects/management/commands/re_encrypt_api_keys.py:/app/projects/management/commands/re_encrypt_api_keys.py"
+  "backend/projects/migrations/0018_project_impact_solution_roi.py:/app/projects/migrations/0018_project_impact_solution_roi.py"
+  "backend/projects/migrations/0019_communicationplan.py:/app/projects/migrations/0019_communicationplan.py"
+  "backend/accounts/migrations/0015_companyaikey_encrypted.py:/app/accounts/migrations/0015_companyaikey_encrypted.py"
+  "backend/accounts/migrations/0016_company_export_preference.py:/app/accounts/migrations/0016_company_export_preference.py"
+  "backend/admin_portal/models.py:/app/admin_portal/models.py"
+  "backend/admin_portal/migrations/0004_clientapikey_encrypted.py:/app/admin_portal/migrations/0004_clientapikey_encrypted.py"
+  "backend/governance/ai_reports.py:/app/governance/ai_reports.py"
+  "backend/governance/views.py:/app/governance/views.py"
+  "backend/bot/ai/__init__.py:/app/bot/ai/__init__.py"
+  "backend/core/secret_field.py:/app/core/secret_field.py"
+  "backend/prince2/views.py:/app/prince2/views.py"
 )
 
 CT="projectpal-backend"

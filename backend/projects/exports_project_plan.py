@@ -144,12 +144,33 @@ def render_project_plan_docx(project) -> bytes:
     _h2(doc, "Target / Problem Statement")
     doc.add_paragraph(project.project_goal or project.description or "—")
 
+    # Impact + Solution (Yanmar §3-4 — problem-statement projects)
+    impact = getattr(project, "problem_impact", "") or ""
+    solution = getattr(project, "proposed_solution", "") or ""
+    if impact or solution:
+        doc.add_paragraph(" ")
+        _h2(doc, "Impact (if problem statement)")
+        doc.add_paragraph(impact or "—")
+        _h2(doc, "Solution (if problem statement)")
+        doc.add_paragraph(solution or "—")
+
     # Scope
     doc.add_paragraph(" ")
     _h2(doc, "Scope (in)")
     doc.add_paragraph(getattr(project, "scope_in", "") or "—")
     _h2(doc, "Scope (out)")
     doc.add_paragraph(getattr(project, "scope_out", "") or "—")
+
+    # ROI (only if set)
+    roi_t = getattr(project, "roi_target_pct", None)
+    roi_r = getattr(project, "roi_realized_pct", None)
+    if roi_t is not None or roi_r is not None:
+        doc.add_paragraph(" ")
+        _h2(doc, "ROI")
+        _kv_table(doc, [
+            ("Target ROI %", f"{roi_t}%" if roi_t is not None else "—"),
+            ("Realized ROI %", f"{roi_r}%" if roi_r is not None else "—"),
+        ])
 
     # Resources
     doc.add_paragraph(" ")

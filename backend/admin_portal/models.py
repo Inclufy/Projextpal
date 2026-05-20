@@ -196,7 +196,9 @@ class ClientApiKey(models.Model):
     ]
     provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
 
-    api_key = models.CharField(max_length=500)
+    # Encrypted at rest via Fernet (see core.secret_field).
+    from core.secret_field import EncryptedCharField as _EncryptedCharField
+    api_key = _EncryptedCharField(max_length=2000)
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

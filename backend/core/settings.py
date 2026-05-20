@@ -270,6 +270,9 @@ STRIPE_PUBLIC_KEY = decouple.config("STRIPE_PUBLIC_KEY")
 STRIPE_WEBHOOK_SECRET = decouple.config("STRIPE_WEBHOOK_SECRET")
 
 OPENAI_API_KEY = decouple.config("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = decouple.config("ANTHROPIC_API_KEY", default="")
+FIELD_ENCRYPTION_KEY = decouple.config("FIELD_ENCRYPTION_KEY", default="")
+FIELD_ENCRYPTION_KEYS = decouple.config("FIELD_ENCRYPTION_KEYS", default="")
 
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {

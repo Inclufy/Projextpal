@@ -421,15 +421,20 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="export/pptx")
     def export_pptx(self, request, project_id=None, pk=None):
-        """Render the Highlight Report as a PPTX matching the Yanmar template."""
+        """Render the Highlight Report as a PPTX (template selectable)."""
         from django.http import HttpResponse
         from django.utils.text import slugify
         from django.utils import timezone
-        from .exports import highlight_report_to_data, render_highlight_pptx
+        from .exports import highlight_report_to_data
+        from projects.export_templates import pick_template
 
         report = self.get_object()
+        company = getattr(report.project, "company", None)
+        template_name = request.query_params.get("template", "")
+        renderer = pick_template(company, template_name, kind="highlight_pptx")
+
         data = highlight_report_to_data(report)
-        pptx_bytes = render_highlight_pptx(data)
+        pptx_bytes = renderer(data)
 
         filename = "{}-highlight-{}.pptx".format(
             slugify(report.project.name) or "project",

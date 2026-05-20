@@ -167,6 +167,32 @@ class CrmApiKey(models.Model):
         return f"{self.name} ({self.company.name})"
 
 
+from core.secret_field import EncryptedCharField as _EncryptedCharField  # noqa: E402
+
+
+class CompanyExportPreference(models.Model):
+    """
+    Per-company default export template (Yanmar / PRINCE2 / generic).
+    Stored separately from Company to keep that model lean and to allow
+    future per-product preferences.
+    """
+    EXPORT_TEMPLATE_CHOICES = [
+        ("yanmar",  "Yanmar / YEU layout"),
+        ("prince2", "PRINCE2 6th Edition"),
+        ("generic", "Generic"),
+    ]
+    company = models.OneToOneField(
+        Company, on_delete=models.CASCADE, related_name="export_pref",
+    )
+    default_template = models.CharField(
+        max_length=20, choices=EXPORT_TEMPLATE_CHOICES, default="yanmar",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.company.name}: {self.default_template}"
+
+
 class CompanyAIKey(models.Model):
     """
     Per-company BYO LLM keys (Yanmar-grade compliance).
@@ -190,9 +216,9 @@ class CompanyAIKey(models.Model):
     company = models.OneToOneField(
         Company, on_delete=models.CASCADE, related_name="ai_key",
     )
-    openai_api_key = models.CharField(
-        max_length=500, blank=True, default="",
-        help_text="Optional. If set, used for all OpenAI calls from this company.",
+    openai_api_key = _EncryptedCharField(
+        max_length=2000, blank=True, default="",
+        help_text="Optional. Encrypted at rest. If set, used for all OpenAI calls from this company.",
     )
     openai_organization_id = models.CharField(
         max_length=200, blank=True, default="",
@@ -202,9 +228,9 @@ class CompanyAIKey(models.Model):
         blank=True, default="",
         help_text="Optional override (e.g. corporate proxy or Azure OpenAI).",
     )
-    anthropic_api_key = models.CharField(
-        max_length=500, blank=True, default="",
-        help_text="Optional. If set, used for all Anthropic calls from this company.",
+    anthropic_api_key = _EncryptedCharField(
+        max_length=2000, blank=True, default="",
+        help_text="Optional. Encrypted at rest. If set, used for all Anthropic calls from this company.",
     )
     anthropic_base_url = models.URLField(
         blank=True, default="",

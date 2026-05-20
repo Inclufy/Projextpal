@@ -100,6 +100,24 @@ class Project(models.Model):
     project_goal = models.TextField(blank=True)
     scope_in = models.TextField(blank=True, default="")
     scope_out = models.TextField(blank=True, default="")
+    # Yanmar Project Plan template — "Impact / Solution" pair for problem-
+    # statement-driven projects + ROI tracking.
+    problem_impact = models.TextField(
+        blank=True, default="",
+        help_text="Impact of NOT changing or resolving the problem.",
+    )
+    proposed_solution = models.TextField(
+        blank=True, default="",
+        help_text="Proposed solution to resolve the problem.",
+    )
+    roi_target_pct = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="Expected return on investment (percentage, e.g. 12.5).",
+    )
+    roi_realized_pct = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="Measured ROI post go-live.",
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1319,6 +1337,111 @@ class ProjectMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} on {self.project} as {self.role}"
+
+
+# ============================================================================
+# Sprint 3 — CommunicationPlan + PlanEvent (Yanmar Project Plan §7)
+# ============================================================================
+#
+# Yanmar's Project Plan template names four communication cadences:
+#   - Kick-off meeting
+#   - Onboarding of stakeholders meeting
+#   - Regular update meetings (weekly / bi-weekly / monthly)
+#   - Project completion meeting
+#
+# We model this as a CommunicationPlan per project with a list of
+# PlanEvent rows. Each PlanEvent may link to a concrete Meeting once
+# held (so AI Minutes generated for that Meeting roll back up here).
+
+class CommunicationPlan(models.Model):
+    """One per project — declares the planned communication cadence."""
+
+    project = models.OneToOneField(
+        "projects.Project",
+        on_delete=models.CASCADE,
+        related_name="communication_plan",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="owned_communication_plans",
+        help_text="Person responsible for keeping the plan up to date.",
+    )
+    notes = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Communication Plan"
+        verbose_name_plural = "Communication Plans"
+
+    def __str__(self):
+        return f"CommunicationPlan<{self.project_id}>"
+
+
+class PlanEvent(models.Model):
+    """A scheduled or recurring communication event."""
+
+    EVENT_TYPE_CHOICES = [
+        ("kickoff",   "Kick-off"),
+        ("onboarding", "Onboarding"),
+        ("regular",   "Regular update"),
+        ("gate",      "Stage / gate review"),
+        ("closing",   "Project closing"),
+        ("other",     "Other"),
+    ]
+    CADENCE_CHOICES = [
+        ("once",      "Once"),
+        ("weekly",    "Weekly"),
+        ("biweekly",  "Bi-weekly"),
+        ("monthly",   "Monthly"),
+        ("quarterly", "Quarterly"),
+    ]
+    STATUS_CHOICES = [
+        ("planned",   "Planned"),
+        ("done",      "Done"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    plan = models.ForeignKey(
+        CommunicationPlan,
+        on_delete=models.CASCADE,
+        related_name="events",
+    )
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
+    cadence = models.CharField(
+        max_length=20, choices=CADENCE_CHOICES, default="once",
+    )
+    name = models.CharField(max_length=200)
+    audience = models.JSONField(
+        default=list, blank=True,
+        help_text="List of role names / stakeholder labels.",
+    )
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    last_held_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True, default="")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="planned",
+    )
+    # Optional link to the actual Meeting once held (for one-time events
+    # or the most recent occurrence of a recurring event).
+    meeting = models.ForeignKey(
+        "communication.Meeting",
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="plan_events",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["event_type", "scheduled_at", "id"]
+        indexes = [
+            models.Index(fields=["plan", "event_type"]),
+            models.Index(fields=["plan", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type}/{self.cadence} {self.name}"
     
 
 # ============================================================================

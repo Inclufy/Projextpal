@@ -7,6 +7,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from django.conf import settings
 
+from core.llm_keys import get_langchain_openai_kwargs
+
 logger = logging.getLogger(__name__)
 
 REPORT_PROMPTS = {
@@ -178,17 +180,26 @@ Company: {company_name}
 }
 
 
-def generate_report(report_id, context_data):
+def generate_report(report_id, context_data, company=None):
     """Generate an AI report based on report type and context data."""
     prompt_config = REPORT_PROMPTS.get(report_id)
     if not prompt_config:
         return {"error": f"Unknown report type: {report_id}"}
 
     try:
+        # BYO key resolver — falls back to settings.OPENAI_API_KEY.
+        llm_kwargs = get_langchain_openai_kwargs(company)
+        if not llm_kwargs:
+            return {
+                "error": (
+                    "No OpenAI key configured. Configure one in "
+                    "Settings → API Keys (admin)."
+                ),
+            }
         llm = ChatOpenAI(
             temperature=0.7,
             model_name="gpt-4o",
-            openai_api_key=settings.OPENAI_API_KEY,
+            **llm_kwargs,
         )
 
         prompt = ChatPromptTemplate.from_messages([

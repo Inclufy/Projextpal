@@ -187,7 +187,7 @@ def generate_ai_report(request):
         "user_role": user.role,
     }
     
-    report = generate_report(report_id, context)
+    report = generate_report(report_id, context, company=company)
     return Response(report)
 
 
