@@ -78,3 +78,6 @@ web/.next/
 # Allow Xcode Cloud ci_scripts
 !ios/ci_scripts/
 !ios/ci_scripts/**
+
+# Recovery backup files from apply-to-main.sh
+**/*.bak.*
