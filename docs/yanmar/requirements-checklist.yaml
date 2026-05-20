@@ -1,0 +1,543 @@
+# Yanmar Europe (YEU) — ProjeXtPal requirements checklist
+#
+# Source documents:
+#   - Sales/Yanmar/Action Tracker Checklist.xlsx (PRJ LEGO)
+#   - Sales/Yanmar/Project Plan - Template.docx
+#   - Sales/Yanmar/YEU Projects - Highlight Report Template.pptx
+#   - Sales/Yanmar/YEU_ Meeting Minutes.docx
+#   - Email thread sami@inclufy.com <-> Dhruv Saxena & Shah Ally (29 April 2026)
+#
+# Used by the `client-requirements-validator` agent.
+
+client: yanmar
+client_full_name: Yanmar Europe B.V.
+product: projextpal
+contact_pmo: Dhruv Saxena <dhruv_saxena@yanmar.com>
+contact_sponsor: Shah Ally <shah_ally@yanmar.com>
+deep_dive_date: 2026-06-08
+last_updated: 2026-05-20
+
+requirements:
+
+  # ============================================================
+  # CATEGORY: Action Tracker (PRJ LEGO xlsx)
+  # ============================================================
+  - id: ATR-01
+    category: action_tracker
+    title: Task category column with sub-totals
+    source: Action Tracker xlsx — CATEGORY column + COUNTIFS sub-totals
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: projects.Task
+        field: category
+        file: backend/projects/models.py
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/projects/tasks/category-subtotals/
+        expected_status: [200, 401, 403]
+
+  - id: ATR-02
+    category: action_tracker
+    title: RACI per task (R/A/C/I as separate fields)
+    source: Action Tracker xlsx — R/A/C/I columns
+    priority: must
+    sprint_added: pre-existing
+    checks:
+      - type: model_field
+        model: projects.Task
+        field: raci_responsible
+      - type: model_field
+        model: projects.Task
+        field: raci_accountable
+      - type: model_field
+        model: projects.Task
+        field: raci_consulted
+      - type: model_field
+        model: projects.Task
+        field: raci_informed
+
+  - id: ATR-03
+    category: action_tracker
+    title: Revised Due Date + Completed On + Delay tracking
+    source: Action Tracker xlsx — REVISED DUE DATE / COMPLETED ON / PROJECT DELAY columns
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: projects.Task
+        field: revised_due_date
+      - type: model_field
+        model: projects.Task
+        field: completed_on
+      - type: migration_applied
+        app: projects
+        migration: 0013_yanmar_schema_batch
+
+  - id: ATR-04
+    category: action_tracker
+    title: 5-state progress indicator (Pending / 25 / 50 / 75 / Done)
+    source: Action Tracker xlsx — PROGRESS column with unicode circles
+    priority: should
+    sprint_added: 0
+    checks:
+      - type: file_exists
+        path: backend/projects/serializers.py
+      - type: manual
+        instruction: |
+          Verify that TaskSerializer exposes a `progress_bucket` field that
+          maps `progress` int (0..100) to one of:
+          pending | quarter | half | three_quarter | done
+
+  - id: ATR-05
+    category: action_tracker
+    title: Today / Tomorrow / This Week / Next Week KPI tiles
+    source: Action Tracker xlsx — COUNTIFS counters at top
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/projects/2/task-kpi/
+        expected_status: [200, 401, 403]
+      - type: frontend_component
+        path: frontend/src/components/TaskKpiTiles.tsx
+
+  # ============================================================
+  # CATEGORY: Project Plan docx
+  # ============================================================
+  - id: PLAN-01
+    category: project_plan
+    title: 6 distinct project roles (Owner/PM/Leader/Facilitator/Outside Eyes/Stakeholders)
+    source: Project Plan docx — Project Team table
+    priority: must
+    sprint_added: 2
+    checks:
+      - type: model_field
+        model: projects.ProjectMembership
+        field: role
+      - type: migration_applied
+        app: projects
+        migration: 0017_projectmembership
+
+  - id: PLAN-02
+    category: project_plan
+    title: Scope in + Scope out as separate fields
+    source: Project Plan docx — Scope section explicitly defines IN and OUT
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: projects.Project
+        field: scope_in
+      - type: model_field
+        model: projects.Project
+        field: scope_out
+
+  - id: PLAN-03
+    category: project_plan
+    title: Impact + Solution fields for problem-statement projects
+    source: Project Plan docx — Impact (if problem statement) + Solution sections
+    priority: should
+    sprint_added: 3
+    checks:
+      - type: model_field
+        model: projects.Project
+        field: problem_impact
+      - type: model_field
+        model: projects.Project
+        field: proposed_solution
+
+  - id: PLAN-04
+    category: project_plan
+    title: 3 date types — Start / Target Implementation / Target End
+    source: Project Plan docx — Time frame table
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: projects.Project
+        field: start_date
+      - type: model_field
+        model: projects.Project
+        field: target_implementation_date
+      - type: model_field
+        model: projects.Project
+        field: end_date
+
+  - id: PLAN-05
+    category: project_plan
+    title: Push-back rule enforced (1 push, max 14 days, then approval)
+    source: Project Plan docx — "Due dates can only be pushed back once for a maximum period of 2 weeks. More than this should be discussed with and approved by project owner."
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: projects.Task
+        field: revision_count
+      - type: model_field
+        model: projects.TaskDueDateChangeRequest
+        field: status
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/projects/task-due-change-requests/
+        expected_status: [200, 401, 403]
+      - type: migration_applied
+        app: projects
+        migration: 0015_pushback_workflow
+
+  - id: PLAN-06
+    category: project_plan
+    title: RAID — Risks / Assumptions / Issues / Dependencies
+    source: Project Plan docx — Risks and Issues section + governance best practice
+    priority: must
+    sprint_added: pre-existing
+    checks:
+      - type: model_field
+        model: projects.Risk
+        field: probability
+      - type: model_field
+        model: projects.Assumption
+        field: validation_status
+      - type: model_field
+        model: projects.Issue
+        field: status
+
+  - id: PLAN-07
+    category: project_plan
+    title: Project closing — Senior Manager sign-off with signature
+    source: Project Plan docx — "Senior manager should sign off every project to be considered as a 'finished project'"
+    priority: must
+    sprint_added: 2
+    checks:
+      - type: model_field
+        model: projects.ProjectSignOff
+        field: signed_off_by
+      - type: model_field
+        model: projects.ProjectSignOff
+        field: signature_image
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/projects/2/closing/sign-off/
+        expected_status: [200, 401, 403, 404]
+      - type: frontend_component
+        path: frontend/src/components/ProjectSignOffDialog.tsx
+
+  - id: PLAN-08
+    category: project_plan
+    title: Communication plan data model (kickoff/onboarding/regular/closing)
+    source: Project Plan docx — Communication plan section
+    priority: should
+    sprint_added: 3
+    checks:
+      - type: model_field
+        model: projects.CommunicationPlan
+        field: project
+      - type: model_field
+        model: projects.PlanEvent
+        field: event_type
+      - type: migration_applied
+        app: projects
+        migration: 0019_communicationplan
+
+  - id: PLAN-09
+    category: project_plan
+    title: Project Plan DOCX export matches Yanmar template
+    source: Project Plan docx itself — must be regeneratable from data
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: file_exists
+        path: backend/projects/exports_project_plan.py
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/projects/2/export/project-plan.docx
+        expected_status: [200, 401, 403]
+
+  # ============================================================
+  # CATEGORY: Highlight Report pptx
+  # ============================================================
+  - id: HR-01
+    category: highlight_report
+    title: PPTX export matching Yanmar template
+    source: YEU Highlight Report pptx — cover + 4-axis RAG + timeline + financials + risk map
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: file_exists
+        path: backend/prince2/exports.py
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/prince2/projects/2/prince2/highlight-reports/4/export/pptx/
+        expected_status: [200, 401, 403, 404]
+
+  - id: HR-02
+    category: highlight_report
+    title: 4-axis RAG (Budget / Planning / Resources / Overall)
+    source: YEU Highlight Report pptx — STATUS block top right
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: prince2.HighlightReport
+        field: rag_budget
+      - type: model_field
+        model: prince2.HighlightReport
+        field: rag_planning
+      - type: model_field
+        model: prince2.HighlightReport
+        field: rag_resources
+      - type: model_field
+        model: prince2.HighlightReport
+        field: overall_status
+
+  - id: HR-03
+    category: highlight_report
+    title: Financials — ETC + Contingency + Variance
+    source: YEU Highlight Report pptx — Financials table
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: projects.ProjectBudget
+        field: etc
+      - type: model_field
+        model: projects.ProjectBudget
+        field: contingency
+
+  - id: HR-04
+    category: highlight_report
+    title: 5x5 Risk Map (Probability x Impact)
+    source: YEU Highlight Report pptx — Risk map grid
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: frontend_component
+        path: frontend/src/components/RiskHeatmap.tsx
+
+  - id: HR-05
+    category: highlight_report
+    title: Highlights + Lowlights narrative
+    source: YEU Highlight Report pptx — Highlights / Lowlights blocks
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: model_field
+        model: prince2.HighlightReport
+        field: highlights
+      - type: model_field
+        model: prince2.HighlightReport
+        field: lowlights
+
+  - id: HR-06
+    category: highlight_report
+    title: PRINCE2 roles — Sponsor + Senior Supplier + PM
+    source: YEU Highlight Report pptx — Report to / Sponsor / Project Manager / Senior Supplier header
+    priority: must
+    sprint_added: pre-existing
+    checks:
+      - type: model_field
+        model: prince2.ProjectBoardMember
+        field: role
+
+  # ============================================================
+  # CATEGORY: Meeting Minutes docx
+  # ============================================================
+  - id: MIN-01
+    category: meeting_minutes
+    title: Attendees split — Invited / Attended / Absent
+    source: YEU Meeting Minutes docx — Attendees table
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: communication.MeetingAttendee
+        field: presence
+      - type: migration_applied
+        app: communication
+        migration: 0004_meeting_expansion
+
+  - id: MIN-02
+    category: meeting_minutes
+    title: Meeting Action Items with PIC + Action Due + status
+    source: YEU Meeting Minutes docx — Agreed New Actions table
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: communication.MeetingActionItem
+        field: pic_text
+      - type: model_field
+        model: communication.MeetingActionItem
+        field: action_due
+      - type: model_field
+        model: communication.MeetingActionItem
+        field: status
+
+  - id: MIN-03
+    category: meeting_minutes
+    title: Previous Actions carry-forward
+    source: YEU Meeting Minutes docx — Previous Actions table linked to prior meeting
+    priority: must
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: communication.Meeting
+        field: previous_meeting
+      - type: model_field
+        model: communication.MeetingActionItem
+        field: source_meeting
+
+  - id: MIN-04
+    category: meeting_minutes
+    title: AI Meeting Minutes from transcript (DOCX in Yanmar template)
+    source: Differentiator — not in template but matches "less admin" pain point
+    priority: should
+    sprint_added: 0
+    checks:
+      - type: file_exists
+        path: backend/communication/ai_minutes.py
+      - type: file_exists
+        path: backend/communication/ai_minutes_views.py
+      - type: endpoint_exists
+        method: GET
+        path: /api/v1/communication/projects/2/meetings/ai-minutes/
+        expected_status: [401, 403, 405]
+
+  - id: MIN-05
+    category: meeting_minutes
+    title: Customer/Supplier vs Yanmar split + meeting room
+    source: YEU Meeting Minutes docx — header table split
+    priority: should
+    sprint_added: 1
+    checks:
+      - type: model_field
+        model: communication.Meeting
+        field: customer_supplier
+      - type: model_field
+        model: communication.Meeting
+        field: yanmar_meeting_room
+
+  # ============================================================
+  # CATEGORY: Sales / Contract requirements
+  # ============================================================
+  - id: SC-01
+    category: sales_contract
+    title: BYO LLM keys — Yanmar's own Anthropic/OpenAI key
+    source: Email — "AI usage via Yanmar-managed OpenAI / LLM keys (no external data exposure)"
+    priority: must
+    sprint_added: 2
+    checks:
+      - type: model_field
+        model: accounts.CompanyAIKey
+        field: anthropic_api_key
+      - type: model_field
+        model: admin_portal.ClientApiKey
+        field: api_key
+      - type: file_exists
+        path: backend/core/llm_keys.py
+      - type: migration_applied
+        app: accounts
+        migration: 0014_companyaikey
+
+  - id: SC-02
+    category: sales_contract
+    title: API keys encrypted at rest (Fernet)
+    source: Email — "GDPR & data security" + InfoSec best practice
+    priority: must
+    sprint_added: 3
+    checks:
+      - type: file_exists
+        path: backend/core/secret_field.py
+      - type: migration_applied
+        app: accounts
+        migration: 0015_companyaikey_encrypted
+      - type: migration_applied
+        app: admin_portal
+        migration: 0004_clientapikey_encrypted
+
+  - id: SC-03
+    category: sales_contract
+    title: GDPR DPIA document for the contract
+    source: Email — "Full audit trail and DPIA support"
+    priority: must
+    sprint_added: 2
+    checks:
+      - type: requirement_doc
+        path: docs/yanmar/dpia-projextpal.md
+        min_bytes: 4000
+
+  - id: SC-04
+    category: sales_contract
+    title: AWS hosting topology document
+    source: Email — "AWS deployment: Inclufy-managed (single-tenant) or fully Yanmar-controlled"
+    priority: must
+    sprint_added: 2
+    checks:
+      - type: requirement_doc
+        path: docs/yanmar/aws-topology-yanmar.md
+        min_bytes: 4000
+
+  - id: SC-05
+    category: sales_contract
+    title: Demo project seed for the 8 June deep-dive
+    source: Internal — demo readiness
+    priority: must
+    sprint_added: 0
+    checks:
+      - type: data_seeded
+        query: "from projects.models import Project; print(Project.objects.filter(name='Renovation Phase 2').count())"
+        expected_min: 1
+      - type: data_seeded
+        query: "from prince2.models import HighlightReport; print(HighlightReport.objects.filter(project__name='Renovation Phase 2').count())"
+        expected_min: 1
+
+  - id: SC-06
+    category: sales_contract
+    title: SAP S/4HANA integration
+    source: Email — "SAP S/4HANA remains the system of record, ProjeXtPal adds the operational layer"
+    priority: phase_2
+    sprint_added: deferred
+    checks:
+      - type: manual
+        instruction: |
+          Phase 2 — separate Statement of Work. Not in scope for the 8 June
+          deep-dive. Expect ~15-25 dev-days + Yanmar IT involvement.
+
+  - id: SC-07
+    category: sales_contract
+    title: Methodology-agnostic — multi-methodology in one programme
+    source: Email — "Native support for multiple methodologies within one programme"
+    priority: must
+    sprint_added: pre-existing
+    checks:
+      - type: model_field
+        model: projects.Project
+        field: methodology
+      - type: file_exists
+        path: backend/projects/methodology_service.py
+
+  - id: SC-08
+    category: sales_contract
+    title: Methodology-aware export templates
+    source: Internal — multi-customer fit beyond Yanmar
+    priority: should
+    sprint_added: 3
+    checks:
+      - type: file_exists
+        path: backend/projects/export_templates/__init__.py
+      - type: model_field
+        model: accounts.CompanyExportPreference
+        field: default_template
+
+  - id: SC-09
+    category: sales_contract
+    title: Demo script for 8 June deep-dive
+    source: Internal — demo readiness
+    priority: should
+    sprint_added: 3
+    checks:
+      - type: requirement_doc
+        path: docs/yanmar/demo-script-8-june.md
+        min_bytes: 3000
