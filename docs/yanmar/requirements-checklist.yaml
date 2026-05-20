@@ -25,7 +25,8 @@ requirements:
   - id: ATR-01
     category: action_tracker
     title: Task category column with sub-totals
-    source: Action Tracker xlsx — CATEGORY column + COUNTIFS sub-totals
+    source: "Action Tracker xlsx — CATEGORY column + COUNTIFS sub-totals"
+
     priority: must
     sprint_added: 1
     checks:
@@ -41,7 +42,8 @@ requirements:
   - id: ATR-02
     category: action_tracker
     title: RACI per task (R/A/C/I as separate fields)
-    source: Action Tracker xlsx — R/A/C/I columns
+    source: "Action Tracker xlsx — R/A/C/I columns"
+
     priority: must
     sprint_added: pre-existing
     checks:
@@ -61,7 +63,8 @@ requirements:
   - id: ATR-03
     category: action_tracker
     title: Revised Due Date + Completed On + Delay tracking
-    source: Action Tracker xlsx — REVISED DUE DATE / COMPLETED ON / PROJECT DELAY columns
+    source: "Action Tracker xlsx — REVISED DUE DATE / COMPLETED ON / PROJECT DELAY columns"
+
     priority: must
     sprint_added: 0
     checks:
@@ -78,7 +81,8 @@ requirements:
   - id: ATR-04
     category: action_tracker
     title: 5-state progress indicator (Pending / 25 / 50 / 75 / Done)
-    source: Action Tracker xlsx — PROGRESS column with unicode circles
+    source: "Action Tracker xlsx — PROGRESS column with unicode circles"
+
     priority: should
     sprint_added: 0
     checks:
@@ -93,7 +97,8 @@ requirements:
   - id: ATR-05
     category: action_tracker
     title: Today / Tomorrow / This Week / Next Week KPI tiles
-    source: Action Tracker xlsx — COUNTIFS counters at top
+    source: "Action Tracker xlsx — COUNTIFS counters at top"
+
     priority: must
     sprint_added: 1
     checks:
@@ -110,7 +115,8 @@ requirements:
   - id: PLAN-01
     category: project_plan
     title: 6 distinct project roles (Owner/PM/Leader/Facilitator/Outside Eyes/Stakeholders)
-    source: Project Plan docx — Project Team table
+    source: "Project Plan docx — Project Team table"
+
     priority: must
     sprint_added: 2
     checks:
@@ -124,7 +130,8 @@ requirements:
   - id: PLAN-02
     category: project_plan
     title: Scope in + Scope out as separate fields
-    source: Project Plan docx — Scope section explicitly defines IN and OUT
+    source: "Project Plan docx — Scope section explicitly defines IN and OUT"
+
     priority: must
     sprint_added: 0
     checks:
@@ -138,7 +145,8 @@ requirements:
   - id: PLAN-03
     category: project_plan
     title: Impact + Solution fields for problem-statement projects
-    source: Project Plan docx — Impact (if problem statement) + Solution sections
+    source: "Project Plan docx — Impact (if problem statement) + Solution sections"
+
     priority: should
     sprint_added: 3
     checks:
@@ -152,7 +160,8 @@ requirements:
   - id: PLAN-04
     category: project_plan
     title: 3 date types — Start / Target Implementation / Target End
-    source: Project Plan docx — Time frame table
+    source: "Project Plan docx — Time frame table"
+
     priority: must
     sprint_added: 0
     checks:
@@ -169,7 +178,8 @@ requirements:
   - id: PLAN-05
     category: project_plan
     title: Push-back rule enforced (1 push, max 14 days, then approval)
-    source: Project Plan docx — "Due dates can only be pushed back once for a maximum period of 2 weeks. More than this should be discussed with and approved by project owner."
+    source: "Project Plan docx — \"Due dates can only be pushed back once for a maximum period of 2 weeks. More than this should be discussed with and approved by project owner.\""
+
     priority: must
     sprint_added: 1
     checks:
@@ -190,7 +200,8 @@ requirements:
   - id: PLAN-06
     category: project_plan
     title: RAID — Risks / Assumptions / Issues / Dependencies
-    source: Project Plan docx — Risks and Issues section + governance best practice
+    source: "Project Plan docx — Risks and Issues section + governance best practice"
+
     priority: must
     sprint_added: pre-existing
     checks:
@@ -207,7 +218,8 @@ requirements:
   - id: PLAN-07
     category: project_plan
     title: Project closing — Senior Manager sign-off with signature
-    source: Project Plan docx — "Senior manager should sign off every project to be considered as a 'finished project'"
+    source: "Project Plan docx — \"Senior manager should sign off every project to be considered as a 'finished project'\""
+
     priority: must
     sprint_added: 2
     checks:
@@ -227,7 +239,8 @@ requirements:
   - id: PLAN-08
     category: project_plan
     title: Communication plan data model (kickoff/onboarding/regular/closing)
-    source: Project Plan docx — Communication plan section
+    source: "Project Plan docx — Communication plan section"
+
     priority: should
     sprint_added: 3
     checks:
@@ -244,7 +257,8 @@ requirements:
   - id: PLAN-09
     category: project_plan
     title: Project Plan DOCX export matches Yanmar template
-    source: Project Plan docx itself — must be regeneratable from data
+    source: "Project Plan docx itself — must be regeneratable from data"
+
     priority: must
     sprint_added: 1
     checks:
@@ -252,7 +266,7 @@ requirements:
         path: backend/projects/exports_project_plan.py
       - type: endpoint_exists
         method: GET
-        path: /api/v1/projects/2/export/project-plan.docx
+        path: /api/v1/projects/2/export/project-plan.docx/
         expected_status: [200, 401, 403]
 
   # ============================================================
@@ -261,7 +275,8 @@ requirements:
   - id: HR-01
     category: highlight_report
     title: PPTX export matching Yanmar template
-    source: YEU Highlight Report pptx — cover + 4-axis RAG + timeline + financials + risk map
+    source: "YEU Highlight Report pptx — cover + 4-axis RAG + timeline + financials + risk map"
+
     priority: must
     sprint_added: 0
     checks:
@@ -275,7 +290,8 @@ requirements:
   - id: HR-02
     category: highlight_report
     title: 4-axis RAG (Budget / Planning / Resources / Overall)
-    source: YEU Highlight Report pptx — STATUS block top right
+    source: "YEU Highlight Report pptx — STATUS block top right"
+
     priority: must
     sprint_added: 0
     checks:
@@ -295,7 +311,8 @@ requirements:
   - id: HR-03
     category: highlight_report
     title: Financials — ETC + Contingency + Variance
-    source: YEU Highlight Report pptx — Financials table
+    source: "YEU Highlight Report pptx — Financials table"
+
     priority: must
     sprint_added: 0
     checks:
@@ -309,7 +326,8 @@ requirements:
   - id: HR-04
     category: highlight_report
     title: 5x5 Risk Map (Probability x Impact)
-    source: YEU Highlight Report pptx — Risk map grid
+    source: "YEU Highlight Report pptx — Risk map grid"
+
     priority: must
     sprint_added: 0
     checks:
@@ -319,7 +337,8 @@ requirements:
   - id: HR-05
     category: highlight_report
     title: Highlights + Lowlights narrative
-    source: YEU Highlight Report pptx — Highlights / Lowlights blocks
+    source: "YEU Highlight Report pptx — Highlights / Lowlights blocks"
+
     priority: must
     sprint_added: 0
     checks:
@@ -333,7 +352,8 @@ requirements:
   - id: HR-06
     category: highlight_report
     title: PRINCE2 roles — Sponsor + Senior Supplier + PM
-    source: YEU Highlight Report pptx — Report to / Sponsor / Project Manager / Senior Supplier header
+    source: "YEU Highlight Report pptx — Report to / Sponsor / Project Manager / Senior Supplier header"
+
     priority: must
     sprint_added: pre-existing
     checks:
@@ -347,7 +367,8 @@ requirements:
   - id: MIN-01
     category: meeting_minutes
     title: Attendees split — Invited / Attended / Absent
-    source: YEU Meeting Minutes docx — Attendees table
+    source: "YEU Meeting Minutes docx — Attendees table"
+
     priority: must
     sprint_added: 1
     checks:
@@ -361,7 +382,8 @@ requirements:
   - id: MIN-02
     category: meeting_minutes
     title: Meeting Action Items with PIC + Action Due + status
-    source: YEU Meeting Minutes docx — Agreed New Actions table
+    source: "YEU Meeting Minutes docx — Agreed New Actions table"
+
     priority: must
     sprint_added: 1
     checks:
@@ -378,7 +400,8 @@ requirements:
   - id: MIN-03
     category: meeting_minutes
     title: Previous Actions carry-forward
-    source: YEU Meeting Minutes docx — Previous Actions table linked to prior meeting
+    source: "YEU Meeting Minutes docx — Previous Actions table linked to prior meeting"
+
     priority: must
     sprint_added: 1
     checks:
@@ -392,7 +415,8 @@ requirements:
   - id: MIN-04
     category: meeting_minutes
     title: AI Meeting Minutes from transcript (DOCX in Yanmar template)
-    source: Differentiator — not in template but matches "less admin" pain point
+    source: "Differentiator — not in template but matches \"less admin\" pain point"
+
     priority: should
     sprint_added: 0
     checks:
@@ -408,7 +432,8 @@ requirements:
   - id: MIN-05
     category: meeting_minutes
     title: Customer/Supplier vs Yanmar split + meeting room
-    source: YEU Meeting Minutes docx — header table split
+    source: "YEU Meeting Minutes docx — header table split"
+
     priority: should
     sprint_added: 1
     checks:
@@ -425,7 +450,8 @@ requirements:
   - id: SC-01
     category: sales_contract
     title: BYO LLM keys — Yanmar's own Anthropic/OpenAI key
-    source: Email — "AI usage via Yanmar-managed OpenAI / LLM keys (no external data exposure)"
+    source: "Email — \"AI usage via Yanmar-managed OpenAI / LLM keys (no external data exposure)\""
+
     priority: must
     sprint_added: 2
     checks:
@@ -444,7 +470,8 @@ requirements:
   - id: SC-02
     category: sales_contract
     title: API keys encrypted at rest (Fernet)
-    source: Email — "GDPR & data security" + InfoSec best practice
+    source: "Email — \"GDPR & data security\" + InfoSec best practice"
+
     priority: must
     sprint_added: 3
     checks:
@@ -460,7 +487,8 @@ requirements:
   - id: SC-03
     category: sales_contract
     title: GDPR DPIA document for the contract
-    source: Email — "Full audit trail and DPIA support"
+    source: "Email — \"Full audit trail and DPIA support\""
+
     priority: must
     sprint_added: 2
     checks:
@@ -471,7 +499,8 @@ requirements:
   - id: SC-04
     category: sales_contract
     title: AWS hosting topology document
-    source: Email — "AWS deployment: Inclufy-managed (single-tenant) or fully Yanmar-controlled"
+    source: "Email — \"AWS deployment: Inclufy-managed (single-tenant) or fully Yanmar-controlled\""
+
     priority: must
     sprint_added: 2
     checks:
@@ -482,7 +511,8 @@ requirements:
   - id: SC-05
     category: sales_contract
     title: Demo project seed for the 8 June deep-dive
-    source: Internal — demo readiness
+    source: "Internal — demo readiness"
+
     priority: must
     sprint_added: 0
     checks:
@@ -496,7 +526,8 @@ requirements:
   - id: SC-06
     category: sales_contract
     title: SAP S/4HANA integration
-    source: Email — "SAP S/4HANA remains the system of record, ProjeXtPal adds the operational layer"
+    source: "Email — \"SAP S/4HANA remains the system of record, ProjeXtPal adds the operational layer\""
+
     priority: phase_2
     sprint_added: deferred
     checks:
@@ -508,7 +539,8 @@ requirements:
   - id: SC-07
     category: sales_contract
     title: Methodology-agnostic — multi-methodology in one programme
-    source: Email — "Native support for multiple methodologies within one programme"
+    source: "Email — \"Native support for multiple methodologies within one programme\""
+
     priority: must
     sprint_added: pre-existing
     checks:
@@ -521,7 +553,8 @@ requirements:
   - id: SC-08
     category: sales_contract
     title: Methodology-aware export templates
-    source: Internal — multi-customer fit beyond Yanmar
+    source: "Internal — multi-customer fit beyond Yanmar"
+
     priority: should
     sprint_added: 3
     checks:
@@ -534,7 +567,8 @@ requirements:
   - id: SC-09
     category: sales_contract
     title: Demo script for 8 June deep-dive
-    source: Internal — demo readiness
+    source: "Internal — demo readiness"
+
     priority: should
     sprint_added: 3
     checks:
