@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .ai_minutes_views import AIMeetingMinutesView
 
 router = DefaultRouter()
 router.register(r'status-reports', views.StatusReportViewSet, basename='status-reports')
@@ -11,9 +10,4 @@ router.register(r'meetings', views.MeetingViewSet, basename='meetings')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path(
-        'projects/<int:project_id>/meetings/ai-minutes/',
-        AIMeetingMinutesView.as_view(),
-        name='ai-meeting-minutes',
-    ),
 ]

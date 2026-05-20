@@ -166,6 +166,84 @@ class CrmApiKey(models.Model):
     def __str__(self):
         return f"{self.name} ({self.company.name})"
 
+
+class CompanyAIKey(models.Model):
+    """
+    Per-company BYO LLM keys (Yanmar-grade compliance).
+
+    Yanmar requires their own Anthropic / OpenAI keys so transcripts and
+    project content never traverse Inclufy's central LLM accounts. When
+    a company has an active row here, the LLM helper uses that key;
+    otherwise it falls back to settings.OPENAI_API_KEY /
+    settings.ANTHROPIC_API_KEY (Inclufy-managed multi-tenant pool).
+
+    Same plain-storage approach as CrmApiKey — relies on DB-level access
+    control + at-rest encryption from the hosting platform. Rotate via
+    admin or the company API.
+    """
+
+    PROVIDER_CHOICES = [
+        ("openai", "OpenAI"),
+        ("anthropic", "Anthropic"),
+    ]
+
+    company = models.OneToOneField(
+        Company, on_delete=models.CASCADE, related_name="ai_key",
+    )
+    openai_api_key = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text="Optional. If set, used for all OpenAI calls from this company.",
+    )
+    openai_organization_id = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text="Optional OpenAI org id (X-OpenAI-Organization header).",
+    )
+    openai_base_url = models.URLField(
+        blank=True, default="",
+        help_text="Optional override (e.g. corporate proxy or Azure OpenAI).",
+    )
+    anthropic_api_key = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text="Optional. If set, used for all Anthropic calls from this company.",
+    )
+    anthropic_base_url = models.URLField(
+        blank=True, default="",
+        help_text="Optional override for Anthropic API (e.g. Bedrock proxy).",
+    )
+    is_active = models.BooleanField(default=True)
+
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    last_used_provider = models.CharField(
+        max_length=20, choices=PROVIDER_CHOICES, blank=True, default="",
+    )
+
+    created_by = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="created_company_ai_keys",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Company AI Key"
+        verbose_name_plural = "Company AI Keys"
+        indexes = [
+            models.Index(fields=["company", "is_active"]),
+        ]
+
+    def __str__(self):
+        return f"AI keys for {self.company.name} (active={self.is_active})"
+
+    def has_key_for(self, provider: str) -> bool:
+        if not self.is_active:
+            return False
+        if provider == "openai":
+            return bool(self.openai_api_key)
+        if provider == "anthropic":
+            return bool(self.anthropic_api_key)
+        return False
+
+
 class Registration(models.Model):
     """Track user registrations with metadata"""
     

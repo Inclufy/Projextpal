@@ -46,15 +46,12 @@ class TaskSerializer(serializers.ModelSerializer):
             "milestone",
             "title",
             "description",
-            "category",
             "assigned_to",
             "assigned_to_email",
             "assigned_to_name",
             "assigned_to_role",
             "start_date",
             "due_date",
-            "revised_due_date",
-            "completed_on",
             "status",
             "priority",
             "progress",
@@ -82,87 +79,6 @@ class TaskSerializer(serializers.ModelSerializer):
         return [
             {"id": s.id, "title": s.title, "completed": s.completed}
             for s in obj.subtasks.all()
-        ]
-
-    # ------------------------------------------------------------------
-    # Yanmar push-back rule enforcement on due_date updates
-    # ------------------------------------------------------------------
-    def update(self, instance, validated_data):
-        """
-        Enforce Yanmar Project Plan rule on due_date push-backs:
-
-          "Due dates can only be pushed back once for a maximum period of
-           2 weeks. More than this should be discussed with and approved
-           by project owner."
-
-        Implementation:
-        - 1st push-back AND delta <= 14 days  -> apply, bump revision_count,
-          set revised_due_date to the new value, keep due_date as the
-          original baseline.
-        - 2nd+ push-back OR delta > 14 days   -> create a
-          TaskDueDateChangeRequest (status=pending) and DO NOT change the
-          stored due_date. Caller receives 202 with the request id via
-          the view (we attach `_pending_due_request` on the instance so
-          the view can pick it up).
-        - Pull-forward (delta <= 0) is always allowed without approval.
-        """
-        from datetime import date as _date
-        from .models import TaskDueDateChangeRequest
-
-        new_due = validated_data.get("due_date", instance.due_date)
-        if new_due and instance.due_date and new_due != instance.due_date:
-            delta = (new_due - instance.due_date).days
-            if delta > 0:  # push-back, not pull-forward
-                needs_approval = (
-                    instance.revision_count >= 1 or delta > 14
-                )
-                if needs_approval:
-                    request = self.context.get("request")
-                    user = request.user if request else None
-                    pending = TaskDueDateChangeRequest.objects.create(
-                        task=instance,
-                        requested_by=user if user and user.is_authenticated else None,
-                        requested_date=new_due,
-                        previous_due_date=instance.due_date,
-                        delta_days=delta,
-                        reason=(
-                            request.data.get("change_reason", "")
-                            if request else ""
-                        ),
-                    )
-                    instance._pending_due_request = pending
-                    # Strip the due_date from validated_data so the parent
-                    # update() doesn't apply it.
-                    validated_data.pop("due_date", None)
-                    return super().update(instance, validated_data)
-                # Within policy: 1st push-back, <=14 days. Record revision.
-                validated_data["revised_due_date"] = new_due
-                validated_data["revision_count"] = instance.revision_count + 1
-                validated_data.pop("due_date", None)
-        return super().update(instance, validated_data)
-
-
-class TaskDueDateChangeRequestSerializer(serializers.ModelSerializer):
-    requested_by_email = serializers.ReadOnlyField(source="requested_by.email")
-    decided_by_email = serializers.ReadOnlyField(source="decided_by.email")
-    task_title = serializers.ReadOnlyField(source="task.title")
-    project_id = serializers.ReadOnlyField(source="task.milestone.project_id")
-
-    class Meta:
-        from .models import TaskDueDateChangeRequest
-        model = TaskDueDateChangeRequest
-        fields = [
-            "id", "task", "task_title", "project_id",
-            "requested_by", "requested_by_email",
-            "requested_date", "previous_due_date", "delta_days",
-            "reason", "status",
-            "decided_by", "decided_by_email", "decided_at",
-            "decision_note",
-            "created_at", "updated_at",
-        ]
-        read_only_fields = [
-            "id", "requested_by", "previous_due_date", "delta_days",
-            "decided_by", "decided_at", "created_at", "updated_at",
         ]
 
 

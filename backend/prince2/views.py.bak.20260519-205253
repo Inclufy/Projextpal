@@ -419,32 +419,6 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(detail=True, methods=["get"], url_path="export/pptx")
-    def export_pptx(self, request, project_id=None, pk=None):
-        """Render the Highlight Report as a PPTX matching the Yanmar template."""
-        from django.http import HttpResponse
-        from django.utils.text import slugify
-        from django.utils import timezone
-        from .exports import highlight_report_to_data, render_highlight_pptx
-
-        report = self.get_object()
-        data = highlight_report_to_data(report)
-        pptx_bytes = render_highlight_pptx(data)
-
-        filename = "{}-highlight-{}.pptx".format(
-            slugify(report.project.name) or "project",
-            (report.report_date or timezone.now().date()).isoformat(),
-        )
-        response = HttpResponse(
-            pptx_bytes,
-            content_type=(
-                "application/vnd.openxmlformats-officedocument."
-                "presentationml.presentation"
-            ),
-        )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
-
 
 class CheckpointReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     """PRINCE2 Checkpoint Report endpoint (PRINCE2 6th Ed §A.3).

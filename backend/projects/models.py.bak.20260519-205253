@@ -94,12 +94,9 @@ class Project(models.Model):
     budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="EUR")
     start_date = models.DateField(null=True, blank=True)
-    target_implementation_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(blank=True)
     project_goal = models.TextField(blank=True)
-    scope_in = models.TextField(blank=True, default="")
-    scope_out = models.TextField(blank=True, default="")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -203,13 +200,6 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    # Yanmar Action Tracker (PRJ LEGO) uses a free-text Category column to group
-    # tasks for COUNTIFS sub-totals. Keep it free-text so customers can use their
-    # own taxonomy (no enum lock-in).
-    category = models.CharField(
-        max_length=100, blank=True, default="", db_index=True,
-        help_text="Optional grouping label used for sub-totals (Action Tracker style).",
-    )
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -219,13 +209,6 @@ class Task(models.Model):
     )
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
-    revised_due_date = models.DateField(null=True, blank=True)
-    completed_on = models.DateField(null=True, blank=True)
-    # Yanmar Project Plan rule: "Due dates can only be pushed back once for a
-    # maximum of 2 weeks. More than this requires Project Owner approval."
-    # `revision_count` counts how many times due_date was successfully pushed
-    # back without approval. The validation is enforced in the serializer.
-    revision_count = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="todo")
     priority = models.CharField(
         max_length=10, choices=PRIORITY_CHOICES, default="medium"
@@ -266,24 +249,6 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title} - {self.milestone.name}"
 
-    @property
-    def effective_due_date(self):
-        """Revised due date if set, otherwise original due date."""
-        return self.revised_due_date or self.due_date
-
-    @property
-    def delay_days(self):
-        """Days delay between due_date and completion or revision.
-
-        Positive = late, negative = early. Returns None if not enough info.
-        """
-        if not self.due_date:
-            return None
-        reference = self.completed_on or self.revised_due_date
-        if not reference:
-            return None
-        return (reference - self.due_date).days
-
     def compute_progress_from_subtasks(self):
         """Calculate progress from subtasks, or fall back to task status.
 
@@ -318,63 +283,6 @@ class Task(models.Model):
             self.save(update_fields=["progress", "status"])
 
         return new_progress
-
-
-class TaskDueDateChangeRequest(models.Model):
-    """
-    Yanmar Project Plan rule enforcement.
-
-    Yanmar's template states: "Due dates can only be pushed back once for a
-    maximum period of 2 weeks. More than this should be discussed with and
-    approved by project owner."
-
-    When a user tries to make a 2nd push-back OR a push-back >14 days, the
-    serializer creates one of these rows in "pending" state instead of
-    silently mutating the task. The Project Owner approves or rejects;
-    approval applies the requested date and increments revision_count.
-    """
-
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected"),
-    ]
-
-    task = models.ForeignKey(
-        Task, on_delete=models.CASCADE, related_name="due_date_change_requests"
-    )
-    requested_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="requested_due_changes",
-    )
-    requested_date = models.DateField()
-    previous_due_date = models.DateField(null=True, blank=True)
-    delta_days = models.IntegerField(
-        help_text="requested_date - previous_due_date (positive = push-back).",
-    )
-    reason = models.TextField(blank=True, default="")
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="pending"
-    )
-    decided_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="decided_due_changes",
-    )
-    decided_at = models.DateTimeField(null=True, blank=True)
-    decision_note = models.TextField(blank=True, default="")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["task", "status"]),
-        ]
-
-    def __str__(self):
-        return f"DueDateChange<{self.task_id}> {self.previous_due_date}→{self.requested_date} [{self.status}]"
 
 
 class Subtask(models.Model):
@@ -1170,18 +1078,10 @@ class ProjectBudget(models.Model):
         related_name='project_budget'
     )
     total_budget = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    etc = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0,
-        help_text="Estimate To Complete — forecasted remaining cost to finish the project.",
-    )
-    contingency = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0,
-        help_text="Contingency reserve held outside the working budget.",
-    )
     currency = models.CharField(max_length=3, default='EUR')
     period_start = models.DateField(null=True, blank=True)
     period_end = models.DateField(null=True, blank=True)
-
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1206,119 +1106,6 @@ class ProjectBudget(models.Model):
     def total_remaining(self):
         """Calculate remaining budget"""
         return float(self.total_budget) - float(self.total_spent)
-
-    @property
-    def variance(self):
-        """Budget variance per Yanmar Highlight Report: Budget - (Actuals + ETC)."""
-        return float(self.total_budget) - (float(self.total_spent) + float(self.etc))
-
-
-# ============================================================================
-# Sprint 2 — Project Closing sign-off (Yanmar template requirement)
-# ============================================================================
-#
-# Yanmar Project Plan template: "Senior manager should sign off every
-# project to be considered as a 'finished project'." This model captures
-# that formal sign-off independent of methodology, so PRINCE2 projects
-# (with EndProjectReport) and non-PRINCE2 projects (with PostProject)
-# share the same closure-attestation surface.
-
-class ProjectSignOff(models.Model):
-    """Senior-manager closing sign-off + signature for a project."""
-
-    project = models.OneToOneField(
-        "projects.Project",
-        on_delete=models.CASCADE,
-        related_name="sign_off",
-    )
-    signed_off_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="signed_off_projects",
-    )
-    signed_off_role = models.CharField(
-        max_length=120, blank=True, default="",
-        help_text="e.g. 'Senior Manager', 'Project Sponsor'.",
-    )
-    signed_off_at = models.DateTimeField(null=True, blank=True)
-    signature_image = models.FileField(
-        upload_to="signoffs/%Y/%m/", null=True, blank=True,
-        help_text="PNG of the signature (drawn in-app or uploaded).",
-    )
-    sign_off_note = models.TextField(blank=True, default="")
-    is_valid = models.BooleanField(
-        default=True,
-        help_text=(
-            "Set to False to revoke a sign-off (e.g. on re-opening the "
-            "project). History is preserved via updated_at."
-        ),
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Project Sign-Off"
-        verbose_name_plural = "Project Sign-Offs"
-
-    def __str__(self):
-        who = self.signed_off_by.email if self.signed_off_by_id else "—"
-        return f"SignOff<{self.project_id}> by {who} at {self.signed_off_at}"
-
-
-# ============================================================================
-# Sprint 2 — Unified 6-role ProjectMembership (Yanmar Project Plan template)
-# ============================================================================
-#
-# Yanmar's Project Plan template names 6 distinct roles. Today these live
-# scattered across PRINCE2 ProjectBoardMember, ProjectTeam, and Stakeholder.
-# ProjectMembership consolidates them under one canonical taxonomy.
-# Existing models stay in place — exporters read ProjectMembership first
-# and fall back to legacy data when no row exists for a role.
-
-class ProjectMembership(models.Model):
-    """One row per (project, user, Yanmar role)."""
-
-    ROLE_CHOICES = [
-        ("project_owner", "Project Owner"),
-        ("project_manager", "Project Manager"),
-        ("project_leader", "Project Leader"),
-        ("facilitator", "Facilitator"),
-        ("outside_eyes", "Outside Eyes"),
-        ("stakeholder", "Stakeholder"),
-        ("other", "Other"),
-    ]
-
-    project = models.ForeignKey(
-        "projects.Project",
-        on_delete=models.CASCADE,
-        related_name="memberships",
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="project_memberships",
-    )
-    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
-    responsibilities = models.TextField(blank=True, default="")
-    is_primary = models.BooleanField(
-        default=False,
-        help_text="Mark the primary holder of this role (e.g. THE Project Manager).",
-    )
-    starts_on = models.DateField(null=True, blank=True)
-    ends_on = models.DateField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = [("project", "user", "role")]
-        ordering = ["project", "role", "id"]
-        indexes = [
-            models.Index(fields=["project", "role"]),
-        ]
-
-    def __str__(self):
-        return f"{self.user} on {self.project} as {self.role}"
     
 
 # ============================================================================

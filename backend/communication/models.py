@@ -158,6 +158,19 @@ class Meeting(models.Model):
     )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="scheduled")
+    # Sprint 1 — Yanmar Meeting Minutes template expansion.
+    reason = models.TextField(blank=True, default="")
+    discussion_notes = models.TextField(blank=True, default="")
+    conclusions = models.TextField(blank=True, default="")
+    previous_meeting = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="follow_up_meetings",
+        help_text="Link to the prior meeting. Used to carry forward open actions.",
+    )
+    customer_supplier = models.CharField(max_length=200, blank=True, default="")
+    yanmar_meeting_room = models.CharField(max_length=200, blank=True, default="")
+    prepared_by = models.CharField(max_length=200, blank=True, default="")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -167,3 +180,115 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.project})"
+
+
+class MeetingAttendee(models.Model):
+    """
+    Per-meeting attendee row matching Yanmar Meeting Minutes template
+    (Invited / Attendees / Absent). One row per (meeting, person).
+
+    `user` is optional -- guests / customer-supplier attendees who don't
+    have a system account are stored via name_text / position / contact.
+    """
+
+    PRESENCE_CHOICES = [
+        ("invited", "Invited"),
+        ("attended", "Attended"),
+        ("absent", "Absent"),
+    ]
+
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, related_name="attendees",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="meeting_attendances",
+    )
+    name_text = models.CharField(max_length=200, blank=True, default="")
+    position = models.CharField(max_length=200, blank=True, default="")
+    contact_info = models.CharField(max_length=255, blank=True, default="")
+    presence = models.CharField(
+        max_length=20, choices=PRESENCE_CHOICES, default="invited",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "meeting_attendees"
+        ordering = ["presence", "id"]
+        indexes = [
+            models.Index(fields=["meeting", "presence"]),
+        ]
+
+    def __str__(self):
+        return f"{self.name_text or self.user_id} -> {self.meeting_id} ({self.presence})"
+
+
+class MeetingActionItem(models.Model):
+    """
+    Action item produced by a meeting (the "Agreed New Actions" table in
+    Yanmar's Meeting Minutes template). Open items are carried forward
+    into the next meeting's "Previous Actions" via
+    `Meeting.previous_meeting`.
+    """
+
+    STATUS_CHOICES = [
+        ("open", "Open"),
+        ("closed", "Closed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, related_name="action_items",
+    )
+    source_meeting = models.ForeignKey(
+        Meeting, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="originated_actions",
+        help_text="If this action was first recorded in an earlier meeting.",
+    )
+    no = models.PositiveIntegerField(default=0)
+    subject = models.CharField(max_length=500)
+    pic_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="meeting_actions_pic",
+    )
+    pic_text = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text="Person In Charge as free text (when no system user).",
+    )
+    action_due = models.CharField(
+        max_length=120, blank=True, default="",
+        help_text="Free-text due date (preserves phrasing like 'next Friday').",
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="open",
+    )
+    notes = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "meeting_action_items"
+        ordering = ["no", "id"]
+        indexes = [
+            models.Index(fields=["meeting", "status"]),
+            models.Index(fields=["source_meeting"]),
+        ]
+
+    def __str__(self):
+        return f"#{self.no} {self.subject[:40]} ({self.status})"
+
+    def carry_forward_to(self, new_meeting: "Meeting") -> "MeetingActionItem":
+        """Clone an open action into a follow-up meeting (preserves source)."""
+        return MeetingActionItem.objects.create(
+            meeting=new_meeting,
+            source_meeting=self.source_meeting or self.meeting,
+            no=self.no,
+            subject=self.subject,
+            pic_user=self.pic_user,
+            pic_text=self.pic_text,
+            action_due=self.action_due,
+            status="open",
+            notes=self.notes,
+        )

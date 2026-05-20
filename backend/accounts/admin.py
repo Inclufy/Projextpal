@@ -1,10 +1,50 @@
+from django import forms
 from django.contrib import admin
 from accounts.models import (
     CustomUser,
     VerificationToken,
     PasswordResetToken,
     Company,
+    CompanyAIKey,
 )
+
+
+class CompanyAIKeyForm(forms.ModelForm):
+    """Render API keys as masked password fields in the Django admin."""
+
+    openai_api_key = forms.CharField(
+        widget=forms.PasswordInput(render_value=True), required=False,
+    )
+    anthropic_api_key = forms.CharField(
+        widget=forms.PasswordInput(render_value=True), required=False,
+    )
+
+    class Meta:
+        model = CompanyAIKey
+        fields = "__all__"
+
+
+@admin.register(CompanyAIKey)
+class CompanyAIKeyAdmin(admin.ModelAdmin):
+    form = CompanyAIKeyForm
+    list_display = (
+        "company", "is_active",
+        "has_openai", "has_anthropic",
+        "last_used_provider", "last_used_at",
+    )
+    list_filter = ("is_active", "last_used_provider")
+    search_fields = ("company__name",)
+    readonly_fields = ("last_used_at", "last_used_provider", "created_at", "updated_at")
+
+    def has_openai(self, obj):
+        return bool(obj.openai_api_key)
+    has_openai.boolean = True
+    has_openai.short_description = "OpenAI"
+
+    def has_anthropic(self, obj):
+        return bool(obj.anthropic_api_key)
+    has_anthropic.boolean = True
+    has_anthropic.short_description = "Anthropic"
 
 
 class CompanyAdmin(admin.ModelAdmin):

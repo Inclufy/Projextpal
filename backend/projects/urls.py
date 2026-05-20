@@ -4,6 +4,7 @@ from .views import (
     ProjectViewSet,
     MilestoneViewSet,
     TaskViewSet,
+    TaskDueDateChangeRequestViewSet,
     SubtaskViewSet,
     ExpenseViewSet,
     ProjectActivityViewSet,
@@ -30,6 +31,7 @@ router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
 router.register(r"milestones", MilestoneViewSet, basename="milestone")
 router.register(r"tasks", TaskViewSet, basename="task")
+router.register(r"task-due-change-requests", TaskDueDateChangeRequestViewSet, basename="task-due-change-request")
 router.register(r"subtasks", SubtaskViewSet, basename="subtask")
 router.register(r"expenses", ExpenseViewSet, basename="expense")
 router.register(r"activities", ProjectActivityViewSet, basename="activity")

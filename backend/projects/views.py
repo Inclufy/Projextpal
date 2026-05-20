@@ -183,9 +183,146 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         return ProjectSerializer
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "summary", "timeline", "team"]:
+        if self.action in [
+            "list", "retrieve", "summary", "timeline", "team",
+            "export_project_plan", "task_kpi",
+        ]:
             return [IsAuthenticated()]
+        if self.action == "closing_sign_off":
+            return [IsAuthenticated(), IsAdminOrPM()]
         return [IsAuthenticated(), IsAdminOrPM()]
+
+    @action(detail=True, methods=["get"], url_path="export/project-plan.docx")
+    def export_project_plan(self, request, pk=None):
+        """Yanmar-template Project Plan DOCX for this project."""
+        from django.http import HttpResponse
+        from django.utils.text import slugify
+        from .exports_project_plan import render_project_plan_docx
+
+        project = self.get_object()
+        docx_bytes = render_project_plan_docx(project)
+        filename = f"{slugify(project.name) or 'project'}-project-plan.docx"
+        response = HttpResponse(
+            docx_bytes,
+            content_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+    @action(detail=True, methods=["post", "get"], url_path="closing/sign-off")
+    def closing_sign_off(self, request, pk=None):
+        """
+        GET  -> current sign-off (or 404 if none).
+        POST -> create or update the sign-off for this project.
+                body: {role, note, signature_image (file)}.
+                Refuses if project.status != 'completed' unless ?force=1.
+        """
+        from django.utils import timezone
+        from .models import ProjectSignOff
+
+        project = self.get_object()
+        if request.method == "GET":
+            so = ProjectSignOff.objects.filter(project=project).first()
+            if not so:
+                return Response({"detail": "No sign-off yet."}, status=404)
+            return Response({
+                "project_id": project.id,
+                "signed_off_by": getattr(so.signed_off_by, "email", None),
+                "signed_off_role": so.signed_off_role,
+                "signed_off_at": so.signed_off_at,
+                "sign_off_note": so.sign_off_note,
+                "signature_image_url": (
+                    so.signature_image.url if so.signature_image else None
+                ),
+                "is_valid": so.is_valid,
+            })
+
+        # POST: enforce completed state unless explicit force.
+        force = request.query_params.get("force") in {"1", "true", "yes"}
+        if project.status != "completed" and not force:
+            return Response(
+                {"detail": (
+                    f"Project status is '{project.status}'. Move to 'completed' "
+                    "first, or pass ?force=1 to override."
+                )},
+                status=400,
+            )
+
+        defaults = {
+            "signed_off_by": request.user,
+            "signed_off_role": request.data.get("role", "")[:120],
+            "signed_off_at": timezone.now(),
+            "sign_off_note": request.data.get("note", ""),
+            "is_valid": True,
+        }
+        sig = request.FILES.get("signature_image")
+        if sig:
+            defaults["signature_image"] = sig
+
+        so, _created = ProjectSignOff.objects.update_or_create(
+            project=project, defaults=defaults,
+        )
+        return Response({
+            "project_id": project.id,
+            "signed_off_by": getattr(so.signed_off_by, "email", None),
+            "signed_off_role": so.signed_off_role,
+            "signed_off_at": so.signed_off_at,
+            "sign_off_note": so.sign_off_note,
+            "signature_image_url": (
+                so.signature_image.url if so.signature_image else None
+            ),
+            "is_valid": so.is_valid,
+        }, status=200 if not _created else 201)
+
+    @action(detail=True, methods=["get"], url_path="task-kpi")
+    def task_kpi(self, request, pk=None):
+        """
+        Yanmar Action Tracker KPI tiles for the project:
+        today / tomorrow / this_week / next_week / overdue / total / completed.
+
+        Uses Task.revised_due_date if set, else due_date.
+        """
+        from datetime import date, timedelta
+        from django.db.models import Count, Q, F
+        from django.db.models.functions import Coalesce
+
+        project = self.get_object()
+        today = date.today()
+        # ISO week starts Monday; treat "this_week" as Mon..Sun.
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        next_week_start = week_end + timedelta(days=1)
+        next_week_end = next_week_start + timedelta(days=6)
+        tomorrow = today + timedelta(days=1)
+
+        tasks = (
+            project.milestones.values_list("id", flat=True)
+        )
+        from .models import Task
+        qs = Task.objects.filter(milestone__project=project).annotate(
+            eff_due=Coalesce("revised_due_date", "due_date"),
+        )
+
+        def count_on(d):
+            return qs.filter(eff_due=d).count()
+
+        def count_between(a, b):
+            return qs.filter(eff_due__gte=a, eff_due__lte=b).count()
+
+        return Response({
+            "today":      count_on(today),
+            "tomorrow":   count_on(tomorrow),
+            "this_week":  count_between(week_start, week_end),
+            "next_week":  count_between(next_week_start, next_week_end),
+            "overdue":    qs.filter(eff_due__lt=today)
+                            .exclude(status="done").count(),
+            "total":      qs.count(),
+            "completed":  qs.filter(status="done").count(),
+            "as_of":      today.isoformat(),
+        })
 
     def get_queryset(self):
         """Filter projects op rol + (membership of cross-company)."""
@@ -1001,7 +1138,164 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         milestone_id = self.request.query_params.get("milestone")
         if milestone_id:
             qs = qs.filter(milestone_id=milestone_id)
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(category=category)
         return qs
+
+    def update(self, request, *args, **kwargs):
+        """Surface a pending due-date change request via 202 + payload."""
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        pending = getattr(instance, "_pending_due_request", None)
+        if pending is not None:
+            from rest_framework import status as _http
+            from .serializers import TaskDueDateChangeRequestSerializer
+            return Response(
+                {
+                    "detail": (
+                        "Due-date change exceeds policy "
+                        "(one push-back, max 14 days). "
+                        "Request routed to Project Owner."
+                    ),
+                    "change_request": TaskDueDateChangeRequestSerializer(pending).data,
+                    "task": response.data,
+                },
+                status=_http.HTTP_202_ACCEPTED,
+            )
+        return response
+
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, partial=True, **kwargs)
+
+    @action(detail=False, methods=["get"], url_path="category-subtotals")
+    def category_subtotals(self, request):
+        """
+        Per-category roll-up across the requesting user's queryset.
+
+        Reproduces the Yanmar Action Tracker (PRJ LEGO) COUNTIFS formulas:
+        for each category we return total / completed / in_progress / pending
+        and a 0-100 progress percentage so the UI can render the same
+        "section header with sub-progress" view as the spreadsheet.
+
+        Requires ``?project=<id>`` (otherwise scoped to all visible tasks).
+        """
+        from django.db.models import Count, Q
+        qs = self.get_queryset()
+        rows = (
+            qs.values("category")
+            .annotate(
+                total=Count("id"),
+                completed=Count("id", filter=Q(status="done")),
+                in_progress=Count("id", filter=Q(status="in_progress")),
+                pending=Count("id", filter=Q(status__in=["todo", "blocked"])),
+            )
+            .order_by("category")
+        )
+        out = []
+        grand_total = 0
+        grand_completed = 0
+        for r in rows:
+            total = r["total"]
+            completed = r["completed"]
+            grand_total += total
+            grand_completed += completed
+            out.append({
+                "category": r["category"] or "(no category)",
+                "total": total,
+                "completed": completed,
+                "in_progress": r["in_progress"],
+                "pending": r["pending"],
+                "progress_pct": int(round((completed / total) * 100)) if total else 0,
+            })
+        return Response({
+            "categories": out,
+            "grand_total": grand_total,
+            "grand_completed": grand_completed,
+            "grand_progress_pct": (
+                int(round((grand_completed / grand_total) * 100))
+                if grand_total else 0
+            ),
+        })
+
+
+class TaskDueDateChangeRequestViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """
+    Approval endpoints for Yanmar push-back rule.
+
+      GET    .../task-due-change-requests/                 list (filter ?status, ?project, ?task)
+      GET    .../task-due-change-requests/<id>/            retrieve
+      POST   .../task-due-change-requests/<id>/approve/    Project Owner approves -> applies new due_date
+      POST   .../task-due-change-requests/<id>/reject/     Project Owner rejects
+
+    Note: creation goes through TaskViewSet.update (when a user tries an
+    out-of-policy due_date push-back) -- direct POST here is not the
+    happy path but is allowed for admin tooling.
+    """
+    from .models import TaskDueDateChangeRequest
+    from .serializers import TaskDueDateChangeRequestSerializer
+
+    queryset = TaskDueDateChangeRequest.objects.select_related(
+        "task", "task__milestone", "task__milestone__project",
+        "task__milestone__project__company",
+        "requested_by", "decided_by",
+    )
+    serializer_class = TaskDueDateChangeRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["approve", "reject"]:
+            return [IsAuthenticated(), IsAdminOrPM()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_f = self.request.query_params.get("status")
+        if status_f:
+            qs = qs.filter(status=status_f)
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(task__milestone__project_id=project_id)
+        task_id = self.request.query_params.get("task")
+        if task_id:
+            qs = qs.filter(task_id=task_id)
+        return qs
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        from django.utils import timezone
+        req = self.get_object()
+        if req.status != "pending":
+            return Response(
+                {"detail": f"Request already {req.status}."},
+                status=400,
+            )
+        task = req.task
+        task.due_date = req.requested_date
+        task.revision_count = (task.revision_count or 0) + 1
+        task.save(update_fields=["due_date", "revision_count"])
+        req.status = "approved"
+        req.decided_by = request.user
+        req.decided_at = timezone.now()
+        req.decision_note = request.data.get("decision_note", "")
+        req.save(update_fields=["status", "decided_by", "decided_at", "decision_note", "updated_at"])
+        return Response(self.get_serializer(req).data)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        from django.utils import timezone
+        req = self.get_object()
+        if req.status != "pending":
+            return Response(
+                {"detail": f"Request already {req.status}."},
+                status=400,
+            )
+        req.status = "rejected"
+        req.decided_by = request.user
+        req.decided_at = timezone.now()
+        req.decision_note = request.data.get("decision_note", "")
+        req.save(update_fields=["status", "decided_by", "decided_at", "decision_note", "updated_at"])
+        return Response(self.get_serializer(req).data)
 
 
 class SubtaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):

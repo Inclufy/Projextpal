@@ -272,11 +272,6 @@ urlpatterns = [
         HighlightReportViewSet.as_view({'post': 'generate'}),
         name='prince2-highlight-generate'
     ),
-    path(
-        'projects/<int:project_id>/prince2/highlight-reports/<int:pk>/export/pptx/',
-        HighlightReportViewSet.as_view({'get': 'export_pptx'}),
-        name='prince2-highlight-export-pptx'
-    ),
 
     # =========================================================================
     # CHECKPOINT REPORTS (PRINCE2 6th Ed §A.3)
