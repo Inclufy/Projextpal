@@ -26,7 +26,7 @@ interface Expense {
   is_recurring?: boolean;
 }
 
-const CATEGORIES = ["Labor Cost", "Material Cost", "Software", "Hardware", "Travel", "Training", "Other"];
+const CATEGORIES = ["Labor Cost", "Material Cost", "Software", "Other"];
 
 const FoundationBudget = () => {
   const { pt } = usePageTranslations();
@@ -38,7 +38,7 @@ const FoundationBudget = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", amount: "", category: "Other", date: "", description: "", status: "Pending", is_recurring: false });
+  const [form, setForm] = useState({ title: "", amount: "", category: "Other", date: "", description: "", status: "pending", is_recurring: false });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -75,19 +75,19 @@ const FoundationBudget = () => {
 
   const openCreate = () => {
     setEditingExpense(null);
-    setForm({ title: "", amount: "", category: "Other", date: new Date().toISOString().split("T")[0], description: "", status: "Pending", is_recurring: false });
+    setForm({ title: "", amount: "", category: "Other", date: new Date().toISOString().split("T")[0], description: "", status: "pending", is_recurring: false });
     setDialogOpen(true);
   };
 
   const openEdit = (expense: Expense) => {
     setEditingExpense(expense);
     setForm({
-      title: expense.title,
+      title: expense.description,
       amount: String(expense.amount),
       category: expense.category || "Other",
       date: expense.date?.split("T")[0] || "",
       description: expense.description || "",
-      status: expense.status || "Pending",
+      status: expense.status || "pending",
       is_recurring: expense.is_recurring || false,
     });
     setDialogOpen(true);
@@ -97,7 +97,7 @@ const FoundationBudget = () => {
     if (!form.title || !form.amount) { toast.error(t.common.titleAmountRequired); return; }
     setSubmitting(true);
     try {
-      const body = { ...form, amount: parseFloat(form.amount), project: parseInt(projectId!) };
+      const body = { description: form.title, amount: parseFloat(form.amount), category: form.category, date: form.date, status: form.status, project: parseInt(projectId!) };
       const url = editingExpense ? `/api/v1/projects/expenses/${editingExpense.id}/` : "/api/v1/projects/expenses/";
       const method = editingExpense ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -190,14 +190,14 @@ const FoundationBudget = () => {
                     {items.map((expense) => (
                       <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/30">
                         <div>
-                          <p className="font-medium">{expense.title}</p>
+                          <p className="font-medium">{expense.description}</p>
                           <p className="text-sm text-muted-foreground">
                             Date: {expense.date?.split("T")[0]} · Amount: {formatCurrency(expense.amount)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           {expense.is_recurring && <Badge className="bg-purple-100 text-purple-700">Recurring</Badge>}
-                          <Badge variant={expense.status === "Paid" ? "default" : "secondary"}>{expense.status}</Badge>
+                          <Badge variant={expense.status === "paid" ? "default" : "secondary"}>{expense.status}</Badge>
                           <Button variant="ghost" size="sm" onClick={() => openEdit(expense)}>{pt("Edit")}</Button>
                           <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(expense.id)}>{pt("Delete")}</Button>
                         </div>
@@ -247,16 +247,12 @@ const FoundationBudget = () => {
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">{pt("Pending")}</SelectItem>
-                    <SelectItem value="Paid">{pt("Paid")}</SelectItem>
-                    <SelectItem value="Cancelled">{pt("Cancelled")}</SelectItem>
+                    <SelectItem value="pending">{pt("Pending")}</SelectItem>
+                    <SelectItem value="approved">{pt("Approved")}</SelectItem>
+                    <SelectItem value="paid">{pt("Paid")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{pt("Description")}</Label>
-              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
