@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,30 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, Eye, Plus, Pencil, Trash2, Target } from "lucide-react";
 import { toast } from "sonner";
 
+type VisionForm = {
+  vision_statement: string;
+  target_audience: string;
+  problem_statement: string;
+  unique_value_proposition: string;
+};
+
+// Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
+const Field = ({ label, field, form, setForm }: {
+  label: string;
+  field: keyof VisionForm;
+  form: VisionForm;
+  setForm: Dispatch<SetStateAction<VisionForm>>;
+}) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    <textarea
+      className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y"
+      value={form[field] || ""}
+      onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+    />
+  </div>
+);
+
 const AgileProductVision = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
@@ -20,7 +44,7 @@ const AgileProductVision = () => {
   const [saving, setSaving] = useState(false);
   const [goalDialog, setGoalDialog] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any>(null);
-  const [visionForm, setVisionForm] = useState({ vision_statement: "", target_audience: "", problem_statement: "", unique_value_proposition: "" });
+  const [visionForm, setVisionForm] = useState<VisionForm>({ vision_statement: "", target_audience: "", problem_statement: "", unique_value_proposition: "" });
   const [goalForm, setGoalForm] = useState({ title: "", description: "", target_date: "", priority: "medium", status: "planned" });
 
   const token = localStorage.getItem("access_token");
@@ -48,8 +72,6 @@ const AgileProductVision = () => {
   const saveGoal = async () => { if (!goalForm.title) { toast.error("Titel verplicht"); return; } try { const url = editingGoal ? `/api/v1/projects/${id}/agile/goals/${editingGoal.id}/` : `/api/v1/projects/${id}/agile/goals/`; const method = editingGoal ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(goalForm) }); if (r.ok) { toast.success("Opgeslagen"); setGoalDialog(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } };
   const deleteGoal = async (gId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/goals/${gId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
-  const Field = ({ label, field }: { label: string; field: string }) => (<div className="space-y-2"><Label>{label}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y" value={(visionForm as any)[field] || ""} onChange={(e) => setVisionForm({ ...visionForm, [field]: e.target.value })} /></div>);
-
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
@@ -61,8 +83,8 @@ const AgileProductVision = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card><CardHeader><CardTitle>Vision</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Vision Statement" field="vision_statement" /><Field label={pt("Unique Value Proposition")} field="unique_value_proposition" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Target & Problem</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Target Audience")} field="target_audience" /><Field label={pt("Problem Statement")} field="problem_statement" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Vision</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Vision Statement" field="vision_statement" form={visionForm} setForm={setVisionForm} /><Field label={pt("Unique Value Proposition")} field="unique_value_proposition" form={visionForm} setForm={setVisionForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Target & Problem</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Target Audience")} field="target_audience" form={visionForm} setForm={setVisionForm} /><Field label={pt("Problem Statement")} field="problem_statement" form={visionForm} setForm={setVisionForm} /></CardContent></Card>
         </div>
 
         <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" /> {pt("Product Goals")} ({goals.length})</CardTitle><Button size="sm" onClick={openCreateGoal}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button></CardHeader>

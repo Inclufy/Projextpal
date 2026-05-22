@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,42 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
+type BusinessCaseForm = {
+  executive_summary: string;
+  reasons: string;
+  expected_benefits: string;
+  development_costs: string;
+  ongoing_costs: string;
+  investment_appraisal: string;
+  major_risks: string;
+  timescale: string;
+};
+
+// Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
+const Field = ({ label, field, multiline = false, form, setForm }: {
+  label: string;
+  field: keyof BusinessCaseForm;
+  multiline?: boolean;
+  form: BusinessCaseForm;
+  setForm: Dispatch<SetStateAction<BusinessCaseForm>>;
+}) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    {multiline ? (
+      <textarea
+        className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y"
+        value={form[field] || ""}
+        onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+      />
+    ) : (
+      <Input
+        value={form[field] || ""}
+        onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+      />
+    )}
+  </div>
+);
+
 const Prince2BusinessCase = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
@@ -21,7 +57,7 @@ const Prince2BusinessCase = () => {
   const [riskDialog, setRiskDialog] = useState(false);
   const [benefitForm, setBenefitForm] = useState({ description: "", category: "financial", expected_value: "" });
   const [riskForm, setRiskForm] = useState({ description: "", probability: "medium", impact: "medium", mitigation: "" });
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<BusinessCaseForm>({
     executive_summary: "", reasons: "", expected_benefits: "",
     development_costs: "", ongoing_costs: "", investment_appraisal: "",
     major_risks: "", timescale: "",
@@ -111,17 +147,6 @@ const Prince2BusinessCase = () => {
     } catch { toast.error(pt("Delete failed")); }
   };
 
-  const Field = ({ label, field, multiline = false }: { label: string; field: string; multiline?: boolean }) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {multiline ? (
-        <textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y" value={(form as any)[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
-      ) : (
-        <Input value={(form as any)[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
-      )}
-    </div>
-  );
-
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
@@ -146,17 +171,17 @@ const Prince2BusinessCase = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card><CardHeader><CardTitle>{pt("Summary")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label="Executive Summary" field="executive_summary" multiline />
-              <Field label={pt("Reasons")} field="reasons" multiline />
-              <Field label={pt("Timescale")} field="timescale" />
+              <Field label="Executive Summary" field="executive_summary" multiline form={form} setForm={setForm} />
+              <Field label={pt("Reasons")} field="reasons" multiline form={form} setForm={setForm} />
+              <Field label={pt("Timescale")} field="timescale" form={form} setForm={setForm} />
             </CardContent>
           </Card>
           <Card><CardHeader><CardTitle>{pt("Costs")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label={pt("Development Costs")} field="development_costs" />
-              <Field label={pt("Ongoing Costs")} field="ongoing_costs" />
-              <Field label={pt("Investment Appraisal")} field="investment_appraisal" multiline />
-              <Field label={pt("Major Risks")} field="major_risks" multiline />
+              <Field label={pt("Development Costs")} field="development_costs" form={form} setForm={setForm} />
+              <Field label={pt("Ongoing Costs")} field="ongoing_costs" form={form} setForm={setForm} />
+              <Field label={pt("Investment Appraisal")} field="investment_appraisal" multiline form={form} setForm={setForm} />
+              <Field label={pt("Major Risks")} field="major_risks" multiline form={form} setForm={setForm} />
             </CardContent>
           </Card>
         </div>

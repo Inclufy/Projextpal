@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,35 @@ import { Loader2, Save, Shield, FileText, Users } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+type GovernanceForm = {
+  project_definition: string;
+  project_approach: string;
+  business_case_reference: string;
+  project_management_team_structure: string;
+  role_descriptions: string;
+  quality_management_approach: string;
+  change_control_approach: string;
+  risk_management_approach: string;
+  communication_management_approach: string;
+};
+
+// Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
+const Field = ({ label, field, form, setForm }: {
+  label: string;
+  field: keyof GovernanceForm;
+  form: GovernanceForm;
+  setForm: Dispatch<SetStateAction<GovernanceForm>>;
+}) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    <textarea
+      className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y"
+      value={form[field] || ""}
+      onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+    />
+  </div>
+);
+
 const Prince2Governance = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
@@ -17,7 +46,7 @@ const Prince2Governance = () => {
   const [boardMembers, setBoardMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<GovernanceForm>({
     project_definition: "", project_approach: "", business_case_reference: "",
     project_management_team_structure: "", role_descriptions: "",
     quality_management_approach: "", change_control_approach: "",
@@ -80,10 +109,6 @@ const Prince2Governance = () => {
     } catch { toast.error(pt("Action failed")); }
   };
 
-  const Field = ({ label, field }: { label: string; field: string }) => (
-    <div className="space-y-2"><Label>{label}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y" value={(form as any)[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} /></div>
-  );
-
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
@@ -107,10 +132,10 @@ const Prince2Governance = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card><CardHeader><CardTitle>{pt("Project Definition")}</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Project Definition")} field="project_definition" /><Field label={pt("Project Approach")} field="project_approach" /><Field label="Business Case Reference" field="business_case_reference" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Team & Roles</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Team Structure" field="project_management_team_structure" /><Field label="Role Descriptions" field="role_descriptions" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Management Approaches</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Quality")} field="quality_management_approach" /><Field label="Change Control" field="change_control_approach" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Risk & Communication</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Risk Management" field="risk_management_approach" /><Field label="Communication" field="communication_management_approach" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Project Definition")}</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Project Definition")} field="project_definition" form={form} setForm={setForm} /><Field label={pt("Project Approach")} field="project_approach" form={form} setForm={setForm} /><Field label="Business Case Reference" field="business_case_reference" form={form} setForm={setForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Team & Roles</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Team Structure" field="project_management_team_structure" form={form} setForm={setForm} /><Field label="Role Descriptions" field="role_descriptions" form={form} setForm={setForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Management Approaches</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Quality")} field="quality_management_approach" form={form} setForm={setForm} /><Field label="Change Control" field="change_control_approach" form={form} setForm={setForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Risk & Communication</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Risk Management" field="risk_management_approach" form={form} setForm={setForm} /><Field label="Communication" field="communication_management_approach" form={form} setForm={setForm} /></CardContent></Card>
         </div>
       </div>
     </div>

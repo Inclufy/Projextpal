@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Save, Plus, Pencil, Trash2, FileCheck, BookOpen, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
+type ClosureReportForm = {
+  achievements_summary: string;
+  performance_review: string;
+  lessons_summary: string;
+  follow_on_actions: string;
+  handover_details: string;
+};
+
+// Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
+const Field = ({ label, field, form, setForm }: {
+  label: string;
+  field: keyof ClosureReportForm;
+  form: ClosureReportForm;
+  setForm: Dispatch<SetStateAction<ClosureReportForm>>;
+}) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    <textarea
+      className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y"
+      value={form[field] || ""}
+      onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+    />
+  </div>
+);
+
 const Prince2ProjectClosure = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
@@ -22,7 +47,7 @@ const Prince2ProjectClosure = () => {
   const [lessonDialog, setLessonDialog] = useState(false);
   const [editingLesson, setEditingLesson] = useState<any>(null);
   const [lessonForm, setLessonForm] = useState({ title: "", description: "", category: "process", lesson_type: "positive", recommendations: "" });
-  const [reportForm, setReportForm] = useState({ achievements_summary: "", performance_review: "", lessons_summary: "", follow_on_actions: "", handover_details: "" });
+  const [reportForm, setReportForm] = useState<ClosureReportForm>({ achievements_summary: "", performance_review: "", lessons_summary: "", follow_on_actions: "", handover_details: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -95,10 +120,6 @@ const Prince2ProjectClosure = () => {
     } catch { toast.error(pt("Delete failed")); }
   };
 
-  const Field = ({ label, field }: { label: string; field: string }) => (
-    <div className="space-y-2"><Label>{label}</Label><textarea className="w-full min-h-[80px] px-3 py-2 border rounded-md bg-background resize-y" value={(reportForm as any)[field] || ""} onChange={(e) => setReportForm({ ...reportForm, [field]: e.target.value })} /></div>
-  );
-
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   return (
@@ -115,8 +136,8 @@ const Prince2ProjectClosure = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card><CardHeader><CardTitle>{pt("Achievements Summary")}</CardTitle></CardHeader><CardContent><Field label={pt("Achievements Summary")} field="achievements_summary" /><Field label={pt("Performance Against Plan")} field="performance_review" /></CardContent></Card>
-          <Card><CardHeader><CardTitle>{pt("Closure Details")}</CardTitle></CardHeader><CardContent><Field label={pt("Lessons Summary")} field="lessons_summary" /><Field label={pt("Follow-on Actions")} field="follow_on_actions" /><Field label="Handover Details" field="handover_details" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Achievements Summary")}</CardTitle></CardHeader><CardContent><Field label={pt("Achievements Summary")} field="achievements_summary" form={reportForm} setForm={setReportForm} /><Field label={pt("Performance Against Plan")} field="performance_review" form={reportForm} setForm={setReportForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Closure Details")}</CardTitle></CardHeader><CardContent><Field label={pt("Lessons Summary")} field="lessons_summary" form={reportForm} setForm={setReportForm} /><Field label={pt("Follow-on Actions")} field="follow_on_actions" form={reportForm} setForm={setReportForm} /><Field label="Handover Details" field="handover_details" form={reportForm} setForm={setReportForm} /></CardContent></Card>
         </div>
 
         {/* Lessons Log */}

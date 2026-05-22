@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,56 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, FileText, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
+type BriefForm = {
+  project_definition: string;
+  project_approach: string;
+  outline_business_case: string;
+  project_scope: string;
+  constraints: string;
+  assumptions: string;
+  dependencies: string;
+  customer_quality_expectations: string;
+  acceptance_criteria: string;
+};
+
+// Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
+const Field = ({
+  label,
+  field,
+  multiline = false,
+  form,
+  setForm,
+}: {
+  label: string;
+  field: keyof BriefForm;
+  multiline?: boolean;
+  form: BriefForm;
+  setForm: Dispatch<SetStateAction<BriefForm>>;
+}) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    {multiline ? (
+      <textarea
+        className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background resize-y"
+        value={form[field] || ""}
+        onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+      />
+    ) : (
+      <Input
+        value={form[field] || ""}
+        onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
+      />
+    )}
+  </div>
+);
+
 const Prince2ProjectBrief = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [brief, setBrief] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<BriefForm>({
     project_definition: "", project_approach: "", outline_business_case: "",
     project_scope: "", constraints: "", assumptions: "", dependencies: "",
     customer_quality_expectations: "", acceptance_criteria: "",
@@ -97,21 +140,6 @@ const Prince2ProjectBrief = () => {
     } catch { toast.error(pt("Action failed")); }
   };
 
-  const Field = ({ label, field, multiline = false }: { label: string; field: string; multiline?: boolean }) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {multiline ? (
-        <textarea
-          className="w-full min-h-[100px] px-3 py-2 border rounded-md bg-background resize-y"
-          value={(form as any)[field] || ""}
-          onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-        />
-      ) : (
-        <Input value={(form as any)[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
-      )}
-    </div>
-  );
-
   if (loading) return (
     <div className="min-h-full bg-background"><ProjectHeader />
       <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -152,33 +180,33 @@ const Prince2ProjectBrief = () => {
           <Card>
             <CardHeader><CardTitle>{pt("Project Definition")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label={pt("Project Definition")} field="project_definition" multiline />
-              <Field label={pt("Project Approach")} field="project_approach" multiline />
-              <Field label={pt("Project Scope")} field="project_scope" multiline />
+              <Field label={pt("Project Definition")} field="project_definition" multiline form={form} setForm={setForm} />
+              <Field label={pt("Project Approach")} field="project_approach" multiline form={form} setForm={setForm} />
+              <Field label={pt("Project Scope")} field="project_scope" multiline form={form} setForm={setForm} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>Business Case</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label={pt("Outline Business Case")} field="outline_business_case" multiline />
-              <Field label={pt("Constraints")} field="constraints" multiline />
-              <Field label={pt("Assumptions")} field="assumptions" multiline />
+              <Field label={pt("Outline Business Case")} field="outline_business_case" multiline form={form} setForm={setForm} />
+              <Field label={pt("Constraints")} field="constraints" multiline form={form} setForm={setForm} />
+              <Field label={pt("Assumptions")} field="assumptions" multiline form={form} setForm={setForm} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>{pt("Quality")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label={pt("Customer Quality Expectations")} field="customer_quality_expectations" multiline />
-              <Field label={pt("Acceptance Criteria")} field="acceptance_criteria" multiline />
+              <Field label={pt("Customer Quality Expectations")} field="customer_quality_expectations" multiline form={form} setForm={setForm} />
+              <Field label={pt("Acceptance Criteria")} field="acceptance_criteria" multiline form={form} setForm={setForm} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>{pt("Dependencies")}</CardTitle></CardHeader>
             <CardContent>
-              <Field label={pt("Dependencies")} field="dependencies" multiline />
+              <Field label={pt("Dependencies")} field="dependencies" multiline form={form} setForm={setForm} />
             </CardContent>
           </Card>
         </div>
