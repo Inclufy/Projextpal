@@ -9,6 +9,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Play, CheckCircle2, ShieldCheck, Pencil, Trash2, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,7 +21,7 @@ const WaterfallPhaseGate = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", order: "", planned_start_date: "", planned_end_date: "", gate_criteria: "" });
+  const [form, setForm] = useState({ name: "", phase_type: "requirements", description: "", order: "", start_date: "", end_date: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -29,10 +30,10 @@ const WaterfallPhaseGate = () => {
   const fetchData = async () => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/`, { headers }); if (r.ok) { const d = await r.json(); setPhases(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ name: "", description: "", order: String(phases.length + 1), planned_start_date: "", planned_end_date: "", gate_criteria: "" }); setDialogOpen(true); };
-  const openEdit = (p: any) => { setEditing(p); setForm({ name: p.name || "", description: p.description || "", order: String(p.order || ""), planned_start_date: p.planned_start_date?.split("T")[0] || "", planned_end_date: p.planned_end_date?.split("T")[0] || "", gate_criteria: p.gate_criteria || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ name: "", phase_type: "requirements", description: "", order: String(phases.length + 1), start_date: "", end_date: "" }); setDialogOpen(true); };
+  const openEdit = (p: any) => { setEditing(p); setForm({ name: p.name || "", phase_type: p.phase_type || "requirements", description: p.description || "", order: String(p.order || ""), start_date: p.start_date?.split("T")[0] || "", end_date: p.end_date?.split("T")[0] || "" }); setDialogOpen(true); };
 
-  const handleSave = async () => { if (!form.name) { toast.error(pt("Name is required")); return; } setSubmitting(true); try { const body: any = { ...form }; if (form.order) body.order = parseInt(form.order); const url = editing ? `/api/v1/projects/${id}/waterfall/phases/${editing.id}/` : `/api/v1/projects/${id}/waterfall/phases/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
+  const handleSave = async () => { if (!form.name) { toast.error(pt("Name is required")); return; } setSubmitting(true); try { const body: any = { name: form.name, phase_type: form.phase_type, description: form.description }; if (form.order) body.order = parseInt(form.order); if (form.start_date) body.start_date = form.start_date; if (form.end_date) body.end_date = form.end_date; const url = editing ? `/api/v1/projects/${id}/waterfall/phases/${editing.id}/` : `/api/v1/projects/${id}/waterfall/phases/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
   const handleDelete = async (pId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
   const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Saved")); fetchData(); } else { const err = await r.json().catch(() => ({})); toast.error(err.detail || pt("Action failed")); } } catch { toast.error(pt("Action failed")); } };
 
@@ -60,8 +61,7 @@ const WaterfallPhaseGate = () => {
                 </div>
                 {p.description && <p className="text-sm text-muted-foreground mb-2">{p.description}</p>}
                 <div className="flex items-center gap-4"><Progress value={p.progress || 0} className="flex-1 h-2" /><span className="text-sm font-medium">{p.progress || 0}%</span></div>
-                {(p.planned_start_date || p.planned_end_date) && <p className="text-xs text-muted-foreground mt-2">{p.planned_start_date} → {p.planned_end_date}</p>}
-                {p.gate_criteria && <p className="text-xs mt-1"><span className="font-medium">Gate:</span> {p.gate_criteria}</p>}
+                {(p.start_date || p.end_date) && <p className="text-xs text-muted-foreground mt-2">{p.start_date} → {p.end_date}</p>}
               </CardContent>
             </Card>
           ))}</div>
@@ -70,9 +70,9 @@ const WaterfallPhaseGate = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Phase</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3"><div className="col-span-2 space-y-2"><Label>{pt("Name")} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div><div className="space-y-2"><Label>Order</Label><Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} /></div></div>
+          <div className="space-y-2"><Label>{pt("Phase Type")} *</Label><Select value={form.phase_type} onValueChange={(v) => setForm({ ...form, phase_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="requirements">Requirements</SelectItem><SelectItem value="design">Design</SelectItem><SelectItem value="development">Development</SelectItem><SelectItem value="testing">Testing</SelectItem><SelectItem value="deployment">Deployment</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem></SelectContent></Select></div>
           <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Start Date")}</Label><Input type="date" value={form.planned_start_date} onChange={(e) => setForm({ ...form, planned_start_date: e.target.value })} /></div><div className="space-y-2"><Label>{pt("End Date")}</Label><Input type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} /></div></div>
-          <div className="space-y-2"><Label>Gate Criteria</Label><textarea className="w-full min-h-[40px] px-3 py-2 border rounded-md bg-background" value={form.gate_criteria} onChange={(e) => setForm({ ...form, gate_criteria: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>{pt("Start Date")}</Label><Input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} /></div><div className="space-y-2"><Label>{pt("End Date")}</Label><Input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} /></div></div>
           <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
         </div>
       </DialogContent></Dialog>

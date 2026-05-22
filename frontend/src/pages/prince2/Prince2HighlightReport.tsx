@@ -20,7 +20,7 @@ const Prince2HighlightReport = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", summary: "", overall_status: "green", report_date: "", achievements: "", issues: "", risks: "", next_period_plan: "" });
+  const [form, setForm] = useState({ status_summary: "", overall_status: "green", report_date: "", period_start: "", period_end: "", work_completed: "", highlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,23 +41,34 @@ const Prince2HighlightReport = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", summary: "", overall_status: "green", report_date: new Date().toISOString().split("T")[0], achievements: "", issues: "", risks: "", next_period_plan: "" });
+    setForm({ status_summary: "", overall_status: "green", report_date: new Date().toISOString().split("T")[0], period_start: "", period_end: "", work_completed: "", highlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (r: any) => {
     setEditing(r);
-    setForm({ title: r.title || "", summary: r.summary || "", overall_status: r.overall_status || "green", report_date: r.report_date?.split("T")[0] || "", achievements: r.achievements || "", issues: r.issues || "", risks: r.risks || "", next_period_plan: r.next_period_plan || "" });
+    setForm({ status_summary: r.status_summary || "", overall_status: r.overall_status || "green", report_date: r.report_date?.split("T")[0] || "", period_start: r.period_start?.split("T")[0] || "", period_end: r.period_end?.split("T")[0] || "", work_completed: r.work_completed || "", highlights: r.highlights || "", issues_summary: r.issues_summary || "", risks_summary: r.risks_summary || "", work_planned_next_period: r.work_planned_next_period || "" });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!form.title) { toast.error(pt("Title is required")); return; }
     setSubmitting(true);
     try {
+      const body: any = {
+        overall_status: form.overall_status,
+        status_summary: form.status_summary,
+        work_completed: form.work_completed,
+        highlights: form.highlights,
+        issues_summary: form.issues_summary,
+        risks_summary: form.risks_summary,
+        work_planned_next_period: form.work_planned_next_period,
+      };
+      if (form.report_date) body.report_date = form.report_date;
+      if (form.period_start) body.period_start = form.period_start;
+      if (form.period_end) body.period_end = form.period_end;
       const url = editing ? `/api/v1/projects/${id}/prince2/highlight-reports/${editing.id}/` : `/api/v1/projects/${id}/prince2/highlight-reports/`;
       const method = editing ? "PATCH" : "POST";
-      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
       if (response.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
       else toast.error(pt("Save failed"));
     } catch { toast.error(pt("Save failed")); }
@@ -109,8 +120,8 @@ const Prince2HighlightReport = () => {
                       <Badge className={`text-xs ${statusColor(r.overall_status)}`}>{r.overall_status}</Badge>
                       <span className="text-sm text-muted-foreground">{r.report_date}</span>
                     </div>
-                    <p className="font-medium">{r.title}</p>
-                    {r.summary && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.summary}</p>}
+                    <p className="font-medium">{r.status_summary ? r.status_summary.slice(0, 80) : pt("Highlight Report")}</p>
+                    {r.work_completed && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.work_completed}</p>}
                   </div>
                   <div className="flex gap-1 ml-4">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
@@ -127,12 +138,13 @@ const Prince2HighlightReport = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New Report")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.report_date} onChange={(e) => setForm({ ...form, report_date: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Period Start")}</Label><Input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Period End")}</Label><Input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} /></div>
             </div>
             <div className="space-y-2">
-              <Label>{pt("Status")}</Label>
+              <Label>{pt("Overall Status")}</Label>
               <Select value={form.overall_status} onValueChange={(v) => setForm({ ...form, overall_status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -142,10 +154,12 @@ const Prince2HighlightReport = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>{pt("Summary")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Achievements")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.achievements} onChange={(e) => setForm({ ...form, achievements: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Issues")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.issues} onChange={(e) => setForm({ ...form, issues: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Risks")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.risks} onChange={(e) => setForm({ ...form, risks: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Status Summary")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.status_summary} onChange={(e) => setForm({ ...form, status_summary: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Work Completed")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.work_completed} onChange={(e) => setForm({ ...form, work_completed: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Highlights")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.highlights} onChange={(e) => setForm({ ...form, highlights: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Work Planned Next Period")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.work_planned_next_period} onChange={(e) => setForm({ ...form, work_planned_next_period: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Issues")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.issues_summary} onChange={(e) => setForm({ ...form, issues_summary: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Risks")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.risks_summary} onChange={(e) => setForm({ ...form, risks_summary: e.target.value })} /></div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting}>

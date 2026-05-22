@@ -56,11 +56,14 @@ const CreateBoard: React.FC = () => {
       const token = localStorage.getItem("access_token");
       const company = localStorage.getItem("company_id");
       
-      const payload = {
-        ...formData,
+      const payload: any = {
+        name: formData.name,
+        board_type: formData.board_type,
+        description: formData.description,
         company: company,
       };
-      
+      if (formData.portfolio) payload.portfolio = formData.portfolio;
+
       const response = await fetch("/api/v1/governance/boards/", {
         method: "POST",
         headers: {

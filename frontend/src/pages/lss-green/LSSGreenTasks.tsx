@@ -21,14 +21,12 @@ const fetchJson = async (url: string) => {
 };
 const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
 
-const STATUSES = ["todo", "in_progress", "review", "completed", "blocked"];
-const PRIORITIES = ["low", "medium", "high", "critical"];
+const STATUSES = ["not_started", "in_progress", "blocked", "done"];
+const PRIORITIES = ["low", "medium", "high", "urgent"];
 
 const statusColors: Record<string, string> = {
-  todo: "bg-gray-100 text-gray-700",
+  not_started: "bg-gray-100 text-gray-700",
   in_progress: "bg-blue-100 text-blue-700",
-  review: "bg-purple-100 text-purple-700",
-  completed: "bg-green-100 text-green-700",
   done: "bg-green-100 text-green-700",
   blocked: "bg-red-100 text-red-700",
 };
@@ -36,7 +34,7 @@ const priorityColors: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
   medium: "bg-blue-100 text-blue-600",
   high: "bg-orange-100 text-orange-600",
-  critical: "bg-red-100 text-red-700",
+  urgent: "bg-red-100 text-red-700",
 };
 
 const LSSGreenTasks = () => {
@@ -46,7 +44,7 @@ const LSSGreenTasks = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ phase: "", title: "", description: "", assignee: "", status: "todo", priority: "medium", start_date: "", due_date: "" });
+  const [form, setForm] = useState({ phase: "", title: "", description: "", assignee: "", status: "not_started", priority: "medium", start_date: "", due_date: "" });
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
@@ -72,7 +70,7 @@ const LSSGreenTasks = () => {
     return true;
   }), [tasks, statusFilter, phaseFilter, assigneeFilter]);
 
-  const openCreate = () => { setEditing(null); setForm({ phase: phases[0]?.id?.toString() || "", title: "", description: "", assignee: "", status: "todo", priority: "medium", start_date: "", due_date: "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ phase: phases[0]?.id?.toString() || "", title: "", description: "", assignee: "", status: "not_started", priority: "medium", start_date: "", due_date: "" }); setDialogOpen(true); };
   const openEdit = (t: any) => {
     setEditing(t);
     setForm({
@@ -80,7 +78,7 @@ const LSSGreenTasks = () => {
       title: t.title || "",
       description: t.description || "",
       assignee: t.assignee?.toString() || "",
-      status: t.status || "todo",
+      status: t.status || "not_started",
       priority: t.priority || "medium",
       start_date: t.start_date?.split("T")[0] || "",
       due_date: t.due_date?.split("T")[0] || "",
@@ -93,10 +91,10 @@ const LSSGreenTasks = () => {
     setSubmitting(true);
     try {
       const body: any = { ...form };
-      if (form.phase) body.phase = parseInt(form.phase);
+      if (form.phase) body.phase = form.phase;
       else delete body.phase;
       if (form.assignee) body.assignee = parseInt(form.assignee);
-      else delete body.assignee;
+      else body.assignee = null;
       if (!body.start_date) delete body.start_date;
       if (!body.due_date) delete body.due_date;
       const url = editing ? `/api/v1/lss-green/projects/${id}/tasks/${editing.id}/` : `/api/v1/lss-green/projects/${id}/tasks/`;

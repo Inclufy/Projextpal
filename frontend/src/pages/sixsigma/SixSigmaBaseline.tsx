@@ -28,8 +28,23 @@ const SixSigmaBaseline = () => {
   const fetchData = async () => { try { const r = await fetch(`${BASE(id!)}/baseline/`, { headers }); if (r.ok) { const d = await r.json(); setItems(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
   useEffect(() => { fetchData(); }, [id]);
   const openCreate = () => { setEditing(null); setForm({ metric_name: "", baseline_value: "", current_value: "", target_value: "", unit: "", sigma_level: "" }); setDialogOpen(true); };
-  const openEdit = (i: any) => { setEditing(i); setForm({ metric_name: i.metric_name || "", baseline_value: String(i.baseline_value || ""), current_value: String(i.current_value || ""), target_value: String(i.target_value || ""), unit: i.unit || "", sigma_level: String(i.sigma_level || "") }); setDialogOpen(true); };
-  const handleSave = async () => { if (!form.metric_name) { toast.error("Metric name verplicht"); return; } setSubmitting(true); try { const body: any = { metric_name: form.metric_name, unit: form.unit }; if (form.baseline_value) body.baseline_value = parseFloat(form.baseline_value); if (form.current_value) body.current_value = parseFloat(form.current_value); if (form.target_value) body.target_value = parseFloat(form.target_value); if (form.sigma_level) body.sigma_level = parseFloat(form.sigma_level); const url = editing ? `${BASE(id!)}/baseline/${editing.id}/` : `${BASE(id!)}/baseline/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
+  const openEdit = (i: any) => { setEditing(i); setForm({ metric_name: i.metric_name || "", baseline_value: String(i.baseline_value ?? ""), current_value: String(i.current_value ?? ""), target_value: String(i.target_value ?? ""), unit: i.unit || "", sigma_level: i.baseline_sigma != null ? String(i.baseline_sigma) : "" }); setDialogOpen(true); };
+  const handleSave = async () => {
+    if (!form.metric_name) { toast.error("Metric name verplicht"); return; }
+    if (!form.unit) { toast.error(pt("Unit is required")); return; }
+    for (const [label, val] of [["Baseline value", form.baseline_value], ["Current value", form.current_value], ["Target value", form.target_value]] as [string, string][]) {
+      if (val === "" || isNaN(Number(val))) { toast.error(`${label} ${pt("is required")}`); return; }
+    }
+    setSubmitting(true);
+    try {
+      const body: any = { metric_name: form.metric_name, unit: form.unit, baseline_value: Number(form.baseline_value), current_value: Number(form.current_value), target_value: Number(form.target_value) };
+      if (form.sigma_level !== "" && !isNaN(Number(form.sigma_level))) body.baseline_sigma = Number(form.sigma_level);
+      const url = editing ? `${BASE(id!)}/baseline/${editing.id}/` : `${BASE(id!)}/baseline/`;
+      const method = editing ? "PATCH" : "POST";
+      const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); }
+  };
   const handleDelete = async (bId: number) => { if (!confirm("Verwijderen?")) return; try { await fetch(`${BASE(id!)}/baseline/${bId}/`, { method: "DELETE", headers }); toast.success("Verwijderd"); fetchData(); } catch { toast.error("Verwijderen mislukt"); } };
   const updateCurrent = async (bId: number, value: string) => { try { const r = await fetch(`${BASE(id!)}/baseline/${bId}/update_current/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ current_value: parseFloat(value) }) }); if (r.ok) { toast.success("Bijgewerkt"); fetchData(); } } catch { toast.error("Bijwerken mislukt"); } };
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);

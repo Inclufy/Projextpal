@@ -17,18 +17,20 @@ const CreateStakeholder: React.FC = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [portfolios, setPortfolios] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    user: "",
     role: "key_stakeholder",
-    organization: "",
     portfolio: "",
     interest_level: "medium",
     influence_level: "medium",
+    communication_plan: "",
+    notes: "",
   });
 
   useEffect(() => {
     fetchPortfolios();
+    fetchUsers();
   }, []);
 
   const fetchPortfolios = async () => {
@@ -41,6 +43,21 @@ const CreateStakeholder: React.FC = () => {
       setPortfolios(data.results || data);
     } catch (error) {
       console.error("Failed to fetch portfolios:", error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch("/api/v1/auth/company-users/members/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(Array.isArray(data) ? data : data.results || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
     }
   };
 
@@ -57,16 +74,22 @@ const CreateStakeholder: React.FC = () => {
 
     try {
       const token = localStorage.getItem("access_token");
+      if (!formData.user) {
+        toast({ title: "Missing User", description: "Please select a user.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       const validRoles = ["executive_sponsor", "senior_responsible_owner", "business_change_manager", "project_executive", "key_stakeholder"];
-      const payload = {
-        ...formData,
+      const payload: any = {
+        user: parseInt(formData.user),
         role: validRoles.includes(formData.role) ? formData.role : "key_stakeholder",
+        interest_level: formData.interest_level,
+        influence_level: formData.influence_level,
+        communication_plan: formData.communication_plan,
+        notes: formData.notes,
       };
-      // Remove empty optional fields
-      if (!payload.organization) delete payload.organization;
-      if (!payload.portfolio) delete payload.portfolio;
-      console.log("Sending payload:", payload);
-      
+      if (formData.portfolio) payload.portfolio = formData.portfolio;
+
       const response = await fetch("/api/v1/governance/stakeholders/", {
         method: "POST",
         headers: {
@@ -84,7 +107,7 @@ const CreateStakeholder: React.FC = () => {
 
       toast({
         title: "✅ Stakeholder Added",
-        description: `${formData.name} has been added successfully.`,
+        description: t("Stakeholder has been added successfully."),
       });
 
       navigate("/governance/stakeholders");
@@ -175,36 +198,26 @@ const CreateStakeholder: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-base font-semibold">
-                    {t("Name")} <span className="text-red-500">*</span>
+                  <Label htmlFor="user" className="text-base font-semibold">
+                    {t("User")} <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="John Doe"
-                    required
-                    className="h-12 text-base"
-                  />
+                  <Select
+                    value={formData.user}
+                    onValueChange={(value) => setFormData({ ...formData, user: value })}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder={t("Select a user")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((u) => (
+                        <SelectItem key={u.id} value={u.id.toString()}>
+                          {u.full_name || u.name || `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-base font-semibold">
-                    {t("Email")} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder={t("john@example.com")}
-                    required
-                    className="h-12 text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="role" className="text-base font-semibold">
                     {t("Role")} <span className="text-red-500">*</span>
@@ -224,19 +237,6 @@ const CreateStakeholder: React.FC = () => {
                       <SelectItem value="key_stakeholder">{t("Key Stakeholder")}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="organization" className="text-base font-semibold">
-                    {t("Organization")}
-                  </Label>
-                  <Input
-                    id="organization"
-                    value={formData.organization}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    placeholder={t("Company name")}
-                    className="h-12 text-base"
-                  />
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ const CreateStakeholder: React.FC = () => {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !formData.name || !formData.email || !formData.portfolio}
+                  disabled={loading || !formData.user || !formData.portfolio}
                   className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
                 >
                   {loading ? (

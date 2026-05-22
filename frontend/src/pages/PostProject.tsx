@@ -120,8 +120,8 @@ const fetchPostProjects = async (): Promise<PostProject[]> => {
   
   return projects.map((p: any) => ({
     id: String(p.id),
-    name: p.name || p.title || '',
-    company: p.company || p.company_name || '',
+    name: p.projectname || p.name || p.title || '',
+    company: p.company_name || p.company || '',
     lessonsLearned: p.lessons_learned || p.lessonsLearned || '',
     achievedResults: p.achieved_results || p.achievedResults || '',
     roi: p.roi || '',
@@ -150,7 +150,7 @@ const fetchProjects = async (): Promise<Project[]> => {
   
   return projects.map((p: any) => ({
     id: String(p.id),
-    name: p.name || p.title || 'Unnamed Project',
+    name: p.projectname || p.name || p.title || 'Unnamed Project',
   }));
 };
 
@@ -329,12 +329,11 @@ export default function PostProject() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: data.name,
-          company: data.company,
+          projectname: data.name,
           lessons_learned: data.lessonsLearned,
           achieved_results: data.achievedResults,
-          roi: data.roi,
-          savings: data.savings,
+          roi: parseInt(data.roi) || 0,
+          savings: parseInt(data.savings) || 0,
         }),
       });
       if (!response.ok) throw new Error('Failed to create');
@@ -360,12 +359,11 @@ export default function PostProject() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: data.name,
-          company: data.company,
+          projectname: data.name,
           lessons_learned: data.lessonsLearned,
           achieved_results: data.achievedResults,
-          roi: data.roi,
-          savings: data.savings,
+          roi: parseInt(data.roi) || 0,
+          savings: parseInt(data.savings) || 0,
         }),
       });
       if (!response.ok) throw new Error('Failed to update');

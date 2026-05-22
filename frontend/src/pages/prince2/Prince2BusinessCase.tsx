@@ -8,6 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -55,7 +56,7 @@ const Prince2BusinessCase = () => {
   const [saving, setSaving] = useState(false);
   const [benefitDialog, setBenefitDialog] = useState(false);
   const [riskDialog, setRiskDialog] = useState(false);
-  const [benefitForm, setBenefitForm] = useState({ description: "", category: "financial", expected_value: "" });
+  const [benefitForm, setBenefitForm] = useState({ description: "", benefit_type: "financial", value: "", timing: "" });
   const [riskForm, setRiskForm] = useState({ description: "", probability: "medium", impact: "medium", mitigation: "" });
   const [form, setForm] = useState<BusinessCaseForm>({
     executive_summary: "", reasons: "", expected_benefits: "",
@@ -95,7 +96,10 @@ const Prince2BusinessCase = () => {
     try {
       const url = bc ? `/api/v1/projects/${id}/prince2/business-case/${bc.id}/` : `/api/v1/projects/${id}/prince2/business-case/`;
       const method = bc ? "PATCH" : "POST";
-      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(form) });
+      const body: any = { ...form };
+      body.development_costs = form.development_costs !== "" && !isNaN(Number(form.development_costs)) ? Number(form.development_costs) : 0;
+      body.ongoing_costs = form.ongoing_costs !== "" && !isNaN(Number(form.ongoing_costs)) ? Number(form.ongoing_costs) : 0;
+      const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
       if (response.ok) { setBc(await response.json()); toast.success(pt("Saved")); if (!bc) fetchBC(); }
       else toast.error(pt("Save failed"));
     } catch { toast.error(pt("Save failed")); }
@@ -117,7 +121,7 @@ const Prince2BusinessCase = () => {
       const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_benefit/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(benefitForm),
       });
-      if (response.ok) { toast.success(pt("Created")); setBenefitDialog(false); setBenefitForm({ description: "", category: "financial", expected_value: "" }); fetchBC(); }
+      if (response.ok) { toast.success(pt("Created")); setBenefitDialog(false); setBenefitForm({ description: "", benefit_type: "financial", value: "", timing: "" }); fetchBC(); }
       else toast.error(pt("Create failed"));
     } catch { toast.error(pt("Create failed")); }
   };
@@ -196,7 +200,7 @@ const Prince2BusinessCase = () => {
             {(!bc?.benefits || bc.benefits.length === 0) ? <p className="text-muted-foreground text-center py-4">{pt("No benefits added yet")}</p> : (
               <div className="space-y-2">{bc.benefits.map((b: any) => (
                 <div key={b.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div><p className="font-medium">{b.description}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{b.category}</Badge>{b.expected_value && <span className="text-sm text-muted-foreground">€{b.expected_value}</span>}</div></div>
+                  <div><p className="font-medium">{b.description}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{b.benefit_type}</Badge>{b.value && <span className="text-sm text-muted-foreground">{b.value}</span>}{b.timing && <span className="text-sm text-muted-foreground">{b.timing}</span>}</div></div>
                   <Button variant="ghost" size="sm" onClick={() => deleteBenefit(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               ))}</div>
@@ -229,9 +233,10 @@ const Prince2BusinessCase = () => {
           <div className="space-y-4">
             <div className="space-y-2"><Label>{pt("Description")} *</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={benefitForm.description} onChange={(e) => setBenefitForm({ ...benefitForm, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{pt("Category")}</Label><Input value={benefitForm.category} onChange={(e) => setBenefitForm({ ...benefitForm, category: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{pt("Expected Value")} (€)</Label><Input type="number" value={benefitForm.expected_value} onChange={(e) => setBenefitForm({ ...benefitForm, expected_value: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Type")}</Label><Select value={benefitForm.benefit_type} onValueChange={(v) => setBenefitForm({ ...benefitForm, benefit_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="financial">Financial</SelectItem><SelectItem value="non_financial">Non-Financial</SelectItem><SelectItem value="intangible">Intangible</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>{pt("Value")}</Label><Input value={benefitForm.value} onChange={(e) => setBenefitForm({ ...benefitForm, value: e.target.value })} /></div>
             </div>
+            <div className="space-y-2"><Label>{pt("Timing")}</Label><Input value={benefitForm.timing} onChange={(e) => setBenefitForm({ ...benefitForm, timing: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setBenefitDialog(false)}>{pt("Cancel")}</Button><Button onClick={addBenefit}>{pt("Add")}</Button></div>
           </div>
         </DialogContent>
@@ -243,8 +248,8 @@ const Prince2BusinessCase = () => {
           <div className="space-y-4">
             <div className="space-y-2"><Label>{pt("Description")} *</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={riskForm.description} onChange={(e) => setRiskForm({ ...riskForm, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{pt("Probability")}</Label><Input value={riskForm.probability} onChange={(e) => setRiskForm({ ...riskForm, probability: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{pt("Impact")}</Label><Input value={riskForm.impact} onChange={(e) => setRiskForm({ ...riskForm, impact: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Probability")}</Label><Select value={riskForm.probability} onValueChange={(v) => setRiskForm({ ...riskForm, probability: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="very_low">Very Low</SelectItem><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="very_high">Very High</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>{pt("Impact")}</Label><Select value={riskForm.impact} onValueChange={(v) => setRiskForm({ ...riskForm, impact: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="very_low">Very Low</SelectItem><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="very_high">Very High</SelectItem></SelectContent></Select></div>
             </div>
             <div className="space-y-2"><Label>{pt("Mitigation")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={riskForm.mitigation} onChange={(e) => setRiskForm({ ...riskForm, mitigation: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setRiskDialog(false)}>{pt("Cancel")}</Button><Button onClick={addRisk}>{pt("Add")}</Button></div>

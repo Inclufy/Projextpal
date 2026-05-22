@@ -461,7 +461,6 @@ Be specific and professional. Use the context to determine appropriate methodolo
       status: "planning",
       start_date: formData.startDate,
       end_date: formData.endDate,
-      priority: formData.priority,
     };
 
     if (formData.budget) {
@@ -470,8 +469,9 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
     payload.currency = formData.currency;
 
+    // `objectives` has no dedicated Project column — map onto project_goal so it is not silently dropped.
     if (formData.objectives) {
-      payload.objectives = formData.objectives;
+      payload.project_goal = formData.objectives;
     }
 
     createMutation.mutate(payload);

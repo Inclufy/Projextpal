@@ -381,11 +381,11 @@ Respond in this EXACT JSON format only, no other text:
       description: formData.description,
       methodology: formData.methodology,
       status: 'planning',
-      priority: formData.priority,
       budget: parseFloat(formData.budget) || 0,
       start_date: formData.startDate,
       end_date: endDate.toISOString().split('T')[0],
-      objectives: formData.objectives,
+      // `objectives` has no dedicated column on Project — map onto project_goal so it is not silently dropped.
+      project_goal: formData.objectives,
     };
 
     createMutation.mutate(projectData);

@@ -21,15 +21,12 @@ const fetchJson = async (url: string) => {
 };
 const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
 
-const STATUSES = ["not_started", "in_progress", "review", "completed", "blocked"];
-const PRIORITIES = ["low", "medium", "high", "critical"];
+const STATUSES = ["not_started", "in_progress", "blocked", "done"];
+const PRIORITIES = ["low", "medium", "high", "urgent"];
 
 const statusColors: Record<string, string> = {
   not_started: "bg-gray-100 text-gray-700",
-  todo: "bg-gray-100 text-gray-700",
   in_progress: "bg-blue-100 text-blue-700",
-  review: "bg-purple-100 text-purple-700",
-  completed: "bg-green-100 text-green-700",
   done: "bg-green-100 text-green-700",
   blocked: "bg-red-100 text-red-700",
 };
@@ -37,7 +34,7 @@ const priorityColors: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
   medium: "bg-blue-100 text-blue-600",
   high: "bg-orange-100 text-orange-600",
-  critical: "bg-red-100 text-red-700",
+  urgent: "bg-red-100 text-red-700",
 };
 
 const HybridTasks = () => {

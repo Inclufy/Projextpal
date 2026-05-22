@@ -80,7 +80,9 @@ const PortfolioDetail: React.FC = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const res = await fetch(`/api/v1/governance/portfolios/${id}/`, { method: "PATCH", headers, body: JSON.stringify(editForm) });
+      const body: any = { ...editForm };
+      body.budget_allocated = editForm.budget_allocated !== "" && !isNaN(Number(editForm.budget_allocated)) ? Number(editForm.budget_allocated) : null;
+      const res = await fetch(`/api/v1/governance/portfolios/${id}/`, { method: "PATCH", headers, body: JSON.stringify(body) });
       if (!res.ok) throw new Error("Failed");
       toast({ title: "Updated", description: "Portfolio updated successfully." });
       setEditModalOpen(false);

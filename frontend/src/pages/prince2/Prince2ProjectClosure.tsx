@@ -14,10 +14,10 @@ import { toast } from "sonner";
 
 type ClosureReportForm = {
   achievements_summary: string;
-  performance_review: string;
-  lessons_summary: string;
+  performance_against_plan: string;
+  benefits_achieved: string;
+  quality_review: string;
   follow_on_actions: string;
-  handover_details: string;
 };
 
 // Module scope keeps Field's identity stable — defining it inside the component remounts it (and drops input focus) on every keystroke.
@@ -46,8 +46,8 @@ const Prince2ProjectClosure = () => {
   const [saving, setSaving] = useState(false);
   const [lessonDialog, setLessonDialog] = useState(false);
   const [editingLesson, setEditingLesson] = useState<any>(null);
-  const [lessonForm, setLessonForm] = useState({ title: "", description: "", category: "process", lesson_type: "positive", recommendations: "" });
-  const [reportForm, setReportForm] = useState<ClosureReportForm>({ achievements_summary: "", performance_review: "", lessons_summary: "", follow_on_actions: "", handover_details: "" });
+  const [lessonForm, setLessonForm] = useState({ title: "", description: "", category: "process", lesson_type: "positive", recommendation: "" });
+  const [reportForm, setReportForm] = useState<ClosureReportForm>({ achievements_summary: "", performance_against_plan: "", benefits_achieved: "", quality_review: "", follow_on_actions: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -66,8 +66,8 @@ const Prince2ProjectClosure = () => {
           setEndReport(list[0]);
           const r = list[0];
           setReportForm({
-            achievements_summary: r.achievements_summary || "", performance_review: r.performance_review || "",
-            lessons_summary: r.lessons_summary || "", follow_on_actions: r.follow_on_actions || "", handover_details: r.handover_details || "",
+            achievements_summary: r.achievements_summary || "", performance_against_plan: r.performance_against_plan || "",
+            benefits_achieved: r.benefits_achieved || "", quality_review: r.quality_review || "", follow_on_actions: r.follow_on_actions || "",
           });
         }
       }
@@ -98,8 +98,8 @@ const Prince2ProjectClosure = () => {
     } catch { toast.error(pt("Action failed")); }
   };
 
-  const openCreateLesson = () => { setEditingLesson(null); setLessonForm({ title: "", description: "", category: "process", lesson_type: "positive", recommendations: "" }); setLessonDialog(true); };
-  const openEditLesson = (l: any) => { setEditingLesson(l); setLessonForm({ title: l.title || "", description: l.description || "", category: l.category || "process", lesson_type: l.lesson_type || "positive", recommendations: l.recommendations || "" }); setLessonDialog(true); };
+  const openCreateLesson = () => { setEditingLesson(null); setLessonForm({ title: "", description: "", category: "process", lesson_type: "positive", recommendation: "" }); setLessonDialog(true); };
+  const openEditLesson = (l: any) => { setEditingLesson(l); setLessonForm({ title: l.title || "", description: l.description || "", category: l.category || "process", lesson_type: l.lesson_type || "positive", recommendation: l.recommendation || "" }); setLessonDialog(true); };
 
   const saveLesson = async () => {
     if (!lessonForm.title) { toast.error(pt("Title is required")); return; }
@@ -136,8 +136,8 @@ const Prince2ProjectClosure = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card><CardHeader><CardTitle>{pt("Achievements Summary")}</CardTitle></CardHeader><CardContent><Field label={pt("Achievements Summary")} field="achievements_summary" form={reportForm} setForm={setReportForm} /><Field label={pt("Performance Against Plan")} field="performance_review" form={reportForm} setForm={setReportForm} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>{pt("Closure Details")}</CardTitle></CardHeader><CardContent><Field label={pt("Lessons Summary")} field="lessons_summary" form={reportForm} setForm={setReportForm} /><Field label={pt("Follow-on Actions")} field="follow_on_actions" form={reportForm} setForm={setReportForm} /><Field label="Handover Details" field="handover_details" form={reportForm} setForm={setReportForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Achievements Summary")}</CardTitle></CardHeader><CardContent><Field label={pt("Achievements Summary")} field="achievements_summary" form={reportForm} setForm={setReportForm} /><Field label={pt("Performance Against Plan")} field="performance_against_plan" form={reportForm} setForm={setReportForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Closure Details")}</CardTitle></CardHeader><CardContent><Field label={pt("Benefits Achieved")} field="benefits_achieved" form={reportForm} setForm={setReportForm} /><Field label={pt("Quality Review")} field="quality_review" form={reportForm} setForm={setReportForm} /><Field label={pt("Follow-on Actions")} field="follow_on_actions" form={reportForm} setForm={setReportForm} /></CardContent></Card>
         </div>
 
         {/* Lessons Log */}
@@ -178,7 +178,7 @@ const Prince2ProjectClosure = () => {
               <div className="space-y-2"><Label>Type</Label><Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="positive">{pt("Positive")}</SelectItem><SelectItem value="negative">{pt("Negative")}</SelectItem></SelectContent></Select></div>
               <div className="space-y-2"><Label>{pt("Category")}</Label><Select value={lessonForm.category} onValueChange={(v) => setLessonForm({ ...lessonForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="process">{pt("Process")}</SelectItem><SelectItem value="technology">{pt("Technology")}</SelectItem><SelectItem value="people">{pt("People")}</SelectItem></SelectContent></Select></div>
             </div>
-            <div className="space-y-2"><Label>Recommendations</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={lessonForm.recommendations} onChange={(e) => setLessonForm({ ...lessonForm, recommendations: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Recommendations</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={lessonForm.recommendation} onChange={(e) => setLessonForm({ ...lessonForm, recommendation: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setLessonDialog(false)}>{pt("Cancel")}</Button><Button onClick={saveLesson}>{pt("Save")}</Button></div>
           </div>
         </DialogContent>

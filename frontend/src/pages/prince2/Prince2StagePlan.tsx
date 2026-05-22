@@ -21,7 +21,7 @@ const Prince2StagePlan = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ stage: "", objectives: "", deliverables: "", activities: "", resource_plan: "", budget: "", schedule: "" });
+  const [form, setForm] = useState({ stage: "", plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,14 +41,23 @@ const Prince2StagePlan = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", objectives: "", deliverables: "", activities: "", resource_plan: "", budget: "", schedule: "" }); setDialogOpen(true); };
-  const openEdit = (p: any) => { setEditing(p); setForm({ stage: p.stage?.toString() || "", objectives: p.objectives || "", deliverables: p.deliverables || "", activities: p.activities || "", resource_plan: p.resource_plan || "", budget: p.budget || "", schedule: p.schedule || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft" }); setDialogOpen(true); };
+  const openEdit = (p: any) => { setEditing(p); setForm({ stage: p.stage?.toString() || "", plan_description: p.plan_description || "", resource_requirements: p.resource_requirements || "", quality_approach: p.quality_approach || "", dependencies: p.dependencies || "", assumptions: p.assumptions || "", budget: p.budget != null ? String(p.budget) : "", status: p.status || "draft" }); setDialogOpen(true); };
 
   const handleSave = async () => {
+    if (!form.stage) { toast.error(pt("Please select a stage")); return; }
     setSubmitting(true);
     try {
-      const body: any = { ...form };
-      if (form.stage) body.stage = parseInt(form.stage);
+      const body: any = {
+        stage: parseInt(form.stage),
+        plan_description: form.plan_description,
+        resource_requirements: form.resource_requirements,
+        quality_approach: form.quality_approach,
+        dependencies: form.dependencies,
+        assumptions: form.assumptions,
+        status: form.status,
+      };
+      if (form.budget !== "" && !isNaN(Number(form.budget))) body.budget = Number(form.budget);
       const url = editing ? `/api/v1/projects/${id}/prince2/stage-plans/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-plans/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -102,9 +111,11 @@ const Prince2StagePlan = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {p.objectives && <div><span className="font-medium text-muted-foreground">{pt("Objectives")}:</span><p className="mt-1">{p.objectives}</p></div>}
-                  {p.deliverables && <div><span className="font-medium text-muted-foreground">{pt("Deliverables")}:</span><p className="mt-1">{p.deliverables}</p></div>}
-                  {p.activities && <div><span className="font-medium text-muted-foreground">{pt("Activities")}:</span><p className="mt-1">{p.activities}</p></div>}
+                  {p.plan_description && <div><span className="font-medium text-muted-foreground">{pt("Plan Description")}:</span><p className="mt-1">{p.plan_description}</p></div>}
+                  {p.resource_requirements && <div><span className="font-medium text-muted-foreground">{pt("Resource Requirements")}:</span><p className="mt-1">{p.resource_requirements}</p></div>}
+                  {p.quality_approach && <div><span className="font-medium text-muted-foreground">{pt("Quality Approach")}:</span><p className="mt-1">{p.quality_approach}</p></div>}
+                  {p.dependencies && <div><span className="font-medium text-muted-foreground">{pt("Dependencies")}:</span><p className="mt-1">{p.dependencies}</p></div>}
+                  {p.assumptions && <div><span className="font-medium text-muted-foreground">{pt("Assumptions")}:</span><p className="mt-1">{p.assumptions}</p></div>}
                   {p.budget && <div><span className="font-medium text-muted-foreground">{pt("Budget")}:</span><p className="mt-1">{p.budget}</p></div>}
                 </div>
               </CardContent>
@@ -117,13 +128,15 @@ const Prince2StagePlan = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} {pt("Stage Plan")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            {stages.length > 0 && <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>}
-            <div className="space-y-2"><Label>{pt("Objectives")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.objectives} onChange={(e) => setForm({ ...form, objectives: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Deliverables")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.deliverables} onChange={(e) => setForm({ ...form, deliverables: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Activities")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.activities} onChange={(e) => setForm({ ...form, activities: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{pt("Plan Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.plan_description} onChange={(e) => setForm({ ...form, plan_description: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Resource Requirements")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.resource_requirements} onChange={(e) => setForm({ ...form, resource_requirements: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Quality Approach")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.quality_approach} onChange={(e) => setForm({ ...form, quality_approach: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Dependencies")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.dependencies} onChange={(e) => setForm({ ...form, dependencies: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Assumptions")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.assumptions} onChange={(e) => setForm({ ...form, assumptions: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{pt("Budget")}</Label><Input value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{pt("Schedule")}</Label><Input value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Budget")}</Label><Input type="number" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Status")}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="approved">Approved</SelectItem><SelectItem value="baselined">Baselined</SelectItem></SelectContent></Select></div>
             </div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
           </div>

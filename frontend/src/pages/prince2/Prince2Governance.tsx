@@ -12,9 +12,10 @@ import { toast } from "sonner";
 type GovernanceForm = {
   project_definition: string;
   project_approach: string;
-  business_case_reference: string;
-  project_management_team_structure: string;
-  role_descriptions: string;
+  project_objectives: string;
+  success_criteria: string;
+  project_controls: string;
+  tailoring: string;
   quality_management_approach: string;
   change_control_approach: string;
   risk_management_approach: string;
@@ -47,8 +48,8 @@ const Prince2Governance = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<GovernanceForm>({
-    project_definition: "", project_approach: "", business_case_reference: "",
-    project_management_team_structure: "", role_descriptions: "",
+    project_definition: "", project_approach: "", project_objectives: "",
+    success_criteria: "", project_controls: "", tailoring: "",
     quality_management_approach: "", change_control_approach: "",
     risk_management_approach: "", communication_management_approach: "",
   });
@@ -71,9 +72,10 @@ const Prince2Governance = () => {
           const p = list[0];
           setForm({
             project_definition: p.project_definition || "", project_approach: p.project_approach || "",
-            business_case_reference: p.business_case_reference || "",
-            project_management_team_structure: p.project_management_team_structure || "",
-            role_descriptions: p.role_descriptions || "",
+            project_objectives: p.project_objectives || "",
+            success_criteria: p.success_criteria || "",
+            project_controls: p.project_controls || "",
+            tailoring: p.tailoring || "",
             quality_management_approach: p.quality_management_approach || "",
             change_control_approach: p.change_control_approach || "",
             risk_management_approach: p.risk_management_approach || "",
@@ -132,8 +134,8 @@ const Prince2Governance = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card><CardHeader><CardTitle>{pt("Project Definition")}</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Project Definition")} field="project_definition" form={form} setForm={setForm} /><Field label={pt("Project Approach")} field="project_approach" form={form} setForm={setForm} /><Field label="Business Case Reference" field="business_case_reference" form={form} setForm={setForm} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>Team & Roles</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Team Structure" field="project_management_team_structure" form={form} setForm={setForm} /><Field label="Role Descriptions" field="role_descriptions" form={form} setForm={setForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Project Definition")}</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Project Definition")} field="project_definition" form={form} setForm={setForm} /><Field label={pt("Project Approach")} field="project_approach" form={form} setForm={setForm} /><Field label={pt("Project Objectives")} field="project_objectives" form={form} setForm={setForm} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>{pt("Controls & Success")}</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Success Criteria")} field="success_criteria" form={form} setForm={setForm} /><Field label={pt("Project Controls")} field="project_controls" form={form} setForm={setForm} /><Field label={pt("Tailoring")} field="tailoring" form={form} setForm={setForm} /></CardContent></Card>
           <Card><CardHeader><CardTitle>Management Approaches</CardTitle></CardHeader><CardContent className="space-y-4"><Field label={pt("Quality")} field="quality_management_approach" form={form} setForm={setForm} /><Field label="Change Control" field="change_control_approach" form={form} setForm={setForm} /></CardContent></Card>
           <Card><CardHeader><CardTitle>Risk & Communication</CardTitle></CardHeader><CardContent className="space-y-4"><Field label="Risk Management" field="risk_management_approach" form={form} setForm={setForm} /><Field label="Communication" field="communication_management_approach" form={form} setForm={setForm} /></CardContent></Card>
         </div>

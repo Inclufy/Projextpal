@@ -19,7 +19,8 @@ const Prince2ProjectBoard = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [memberDialog, setMemberDialog] = useState(false);
-  const [memberForm, setMemberForm] = useState({ name: "", role: "senior_user", email: "" });
+  const [memberForm, setMemberForm] = useState({ user: "", role: "senior_user", responsibilities: "" });
+  const [users, setUsers] = useState<any[]>([]);
   const [creating, setCreating] = useState(false);
 
   const token = localStorage.getItem("access_token");
@@ -45,13 +46,20 @@ const Prince2ProjectBoard = () => {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [id]);
+  const fetchUsers = async () => {
+    try {
+      const r = await fetch(`/api/v1/auth/company-users/members/`, { headers });
+      if (r.ok) { const d = await r.json(); setUsers(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => { fetchData(); fetchUsers(); }, [id]);
 
   const createBoard = async () => {
     setCreating(true);
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/board/`, {
-        method: "POST", headers: jsonHeaders, body: JSON.stringify({ name: "Project Board" }),
+        method: "POST", headers: jsonHeaders, body: JSON.stringify({}),
       });
       if (r.ok) { toast.success(pt("Created")); fetchData(); }
       else toast.error(pt("Create failed"));
@@ -60,12 +68,17 @@ const Prince2ProjectBoard = () => {
   };
 
   const addMember = async () => {
-    if (!board || !memberForm.name) return;
+    if (!board) return;
+    if (!memberForm.user) { toast.error(pt("Please select a user")); return; }
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/board/${board.id}/add_member/`, {
-        method: "POST", headers: jsonHeaders, body: JSON.stringify(memberForm),
+        method: "POST", headers: jsonHeaders, body: JSON.stringify({
+          user: parseInt(memberForm.user),
+          role: memberForm.role,
+          responsibilities: memberForm.responsibilities,
+        }),
       });
-      if (r.ok) { toast.success(pt("Created")); setMemberDialog(false); setMemberForm({ name: "", role: "senior_user", email: "" }); fetchData(); }
+      if (r.ok) { toast.success(pt("Created")); setMemberDialog(false); setMemberForm({ user: "", role: "senior_user", responsibilities: "" }); fetchData(); }
       else toast.error(pt("Create failed"));
     } catch { toast.error(pt("Create failed")); }
   };
@@ -79,7 +92,7 @@ const Prince2ProjectBoard = () => {
 
   const roleLabels: Record<string, string> = {
     executive: "Executive", senior_user: "Senior User", senior_supplier: "Senior Supplier",
-    project_manager: "Project Manager", team_manager: "Team Manager", project_assurance: "Project Assurance",
+    project_manager: "Project Manager", project_assurance: "Project Assurance",
     change_authority: "Change Authority", project_support: "Project Support",
   };
 
@@ -115,10 +128,11 @@ const Prince2ProjectBoard = () => {
                     <CardContent className="p-4">
                       <button onClick={() => removeMember(m.id)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="font-semibold text-primary">{m.name?.charAt(0)?.toUpperCase() || "?"}</span></div>
-                        <div><p className="font-medium">{m.name}</p>{m.email && <p className="text-xs text-muted-foreground">{m.email}</p>}</div>
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="font-semibold text-primary">{m.user_name?.charAt(0)?.toUpperCase() || "?"}</span></div>
+                        <div><p className="font-medium">{m.user_name || m.user_email}</p>{m.user_email && <p className="text-xs text-muted-foreground">{m.user_email}</p>}</div>
                       </div>
                       <Badge className={`text-xs ${roleColors[m.role] || "bg-gray-100 text-gray-700"}`}>{roleLabels[m.role] || m.role}</Badge>
+                      {m.responsibilities && <p className="text-xs text-muted-foreground mt-2">{m.responsibilities}</p>}
                     </CardContent>
                   </Card>
                 ))}
@@ -131,13 +145,17 @@ const Prince2ProjectBoard = () => {
       <Dialog open={memberDialog} onOpenChange={setMemberDialog}>
         <DialogContent><DialogHeader><DialogTitle>{pt("Add Member")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2"><Label>{pt("Name")} *</Label><Input value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label>{pt("Email")}</Label><Input type="email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("User")} *</Label>
+              <Select value={memberForm.user} onValueChange={(v) => setMemberForm({ ...memberForm, user: v })}><SelectTrigger><SelectValue placeholder={pt("Select user")} /></SelectTrigger>
+                <SelectContent>{users.map((u) => <SelectItem key={u.id} value={u.id.toString()}>{u.full_name || u.name || `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2"><Label>{pt("Role")}</Label>
               <Select value={memberForm.role} onValueChange={(v) => setMemberForm({ ...memberForm, role: v })}><SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{Object.entries(roleLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            <div className="space-y-2"><Label>{pt("Responsibilities")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={memberForm.responsibilities} onChange={(e) => setMemberForm({ ...memberForm, responsibilities: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setMemberDialog(false)}>{pt("Cancel")}</Button><Button onClick={addMember}>{pt("Add")}</Button></div>
           </div>
         </DialogContent>

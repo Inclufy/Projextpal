@@ -21,7 +21,7 @@ const Prince2StageGate = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ stage: "", review_type: "end_stage", review_notes: "", decision: "", conditions: "" });
+  const [form, setForm] = useState({ stage: "", outcome: "pending", review_date: "", decision_notes: "", stage_performance_summary: "", products_completed: "", products_pending: "", lessons_learned: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,14 +41,23 @@ const Prince2StageGate = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", review_type: "end_stage", review_notes: "", decision: "", conditions: "" }); setDialogOpen(true); };
-  const openEdit = (g: any) => { setEditing(g); setForm({ stage: g.stage?.toString() || "", review_type: g.review_type || "end_stage", review_notes: g.review_notes || "", decision: g.decision || "", conditions: g.conditions || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", outcome: "pending", review_date: "", decision_notes: "", stage_performance_summary: "", products_completed: "", products_pending: "", lessons_learned: "" }); setDialogOpen(true); };
+  const openEdit = (g: any) => { setEditing(g); setForm({ stage: g.stage?.toString() || "", outcome: g.outcome || "pending", review_date: g.review_date || "", decision_notes: g.decision_notes || "", stage_performance_summary: g.stage_performance_summary || "", products_completed: g.products_completed || "", products_pending: g.products_pending || "", lessons_learned: g.lessons_learned || "" }); setDialogOpen(true); };
 
   const handleSave = async () => {
+    if (!form.stage) { toast.error(pt("Please select a stage")); return; }
     setSubmitting(true);
     try {
-      const body: any = { ...form };
-      if (form.stage) body.stage = parseInt(form.stage);
+      const body: any = {
+        stage: parseInt(form.stage),
+        outcome: form.outcome,
+        decision_notes: form.decision_notes,
+        stage_performance_summary: form.stage_performance_summary,
+        products_completed: form.products_completed,
+        products_pending: form.products_pending,
+        lessons_learned: form.lessons_learned,
+      };
+      if (form.review_date) body.review_date = form.review_date;
       const url = editing ? `/api/v1/projects/${id}/prince2/stage-gates/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-gates/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -93,12 +102,12 @@ const Prince2StageGate = () => {
           <div className="space-y-3">{gates.map((g) => (
             <Card key={g.id}><CardContent className="p-4 flex items-center justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1"><Badge className={`text-xs ${statusColors[g.status] || ""}`}>{g.status}</Badge><Badge variant="outline" className="text-xs">{g.review_type}</Badge><span className="text-sm text-muted-foreground">{stages.find(s => s.id === g.stage)?.name}</span></div>
-                {g.review_notes && <p className="text-sm mt-1">{g.review_notes}</p>}
-                {g.decision && <p className="text-sm text-muted-foreground mt-1">Decision: {g.decision}</p>}
+                <div className="flex items-center gap-2 mb-1"><Badge className={`text-xs ${statusColors[g.outcome] || ""}`}>{g.outcome}</Badge>{g.review_date && <Badge variant="outline" className="text-xs">{g.review_date}</Badge>}<span className="text-sm text-muted-foreground">{stages.find(s => s.id === g.stage)?.name || g.stage_name}</span></div>
+                {g.decision_notes && <p className="text-sm mt-1">{g.decision_notes}</p>}
+                {g.stage_performance_summary && <p className="text-sm text-muted-foreground mt-1">{g.stage_performance_summary}</p>}
               </div>
               <div className="flex gap-1 ml-4">
-                {g.status === "pending" && <>
+                {g.outcome === "pending" && <>
                   <Button variant="ghost" size="sm" onClick={() => handleAction(g.id, "approve")}><CheckCircle2 className="h-4 w-4 text-green-500" /></Button>
                   <Button variant="ghost" size="sm" onClick={() => handleAction(g.id, "reject")}><XCircle className="h-4 w-4 text-red-500" /></Button>
                 </>}
@@ -113,9 +122,16 @@ const Prince2StageGate = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} Stage Gate</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            {stages.length > 0 && <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>}
-            <div className="space-y-2"><Label>Review Type</Label><Select value={form.review_type} onValueChange={(v) => setForm({ ...form, review_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="end_stage">End Stage</SelectItem><SelectItem value="exception">Exception</SelectItem></SelectContent></Select></div>
-            <div className="space-y-2"><Label>Review Notes</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.review_notes} onChange={(e) => setForm({ ...form, review_notes: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Outcome</Label><Select value={form.outcome} onValueChange={(v) => setForm({ ...form, outcome: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pending">Pending</SelectItem><SelectItem value="approved">Approved</SelectItem><SelectItem value="conditional">Conditional</SelectItem><SelectItem value="rejected">Rejected</SelectItem><SelectItem value="deferred">Deferred</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>Review Date</Label><Input type="date" value={form.review_date} onChange={(e) => setForm({ ...form, review_date: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2"><Label>Decision Notes</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.decision_notes} onChange={(e) => setForm({ ...form, decision_notes: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Stage Performance Summary</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.stage_performance_summary} onChange={(e) => setForm({ ...form, stage_performance_summary: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Products Completed</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.products_completed} onChange={(e) => setForm({ ...form, products_completed: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Products Pending</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.products_pending} onChange={(e) => setForm({ ...form, products_pending: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Lessons Learned</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.lessons_learned} onChange={(e) => setForm({ ...form, lessons_learned: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
           </div>
         </DialogContent>
