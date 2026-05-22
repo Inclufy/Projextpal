@@ -6,21 +6,21 @@ class DMAICPhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = DMAICPhase
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
 
 
 class LSSGreenMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = LSSGreenMetric
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
 
 
 class LSSGreenMeasurementSerializer(serializers.ModelSerializer):
     class Meta:
         model = LSSGreenMeasurement
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
 
 
 class LSSGreenTaskSerializer(serializers.ModelSerializer):

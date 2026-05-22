@@ -23,6 +23,7 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
             'project_approach', 'outline_business_case',
             'project_objectives', 'project_scope', 'project_team_structure',
             'constraints', 'assumptions',
+            'dependencies', 'customer_quality_expectations', 'acceptance_criteria',
             'status', 'version', 'created_at', 'updated_at',
         ]
         read_only_fields = ['project', 'created_at', 'updated_at']

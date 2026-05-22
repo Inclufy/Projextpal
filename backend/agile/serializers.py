@@ -241,4 +241,4 @@ class DefinitionOfDoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = DefinitionOfDone
         fields = ['id', 'project', 'description', 'category', 'is_required', 'order', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']

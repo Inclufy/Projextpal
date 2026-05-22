@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, Avg
@@ -443,8 +444,10 @@ class AgileDailyUpdateViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         project = _gated_project_lookup(self.request.user, self.kwargs.get("project_id"))
         iteration_id = self.request.data.get('iteration_id')
-        iteration = get_object_or_404(AgileIteration, id=iteration_id) if iteration_id else None
-        
+        if not iteration_id:
+            raise ValidationError({'iteration_id': 'An iteration is required to log a daily update.'})
+        iteration = get_object_or_404(AgileIteration, id=iteration_id)
+
         serializer.save(
             project=project,
             iteration=iteration,
