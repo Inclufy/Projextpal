@@ -52,6 +52,13 @@ router.register(r'budget-items', BudgetItemViewSet, basename='budget-item')
 router.register(r"", ProjectViewSet, basename="project")  # ← MOVED TO END
 
 urlpatterns = [
+    # Project Plan DOCX — the router only generates the trailing-slash route;
+    # this makes the natural file-download URL (…/project-plan.docx) resolve too.
+    path(
+        "<int:pk>/export/project-plan.docx",
+        ProjectViewSet.as_view({"get": "export_project_plan"}),
+        name="project-export-project-plan-file",
+    ),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),

@@ -71,8 +71,9 @@ class AIMeetingMinutesView(APIView):
             return Response(
                 {"detail": (
                     "No Anthropic API key configured for this company. "
-                    "Set CompanyAIKey.anthropic_api_key or "
-                    "settings.ANTHROPIC_API_KEY."
+                    "Configure one in Settings → API Keys (preferred), "
+                    "or have an admin set CompanyAIKey.anthropic_api_key, "
+                    "or set settings.ANTHROPIC_API_KEY as platform fallback."
                 )},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
