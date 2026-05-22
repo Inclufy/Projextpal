@@ -807,7 +807,7 @@ class WaterfallBudgetItemViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
-        project = _gated_project_lookup(request.user, project_id)
+        project = _gated_project_lookup(self.request.user, project_id)
         budget = WaterfallBudget.objects.filter(project=project).first()
         if budget:
             return WaterfallBudgetItem.objects.filter(budget=budget)

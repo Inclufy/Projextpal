@@ -34,7 +34,7 @@ Plus **project-wide tabs** that appear on every project regardless of methodolog
 
 Target: `https://projextpal.com` by default; override via `BASE_URL`.
 
-Auth: `POST /api/v1/auth/login-2fa/` with `sami@inclufy.com` / `Eprocure2025!` (or `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars).
+Auth: `POST /api/v1/auth/login-2fa/` with `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars (default email `sami@inclufy.com`; password lives in the operator's password manager — never commit a literal).
 
 Cloudflare rejects Python's default UA with 403. Always set:
 ```
@@ -137,6 +137,17 @@ EMPTY-DATA GAPS (200 but no rows — seeding didn't reach):
 - Don't mix up Program vs Project methodologies. SAFe/MSP/PMI are programs, not projects — hand those to `program-manager-tester`.
 - When a POST returns 400 with a clean field-level error ("foo: required"), that's a VALID response — your test payload was wrong. Fix your payload, don't "fix" the backend.
 - Don't keep hammering a 5xx. One retry with a different payload, then flag and move on.
+
+## Known regressions to always verify
+
+These bugs were live in production and have specific regression tests in `tests/regression/known_issues.json`. Re-run them whenever the project module is touched:
+
+### BUG-033 — agile + waterfall budget-items NameError (P0, fixed_verified)
+- Endpoint: `GET /api/v1/projects/<id>/agile/budget/items/` AND `GET /api/v1/projects/<id>/waterfall/budget/items/`
+- Symptom: 500 with `NameError: name 'request' is not defined` because `get_queryset(self)` referenced a bare `request.user` instead of `self.request.user`.
+- Test (per methodology): authenticated GET on the budget-items endpoint must return 200 / 403 / 404 — never 500 with NameError. Same check applies to BOTH agile AND waterfall — the bug was copy-pasted between the two viewsets, so any future copy of `AgileBudgetItemViewSet` / `WaterfallBudgetItemViewSet` is a high-risk site.
+- Static scan rule for prevention: in any `def get_queryset(self):` block under `backend/**/*.py`, there must be ZERO bare `request.` references — only `self.request.`. The same shape of typo can hide in any new ViewSet's `get_queryset`; grep `def get_queryset\(self\):` across `backend/` after every PR that adds a viewset and confirm none of the bodies reference `request.user` (only `self.request.user`).
+- Affected files where the typo lived: `backend/agile/views.py:524`, `backend/waterfall/views.py:810` — both fixed in PR #19 (commit 1b84d5b7). If new methodologies (msp, prince2, pmi, etc.) add their own `BudgetItemViewSet`, verify they used `self.request.user` from day one.
 
 ## Ready-to-run test script
 

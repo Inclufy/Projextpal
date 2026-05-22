@@ -24,6 +24,7 @@ admins, edit the env var and restart the backend container.
 from __future__ import annotations
 
 import logging
+import threading
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -230,9 +231,23 @@ def _send_email_safe(
     to: list[str],
     reply_to: list[str] | None = None,
 ) -> bool:
-    """Send a transactional email; never raise — caller continues regardless."""
+    """Build the email synchronously, then dispatch the SMTP TCP call to a
+    daemon thread so the post_save signal returns to the request thread in
+    ~1ms instead of blocking on Resend SMTP for up to EMAIL_TIMEOUT seconds
+    (15s by default). See BUG-031.
+
+    Returns True optimistically as soon as the thread is started. SMTP
+    failures inside the thread are logged via logger.warning but never
+    raised — consistent with the previous fail_silently=False + try/except
+    behavior from the caller's point of view (errors don't propagate).
+
+    Note: build the EmailMultiAlternatives object in the request thread
+    so any DB lookups (DEFAULT_FROM_EMAIL etc.) happen with the request's
+    DB connection. The thread only owns the network send.
+    """
     if not to:
         return False
+
     try:
         msg = EmailMultiAlternatives(
             subject=subject,
@@ -242,14 +257,30 @@ def _send_email_safe(
             reply_to=reply_to or ["support@inclufy.com"],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=False)
-        return True
     except Exception as exc:
+        # Construction error (rare). Log and bail BEFORE we spawn anything.
         logger.warning(
-            "ProductIssue notification email failed (to=%s, subject=%r): %s",
+            "ProductIssue notification email construction failed (to=%s, subject=%r): %s",
             to, subject, exc,
         )
         return False
+
+    def _do_send() -> None:
+        try:
+            msg.send(fail_silently=False)
+        except Exception as exc:
+            logger.warning(
+                "ProductIssue notification email send failed in background "
+                "(to=%s, subject=%r): %s",
+                to, subject, exc,
+            )
+
+    threading.Thread(
+        target=_do_send,
+        daemon=True,
+        name=f"product-issue-email-{subject[:40]}",
+    ).start()
+    return True
 
 
 def _wrap_html(title: str, body_html: str, cta_url: str, cta_label: str) -> str:

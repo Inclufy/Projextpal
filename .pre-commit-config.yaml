@@ -1,0 +1,87 @@
+# Pre-commit hooks for Inclufy/Projextpal.
+#
+# Once per developer machine, run:
+#
+#     pip install pre-commit
+#     pre-commit install
+#
+# After that, every `git commit` automatically runs these checks against
+# the staged files. Pushing without running them is possible (`--no-verify`)
+# but discouraged — CI doesn't yet run gitleaks server-side.
+#
+# Why this exists: on 2026-05-18 a literal superadmin password was found
+# committed to 9 tracked files in this public repo. The credential had
+# already been rotated upstream by the time we discovered it, but the
+# leak would have been caught at `git commit` time by these hooks. See
+# PR #29 (scrub) and tests/regression/known_issues.json BUG-035 for
+# the post-mortem.
+
+repos:
+  # ─────────────────────────────────────────────────────────────────────
+  # Gitleaks — catches ~120 well-known secret shapes
+  # ─────────────────────────────────────────────────────────────────────
+  # Built-in detection rules cover Stripe (sk_live_*, sk_test_*),
+  # GitHub (ghp_*, gho_*, ghu_*, ghs_*, ghr_*), AWS (AKIA*, ASIA*),
+  # Slack (xox[abprs]-*), JWTs, RSA private keys, GCP service-account
+  # JSON, Twilio, Mailgun, OpenAI, Anthropic, etc.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Local regex hooks — catch shapes gitleaks misses
+  # ─────────────────────────────────────────────────────────────────────
+  # Gitleaks' built-in generic-password rule has had too many false
+  # positives in past projects. Instead of enabling that, we target the
+  # *specific* shape that leaked on 2026-05-18 (Word + digits + special
+  # char, e.g. `Eprocure2025!`). This catches the exact failure mode
+  # without false-positive-ing on normal English text.
+  #
+  # If you legitimately need a string that looks like this (e.g. example
+  # data in docs), wrap it in a code fence and prefix with `EXAMPLE: ` —
+  # the regex avoids that prefix.
+  - repo: local
+    hooks:
+      - id: no-shaped-passwords
+        name: Reject committed `Word + digits + special` shaped passwords
+        description: |
+          Catches the BUG-035 leak shape (an admin password committed
+          as a literal). Refuses any commit containing a token that
+          matches `[A-Z][a-z]{4,}[0-9]{2,4}[!@#$%^&*]` outside of
+          well-known safe locations (lock files, this hook itself).
+        entry: |
+          bash -c '
+            FILES=$(printf "%s\n" "$@" | grep -Ev "^(\.git/|node_modules/|.*\.lock$|.*\.lock\.json$|package-lock\.json|.*\.png$|.*\.jpg$|.*\.svg$|tests/regression/known_issues\.json|\.pre-commit-config\.yaml|frontend/.*lock.*)$" || true)
+            if [ -z "$FILES" ]; then exit 0; fi
+            HITS=$(grep -HnE "(?:[A-Z][a-z]{4,}[0-9]{2,4}[!@#\$%^&*])" $FILES 2>/dev/null | grep -v "^Binary file" | grep -v "EXAMPLE:" || true)
+            if [ -n "$HITS" ]; then
+              echo "Refusing commit — possible hardcoded password (Word+digits+special shape):"
+              echo
+              echo "$HITS"
+              echo
+              echo "If this is a real credential: rotate it AND load it via env var (see tests/e2e/common.py: ADMIN_PASSWORD)."
+              echo "If this is a legitimate example, prefix the line with \"EXAMPLE: \" to whitelist it."
+              echo "If this hook is too noisy in a specific path, refine the regex in .pre-commit-config.yaml."
+              exit 1
+            fi
+          ' --
+        language: system
+        pass_filenames: true
+
+  # ─────────────────────────────────────────────────────────────────────
+  # House-keeping (light)
+  # ─────────────────────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=2048']  # 2 MB — anything bigger probably wants Git LFS
+      - id: check-yaml
+        # Some agent .md files have triple-dash front-matter that confuses
+        # check-yaml's first-document parser; restrict to actual YAML.
+        files: '\.(ya?ml)$'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: ['--markdown-linebreak-ext=md']

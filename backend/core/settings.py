@@ -158,6 +158,23 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Shared cache backend — used by DRF throttling so every gunicorn worker
+# reads/writes the same counter. With the previous (default) LocMemCache
+# each worker had its own throttle bucket, making the effective rate
+# `workers × configured/hour` instead of the configured rate (see BUG-030).
+# Uses the same Redis container as Channels; DB 1 keeps the namespace
+# separated from pub/sub keys.
+_REDIS_PW = os.environ.get("REDIS_PASSWORD") or ""
+_REDIS_AUTH = f":{_REDIS_PW}@" if _REDIS_PW else ""
+_REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+_REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{_REDIS_AUTH}{_REDIS_HOST}:{_REDIS_PORT}/1",
+    },
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -186,7 +203,9 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "forgot_password": "3/10min",
+        # DRF's parse_rate only accepts single-letter periods (s/m/h/d),
+        # so "3/10min" is invalid and raises KeyError: '1' on every call.
+        "forgot_password": "3/hour",
         # Public landing-page chatbot — defense-in-depth with Cloudflare WAF
         # rate-limit. Caps anonymous OpenAI calls at 20/hour per IP at the
         # Django layer (Cloudflare is plan-tier limited to 10s windows).
@@ -252,6 +271,10 @@ EMAIL_PORT = int(decouple.config("EMAIL_PORT"))
 EMAIL_USE_TLS = decouple.config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_HOST_USER = decouple.config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = decouple.config("EMAIL_HOST_PASSWORD")
+# Hard cap on SMTP socket wait. Default is None (= forever), which previously
+# allowed a hung Resend connection to wedge background email threads and pile
+# up unbounded daemon threads when many issues were created. See BUG-031.
+EMAIL_TIMEOUT = decouple.config("EMAIL_TIMEOUT", default=15, cast=int)
 DEFAULT_FROM_EMAIL = decouple.config("DEFAULT_FROM_EMAIL")
 
 # Comma-separated list of email addresses to notify when ProductIssues are

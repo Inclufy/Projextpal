@@ -67,3 +67,23 @@ Keep the output under 300 words. The parent agent reads this and decides whether
 - **Don't expand scope.** Your job is to validate the single reported issue, not architect a bigger fix.
 - **Don't guess.** Always back claims with a grep result, file read, or command output.
 - **Do not write code.** Only analyze and report.
+
+## Known typo patterns to validate against
+
+Three distinct shapes of bug have hit production in the last 30 days; before validating any new "500 on endpoint X" report, check whether it matches one of these — the proposed fix often becomes obvious and the validation is just confirming the pattern.
+
+### Pattern 1 — Bare `request` in `get_queryset(self)` (BUG-033)
+- `def get_queryset(self):` is the ONLY common viewset method that doesn't receive `request` as a parameter. Inside it, `request.X` is a NameError; the correct form is `self.request.X`.
+- Smoke test before validating any 500 from a `list` endpoint: `grep -n "def get_queryset" backend/<app>/views.py` → for each match, look at the body for bare `request.` (must be `self.request.`).
+- Sibling viewsets often have copy-paste bugs (agile + waterfall hit the same day) — always check both methodologies when one fails.
+
+### Pattern 2 — Invalid DRF throttle rate (BUG-030)
+- `DEFAULT_THROTTLE_RATES` accepts only `<n>/<period>` where period starts with `s`/`m`/`h`/`d`. Multipliers like `'3/10min'` or `'10/15s'` raise `KeyError: '<first_digit>'` in `rest_framework/throttling.py:parse_rate`.
+- Before validating a 500 with `KeyError` in throttling.py, grep `DEFAULT_THROTTLE_RATES` for any rate whose period doesn't start with a letter.
+- If you need "N per X-minute window", implement a custom throttle subclass; don't try to encode it in the rate string.
+
+### Pattern 3 — Per-worker LocMemCache silently looser than configured (BUG-030 secondary)
+- If `CACHES['default']` is unset (or set to `LocMemCache`) and gunicorn runs >1 worker, every cache-backed feature (throttling, signed-URL TTL caches, etc.) is N× more permissive than configured. Symptoms: rate-limit "feels off", `cache.get` returns None across requests that should hit, distinct workers report inconsistent state.
+- Validation: `docker exec <backend> sh -c 'cd /app && DJANGO_SETTINGS_MODULE=core.settings python -c "import django; django.setup(); from django.core.cache import cache; print(type(cache._cache).__module__)"'` — must report `django.core.cache.backends.redis`. If it says `collections` (i.e. LocMemCache), file as P1.
+
+Cross-reference: `tests/regression/known_issues.json` BUG-030, BUG-031, BUG-032, BUG-033. New typo patterns get added there as they're discovered.

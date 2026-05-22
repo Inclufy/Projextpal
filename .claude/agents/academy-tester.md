@@ -55,7 +55,7 @@ You test ProjeXtPal's Academy — the gated LMS that controls certification for 
 
 Target: `https://projextpal.com`. Cloudflare UA required.
 
-Auth: `sami@inclufy.com` / `Eprocure2025!` (superadmin).
+Auth: superadmin = `sami@inclufy.com`; password lives in the operator's password manager — pass via `ADMIN_PASSWORD` env var, never commit a literal.
 
 ## The critical cert-gate test
 

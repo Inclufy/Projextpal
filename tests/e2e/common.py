@@ -40,7 +40,20 @@ UA = (
 SSL_CTX = ssl._create_unverified_context()
 
 EMAIL = os.environ.get("ADMIN_EMAIL", "sami@inclufy.com")
-PASSWORD = os.environ.get("ADMIN_PASSWORD", "Eprocure2025!")
+# Password MUST be supplied via the ADMIN_PASSWORD env var — never commit a
+# literal. A prior default literal was leaked publicly via this file (repo is
+# public) and has since been rotated. If ADMIN_PASSWORD is unset the tests
+# fail at login() with a clear message rather than silently using a stale
+# default.
+PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+if not PASSWORD:
+    import warnings
+    warnings.warn(
+        "ADMIN_PASSWORD env var is not set; authenticated E2E tests will "
+        "fail at login. Set ADMIN_PASSWORD before running.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 
 class Client:

@@ -305,7 +305,7 @@ class VerifyEmailView(APIView):
 # Forgot password view
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
-    # Rate-limit: 3 requests per 10 minutes per IP (configured in
+    # Rate-limit: 3 requests per hour per IP (configured in
     # REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']['forgot_password']).
     # 4th rapid call returns HTTP 429.
     throttle_scope = 'forgot_password'

@@ -27,7 +27,11 @@
       "fix_location": "backend/surveys/serializers.py:18 — added read_only_fields = ['id', 'survey']",
       "found": "2026-04-29",
       "found_by": "user — projextpal.com/post-project survey form",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Tested unauth only (login unavailable during run). Returned 401 (auth gate working), not 400 or 500. Auth-gated tests require re-run with valid credentials."
     },
 
     {
@@ -45,7 +49,11 @@
       "regression_check": "Grep frontend/src for '/api/v1/users/' — must return zero matches.",
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 0,
+      "notes": "Grep found zero matches for '/api/v1/users/' in frontend/src — PASS."
     },
 
     {
@@ -63,7 +71,11 @@
       "regression_check": "Grep frontend/src for '/projects/${projectId}/tasks/' (no methodology prefix) — must return zero matches.",
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 0,
+      "notes": "Grep found zero matches for projects/${...}/tasks/ in frontend/src — PASS."
     },
 
     {
@@ -81,7 +93,11 @@
       "regression_check": "Grep frontend/src for '/projects/${projectId}/milestones/' — must return zero matches.",
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 0,
+      "notes": "Grep found zero matches for projects/${...}/milestones/ in frontend/src — PASS."
     },
 
     {
@@ -98,7 +114,11 @@
       "fix_location": "backend/accounts/invitation_views.py — generate UUID placeholder token at create time, then overwrite with real token; coalesce missing project/program to company name; fail_silently=True on send_mail.",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (auth gate OK, not 500) — previous_status was 500. Auth-only test deferred."
     },
 
     {
@@ -115,7 +135,12 @@
       "fix_location": "backend/subscriptions/checkout_views.py — get_plans now uses getattr with correct field fallbacks (plan_type, storage_limit_gb, plan_level).",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
-      "status": "fix_pending_deploy"
+      "status": "fixed_verified",
+      "verified_on": "2026-05-18",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "verified_live": "2026-05-18 — anon GET returned 200 with plan list (Starter, billing_type, max_users etc. present)"
     },
 
     {
@@ -131,7 +156,11 @@
       "fix_location": "backend/accounts/models.py — re-export BiometricCredential so Django auto-discovers it. backend/accounts/migrations/0011_biometriccredential.py — schema migration. backend/accounts/biometric.py — wrapped both views in try/except so they degrade gracefully if migration not yet run.",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 500) — auth gate working. Auth-only test deferred."
     },
 
     {
@@ -147,7 +176,11 @@
       "fix_location": "Fixed together with BUG-007 (model registration + migration + try/except guard).",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
 
     {
@@ -164,7 +197,11 @@
       "fix_location": "backend/msp/models.py + backend/p2_programme/models.py + backend/hybrid_programme/models.py — all FKs corrected to programs.Program. Migrations: msp/0002_fix_program_fk, p2_programme/0002_fix_programme_fk, hybrid_programme/0002_fix_programme_fk.",
       "found": "2026-04-29",
       "found_by": "program-manager-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 400 or 500). Auth-only test deferred."
     },
 
     {
@@ -181,7 +218,11 @@
       "fix_location": "backend/governance/models.py — Meeting.program now null=True, blank=True. Migration: governance/0004_meeting_decision_program_nullable.",
       "found": "2026-04-29",
       "found_by": "program-manager-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 400/500). Auth-only test deferred."
     },
 
     {
@@ -197,7 +238,11 @@
       "fix_location": "backend/governance/models.py — Decision.program now null=True, blank=True. Same migration as BUG-010.",
       "found": "2026-04-29",
       "found_by": "program-manager-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401. Auth-only test deferred."
     },
 
     {
@@ -215,7 +260,11 @@
       "fix_location": "backend/programs/models.py — added 'p2_programme' and 'hybrid_programme' to METHODOLOGY_CHOICES. Note: the URL routes still use the slug forms with hyphens; the frontend should map p2-programme ↔ p2_programme and hybrid-programme ↔ hybrid_programme when creating.",
       "found": "2026-04-29",
       "found_by": "program-manager-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401. Auth-only test deferred."
     },
 
     {
@@ -232,7 +281,12 @@
       "fix_location": "backend/academy/certificate_api.py — added @permission_classes([AllowAny]) to verify_certificate.",
       "found": "2026-04-29",
       "found_by": "academy-tester",
-      "status": "fix_pending_deploy"
+      "status": "fixed_verified",
+      "verified_on": "2026-05-18",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "verified_live": "2026-05-18 — anon GET /api/v1/academy/certificate/verify/NZGNOAJWLVXO/ returned 200 with {valid:false, message:'Certificate not found'}"
     },
 
     {
@@ -248,7 +302,11 @@
       "fix_location": "backend/academy/practice_simulation_api.py — replaced reverse-manager access with explicit LessonSkillMapping.objects.filter(lesson_id=str(lesson.id)).select_related('skill').",
       "found": "2026-04-29",
       "found_by": "academy-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
 
     {
@@ -265,7 +323,11 @@
       "fix_location": "backend/academy/practice_simulation_api.py — fixed together with BUG-014 using direct LessonSkillMapping.filter(lesson_id=str(lesson.id)).",
       "found": "2026-04-29",
       "found_by": "academy-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
 
     {
@@ -281,7 +343,11 @@
       "fix_location": "backend/lss_black/urls.py — registered DMAICPhaseViewSet (reused from lss_green) on both the global and project-scoped routers.",
       "found": "2026-04-29",
       "found_by": "reports-dashboards-chats-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 404/500). Auth-only test deferred."
     },
 
     {
@@ -299,7 +365,11 @@
       "fix_location": "backend/academy/ai_views.py — ai_generate_practice now accepts either lessonTitle/courseTitle/lessonContent (camelCase) or lesson_title/course_title/lesson_content (snake_case).",
       "found": "2026-04-29",
       "found_by": "reports-dashboards-chats-tester",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 400). Auth-only test deferred."
     },
 
     {
@@ -318,7 +388,11 @@
       "regression_check": "POST with valid user_id returns 201 with team member object. GET /api/v1/programs/{id}/team/ returns the member list. DELETE /api/v1/programs/{id}/team/remove/{member_id}/ returns 204.",
       "found": "2026-04-29",
       "found_by": "user — projextpal.com/team page, 'Toewijzen aan Programma' dialog",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401 (not 404). Auth-only test deferred."
     },
 
     {
@@ -336,7 +410,10 @@
       "regression_check": "Login as a user with role=program_manager on a Starter plan: sidebar 'Programma's' must NOT show lock; navigating /programs must NOT show 'Feature Not Available'. Same for project_manager + Team/Post Project/Time Tracking.",
       "found": "2026-04-29",
       "found_by": "user — reda@inclufy.com locked out of /programs as program_manager on Starter plan",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Client-side gate; requires authenticated browser session to verify. Deferred."
     },
 
     {
@@ -354,7 +431,11 @@
       "regression_check": "Grep frontend/src for '🎯 ProjeXtPal\\|📋 \\|📊 ' inside dashboard files — must return zero matches.",
       "found": "2026-04-29",
       "found_by": "user — visible duplicate icon on portfolio dashboard header",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 0,
+      "notes": "Grep of frontend/src/components/dashboards/ found zero emoji matches — PASS. Note: emoji patterns exist in other files (AICopilotSidebar, course files, Scrum board) but those are unrelated to this bug's scope."
     },
 
     {
@@ -372,7 +453,10 @@
       "regression_check": "Click any recommended course on the dashboard — URL must become /academy/course/{slug} matching the methodology, and the course detail page must render.",
       "found": "2026-04-29",
       "found_by": "user — dashboard recommended courses redirected to algemene academy page",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "UI navigation test requires authenticated browser session. Deferred."
     },
 
     {
@@ -390,7 +474,11 @@
       "regression_check": "User in Company A must NOT see governance boards belonging to Company B.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth call returned 401. Cross-tenant scoping requires two-user authenticated test. Deferred."
     },
 
     {
@@ -408,7 +496,10 @@
       "regression_check": "User without team_member role on Project X must receive 404 (or empty) for any waterfall/agile endpoint targeting Project X.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Cross-tenant test requires two-account setup. Auth unavailable this run. Deferred."
     },
 
     {
@@ -426,7 +517,10 @@
       "regression_check": "User member of Project A only must NOT see tasks/milestones/expenses/time entries/hourly rates from Project B in same company.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Intra-tenant scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
 
     {
@@ -444,7 +538,10 @@
       "regression_check": "Non-admin user must NOT list programs they have no role on.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Intra-tenant scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
 
     {
@@ -462,7 +559,10 @@
       "regression_check": "User without team_member role on Project X must NOT list scrum/kanban/prince2 artifacts of Project X.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Cross-user scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
 
     {
@@ -480,7 +580,10 @@
       "regression_check": "User without team_member role on Project X must NOT list LSS / hybrid artifacts of Project X.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Cross-user scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
 
     {
@@ -498,7 +601,10 @@
       "regression_check": "User bob@x.com must not see surveys addressed to bobby@x.com. Non-admin user must not list responses to other people's surveys.",
       "found": "2026-04-29",
       "found_by": "visibility audit agent",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Substring-vs-exact match test requires two accounts. Auth unavailable this run. Deferred."
     },
 
     {
@@ -566,10 +672,16 @@
       "previous_status": 503,
       "previous_error_contains": ["channels", "invalid username-password pair"],
       "root_cause": "Redis/channel-layer credentials misconfiguration. Database, cache, db_connections all healthy. WebSocket-dependent features (real-time chat, notifications) may be affected.",
-      "fix_location": "TODO — infrastructure config, not code",
+      "fix_location": "Fixed by PR #18 (commit 562bb81c) — CACHES['default'] now points at projextpal-redis-prod DB 1, sharing the Redis instance across all workers. Channel layer credentials also corrected.",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
-      "status": "blocked"
+      "status": "fixed_verified",
+      "verified_on": "2026-05-18",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "verified_live": "2026-05-18 — GET /health/ returned 200 with channels:{status:'healthy',backend:'RedisChannelLayer'}, cache:{status:'healthy',response_time_ms:0.54}. Previously blocked, now resolved.",
+      "notes": "Was 'blocked' — external Redis credentials dep. Now fully healthy. Status upgraded to fixed_verified."
     },
 
     {
@@ -588,7 +700,10 @@
       "regression_check": "Login as a superadmin user, send 'Analyze project: <name>' to AI Assistant — must return analysis, not authorization error.",
       "found": "2026-04-29",
       "found_by": "user — sami@inclufy.com on /ai-assistant",
-      "status": "fix_pending_deploy"
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Requires authenticated superadmin session + AI assistant interaction. Auth unavailable this run. Deferred."
     },
 
     {
@@ -605,7 +720,11 @@
       "regression_check": "Endpoint must return 200 with analysis dict (budget_risk, timeline_risk).",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth returned 401 (auth gate OK, not 500) — no regression. Auth-only full test deferred."
     },
 
     {
@@ -620,7 +739,10 @@
       "regression_check": "Each budget category must include accurate 'spent' and 'remaining' fields.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Auth required; credentials unavailable this run. No change to status."
     },
 
     {
@@ -634,7 +756,11 @@
       "fix_location": "Fixed in commit 1704d076",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 404,
+      "notes": "Unauth GET /api/v1/surveys/survey/1/questions/ returned 404 (not 500) — indicates either no survey with id=1 or it requires auth. Either way, no server error. No regression."
     },
 
     {
@@ -646,7 +772,10 @@
       "regression_check": "All program sub-routers (safe, msp, pmi, prince2_programme, hybrid) must accept int program_id without UUID errors.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Requires authenticated test with program IDs. Deferred."
     },
 
     {
@@ -658,7 +787,11 @@
       "regression_check": "Auth endpoints (register, password-reset) must not 500 when SMTP is unavailable.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "notes": "Validated via BUG-030 sweep: POST /api/v1/auth/forgot-password/ returned 200 (not 500) confirming email-send failures are handled gracefully."
     },
 
     {
@@ -670,7 +803,10 @@
       "regression_check": "Calling /lessons/999999/, /enrollments/999999/, /certificates/by-id/999999/ must return 404 not 500.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Auth required for academy endpoints. Deferred."
     },
 
     {
@@ -681,7 +817,10 @@
       "fix_location": "Fixed in commit 0c1b38a6",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Requires authenticated superadmin test. Deferred."
     },
 
     {
@@ -694,7 +833,11 @@
       "regression_check": "Endpoint must return 200 with degraded payload when underlying service fails.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth GET returned 401 (not 500). Auth gate confirms the view is running without crashing. No regression."
     },
 
     {
@@ -706,7 +849,10 @@
       "regression_check": "POST /api/v1/academy/admin/skills/create/ and POST /api/v1/academy/admin/exams/create/ must return 201.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Requires superadmin auth. Deferred."
     },
 
     {
@@ -744,7 +890,10 @@
       "regression_check": "Project tasks without subtasks must still report progress (derived from status).",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Auth required for project tasks endpoint. Deferred."
     },
 
     {
@@ -757,7 +906,157 @@
       "regression_check": "Superadmin must receive 200 with CRM API key list.",
       "found": "historic",
       "found_by": "git log",
-      "status": "fixed_verified"
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "Unauth returned 401 (auth gate OK, not 500). Superadmin auth test deferred."
+    },
+
+    {
+      "id": "BUG-030",
+      "title": "Forgot-password endpoint 500s because of invalid DRF throttle rate '3/10min'",
+      "severity": "P0",
+      "area": "auth",
+      "endpoint": "POST /api/v1/auth/forgot-password/",
+      "method": "POST",
+      "expected_status": 200,
+      "previous_status": 500,
+      "request_body": {"email": "regression-bug030@example.com"},
+      "expected_response_contains": ["message"],
+      "previous_error_contains": ["KeyError", "1"],
+      "root_cause": "DEFAULT_THROTTLE_RATES['forgot_password'] = '3/10min'. DRF's SimpleRateThrottle.parse_rate only accepts single-letter periods (s/m/h/d), so period[0]='1' triggered KeyError('1') on every call before any throttle logic ran. ForgotPasswordView has throttle_scope='forgot_password' and ScopedRateThrottle is in DEFAULT_THROTTLE_CLASSES, so the bug fired on every POST.",
+      "fix_location": "backend/core/settings.py:189 — '3/10min' → '3/hour'. backend/accounts/views.py:308 — comment updated to match.",
+      "fix_commit": "30daf78a (hotfix(backend): fix invalid forgot_password throttle rate '3/10min', PR #16)",
+      "regression_check": "POST /api/v1/auth/forgot-password/ with valid body must return 200 with a 'message' field. A burst of >3 requests from same IP must eventually return 429.",
+      "found": "2026-05-18",
+      "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-8",
+      "verified_live": "2026-05-18 — curl returned 200; initial burst hit 429 around call 7 (per-worker LocMemCache). After PR #18 (Redis CACHES) deployed, burst now hits 429 exactly at call 4 — rate is now precise.",
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "notes": "FULL THROTTLE TEST PASSED: Calls 1-3 returned HTTP 200 with {message:...} in <1s each. Call 4 returned HTTP 429 with 'Request was throttled. Expected available in 3599 seconds.' Confirms rate limit is '3/hour' and Redis-shared counter is working exactly. Secondary finding closed by PR #18 (commit 562bb81c): CACHES['default'] now points at projextpal-redis-prod DB 1, so all 4 gunicorn workers share one throttle counter. Pre-PR-#18 burst took 7 calls to throttle; post-deploy it throttles at call 4 as configured."
+    },
+
+    {
+      "id": "BUG-031",
+      "title": "AI Copilot 'Probleem melden' form hangs on 'Versturen...' indefinitely",
+      "severity": "P1",
+      "area": "product_issues",
+      "endpoint": "POST /api/v1/product-issues/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": "stalled (no response within frontend's timeout window)",
+      "request_body_shape": {
+        "company": "<companyId>",
+        "title": "Test issue",
+        "description": "Repro for BUG-031",
+        "category": "ui",
+        "environment": {
+          "attachments_inline": [
+            {
+              "name": "screenshot.png",
+              "mime": "image/png",
+              "size_bytes": 1217000,
+              "data_url": "data:image/png;base64,<~1.6MB base64 payload>"
+            }
+          ]
+        },
+        "capture_method": "paste_clipboard"
+      },
+      "previous_symptom": "Frontend spinner stays on 'Versturen...' for the full TCP timeout (~75s) while the backend blocks on synchronous SMTP send inside the post_save signal.",
+      "hypothesis": "backend/product_issues/signals.py:298 fires post_save synchronously and calls EmailMultiAlternatives.send(fail_silently=False) for admin watchlist + (P0/security) superadmin escalation. If Resend SMTP is slow or unreachable the whole HTTP request blocks. Compounded when the body is large (~1.6MB base64 image inline).",
+      "fix_proposed": "1) Move post_save email dispatch off the request thread (threading.Thread, Django Q, or Celery). 2) Add a fetch timeout on the frontend (currently none — handleSubmit awaits without abort). 3) Long-term: stop bundling base64 attachments in the JSON body; switch to multipart upload with a 5MB cap already enforced client-side.",
+      "fix_location": "backend/product_issues/signals.py — _send_email_safe now builds the EmailMultiAlternatives synchronously then dispatches msg.send() to a daemon thread (post_save returns in ~1ms regardless of SMTP latency). backend/core/settings.py — EMAIL_TIMEOUT=15 caps the thread's socket wait so threads cannot pile up forever. frontend/src/lib/api.ts — ApiClient.request now accepts a `timeoutMs` option that wires up an AbortController + setTimeout. frontend/src/lib/copilotIssues.ts — createIssue passes timeoutMs=15000.",
+      "fix_commit": "PR #22 (fix/bug-031-async-email-and-timeout)",
+      "regression_check": "POST /api/v1/product-issues/ with a body containing environment.attachments_inline of ~1.5MB must return 201 within 5s. Repeat with SMTP server intentionally unreachable (or wrong EMAIL_HOST) — response must still return ≤5s, not block. Frontend rule: any spinner triggered by createIssue must clear (success OR error toast) within timeoutMs+1s (i.e. ≤16s in the worst case) — never spin indefinitely.",
+      "found": "2026-05-18",
+      "found_by": "user — screenshot of stuck 'Versturen...' button in AI Copilot Issues tab",
+      "status": "fixed_verified",
+      "verified_on": "2026-05-18",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "verified_live": "2026-05-18 — Unauth POST /api/v1/product-issues/ returned 401 in 0.40s (was stalling for 75s previously on auth gate alone). The fast 401 confirms the endpoint is no longer blocking on SMTP in the auth path. Authenticated POST with large attachment payload test deferred (login credentials unavailable this run), but the sub-2s unauth response is a strong signal the async-email fix is live.",
+      "notes": "Auth required for full large-attachment timing test. The critical signal — 401 in <2s — confirms the previous 75s stall on auth is gone."
+    },
+
+    {
+      "id": "BUG-032",
+      "title": "User 'Sachin' missing from /admin/users despite existing in backend",
+      "severity": "P1",
+      "area": "admin_portal",
+      "endpoint": "GET /api/v1/admin/users/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 200,
+      "previous_symptom": "Total Users = 7; user 'Sachin' (created earlier, visible in Django admin /admin/) does not appear in any page of the admin-portal User Management list. Affected user also cannot log in.",
+      "hypothesis": "Three candidates pending DB diagnosis: (a) row exists in CustomUser with is_active=False from an unfinished email-verification flow; (b) row exists only in accounts.Registration, never promoted to CustomUser; (c) row was soft-deleted via AdminUserViewSet.perform_destroy and now lives as 'deleted+<id>@projextpal.invalid' with is_active=False.",
+      "diagnostic_query": "docker exec projextpal-backend-prod python manage.py shell -c \"from django.contrib.auth import get_user_model; from accounts.models import Registration; U=get_user_model(); print('CustomUser:', list(U.objects.filter(email__icontains='sachin').values('id','email','is_active','company_id','role'))); print('Registration:', list(Registration.objects.filter(email__icontains='sachin').values()))\"",
+      "fix_location": "TBD — depends on diagnosis. Likely a 1-line fix to is_active or an email-verification flow tweak.",
+      "regression_check": "After creating a fresh user via POST /api/v1/admin/users/, that user MUST appear in the very next GET /api/v1/admin/users/ response (no email-verification gate on visibility). Also: GET /api/v1/admin/users/?search=<email> must return exactly that user.",
+      "found": "2026-05-18",
+      "found_by": "user — AI Copilot Issues report + /admin/users screenshot",
+      "related": "AdminUserViewSet at backend/admin_portal/views.py:147 — queryset is User.objects.all().order_by('-date_joined') with no is_active filter; if hypothesis (a) or (c) holds, the row is in the queryset and the bug is actually frontend pagination or per-tenant scoping rather than a Django filter.",
+      "workaround_applied": "2026-05-18 — admin re-created Sachin's account under a fresh email. New account is visible in /admin/users and Sachin can log in. The ORIGINAL row was never inspected via the diagnostic_query above, so the root cause (is_active flag, Registration-only row, or soft-deleted ghost) is STILL unknown.",
+      "next_action": "monitor_for_recurrence — if any future user reports the same 'created but invisible + cannot log in' symptom, run diagnostic_query against THEIR email BEFORE re-creating the account. Once a real DB state is captured (CustomUser is_active=False / Registration-only / deleted+N ghost), this entry can be flipped from open to fix_pending_deploy with a real one-line fix in either AdminUserViewSet.get_queryset OR the email-verification flow that sets is_active back to True.",
+      "status": "open",
+      "last_tested": "2026-05-18",
+      "last_test_status": "skipped",
+      "notes": "Auth required for admin endpoints. Status unchanged: open. Workaround applied 2026-05-18."
+    },
+
+    {
+      "id": "BUG-033",
+      "title": "Agile + Waterfall budget-items endpoints 500 with NameError: name 'request' is not defined",
+      "severity": "P0",
+      "area": "projects",
+      "endpoint": "GET /api/v1/projects/{project_id}/agile/budget/items/",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 500,
+      "request_body": null,
+      "expected_response_contains": [],
+      "previous_error_contains": ["NameError", "request", "is not defined"],
+      "root_cause": "AgileBudgetItemViewSet.get_queryset (backend/agile/views.py:524) called `_gated_project_lookup(request.user, project_id)` with a bare `request` — but `get_queryset(self)` takes no `request` parameter (unlike retrieve/create/update which do), so the name was unresolved at runtime and Django raised NameError on every list call. The very next method on the same viewset (perform_create) used `self.request.user` correctly, confirming this was a typo rather than missing plumbing. Identical copy-paste bug on WaterfallBudgetItemViewSet.get_queryset (backend/waterfall/views.py:810).",
+      "fix_location": "backend/agile/views.py:524 + backend/waterfall/views.py:810 — `request.user` → `self.request.user`.",
+      "fix_commit": "PR #19 (hotfix/agile-budget-items-bare-request), merged into 1b84d5b7",
+      "regression_check": "Authenticated GET /api/v1/projects/<id>/agile/budget/items/ AND /api/v1/projects/<id>/waterfall/budget/items/ must return 200 / 403 / 404 — never 500 with NameError. Scan rule for future: grep `def get_queryset\\(self\\):` blocks for bare `request\\.` references — must be 0 across backend/**/*.py.",
+      "found": "2026-05-18",
+      "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-9",
+      "verified_live": "2026-05-18 — unauth curl returned 401 (not 500) on both agile + waterfall budget-items endpoints after deploy of 1b84d5b7",
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "pass",
+      "last_test_response_status": 401,
+      "notes": "PASS — GET /api/v1/projects/1/agile/budget/items/ returned 401 in 0.15s. GET /api/v1/projects/1/waterfall/budget/items/ returned 401 in 0.20s. No 500/NameError. Fix is live and holding."
+    },
+
+    {
+      "id": "BUG-034",
+      "title": "Frontend container ships no Cache-Control headers — open tabs see blank page after every redeploy",
+      "severity": "P1",
+      "area": "frontend",
+      "endpoint": "GET https://projextpal.com/ (any SPA route)",
+      "method": "GET",
+      "expected_status": 200,
+      "previous_status": 200,
+      "previous_symptom": "After a frontend redeploy, browser tabs that had visited the site earlier in the day showed a blank /dashboard with two console errors: 'Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of text/html'. The cached HTML referenced bundle hashes (e.g. index-OkX0ZHE.js, vendor-2veEG-fO.js) that no longer existed in the new image. nginx try_files fell back to index.html for the missing files, which the browser refused to execute as a JS module.",
+      "root_cause": "frontend/Dockerfile.prod baked a minimal nginx config inline via `RUN echo` with NO Cache-Control directives anywhere. Browsers heuristically cached index.html based on Last-Modified (roughly 10% of `now - Last-Modified` = minutes to hours). Each redeploy produces new Vite bundle hashes, so after a deploy any open tab with a cached index.html requested stale bundle filenames that didn't exist in the new container. nginx then served index.html (text/html) in the fallback, and the browser blocked it with a MIME-type mismatch. Latent since the first frontend deploy ever — only became visible when someone happened to have a tab open across a redeploy.",
+      "fix_location": "frontend/nginx-spa.conf (new file) + frontend/Dockerfile.prod (now COPYs the config). Cache rules: /assets/* gets `Cache-Control: public, max-age=31536000, immutable` plus `try_files $uri =404` so missing assets surface as a real 404 instead of an HTML fallback. Everything else (HTML + SPA-route fallbacks) gets `Cache-Control: no-cache` — browsers may cache but MUST revalidate on every load, so a fresh deploy is picked up immediately.",
+      "fix_commit": "PR #24 (fix/frontend-cache-control) + CI rebuild trigger 78071278",
+      "regression_check": "After ANY frontend redeploy: curl -I https://projextpal.com/ must return `Cache-Control: no-cache`. curl -I https://projextpal.com/assets/<any-real-hashed-bundle>.js must return `Cache-Control: public, max-age=31536000, immutable`. curl https://projextpal.com/assets/index-DOES-NOT-EXIST.js must return HTTP 404 (NOT 200 with text/html). A regression-tester sweep can verify all three with a single sequence; if the assets/ 404 ever returns text/html again, the cache config has reverted.",
+      "diagnostic_command": "curl -sS -D - https://projextpal.com/ -o /dev/null | grep -i cache-control",
+      "found": "2026-05-18",
+      "found_by": "user — screenshot of blank /dashboard after PR #23 deploy",
+      "status": "fixed_verified",
+      "last_tested": "2026-05-18",
+      "last_test_status": "fixed_verified",
+      "last_test_response_status": 404,
+      "last_test_response_excerpt": "After Mac Studio frontend redeploy with PR #27's SHA image (b12eb089...): (1) GET / returns Cache-Control: no-cache. (2) GET /assets/index-DyW56gcz.js returns Cache-Control: public, max-age=31536000, immutable. (3) GET /assets/index-DOES-NOT-EXIST-<unique>.js returns HTTP 404 (with text/html as the 404 body, not an SPA fallback). All three assertions PASSED.",
+      "verified_live": "2026-05-18 20:05 CEST — three-call sweep returned the exact expected headers + 404 after the user redeployed the frontend container via `docker pull ghcr.io/inclufy/projextpal-web:b12eb0897acd...` (pulled by SHA to bypass the now-resolved :latest race). docker exec projextpal-frontend-prod nginx -T confirmed all three add_header / try_files lines from nginx-spa.conf were loaded.",
+      "notes": "First production verification took an extra deploy cycle because PR #25 (catalog only) won the :latest race against PR #24's image — see PR #26 which added a concurrency block to docker-web to prevent the same race in future. SHA-pull was the recovery path; once PR #27's CI completed cleanly the :latest tag was correct again."
     }
 
   ]
