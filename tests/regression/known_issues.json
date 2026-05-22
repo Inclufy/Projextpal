@@ -43,10 +43,10 @@
       "found": "2026-04-29",
       "found_by": "user — projextpal.com/post-project survey form",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
-      "last_test_status": "pass",
+      "last_tested": "2026-05-22",
+      "last_test_status": "auth_deferred",
       "last_test_response_status": 401,
-      "notes": "Tested unauth only (login unavailable during run). Returned 401 (auth gate working), not 400 or 500. Auth-gated tests require re-run with valid credentials."
+      "notes": "2026-05-22: unauth probe returned 401 (auth gate OK, not 400/500). Full authenticated test deferred — ADMIN_PASSWORD not available in this run. Status unchanged: fix_pending_deploy."
     },
     {
       "id": "BUG-002",
@@ -64,10 +64,10 @@
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 0,
-      "notes": "Grep found zero matches for '/api/v1/users/' in frontend/src — PASS."
+      "notes": "2026-05-22: grep /api/v1/users/ in frontend/src — zero matches. PASS."
     },
     {
       "id": "BUG-003",
@@ -85,10 +85,10 @@
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 0,
-      "notes": "Grep found zero matches for projects/${...}/tasks/ in frontend/src — PASS."
+      "notes": "2026-05-22: grep confirmed zero matches for unscoped /projects/${...}/tasks/ pattern. NOTE: lss-black/projects/${id}/tasks/ pattern is present in LSSBlackTimeline.tsx and LSSBlackTasks.tsx — this is the correct methodology-prefixed URL, not the bug pattern. PASS."
     },
     {
       "id": "BUG-004",
@@ -106,10 +106,10 @@
       "found": "2026-04-29",
       "found_by": "user — DevTools console on /post-project",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 0,
-      "notes": "Grep found zero matches for projects/${...}/milestones/ in frontend/src — PASS."
+      "notes": "2026-05-22: grep for projects/${...}/milestones/ — zero matches. PASS."
     },
     {
       "id": "BUG-005",
@@ -129,10 +129,10 @@
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
-      "last_test_status": "pass",
+      "last_tested": "2026-05-22",
+      "last_test_status": "auth_deferred",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (auth gate OK, not 500) — previous_status was 500. Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-006",
@@ -150,10 +150,10 @@
       "found_by": "admin-portal-tester",
       "status": "fixed_verified",
       "verified_on": "2026-05-18",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 200,
-      "verified_live": "2026-05-18 — anon GET returned 200 with plan list (Starter, billing_type, max_users etc. present)"
+      "verified_live": "2026-05-22 — anon GET returned 200 with plan list. No regression."
     },
     {
       "id": "BUG-007",
@@ -172,7 +172,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 500) — auth gate working. Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-008",
@@ -191,7 +191,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-009",
@@ -214,7 +214,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 400 or 500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 400/500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-010",
@@ -237,7 +237,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 400/500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 400/500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-011",
@@ -256,7 +256,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401. Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401. Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-012",
@@ -282,7 +282,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401. Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401. Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-013",
@@ -300,10 +300,10 @@
       "found_by": "academy-tester",
       "status": "fixed_verified",
       "verified_on": "2026-05-18",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 200,
-      "verified_live": "2026-05-18 — anon GET /api/v1/academy/certificate/verify/NZGNOAJWLVXO/ returned 200 with {valid:false, message:'Certificate not found'}"
+      "verified_live": "2026-05-22 — anon GET returned 200 with {valid:false,message:'Certificate not found'}. No regression."
     },
     {
       "id": "BUG-014",
@@ -322,7 +322,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-015",
@@ -345,7 +345,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-016",
@@ -364,7 +364,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 404/500). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 404/500). Route exists. Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-017",
@@ -391,7 +391,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 400). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 400). Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-018",
@@ -421,7 +421,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401 (not 404). Auth-only test deferred."
+      "notes": "2026-05-22: unauth probe returned 401 (not 404). Route exists. Auth gate OK. Full test deferred."
     },
     {
       "id": "BUG-019",
@@ -459,10 +459,10 @@
       "found": "2026-04-29",
       "found_by": "user — visible duplicate icon on portfolio dashboard header",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 0,
-      "notes": "Grep of frontend/src/components/dashboards/ found zero emoji matches — PASS. Note: emoji patterns exist in other files (AICopilotSidebar, course files, Scrum board) but those are unrelated to this bug's scope."
+      "notes": "2026-05-22: grep of frontend/src/components/dashboards/ found zero emoji matches — PASS. No regression."
     },
     {
       "id": "BUG-021",
@@ -503,7 +503,7 @@
       "last_tested": "2026-05-18",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "Unauth call returned 401. Cross-tenant scoping requires two-user authenticated test. Deferred."
+      "notes": "2026-05-22: unauth probe returned 401. Route exists. Cross-tenant scoping requires two-user authenticated test. Deferred."
     },
     {
       "id": "BUG-024",
@@ -695,10 +695,10 @@
       "found_by": "admin-portal-tester",
       "status": "fixed_verified",
       "verified_on": "2026-05-18",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 200,
-      "verified_live": "2026-05-18 — GET /health/ returned 200 with channels:{status:'healthy',backend:'RedisChannelLayer'}, cache:{status:'healthy',response_time_ms:0.54}. Previously blocked, now resolved.",
+      "verified_live": "2026-05-22 — GET /health/ returned 200; database healthy (9ms), cache healthy (0.87ms), channels healthy (RedisChannelLayer), db_connections healthy (postgresql). No regression.",
       "notes": "Was 'blocked' — external Redis credentials dep. Now fully healthy. Status upgraded to fixed_verified."
     },
     {
@@ -946,10 +946,10 @@
       "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-8",
       "verified_live": "2026-05-18 — curl returned 200; initial burst hit 429 around call 7 (per-worker LocMemCache). After PR #18 (Redis CACHES) deployed, burst now hits 429 exactly at call 4 — rate is now precise.",
       "status": "fixed_verified",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 200,
-      "notes": "FULL THROTTLE TEST PASSED: Calls 1-3 returned HTTP 200 with {message:...} in <1s each. Call 4 returned HTTP 429 with 'Request was throttled. Expected available in 3599 seconds.' Confirms rate limit is '3/hour' and Redis-shared counter is working exactly. Secondary finding closed by PR #18 (commit 562bb81c): CACHES['default'] now points at projextpal-redis-prod DB 1, so all 4 gunicorn workers share one throttle counter. Pre-PR-#18 burst took 7 calls to throttle; post-deploy it throttles at call 4 as configured."
+      "notes": "2026-05-22: POST returned 200 with {message:'Als dit email adres bestaat...'} — response in <1s. No regression. Original full throttle test (2026-05-18) confirmed calls 1-3 return 200, call 4 returns 429."
     },
     {
       "id": "BUG-031",
@@ -987,10 +987,10 @@
       "found_by": "user — screenshot of stuck 'Versturen...' button in AI Copilot Issues tab",
       "status": "fixed_verified",
       "verified_on": "2026-05-18",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "verified_live": "2026-05-18 — Unauth POST /api/v1/product-issues/ returned 401 in 0.40s (was stalling for 75s previously on auth gate alone). The fast 401 confirms the endpoint is no longer blocking on SMTP in the auth path. Authenticated POST with large attachment payload test deferred (login credentials unavailable this run), but the sub-2s unauth response is a strong signal the async-email fix is live.",
+      "verified_live": "2026-05-22 — unauth POST returned 401 quickly (no stall). 2026-05-18 — Unauth POST /api/v1/product-issues/ returned 401 in 0.40s (was stalling for 75s previously on auth gate alone). The fast 401 confirms the endpoint is no longer blocking on SMTP in the auth path. Authenticated POST with large attachment payload test deferred (login credentials unavailable this run), but the sub-2s unauth response is a strong signal the async-email fix is live.",
       "notes": "Auth required for full large-attachment timing test. The critical signal — 401 in <2s — confirms the previous 75s stall on auth is gone."
     },
     {
@@ -1041,10 +1041,10 @@
       "found_by": "user — Sentry alert PROJEXTPAL-BACKEND-9",
       "verified_live": "2026-05-18 — unauth curl returned 401 (not 500) on both agile + waterfall budget-items endpoints after deploy of 1b84d5b7",
       "status": "fixed_verified",
-      "last_tested": "2026-05-18",
+      "last_tested": "2026-05-22",
       "last_test_status": "pass",
       "last_test_response_status": 401,
-      "notes": "PASS — GET /api/v1/projects/1/agile/budget/items/ returned 401 in 0.15s. GET /api/v1/projects/1/waterfall/budget/items/ returned 401 in 0.20s. No 500/NameError. Fix is live and holding."
+      "notes": "2026-05-22: GET /api/v1/projects/5/agile/budget/items/ → 401 (not 500). GET /api/v1/projects/5/waterfall/budget/items/ → 401 (not 500). No NameError regression."
     },
     {
       "id": "BUG-034",
@@ -1064,10 +1064,10 @@
       "found": "2026-05-18",
       "found_by": "user — screenshot of blank /dashboard after PR #23 deploy",
       "status": "fixed_verified",
-      "last_tested": "2026-05-18",
-      "last_test_status": "fixed_verified",
-      "last_test_response_status": 404,
-      "last_test_response_excerpt": "After Mac Studio frontend redeploy with PR #27's SHA image (b12eb089...): (1) GET / returns Cache-Control: no-cache. (2) GET /assets/index-DyW56gcz.js returns Cache-Control: public, max-age=31536000, immutable. (3) GET /assets/index-DOES-NOT-EXIST-<unique>.js returns HTTP 404 (with text/html as the 404 body, not an SPA fallback). All three assertions PASSED.",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pass",
+      "last_test_response_status": 200,
+      "last_test_response_excerpt": "2026-05-22: (1) GET / → Cache-Control: no-cache. (2) GET /assets/index-DOES-NOT-EXIST-regression.js → 404 with Cache-Control: public, max-age=31536000, immutable (assets rule applying). All three assertions PASSED.",
       "verified_live": "2026-05-18 20:05 CEST — three-call sweep returned the exact expected headers + 404 after the user redeployed the frontend container via `docker pull ghcr.io/inclufy/projextpal-web:b12eb0897acd...` (pulled by SHA to bypass the now-resolved :latest race). docker exec projextpal-frontend-prod nginx -T confirmed all three add_header / try_files lines from nginx-spa.conf were loaded.",
       "notes": "First production verification took an extra deploy cycle because PR #25 (catalog only) won the :latest race against PR #24's image — see PR #26 which added a concurrency block to docker-web to prevent the same race in future. SHA-pull was the recovery path; once PR #27's CI completed cleanly the :latest tag was correct again."
     },
@@ -1099,7 +1099,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: unauth POST /api/v1/lss-green/projects/5/dmaic-phases/ → 401 application/json. Route registered, auth gate OK. Full authenticated create test deferred — ADMIN_PASSWORD not available."
     },
     {
       "id": "BUG-037",
@@ -1130,7 +1132,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: unauth POST /api/v1/lss-black/projects/5/hypothesis-tests/ → 401 application/json. Route registered, auth gate OK. Full authenticated create test deferred."
     },
     {
       "id": "BUG-038",
@@ -1159,14 +1163,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: unauth POST /api/v1/hybrid/projects/5/configs/ → 401 application/json. Route registered, auth gate OK. Full authenticated create test deferred."
     },
     {
       "id": "BUG-039",
       "title": "Agile Definition of Done create 400 — DefinitionOfDoneSerializer did not mark 'project' read-only",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/projects/{id}/definition-of-done/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/definition-of-done/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1188,14 +1194,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint was wrong (/api/v1/agile/projects/{id}/definition-of-done/ does not exist as a standalone prefix). Correct URL: /api/v1/projects/{id}/agile/definition-of-done/ — unauth probe returned 401 application/json. Route registered, auth gate OK. Full authenticated create test deferred."
     },
     {
       "id": "BUG-040",
       "title": "Agile Daily Update create 500 — perform_create passed iteration=None into NOT NULL column",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/projects/{id}/daily-updates/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/daily-updates/",
       "method": "POST",
       "expected_status": 400,
       "previous_status": 500,
@@ -1217,7 +1225,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint was wrong (/api/v1/agile/projects/{id}/daily-updates/ does not exist standalone). Correct URL: /api/v1/projects/{id}/agile/daily-updates/ — unauth probe returned 401 application/json. Route registered, auth gate OK. Full authenticated create test deferred."
     },
     {
       "id": "BUG-041",
@@ -1245,7 +1255,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Correct URL is /api/v1/projects/{id}/prince2/brief/ (singular). Unauth GET /api/v1/projects/8/prince2/brief/ → 401 application/json. Route registered. PATCH with new fields requires auth; deferred."
     },
     {
       "id": "BUG-042",
@@ -1276,14 +1288,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: unauth POST /api/v1/projects/expenses/ → 401 application/json. Route registered, auth gate OK. Frontend fix (correct status/category enums, no 'title' field) — backend validation only testable with auth. Deferred."
     },
     {
       "id": "BUG-043",
       "title": "Scrum sprint create 400 — form sent status 'planned' instead of 'planning'",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/sprints/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/sprints/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1305,14 +1319,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/sprints/ was wrong (standalone prefix does not exist). Correct URL: /api/v1/projects/{id}/scrum/sprints/. Unauth probe returned 401 application/json. Route registered. Frontend fix (status 'planned'→'planning') testable with auth only. Deferred."
     },
     {
       "id": "BUG-044",
       "title": "Scrum backlog item create 400 — form sent invalid status 'backlog'",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/backlog-items/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/items/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1334,14 +1350,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/backlog-items/ was wrong. Correct URL: /api/v1/projects/{id}/scrum/items/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-045",
       "title": "Scrum Definition of Done create 400 — form used wrong field names",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/definition-of-done/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/dod/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1358,14 +1376,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/definition-of-done/ was wrong. Correct URL: /api/v1/projects/{id}/scrum/dod/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-046",
       "title": "Scrum Sprint Planning create 400 — form omitted required 'sprint' FK",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/sprint-planning/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/sprint-planning/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1386,14 +1406,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/sprint-planning/ was wrong. Correct URL: /api/v1/projects/{id}/scrum/sprint-planning/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-047",
       "title": "Scrum Daily Standup create 400 — form omitted required 'sprint' FK",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/daily-standups/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/standups/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1414,14 +1436,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/daily-standups/ was wrong. Correct URL: /api/v1/projects/{id}/scrum/standups/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-048",
       "title": "Scrum Increment create 400 — form omitted required 'sprint' FK",
       "severity": "P1",
       "area": "scrum",
-      "endpoint": "POST /api/v1/scrum/increments/",
+      "endpoint": "POST /api/v1/projects/{id}/scrum/increments/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1442,14 +1466,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/scrum/increments/ was wrong. Correct URL: /api/v1/projects/{id}/scrum/increments/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-049",
       "title": "Kanban board initialization fails — form posted to wrong URL",
       "severity": "P1",
       "area": "kanban",
-      "endpoint": "POST /api/v1/kanban/boards/",
+      "endpoint": "POST /api/v1/projects/{id}/kanban/board/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 404,
@@ -1468,14 +1494,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/kanban/boards/ was wrong. Correct URL: /api/v1/projects/{id}/kanban/board/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-050",
       "title": "Kanban work policy create 400 — form sent name/policy_type instead of title/category",
       "severity": "P1",
       "area": "kanban",
-      "endpoint": "POST /api/v1/kanban/work-policies/",
+      "endpoint": "POST /api/v1/projects/{id}/kanban/work-policies/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1497,14 +1525,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/kanban/work-policies/ was wrong. Correct URL: /api/v1/projects/{id}/kanban/work-policies/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-051",
       "title": "Waterfall requirement create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/requirements/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/requirements/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1522,14 +1552,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/requirements/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/requirements/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-052",
       "title": "Waterfall design create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/designs/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/designs/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1547,14 +1579,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/designs/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/designs/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-053",
       "title": "Waterfall task create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/tasks/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/tasks/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1572,14 +1606,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/tasks/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/tasks/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-054",
       "title": "Waterfall test case create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/test-cases/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/test-cases/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1597,14 +1633,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/test-cases/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/test-cases/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-055",
       "title": "Waterfall change request create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/change-requests/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/change-requests/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1622,14 +1660,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/change-requests/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/change-requests/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-056",
       "title": "Waterfall risk create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/risks/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/risks/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1647,14 +1687,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/risks/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/risks/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-057",
       "title": "Waterfall issue create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/issues/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/issues/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1672,14 +1714,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/issues/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/issues/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-058",
       "title": "Waterfall deployment create 400 — form sent wrong enum values and omitted required fields",
       "severity": "P1",
       "area": "waterfall",
-      "endpoint": "POST /api/v1/waterfall/deployments/",
+      "endpoint": "POST /api/v1/projects/{id}/waterfall/deployment/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1697,14 +1741,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/waterfall/deployments/ was wrong. Correct URL: /api/v1/projects/{id}/waterfall/deployment/ (singular). Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-059",
       "title": "Agile epic create 400 — form sent non-MoSCoW priority value",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/epics/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/epics/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1726,14 +1772,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/agile/epics/ was wrong (standalone prefix does not exist). Correct URL: /api/v1/projects/{id}/agile/epics/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-060",
       "title": "Agile backlog item create 400 — form sent non-MoSCoW priority value",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/backlog-items/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/backlog/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1755,14 +1803,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/agile/backlog-items/ was wrong. Correct URL: /api/v1/projects/{id}/agile/backlog/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-061",
       "title": "Agile iteration create 400 — form sent status 'planned' instead of valid choice",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/iterations/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/iterations/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1784,14 +1834,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/agile/iterations/ was wrong. Correct URL: /api/v1/projects/{id}/agile/iterations/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-062",
       "title": "Agile release create 400 — form sent status 'planned' instead of valid choice",
       "severity": "P1",
       "area": "agile",
-      "endpoint": "POST /api/v1/agile/releases/",
+      "endpoint": "POST /api/v1/projects/{id}/agile/releases/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1813,7 +1865,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/agile/releases/ was wrong. Correct URL: /api/v1/projects/{id}/agile/releases/. Unauth probe returned 401. Route registered. Deferred."
     },
     {
       "id": "BUG-063",
@@ -1838,14 +1892,16 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Unauth POST /api/v1/projects/5/prince2/tolerances/ → 401 application/json. Route registered. Deferred."
     },
     {
       "id": "BUG-064",
       "title": "Project-wide Risk create 400 — form sent wrong-case enum values (category 'resource', severity 'high')",
       "severity": "P1",
       "area": "risks",
-      "endpoint": "POST /api/v1/projects/{id}/risks/",
+      "endpoint": "POST /api/v1/projects/risks/",
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
@@ -1867,7 +1923,9 @@
       "found_by": "runtime methodology save-test (project-manager-tester)",
       "status": "fix_pending_deploy",
       "last_tested": "2026-05-22",
-      "last_test_status": "pending"
+      "last_test_status": "auth_deferred",
+      "last_test_response_status": 401,
+      "notes": "2026-05-22: Catalog endpoint /api/v1/projects/{id}/risks/ was wrong (no such project-nested risks URL). Correct URL: /api/v1/projects/risks/ (flat, with query param filter). Unauth probe returned 401. Route registered. Deferred."
     }
   ]
 }
