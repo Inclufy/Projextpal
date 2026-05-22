@@ -20,7 +20,7 @@ const Prince2Tolerances = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ tolerance_type: "time", planned_value: "", actual_value: "", deviation_percentage: "0", is_exceeded: false });
+  const [form, setForm] = useState({ tolerance_type: "time", description: "", plus_tolerance: "", minus_tolerance: "", current_status: "", is_exceeded: false });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -51,7 +51,7 @@ const Prince2Tolerances = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ tolerance_type: "time", planned_value: "", actual_value: "", deviation_percentage: "0", is_exceeded: false });
+    setForm({ tolerance_type: "time", description: "", plus_tolerance: "", minus_tolerance: "", current_status: "", is_exceeded: false });
     setDialogOpen(true);
   };
 
@@ -59,9 +59,10 @@ const Prince2Tolerances = () => {
     setEditing(t);
     setForm({
       tolerance_type: t.tolerance_type || "time",
-      planned_value: t.planned_value || "",
-      actual_value: t.actual_value || "",
-      deviation_percentage: String(t.deviation_percentage || 0),
+      description: t.description || "",
+      plus_tolerance: t.plus_tolerance || "",
+      minus_tolerance: t.minus_tolerance || "",
+      current_status: t.current_status || "",
       is_exceeded: t.is_exceeded || false,
     });
     setDialogOpen(true);
@@ -70,7 +71,7 @@ const Prince2Tolerances = () => {
   const handleSave = async () => {
     setSubmitting(true);
     try {
-      const body = { ...form, deviation_percentage: parseFloat(form.deviation_percentage) };
+      const body = { ...form };
       const url = editing ? `/api/v1/projects/${id}/prince2/tolerances/${editing.id}/` : `/api/v1/projects/${id}/prince2/tolerances/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -135,10 +136,10 @@ const Prince2Tolerances = () => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Planned")}:</span><span>{t.planned_value || "-"}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Actual")}:</span><span>{t.actual_value || "-"}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Deviation")}:</span>
-                      <span className={t.is_exceeded ? "text-red-600 font-bold" : ""}>{t.deviation_percentage || 0}%</span>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Plus Tolerance")}:</span><span>{t.plus_tolerance || "-"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Minus Tolerance")}:</span><span>{t.minus_tolerance || "-"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{pt("Current Status")}:</span>
+                      <span className={t.is_exceeded ? "text-red-600 font-bold" : ""}>{t.current_status || "-"}</span>
                     </div>
                   </div>
                   {t.is_exceeded && (
@@ -171,11 +172,12 @@ const Prince2Tolerances = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{pt("Planned")}</Label><Input value={form.planned_value} onChange={(e) => setForm({ ...form, planned_value: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{pt("Actual")}</Label><Input value={form.actual_value} onChange={(e) => setForm({ ...form, actual_value: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Plus Tolerance")}</Label><Input value={form.plus_tolerance} onChange={(e) => setForm({ ...form, plus_tolerance: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Minus Tolerance")}</Label><Input value={form.minus_tolerance} onChange={(e) => setForm({ ...form, minus_tolerance: e.target.value })} /></div>
             </div>
-            <div className="space-y-2"><Label>{pt("Deviation")} %</Label><Input type="number" value={form.deviation_percentage} onChange={(e) => setForm({ ...form, deviation_percentage: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Current Status")}</Label><Input value={form.current_status} onChange={(e) => setForm({ ...form, current_status: e.target.value })} /></div>
             <div className="flex items-center gap-2">
               <input type="checkbox" checked={form.is_exceeded} onChange={(e) => setForm({ ...form, is_exceeded: e.target.checked })} />
               <Label>Tolerance exceeded</Label>

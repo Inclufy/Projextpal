@@ -41,7 +41,7 @@ const ScrumSprintBoard = () => {
 
   const activeSprint = sprints.find(s => s.status === "active");
   const sprintItems = activeSprint ? items.filter(i => i.sprint === activeSprint.id) : [];
-  const columns = { todo: sprintItems.filter(i => i.status === "todo"), in_progress: sprintItems.filter(i => i.status === "in_progress"), done: sprintItems.filter(i => i.status === "done") };
+  const columns = { todo: sprintItems.filter(i => i.status === "new" || i.status === "ready"), in_progress: sprintItems.filter(i => i.status === "in_progress"), done: sprintItems.filter(i => i.status === "done") };
 
   const createSprint = async () => {
     if (!form.name) { toast.error(pt("Name is required")); return; }
@@ -87,7 +87,7 @@ const ScrumSprintBoard = () => {
           {sprints.map(s => (
             <div key={s.id} className="flex items-center gap-1">
               <Badge variant={s.status === "active" ? "default" : s.status === "completed" ? "secondary" : "outline"}>{s.name} ({s.status})</Badge>
-              {s.status === "planned" && <Button variant="ghost" size="sm" onClick={() => startSprint(s.id)} className="h-6 px-2"><Play className="h-3 w-3" /></Button>}
+              {s.status === "planning" && <Button variant="ghost" size="sm" onClick={() => startSprint(s.id)} className="h-6 px-2"><Play className="h-3 w-3" /></Button>}
               {s.status === "active" && <Button variant="ghost" size="sm" onClick={() => completeSprint(s.id)} className="h-6 px-2"><CheckCircle2 className="h-3 w-3" /></Button>}
             </div>
           ))}
@@ -107,7 +107,7 @@ const ScrumSprintBoard = () => {
                       <div className="flex items-center gap-2 mb-1"><Badge className={`text-xs ${typeColors[item.item_type] || ""}`}>{item.item_type}</Badge>{item.story_points && <Badge variant="outline" className="text-xs">{item.story_points}p</Badge>}</div>
                       <p className="text-sm font-medium">{item.title}</p>
                       <div className="flex gap-1 mt-2">
-                        {col !== "todo" && <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => updateItemStatus(item.id, col === "in_progress" ? "todo" : "in_progress")}>← Back</Button>}
+                        {col !== "todo" && <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => updateItemStatus(item.id, col === "in_progress" ? "new" : "in_progress")}>← Back</Button>}
                         {col !== "done" && <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => updateItemStatus(item.id, col === "todo" ? "in_progress" : "done")}>Next →</Button>}
                       </div>
                     </div>

@@ -8,6 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Users, MessageSquare, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,10 +16,11 @@ const ScrumDailyStandup = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [standups, setStandups] = useState<any[]>([]);
+  const [sprints, setSprints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ date: new Date().toISOString().split("T")[0], notes: "" });
+  const [form, setForm] = useState({ sprint: "", date: new Date().toISOString().split("T")[0], notes: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -26,8 +28,12 @@ const ScrumDailyStandup = () => {
 
   const fetchData = async () => {
     try {
-      const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { headers });
-      if (r.ok) { const d = await r.json(); setStandups(Array.isArray(d) ? d : d.results || []); }
+      const [stRes, spRes] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/scrum/standups/`, { headers }),
+        fetch(`/api/v1/projects/${id}/scrum/sprints/`, { headers }),
+      ]);
+      if (stRes.ok) { const d = await stRes.json(); setStandups(Array.isArray(d) ? d : d.results || []); }
+      if (spRes.ok) { const d = await spRes.json(); setSprints(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -35,9 +41,11 @@ const ScrumDailyStandup = () => {
   useEffect(() => { fetchData(); }, [id]);
 
   const handleCreate = async () => {
+    if (!form.sprint) { toast.error(pt("Sprint is required")); return; }
     setSubmitting(true);
     try {
-      const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) });
+      const body = { sprint: parseInt(form.sprint), date: form.date, notes: form.notes };
+      const r = await fetch(`/api/v1/projects/${id}/scrum/standups/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(body) });
       if (r.ok) { toast.success(pt("Created")); setDialogOpen(false); fetchData(); }
       else toast.error(pt("Create failed"));
     } catch { toast.error(pt("Create failed")); }
@@ -57,7 +65,7 @@ const ScrumDailyStandup = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><Users className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Daily Standup")}</h1><Badge variant="outline">{standups.length}</Badge></div>
-          <Button onClick={() => { setForm({ date: new Date().toISOString().split("T")[0], notes: "" }); setDialogOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Standup")}</Button>
+          <Button onClick={() => { setForm({ sprint: sprints.find(s => s.status === "active")?.id?.toString() || "", date: new Date().toISOString().split("T")[0], notes: "" }); setDialogOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Standup")}</Button>
         </div>
 
         {standups.length === 0 ? (
@@ -77,6 +85,7 @@ const ScrumDailyStandup = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent><DialogHeader><DialogTitle>{pt("New Standup")}</DialogTitle><DialogDescription>{pt("Add a new daily standup entry")}</DialogDescription></DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2"><Label>{pt("Sprint")} *</Label><Select value={form.sprint} onValueChange={(v) => setForm({ ...form, sprint: v })}><SelectTrigger><SelectValue placeholder={pt("Select a sprint")} /></SelectTrigger><SelectContent>{sprints.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Notes")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleCreate} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Create")}</Button></div>

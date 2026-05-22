@@ -21,7 +21,7 @@ const ScrumBacklog = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", item_type: "story", priority: "medium", story_points: "", acceptance_criteria: "" });
+  const [form, setForm] = useState({ title: "", description: "", item_type: "user_story", priority: "medium", story_points: "", acceptance_criteria: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,8 +41,8 @@ const ScrumBacklog = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", item_type: "story", priority: "medium", story_points: "", acceptance_criteria: "" }); setDialogOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title, description: item.description || "", item_type: item.item_type || "story", priority: item.priority || "medium", story_points: String(item.story_points || ""), acceptance_criteria: item.acceptance_criteria || "" }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", item_type: "user_story", priority: "medium", story_points: "", acceptance_criteria: "" }); setDialogOpen(true); };
+  const openEdit = (item: any) => { setEditing(item); setForm({ title: item.title, description: item.description || "", item_type: item.item_type || "user_story", priority: item.priority || "medium", story_points: String(item.story_points || ""), acceptance_criteria: item.acceptance_criteria || "" }); setDialogOpen(true); };
 
   const handleSave = async () => {
     if (!form.title) { toast.error(pt("Title is required")); return; }
@@ -118,7 +118,7 @@ const ScrumBacklog = () => {
                     {item.story_points && <Badge variant="outline" className="text-xs">{item.story_points} pts</Badge>}
                   </div>
                   <div className="flex items-center gap-1">
-                    {sprints.filter(s => s.status === "active" || s.status === "planned").length > 0 && (
+                    {sprints.filter(s => s.status === "active" || s.status === "planning").length > 0 && (
                       <Select onValueChange={(v) => assignToSprint(item.id, parseInt(v))}>
                         <SelectTrigger className="w-32 h-8 text-xs"><SelectValue placeholder="→ Sprint" /></SelectTrigger>
                         <SelectContent>{sprints.filter(s => s.status !== "completed").map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent>
@@ -147,7 +147,7 @@ const ScrumBacklog = () => {
                       <div className="flex items-center gap-2">
                         <Select value={item.status} onValueChange={(v) => updateStatus(item.id, v)}>
                           <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="todo">To Do</SelectItem><SelectItem value="in_progress">In Progress</SelectItem><SelectItem value="done">Done</SelectItem></SelectContent>
+                          <SelectContent><SelectItem value="new">New</SelectItem><SelectItem value="ready">Ready</SelectItem><SelectItem value="in_progress">In Progress</SelectItem><SelectItem value="done">Done</SelectItem><SelectItem value="removed">Removed</SelectItem></SelectContent>
                         </Select>
                         <Button variant="ghost" size="sm" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
                       </div>
@@ -166,7 +166,7 @@ const ScrumBacklog = () => {
             <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-2"><Label>Type</Label><Select value={form.item_type} onValueChange={(v) => setForm({ ...form, item_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="story">Story</SelectItem><SelectItem value="bug">Bug</SelectItem><SelectItem value="task">Task</SelectItem><SelectItem value="spike">Spike</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>Type</Label><Select value={form.item_type} onValueChange={(v) => setForm({ ...form, item_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="user_story">User Story</SelectItem><SelectItem value="bug">Bug</SelectItem><SelectItem value="task">Task</SelectItem><SelectItem value="spike">Spike</SelectItem><SelectItem value="epic">Epic</SelectItem></SelectContent></Select></div>
               <div className="space-y-2"><Label>{pt("Priority")}</Label><Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="critical">Critical</SelectItem></SelectContent></Select></div>
               <div className="space-y-2"><Label>Story Points</Label><Input type="number" value={form.story_points} onChange={(e) => setForm({ ...form, story_points: e.target.value })} /></div>
             </div>
