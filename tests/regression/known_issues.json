@@ -10,7 +10,6 @@
     "blocked": "Cannot fix without external dependency"
   },
   "issues": [
-
     {
       "id": "BUG-001",
       "title": "Survey creation 400 — nested QuestionSerializer requires survey FK",
@@ -20,9 +19,25 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
-      "request_body": {"name": "Test", "description": "", "questions": [{"text": "Q1", "question_type": "open_text", "required": true}]},
-      "expected_response_contains": ["id", "questions"],
-      "previous_error_contains": ["This field is required", "survey"],
+      "request_body": {
+        "name": "Test",
+        "description": "",
+        "questions": [
+          {
+            "text": "Q1",
+            "question_type": "open_text",
+            "required": true
+          }
+        ]
+      },
+      "expected_response_contains": [
+        "id",
+        "questions"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "survey"
+      ],
       "root_cause": "QuestionSerializer.Meta.fields included 'survey' as writable; DRF demanded it during nested validation even though create() sets it server-side.",
       "fix_location": "backend/surveys/serializers.py:18 — added read_only_fields = ['id', 'survey']",
       "found": "2026-04-29",
@@ -33,7 +48,6 @@
       "last_test_response_status": 401,
       "notes": "Tested unauth only (login unavailable during run). Returned 401 (auth gate working), not 400 or 500. Auth-gated tests require re-run with valid credentials."
     },
-
     {
       "id": "BUG-002",
       "title": "Frontend calls non-existent /api/v1/users/ → 404",
@@ -55,7 +69,6 @@
       "last_test_response_status": 0,
       "notes": "Grep found zero matches for '/api/v1/users/' in frontend/src — PASS."
     },
-
     {
       "id": "BUG-003",
       "title": "Frontend hits non-existent /api/v1/projects/{id}/tasks/ → 404",
@@ -77,7 +90,6 @@
       "last_test_response_status": 0,
       "notes": "Grep found zero matches for projects/${...}/tasks/ in frontend/src — PASS."
     },
-
     {
       "id": "BUG-004",
       "title": "Frontend hits non-existent /api/v1/projects/{id}/milestones/ → 404",
@@ -99,7 +111,6 @@
       "last_test_response_status": 0,
       "notes": "Grep found zero matches for projects/${...}/milestones/ in frontend/src — PASS."
     },
-
     {
       "id": "BUG-005",
       "title": "Invitation creation returns 500 — admin invite flow broken",
@@ -109,7 +120,10 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 500,
-      "request_body": {"email": "test+invite@example.com", "role": "contributor"},
+      "request_body": {
+        "email": "test+invite@example.com",
+        "role": "contributor"
+      },
       "root_cause": "TeamInvitation.token has unique=True; the view passed token='' on create, so the second invite ever raised IntegrityError. Email subject also crashed when neither project nor program was set (NoneType.name).",
       "fix_location": "backend/accounts/invitation_views.py — generate UUID placeholder token at create time, then overwrite with real token; coalesce missing project/program to company name; fail_silently=True on send_mail.",
       "found": "2026-04-29",
@@ -120,7 +134,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (auth gate OK, not 500) — previous_status was 500. Auth-only test deferred."
     },
-
     {
       "id": "BUG-006",
       "title": "Public pricing endpoint 500 — anon visitors can't load pricing page",
@@ -142,7 +155,6 @@
       "last_test_response_status": 200,
       "verified_live": "2026-05-18 — anon GET returned 200 with plan list (Starter, billing_type, max_users etc. present)"
     },
-
     {
       "id": "BUG-007",
       "title": "Biometric/passkey status crashes 500",
@@ -162,7 +174,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 500) — auth gate working. Auth-only test deferred."
     },
-
     {
       "id": "BUG-008",
       "title": "Biometric credentials list 500",
@@ -182,7 +193,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-009",
       "title": "MSP benefit POST rejects own program FK — wrong model in FK",
@@ -192,7 +202,10 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
-      "previous_error_contains": ["Invalid pk", "object does not exist"],
+      "previous_error_contains": [
+        "Invalid pk",
+        "object does not exist"
+      ],
       "root_cause": "MSPBenefit.program, MSPTranche.program, P2Blueprint.programme, P2ProgrammeProject.programme, HybridGovernanceConfig.programme, HybridAdaptation.programme — all 6 FKs pointed at projects.Project instead of programs.Program.",
       "fix_location": "backend/msp/models.py + backend/p2_programme/models.py + backend/hybrid_programme/models.py — all FKs corrected to programs.Program. Migrations: msp/0002_fix_program_fk, p2_programme/0002_fix_programme_fk, hybrid_programme/0002_fix_programme_fk.",
       "found": "2026-04-29",
@@ -203,7 +216,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 400 or 500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-010",
       "title": "Governance Meeting POST requires program FK that should be optional",
@@ -213,7 +225,10 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
-      "previous_error_contains": ["program", "This field is required"],
+      "previous_error_contains": [
+        "program",
+        "This field is required"
+      ],
       "root_cause": "governance.Meeting.program was non-nullable FK. Tenant-wide cross-program meetings were impossible.",
       "fix_location": "backend/governance/models.py — Meeting.program now null=True, blank=True. Migration: governance/0004_meeting_decision_program_nullable.",
       "found": "2026-04-29",
@@ -224,7 +239,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 400/500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-011",
       "title": "Governance Decision POST requires program FK that should be optional",
@@ -244,7 +258,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401. Auth-only test deferred."
     },
-
     {
       "id": "BUG-012",
       "title": "P2-Programme + Hybrid-Programme are dead routers — enum missing",
@@ -254,8 +267,13 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 400,
-      "request_body": {"methodology": "p2-programme", "name": "test"},
-      "previous_error_contains": ["not a valid choice"],
+      "request_body": {
+        "methodology": "p2-programme",
+        "name": "test"
+      },
+      "previous_error_contains": [
+        "not a valid choice"
+      ],
       "root_cause": "Program.METHODOLOGY_CHOICES had only safe/msp/pmi/prince2_programme/hybrid. The dedicated p2_programme/ and hybrid_programme/ routers were unreachable because no program could be created with those methodologies.",
       "fix_location": "backend/programs/models.py — added 'p2_programme' and 'hybrid_programme' to METHODOLOGY_CHOICES. Note: the URL routes still use the slug forms with hyphens; the frontend should map p2-programme ↔ p2_programme and hybrid-programme ↔ hybrid_programme when creating.",
       "found": "2026-04-29",
@@ -266,7 +284,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401. Auth-only test deferred."
     },
-
     {
       "id": "BUG-013",
       "title": "Certificate verify endpoint requires authentication — public verifier broken",
@@ -288,7 +305,6 @@
       "last_test_response_status": 200,
       "verified_live": "2026-05-18 — anon GET /api/v1/academy/certificate/verify/NZGNOAJWLVXO/ returned 200 with {valid:false, message:'Certificate not found'}"
     },
-
     {
       "id": "BUG-014",
       "title": "Practice submit 500 for assignments linked to a lesson",
@@ -308,7 +324,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-015",
       "title": "Simulation submit 500 when valid lesson_id is passed",
@@ -318,7 +333,10 @@
       "method": "POST",
       "expected_status": 200,
       "previous_status": 500,
-      "request_body": {"lesson_id": 165, "correct": true},
+      "request_body": {
+        "lesson_id": 165,
+        "correct": true
+      },
       "root_cause": "Same skill_mappings AttributeError as BUG-014, at practice_simulation_api.py:136. Triggered when lesson_id is set + correct=True.",
       "fix_location": "backend/academy/practice_simulation_api.py — fixed together with BUG-014 using direct LessonSkillMapping.filter(lesson_id=str(lesson.id)).",
       "found": "2026-04-29",
@@ -329,7 +347,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-016",
       "title": "lss-black missing dmaic-phases route → 404",
@@ -349,7 +366,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 404/500). Auth-only test deferred."
     },
-
     {
       "id": "BUG-017",
       "title": "academy/ai/generate-practice expects camelCase lessonTitle (schema inconsistency)",
@@ -359,8 +375,14 @@
       "method": "POST",
       "expected_status": 200,
       "previous_status": 400,
-      "request_body": {"lesson_id": 1, "course_id": 1, "topic": "test"},
-      "previous_error_contains": ["lessonTitle is required"],
+      "request_body": {
+        "lesson_id": 1,
+        "course_id": 1,
+        "topic": "test"
+      },
+      "previous_error_contains": [
+        "lessonTitle is required"
+      ],
       "root_cause": "generate-practice required lessonTitle (camelCase) while all other generate-* endpoints used snake_case. Frontend had to pass lessonTitle — inconsistent.",
       "fix_location": "backend/academy/ai_views.py — ai_generate_practice now accepts either lessonTitle/courseTitle/lessonContent (camelCase) or lesson_title/course_title/lesson_content (snake_case).",
       "found": "2026-04-29",
@@ -371,7 +393,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 400). Auth-only test deferred."
     },
-
     {
       "id": "BUG-018",
       "title": "Program team-assign endpoint missing — POST /api/v1/programs/{id}/team/add/ → 404",
@@ -381,8 +402,16 @@
       "method": "POST",
       "expected_status": 201,
       "previous_status": 404,
-      "request_body": {"user_id": 1, "role": "Project Manager"},
-      "expected_response_contains": ["id", "user_id", "user_name", "role"],
+      "request_body": {
+        "user_id": 1,
+        "role": "Project Manager"
+      },
+      "expected_response_contains": [
+        "id",
+        "user_id",
+        "user_name",
+        "role"
+      ],
       "root_cause": "ProgramViewSet had no team/add @action; the frontend Team page assumed parity with the project-level endpoint. There was also no ProgramTeam model.",
       "fix_location": "backend/programs/models.py — added ProgramTeam model; backend/programs/migrations/0004_programteam.py; backend/programs/serializers.py — added ProgramTeamSerializer; backend/programs/views.py — added get_team, add_team_member, remove_team_member actions on ProgramViewSet.",
       "regression_check": "POST with valid user_id returns 201 with team member object. GET /api/v1/programs/{id}/team/ returns the member list. DELETE /api/v1/programs/{id}/team/remove/{member_id}/ returns 204.",
@@ -394,7 +423,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401 (not 404). Auth-only test deferred."
     },
-
     {
       "id": "BUG-019",
       "title": "Role-based feature gates ignore user role — PM/program_manager locked out of their core features on free plan",
@@ -415,7 +443,6 @@
       "last_test_status": "skipped",
       "notes": "Client-side gate; requires authenticated browser session to verify. Deferred."
     },
-
     {
       "id": "BUG-020",
       "title": "Duplicate icon on dashboard headers — Sparkles + emoji rendered together",
@@ -437,7 +464,6 @@
       "last_test_response_status": 0,
       "notes": "Grep of frontend/src/components/dashboards/ found zero emoji matches — PASS. Note: emoji patterns exist in other files (AICopilotSidebar, course files, Scrum board) but those are unrelated to this bug's scope."
     },
-
     {
       "id": "BUG-021",
       "title": "Recommended Courses widget routes to /academy filter instead of specific course",
@@ -458,7 +484,6 @@
       "last_test_status": "skipped",
       "notes": "UI navigation test requires authenticated browser session. Deferred."
     },
-
     {
       "id": "BUG-023",
       "title": "P0 cross-tenant leak — governance viewsets returned global rows",
@@ -480,7 +505,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth call returned 401. Cross-tenant scoping requires two-user authenticated test. Deferred."
     },
-
     {
       "id": "BUG-024",
       "title": "P0 cross-tenant leak — Waterfall + Agile project mixins lacked company filter",
@@ -501,7 +525,6 @@
       "last_test_status": "skipped",
       "notes": "Cross-tenant test requires two-account setup. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "BUG-025",
       "title": "P1 intra-tenant leak — Tasks/Milestones/Subtasks/Expenses/etc only company-scoped",
@@ -522,7 +545,6 @@
       "last_test_status": "skipped",
       "notes": "Intra-tenant scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "BUG-026",
       "title": "P1 intra-tenant leak — ProgramViewSet returned all programs in company",
@@ -543,7 +565,6 @@
       "last_test_status": "skipped",
       "notes": "Intra-tenant scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "BUG-027",
       "title": "P2 methodology leak — Scrum/Kanban/PRINCE2 ProjectFilterMixin company-only",
@@ -564,7 +585,6 @@
       "last_test_status": "skipped",
       "notes": "Cross-user scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "BUG-028",
       "title": "P2 methodology leak — LSS Green/Black/Hybrid _verify_project_access company-only",
@@ -585,7 +605,6 @@
       "last_test_status": "skipped",
       "notes": "Cross-user scoping test requires two-account setup. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "BUG-029",
       "title": "P3 leak — Survey recipient match used substring; SurveyResponse leaked to whole tenant",
@@ -606,7 +625,6 @@
       "last_test_status": "skipped",
       "notes": "Substring-vs-exact match test requires two accounts. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "FEAT-001",
       "title": "Finance app — Vendor + Invoice + cost rollup + bulk import",
@@ -624,7 +642,6 @@
       "found_by": "user request",
       "status": "fix_pending_deploy"
     },
-
     {
       "id": "FEAT-002",
       "title": "Inclufy Finance ↔ ProjeXtPal integration — pull-sync + webhook + push-back",
@@ -642,7 +659,6 @@
       "found_by": "user request",
       "status": "fix_pending_deploy"
     },
-
     {
       "id": "FEAT-003",
       "title": "Methodology parity — LSS Green/Black + Hybrid now have planning dates + per-task assignment",
@@ -660,7 +676,6 @@
       "found_by": "user request — methodology parity",
       "status": "fix_pending_deploy"
     },
-
     {
       "id": "INFRA-001",
       "title": "Health endpoint reports 503 — channels (Redis) credentials misconfigured",
@@ -670,7 +685,10 @@
       "method": "GET",
       "expected_status": 200,
       "previous_status": 503,
-      "previous_error_contains": ["channels", "invalid username-password pair"],
+      "previous_error_contains": [
+        "channels",
+        "invalid username-password pair"
+      ],
       "root_cause": "Redis/channel-layer credentials misconfiguration. Database, cache, db_connections all healthy. WebSocket-dependent features (real-time chat, notifications) may be affected.",
       "fix_location": "Fixed by PR #18 (commit 562bb81c) — CACHES['default'] now points at projextpal-redis-prod DB 1, sharing the Redis instance across all workers. Channel layer credentials also corrected.",
       "found": "2026-04-29",
@@ -683,7 +701,6 @@
       "verified_live": "2026-05-18 — GET /health/ returned 200 with channels:{status:'healthy',backend:'RedisChannelLayer'}, cache:{status:'healthy',response_time_ms:0.54}. Previously blocked, now resolved.",
       "notes": "Was 'blocked' — external Redis credentials dep. Now fully healthy. Status upgraded to fixed_verified."
     },
-
     {
       "id": "BUG-022",
       "title": "AI Assistant 'analyze project' tool denies superadmin — bot tool role list missing superadmin",
@@ -694,7 +711,10 @@
       "expected_status": 200,
       "previous_status": 200,
       "expected_behavior": "Superadmin must be able to call any bot tool. The analyze_project_summary tool restricted allowed_roles to ['admin','pm','team_member'] — dropping superadmin.",
-      "previous_error_contains": ["necessary authorization", "not authorized"],
+      "previous_error_contains": [
+        "necessary authorization",
+        "not authorized"
+      ],
       "root_cause": "backend/bot/ai/tools/project_analysis_tools.py:936 hardcoded allowed_roles=['admin','pm','team_member']. check_user_permission has no superadmin bypass, so superadmin role was rejected. Other tools correctly include 'superadmin' in their list — this one was the outlier.",
       "fix_location": "backend/bot/ai/utils/permissions.py — added blanket superadmin/is_superuser bypass at the top of check_user_permission. backend/bot/ai/tools/project_analysis_tools.py:936 — added 'superadmin' to allowed_roles list for consistency.",
       "regression_check": "Login as a superadmin user, send 'Analyze project: <name>' to AI Assistant — must return analysis, not authorization error.",
@@ -705,7 +725,6 @@
       "last_test_status": "skipped",
       "notes": "Requires authenticated superadmin session + AI assistant interaction. Auth unavailable this run. Deferred."
     },
-
     {
       "id": "HISTORIC-001",
       "title": "ai-insights 500 on Decimal*float TypeError",
@@ -726,7 +745,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth returned 401 (auth gate OK, not 500) — no regression. Auth-only full test deferred."
     },
-
     {
       "id": "HISTORIC-002",
       "title": "BudgetCategory spent/remaining computation incorrect",
@@ -744,7 +762,6 @@
       "last_test_status": "skipped",
       "notes": "Auth required; credentials unavailable this run. No change to status."
     },
-
     {
       "id": "HISTORIC-003",
       "title": "Surveys questions endpoint returned 500",
@@ -762,7 +779,6 @@
       "last_test_response_status": 404,
       "notes": "Unauth GET /api/v1/surveys/survey/1/questions/ returned 404 (not 500) — indicates either no survey with id=1 or it requires auth. Either way, no server error. No regression."
     },
-
     {
       "id": "HISTORIC-004",
       "title": "PRINCE2 / programs / governance UUID-vs-int route mismatch on 3 routers",
@@ -777,7 +793,6 @@
       "last_test_status": "skipped",
       "notes": "Requires authenticated test with program IDs. Deferred."
     },
-
     {
       "id": "HISTORIC-005",
       "title": "Email-send failures returned 500 on auth endpoints",
@@ -793,7 +808,6 @@
       "last_test_response_status": 200,
       "notes": "Validated via BUG-030 sweep: POST /api/v1/auth/forgot-password/ returned 200 (not 500) confirming email-send failures are handled gracefully."
     },
-
     {
       "id": "HISTORIC-006",
       "title": "Academy 500→404 when lesson/enrollment/certificate not found",
@@ -808,7 +822,6 @@
       "last_test_status": "skipped",
       "notes": "Auth required for academy endpoints. Deferred."
     },
-
     {
       "id": "HISTORIC-007",
       "title": "Academy AI course generation crashed without default category",
@@ -822,7 +835,6 @@
       "last_test_status": "skipped",
       "notes": "Requires authenticated superadmin test. Deferred."
     },
-
     {
       "id": "HISTORIC-008",
       "title": "Onboarding /api/v1/onboarding/status/ returned bare 500",
@@ -839,7 +851,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth GET returned 401 (not 500). Auth gate confirms the view is running without crashing. No regression."
     },
-
     {
       "id": "HISTORIC-009",
       "title": "Academy admin skill + exam create 500s",
@@ -854,7 +865,6 @@
       "last_test_status": "skipped",
       "notes": "Requires superadmin auth. Deferred."
     },
-
     {
       "id": "HISTORIC-010",
       "title": "PATCH /api/v1/auth/user/ returned 405 — profile edits rejected",
@@ -868,7 +878,6 @@
       "found_by": "git log",
       "status": "wontfix"
     },
-
     {
       "id": "HISTORIC-011",
       "title": "Mobile-breaking COURSE_MODULES + LESSONS nested 404s",
@@ -880,7 +889,6 @@
       "found_by": "git log",
       "status": "blocked"
     },
-
     {
       "id": "HISTORIC-012",
       "title": "Task progress field empty when project has no subtasks",
@@ -895,7 +903,6 @@
       "last_test_status": "skipped",
       "notes": "Auth required for project tasks endpoint. Deferred."
     },
-
     {
       "id": "HISTORIC-013",
       "title": "CRM API keys not accessible to superadmin",
@@ -912,7 +919,6 @@
       "last_test_response_status": 401,
       "notes": "Unauth returned 401 (auth gate OK, not 500). Superadmin auth test deferred."
     },
-
     {
       "id": "BUG-030",
       "title": "Forgot-password endpoint 500s because of invalid DRF throttle rate '3/10min'",
@@ -922,9 +928,16 @@
       "method": "POST",
       "expected_status": 200,
       "previous_status": 500,
-      "request_body": {"email": "regression-bug030@example.com"},
-      "expected_response_contains": ["message"],
-      "previous_error_contains": ["KeyError", "1"],
+      "request_body": {
+        "email": "regression-bug030@example.com"
+      },
+      "expected_response_contains": [
+        "message"
+      ],
+      "previous_error_contains": [
+        "KeyError",
+        "1"
+      ],
       "root_cause": "DEFAULT_THROTTLE_RATES['forgot_password'] = '3/10min'. DRF's SimpleRateThrottle.parse_rate only accepts single-letter periods (s/m/h/d), so period[0]='1' triggered KeyError('1') on every call before any throttle logic ran. ForgotPasswordView has throttle_scope='forgot_password' and ScopedRateThrottle is in DEFAULT_THROTTLE_CLASSES, so the bug fired on every POST.",
       "fix_location": "backend/core/settings.py:189 — '3/10min' → '3/hour'. backend/accounts/views.py:308 — comment updated to match.",
       "fix_commit": "30daf78a (hotfix(backend): fix invalid forgot_password throttle rate '3/10min', PR #16)",
@@ -938,7 +951,6 @@
       "last_test_response_status": 200,
       "notes": "FULL THROTTLE TEST PASSED: Calls 1-3 returned HTTP 200 with {message:...} in <1s each. Call 4 returned HTTP 429 with 'Request was throttled. Expected available in 3599 seconds.' Confirms rate limit is '3/hour' and Redis-shared counter is working exactly. Secondary finding closed by PR #18 (commit 562bb81c): CACHES['default'] now points at projextpal-redis-prod DB 1, so all 4 gunicorn workers share one throttle counter. Pre-PR-#18 burst took 7 calls to throttle; post-deploy it throttles at call 4 as configured."
     },
-
     {
       "id": "BUG-031",
       "title": "AI Copilot 'Probleem melden' form hangs on 'Versturen...' indefinitely",
@@ -981,7 +993,6 @@
       "verified_live": "2026-05-18 — Unauth POST /api/v1/product-issues/ returned 401 in 0.40s (was stalling for 75s previously on auth gate alone). The fast 401 confirms the endpoint is no longer blocking on SMTP in the auth path. Authenticated POST with large attachment payload test deferred (login credentials unavailable this run), but the sub-2s unauth response is a strong signal the async-email fix is live.",
       "notes": "Auth required for full large-attachment timing test. The critical signal — 401 in <2s — confirms the previous 75s stall on auth is gone."
     },
-
     {
       "id": "BUG-032",
       "title": "User 'Sachin' missing from /admin/users despite existing in backend",
@@ -1006,7 +1017,6 @@
       "last_test_status": "skipped",
       "notes": "Auth required for admin endpoints. Status unchanged: open. Workaround applied 2026-05-18."
     },
-
     {
       "id": "BUG-033",
       "title": "Agile + Waterfall budget-items endpoints 500 with NameError: name 'request' is not defined",
@@ -1018,7 +1028,11 @@
       "previous_status": 500,
       "request_body": null,
       "expected_response_contains": [],
-      "previous_error_contains": ["NameError", "request", "is not defined"],
+      "previous_error_contains": [
+        "NameError",
+        "request",
+        "is not defined"
+      ],
       "root_cause": "AgileBudgetItemViewSet.get_queryset (backend/agile/views.py:524) called `_gated_project_lookup(request.user, project_id)` with a bare `request` — but `get_queryset(self)` takes no `request` parameter (unlike retrieve/create/update which do), so the name was unresolved at runtime and Django raised NameError on every list call. The very next method on the same viewset (perform_create) used `self.request.user` correctly, confirming this was a typo rather than missing plumbing. Identical copy-paste bug on WaterfallBudgetItemViewSet.get_queryset (backend/waterfall/views.py:810).",
       "fix_location": "backend/agile/views.py:524 + backend/waterfall/views.py:810 — `request.user` → `self.request.user`.",
       "fix_commit": "PR #19 (hotfix/agile-budget-items-bare-request), merged into 1b84d5b7",
@@ -1032,7 +1046,6 @@
       "last_test_response_status": 401,
       "notes": "PASS — GET /api/v1/projects/1/agile/budget/items/ returned 401 in 0.15s. GET /api/v1/projects/1/waterfall/budget/items/ returned 401 in 0.20s. No 500/NameError. Fix is live and holding."
     },
-
     {
       "id": "BUG-034",
       "title": "Frontend container ships no Cache-Control headers — open tabs see blank page after every redeploy",
@@ -1057,7 +1070,804 @@
       "last_test_response_excerpt": "After Mac Studio frontend redeploy with PR #27's SHA image (b12eb089...): (1) GET / returns Cache-Control: no-cache. (2) GET /assets/index-DyW56gcz.js returns Cache-Control: public, max-age=31536000, immutable. (3) GET /assets/index-DOES-NOT-EXIST-<unique>.js returns HTTP 404 (with text/html as the 404 body, not an SPA fallback). All three assertions PASSED.",
       "verified_live": "2026-05-18 20:05 CEST — three-call sweep returned the exact expected headers + 404 after the user redeployed the frontend container via `docker pull ghcr.io/inclufy/projextpal-web:b12eb0897acd...` (pulled by SHA to bypass the now-resolved :latest race). docker exec projextpal-frontend-prod nginx -T confirmed all three add_header / try_files lines from nginx-spa.conf were loaded.",
       "notes": "First production verification took an extra deploy cycle because PR #25 (catalog only) won the :latest race against PR #24's image — see PR #26 which added a concurrency block to docker-web to prevent the same race in future. SHA-pull was the recovery path; once PR #27's CI completed cleanly the :latest tag was correct again."
+    },
+    {
+      "id": "BUG-036",
+      "title": "LSS-Green DMAIC phase / metric / measurement creates 400 — serializers did not mark 'project' read-only",
+      "severity": "P1",
+      "area": "lss-green",
+      "endpoint": "POST /api/v1/lss-green/projects/{id}/dmaic-phases/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "phase": "define",
+        "status": "in_progress",
+        "notes": "Test phase"
+      },
+      "expected_response_contains": [
+        "id",
+        "phase"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "project"
+      ],
+      "root_cause": "DMAICPhaseSerializer, LSSGreenMetricSerializer and LSSGreenMeasurementSerializer included 'project' as a writable field; DRF rejected create with 'project required' even though the view sets it from the URL. Also affects POST .../metrics/ and POST .../measurements/.",
+      "fix_location": "backend/lss_green/serializers.py — added 'project' to read_only_fields on DMAICPhaseSerializer, LSSGreenMetricSerializer, LSSGreenMeasurementSerializer (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-037",
+      "title": "LSS-Black hypothesis-test / DOE / control-plan / SPC-chart creates 400 — serializers did not mark 'project' read-only",
+      "severity": "P1",
+      "area": "lss-black",
+      "endpoint": "POST /api/v1/lss-black/projects/{id}/hypothesis-tests/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "name": "Test hypothesis",
+        "test_type": "t_test",
+        "null_hypothesis": "H0",
+        "alternative_hypothesis": "H1"
+      },
+      "expected_response_contains": [
+        "id",
+        "name"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "project"
+      ],
+      "root_cause": "HypothesisTestSerializer, DesignOfExperimentSerializer, ControlPlanSerializer and SPCChartSerializer included 'project' as a writable field; DRF rejected create with 'project required'. Also affects POST .../design-of-experiments/, .../control-plans/, .../spc-charts/.",
+      "fix_location": "backend/lss_black/serializers.py — added 'project' to read_only_fields on HypothesisTestSerializer, DesignOfExperimentSerializer, ControlPlanSerializer, SPCChartSerializer (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-038",
+      "title": "Hybrid config / artifact / phase-methodology creates 400 — serializers did not mark 'project' read-only",
+      "severity": "P1",
+      "area": "hybrid",
+      "endpoint": "POST /api/v1/hybrid/projects/{id}/configs/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "name": "Hybrid config",
+        "description": "Test"
+      },
+      "expected_response_contains": [
+        "id",
+        "name"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "project"
+      ],
+      "root_cause": "HybridArtifactSerializer, HybridConfigurationSerializer and PhaseMethodologySerializer included 'project' as a writable field; DRF rejected create with 'project required'. Also affects POST .../artifacts/ and POST .../phase-methodologies/.",
+      "fix_location": "backend/hybrid/serializers.py — added 'project' to read_only_fields on HybridArtifactSerializer, HybridConfigurationSerializer, PhaseMethodologySerializer (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-039",
+      "title": "Agile Definition of Done create 400 — DefinitionOfDoneSerializer did not mark 'project' read-only",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/projects/{id}/definition-of-done/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "criteria": "Code reviewed and merged",
+        "is_active": true
+      },
+      "expected_response_contains": [
+        "id",
+        "criteria"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "project"
+      ],
+      "root_cause": "DefinitionOfDoneSerializer included 'project' as a writable field; DRF rejected create with 'project required' even though the view sets it from the URL.",
+      "fix_location": "backend/agile/serializers.py — added 'project' to read_only_fields on DefinitionOfDoneSerializer (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-040",
+      "title": "Agile Daily Update create 500 — perform_create passed iteration=None into NOT NULL column",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/projects/{id}/daily-updates/",
+      "method": "POST",
+      "expected_status": 400,
+      "previous_status": 500,
+      "request_body": {
+        "summary": "Daily update",
+        "blockers": ""
+      },
+      "expected_response_contains": [
+        "iteration"
+      ],
+      "previous_error_contains": [
+        "IntegrityError",
+        "null value",
+        "iteration"
+      ],
+      "root_cause": "AgileDailyUpdateViewSet.perform_create passed iteration=None when no iteration was supplied; the daily-update table has a NOT NULL iteration FK, so the insert raised an unhandled IntegrityError surfaced as HTTP 500.",
+      "fix_location": "backend/agile/views.py — AgileDailyUpdateViewSet.perform_create now validates iteration and raises a clean 400 instead of inserting NULL (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-041",
+      "title": "PRINCE2 Project Brief PATCH silently drops dependencies / customer_quality_expectations / acceptance_criteria",
+      "severity": "P2",
+      "area": "prince2",
+      "endpoint": "PATCH /api/v1/projects/{id}/prince2/brief/{bid}/",
+      "method": "PATCH",
+      "expected_status": 200,
+      "previous_status": 200,
+      "request_body": {
+        "dependencies": "Dep A",
+        "customer_quality_expectations": "CQE text",
+        "acceptance_criteria": "AC text"
+      },
+      "expected_response_contains": [
+        "dependencies",
+        "customer_quality_expectations",
+        "acceptance_criteria"
+      ],
+      "previous_error_contains": [],
+      "root_cause": "The ProjectBrief model had no dependencies, customer_quality_expectations or acceptance_criteria fields. PATCH returned 200 but those three values were silently discarded — data loss with no error.",
+      "fix_location": "backend/prince2/models.py — added dependencies, customer_quality_expectations, acceptance_criteria fields; migration backend/prince2/migrations/0007 (commit 7f18f151)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-042",
+      "title": "Budget Expense forms 400 — Foundation/Scrum/Kanban budget pages sent wrong status/category enums + non-existent 'title' field",
+      "severity": "P1",
+      "area": "budget",
+      "endpoint": "POST /api/v1/projects/expenses/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "amount": "100.00",
+        "category": "labor",
+        "status": "pending",
+        "description": "Test expense"
+      },
+      "expected_response_contains": [
+        "id",
+        "amount"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "title"
+      ],
+      "root_cause": "The Foundation, Scrum and Kanban budget pages submitted invalid status/category enum values and included a 'title' field that the Expense model does not define, so DRF rejected the create with 400.",
+      "fix_location": "frontend — 3 budget .tsx pages (Foundation/Scrum/Kanban budget) corrected to valid status/category enums and removed the 'title' field (commit b8c1c862)",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-043",
+      "title": "Scrum sprint create 400 — form sent status 'planned' instead of 'planning'",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/sprints/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "name": "Sprint 1",
+        "status": "planning"
+      },
+      "expected_response_contains": [
+        "id",
+        "name"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "status"
+      ],
+      "root_cause": "The Scrum sprint form submitted status:'planned', which is not a valid choice on the Sprint model (correct value is 'planning').",
+      "fix_location": "frontend — Scrum sprint form: status value changed 'planned' -> 'planning'",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-044",
+      "title": "Scrum backlog item create 400 — form sent invalid status 'backlog'",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/backlog-items/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "title": "Backlog item",
+        "status": "todo"
+      },
+      "expected_response_contains": [
+        "id",
+        "title"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "status"
+      ],
+      "root_cause": "The Scrum backlog form submitted status:'backlog', which is not a valid choice on the backlog-item model.",
+      "fix_location": "frontend — Scrum backlog form: corrected the status value to a valid backlog-item status",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-045",
+      "title": "Scrum Definition of Done create 400 — form used wrong field names",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/definition-of-done/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "This field is required"
+      ],
+      "root_cause": "The Scrum Definition of Done form submitted field names that do not match the serializer, so required fields were reported missing and create returned 400.",
+      "fix_location": "frontend — Scrum DoD form: corrected field names to match the serializer",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-046",
+      "title": "Scrum Sprint Planning create 400 — form omitted required 'sprint' FK",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/sprint-planning/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "sprint": "{sprint_id}"
+      },
+      "expected_response_contains": [
+        "id",
+        "sprint"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "sprint"
+      ],
+      "root_cause": "The Scrum Sprint Planning form did not include the required 'sprint' foreign key in the request body.",
+      "fix_location": "frontend — Scrum SprintPlanning form: added the required 'sprint' FK to the payload",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-047",
+      "title": "Scrum Daily Standup create 400 — form omitted required 'sprint' FK",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/daily-standups/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "sprint": "{sprint_id}"
+      },
+      "expected_response_contains": [
+        "id",
+        "sprint"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "sprint"
+      ],
+      "root_cause": "The Scrum Daily Standup form did not include the required 'sprint' foreign key in the request body.",
+      "fix_location": "frontend — Scrum DailyStandup form: added the required 'sprint' FK to the payload",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-048",
+      "title": "Scrum Increment create 400 — form omitted required 'sprint' FK",
+      "severity": "P1",
+      "area": "scrum",
+      "endpoint": "POST /api/v1/scrum/increments/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "sprint": "{sprint_id}"
+      },
+      "expected_response_contains": [
+        "id",
+        "sprint"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "sprint"
+      ],
+      "root_cause": "The Scrum Increments form did not include the required 'sprint' foreign key in the request body.",
+      "fix_location": "frontend — Scrum Increments form: added the required 'sprint' FK to the payload",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-049",
+      "title": "Kanban board initialization fails — form posted to wrong URL",
+      "severity": "P1",
+      "area": "kanban",
+      "endpoint": "POST /api/v1/kanban/boards/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 404,
+      "request_body": {
+        "name": "Board"
+      },
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "Not Found"
+      ],
+      "root_cause": "The Kanban board-initialization form posted to an incorrect endpoint URL, so the request 404'd and the board was never created.",
+      "fix_location": "frontend — Kanban board-init form: corrected the endpoint URL",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-050",
+      "title": "Kanban work policy create 400 — form sent name/policy_type instead of title/category",
+      "severity": "P1",
+      "area": "kanban",
+      "endpoint": "POST /api/v1/kanban/work-policies/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "title": "WIP limit",
+        "category": "wip"
+      },
+      "expected_response_contains": [
+        "id",
+        "title"
+      ],
+      "previous_error_contains": [
+        "This field is required",
+        "title"
+      ],
+      "root_cause": "The Kanban work-policy form submitted 'name' and 'policy_type' fields, but the serializer expects 'title' and 'category'.",
+      "fix_location": "frontend — Kanban work-policy form: renamed fields name->title, policy_type->category",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-051",
+      "title": "Waterfall requirement create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/requirements/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall requirement form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall requirement form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-052",
+      "title": "Waterfall design create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/designs/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall design form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall design form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-053",
+      "title": "Waterfall task create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/tasks/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall task form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall task form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-054",
+      "title": "Waterfall test case create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/test-cases/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall test-case form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall test-case form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-055",
+      "title": "Waterfall change request create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/change-requests/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall change-request form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall change-request form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-056",
+      "title": "Waterfall risk create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/risks/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall risk form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall risk form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-057",
+      "title": "Waterfall issue create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/issues/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall issue form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall issue form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-058",
+      "title": "Waterfall deployment create 400 — form sent wrong enum values and omitted required fields",
+      "severity": "P1",
+      "area": "waterfall",
+      "endpoint": "POST /api/v1/waterfall/deployments/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The Waterfall deployment form submitted invalid enum values and omitted fields the serializer marks as required, so create returned 400.",
+      "fix_location": "frontend — Waterfall deployment form: corrected enum values and added the missing required fields",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-059",
+      "title": "Agile epic create 400 — form sent non-MoSCoW priority value",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/epics/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "title": "Epic",
+        "priority": "must_have"
+      },
+      "expected_response_contains": [
+        "id",
+        "title"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "priority"
+      ],
+      "root_cause": "The Agile epic form submitted a priority value that is not one of the MoSCoW choices the serializer accepts (must_have/should_have/could_have/wont_have).",
+      "fix_location": "frontend — Agile epic form: corrected priority to a valid MoSCoW value",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-060",
+      "title": "Agile backlog item create 400 — form sent non-MoSCoW priority value",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/backlog-items/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "title": "Backlog item",
+        "priority": "must_have"
+      },
+      "expected_response_contains": [
+        "id",
+        "title"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "priority"
+      ],
+      "root_cause": "The Agile backlog form submitted a priority value that is not one of the MoSCoW choices the serializer accepts.",
+      "fix_location": "frontend — Agile backlog form: corrected priority to a valid MoSCoW value",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-061",
+      "title": "Agile iteration create 400 — form sent status 'planned' instead of valid choice",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/iterations/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "name": "Iteration 1",
+        "status": "planning"
+      },
+      "expected_response_contains": [
+        "id",
+        "name"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "status"
+      ],
+      "root_cause": "The Agile iteration form submitted status:'planned', which is not a valid choice on the iteration model.",
+      "fix_location": "frontend — Agile iteration form: corrected the status value",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-062",
+      "title": "Agile release create 400 — form sent status 'planned' instead of valid choice",
+      "severity": "P1",
+      "area": "agile",
+      "endpoint": "POST /api/v1/agile/releases/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "name": "Release 1",
+        "status": "planning"
+      },
+      "expected_response_contains": [
+        "id",
+        "name"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "status"
+      ],
+      "root_cause": "The Agile release form submitted status:'planned', which is not a valid choice on the release model.",
+      "fix_location": "frontend — Agile release form: corrected the status value",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-063",
+      "title": "PRINCE2 tolerance create 400 — form sent wrong type and field names",
+      "severity": "P1",
+      "area": "prince2",
+      "endpoint": "POST /api/v1/projects/{id}/prince2/tolerances/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {},
+      "expected_response_contains": [
+        "id"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice",
+        "This field is required"
+      ],
+      "root_cause": "The PRINCE2 tolerance form submitted an invalid tolerance type value and field names that do not match the serializer, so create returned 400.",
+      "fix_location": "frontend — PRINCE2 tolerance form: corrected the tolerance type value and field names",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
+    },
+    {
+      "id": "BUG-064",
+      "title": "Project-wide Risk create 400 — form sent wrong-case enum values (category 'resource', severity 'high')",
+      "severity": "P1",
+      "area": "risks",
+      "endpoint": "POST /api/v1/projects/{id}/risks/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 400,
+      "request_body": {
+        "title": "Risk",
+        "category": "Resource",
+        "severity": "High"
+      },
+      "expected_response_contains": [
+        "id",
+        "title"
+      ],
+      "previous_error_contains": [
+        "is not a valid choice"
+      ],
+      "root_cause": "The project-wide Risk form submitted enum values in the wrong case (lowercase 'resource'/'high') that do not match the serializer's choices.",
+      "fix_location": "frontend — project-wide Risk form: corrected enum case for category and severity",
+      "found": "2026-05-22",
+      "found_by": "runtime methodology save-test (project-manager-tester)",
+      "status": "fix_pending_deploy",
+      "last_tested": "2026-05-22",
+      "last_test_status": "pending"
     }
-
   ]
 }
