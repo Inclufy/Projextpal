@@ -7,6 +7,178 @@ on:
     branches: [main, master]
 
 jobs:
+  e2e-api:
+    # Backend save-test suite — spins up Django + Postgres + Redis and runs
+    # the four E2E scripts (project / program / academy / admin) against a
+    # fresh DB. Catches the class of bug where a save endpoint starts
+    # returning 400/500 (e.g. PRINCE2 Stage Plan, Agile DoD, LSS-Green
+    # phase) before it ships. Parallel with test-mobile / test-web (no
+    # `needs:`), so a UI failure doesn't mask an API failure and vice versa.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Django settings — keep DEBUG=False to match production-like config.
+      # SECRET_KEY is >=50 chars + >=5 unique chars (enforced by core/settings.py
+      # when DEBUG=False).
+      SECRET_KEY: ci-secret-key-for-projextpal-please-rotate-me-aaaaaaaaaaaa
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      # settings.py reads POSTGRES_* / REDIS_* individually (not DATABASE_URL).
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: localhost
+      REDIS_PORT: "6379"
+      # SSL redirect would break HTTP testing in CI; opt out explicitly
+      # (settings.py defaults this to True when DEBUG=False).
+      SECURE_SSL_REDIRECT: "False"
+      # Email / Stripe / OpenAI vars are required by settings.py at startup
+      # (no decouple defaults). Dummy values are fine — none are exercised
+      # by the save-test suite.
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      EMAIL_HOST: localhost
+      EMAIL_PORT: "25"
+      EMAIL_HOST_USER: ci@example.com
+      EMAIL_HOST_PASSWORD: ci-password
+      DEFAULT_FROM_EMAIL: ci@example.com
+      FRONTEND_URL: http://localhost:5173
+      BASE_URL: http://localhost:8001
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_PUBLIC_KEY: pk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_test_ci
+      OPENAI_API_KEY: sk-ci-not-a-real-key
+      # E2E client config — common.py reads these.
+      BASE_URL_E2E: http://localhost:8001
+      ADMIN_EMAIL: sami@inclufy.com
+      ADMIN_PASSWORD: e2e-ci-2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        working-directory: backend
+        run: python manage.py migrate --noinput
+
+      - name: Create CI superuser + tenant company
+        working-directory: backend
+        # The E2E scripts log in as ADMIN_EMAIL / ADMIN_PASSWORD. The
+        # ProjectViewSet auto-scopes to the user's company FK, so the
+        # superuser must be attached to a Company (multi-tenant gate in
+        # perform_create() raises ValidationError otherwise).
+        run: |
+          python manage.py shell <<'PYEOF'
+          from django.contrib.auth import get_user_model
+          from accounts.models import Company
+
+          User = get_user_model()
+          company, _ = Company.objects.get_or_create(
+              name='CI Tenant',
+              defaults={'industry': 'software'},
+          )
+          user, created = User.objects.get_or_create(
+              email='sami@inclufy.com',
+              defaults={
+                  'username': 'sami',
+                  'is_staff': True,
+                  'is_superuser': True,
+                  'is_active': True,
+                  'role': 'superadmin',
+                  'company': company,
+              },
+          )
+          user.is_staff = True
+          user.is_superuser = True
+          user.is_active = True
+          user.company = company
+          user.set_password('e2e-ci-2026')
+          user.save()
+          print(f"superuser sami@inclufy.com {'created' if created else 'updated'} (company={company.id})")
+          PYEOF
+
+      - name: Start backend (runserver, background)
+        working-directory: backend
+        # runserver is lighter than gunicorn and is enough for a save-test
+        # suite — we're hitting REST endpoints, not load-testing.
+        run: |
+          nohup python manage.py runserver 0.0.0.0:8001 --insecure > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
+
+      - name: Wait for /api/v1/health/
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/api/v1/health/simple/ >/dev/null 2>&1; then
+              echo "backend healthy after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::backend never became healthy"
+          echo "----- backend.log -----"
+          cat /tmp/backend.log || true
+          exit 1
+
+      - name: Run project_manager_full.py
+        env:
+          BASE_URL: http://localhost:8001
+        run: python tests/e2e/project_manager_full.py
+
+      - name: Run program_manager_full.py
+        env:
+          BASE_URL: http://localhost:8001
+        run: python tests/e2e/program_manager_full.py
+
+      - name: Run academy_full.py
+        env:
+          BASE_URL: http://localhost:8001
+        run: python tests/e2e/academy_full.py
+
+      - name: Run admin_portal_full.py
+        env:
+          BASE_URL: http://localhost:8001
+        run: python tests/e2e/admin_portal_full.py
+
+      - name: Dump backend log on failure
+        if: failure()
+        run: |
+          echo "----- backend.log -----"
+          cat /tmp/backend.log || true
+
   test-mobile:
     runs-on: ubuntu-latest
     steps:
