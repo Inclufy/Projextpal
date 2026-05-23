@@ -300,7 +300,10 @@ class DecisionViewSet(viewsets.ModelViewSet):
     serializer_class = DecisionSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['program', 'status', 'impact']
+    # `board` and `meeting` are new (governance migration 0005). Adding them
+    # to filterset_fields lets the new Decisions.tsx page and BoardDetail.tsx
+    # filter via `?board=<id>` / `?meeting=<id>` query strings.
+    filterset_fields = ['program', 'board', 'meeting', 'status', 'impact']
     search_fields = ['title', 'description']
     ordering_fields = ['decided_at', 'created_at']
 
@@ -308,6 +311,12 @@ class DecisionViewSet(viewsets.ModelViewSet):
         # P0 cross-tenant fix — was returning Decision.objects.all() when the
         # requesting user had no company (cross-tenant leak). Superadmin
         # defaults to own-company; cross-tenant view via ?all_tenants=1.
+        #
+        # Tenant scoping now reaches across all three parent FKs (program /
+        # board / meeting) because a Decision can live at any of those levels
+        # (program is nullable; board-level and meeting-level decisions have
+        # no program). The original `program__company` filter excluded those.
+        from django.db.models import Q
         user = self.request.user
         if not user.is_authenticated:
             return Decision.objects.none()
@@ -318,7 +327,13 @@ class DecisionViewSet(viewsets.ModelViewSet):
             return Decision.objects.all()
         if not company:
             return Decision.objects.none()
-        return Decision.objects.filter(program__company=company)
+        return Decision.objects.filter(
+            Q(program__company=company)
+            | Q(board__portfolio__company=company)
+            | Q(board__program__company=company)
+            | Q(board__project__company=company)
+            | Q(meeting__program__company=company)
+        ).distinct()
 
     def perform_create(self, serializer):
         # Default decided_by to the requester if absent so demo POSTs that

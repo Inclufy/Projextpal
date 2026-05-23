@@ -174,6 +174,19 @@ class Decision(models.Model):
         'programs.Program', on_delete=models.CASCADE,
         null=True, blank=True, related_name='decisions',
     )
+    # Board-level decision: a Decision can be tied to a specific GovernanceBoard
+    # (e.g. taken by the Steering Committee). SET_NULL so deleting the board
+    # leaves the decision history intact.
+    board = models.ForeignKey(
+        'governance.GovernanceBoard', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='decisions',
+    )
+    # Meeting-level decision: most decisions are taken IN a specific meeting,
+    # which makes the audit trail much stronger. SET_NULL preserves history.
+    meeting = models.ForeignKey(
+        'governance.Meeting', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='decisions',
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     decided_by = models.ForeignKey(
