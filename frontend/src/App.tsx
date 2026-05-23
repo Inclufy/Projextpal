@@ -180,6 +180,7 @@ const AgileBudget = lazy(() => import('./pages/agile/AgileBudget'));
 const AgileProductVision = lazy(() => import('./pages/agile/AgileProductVision'));
 const AgileUserPersonas = lazy(() => import('./pages/agile/AgileUserPersonas'));
 const AgileBacklog = lazy(() => import('./pages/agile/AgileBacklog'));
+const AgileEpics = lazy(() => import('./pages/agile/AgileEpics'));
 const AgileIterationBoard = lazy(() => import('./pages/agile/AgileIterationBoard'));
 const AgileReleasePlanning = lazy(() => import('./pages/agile/AgileReleasePlanning'));
 const AgileDailyProgress = lazy(() => import('./pages/agile/AgileDailyProgress'));
@@ -871,6 +872,7 @@ const App = () => (
               <Route path="/projects/:id/agile/vision" element={<ProtectedPage><AgileProductVision /></ProtectedPage>} />
               <Route path="/projects/:id/agile/personas" element={<ProtectedPage><AgileUserPersonas /></ProtectedPage>} />
               <Route path="/projects/:id/agile/backlog" element={<ProtectedPage><AgileBacklog /></ProtectedPage>} />
+              <Route path="/projects/:id/agile/epics" element={<ProtectedPage><AgileEpics /></ProtectedPage>} />
               <Route path="/projects/:id/agile/iteration-board" element={<ProtectedPage><AgileIterationBoard /></ProtectedPage>} />
               <Route path="/projects/:id/agile/release-planning" element={<ProtectedPage><AgileReleasePlanning /></ProtectedPage>} />
               <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />

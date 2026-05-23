@@ -536,6 +536,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Planning",
           icon: Calendar,
           items: [
+            { title: "Epics", url: `/projects/${projectId}/agile/epics`, icon: Layers },
             { title: "Backlog", url: `/projects/${projectId}/agile/backlog`, icon: ListChecks },
             { title: "Release Planning", url: `/projects/${projectId}/agile/release-planning`, icon: Calendar },
           ],
