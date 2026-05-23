@@ -291,9 +291,12 @@ class WorkPackageViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.get_project_queryset(WorkPackage)
         stage = self.request.query_params.get('stage')
+        stage_plan = self.request.query_params.get('stage_plan')
         status_filter = self.request.query_params.get('status')
         if stage:
             queryset = queryset.filter(stage_id=stage)
+        if stage_plan:
+            queryset = queryset.filter(stage_plan_id=stage_plan)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         return queryset
@@ -721,7 +724,11 @@ class ProductViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
-        return self.get_project_queryset(Product)
+        queryset = self.get_project_queryset(Product)
+        work_package = self.request.query_params.get('work_package')
+        if work_package:
+            queryset = queryset.filter(work_package_id=work_package)
+        return queryset
 
     def perform_create(self, serializer):
         project = self.get_project()

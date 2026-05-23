@@ -238,6 +238,7 @@ class WorkPackage(models.Model):
     
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_work_packages')
     stage = models.ForeignKey(Stage, on_delete=models.CASCADE, related_name='work_packages', null=True, blank=True)
+    stage_plan = models.ForeignKey('StagePlan', on_delete=models.SET_NULL, null=True, blank=True, related_name='work_packages')
     reference = models.CharField(max_length=50, blank=True, default='')
     title = models.CharField(max_length=200, blank=True, default='')
     description = models.TextField(blank=True, null=True)
@@ -589,6 +590,7 @@ class ProjectTolerance(models.Model):
 class Product(models.Model):
     """PRINCE2 Product - deliverable or output"""
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_products')
+    work_package = models.ForeignKey('WorkPackage', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     product_type = models.CharField(max_length=50, choices=[

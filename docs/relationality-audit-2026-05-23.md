@@ -564,7 +564,7 @@ Several places where the canonical methodology expects a relationship but the sc
 1. **[Six Sigma] Add `addresses_root_cause` picker to `SixSigmaSolutions.tsx`** — single Select component, fetch `/api/v1/projects/{id}/sixsigma/causes/?is_root_cause=true`, populate dropdown. **2 hours.** Unlocks DMAIC narrative.
 2. **[Waterfall] Add `requirement` picker to `WaterfallTesting.tsx`** — same shape as #1, fetch `/api/v1/projects/{id}/waterfall/requirements/`. **2 hours.** Unlocks traceability matrix.
 3. **[Agile] Add `epic` picker to `AgileBacklog.tsx`** *and* create a minimal `AgileEpics.tsx` page (list + create + show children-stories count). **1 day.** The most-asked-for hierarchy in agile (model already supports it).
-4. **[PRINCE2] On `Prince2StagePlan.tsx` and `Prince2WorkPackages.tsx`, render parent Stage as a clickable badge + add a child list panel.** Stage Plans should show their stage's WPs; WPs should show their stage's other WPs (siblings). **1 day.** Closest to the user's exact ask.
+4. **[PRINCE2] On `Prince2StagePlan.tsx` and `Prince2WorkPackages.tsx`, render parent Stage as a clickable badge + add a child list panel.** Stage Plans should show their stage's WPs; WPs should show their stage's other WPs (siblings). **1 day.** Closest to the user's exact ask. **Update (2026-05-23): now plan-scoped** — `WorkPackage.stage_plan` FK landed in prince2 migration 0008, so `Prince2StagePlan.tsx` groups WPs by `stage_plan` directly (was: stage-scoped fallback only); `Prince2WorkPackages.tsx` breadcrumb reads the FK directly when present.
 5. **[Governance] Build `BoardDetail.tsx` parent/related panels** mirroring `PortfolioDetail.tsx` — show portfolio/program/project parent link + list governance.Meeting and governance.Decision children (creates `Decisions.tsx` MVP). **2 days.** Completes the governance triangle the model already supports.
 
 After these five, the pattern is repeatable: every flat-form dialog gets the missing FK picker, every detail page gets a child-relations panel modelled on `PortfolioDetail.tsx`. A single shared `<RelatedEntitiesPanel entity={} relations={['x', 'y']} />` component would pay for itself in 3-4 reuses.
@@ -585,6 +585,15 @@ After these five, the pattern is repeatable: every flat-form dialog gets the mis
 | 8 | BoardDetail missing program/project link | `frontend/src/pages/governance/BoardDetail.tsx:112-127,155-177`; model `backend/governance/models.py:55-56` |
 | 9 | Highlight Report no Stage picker | `frontend/src/pages/prince2/Prince2HighlightReport.tsx`; model `backend/prince2/models.py:363` |
 | 10 | Sprint planning doesn't show items | `frontend/src/pages/scrum/ScrumSprintPlanning.tsx:65-92` |
+
+---
+
+## Bonus findings
+
+- **(2026-05-23, post-audit)** Two PRINCE2 model-level FK gaps called out above are now addressed in prince2 migration `0008_workpackage_stage_plan_product_work_package`:
+  - `WorkPackage.stage_plan = FK(StagePlan, null=True, blank=True, related_name='work_packages')` — closes the gap that a Stage with multiple Stage Plans rendered the same WP list under each plan.
+  - `Product.work_package = FK(WorkPackage, null=True, blank=True, related_name='products')` — PRINCE2 doctrine: Products are the deliverable of a Work Package.
+  Both are additive + nullable; existing rows resolve to `null` and the frontend keeps a stage-scoped fallback for historic data.
 
 ---
 

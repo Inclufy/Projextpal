@@ -19,6 +19,7 @@ const Prince2StagePlan = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<any[]>([]);
   const [stages, setStages] = useState<any[]>([]);
+  const [workPackagesByPlan, setWorkPackagesByPlan] = useState<Record<number, any[]>>({});
   const [workPackagesByStage, setWorkPackagesByStage] = useState<Record<number, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -29,7 +30,7 @@ const Prince2StagePlan = () => {
   // Inline-create Work Package dialog state
   const [wpDialogOpen, setWpDialogOpen] = useState(false);
   const [wpSubmitting, setWpSubmitting] = useState(false);
-  const [wpForm, setWpForm] = useState({ title: "", description: "", stage: "", priority: "medium" });
+  const [wpForm, setWpForm] = useState({ title: "", description: "", stage: "", stage_plan: "", priority: "medium" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -47,14 +48,23 @@ const Prince2StagePlan = () => {
       if (wpRes.ok) {
         const d = await wpRes.json();
         const list: any[] = Array.isArray(d) ? d : d.results || [];
-        const grouped: Record<number, any[]> = {};
+        // Group by stage_plan (true plan-scoped relationship) for the primary
+        // child-panel render. Also keep a stage-keyed grouping as fallback
+        // for legacy WPs that pre-date the WorkPackage.stage_plan FK.
+        const byPlan: Record<number, any[]> = {};
+        const byStage: Record<number, any[]> = {};
         list.forEach((wp) => {
+          if (wp.stage_plan != null) {
+            if (!byPlan[wp.stage_plan]) byPlan[wp.stage_plan] = [];
+            byPlan[wp.stage_plan].push(wp);
+          }
           if (wp.stage != null) {
-            if (!grouped[wp.stage]) grouped[wp.stage] = [];
-            grouped[wp.stage].push(wp);
+            if (!byStage[wp.stage]) byStage[wp.stage] = [];
+            byStage[wp.stage].push(wp);
           }
         });
-        setWorkPackagesByStage(grouped);
+        setWorkPackagesByPlan(byPlan);
+        setWorkPackagesByStage(byStage);
       }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -104,8 +114,8 @@ const Prince2StagePlan = () => {
     } catch { toast.error(pt("Delete failed")); }
   };
 
-  const openCreateWp = (stageId: number) => {
-    setWpForm({ title: "", description: "", stage: stageId.toString(), priority: "medium" });
+  const openCreateWp = (stageId: number, planId: number) => {
+    setWpForm({ title: "", description: "", stage: stageId.toString(), stage_plan: planId.toString(), priority: "medium" });
     setWpDialogOpen(true);
   };
 
@@ -115,6 +125,7 @@ const Prince2StagePlan = () => {
     try {
       const body: any = { title: wpForm.title, description: wpForm.description, priority: wpForm.priority };
       if (wpForm.stage) body.stage = parseInt(wpForm.stage);
+      if (wpForm.stage_plan) body.stage_plan = parseInt(wpForm.stage_plan);
       const response = await fetch(`/api/v1/projects/${id}/prince2/work-packages/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(body)
       });
@@ -155,7 +166,12 @@ const Prince2StagePlan = () => {
           <Card className="p-8 text-center"><FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">{pt("No stage plan created yet")}</h3><Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> {pt("Create Plan")}</Button></Card>
         ) : (
           <div className="space-y-4">{plans.map((p) => {
-            const stageWps = workPackagesByStage[p.stage] || [];
+            // Prefer plan-scoped WPs (via WorkPackage.stage_plan FK). Fall back to
+            // stage-scoped grouping for legacy rows where stage_plan is null.
+            const planWps = workPackagesByPlan[p.id];
+            const stageWps = (planWps && planWps.length > 0)
+              ? planWps
+              : (workPackagesByStage[p.stage] || []);
             return (
             <Card key={p.id}>
               <CardContent className="p-4">
@@ -197,7 +213,7 @@ const Prince2StagePlan = () => {
                       <Badge variant="outline" className="text-xs">{stageWps.length}</Badge>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openCreateWp(p.stage)} className="gap-1 h-7 text-xs">
+                      <Button variant="ghost" size="sm" onClick={() => openCreateWp(p.stage, p.id)} className="gap-1 h-7 text-xs">
                         <Plus className="h-3 w-3" /> {pt("Add Work Package")}
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}/prince2/work-packages?stage=${p.stage}`)} className="gap-1 h-7 text-xs">

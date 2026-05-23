@@ -187,7 +187,15 @@ const Prince2WorkPackages = () => {
           <div className="space-y-3">
             {visibleWorkPackages.map((wp) => {
               const stageName = getStageName(wp.stage);
-              const parentPlans = wp.stage != null ? (stagePlansByStage[wp.stage] || []) : [];
+              // Prefer the direct WorkPackage.stage_plan FK when present;
+              // fall back to the stage-scoped lookup for historic rows that
+              // pre-date the FK (`wp.stage_plan` is null).
+              const directPlan = wp.stage_plan != null
+                ? stagePlans.find((sp) => sp.id === wp.stage_plan) || null
+                : null;
+              const parentPlans = directPlan
+                ? [directPlan]
+                : (wp.stage != null ? (stagePlansByStage[wp.stage] || []) : []);
               const isHighlighted = highlightWp && parseInt(highlightWp) === wp.id;
               return (
               <Card key={wp.id} className={`hover:shadow-md transition-shadow ${isHighlighted ? "ring-2 ring-blue-400" : ""}`}>
