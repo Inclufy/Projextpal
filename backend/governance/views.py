@@ -300,10 +300,11 @@ class DecisionViewSet(viewsets.ModelViewSet):
     serializer_class = DecisionSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    # `board` and `meeting` are new (governance migration 0005). Adding them
-    # to filterset_fields lets the new Decisions.tsx page and BoardDetail.tsx
-    # filter via `?board=<id>` / `?meeting=<id>` query strings.
-    filterset_fields = ['program', 'board', 'meeting', 'status', 'impact']
+    # `board` and `meeting` are from governance migration 0005; `risk` is
+    # from migration 0007. Adding them to filterset_fields lets the
+    # Decisions.tsx page and BoardDetail.tsx filter via `?board=<id>` /
+    # `?meeting=<id>` / `?risk=<id>` query strings.
+    filterset_fields = ['program', 'board', 'meeting', 'risk', 'status', 'impact']
     search_fields = ['title', 'description']
     ordering_fields = ['decided_at', 'created_at']
 

@@ -187,6 +187,14 @@ class Decision(models.Model):
         'governance.Meeting', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='decisions',
     )
+    # Risk-driven decision: a Decision may be taken specifically in response
+    # to a Risk (mitigation accepted, owner reassigned, escalation closed,
+    # etc.). Cross-app FK uses string reference. SET_NULL preserves the
+    # decision history if the risk is archived.
+    risk = models.ForeignKey(
+        'projects.Risk', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='governance_decisions',
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     decided_by = models.ForeignKey(

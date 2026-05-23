@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Gavel, Plus, Pencil, Trash2, Shield, CalendarDays, Layers, X, Loader2,
+  AlertTriangle,
 } from "lucide-react";
 
 // Module-scope form type so the dialog state has a stable identity (same
@@ -31,6 +32,7 @@ type DecisionForm = {
   program: string;
   board: string;
   meeting: string;
+  risk: string;
 };
 
 interface Decision {
@@ -44,6 +46,7 @@ interface Decision {
   program: number | null;
   board: string | null;
   meeting: string | null;
+  risk: number | null;
   decided_by: number | null;
   decided_by_name: string | null;
 }
@@ -51,6 +54,7 @@ interface Decision {
 interface ProgramRef { id: number; name: string }
 interface BoardRef { id: string; name: string; board_type: string }
 interface MeetingRef { id: string; title: string; type: string }
+interface RiskRef { id: number; name: string; project: number; level?: string }
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -83,6 +87,7 @@ const Decisions: React.FC = () => {
   const boardFilter = searchParams.get("board");
   const meetingFilter = searchParams.get("meeting");
   const programFilter = searchParams.get("program");
+  const riskFilter = searchParams.get("risk");
   const highlight = searchParams.get("highlight");
   // Allow `?board=<id>&add=1` to deep-link "open the create dialog with this
   // board preset" — used by BoardDetail's "Add Decision" button.
@@ -92,6 +97,7 @@ const Decisions: React.FC = () => {
   const [programs, setPrograms] = useState<ProgramRef[]>([]);
   const [boards, setBoards] = useState<BoardRef[]>([]);
   const [meetings, setMeetings] = useState<MeetingRef[]>([]);
+  const [risks, setRisks] = useState<RiskRef[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Decision | null>(null);
@@ -106,6 +112,7 @@ const Decisions: React.FC = () => {
     program: "",
     board: "",
     meeting: "",
+    risk: "",
   });
 
   const token = localStorage.getItem("access_token");
@@ -118,17 +125,24 @@ const Decisions: React.FC = () => {
       if (boardFilter) qs.set("board", boardFilter);
       if (meetingFilter) qs.set("meeting", meetingFilter);
       if (programFilter) qs.set("program", programFilter);
+      if (riskFilter) qs.set("risk", riskFilter);
       const dUrl = `/api/v1/governance/decisions/${qs.toString() ? `?${qs}` : ""}`;
-      const [dRes, pRes, bRes, mRes] = await Promise.all([
+      // Risks come from /api/v1/projects/risks/ — these aren't project-scoped
+      // per call, so we paginate with a sensible limit. 100 covers all tenants
+      // we have in practice; if/when this grows past that, swap for an async
+      // search picker.
+      const [dRes, pRes, bRes, mRes, rRes] = await Promise.all([
         fetch(dUrl, { headers }),
         fetch("/api/v1/programs/", { headers }),
         fetch("/api/v1/governance/boards/", { headers }),
         fetch("/api/v1/governance/meetings/", { headers }),
+        fetch("/api/v1/projects/risks/?limit=100", { headers }),
       ]);
       if (dRes.ok) { const d = await dRes.json(); setDecisions(Array.isArray(d) ? d : d.results || []); }
       if (pRes.ok) { const d = await pRes.json(); setPrograms(Array.isArray(d) ? d : d.results || []); }
       if (bRes.ok) { const d = await bRes.json(); setBoards(Array.isArray(d) ? d : d.results || []); }
       if (mRes.ok) { const d = await mRes.json(); setMeetings(Array.isArray(d) ? d : d.results || []); }
+      if (rRes.ok) { const d = await rRes.json(); setRisks(Array.isArray(d) ? d : d.results || []); }
     } catch (err) {
       console.error(err);
     } finally {
@@ -136,7 +150,7 @@ const Decisions: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchAll(); }, [boardFilter, meetingFilter, programFilter]);
+  useEffect(() => { fetchAll(); }, [boardFilter, meetingFilter, programFilter, riskFilter]);
 
   // Auto-open the create dialog with the active filter preset when ?add=1.
   useEffect(() => {
@@ -152,6 +166,7 @@ const Decisions: React.FC = () => {
         program: programFilter || "",
         board: boardFilter || "",
         meeting: meetingFilter || "",
+        risk: riskFilter || "",
       });
       setDialogOpen(true);
       const next = new URLSearchParams(searchParams);
@@ -167,10 +182,13 @@ const Decisions: React.FC = () => {
     bid == null ? null : boards.find(b => b.id === bid) || null;
   const meetingById = (mid: string | null | undefined) =>
     mid == null ? null : meetings.find(m => m.id === mid) || null;
+  const riskById = (rid: number | null | undefined) =>
+    rid == null ? null : risks.find(r => r.id === rid) || null;
 
   const filterBoard = boardFilter ? boardById(boardFilter) : null;
   const filterMeeting = meetingFilter ? meetingById(meetingFilter) : null;
   const filterProgram = programFilter ? programById(parseInt(programFilter)) : null;
+  const filterRisk = riskFilter ? riskById(parseInt(riskFilter)) : null;
 
   const openCreate = () => {
     setEditing(null);
@@ -184,6 +202,7 @@ const Decisions: React.FC = () => {
       program: programFilter || "",
       board: boardFilter || "",
       meeting: meetingFilter || "",
+      risk: riskFilter || "",
     });
     setDialogOpen(true);
   };
@@ -201,6 +220,7 @@ const Decisions: React.FC = () => {
       program: d.program != null ? String(d.program) : "",
       board: d.board || "",
       meeting: d.meeting || "",
+      risk: d.risk != null ? String(d.risk) : "",
     });
     setDialogOpen(true);
   };
@@ -230,6 +250,9 @@ const Decisions: React.FC = () => {
 
       if (form.meeting !== "") body.meeting = form.meeting;
       else if (editing) body.meeting = null;
+
+      if (form.risk !== "") body.risk = parseInt(form.risk);
+      else if (editing) body.risk = null;
 
       const url = editing
         ? `/api/v1/governance/decisions/${editing.id}/`
@@ -278,7 +301,7 @@ const Decisions: React.FC = () => {
     setSearchParams(next, { replace: true });
   };
 
-  const hasFilters = !!(boardFilter || meetingFilter || programFilter);
+  const hasFilters = !!(boardFilter || meetingFilter || programFilter || riskFilter);
 
   const orderedDecisions = useMemo(() => {
     if (!highlight) return decisions;
@@ -354,6 +377,19 @@ const Decisions: React.FC = () => {
               </button>
             </Badge>
           )}
+          {filterRisk && (
+            <Badge variant="outline" className="gap-1">
+              <AlertTriangle className="h-3 w-3" /> {filterRisk.name}
+              <button
+                type="button"
+                onClick={() => clearFilter("risk")}
+                className="ml-1 hover:text-red-500"
+                aria-label={pt("Clear risk filter")}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
           <Button variant="ghost" size="sm" className="ml-auto h-6 gap-1" onClick={clearAllFilters}>
             <X className="h-3 w-3" /> {pt("Clear all")}
           </Button>
@@ -379,6 +415,7 @@ const Decisions: React.FC = () => {
             const linkedProgram = programById(d.program);
             const linkedBoard = boardById(d.board);
             const linkedMeeting = meetingById(d.meeting);
+            const linkedRisk = riskById(d.risk);
             const isHighlighted = highlight && d.id === highlight;
             return (
               <Card key={d.id} className={`hover:shadow-md transition-shadow ${isHighlighted ? "ring-2 ring-purple-400" : ""}`}>
@@ -418,6 +455,20 @@ const Decisions: React.FC = () => {
                             title={pt("Open linked programme")}
                           >
                             <Layers className="h-3 w-3" /> {linkedProgram.name}
+                          </Badge>
+                        )}
+                        {linkedRisk && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-pointer hover:bg-muted gap-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Deep-link to the project's risk register with highlight.
+                              navigate(`/projects/${linkedRisk.project}?tab=risks&highlight=${linkedRisk.id}`);
+                            }}
+                            title={pt("Open linked risk")}
+                          >
+                            <AlertTriangle className="h-3 w-3" /> {linkedRisk.name}
                           </Badge>
                         )}
                       </div>
@@ -513,7 +564,7 @@ const Decisions: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>{pt("Board")}</Label>
                 <Select
@@ -557,6 +608,23 @@ const Decisions: React.FC = () => {
                     <SelectItem value={NONE}>{pt("None")}</SelectItem>
                     {programs.map(p => (
                       <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{pt("Risk")}</Label>
+                <Select
+                  value={form.risk || NONE}
+                  onValueChange={(v) => setForm({ ...form, risk: v === NONE ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder={pt("None")} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>{pt("None")}</SelectItem>
+                    {risks.map(r => (
+                      <SelectItem key={r.id} value={String(r.id)}>
+                        {r.name}{r.level ? ` (${r.level})` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
