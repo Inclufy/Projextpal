@@ -6,8 +6,8 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
-  Package, Presentation, Briefcase, AlertCircle, CheckCircle, 
-  BookOpen, Download, FlaskConical
+  Package, Presentation, Briefcase, AlertCircle, CheckCircle,
+  BookOpen, Download, FlaskConical, Gavel
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -815,6 +815,7 @@ export function AppSidebar() {
     portfolios: 'Portfolios',
     boards: 'Boards',
     stakeholders: 'Stakeholders',
+    decisions: 'Decisions',
     reports: 'Reports',
     profile: 'Profile',
     settings: 'Settings',
@@ -877,6 +878,7 @@ export function AppSidebar() {
           { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
           { title: ts.boards, url: "/governance/boards", icon: Shield },
           { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
+          { title: ts.decisions, url: "/governance/decisions", icon: Gavel },
         ],
       });
     }

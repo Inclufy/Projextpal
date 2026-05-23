@@ -34,6 +34,7 @@ const Portfolios = lazy(() => import("./pages/governance/Portfolios"));
 const PortfolioDetail = lazy(() => import("./pages/governance/PortfolioDetail"));
 const GovernanceBoards = lazy(() => import("./pages/governance/GovernanceBoards"));
 const Stakeholders = lazy(() => import("./pages/governance/Stakeholders"));
+const Decisions = lazy(() => import("./pages/governance/Decisions"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const DemoRequests = lazy(() => import('./pages/admin/DemoRequests'));
@@ -959,6 +960,7 @@ const App = () => (
               <Route path="/governance/boards/:id" element={<ProtectedPage><BoardDetail /></ProtectedPage>} />
               <Route path="/governance/stakeholders" element={<ProtectedPage><Stakeholders /></ProtectedPage>} />
               <Route path="/governance/stakeholders/new" element={<ProtectedPage><CreateStakeholder /></ProtectedPage>} />
+              <Route path="/governance/decisions" element={<ProtectedPage><Decisions /></ProtectedPage>} />
 
               {/* Catch-all - MUST be last */}
               <Route path="*" element={<NotFound />} />
