@@ -168,6 +168,11 @@ class Report:
         self.rows.append((area, check_name, method, status, note[:200]))
 
     def bucket(self, status: int) -> str:
+        # Scripts record status=0 for an intentional skip (no data seeded,
+        # admin-only flow, prerequisite not met, etc.). Don't fail CI on
+        # those — bucket them as SKIP, info-only, excluded from the exit code.
+        if status == 0:
+            return "SKIP"
         if 200 <= status < 300:
             return "OK"
         if 400 <= status < 500:
@@ -178,19 +183,18 @@ class Report:
 
     def print(self) -> int:
         """Print the matrix. Returns the number of 5xx + networking errors
-        (useful for a nonzero exit code in CI)."""
+        (useful for a nonzero exit code in CI). SKIP rows are excluded."""
         print("=" * 90)
         print(self.title)
         print(f"base_url: {BASE_URL}")
         print("=" * 90)
 
-        by_area: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0, 0])
-        # [OK, CLIENT, SERVER, OTHER]
+        by_area: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0, 0, 0])
+        # [OK, CLIENT, SERVER, OTHER, SKIP]
 
+        idx_for = {"OK": 0, "CLIENT": 1, "SERVER": 2, "OTHER": 3, "SKIP": 4}
         for area, name, method, status, note in self.rows:
-            b = self.bucket(status)
-            idx = {"OK": 0, "CLIENT": 1, "SERVER": 2, "OTHER": 3}[b]
-            by_area[area][idx] += 1
+            by_area[area][idx_for[self.bucket(status)]] += 1
 
         # Group rows by area for printing
         for area in sorted({r[0] for r in self.rows}):
@@ -204,6 +208,7 @@ class Report:
                     "CLIENT": "?",
                     "SERVER": "✗",
                     "OTHER": "!",
+                    "SKIP": "·",
                 }[self.bucket(status)]
                 print(
                     f"  {tag} {method:5s} {status:>4d}  {name:<50s}  "
@@ -211,7 +216,7 @@ class Report:
                 )
 
         # Summary
-        totals = [0, 0, 0, 0]
+        totals = [0, 0, 0, 0, 0]
         for cells in by_area.values():
             for i, v in enumerate(cells):
                 totals[i] += v
@@ -220,22 +225,28 @@ class Report:
             print("\nno checks recorded")
             return 0
 
+        # Pass-rate excludes SKIPs from the denominator so a stack of "no
+        # seed yet" skips doesn't tank a fundamentally green run.
+        scored = total - totals[4]
+
         print("\n" + "=" * 90)
         print(
-            f"SUMMARY: {totals[0]}/{total} OK  |  "
-            f"{totals[1]} 4xx  |  {totals[2]} 5xx  |  {totals[3]} other"
+            f"SUMMARY: {totals[0]}/{scored} OK  |  "
+            f"{totals[1]} 4xx  |  {totals[2]} 5xx  |  {totals[3]} other  |  "
+            f"{totals[4]} skipped"
         )
-        print(f"Pass rate: {totals[0] * 100 / total:.1f}%")
+        if scored > 0:
+            print(f"Pass rate: {totals[0] * 100 / scored:.1f}%  (skips excluded)")
 
         # Per-area breakdown
         print("\nPer-area breakdown:")
-        print(f"  {'area':<22s} {'OK':>5s} {'4xx':>5s} {'5xx':>5s}")
+        print(f"  {'area':<22s} {'OK':>5s} {'4xx':>5s} {'5xx':>5s} {'skip':>5s}")
         for area, cells in sorted(by_area.items()):
             print(
-                f"  {area:<22s} {cells[0]:>5d} {cells[1]:>5d} {cells[2]:>5d}"
+                f"  {area:<22s} {cells[0]:>5d} {cells[1]:>5d} {cells[2]:>5d} {cells[4]:>5d}"
             )
 
-        # Highlight 5xx + OTHER as things to investigate
+        # Highlight 5xx + OTHER as things to investigate (SKIPs are intentional)
         bugs = [r for r in self.rows if self.bucket(r[3]) in ("SERVER", "OTHER")]
         if bugs:
             print(f"\n{len(bugs)} items need investigation:")
