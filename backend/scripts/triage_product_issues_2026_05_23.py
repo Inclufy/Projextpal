@@ -550,7 +550,7 @@ RESOLUTIONS = [
     #     Router config issue — NOT yet fixed (form itself is fine).
     # ────────────────────────────────────────────────────────────────
     {
-        "bug_id": "CLOSURE-SUBTABS-ROUTING",
+        "bug_id": "CLOSURE-SUBTABS-ROUTING-RESOLVED-2026-05-23",
         "match": lambda i: (
             ("closure check" in (i.title + " " + i.description).lower()
              or "closure checklist" in (i.title + " " + i.description).lower()
@@ -561,23 +561,26 @@ RESOLUTIONS = [
                  or "end project report only" in (i.title + " " + i.description).lower())
         ),
         "comment_nl": (
-            f"{SCRIPT_SIGNATURE} CLOSURE-SUBTABS-ROUTING\n\n"
-            "📌 Erkend (P2 — nog niet opgelost) — alle Project Closure "
+            f"{SCRIPT_SIGNATURE} CLOSURE-SUBTABS-ROUTING-RESOLVED-2026-05-23\n\n"
+            "✅ Opgelost en live in productie — alle 4 Project Closure "
             "sub-tabs (Closure Checklist, End Project Report, Lessons Log, "
-            "Benefits Review) navigeren naar dezelfde pagina (End Project "
-            "Report). Dit is een router-configuratie probleem, niet een "
-            "bug in de formulieren zelf.\n\n"
-            "Het End Project Report formulier is wel correct herschreven "
-            "naar de echte model-velden (commit e02c03b1) — zodra de "
-            "routes ontkoppeld zijn werken alle 4 sub-pagina's onafhankelijk.\n\n"
-            "Wordt opgepakt in een aparte commit; nog niet in productie."
+            "Benefits Review) navigeren nu naar hun eigen pagina, niet "
+            "meer allemaal naar End Project Report.\n\n"
+            "Fix: routes ontkoppeld in `App.tsx` en sidebar-links bijgewerkt; "
+            "drie nieuwe pagina's gecreëerd die echte data ophalen — "
+            "Closure Checklist (readiness-dashboard), Lessons Log "
+            "(`/api/v1/projects/:id/prince2/lessons/`) en Benefits Review "
+            "(geplande + gerealiseerde benefits). Het End Project Report "
+            "formulier blijft gericht op zijn eigen velden.\n\n"
+            "Live sinds 2026-05-23 (commit 62daa616). Test: open elke "
+            "sub-tab en bevestig dat ze verschillende pagina's tonen."
         ),
-        "new_status": "accepted",
+        "new_status": "resolved",
         "new_repro_result": "reproduced",
         "resolution_summary": (
-            "Closure sub-tabs (checklist/end-report/lessons/benefits) all "
-            "route to End Project Report. Router config bug, separate "
-            "from the form-field fix already shipped in e02c03b1."
+            "Closure sub-tabs decoupled into 4 distinct pages — Checklist "
+            "/ End Project Report / Lessons Log / Benefits Review. Live "
+            "(commit 62daa616)."
         ),
     },
 
@@ -586,7 +589,7 @@ RESOLUTIONS = [
     #     i18n bug — NOT yet fixed.
     # ────────────────────────────────────────────────────────────────
     {
-        "bug_id": "AI-COPILOT-LANGUAGE-EN",
+        "bug_id": "AI-COPILOT-LANGUAGE-EN-RESOLVED-2026-05-23",
         "match": lambda i: (
             ("ai copilot" in (i.title + " " + i.description).lower()
              or "ai-copilot" in (i.title + " " + i.description).lower())
@@ -596,21 +599,25 @@ RESOLUTIONS = [
                  or "not changing" in (i.title + " " + i.description).lower())
         ),
         "comment_nl": (
-            f"{SCRIPT_SIGNATURE} AI-COPILOT-LANGUAGE-EN\n\n"
-            "📌 Erkend (P2 — nog niet opgelost) — de taalwissel in de AI "
-            "Copilot werkt momenteel niet: de UI staat op EN maar de "
-            "assistant-responses blijven in NL (of vice versa).\n\n"
-            "Classificatie: i18n-bug, prioriteit P2 (UX-issue, geen "
-            "blokkade voor functionaliteit). De fix vereist het meegeven "
-            "van de UI-taal in elke AI-Copilot-call en het gebruiken in "
-            "de system-prompt op de backend.\n\n"
-            "Wordt opgepakt in een aparte commit; nog niet in productie."
+            f"{SCRIPT_SIGNATURE} AI-COPILOT-LANGUAGE-EN-RESOLVED-2026-05-23\n\n"
+            "✅ Opgelost en live in productie — de AI Copilot honoreert "
+            "nu de UI-taal: zet de UI op EN en je krijgt EN-responses, "
+            "zet 'm op NL en je krijgt NL-responses.\n\n"
+            "Fix: iedere `callAI()` op de frontend leest `language` van "
+            "`useLanguage()` en stuurt 'm in het request body + "
+            "`X-UI-Language` header. De backend laat `detect_language()` "
+            "alleen nog voor logging en gebruikt de UI-taal autoritatief "
+            "voor de Anthropic system-prompt (\"respond exclusively in "
+            "<lang> regardless of input language\").\n\n"
+            "Live sinds 2026-05-23 (commit 350bc934). Test: wissel de "
+            "taal-toggle en stuur een prompt — de response volgt nu."
         ),
-        "new_status": "accepted",
+        "new_status": "resolved",
         "new_repro_result": "reproduced",
         "resolution_summary": (
-            "AI Copilot doesn't honour UI language setting. Real i18n "
-            "bug, accepted for separate fix."
+            "AI Copilot now honours UI language: frontend forwards via "
+            "X-UI-Language header + body; backend uses it as the system-"
+            "prompt language directive. Live (commit 350bc934)."
         ),
     },
 
