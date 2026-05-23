@@ -50,7 +50,7 @@ const fetchProjects = async () => {
   return response.json();
 };
 
-const callAI = async (prompt: string): Promise<string> => {
+const callAI = async (prompt: string, language: "en" | "nl" = "nl"): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
     const createChatResponse = await fetch("/api/v1/bot/chats/", {
@@ -63,7 +63,7 @@ const callAI = async (prompt: string): Promise<string> => {
     const messageResponse = await fetch(`/api/v1/bot/chats/${chatData.id}/send_message/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ message: prompt }),
+      body: JSON.stringify({ message: prompt, language }),
     });
     if (!messageResponse.ok) throw new Error("AI service unavailable");
     const data = await messageResponse.json();
@@ -301,7 +301,7 @@ const ProgramManagerDashboard: React.FC = () => {
     try {
       const langInst = language === 'nl' ? '**BELANGRIJK: Antwoord in het Nederlands.**' : '**Respond in English.**';
       const prompt = `${langInst}\n\nAnalyze: ${selectedPrograms.length} programs, ${selectedProjects.length} projects.\n\n## Summary\nProvide analysis.`;
-      const response = await callAI(prompt);
+      const response = await callAI(prompt, language === "nl" ? "nl" : "en");
       setAiSummary(response);
     } catch (error) {
       setAiSummary("## Error\n\nUnable to generate summary.");

@@ -16,7 +16,7 @@ interface VoiceChatDialogProps {
   isNL: boolean;
 }
 
-const callAI = async (prompt: string): Promise<string> => {
+const callAI = async (prompt: string, language: "en" | "nl" = "nl"): Promise<string> => {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Not authenticated");
   const createRes = await fetch("/api/v1/bot/chats/", {
@@ -29,7 +29,7 @@ const callAI = async (prompt: string): Promise<string> => {
   const msgRes = await fetch(`/api/v1/bot/chats/${chatData.id}/send_message/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ message: prompt }),
+    body: JSON.stringify({ message: prompt, language }),
   });
   if (!msgRes.ok) throw new Error("AI service unavailable");
   const data = await msgRes.json();
@@ -97,7 +97,7 @@ const VoiceChatDialog = ({ open, onClose, isNL }: VoiceChatDialogProps) => {
     setIsProcessing(true);
     setAiResponse("");
     try {
-      const response = await callAI(message);
+      const response = await callAI(message, isNL ? "nl" : "en");
       setAiResponse(response);
       // Speak the response
       if ("speechSynthesis" in window) {

@@ -83,11 +83,23 @@ def detect_language(text: str) -> str:
 def get_language_instruction(language: str) -> str:
     """
     Get the language instruction to prepend to messages.
+    Reinforced so the model honours the UI language even if the user types
+    in a different language (issue #12).
     """
     if language == 'nl':
-        return "[BELANGRIJK: Antwoord volledig in het Nederlands] "
+        return (
+            "[TAALINSTRUCTIE — VERPLICHT] Antwoord uitsluitend in het Nederlands, "
+            "ongeacht in welke taal de gebruiker hieronder schrijft. "
+            "Gebruik Nederlandse koppen, opsommingstekens en zinnen. "
+            "Vraag van de gebruiker: "
+        )
     else:
-        return "[IMPORTANT: Respond entirely in English] "
+        return (
+            "[LANGUAGE INSTRUCTION — REQUIRED] Respond exclusively in English, "
+            "regardless of which language the user writes their question in below. "
+            "Use English headings, bullet points, and sentences. "
+            "User question: "
+        )
 
 
 class ChatViewSet(viewsets.ModelViewSet):
@@ -123,26 +135,24 @@ class ChatViewSet(viewsets.ModelViewSet):
         chat = self.get_object()
         message = request.data.get("message")
         user_details = request.user
-        
-        # Get website language from frontend (default: 'nl')
-        website_language = request.data.get("language", "nl")
+
+        # Get website UI language from frontend. The UI language is authoritative —
+        # the assistant must respond in the language the user has selected in the UI,
+        # regardless of what language the user types their message in.
+        # (Fixes issue #12 — AI Copilot language not changing to English.)
+        website_language = request.data.get("language") or request.headers.get("X-UI-Language") or "nl"
+        if website_language not in ("en", "nl"):
+            website_language = "nl"
 
         if not message:
             return Response(
                 {"error": "Message is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Use website language as default, but detect from message if clearly different
+        # Still detect for debugging only — never used to override UI choice.
         detected_language = detect_language(message)
-        
-        # If message language is clearly detected, use it. Otherwise use website language.
-        # This allows users to type in a different language than the website if they want.
-        final_language = detected_language if detected_language != 'unknown' else website_language
-        
-        # If detection is uncertain, fall back to website language
-        if detected_language == website_language or detected_language == 'unknown':
-            final_language = website_language
-            
+        final_language = website_language
+
         language_instruction = get_language_instruction(final_language)
         
         # Get authentication token from request

@@ -98,7 +98,7 @@ const MAX_HISTORY_ITEMS = 20;
 // ============================================
 // AI API CALL
 // ============================================
-const callAI = async (prompt: string): Promise<string> => {
+const callAI = async (prompt: string, language: "en" | "nl" = "nl"): Promise<string> => {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Not authenticated");
 
@@ -107,16 +107,16 @@ const callAI = async (prompt: string): Promise<string> => {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ title: "AI Commander Query" }),
   });
-  
+
   if (!createChatResponse.ok) throw new Error("Failed to create chat");
   const chatData = await createChatResponse.json();
-  
+
   const messageResponse = await fetch(`/api/v1/bot/chats/${chatData.id}/send_message/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ message: prompt }),
+    body: JSON.stringify({ message: prompt, language }),
   });
-  
+
   if (!messageResponse.ok) throw new Error("AI service unavailable");
   const data = await messageResponse.json();
   return data.ai_response?.content || "";
@@ -442,7 +442,7 @@ const AICommander = ({
     
     try {
       const prompt = buildContextPrompt(searchQuery, programs, projects, isNL);
-      const response = onAIQuery ? await onAIQuery(searchQuery, { programs, projects }) : await callAI(prompt);
+      const response = onAIQuery ? await onAIQuery(searchQuery, { programs, projects }) : await callAI(prompt, isNL ? "nl" : "en");
       setAiResponse(response);
       addToHistory(searchQuery, response);
     } catch (err) {
