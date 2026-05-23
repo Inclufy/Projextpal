@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,15 +10,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil } from "lucide-react";
+import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil, FileText, Layers, X } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const Prince2WorkPackages = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stageFilter = searchParams.get("stage");
+  const highlightWp = searchParams.get("wp");
   const [workPackages, setWorkPackages] = useState<any[]>([]);
   const [stages, setStages] = useState<any[]>([]);
+  const [stagePlans, setStagePlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -31,9 +36,10 @@ const Prince2WorkPackages = () => {
 
   const fetchData = async () => {
     try {
-      const [wpRes, stRes] = await Promise.all([
+      const [wpRes, stRes, spRes] = await Promise.all([
         fetch(`/api/v1/projects/${id}/prince2/work-packages/`, { headers }),
         fetch(`/api/v1/projects/${id}/prince2/stages/`, { headers }),
+        fetch(`/api/v1/projects/${id}/prince2/stage-plans/`, { headers }),
       ]);
       if (wpRes.ok) {
         const data = await wpRes.json();
@@ -43,11 +49,44 @@ const Prince2WorkPackages = () => {
         const data = await stRes.json();
         setStages(Array.isArray(data) ? data : data.results || []);
       }
+      if (spRes.ok) {
+        const data = await spRes.json();
+        setStagePlans(Array.isArray(data) ? data : data.results || []);
+      }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, [id]);
+
+  // Stage Plans grouped by stage for the reverse-linkage breadcrumb on each WP card
+  const stagePlansByStage = useMemo(() => {
+    const grouped: Record<number, any[]> = {};
+    stagePlans.forEach((sp) => {
+      if (sp.stage != null) {
+        if (!grouped[sp.stage]) grouped[sp.stage] = [];
+        grouped[sp.stage].push(sp);
+      }
+    });
+    return grouped;
+  }, [stagePlans]);
+
+  const getStageName = (stageId: number | null | undefined) =>
+    stageId == null ? null : stages.find((s) => s.id === stageId)?.name || `Stage ${stageId}`;
+
+  // If ?stage= filter is present, narrow the list. Audit fix #4: stage-scoped WP view.
+  const visibleWorkPackages = useMemo(() => {
+    if (!stageFilter) return workPackages;
+    const sid = parseInt(stageFilter);
+    if (Number.isNaN(sid)) return workPackages;
+    return workPackages.filter((wp) => wp.stage === sid);
+  }, [workPackages, stageFilter]);
+
+  const clearStageFilter = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("stage");
+    setSearchParams(next, { replace: true });
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -120,12 +159,23 @@ const Prince2WorkPackages = () => {
           <div className="flex items-center gap-3">
             <Package className="h-6 w-6 text-blue-500" />
             <h1 className="text-2xl font-bold">{pt("Work Packages")}</h1>
-            <Badge variant="outline">{workPackages.length}</Badge>
+            <Badge variant="outline">{visibleWorkPackages.length}{stageFilter ? ` / ${workPackages.length}` : ""}</Badge>
           </div>
           <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create")}</Button>
         </div>
 
-        {workPackages.length === 0 ? (
+        {stageFilter && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 border rounded-md text-sm">
+            <Layers className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">{pt("Filtered by stage")}:</span>
+            <span className="font-medium">{getStageName(parseInt(stageFilter)) || stageFilter}</span>
+            <Button variant="ghost" size="sm" className="ml-auto h-6 gap-1" onClick={clearStageFilter}>
+              <X className="h-3 w-3" /> {pt("Clear")}
+            </Button>
+          </div>
+        )}
+
+        {visibleWorkPackages.length === 0 ? (
           <EmptyState
             icon={Package}
             title={pt("No work packages yet")}
@@ -135,10 +185,44 @@ const Prince2WorkPackages = () => {
           />
         ) : (
           <div className="space-y-3">
-            {workPackages.map((wp) => (
-              <Card key={wp.id} className="hover:shadow-md transition-shadow">
+            {visibleWorkPackages.map((wp) => {
+              const stageName = getStageName(wp.stage);
+              const parentPlans = wp.stage != null ? (stagePlansByStage[wp.stage] || []) : [];
+              const isHighlighted = highlightWp && parseInt(highlightWp) === wp.id;
+              return (
+              <Card key={wp.id} className={`hover:shadow-md transition-shadow ${isHighlighted ? "ring-2 ring-blue-400" : ""}`}>
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
+                    {/* Reverse linkage: parent Stage + Stage Plan breadcrumb */}
+                    {(stageName || parentPlans.length > 0) && (
+                      <div className="flex items-center gap-1 mb-1 text-xs text-muted-foreground flex-wrap">
+                        {stageName && (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/projects/${id}/prince2/dashboard?stage=${wp.stage}`)}
+                            className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
+                            title={pt("View stage")}
+                          >
+                            <Layers className="h-3 w-3" /> {stageName}
+                          </button>
+                        )}
+                        {parentPlans.length > 0 && (
+                          <>
+                            <span className="text-muted-foreground/60">/</span>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/projects/${id}/prince2/stage-plan`)}
+                              className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
+                              title={pt("View Stage Plan")}
+                            >
+                              <FileText className="h-3 w-3" />
+                              {pt("Stage Plan")}
+                              {parentPlans.length > 1 && ` (${parentPlans.length})`}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-muted-foreground">{wp.reference}</span>
                       <Badge className={`text-xs ${statusColors[wp.status] || ""}`}>{wp.status}</Badge>
@@ -172,7 +256,8 @@ const Prince2WorkPackages = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
