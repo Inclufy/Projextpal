@@ -296,7 +296,7 @@ class WaterfallRiskSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterfallRisk
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['project', 'created_at', 'updated_at']
 
 
 # Issue Serializer
@@ -304,7 +304,7 @@ class WaterfallIssueSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterfallIssue
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['project', 'created_at', 'updated_at']
 
 
 # Deliverable Serializer
@@ -312,7 +312,7 @@ class WaterfallDeliverableSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterfallDeliverable
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['project', 'created_at', 'updated_at']
 
 
 # Baseline Serializer

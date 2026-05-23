@@ -145,4 +145,4 @@ class WorkPolicySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkPolicy
         fields = ['id', 'project', 'title', 'description', 'category', 'is_active', 'order', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']

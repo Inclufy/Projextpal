@@ -827,6 +827,9 @@ class WaterfallRiskViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         return WaterfallRisk.objects.filter(project_id=project_id)
 
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
 
 # Issue ViewSet
 class WaterfallIssueViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
@@ -836,6 +839,9 @@ class WaterfallIssueViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
         project_id = self.kwargs.get('project_id')
         return WaterfallIssue.objects.filter(project_id=project_id)
 
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
 
 # Deliverable ViewSet
 class WaterfallDeliverableViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
@@ -844,6 +850,9 @@ class WaterfallDeliverableViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         return WaterfallDeliverable.objects.filter(project_id=project_id)
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
 
 
 # Baseline ViewSet
