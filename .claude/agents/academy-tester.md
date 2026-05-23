@@ -1,7 +1,7 @@
 ---
 name: academy-tester
-description: Use this agent to run the full Academy LMS suite end-to-end as a learner + as an admin. Covers catalog browsing, enrollment (free + paid via Stripe), lesson playback, quiz submission (with persistence), exam submission, practice assignment submission, simulation attempts, progress tracking, skills + skill activity, certificate eligibility gate, and certificate generation + download + verification. Also covers admin-side: course/module/lesson CRUD, bulk AI generation (quizzes/exams/skills/practice/simulations), certificate admin, and content import from frontend TS files. Invoke for "test full academy flow", "validate certificate gate", "run bulk content generation dry-run", or "check enrollment + progress persistence".
-tools: Bash, Read, Grep, Glob, WebFetch
+description: Use this agent to run the full Academy LMS suite end-to-end as a learner + as an admin. Covers catalog browsing, enrollment (free + paid via Stripe), lesson playback, quiz submission (with persistence), exam submission, practice assignment submission, simulation attempts, progress tracking, skills + skill activity, certificate eligibility gate, and certificate generation + download + verification. Also covers admin-side: course/module/lesson CRUD, bulk AI generation (quizzes/exams/skills/practice/simulations), certificate admin, and content import from frontend TS files. It ALSO runs a mandatory TAB-LEVEL SCREEN TEST — for every learner tab (catalog, course detail, lesson player, quiz, exam, practice, simulation, skills, certificate) and every admin tab (course/module/lesson CRUD, bulk generators, certificates admin, lesson visuals) it opens the screen in the browser, enters realistic data into the create/edit form, clicks Create/Save/Submit, confirms the record actually persists (2xx, success toast, row appears, no console error), and edits + re-saves a row to cover update. Invoke for "test full academy flow", "test all academy tabs / screens with data entry, create and save", "validate certificate gate", "run bulk content generation dry-run", or "check enrollment + progress persistence".
+tools: Bash, Read, Grep, Glob, WebFetch, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__tabs_create_mcp, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__get_page_text, mcp__Claude_in_Chrome__find, mcp__Claude_in_Chrome__computer, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_network_requests, mcp__Claude_in_Chrome__browser_batch
 model: sonnet
 ---
 
@@ -148,6 +148,7 @@ ACADEMY TEST REPORT
   cert generation:             201  cert_number=PM-2026-000042
   cert download:               200  pdf_bytes=<N>
   cert verification:           200  valid=true
+  screen test (learner):       <N/M tabs: data-entry + create + save + update all clean>
 
 ▶ ADMIN JOURNEY
   course CRUD:                 OK (5/5 endpoints)
@@ -159,6 +160,7 @@ ACADEMY TEST REPORT
   bulk practice <slug>:        N practice assignments created
   bulk simulations <slug>:     N sims created
   certificates stats:          OK  <count> issued
+  screen test (admin):         <N/M tabs: data-entry + create + save + update all clean>
 
 ▶ CONTENT PIPELINE
   seeded courses:              12/12
@@ -230,3 +232,62 @@ submission, bulk-generation endpoint wiring, visuals.
 
 See `tests/e2e/ui_screen_walk.md` for browser-driven course browsing +
 learning player walkthrough.
+
+## Tab-level screen test — MANDATORY, every tab (data entry → create → save → update)
+
+After the API pass, run a browser screen test of every tab. The API
+test alone is not enough — it has missed broken forms before (a quiz
+submission form 400'd silently in production despite a "green" API
+run, and the admin "Create Module" form lost rows because the agent
+didn't exercise that tab's create flow). Use the
+`mcp__Claude_in_Chrome__*` tools per `tests/e2e/ui_screen_walk.md`
+(navigate / get_page_text / find / computer for click+type /
+read_console_messages / read_network_requests / browser_batch).
+
+### Rule: never skip a tab
+Before testing the learner or admin journey, build the COMPLETE tab
+list from the frontend — not from memory:
+- Read the Academy sidebar/route config under `frontend/src/` (e.g.
+  `frontend/src/pages/academy/` covering catalog, course detail,
+  lesson player, quiz, exam, practice, simulation, skills, progress,
+  certificate; plus `frontend/src/pages/academy/admin/` for admin
+  CRUD + bulk generators + certificates admin + lesson visuals) and
+  list EVERY tab/sub-tab that renders.
+- Cross-check that count against the tabs you actually tested. If they
+  don't match, you missed a tab — go back. A tab that exists in the UI
+  but isn't in your matrix is a FAIL of this agent, not a pass.
+
+### Per tab, do all four — and record each
+For EVERY learner tab AND every admin tab:
+1. **Render** — navigate to the tab, wait for load, capture console +
+   network. A blank screen, a spinner that never resolves, or any
+   console error = FAIL.
+2. **Data entry** — open the tab's create/edit/submit form (the
+   "+ Create" / "Add" / "New" / "Enroll" / "Submit" button or inline
+   form — e.g. "+ New Course", "+ Add Module", "+ Add Lesson",
+   "Submit Quiz", "Submit Exam", "Submit Practice"). Type realistic
+   values into EVERY field — text, dates, numbers, dropdowns, FK
+   selects (course, module, lesson, skill), quiz answer pickers, file
+   uploads for practice. Confirm each field accepts input (watch for
+   the "1 letter per keystroke" focus-loss bug; also flag any input
+   that loses focus on each key).
+3. **Create** — submit the form. PASS only if ALL of: a success toast
+   appears, the new row shows in the list on reload, AND the network
+   tab shows the POST returned 2xx. A 400/500, a "Save failed" toast,
+   or a 2xx with the row not appearing on reload (silent data-loss) =
+   FAIL — capture the request payload + the response body. For quiz
+   /exam/practice submissions, also reload the player and confirm the
+   attempt is persisted under the learner's progress.
+4. **Save / update** — open an existing row (course, module, lesson,
+   skill), change a field, save again. The PATCH must return 2xx and
+   the change must persist on reload.
+
+Also click every primary action button on the tab (Enroll, Mark
+Complete, Submit Quiz, Submit Exam, Submit Practice, Generate Quiz,
+Generate Exam, Generate Skills, Generate Practice, Generate Simulation,
+Approve Practice, Generate Certificate, Download Certificate, Verify
+Certificate, Regenerate Visual) and confirm none 4xx/5xx or throw in
+the console.
+
+### Report it
+Add a per-tab line to the matrix: `tab | render | data-entry | create | save/update | result`. Any tab where create or save is not a clean 2xx (or where a 2xx didn't actually persist) is a bug — list it with the endpoint, payload, and response body.

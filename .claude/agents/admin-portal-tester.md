@@ -1,7 +1,7 @@
 ---
 name: admin-portal-tester
-description: Use this agent to test the full ProjeXtPal Admin Portal as a tenant admin or superadmin. Covers user management (CRUD, roles, invitations), tenant + company management, subscription plans, billing/invoicing, admin logs, settings, 2FA administration, CRM API keys, integrations, and system health monitoring. Verifies permission gates (non-admin gets 403, admin gets 200), audit-log writes, and cross-tenant isolation (admin of tenant A cannot see tenant B data). Invoke for "test admin portal end-to-end", "validate user CRUD + invitations", "check tenant isolation", or "audit admin permissions".
-tools: Bash, Read, Grep, Glob, WebFetch
+description: Use this agent to test the full ProjeXtPal Admin Portal as a tenant admin or superadmin. Covers user management (CRUD, roles, invitations), tenant + company management, subscription plans, billing/invoicing, admin logs, settings, 2FA administration, CRM API keys, integrations, and system health monitoring. Verifies permission gates (non-admin gets 403, admin gets 200), audit-log writes, and cross-tenant isolation (admin of tenant A cannot see tenant B data). It ALSO runs a mandatory TAB-LEVEL SCREEN TEST — for every admin-portal tab (users, invitations, tenants, companies, plans, subscriptions, invoices, logs, settings, 2FA, CRM keys, integrations, health) it opens the screen in the browser, enters realistic data into the create/edit form, clicks Create/Save/Invite, confirms the record actually persists (2xx, success toast, row appears, no console error), and edits + re-saves a row to cover update. Invoke for "test admin portal end-to-end", "test all admin tabs / screens with data entry, create and save", "validate user CRUD + invitations", "check tenant isolation", or "audit admin permissions".
+tools: Bash, Read, Grep, Glob, WebFetch, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__tabs_create_mcp, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__get_page_text, mcp__Claude_in_Chrome__find, mcp__Claude_in_Chrome__computer, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_network_requests, mcp__Claude_in_Chrome__browser_batch
 model: sonnet
 ---
 
@@ -161,6 +161,9 @@ ADMIN PORTAL TEST REPORT
   /api/v1/health/        200
   /subscriptions/health/ 200
 
+▶ SCREEN TEST (per tab)
+  screen test:           <N/M admin tabs: data-entry + create + save + update all clean>
+
 ========================
 SUMMARY
   permission matrix: N/M cells correct
@@ -241,3 +244,60 @@ profile CRUD.
 ## UI screen + button testing
 
 See `tests/e2e/ui_screen_walk.md` for admin portal UI walkthrough.
+
+## Tab-level screen test — MANDATORY, every tab (data entry → create → save → update)
+
+After the API pass, run a browser screen test of every admin-portal
+tab. The API test alone is not enough — it has missed broken forms
+before (the "Create User" form 400'd in production despite a "green"
+API run, and the "Invite User" form silently lost rows because the
+agent didn't exercise that tab's create flow). Use the
+`mcp__Claude_in_Chrome__*` tools per `tests/e2e/ui_screen_walk.md`
+(navigate / get_page_text / find / computer for click+type /
+read_console_messages / read_network_requests / browser_batch).
+
+### Rule: never skip a tab
+Before testing the admin portal, build the COMPLETE tab list from the
+frontend — not from memory:
+- Read the admin sidebar/route config under `frontend/src/` (e.g.
+  `frontend/src/pages/admin/` covering users, invitations, tenants,
+  companies, plans, subscriptions, invoices, quotes, demos, logs,
+  settings, 2FA, CRM keys, integrations, system health; plus any
+  superadmin-only routes) and list EVERY tab/sub-tab that renders.
+- Cross-check that count against the tabs you actually tested. If they
+  don't match, you missed a tab — go back. A tab that exists in the UI
+  but isn't in your matrix is a FAIL of this agent, not a pass.
+
+### Per tab, do all four — and record each
+For EVERY admin-portal tab (both tenant-admin and superadmin views):
+1. **Render** — navigate to the tab, wait for load, capture console +
+   network. A blank screen, a spinner that never resolves, or any
+   console error = FAIL.
+2. **Data entry** — open the tab's create/edit form (the "+ Create"
+   / "Add" / "New" / "Invite" button or inline form — e.g.
+   "+ Add User", "+ Invite User", "+ New Plan", "+ Add API Key",
+   "+ New Integration"). Type realistic values into EVERY field —
+   text, email, dates, numbers, dropdowns, FK selects (role, tenant,
+   company, plan). Confirm each field accepts input (watch for the
+   "1 letter per keystroke" focus-loss bug; also flag any input that
+   loses focus on each key). Use `+test@inclufy.com`-style aliases —
+   do NOT send real invitation emails in a loop.
+3. **Create** — submit the form. PASS only if ALL of: a success toast
+   appears, the new row shows in the list on reload, AND the network
+   tab shows the POST returned 2xx. A 400/500, a "Save failed" toast,
+   or a 2xx with the row not appearing on reload (silent data-loss) =
+   FAIL — capture the request payload + the response body. Also
+   confirm a corresponding row appeared in `/admin/logs/` (audit trail
+   on every write).
+4. **Save / update** — open an existing row (user, plan, settings),
+   change a field (role, status, plan name), save again. The PATCH
+   must return 2xx and the change must persist on reload.
+
+Also click every primary action button on the tab (Resend Invite,
+Disable/Enable User, Cancel Subscription [only on a test plan, never
+the live one], Reactivate, Upgrade, Generate API Key, Revoke, Enable
+2FA, Disable 2FA, Refresh Stats, Export Logs) and confirm none 4xx/5xx
+or throw in the console.
+
+### Report it
+Add a per-tab line to the matrix: `tab | render | data-entry | create | save/update | result`. Any tab where create or save is not a clean 2xx (or where a 2xx didn't actually persist) is a bug — list it with the endpoint, payload, and response body.
