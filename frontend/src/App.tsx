@@ -141,6 +141,9 @@ const Prince2ProjectBrief = lazy(() => import("./pages/prince2/Prince2ProjectBri
 const Prince2Tolerances = lazy(() => import("./pages/prince2/Prince2Tolerances"));
 const Prince2Governance = lazy(() => import("./pages/prince2/Prince2Governance"));
 const Prince2ProjectClosure = lazy(() => import("./pages/prince2/Prince2ProjectClosure"));
+const Prince2ClosureChecklist = lazy(() => import("./pages/prince2/Prince2ClosureChecklist"));
+const Prince2LessonsLog = lazy(() => import("./pages/prince2/Prince2LessonsLog"));
+const Prince2BenefitsReview = lazy(() => import("./pages/prince2/Prince2BenefitsReview"));
 
 // Scrum Pages
 const ScrumOverview = lazy(() => import('./pages/scrum/ScrumOverview'));
@@ -818,8 +821,14 @@ const App = () => (
               <Route path="/projects/:id/prince2/project-board" element={<ProtectedPage><Prince2ProjectBoard /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/governance" element={<ProtectedPage><Prince2Governance /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/highlight-report" element={<ProtectedPage><Prince2HighlightReport /></ProtectedPage>} />
+              {/* Default closure landing keeps existing URL working — it now shows the End Project Report. */}
               <Route path="/projects/:id/prince2/closure" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/project-closure" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
+              {/* Each closure sub-tab now renders its own page (issue #14). */}
+              <Route path="/projects/:id/prince2/closure-checklist" element={<ProtectedPage><Prince2ClosureChecklist /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/end-project-report" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/lessons-log" element={<ProtectedPage><Prince2LessonsLog /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/benefits-review" element={<ProtectedPage><Prince2BenefitsReview /></ProtectedPage>} />
               
               {/* ============================================ */}
               {/* Scrum Methodology Routes                     */}

@@ -414,10 +414,10 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Project Closure",
           icon: CheckSquare,
           items: [
-            { title: "Closure Checklist", url: `/projects/${projectId}/prince2/closure`, icon: CheckSquare },
-            { title: "End Project Report", url: `/projects/${projectId}/prince2/closure`, icon: File },
-            { title: "Lessons Log", url: `/projects/${projectId}/prince2/closure`, icon: Lightbulb },
-            { title: "Benefits Review", url: `/projects/${projectId}/prince2/closure`, icon: Award },
+            { title: "Closure Checklist", url: `/projects/${projectId}/prince2/closure-checklist`, icon: CheckSquare },
+            { title: "End Project Report", url: `/projects/${projectId}/prince2/end-project-report`, icon: File },
+            { title: "Lessons Log", url: `/projects/${projectId}/prince2/lessons-log`, icon: Lightbulb },
+            { title: "Benefits Review", url: `/projects/${projectId}/prince2/benefits-review`, icon: Award },
           ],
         },
       ];

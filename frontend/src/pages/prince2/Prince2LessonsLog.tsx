@@ -1,0 +1,124 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
+import { toast } from "sonner";
+
+const Prince2LessonsLog = () => {
+  const { pt } = usePageTranslations();
+  const { id } = useParams<{ id: string }>();
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lessonDialog, setLessonDialog] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
+  const [lessonForm, setLessonForm] = useState({ title: "", description: "", category: "process", lesson_type: "positive", recommendation: "" });
+
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
+
+  const fetchData = async () => {
+    try {
+      const lRes = await fetch(`/api/v1/projects/${id}/prince2/lessons/`, { headers });
+      if (lRes.ok) { const d = await lRes.json(); setLessons(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchData(); }, [id]);
+
+  const openCreateLesson = () => { setEditingLesson(null); setLessonForm({ title: "", description: "", category: "process", lesson_type: "positive", recommendation: "" }); setLessonDialog(true); };
+  const openEditLesson = (l: any) => { setEditingLesson(l); setLessonForm({ title: l.title || "", description: l.description || "", category: l.category || "process", lesson_type: l.lesson_type || "positive", recommendation: l.recommendation || "" }); setLessonDialog(true); };
+
+  const saveLesson = async () => {
+    if (!lessonForm.title) { toast.error(pt("Title is required")); return; }
+    try {
+      const url = editingLesson ? `/api/v1/projects/${id}/prince2/lessons/${editingLesson.id}/` : `/api/v1/projects/${id}/prince2/lessons/`;
+      const method = editingLesson ? "PATCH" : "POST";
+      const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(lessonForm) });
+      if (r.ok) { toast.success(pt("Saved")); setLessonDialog(false); fetchData(); }
+      else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
+  };
+
+  const deleteLesson = async (lId: number) => {
+    if (!confirm(pt("Are you sure you want to delete this?"))) return;
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/prince2/lessons/${lId}/`, { method: "DELETE", headers });
+      if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+    } catch { toast.error(pt("Delete failed")); }
+  };
+
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
+
+  const positiveCount = lessons.filter((l) => l.lesson_type === "positive").length;
+  const negativeCount = lessons.filter((l) => l.lesson_type === "negative").length;
+
+  return (
+    <div className="min-h-full bg-background">
+      <ProjectHeader />
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-6 w-6 text-blue-500" />
+            <div>
+              <h1 className="text-2xl font-bold">{pt("Lessons Log")}</h1>
+              <p className="text-sm text-muted-foreground">{lessons.length} {pt("lessons recorded")} — {positiveCount} {pt("Positive")} / {negativeCount} {pt("Negative")}</p>
+            </div>
+          </div>
+          <Button onClick={openCreateLesson} className="gap-1"><Plus className="h-4 w-4" /> {pt("Add")}</Button>
+        </div>
+
+        <Card>
+          <CardHeader><CardTitle>{pt("Lessons Log")} ({lessons.length})</CardTitle></CardHeader>
+          <CardContent>
+            {lessons.length === 0 ? <p className="text-muted-foreground text-center py-8">{pt("No lessons recorded yet")}</p> : (
+              <div className="space-y-2">{lessons.map((l) => (
+                <div key={l.id} className="flex items-start justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant={l.lesson_type === "positive" ? "default" : "destructive"} className="text-xs">{l.lesson_type}</Badge>
+                      <Badge variant="outline" className="text-xs">{l.category}</Badge>
+                    </div>
+                    <p className="font-medium">{l.title}</p>
+                    {l.description && <p className="text-sm text-muted-foreground mt-1">{l.description}</p>}
+                    {l.recommendation && <p className="text-sm mt-2"><span className="font-semibold">{pt("Recommendation")}:</span> {l.recommendation}</p>}
+                  </div>
+                  <div className="flex gap-1 ml-4">
+                    <Button variant="ghost" size="sm" onClick={() => openEditLesson(l)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => deleteLesson(l.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </div>
+                </div>
+              ))}</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Dialog open={lessonDialog} onOpenChange={setLessonDialog}>
+        <DialogContent><DialogHeader><DialogTitle>{editingLesson ? pt("Edit") : pt("Add")} {pt("Lesson")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2"><Label>{pt("Title")} *</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={lessonForm.description} onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>{pt("Type")}</Label><Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="positive">{pt("Positive")}</SelectItem><SelectItem value="negative">{pt("Negative")}</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>{pt("Category")}</Label><Select value={lessonForm.category} onValueChange={(v) => setLessonForm({ ...lessonForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="process">{pt("Process")}</SelectItem><SelectItem value="technology">{pt("Technology")}</SelectItem><SelectItem value="people">{pt("People")}</SelectItem></SelectContent></Select></div>
+            </div>
+            <div className="space-y-2"><Label>{pt("Recommendation")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={lessonForm.recommendation} onChange={(e) => setLessonForm({ ...lessonForm, recommendation: e.target.value })} /></div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setLessonDialog(false)}>{pt("Cancel")}</Button><Button onClick={saveLesson}>{pt("Save")}</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Prince2LessonsLog;
