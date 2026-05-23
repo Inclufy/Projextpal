@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,13 +83,31 @@ const AgileEpics = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  // Auto-expand the highlighted epic if it has any items
+  // Auto-expand the highlighted epic so its linked items are visible after a
+  // deep-link arrives. The smooth-scroll for the same row is handled by a
+  // dedicated ref + effect below (audit polish — previously the ring rendered
+  // but the row never scrolled into view on long lists).
   useEffect(() => {
     if (highlightEpic) {
       const eid = parseInt(highlightEpic);
       if (!Number.isNaN(eid)) setExpanded(prev => ({ ...prev, [eid]: true }));
     }
   }, [highlightEpic]);
+
+  // Per-page highlight scroll: keep a ref keyed by epic id, attach it via a
+  // tiny callback ref so we don't have to extract a child component. The
+  // shared useHighlightFromQuery hook handles the same flow for pages that
+  // can extract a row component cheaply; here we inline the equivalent.
+  const highlightedRowRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!highlightEpic || !highlightedRowRef.current || epics.length === 0) return;
+    const el = highlightedRowRef.current;
+    const t = window.setTimeout(() => {
+      try { el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      catch { el.scrollIntoView(); }
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [highlightEpic, epics.length]);
 
   const itemsByEpic = useMemo(() => {
     const grouped: Record<number, any[]> = {};
@@ -198,7 +216,11 @@ const AgileEpics = () => {
               const colorDot = COLOR_DOTS[epic.color] || "bg-blue-500";
               const preview = linked.slice(0, 5);
               return (
-                <Card key={epic.id} className={`hover:shadow-md transition-shadow ${isHighlighted ? "ring-2 ring-emerald-400" : ""}`}>
+                <Card
+                  key={epic.id}
+                  ref={isHighlighted ? highlightedRowRef : undefined}
+                  className={`hover:shadow-md transition-shadow ${isHighlighted ? "ring-2 ring-emerald-400" : ""}`}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">

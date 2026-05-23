@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,33 @@ import { toast } from "sonner";
 const WaterfallRequirements = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  // Deep-link from TestCase traceability badges (commit 938aaf29) lands here
+  // with `?highlight=<requirement_id>`. We surface the row by smooth-scrolling
+  // it into view and giving it a 3s ring.
+  const [searchParams] = useSearchParams();
+  const highlight = searchParams.get("highlight");
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", requirement_type: "functional", priority: "should_have", source: "" });
+
+  // Highlight effect: ref attaches to whichever row matches `?highlight=<id>`,
+  // and a 3s ringActive flag fades the ring after the scroll lands.
+  const highlightedRowRef = useRef<HTMLDivElement | null>(null);
+  const [ringActive, setRingActive] = useState(true);
+  useEffect(() => {
+    if (!highlight || !highlightedRowRef.current || items.length === 0) return;
+    const el = highlightedRowRef.current;
+    setRingActive(true);
+    const tScroll = window.setTimeout(() => {
+      try { el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      catch { el.scrollIntoView(); }
+    }, 50);
+    const tFade = window.setTimeout(() => setRingActive(false), 3000);
+    return () => { window.clearTimeout(tScroll); window.clearTimeout(tFade); };
+  }, [highlight, items.length]);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -45,12 +66,19 @@ const WaterfallRequirements = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between"><div className="flex items-center gap-3"><FileText className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Requirements")}</h1><Badge variant="outline">{items.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
         {items.length === 0 ? <Card className="p-8 text-center"><FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No requirements yet")}</h3></Card> : (
-          <div className="space-y-2">{items.map(i => (
-            <Card key={i.id}><CardContent className="p-4 flex items-center justify-between">
+          <div className="space-y-2">{items.map(i => {
+            const isHighlighted = highlight != null && String(i.id) === String(highlight);
+            return (
+            <Card
+              key={i.id}
+              ref={isHighlighted ? highlightedRowRef : undefined}
+              className={`transition-all ${isHighlighted && ringActive ? "ring-2 ring-primary" : ""}`}
+            ><CardContent className="p-4 flex items-center justify-between">
               <div className="flex-1"><div className="flex items-center gap-2 mb-1"><Badge className={`text-xs ${typeColors[i.requirement_type] || ""}`}>{i.requirement_type}</Badge><span className="font-medium">{i.title}</span><Badge className={`text-xs ${prioColors[i.priority] || ""}`}>{i.priority}</Badge><Badge variant={i.status === "approved" ? "default" : "outline"} className="text-xs">{i.status}</Badge></div>{i.description && <p className="text-sm text-muted-foreground">{i.description}</p>}</div>
               <div className="flex gap-1">{i.status !== "approved" && <Button variant="ghost" size="sm" onClick={() => handleApprove(i.id)} title="Approve"><CheckCircle2 className="h-4 w-4 text-green-500" /></Button>}<Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div>
             </CardContent></Card>
-          ))}</div>
+            );
+          })}</div>
         )}
       </div>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} Requirement</DialogTitle></DialogHeader>
