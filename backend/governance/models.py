@@ -233,6 +233,15 @@ class Meeting(models.Model):
         'programs.Program', on_delete=models.CASCADE,
         null=True, blank=True, related_name='governance_meetings',
     )
+    # Board-level meeting: a Meeting can be tied to a specific GovernanceBoard
+    # (e.g. a regular Steering Committee meeting). SET_NULL so deleting the
+    # board leaves the meeting history intact. Used by BoardDetail's Meetings
+    # panel to query precisely by board instead of falling back to program-
+    # scoped + filtering.
+    board = models.ForeignKey(
+        'governance.GovernanceBoard', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='meetings_explicit',
+    )
     title = models.CharField(max_length=255)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='steering')
     scheduled_at = models.DateTimeField(null=True, blank=True)

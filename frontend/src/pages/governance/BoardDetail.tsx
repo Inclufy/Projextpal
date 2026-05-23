@@ -105,10 +105,10 @@ const BoardDetail: React.FC = () => {
   const [parentProgram, setParentProgram] = useState<ParentRef | null>(null);
   const [parentProject, setParentProject] = useState<ParentRef | null>(null);
 
-  // Related entities — meetings of this board (best-effort via program filter
-  // since governance.Meeting itself lacks a board FK; the audit fix scoped to
-  // Decision FKs) and decisions taken either directly at this board or in
-  // any of its meetings.
+  // Related entities — meetings of this board (board-precise via Meeting.board
+  // FK from migration 0006, with a legacy program-scoped fallback for old
+  // rows) and decisions taken either directly at this board or in any of its
+  // meetings.
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [decisions, setDecisions] = useState<Decision[]>([]);
 
@@ -168,9 +168,23 @@ const BoardDetail: React.FC = () => {
   };
 
   const fetchMeetings = async (b: Board) => {
-    // Meeting has only a program FK today. Best-effort: if the board has a
-    // program parent, list that program's governance meetings. If not, we
-    // still render the panel (empty) so the UI is consistent.
+    // Primary path: governance.Meeting now has a direct board FK
+    // (migration 0006), so we can query precisely. Legacy rows created before
+    // the FK existed have meeting.board=NULL — they still appear in the
+    // program-scoped fallback so nothing regresses.
+    try {
+      const r = await fetch(`/api/v1/governance/meetings/?board=${id}`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        const boardScoped: Meeting[] = Array.isArray(d) ? d : d.results || [];
+        if (boardScoped.length > 0) {
+          setMeetings(boardScoped);
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+    // Legacy fallback: program-scoped lookup catches meetings that were
+    // created before Meeting.board existed.
     try {
       if (b.program) {
         const r = await fetch(`/api/v1/governance/meetings/?program=${b.program}`, { headers });
@@ -465,9 +479,9 @@ const BoardDetail: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Meetings panel — best-effort via program scope (Meeting has no board
-          FK in the model today). When the board has no program parent, this
-          panel renders empty rather than being hidden, so users see the slot. */}
+      {/* Meetings panel — board-precise via Meeting.board FK (migration 0006).
+          Falls back to program-scoped lookup for legacy meetings that were
+          created before the FK existed. */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

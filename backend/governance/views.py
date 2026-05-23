@@ -348,7 +348,10 @@ class MeetingViewSet(viewsets.ModelViewSet):
     serializer_class = MeetingSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['program', 'type', 'status']
+    # `board` is new (governance migration 0006). Adding it to filterset_fields
+    # lets BoardDetail.tsx query `?board=<id>` precisely instead of pulling all
+    # program-scoped meetings and filtering client-side.
+    filterset_fields = ['program', 'board', 'type', 'status']
     search_fields = ['title', 'agenda', 'minutes']
     ordering_fields = ['scheduled_at', 'created_at']
 
@@ -356,6 +359,11 @@ class MeetingViewSet(viewsets.ModelViewSet):
         # P0 cross-tenant fix — was returning Meeting.objects.all() when the
         # requesting user had no company (cross-tenant leak). Superadmin
         # defaults to own-company; cross-tenant view via ?all_tenants=1.
+        #
+        # Tenant scoping reaches across both parent FKs (program / board)
+        # because a Meeting can live at either level — board-level meetings
+        # (e.g. Steering Committee) have no program. Mirrors DecisionViewSet.
+        from django.db.models import Q
         user = self.request.user
         if not user.is_authenticated:
             return Meeting.objects.none()
@@ -366,7 +374,12 @@ class MeetingViewSet(viewsets.ModelViewSet):
             return Meeting.objects.all()
         if not company:
             return Meeting.objects.none()
-        return Meeting.objects.filter(program__company=company)
+        return Meeting.objects.filter(
+            Q(program__company=company)
+            | Q(board__portfolio__company=company)
+            | Q(board__program__company=company)
+            | Q(board__project__company=company)
+        ).distinct()
 
     def perform_create(self, serializer):
         if not serializer.validated_data.get('facilitator'):
