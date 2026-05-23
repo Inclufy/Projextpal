@@ -501,6 +501,158 @@ RESOLUTIONS = [
             "Not a product bug."
         ),
     },
+
+    # ────────────────────────────────────────────────────────────────
+    # 12. PRINCE2 Project Board — add_member 400 "This field is required."
+    #     Form sent {name,email,role}; model needs `user` FK.
+    #     Fix:     commit e02c03b1 (rewrote dialog to user-FK select)
+    #     Status:  LIVE on prod
+    # ────────────────────────────────────────────────────────────────
+    {
+        "bug_id": "PRINCE2-BOARD-ADD-MEMBER-2026-05-22",
+        "match": lambda i: (
+            (
+                "board member" in (i.title + " " + i.description).lower()
+                or "project board" in (i.title + " " + i.description).lower()
+            )
+            and (
+                "failing" in (i.title + " " + i.description).lower()
+                or "field is required" in (i.title + " " + i.description + " " + getattr(i, "actual_behavior", "")).lower()
+            )
+        ),
+        "comment_nl": (
+            f"{SCRIPT_SIGNATURE} PRINCE2-BOARD-ADD-MEMBER-2026-05-22\n\n"
+            "✅ Opgelost — het toevoegen van een Project Board-lid faalde "
+            "met `\"This field is required.\"` omdat het formulier "
+            "`name/email/role` stuurde terwijl het backend-model "
+            "`ProjectBoardMember` een echte `user` (FK) vereist.\n\n"
+            "Fix: de Prince2ProjectBoard add-member dialog is herschreven "
+            "naar een user-FK select (haalt company-leden op via "
+            "`/api/v1/auth/company-users/members/`). De ongeldige "
+            "`team_manager`-rol is verwijderd.\n\n"
+            "Live sinds 2026-05-23 (commit e02c03b1). Test: open de Project "
+            "Board pagina, klik Add Member, selecteer een gebruiker en sla "
+            "op — 201 Created."
+        ),
+        "new_status": "resolved",
+        "new_repro_result": "reproduced",
+        "resolution_summary": (
+            "Prince2ProjectBoard add_member sent name/email/role; model "
+            "needs `user` FK. Rewrote dialog to user-FK select. Live "
+            "(commit e02c03b1)."
+        ),
+    },
+
+    # ────────────────────────────────────────────────────────────────
+    # 13. PRINCE2 Project Closure sub-tabs — routing bug
+    #     All 4 sub-pages (Closure Checklist / End Project Report /
+    #     Lessons Log / Benefits Review) redirect to End Project Report.
+    #     Router config issue — NOT yet fixed (form itself is fine).
+    # ────────────────────────────────────────────────────────────────
+    {
+        "bug_id": "CLOSURE-SUBTABS-ROUTING",
+        "match": lambda i: (
+            ("closure check" in (i.title + " " + i.description).lower()
+             or "closure checklist" in (i.title + " " + i.description).lower()
+             or "benefits review" in (i.title + " " + i.description).lower())
+            and ("redirecting" in (i.title + " " + i.description).lower()
+                 or "doorverwijst" in (i.title + " " + i.description).lower()
+                 or "all not working" in (i.title + " " + i.description).lower()
+                 or "end project report only" in (i.title + " " + i.description).lower())
+        ),
+        "comment_nl": (
+            f"{SCRIPT_SIGNATURE} CLOSURE-SUBTABS-ROUTING\n\n"
+            "📌 Erkend (P2 — nog niet opgelost) — alle Project Closure "
+            "sub-tabs (Closure Checklist, End Project Report, Lessons Log, "
+            "Benefits Review) navigeren naar dezelfde pagina (End Project "
+            "Report). Dit is een router-configuratie probleem, niet een "
+            "bug in de formulieren zelf.\n\n"
+            "Het End Project Report formulier is wel correct herschreven "
+            "naar de echte model-velden (commit e02c03b1) — zodra de "
+            "routes ontkoppeld zijn werken alle 4 sub-pagina's onafhankelijk.\n\n"
+            "Wordt opgepakt in een aparte commit; nog niet in productie."
+        ),
+        "new_status": "accepted",
+        "new_repro_result": "reproduced",
+        "resolution_summary": (
+            "Closure sub-tabs (checklist/end-report/lessons/benefits) all "
+            "route to End Project Report. Router config bug, separate "
+            "from the form-field fix already shipped in e02c03b1."
+        ),
+    },
+
+    # ────────────────────────────────────────────────────────────────
+    # 14. AI Copilot — UI language not propagating to assistant responses
+    #     i18n bug — NOT yet fixed.
+    # ────────────────────────────────────────────────────────────────
+    {
+        "bug_id": "AI-COPILOT-LANGUAGE-EN",
+        "match": lambda i: (
+            ("ai copilot" in (i.title + " " + i.description).lower()
+             or "ai-copilot" in (i.title + " " + i.description).lower())
+            and "language" in (i.title + " " + i.description).lower()
+            and ("english" in (i.title + " " + i.description).lower()
+                 or "engels" in (i.title + " " + i.description).lower()
+                 or "not changing" in (i.title + " " + i.description).lower())
+        ),
+        "comment_nl": (
+            f"{SCRIPT_SIGNATURE} AI-COPILOT-LANGUAGE-EN\n\n"
+            "📌 Erkend (P2 — nog niet opgelost) — de taalwissel in de AI "
+            "Copilot werkt momenteel niet: de UI staat op EN maar de "
+            "assistant-responses blijven in NL (of vice versa).\n\n"
+            "Classificatie: i18n-bug, prioriteit P2 (UX-issue, geen "
+            "blokkade voor functionaliteit). De fix vereist het meegeven "
+            "van de UI-taal in elke AI-Copilot-call en het gebruiken in "
+            "de system-prompt op de backend.\n\n"
+            "Wordt opgepakt in een aparte commit; nog niet in productie."
+        ),
+        "new_status": "accepted",
+        "new_repro_result": "reproduced",
+        "resolution_summary": (
+            "AI Copilot doesn't honour UI language setting. Real i18n "
+            "bug, accepted for separate fix."
+        ),
+    },
+
+    # ────────────────────────────────────────────────────────────────
+    # 15. Impact fields Add button — needs more info
+    #     "user impact / business impact / timeline impact cant be added"
+    #     Could be governance Decision, Risk register, PI Objective,
+    #     or Change Request form. Body says only "add button is not
+    #     working" — needs URL + network detail.
+    # ────────────────────────────────────────────────────────────────
+    {
+        "bug_id": "IMPACT-FIELDS-ADD-BUTTON",
+        "match": lambda i: (
+            ("user impact" in (i.title + " " + i.description).lower()
+             or "business impact" in (i.title + " " + i.description).lower()
+             or "timeline impact" in (i.title + " " + i.description).lower())
+            and ("add button" in (i.title + " " + i.description).lower()
+                 or "cant be added" in (i.title + " " + i.description).lower()
+                 or "can't be added" in (i.title + " " + i.description).lower()
+                 or "kan niet" in (i.title + " " + i.description).lower())
+        ),
+        "comment_nl": (
+            f"{SCRIPT_SIGNATURE} IMPACT-FIELDS-ADD-BUTTON\n\n"
+            "ℹ️ Triage — om dit te kunnen reproduceren hebben we meer "
+            "informatie nodig:\n\n"
+            "1. Op welke pagina staan deze velden? (governance Decision, "
+            "Risk register, PI Objective, of Change Request?)\n"
+            "2. Wat is de exacte URL?\n"
+            "3. Wat gebeurt er als je op de Add-knop klikt — geen "
+            "reactie, een foutmelding, of een lege response?\n"
+            "4. Wat staat er in het netwerk-tabblad (F12 → Network) bij "
+            "het klikken op Add?\n\n"
+            "Zonder die info kunnen we niet vaststellen welke form en "
+            "welk endpoint hier breken."
+        ),
+        "new_status": "needs-info",
+        "new_repro_result": "needs-data",
+        "resolution_summary": (
+            "Add button reportedly broken on an impact-fields form. "
+            "Needs URL + network response to identify which form."
+        ),
+    },
 ]
 
 APPLY = os.environ.get("APPLY") == "1"
