@@ -561,7 +561,7 @@ Several places where the canonical methodology expects a relationship but the sc
 
 ## Recommended next 5 fixes (smallest blast-radius, biggest UX win first)
 
-1. **[Six Sigma] Add `addresses_root_cause` picker to `SixSigmaSolutions.tsx`** — single Select component, fetch `/api/v1/projects/{id}/sixsigma/causes/?is_root_cause=true`, populate dropdown. **2 hours.** Unlocks DMAIC narrative.
+1. **[Six Sigma] Add `addresses_root_cause` picker to `SixSigmaSolutions.tsx`** — single Select component, fetch `/api/v1/projects/{id}/sixsigma/causes/?is_root_cause=true`, populate dropdown. **2 hours.** Unlocks DMAIC narrative. _(done 2026-05-23)_
 2. **[Waterfall] Add `requirement` picker to `WaterfallTesting.tsx`** — same shape as #1, fetch `/api/v1/projects/{id}/waterfall/requirements/`. **2 hours.** Unlocks traceability matrix.
 3. **[Agile] Add `epic` picker to `AgileBacklog.tsx`** *and* create a minimal `AgileEpics.tsx` page (list + create + show children-stories count). **1 day.** The most-asked-for hierarchy in agile (model already supports it).
 4. **[PRINCE2] On `Prince2StagePlan.tsx` and `Prince2WorkPackages.tsx`, render parent Stage as a clickable badge + add a child list panel.** Stage Plans should show their stage's WPs; WPs should show their stage's other WPs (siblings). **1 day.** Closest to the user's exact ask. **Update (2026-05-23): now plan-scoped** — `WorkPackage.stage_plan` FK landed in prince2 migration 0008, so `Prince2StagePlan.tsx` groups WPs by `stage_plan` directly (was: stage-scoped fallback only); `Prince2WorkPackages.tsx` breadcrumb reads the FK directly when present.
