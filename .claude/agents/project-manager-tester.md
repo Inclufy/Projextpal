@@ -1,7 +1,7 @@
 ---
 name: project-manager-tester
-description: Use this agent to run end-to-end tests on all ProjeXtPal project methodologies from a Project Manager's perspective. It logs in as sami@inclufy.com, creates or picks a project in each methodology (scrum, kanban, waterfall, prince2, agile, lss-green, lss-black, hybrid), walks every tab, populates realistic team + task + risk + milestone + time-entry + budget data, exercises state transitions (sprint start/complete, phase sign-off, stage approve, WP authorize, etc.), submits post-project lessons learned, and verifies every data endpoint returns 200 with expected content. Produces a pass/fail matrix per methodology × tab and flags any 5xx or empty-data gaps. Invoke for "test all project methodologies end-to-end", "validate <methodology> after seed", "run project lifecycle flow", or "check team + time-entry coverage".
-tools: Bash, Read, Grep, Glob, WebFetch
+description: Use this agent to run end-to-end tests on all ProjeXtPal project methodologies from a Project Manager's perspective. It logs in as sami@inclufy.com, creates or picks a project in each methodology (scrum, kanban, waterfall, prince2, agile, lss-green, lss-black, hybrid), walks every tab, populates realistic team + task + risk + milestone + time-entry + budget data, exercises state transitions (sprint start/complete, phase sign-off, stage approve, WP authorize, etc.), submits post-project lessons learned, and verifies every data endpoint returns 200 with expected content. It ALSO runs a mandatory TAB-LEVEL SCREEN TEST — for every tab of every methodology it opens the screen in the browser, enters realistic data into the create/edit form, clicks Create/Save, confirms the record actually persists (2xx, success toast, row appears, no console error), and edits + re-saves a row to cover update. Produces a pass/fail matrix per methodology × tab and flags any 5xx, failed save, or empty-data gaps. Invoke for "test all project methodologies end-to-end", "test all tabs / screens with data entry, create and save", "validate <methodology> after seed", or "run project lifecycle flow".
+tools: Bash, Read, Grep, Glob, WebFetch, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__tabs_create_mcp, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__get_page_text, mcp__Claude_in_Chrome__find, mcp__Claude_in_Chrome__computer, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_network_requests, mcp__Claude_in_Chrome__browser_batch
 model: sonnet
 ---
 
@@ -105,9 +105,10 @@ token_user: sami@inclufy.com
 ▶ <METHODOLOGY> (project <id>)
    setup:        <N/M seeds succeeded>
    state trans:  <N/M transitions green>
-   tab coverage: <N/M tabs returned 200>
+   tab coverage: <N/M tabs returned 200 (API probe)>
+   screen test:  <N/M tabs: data-entry + create + save + update all clean>
    empty tabs:   [list of tabs returning 200 but no rows]
-   bugs:         [list of 5xx or genuine 404s]
+   bugs:         [list of 5xx, 4xx-on-save, save-with-no-persistence, genuine 404s]
 
 (repeat per methodology)
 
@@ -163,12 +164,51 @@ Run it first, then parse the report.
 python tests/e2e/project_manager_full.py
 ```
 
-## UI screen + button testing
+## Tab-level screen test — MANDATORY, every tab (data entry → create → save → update)
 
-For browser-level button + screen testing (not just API), follow
-`tests/e2e/ui_screen_walk.md` — uses Chrome MCP to render each tab,
-collect console errors, verify network calls, and exercise primary
-buttons. Combine with the API test for full coverage.
+After the API pass, run a browser screen test of every tab. The API
+test alone is not enough — it has missed broken forms before (a PRINCE2
+Stage Plan form 400'd in production despite a "green" API run, because
+the agent didn't exercise that tab's create flow). Use the
+`mcp__Claude_in_Chrome__*` tools per `tests/e2e/ui_screen_walk.md`
+(navigate / get_page_text / find / computer for click+type /
+read_console_messages / read_network_requests / browser_batch).
+
+### Rule: never skip a tab
+Before testing a methodology, build the COMPLETE tab list from the
+frontend — not from memory:
+- Read the methodology's sidebar/route config under `frontend/src/`
+  (e.g. for PRINCE2: `frontend/src/pages/prince2/` + the routes file)
+  and list EVERY tab/sub-tab that renders for that methodology.
+- Cross-check that count against the tabs you actually tested. If they
+  don't match, you missed a tab — go back. A tab that exists in the UI
+  but isn't in your matrix is a FAIL of this agent, not a pass.
+
+### Per tab, do all four — and record each
+For EVERY tab of EVERY methodology:
+1. **Render** — navigate to the tab, wait for load, capture console +
+   network. A blank screen, a spinner that never resolves, or any
+   console error = FAIL.
+2. **Data entry** — open the tab's create/edit form (the "+ Create" /
+   "Add" / "New" button or inline form). Type realistic values into
+   EVERY field — text, dates, numbers, dropdowns, FK selects. Confirm
+   each field accepts input (watch for the "1 letter per keystroke"
+   focus-loss bug; also flag any input that loses focus on each key).
+3. **Create** — submit the form. PASS only if ALL of: a success toast
+   appears, the new row shows in the list on reload, AND the network
+   tab shows the POST returned 2xx. A 400/500, a "Save failed" toast,
+   or a 2xx with the row not appearing on reload (silent data-loss) =
+   FAIL — capture the request payload + the response body.
+4. **Save / update** — open an existing row, change a field, save
+   again. The PATCH must return 2xx and the change must persist on
+   reload.
+
+Also click every primary action button on the tab (approve, start,
+complete, submit-for-review, baseline, authorize, export) and confirm
+none 4xx/5xx or throw in the console.
+
+### Report it
+Add a per-tab line to the matrix: `tab | render | data-entry | create | save/update | result`. Any tab where create or save is not a clean 2xx (or where a 2xx didn't actually persist) is a bug — list it with the endpoint, payload, and response body.
 
 ## Legacy scratchpads
 
