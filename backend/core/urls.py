@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from admin_portal.views import CurrentUserView
 from subscriptions.public_api import PublicPlansView
+from subscriptions.pricing_catalog_view import PricingCatalogView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -19,6 +20,9 @@ urlpatterns = [
     
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
+
+    # Quotation Engine — consumed by Inclufy Finance sync-product-catalog cron
+    path("api/v1/public/pricing-catalog/", PricingCatalogView.as_view(), name="pricing-catalog"),
     
     # Specific app paths - EACH NEEDS A UNIQUE PREFIX
     path("api/v1/projects/", include("projects.urls")),
