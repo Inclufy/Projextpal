@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   type IssueAttachment,
   type IssueCategory,
@@ -79,23 +80,28 @@ interface IssuesTabProps {
   onPrefillConsumed?: () => void;
 }
 
-const CATEGORY_OPTIONS: { value: IssueCategory; label: string }[] = [
-  { value: "ui", label: "UI / Frontend" },
-  { value: "api", label: "API / Backend" },
-  { value: "mobile", label: "Mobiele app" },
-  { value: "performance", label: "Performance" },
-  { value: "security", label: "Security" },
-  { value: "auth", label: "Login / Permissies" },
-  { value: "data", label: "Data / Database" },
-  { value: "integration", label: "Integratie" },
-  { value: "documentation", label: "Documentatie" },
-  { value: "other", label: "Anders" },
-];
+function getCategoryOptions(isNl: boolean): { value: IssueCategory; label: string }[] {
+  return [
+    { value: "ui", label: "UI / Frontend" },
+    { value: "api", label: "API / Backend" },
+    { value: "mobile", label: isNl ? "Mobiele app" : "Mobile app" },
+    { value: "performance", label: "Performance" },
+    { value: "security", label: "Security" },
+    { value: "auth", label: isNl ? "Login / Permissies" : "Login / Permissions" },
+    { value: "data", label: "Data / Database" },
+    { value: "integration", label: isNl ? "Integratie" : "Integration" },
+    { value: "documentation", label: isNl ? "Documentatie" : "Documentation" },
+    { value: "other", label: isNl ? "Anders" : "Other" },
+  ];
+}
 
 export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: IssuesTabProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const isNl = language === "nl";
   const companyId = user?.company ?? null;
+  const categoryOptions = getCategoryOptions(isNl);
 
   const detectedModule = detectProjeXtPalModuleFromPath(pathname);
   const defaultCategory = defaultCategoryForModule(detectedModule);
@@ -146,7 +152,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       toast({
-        title: "Kon issues niet ophalen",
+        title: isNl ? "Kon issues niet ophalen" : "Could not load issues",
         description: msg,
         variant: "destructive",
       });
@@ -168,11 +174,17 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
   async function handleSubmit() {
     if (!companyId) {
-      toast({ title: "Geen bedrijf gekoppeld", variant: "destructive" });
+      toast({
+        title: isNl ? "Geen bedrijf gekoppeld" : "No company linked",
+        variant: "destructive",
+      });
       return;
     }
     if (!title.trim()) {
-      toast({ title: "Titel is verplicht", variant: "destructive" });
+      toast({
+        title: isNl ? "Titel is verplicht" : "Title is required",
+        variant: "destructive",
+      });
       return;
     }
     setSubmitting(true);
@@ -198,8 +210,10 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           : "manual_form",
       });
       toast({
-        title: "Probleem gemeld",
-        description: "Onze AI-agent triageert het binnen enkele minuten.",
+        title: isNl ? "Probleem gemeld" : "Issue reported",
+        description: isNl
+          ? "Onze AI-agent triageert het binnen enkele minuten."
+          : "Our AI agent will triage it within minutes.",
       });
       setIssues((prev) => [issue, ...prev]);
       resetForm();
@@ -207,7 +221,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       toast({
-        title: "Versturen mislukt",
+        title: isNl ? "Versturen mislukt" : "Submit failed",
         description: msg,
         variant: "destructive",
       });
@@ -223,7 +237,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
     for (const f of Array.from(files)) {
       if (f.size > 5 * 1024 * 1024) {
         toast({
-          title: "Bestand te groot",
+          title: isNl ? "Bestand te groot" : "File too large",
           description: `${f.name} (${Math.round(f.size / 1024)} KB) > 5 MB`,
           variant: "destructive",
         });
@@ -250,7 +264,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           const att = await fileToAttachment(file);
           setAttachments((prev) => [...prev, att]);
           toast({
-            title: "Screenshot toegevoegd",
+            title: isNl ? "Screenshot toegevoegd" : "Screenshot attached",
             description: file.name || "clipboard.png",
           });
         }
@@ -269,9 +283,10 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
   async function handleCaptureScreenshot() {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getDisplayMedia) {
       toast({
-        title: "Schermafbeelding niet ondersteund",
-        description:
-          "Je browser ondersteunt de Screen Capture API niet. Gebruik 'Bestand kiezen' of plak een screenshot vanaf je klembord.",
+        title: isNl ? "Schermafbeelding niet ondersteund" : "Screenshot not supported",
+        description: isNl
+          ? "Je browser ondersteunt de Screen Capture API niet. Gebruik 'Bestand kiezen' of plak een screenshot vanaf je klembord."
+          : "Your browser does not support the Screen Capture API. Use 'Choose file' or paste a screenshot from your clipboard.",
         variant: "destructive",
       });
       return;
@@ -328,8 +343,10 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "Schermafbeelding te groot",
-          description: `${Math.round(file.size / 1024)} KB > 5 MB — kies een kleiner gebied of een lager-resolutie scherm.`,
+          title: isNl ? "Schermafbeelding te groot" : "Screenshot too large",
+          description: isNl
+            ? `${Math.round(file.size / 1024)} KB > 5 MB — kies een kleiner gebied of een lager-resolutie scherm.`
+            : `${Math.round(file.size / 1024)} KB > 5 MB — pick a smaller area or a lower-resolution screen.`,
           variant: "destructive",
         });
         return;
@@ -338,7 +355,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
       const att = await fileToAttachment(file);
       setAttachments((prev) => [...prev, att]);
       toast({
-        title: "Schermafbeelding toegevoegd",
+        title: isNl ? "Schermafbeelding toegevoegd" : "Screenshot attached",
         description: file.name,
       });
     } catch (err) {
@@ -348,7 +365,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
       }
       const msg = err instanceof Error ? err.message : String(err);
       toast({
-        title: "Schermafbeelding mislukt",
+        title: isNl ? "Schermafbeelding mislukt" : "Screenshot failed",
         description: msg,
         variant: "destructive",
       });
@@ -372,7 +389,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           <div className="flex items-center gap-2">
             <Bug className="h-3.5 w-3.5 text-purple-600" />
             <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              Recente issues
+              {isNl ? "Recente issues" : "Recent issues"}
               {detectedModule && (
                 <span className="ml-1.5 text-gray-400">· {detectedModule}</span>
               )}
@@ -385,7 +402,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               className="h-6 w-6 p-0"
               onClick={refreshList}
               disabled={loadingList}
-              title="Vernieuwen"
+              title={isNl ? "Vernieuwen" : "Refresh"}
             >
               <RefreshCw className={`h-3 w-3 ${loadingList ? "animate-spin" : ""}`} />
             </Button>
@@ -395,7 +412,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               onClick={() => setMode("form")}
             >
               <Plus className="h-3 w-3 mr-1" />
-              Probleem melden
+              {isNl ? "Probleem melden" : "Report issue"}
             </Button>
           </div>
         </div>
@@ -404,13 +421,15 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           {loadingList && issues.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-gray-500">
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              <span className="text-xs">Laden...</span>
+              <span className="text-xs">{isNl ? "Laden..." : "Loading..."}</span>
             </div>
           ) : issues.length === 0 ? (
             <div className="text-center py-8 px-4 text-gray-500">
               <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500/70" />
               <p className="text-xs">
-                Geen openstaande problemen. Werkt iets niet zoals verwacht?
+                {isNl
+                  ? "Geen openstaande problemen. Werkt iets niet zoals verwacht?"
+                  : "No open issues. Something not working as expected?"}
               </p>
               <Button
                 variant="outline"
@@ -419,7 +438,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
                 onClick={() => setMode("form")}
               >
                 <Plus className="h-3 w-3 mr-1" />
-                Meld het nu
+                {isNl ? "Meld het nu" : "Report it now"}
               </Button>
             </div>
           ) : (
@@ -438,7 +457,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
           <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-            Probleem melden
+            {isNl ? "Probleem melden" : "Report issue"}
           </span>
           {detectedModule && (
             <span className="text-[10px] px-1.5 py-0 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
@@ -462,13 +481,17 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         <div>
           <Label htmlFor="issue-title" className="text-xs">
-            Wat ging er mis? *
+            {isNl ? "Wat ging er mis? *" : "What went wrong? *"}
           </Label>
           <Input
             id="issue-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Bijv. 'Risico kan niet worden opgeslagen'"
+            placeholder={
+              isNl
+                ? "Bijv. 'Risico kan niet worden opgeslagen'"
+                : "E.g. 'Risk cannot be saved'"
+            }
             className="text-xs mt-1"
             maxLength={255}
           />
@@ -476,7 +499,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
         <div>
           <Label htmlFor="issue-category" className="text-xs">
-            Categorie
+            {isNl ? "Categorie" : "Category"}
           </Label>
           <Select
             value={category}
@@ -486,7 +509,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CATEGORY_OPTIONS.map((opt) => (
+              {categoryOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value} className="text-xs">
                   {opt.label}
                 </SelectItem>
@@ -497,30 +520,36 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
         <div>
           <Label htmlFor="issue-description" className="text-xs">
-            Beschrijving
+            {isNl ? "Beschrijving" : "Description"}
           </Label>
           <Textarea
             id="issue-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Wat probeer je te doen? Wat zie je?"
+            placeholder={
+              isNl
+                ? "Wat probeer je te doen? Wat zie je?"
+                : "What are you trying to do? What do you see?"
+            }
             className="text-xs mt-1 resize-none"
             rows={4}
           />
           <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
             <Clipboard className="h-2.5 w-2.5" />
-            Tip: plak een screenshot ergens op dit formulier (Cmd/Ctrl + V) — die wordt automatisch toegevoegd.
+            {isNl
+              ? "Tip: plak een screenshot ergens op dit formulier (Cmd/Ctrl + V) — die wordt automatisch toegevoegd."
+              : "Tip: paste a screenshot anywhere on this form (Cmd/Ctrl + V) — it gets attached automatically."}
           </p>
         </div>
 
         <details className="group">
           <summary className="text-xs cursor-pointer text-gray-500 hover:text-gray-800 select-none">
-            + Meer details (optioneel)
+            {isNl ? "+ Meer details (optioneel)" : "+ More details (optional)"}
           </summary>
           <div className="mt-2 space-y-2">
             <div>
               <Label htmlFor="issue-repro" className="text-xs">
-                Stappen om te reproduceren
+                {isNl ? "Stappen om te reproduceren" : "Steps to reproduce"}
               </Label>
               <Textarea
                 id="issue-repro"
@@ -533,7 +562,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
             </div>
             <div>
               <Label htmlFor="issue-expected" className="text-xs">
-                Wat verwachtte je?
+                {isNl ? "Wat verwachtte je?" : "What did you expect?"}
               </Label>
               <Input
                 id="issue-expected"
@@ -544,7 +573,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
             </div>
             <div>
               <Label htmlFor="issue-actual" className="text-xs">
-                Wat gebeurde er werkelijk?
+                {isNl ? "Wat gebeurde er werkelijk?" : "What actually happened?"}
               </Label>
               <Input
                 id="issue-actual"
@@ -555,13 +584,17 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
             </div>
             <div>
               <Label htmlFor="issue-error" className="text-xs">
-                Foutmelding / console-output
+                {isNl ? "Foutmelding / console-output" : "Error message / console output"}
               </Label>
               <Textarea
                 id="issue-error"
                 value={errorTrace}
                 onChange={(e) => setErrorTrace(e.target.value)}
-                placeholder="Plak hier eventueel een stacktrace..."
+                placeholder={
+                  isNl
+                    ? "Plak hier eventueel een stacktrace..."
+                    : "Paste a stack trace here if you have one..."
+                }
                 className="text-xs font-mono mt-1 resize-none"
                 rows={3}
               />
@@ -571,7 +604,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
         <div>
           <Label className="text-xs">
-            Bijlagen
+            {isNl ? "Bijlagen" : "Attachments"}
             {attachments.length > 0 && (
               <span className="ml-1 text-gray-500">({attachments.length})</span>
             )}
@@ -585,7 +618,7 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               onClick={() => fileInputRef.current?.click()}
             >
               <Camera className="h-3 w-3 mr-1" />
-              Bestand kiezen
+              {isNl ? "Bestand kiezen" : "Choose file"}
             </Button>
             <Button
               type="button"
@@ -593,10 +626,14 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               size="sm"
               className="text-xs h-7"
               onClick={handleCaptureScreenshot}
-              title="Open de schermkiezer en maak direct een screenshot — geen OS-tool nodig."
+              title={
+                isNl
+                  ? "Open de schermkiezer en maak direct een screenshot — geen OS-tool nodig."
+                  : "Open the screen picker and take a screenshot directly — no OS tool needed."
+              }
             >
               <Monitor className="h-3 w-3 mr-1" />
-              Schermafbeelding maken
+              {isNl ? "Schermafbeelding maken" : "Take screenshot"}
             </Button>
             <input
               ref={fileInputRef}
@@ -638,8 +675,9 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
         <div className="p-2 bg-purple-50/40 dark:bg-purple-900/10 border border-dashed border-purple-200 dark:border-purple-900/40 rounded">
           <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">
-            We voegen automatisch toe: paginalink, browser, schermresolutie,
-            app-versie en tijdzone — zo kunnen we het probleem sneller reproduceren.
+            {isNl
+              ? "We voegen automatisch toe: paginalink, browser, schermresolutie, app-versie en tijdzone — zo kunnen we het probleem sneller reproduceren."
+              : "We automatically attach: page URL, browser, screen resolution, app version and timezone — so we can reproduce the issue faster."}
           </p>
         </div>
 
@@ -653,12 +691,12 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           {submitting ? (
             <>
               <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-              Versturen...
+              {isNl ? "Versturen..." : "Submitting..."}
             </>
           ) : (
             <>
               <Send className="h-3 w-3 mr-2" />
-              Verstuur probleem
+              {isNl ? "Verstuur probleem" : "Submit issue"}
             </>
           )}
         </Button>
@@ -676,9 +714,11 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
   const [newComment, setNewComment] = useState("");
   const [postingComment, setPostingComment] = useState(false);
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const isNl = language === "nl";
 
   const created = new Date(issue.created_at);
-  const ago = relativeTime(created);
+  const ago = relativeTime(created, isNl);
   const moduleCtx =
     typeof issue.environment?.module_context === "string"
       ? (issue.environment.module_context as string)
@@ -711,10 +751,14 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
       const detail = await fetchIssueDetail(issue.id);
       setComments(detail.comments);
       setNewComment("");
-      toast({ title: "Reactie verstuurd" });
+      toast({ title: isNl ? "Reactie verstuurd" : "Comment sent" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      toast({ title: "Versturen mislukt", description: msg, variant: "destructive" });
+      toast({
+        title: isNl ? "Versturen mislukt" : "Submit failed",
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setPostingComment(false);
     }
@@ -783,7 +827,9 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
         <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-900/40 p-3 space-y-3 text-[11px]">
           {issue.description && (
             <div>
-              <p className="font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Beschrijving</p>
+              <p className="font-semibold text-gray-700 dark:text-gray-300 mb-0.5">
+                {isNl ? "Beschrijving" : "Description"}
+              </p>
               <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{issue.description}</p>
             </div>
           )}
@@ -828,12 +874,14 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
           <div>
             <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
               <MessageCircle className="h-3 w-3" />
-              Reacties {comments && `(${comments.length})`}
+              {isNl ? "Reacties" : "Comments"} {comments && `(${comments.length})`}
             </p>
             {loadingDetail ? (
               <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
             ) : comments && comments.length === 0 ? (
-              <p className="text-gray-400 italic">Nog geen reacties</p>
+              <p className="text-gray-400 italic">
+                {isNl ? "Nog geen reacties" : "No comments yet"}
+              </p>
             ) : comments ? (
               <div className="space-y-2">
                 {comments.map((c) => (
@@ -850,7 +898,7 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
                         {c.author}
                       </span>
                       <span className="text-[10px] text-gray-400">
-                        {relativeTime(new Date(c.created_at))}
+                        {relativeTime(new Date(c.created_at), isNl)}
                       </span>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
@@ -864,7 +912,7 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
               <Input
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Reactie toevoegen..."
+                placeholder={isNl ? "Reactie toevoegen..." : "Add comment..."}
                 className="text-[11px] h-7 flex-1"
                 disabled={postingComment}
                 onKeyDown={(e) => {
@@ -891,14 +939,17 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
   );
 }
 
-function relativeTime(d: Date): string {
+function relativeTime(d: Date, isNl: boolean = true): string {
   const diff = Date.now() - d.getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "net";
+  if (m < 1) return isNl ? "net" : "now";
   if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}u`;
+  // NL uses "u" for "uur"; EN uses "h" for "hour"
+  if (h < 24) return `${h}${isNl ? "u" : "h"}`;
   const days = Math.floor(h / 24);
   if (days < 7) return `${days}d`;
-  return d.toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
+  return d.toLocaleDateString(isNl ? "nl-NL" : "en-US", {
+    day: "numeric", month: "short",
+  });
 }
