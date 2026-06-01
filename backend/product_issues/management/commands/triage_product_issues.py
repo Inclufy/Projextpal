@@ -173,32 +173,138 @@ def _already_triaged_today(issue: ProductIssue) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# LLM call (Phase B)
+# Language resolution + LLM call (Phase B)
 # ---------------------------------------------------------------------------
 
-LLM_SYSTEM_PROMPT = (
-    "Je bent een productmanager voor ProjeXtPal (project-management SaaS). "
-    "Je triage-rol: classificeer een gemelde ProductIssue en geef advies.\n\n"
-    "Geef ALLEEN een JSON-object terug, zonder commentaar, zonder markdown-fence. "
-    "Schema:\n"
-    "{\n"
-    '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix",\n'
-    '  "priority": "P0" | "P1" | "P2" | "P3",\n'
-    '  "affected_area": "<korte string, bv. surveys / governance / mobile / auth>",\n'
-    '  "reasoning": "<2-3 zinnen in het Nederlands>",\n'
-    '  "recommended_action": "<korte zin in het Nederlands>"\n'
-    "}\n\n"
-    "Heuristieken:\n"
-    "- 'bug' = duidelijk een code-defect / regression.\n"
-    "- 'duplicate' = lijkt op een al bekende bug; gebruik dit alleen als de "
-    "  beschrijving sterk overlapt met een bestaand patroon.\n"
-    "- 'feature' = verzoek tot nieuwe functionaliteit.\n"
-    "- 'needs-info' = niet reproduceerbaar zonder meer info van de reporter.\n"
-    "- 'wontfix' = test-data, by-design, of out-of-scope.\n"
-    "- Priority: P0 = blocker (data verlies, productie down, security), "
-    "  P1 = belangrijke bug die meerdere gebruikers raakt, "
-    "  P2 = standaard, P3 = nice-to-have / kosmetisch.\n"
-)
+# Languages we have translated triage strings + LLM prompts for. Anything
+# else falls back to English. Add a new key here + entries in both
+# `_LLM_SYSTEM_PROMPTS` and `_TRIAGE_TRANSLATIONS` to support a new locale.
+_SUPPORTED_TRIAGE_LANGS = {"en", "nl"}
+
+
+def _resolve_triage_language(issue: ProductIssue) -> str:
+    """Pick the language to use for both the LLM output and the comment body.
+
+    Precedence (most specific wins):
+      1. `issue.environment.language` / `.locale` — frontend can pass the
+         exact UI language the reporter was using when filing the bug.
+         This is the most accurate signal because the same user can switch
+         locales in-app per session.
+      2. `issue.company.locale` — tenant default (Company model has a
+         `locale` CharField with default "en").
+      3. "en" — final safe fallback.
+    """
+    env = issue.environment if isinstance(issue.environment, dict) else {}
+    lang_hint = (env.get("language") or env.get("locale") or "").lower()[:2]
+    if lang_hint in _SUPPORTED_TRIAGE_LANGS:
+        return lang_hint
+
+    company = getattr(issue, "company", None)
+    company_locale = (getattr(company, "locale", "") or "").lower()[:2]
+    if company_locale in _SUPPORTED_TRIAGE_LANGS:
+        return company_locale
+
+    return "en"
+
+
+_LLM_SYSTEM_PROMPTS = {
+    "nl": (
+        "Je bent een productmanager voor ProjeXtPal (project-management SaaS). "
+        "Je triage-rol: classificeer een gemelde ProductIssue en geef advies.\n\n"
+        "Geef ALLEEN een JSON-object terug, zonder commentaar, zonder markdown-fence. "
+        "Schema:\n"
+        "{\n"
+        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix",\n'
+        '  "priority": "P0" | "P1" | "P2" | "P3",\n'
+        '  "affected_area": "<korte string, bv. surveys / governance / mobile / auth>",\n'
+        '  "reasoning": "<2-3 zinnen in het Nederlands>",\n'
+        '  "recommended_action": "<korte zin in het Nederlands>"\n'
+        "}\n\n"
+        "Heuristieken:\n"
+        "- 'bug' = duidelijk een code-defect / regression.\n"
+        "- 'duplicate' = lijkt op een al bekende bug; gebruik dit alleen als de "
+        "  beschrijving sterk overlapt met een bestaand patroon.\n"
+        "- 'feature' = verzoek tot nieuwe functionaliteit.\n"
+        "- 'needs-info' = niet reproduceerbaar zonder meer info van de reporter.\n"
+        "- 'wontfix' = test-data, by-design, of out-of-scope.\n"
+        "- Priority: P0 = blocker (data verlies, productie down, security), "
+        "  P1 = belangrijke bug die meerdere gebruikers raakt, "
+        "  P2 = standaard, P3 = nice-to-have / kosmetisch.\n"
+    ),
+    "en": (
+        "You are a product manager for ProjeXtPal (project-management SaaS). "
+        "Your triage role: classify a reported ProductIssue and give advice.\n\n"
+        "Return ONLY a JSON object, no commentary, no markdown fence. "
+        "Schema:\n"
+        "{\n"
+        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix",\n'
+        '  "priority": "P0" | "P1" | "P2" | "P3",\n'
+        '  "affected_area": "<short string, e.g. surveys / governance / mobile / auth>",\n'
+        '  "reasoning": "<2-3 sentences in English>",\n'
+        '  "recommended_action": "<short sentence in English>"\n'
+        "}\n\n"
+        "Heuristics:\n"
+        "- 'bug' = clear code defect / regression.\n"
+        "- 'duplicate' = looks like a known bug; only use this if the description "
+        "  strongly overlaps a known pattern.\n"
+        "- 'feature' = request for new functionality.\n"
+        "- 'needs-info' = not reproducible without more info from the reporter.\n"
+        "- 'wontfix' = test data, by-design, or out-of-scope.\n"
+        "- Priority: P0 = blocker (data loss, production down, security), "
+        "  P1 = important bug affecting multiple users, "
+        "  P2 = standard, P3 = nice-to-have / cosmetic.\n"
+    ),
+}
+
+
+# Translation table for static comment labels (the LLM provides the dynamic
+# content like reasoning/recommended_action in the correct language already
+# via the system prompt above).
+_TRIAGE_TRANSLATIONS = {
+    "nl": {
+        "header": "Automatische LLM-classificatie",
+        "classification": "Classification",  # keep technical label
+        "priority": "Priority",
+        "affected_area": "Affected area",
+        "unknown": "(onbekend)",
+        "reasoning_h": "Redenering",
+        "recommended_action_h": "Aanbevolen actie",
+        "none": "(geen)",
+        "llm_error_body": (
+            "Auto-triage tijdelijk niet beschikbaar (LLM-call faalde of gaf "
+            "geen geldige JSON). De volgende cron-cycle probeert het opnieuw."
+        ),
+    },
+    "en": {
+        "header": "Automatic LLM classification",
+        "classification": "Classification",
+        "priority": "Priority",
+        "affected_area": "Affected area",
+        "unknown": "(unknown)",
+        "reasoning_h": "Reasoning",
+        "recommended_action_h": "Recommended action",
+        "none": "(none)",
+        "llm_error_body": (
+            "Auto-triage temporarily unavailable (LLM call failed or returned "
+            "invalid JSON). The next cron cycle will retry."
+        ),
+    },
+}
+
+
+def _llm_system_prompt(lang: str) -> str:
+    return _LLM_SYSTEM_PROMPTS.get(lang, _LLM_SYSTEM_PROMPTS["en"])
+
+
+def _t(lang: str, key: str) -> str:
+    """Lookup a triage label in the requested language, fall back to en."""
+    return _TRIAGE_TRANSLATIONS.get(
+        lang, _TRIAGE_TRANSLATIONS["en"]
+    ).get(key, _TRIAGE_TRANSLATIONS["en"].get(key, key))
+
+
+# Kept for backwards compatibility with any direct callers / tests.
+LLM_SYSTEM_PROMPT = _LLM_SYSTEM_PROMPTS["en"]
 
 
 def _llm_user_message(issue: ProductIssue) -> str:
@@ -239,12 +345,13 @@ def _call_anthropic(issue: ProductIssue) -> Optional[dict]:
         logger.warning("Triage: no Anthropic key available (company=%s)", company)
         return None
 
+    lang = _resolve_triage_language(issue)
     try:
         resp = client.messages.create(
             model="claude-sonnet-4-5",
             max_tokens=600,
             temperature=0,
-            system=LLM_SYSTEM_PROMPT,
+            system=_llm_system_prompt(lang),
             messages=[{"role": "user", "content": _llm_user_message(issue)}],
         )
     except Exception as exc:
@@ -501,15 +608,14 @@ class Command(BaseCommand):
                 self.stdout.write(f"  · #{issue.id} — dry-run, would call LLM")
                 continue
 
+            lang = _resolve_triage_language(issue)
             parsed = _call_anthropic(issue)
             if parsed is None:
                 # Leave status='new'; post a transient-failure comment, but
                 # only once per day (idempotency upstream already guarded).
                 comment_body = (
                     f"{_today_signature(issue)} llm-error\n\n"
-                    f"Auto-triage tijdelijk niet beschikbaar (LLM-call faalde "
-                    f"of gaf geen geldige JSON). De volgende cron-cycle "
-                    f"probeert het opnieuw."
+                    f"{_t(lang, 'llm_error_body')}"
                 )
                 try:
                     ProductIssueComment.objects.create(
@@ -536,12 +642,12 @@ class Command(BaseCommand):
 
             body = (
                 f"{_today_signature(issue)} llm-triage\n\n"
-                f"Automatische LLM-classificatie:\n"
-                f"- Classification: **{classification}**\n"
-                f"- Priority: **{priority}**\n"
-                f"- Affected area: {area or '(onbekend)'}\n\n"
-                f"**Redenering**\n{reasoning or '(geen)'}\n\n"
-                f"**Aanbevolen actie**\n{recommended or '(geen)'}\n"
+                f"{_t(lang, 'header')}:\n"
+                f"- {_t(lang, 'classification')}: **{classification}**\n"
+                f"- {_t(lang, 'priority')}: **{priority}**\n"
+                f"- {_t(lang, 'affected_area')}: {area or _t(lang, 'unknown')}\n\n"
+                f"**{_t(lang, 'reasoning_h')}**\n{reasoning or _t(lang, 'none')}\n\n"
+                f"**{_t(lang, 'recommended_action_h')}**\n{recommended or _t(lang, 'none')}\n"
             )
 
             try:

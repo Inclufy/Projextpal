@@ -267,6 +267,163 @@ def test_idempotency_direct_guard(company, patched_catalog):
 
 
 @pytest.mark.django_db
+def test_language_resolution_prefers_environment_then_company(company, patched_catalog):
+    """Language picker order: environment.language > company.locale > 'en'."""
+    from product_issues.management.commands.triage_product_issues import (
+        _resolve_triage_language,
+    )
+
+    # 1. Environment override beats everything
+    company.locale = "nl"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(company, environment={"client": "web", "language": "en"})
+    assert _resolve_triage_language(issue) == "en"
+
+    # 2. No env hint → company.locale wins
+    issue.environment = {"client": "web"}
+    issue.save(update_fields=["environment"])
+    assert _resolve_triage_language(issue) == "nl"
+
+    # 3. Unsupported locale → fallback to en
+    company.locale = "fr"  # not in _SUPPORTED_TRIAGE_LANGS yet
+    company.save(update_fields=["locale"])
+    issue.refresh_from_db()
+    assert _resolve_triage_language(issue) == "en"
+
+
+@pytest.mark.django_db
+def test_llm_comment_localized_to_english_when_company_is_en(company, patched_catalog):
+    """When the reporter's company locale is 'en', the triage comment body
+    must use the English labels — NOT the Dutch 'Redenering' / 'Aanbevolen
+    actie' that were hardcoded before this fix.
+
+    Bug reported 2026-06-01 via the AI Copilot: triage feedback was
+    showing in Dutch even when the UI was English.
+    """
+    company.locale = "en"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(
+        company,
+        title="Brand-new dashboard glitch — English reporter",
+        description="Something is wrong on the dashboard.",
+        error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+
+    fake_payload = {
+        "classification": "bug",
+        "priority": "P1",
+        "affected_area": "dashboard",
+        "reasoning": "It looks like a UI bug on the dashboard.",
+        "recommended_action": "Reproduce with DevTools open.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client",
+        return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
+    assert comment is not None
+    body = comment.body
+
+    # English labels present
+    assert "Automatic LLM classification" in body
+    assert "Reasoning" in body
+    assert "Recommended action" in body
+
+    # Dutch labels absent (this is the regression)
+    assert "Automatische LLM-classificatie" not in body
+    assert "Redenering" not in body
+    assert "Aanbevolen actie" not in body
+
+    # And the LLM was called with the English system prompt
+    call_kwargs = fake_client.messages.create.call_args.kwargs
+    system_prompt = call_kwargs["system"]
+    assert "You are a product manager" in system_prompt
+    assert "Je bent een productmanager" not in system_prompt
+
+
+@pytest.mark.django_db
+def test_llm_comment_localized_to_dutch_when_company_is_nl(company, patched_catalog):
+    """Conversely, a Dutch tenant must keep getting Dutch triage comments."""
+    company.locale = "nl"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(
+        company,
+        title="Nieuwe dashboard glitch — NL reporter",
+        description="Er gaat iets mis op het dashboard.",
+        error_trace="",
+        environment={"client": "web", "language": "nl"},
+    )
+
+    fake_payload = {
+        "classification": "bug",
+        "priority": "P1",
+        "affected_area": "dashboard",
+        "reasoning": "Het lijkt een UI-bug op het dashboard.",
+        "recommended_action": "Reproduceer met DevTools open.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client",
+        return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
+    assert comment is not None
+    body = comment.body
+    assert "Automatische LLM-classificatie" in body
+    assert "Redenering" in body
+    assert "Aanbevolen actie" in body
+
+    # And the Dutch system prompt was used
+    system_prompt = fake_client.messages.create.call_args.kwargs["system"]
+    assert "Je bent een productmanager" in system_prompt
+
+
+@pytest.mark.django_db
+def test_llm_error_comment_localized(company, patched_catalog):
+    """The static llm-error comment must also respect the reporter's language."""
+    company.locale = "en"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(
+        company, title="EN reporter — no key today", error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+
+    # Simulate LLM unavailable
+    with patch(
+        "core.llm_keys.get_anthropic_client", return_value=None,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    comment = ProductIssueComment.objects.filter(issue=issue).first()
+    assert comment is not None
+    assert "llm-error" in comment.body
+    assert "Auto-triage temporarily unavailable" in comment.body
+    assert "Auto-triage tijdelijk niet beschikbaar" not in comment.body
+
+
+@pytest.mark.django_db
 def test_llm_error_comment_does_not_block_retry(company, patched_catalog):
     """A transient `llm-error` comment from earlier today (e.g. Anthropic
     key was missing on a previous cron-fire) MUST NOT block a retry.
