@@ -49,6 +49,10 @@ services:
     volumes:
       - static_files:/app/staticfiles
       - media_files:/app/media
+      # Read-only mount so the triage command's Phase A can read the
+      # regression catalog. The file lives at repo root, outside the
+      # backend Dockerfile's COPY context, so we mount it at runtime.
+      - ./tests/regression/known_issues.json:/app/tests/regression/known_issues.json:ro
     depends_on:
       postgres:
         condition: service_healthy
