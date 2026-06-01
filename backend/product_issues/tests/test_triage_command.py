@@ -449,6 +449,106 @@ def test_llm_triage_comment_has_no_markdown_asterisks(company, patched_catalog):
 
 
 @pytest.mark.django_db
+def test_escalate_classification_routes_to_superadmin_not_reporter(company, patched_catalog):
+    """When the LLM classifies as 'escalate' (issue needs dev/admin access
+    to diagnose: stack trace, Sentry, server logs), the comment must be
+    framed as a superadmin routing decision — NOT as a list of questions
+    for the reporter.
+
+    Policy from user 2026-06-01: reporters are end users; screenshots +
+    links + descriptions are what they can provide. Anything more
+    technical must route to superadmin.
+    """
+    company.locale = "en"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(
+        company,
+        title="500 backend issues",
+        description="The backend keeps failing.",
+        error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+
+    fake_payload = {
+        "classification": "escalate",
+        "priority": "P1",
+        "affected_area": "backend",
+        "reasoning": "Vague 500 report — only diagnosable with Sentry + server logs, which an end user does not have.",
+        "recommended_action": "Check Sentry for 500s around the report timestamp; correlate with recent deploys; capture stack trace.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client", return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    issue.refresh_from_db()
+    # Status maps to triaging (active dev work, NOT needs-info / waiting on reporter)
+    assert issue.status == "triaging"
+    assert issue.priority == "P1"
+    assert issue.agent_triage_result.get("classification") == "escalate"
+
+    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
+    assert comment is not None
+    body = comment.body
+
+    # Escalate marker visible
+    assert "ESCALATED TO SUPERADMIN" in body
+    assert "This report requires technical details" in body
+    # The action section is reframed for superadmin, NOT "Recommended action"
+    assert "Next steps for superadmin" in body
+    # The reporter is NOT being asked to do anything — no end-user-facing
+    # "Recommended action" header
+    assert "Recommended action" not in body
+    # Still no markdown
+    assert "**" not in body
+
+
+def test_llm_prompt_forbids_asking_reporter_for_dev_details_en():
+    """The English system prompt must explicitly tell the LLM that
+    reporters are end users with no DevTools / HTTP code / stack trace
+    access, and to use 'escalate' when dev-level info is actually needed.
+    """
+    from product_issues.management.commands.triage_product_issues import (
+        _llm_system_prompt,
+    )
+    prompt = _llm_system_prompt("en")
+
+    # The 'escalate' classification must be documented
+    assert "'escalate'" in prompt
+    # The end-user policy must be explicit
+    assert "end user" in prompt.lower() or "end users" in prompt.lower()
+    # The forbidden-asks must be named
+    assert "DevTools" in prompt
+    assert "stack trace" in prompt.lower()
+    assert "HTTP" in prompt
+    # And the needs-info guidance must mention the allowed asks
+    assert "screenshot" in prompt.lower()
+    assert "URL" in prompt or "link" in prompt.lower()
+
+
+def test_llm_prompt_forbids_asking_reporter_for_dev_details_nl():
+    """Same policy in Dutch — reporters zijn eindgebruikers."""
+    from product_issues.management.commands.triage_product_issues import (
+        _llm_system_prompt,
+    )
+    prompt = _llm_system_prompt("nl")
+
+    assert "'escalate'" in prompt
+    assert "eindgebruiker" in prompt.lower()
+    assert "DevTools" in prompt
+    assert "stack trace" in prompt.lower() or "stacktrace" in prompt.lower()
+    assert "screenshot" in prompt.lower()
+    assert "URL" in prompt or "link" in prompt.lower()
+
+
+@pytest.mark.django_db
 def test_llm_error_comment_localized(company, patched_catalog):
     """The static llm-error comment must also respect the reporter's language."""
     company.locale = "en"

@@ -211,48 +211,95 @@ _LLM_SYSTEM_PROMPTS = {
     "nl": (
         "Je bent een productmanager voor ProjeXtPal (project-management SaaS). "
         "Je triage-rol: classificeer een gemelde ProductIssue en geef advies.\n\n"
+        "BELANGRIJK over reporters: dit zijn EINDGEBRUIKERS — geen "
+        "developers en geen admins. Ze hebben GEEN toegang tot DevTools, "
+        "HTTP status codes, stack traces, Sentry, server logs of database. "
+        "Vraag NOOIT om dit soort technische details aan de reporter. "
+        "Als je ze toch nodig hebt, classificeer als 'escalate' — dan gaat "
+        "het naar de superadmin in plaats van terug naar de reporter.\n\n"
         "Geef ALLEEN een JSON-object terug, zonder commentaar, zonder markdown-fence. "
         "Schema:\n"
         "{\n"
-        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix",\n'
+        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix" | "escalate",\n'
         '  "priority": "P0" | "P1" | "P2" | "P3",\n'
         '  "affected_area": "<korte string, bv. surveys / governance / mobile / auth>",\n'
         '  "reasoning": "<2-3 zinnen in het Nederlands>",\n'
         '  "recommended_action": "<korte zin in het Nederlands>"\n'
         "}\n\n"
-        "Heuristieken:\n"
-        "- 'bug' = duidelijk een code-defect / regression.\n"
-        "- 'duplicate' = lijkt op een al bekende bug; gebruik dit alleen als de "
-        "  beschrijving sterk overlapt met een bestaand patroon.\n"
+        "Heuristieken voor classification:\n"
+        "- 'bug' = duidelijk een code-defect / regression, voldoende info om te starten.\n"
+        "- 'duplicate' = lijkt op een al bekende bug; alleen gebruiken bij sterke overlap.\n"
         "- 'feature' = verzoek tot nieuwe functionaliteit.\n"
-        "- 'needs-info' = niet reproduceerbaar zonder meer info van de reporter.\n"
-        "- 'wontfix' = test-data, by-design, of out-of-scope.\n"
-        "- Priority: P0 = blocker (data verlies, productie down, security), "
-        "  P1 = belangrijke bug die meerdere gebruikers raakt, "
-        "  P2 = standaard, P3 = nice-to-have / kosmetisch.\n"
+        "- 'needs-info' = niet reproduceerbaar, maar de reporter (eindgebruiker) "
+        "  kan het oplossen door simpele zaken te geven: screenshot, URL van de "
+        "  pagina, of een korte beschrijving in eigen woorden van wat er gebeurde.\n"
+        "- 'escalate' = alleen diagnoseerbaar met developer- of admin-toegang "
+        "  (HTTP status codes, stack traces, Sentry links, server logs, "
+        "  performance metrics, security incidenten, database queries, "
+        "  infrastructuur). Vraag dit NIET aan de reporter — markeer als escalate "
+        "  zodat het naar superadmin gaat.\n"
+        "- 'wontfix' = test-data, by-design, of out-of-scope.\n\n"
+        "Heuristieken voor recommended_action:\n"
+        "- Bij 'needs-info': schrijf in vriendelijke eindgebruikers-taal wat de "
+        "  reporter kan delen. ALLEEN vragen om: screenshot van wat ze zagen, "
+        "  link/URL van de pagina, en/of een zin in hun eigen woorden over wat "
+        "  ze probeerden te doen. GEEN DevTools, GEEN HTTP codes, GEEN stack "
+        "  traces, GEEN payloads vragen.\n"
+        "- Bij 'escalate': schrijf de volgende stappen voor de superadmin in "
+        "  developer-taal (waar te kijken in Sentry, welke endpoint, welke "
+        "  logs/queries, welke deploy-correlatie). Hier mag technisch jargon.\n"
+        "- Bij 'bug'/'feature': korte zin met aanbevolen vervolgactie voor het "
+        "  dev-team.\n\n"
+        "Priority: P0 = blocker (data verlies, productie down, security), "
+        "P1 = belangrijke bug die meerdere gebruikers raakt, "
+        "P2 = standaard, P3 = nice-to-have / kosmetisch.\n"
     ),
     "en": (
         "You are a product manager for ProjeXtPal (project-management SaaS). "
         "Your triage role: classify a reported ProductIssue and give advice.\n\n"
+        "IMPORTANT about reporters: they are END USERS — not developers, not "
+        "admins. They do NOT have access to DevTools, HTTP status codes, "
+        "stack traces, Sentry, server logs, or the database. NEVER ask the "
+        "reporter for technical details like these. If you actually need "
+        "them, classify as 'escalate' — the issue then routes to the "
+        "superadmin instead of back to the reporter.\n\n"
         "Return ONLY a JSON object, no commentary, no markdown fence. "
         "Schema:\n"
         "{\n"
-        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix",\n'
+        '  "classification": "bug" | "duplicate" | "feature" | "needs-info" | "wontfix" | "escalate",\n'
         '  "priority": "P0" | "P1" | "P2" | "P3",\n'
         '  "affected_area": "<short string, e.g. surveys / governance / mobile / auth>",\n'
         '  "reasoning": "<2-3 sentences in English>",\n'
         '  "recommended_action": "<short sentence in English>"\n'
         "}\n\n"
-        "Heuristics:\n"
-        "- 'bug' = clear code defect / regression.\n"
-        "- 'duplicate' = looks like a known bug; only use this if the description "
-        "  strongly overlaps a known pattern.\n"
+        "Classification heuristics:\n"
+        "- 'bug' = clear code defect / regression, enough info to start work.\n"
+        "- 'duplicate' = looks like a known bug; only when strong overlap.\n"
         "- 'feature' = request for new functionality.\n"
-        "- 'needs-info' = not reproducible without more info from the reporter.\n"
-        "- 'wontfix' = test data, by-design, or out-of-scope.\n"
-        "- Priority: P0 = blocker (data loss, production down, security), "
-        "  P1 = important bug affecting multiple users, "
-        "  P2 = standard, P3 = nice-to-have / cosmetic.\n"
+        "- 'needs-info' = not reproducible, but the reporter (an end user) CAN "
+        "  resolve it by sharing simple things: a screenshot, the URL of the "
+        "  page they were on, or a sentence in their own words about what "
+        "  happened.\n"
+        "- 'escalate' = diagnosable only with developer or admin access "
+        "  (HTTP status codes, stack traces, Sentry links, server logs, "
+        "  performance metrics, security incidents, database queries, "
+        "  infrastructure). Do NOT ask the reporter — mark as escalate so it "
+        "  routes to superadmin.\n"
+        "- 'wontfix' = test data, by-design, or out-of-scope.\n\n"
+        "Recommended_action heuristics:\n"
+        "- For 'needs-info': write in friendly end-user language. ONLY ask "
+        "  for: a screenshot of what they saw, the link/URL of the page, "
+        "  and/or a sentence in their own words about what they were trying "
+        "  to do. DO NOT ask for DevTools output, HTTP codes, stack traces, "
+        "  or request payloads.\n"
+        "- For 'escalate': write next steps for the superadmin in developer "
+        "  language (where to check in Sentry, which endpoint, which "
+        "  logs/queries, deploy correlations). Technical jargon is fine here.\n"
+        "- For 'bug'/'feature': a short sentence with the recommended next "
+        "  step for the dev team.\n\n"
+        "Priority: P0 = blocker (data loss, production down, security), "
+        "P1 = important bug affecting multiple users, "
+        "P2 = standard, P3 = nice-to-have / cosmetic.\n"
     ),
 }
 
@@ -269,6 +316,17 @@ _TRIAGE_TRANSLATIONS = {
         "unknown": "(onbekend)",
         "reasoning_h": "Redenering",
         "recommended_action_h": "Aanbevolen actie",
+        # When classification == 'escalate' we use these labels instead so
+        # the comment reads as a routing decision to the superadmin rather
+        # than an action for the reporter.
+        "escalate_marker": "GEËSCALEERD NAAR SUPERADMIN",
+        "escalate_explainer": (
+            "Deze melding vraagt technische details die een eindgebruiker "
+            "redelijkerwijs niet kan aanleveren (stack trace, Sentry-link, "
+            "server logs). Doorgestuurd naar superadmin voor directe "
+            "diagnose i.p.v. terugvragen aan de reporter."
+        ),
+        "next_steps_h": "Volgende stappen voor superadmin",
         "none": "(geen)",
         "llm_error_body": (
             "Auto-triage tijdelijk niet beschikbaar (LLM-call faalde of gaf "
@@ -283,6 +341,14 @@ _TRIAGE_TRANSLATIONS = {
         "unknown": "(unknown)",
         "reasoning_h": "Reasoning",
         "recommended_action_h": "Recommended action",
+        "escalate_marker": "ESCALATED TO SUPERADMIN",
+        "escalate_explainer": (
+            "This report requires technical details that an end user cannot "
+            "reasonably provide (stack trace, Sentry link, server logs). "
+            "Routed to superadmin for direct investigation rather than "
+            "asking the reporter for dev-level information."
+        ),
+        "next_steps_h": "Next steps for superadmin",
         "none": "(none)",
         "llm_error_body": (
             "Auto-triage temporarily unavailable (LLM call failed or returned "
@@ -322,18 +388,45 @@ def _format_llm_triage_body(
     Uses Unicode bullet `•` for the field-value lines and bare headers
     for the long-form sections. Mirrors the visual style of the
     `[needs-info-followup]` comments to keep the feed consistent.
+
+    Two variants:
+      - Default: shows "Recommended action" — what the reporter or dev
+        team should do next.
+      - Escalate: when classification == 'escalate', prepends an
+        ESCALATED-TO-SUPERADMIN marker + explainer, and renames
+        "Recommended action" to "Next steps for superadmin" so the
+        reporter doesn't see a wall of dev-jargon framed as something
+        they're supposed to do.
     """
     unknown = _t(lang, "unknown")
     none = _t(lang, "none")
-    return (
-        f"{signature} llm-triage\n\n"
-        f"{_t(lang, 'header')}\n"
-        f"• {_t(lang, 'classification')}: {classification}\n"
-        f"• {_t(lang, 'priority')}: {priority}\n"
-        f"• {_t(lang, 'affected_area')}: {area or unknown}\n\n"
-        f"{_t(lang, 'reasoning_h')}\n{reasoning or none}\n\n"
-        f"{_t(lang, 'recommended_action_h')}\n{recommended or none}\n"
-    )
+    is_escalate = classification == "escalate"
+
+    parts = [f"{signature} llm-triage", ""]
+
+    if is_escalate:
+        parts += [
+            f"⚠ {_t(lang, 'escalate_marker')}",
+            "",
+            _t(lang, "escalate_explainer"),
+            "",
+        ]
+
+    parts += [
+        _t(lang, "header"),
+        f"• {_t(lang, 'classification')}: {classification}",
+        f"• {_t(lang, 'priority')}: {priority}",
+        f"• {_t(lang, 'affected_area')}: {area or unknown}",
+        "",
+        _t(lang, "reasoning_h"),
+        reasoning or none,
+        "",
+        # Different label for the action section depending on routing
+        _t(lang, "next_steps_h") if is_escalate else _t(lang, "recommended_action_h"),
+        recommended or none,
+        "",
+    ]
+    return "\n".join(parts)
 
 
 # Kept for backwards compatibility with any direct callers / tests.
@@ -424,6 +517,13 @@ _LLM_STATUS_MAP = {
     "feature": "accepted",
     "needs-info": "needs-info",
     "wontfix": "wont-fix",
+    # 'escalate' = issue requires developer/admin access to diagnose
+    # (stack trace, Sentry, server logs). Routes to superadmin instead
+    # of asking the reporter for technical details. Status stays
+    # 'triaging' so it shows up as an active dev task — but the comment
+    # body is rendered with the escalate marker so it's visually
+    # distinct from a normal bug.
+    "escalate": "triaging",
 }
 
 
