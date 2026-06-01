@@ -27,42 +27,255 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 
+# Each item is a sales-ready SKU — clear price, clear value-prop, clear
+# category — curated for the Inclufy Finance offerte builder. The
+# `metadata.quotable` flag is used by Finance to filter out internal
+# items (currently all items are quotable; the flag is here for future
+# internal-only SKUs like volume discounts or partner-only bundles).
+#
+# Pricing decisions:
+#   - Tiered seats (Starter/Pro/Enterprise) replace the single PXP-SEAT
+#     so sales can sell up. Old PXP-SEAT kept as `deprecated` for quote-
+#     reproducibility — existing quotes that referenced it still resolve.
+#   - Methodology modules (LSS / MSP / PRINCE2) priced per-org per-month
+#     since they're feature flags, not per-user.
+#   - Feature add-ons priced low-€/mo per-org so they're easy add-ons
+#     during quote-build (€29-99/mo each — under the procurement
+#     approval threshold of most enterprise buyers).
+#   - Services (DPIA / AWS / Custom Integration) are one-off — show as
+#     setup_fee with recurring_interval=null.
 ITEMS = [
+    # ------------------------------------------------------------------
+    # Tiered seats (3) — replace the old generic PXP-SEAT
+    # ------------------------------------------------------------------
     {
-        "sku": "PXP-SEAT",
-        "name": "ProjeXtPal — Seat",
-        "description": "Per gebruiker per maand. Alle methodologies (Agile/Kanban/Waterfall/Hybrid).",
+        "sku": "PXP-STARTER",
+        "name": "ProjeXtPal Starter",
+        "description": (
+            "Per gebruiker per maand. Agile/Kanban/Waterfall, 3-role "
+            "membership (Owner/PM/Member), basis exports."
+        ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 1900,
+        "unit_price_cents": 1500,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"tier": "starter", "quotable": True},
+    },
+    {
+        "sku": "PXP-PRO",
+        "name": "ProjeXtPal Pro",
+        "description": (
+            "Per gebruiker per maand. Inclusief Starter + 6-role "
+            "governance, push-back approval workflow, DOCX/PPTX exports, "
+            "category sub-totals, AI Meeting Minutes."
+        ),
+        "category": "license_variable",
+        "pricing_model": "per_user",
+        "unit_price_cents": 2500,
         "setup_fee_cents": 25000,
         "currency": "EUR",
         "recurring_interval": "monthly",
-        "metadata": {},
+        "metadata": {"tier": "pro", "quotable": True},
     },
+    {
+        "sku": "PXP-ENTERPRISE",
+        "name": "ProjeXtPal Enterprise",
+        "description": (
+            "Per gebruiker per maand. Inclusief Pro + BYO LLM keys, "
+            "Fernet encryption at rest, full audit log, e-sig project "
+            "closing, TOTP 2FA, custom domain, SLA 99.9%."
+        ),
+        "category": "license_variable",
+        "pricing_model": "per_user",
+        "unit_price_cents": 4500,
+        "setup_fee_cents": 50000,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"tier": "enterprise", "quotable": True},
+    },
+    # ------------------------------------------------------------------
+    # Methodology modules (3) — feature flags per organisation
+    # ------------------------------------------------------------------
     {
         "sku": "PXP-LSS",
         "name": "LSS Black/Green add-on",
-        "description": "Lean Six Sigma module per organisatie.",
+        "description": "Lean Six Sigma module per organisatie (DMAIC, control plans, RACI).",
         "category": "addon",
         "pricing_model": "per_module",
         "unit_price_cents": 9900,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
-        "metadata": {},
+        "metadata": {"family": "methodology", "quotable": True},
     },
     {
         "sku": "PXP-MSP",
         "name": "MSP programme add-on",
-        "description": "Managing Successful Programmes — multi-project governance.",
+        "description": "Managing Successful Programmes — multi-project governance + benefits realisation.",
         "category": "addon",
         "pricing_model": "per_module",
         "unit_price_cents": 14900,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
-        "metadata": {},
+        "metadata": {"family": "methodology", "quotable": True},
+    },
+    {
+        "sku": "PXP-PRINCE2",
+        "name": "PRINCE2 + Highlight Reports add-on",
+        "description": (
+            "PRINCE2 stages, business case, end-project report, e-sig "
+            "closing, Highlight Report PPTX export per maand."
+        ),
+        "category": "addon",
+        "pricing_model": "per_module",
+        "unit_price_cents": 7900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"family": "methodology", "quotable": True},
+    },
+    # ------------------------------------------------------------------
+    # Feature add-ons (4) — bundles derived from Sprint 0-3 work
+    # ------------------------------------------------------------------
+    {
+        "sku": "PXP-AI-MINUTES",
+        "name": "AI Meeting Minutes",
+        "description": (
+            "Upload meeting transcript → Claude-gegenereerde notulen + "
+            "actiepunten → DOCX export. Onbeperkt aantal meetings per org."
+        ),
+        "category": "addon",
+        "pricing_model": "per_module",
+        "unit_price_cents": 2900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"family": "ai", "quotable": True},
+    },
+    {
+        "sku": "PXP-COMPLIANCE",
+        "name": "Enterprise Compliance Pack",
+        "description": (
+            "BYO LLM keys (eigen Anthropic/OpenAI account) + Fernet "
+            "encryption at rest voor alle credentials + uitgebreide "
+            "audit log + DPIA template + GDPR data-export endpoints. "
+            "Voor InfoSec-gating bij enterprise procurement."
+        ),
+        "category": "addon",
+        "pricing_model": "per_module",
+        "unit_price_cents": 19900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"family": "compliance", "quotable": True},
+    },
+    {
+        "sku": "PXP-GOVERNANCE",
+        "name": "PMO Governance Pack",
+        "description": (
+            "6-role unified membership (Owner/PM/Leader/Facilitator/"
+            "Outside Eyes/Stakeholder), push-back approval workflow met "
+            "14-dag rule, e-sig project closing met canvas pad."
+        ),
+        "category": "addon",
+        "pricing_model": "per_module",
+        "unit_price_cents": 9900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"family": "governance", "quotable": True},
+    },
+    {
+        "sku": "PXP-EXPORT-PACK",
+        "name": "Country-specific Export Templates",
+        "description": (
+            "Methodology-aware exports met landspecifieke templates "
+            "(NL Belastingdienst layout / FR Liasse fiscale / DE / "
+            "MA DGI / AE FTA). Prijs per land per maand."
+        ),
+        "category": "addon",
+        "pricing_model": "per_module",
+        "unit_price_cents": 3900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"family": "exports", "quotable": True},
+    },
+    # ------------------------------------------------------------------
+    # Implementation services (3) — one-off setup fees
+    # ------------------------------------------------------------------
+    {
+        "sku": "PXP-SVC-DPIA",
+        "name": "DPIA-review + GDPR consult",
+        "description": (
+            "Eenmalige DPIA-review + GDPR-compliance assessment door "
+            "Inclufy consultant. Inclusief 1 workshop + DPIA-document "
+            "op klant-template."
+        ),
+        "category": "service",
+        "pricing_model": "one_off",
+        "unit_price_cents": 0,
+        "setup_fee_cents": 250000,
+        "currency": "EUR",
+        "recurring_interval": None,
+        "metadata": {"family": "services", "quotable": True},
+    },
+    {
+        "sku": "PXP-SVC-AWS",
+        "name": "AWS dedicated hosting setup",
+        "description": (
+            "Dedicated AWS-omgeving met KMS-CMK, VPC peering, en "
+            "dedicated Postgres. Inclusief topology-document + "
+            "migratie van shared tenant naar dedicated."
+        ),
+        "category": "service",
+        "pricing_model": "one_off",
+        "unit_price_cents": 0,
+        "setup_fee_cents": 500000,
+        "currency": "EUR",
+        "recurring_interval": None,
+        "metadata": {"family": "services", "quotable": True},
+    },
+    {
+        "sku": "PXP-SVC-INTEGRATION",
+        "name": "Custom Integration (SAP / Jira / etc.)",
+        "description": (
+            "Klant-specifieke integratie met externe systemen "
+            "(SAP S/4HANA, Jira, MS Project, Salesforce). Prijs op "
+            "aanvraag — afhankelijk van scope."
+        ),
+        "category": "service",
+        "pricing_model": "one_off",
+        "unit_price_cents": 0,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": None,
+        "metadata": {"family": "services", "quotable": True, "price_on_request": True},
+    },
+    # ------------------------------------------------------------------
+    # Deprecated — kept for quote-reproducibility (existing quotes that
+    # referenced PXP-SEAT still resolve). Marked `quotable: False` so
+    # the Finance offerte builder skips it in the picker.
+    # ------------------------------------------------------------------
+    {
+        "sku": "PXP-SEAT",
+        "name": "ProjeXtPal — Seat (deprecated)",
+        "description": (
+            "Per gebruiker per maand. Alle methodologies "
+            "(Agile/Kanban/Waterfall/Hybrid). Vervangen door "
+            "PXP-STARTER/PRO/ENTERPRISE tiers — alleen zichtbaar voor "
+            "reproductie van bestaande offertes."
+        ),
+        "category": "license_variable",
+        "pricing_model": "per_user",
+        "unit_price_cents": 1900,
+        "setup_fee_cents": 25000,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"quotable": False, "deprecated_in_favor_of": "PXP-PRO"},
     },
 ]
 
