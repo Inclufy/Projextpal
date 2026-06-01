@@ -210,7 +210,9 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
           : "manual_form",
       });
       toast({
-        title: isNl ? "Probleem gemeld" : "Issue reported",
+        title: isNl
+          ? `Probleem gemeld · #${issue.id}`
+          : `Issue reported · #${issue.id}`,
         description: isNl
           ? "Onze AI-agent triageert het binnen enkele minuten."
           : "Our AI agent will triage it within minutes.",
@@ -787,6 +789,14 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
             ) : (
               <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
             )}
+            {/* Issue number as the leftmost reference handle — makes it
+                trivial to say "#23 is broken" in chat / email / support. */}
+            <span
+              className="text-[10px] font-mono text-gray-500 dark:text-gray-400 shrink-0"
+              title={isNl ? "Issue-nummer" : "Issue number"}
+            >
+              #{issue.id}
+            </span>
             {issue.priority && (
               <span
                 className={`text-[10px] px-1.5 py-0 rounded font-bold ${priorityBadgeClass(issue.priority)}`}
