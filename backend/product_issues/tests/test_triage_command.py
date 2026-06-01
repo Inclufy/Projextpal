@@ -397,6 +397,58 @@ def test_llm_comment_localized_to_dutch_when_company_is_nl(company, patched_cata
 
 
 @pytest.mark.django_db
+def test_llm_triage_comment_has_no_markdown_asterisks(company, patched_catalog):
+    """The AI Copilot UI renders comments as plain text (whitespace-pre-wrap),
+    NOT through a markdown parser. So `**bold**` would show literally as
+    asterisks. Bug reported 2026-06-01 via screenshot: the triage comment
+    showed `**Reasoning**` and `**Recommended action**` as visible `**`s.
+
+    This test locks down the bullet-style format: no `**` markers anywhere.
+    """
+    company.locale = "en"
+    company.save(update_fields=["locale"])
+    issue = _make_issue(
+        company,
+        title="A markdown-free triage comment please",
+        description="x",
+        error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+
+    fake_payload = {
+        "classification": "bug",
+        "priority": "P1",
+        "affected_area": "dashboard",
+        "reasoning": "Looks like a UI bug.",
+        "recommended_action": "Reproduce with DevTools.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client", return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
+    assert comment is not None
+    body = comment.body
+    # No double-asterisk markdown anywhere
+    assert "**" not in body, f"Expected zero `**` in comment body, got: {body!r}"
+    # But labels themselves still present
+    assert "Reasoning" in body
+    assert "Recommended action" in body
+    # And bullet characters render the field-value lines
+    assert "• Classification: bug" in body
+    assert "• Priority: P1" in body
+    assert "• Affected area: dashboard" in body
+
+
+@pytest.mark.django_db
 def test_llm_error_comment_localized(company, patched_catalog):
     """The static llm-error comment must also respect the reporter's language."""
     company.locale = "en"

@@ -303,6 +303,39 @@ def _t(lang: str, key: str) -> str:
     ).get(key, _TRIAGE_TRANSLATIONS["en"].get(key, key))
 
 
+def _format_llm_triage_body(
+    *,
+    signature: str,
+    lang: str,
+    classification: str,
+    priority: str,
+    area: str,
+    reasoning: str,
+    recommended: str,
+) -> str:
+    """Render the comment body for a successful llm-triage classification.
+
+    Plain-text format (no markdown) — the AI Copilot UI renders comments
+    via `<p className="whitespace-pre-wrap">{body}</p>`, NOT through a
+    markdown parser, so `**bold**` would show as literal asterisks.
+
+    Uses Unicode bullet `•` for the field-value lines and bare headers
+    for the long-form sections. Mirrors the visual style of the
+    `[needs-info-followup]` comments to keep the feed consistent.
+    """
+    unknown = _t(lang, "unknown")
+    none = _t(lang, "none")
+    return (
+        f"{signature} llm-triage\n\n"
+        f"{_t(lang, 'header')}\n"
+        f"• {_t(lang, 'classification')}: {classification}\n"
+        f"• {_t(lang, 'priority')}: {priority}\n"
+        f"• {_t(lang, 'affected_area')}: {area or unknown}\n\n"
+        f"{_t(lang, 'reasoning_h')}\n{reasoning or none}\n\n"
+        f"{_t(lang, 'recommended_action_h')}\n{recommended or none}\n"
+    )
+
+
 # Kept for backwards compatibility with any direct callers / tests.
 LLM_SYSTEM_PROMPT = _LLM_SYSTEM_PROMPTS["en"]
 
@@ -640,14 +673,14 @@ class Command(BaseCommand):
             recommended = str(parsed.get("recommended_action") or "")[:500]
             area = str(parsed.get("affected_area") or "")[:80]
 
-            body = (
-                f"{_today_signature(issue)} llm-triage\n\n"
-                f"{_t(lang, 'header')}:\n"
-                f"- {_t(lang, 'classification')}: **{classification}**\n"
-                f"- {_t(lang, 'priority')}: **{priority}**\n"
-                f"- {_t(lang, 'affected_area')}: {area or _t(lang, 'unknown')}\n\n"
-                f"**{_t(lang, 'reasoning_h')}**\n{reasoning or _t(lang, 'none')}\n\n"
-                f"**{_t(lang, 'recommended_action_h')}**\n{recommended or _t(lang, 'none')}\n"
+            body = _format_llm_triage_body(
+                signature=_today_signature(issue),
+                lang=lang,
+                classification=classification,
+                priority=priority,
+                area=area,
+                reasoning=reasoning,
+                recommended=recommended,
             )
 
             try:
