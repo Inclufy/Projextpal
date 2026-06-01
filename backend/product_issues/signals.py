@@ -327,7 +327,18 @@ def _capture_old_status(sender, instance: ProductIssue, **kwargs):
 
 @receiver(post_save, sender=ProductIssue)
 def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kwargs):
-    """Route ProductIssue lifecycle events to the right notification emails."""
+    """Route ProductIssue lifecycle events to the right notification emails.
+
+    Callers (e.g. the auto-triage cron) can short-circuit the per-issue
+    emails by setting `instance._suppress_email_on_save = True` BEFORE
+    calling `.save()` — the batch will then send a single digest mail
+    instead of one mail per row.
+    """
+    # Per-call email suppression (auto-triage cron uses this to avoid
+    # an N-issue email storm; it sends ONE digest after the batch).
+    if getattr(instance, "_suppress_email_on_save", False):
+        return
+
     issue = instance
     issue_url = _issue_url(issue)
     old_status = getattr(issue, "_old_status", None)
