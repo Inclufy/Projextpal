@@ -243,6 +243,13 @@ class ProductIssueComment(models.Model):
     ('I started reproduction', 'I cannot find the click target', etc.).
     """
 
+    VISIBILITY_PUBLIC = "public"
+    VISIBILITY_INTERNAL = "internal"
+    VISIBILITY_CHOICES = [
+        (VISIBILITY_PUBLIC, "Public — reporter + all roles can see"),
+        (VISIBILITY_INTERNAL, "Internal — admin + superadmin only"),
+    ]
+
     issue = models.ForeignKey(
         ProductIssue, on_delete=models.CASCADE, related_name="comments"
     )
@@ -254,6 +261,17 @@ class ProductIssueComment(models.Model):
     is_triage_step = models.BooleanField(
         default=False,
         help_text="True if this comment is part of the agent's triage trace",
+    )
+    visibility = models.CharField(
+        max_length=16,
+        choices=VISIBILITY_CHOICES,
+        default=VISIBILITY_PUBLIC,
+        help_text=(
+            "public = visible to the reporter and everyone with issue access. "
+            "internal = admin + superadmin only — for dev-jargon triage notes "
+            "(API mismatch, SQL fixes, stack traces) that would be useless or "
+            "confusing for an end-user reporter."
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

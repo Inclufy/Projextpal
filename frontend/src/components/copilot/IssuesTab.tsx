@@ -894,26 +894,50 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
               </p>
             ) : comments ? (
               <div className="space-y-2">
-                {comments.map((c) => (
-                  <div
-                    key={c.id}
-                    className={`rounded p-2 ${
-                      c.is_triage_step
-                        ? "bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40"
-                        : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-0.5">
-                      <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300">
-                        {c.author}
-                      </span>
-                      <span className="text-[10px] text-gray-400">
-                        {relativeTime(new Date(c.created_at), isNl)}
-                      </span>
+                {comments.map((c) => {
+                  const isInternal = c.visibility === "internal";
+                  // Internal comments only reach the client if the
+                  // viewer is admin/superadmin — the backend serializer
+                  // filters them otherwise. So if we see one, render a
+                  // visible "Internal" badge + amber tint so the staff
+                  // viewer knows the reporter does NOT see this row.
+                  return (
+                    <div
+                      key={c.id}
+                      className={`rounded p-2 ${
+                        isInternal
+                          ? "bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50"
+                          : c.is_triage_step
+                          ? "bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40"
+                          : "bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300">
+                            {c.author}
+                          </span>
+                          {isInternal && (
+                            <span
+                              className="text-[9px] px-1.5 py-0 rounded font-bold bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+                              title={
+                                isNl
+                                  ? "Alleen zichtbaar voor admin en superadmin — niet voor de reporter"
+                                  : "Visible to admin and superadmin only — not to the reporter"
+                              }
+                            >
+                              {isNl ? "INTERN" : "INTERNAL"}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-gray-400">
+                          {relativeTime(new Date(c.created_at), isNl)}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : null}
 

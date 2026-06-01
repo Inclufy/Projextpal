@@ -122,7 +122,11 @@ def _fake_anthropic_response(payload: dict) -> MagicMock:
 
 @pytest.mark.django_db
 def test_phase_b_llm_classification(company, patched_catalog):
-    """An issue that doesn't match the catalog goes through the LLM path."""
+    """An issue that doesn't match the catalog goes through the LLM path.
+
+    Now emits TWO sibling comments: one public (reporter-visible) and one
+    internal (admin/superadmin-only).
+    """
     issue = _make_issue(
         company,
         title="Brand-new dashboard glitch nobody catalogued",
@@ -134,8 +138,9 @@ def test_phase_b_llm_classification(company, patched_catalog):
         "classification": "bug",
         "priority": "P1",
         "affected_area": "dashboard",
-        "reasoning": "Het lijkt een UI-bug op het dashboard.",
-        "recommended_action": "Reproduceer met DevTools open.",
+        "reasoning": "Likely a UI bug on the dashboard.",
+        "reporter_message": "Thanks for reporting — our dev team has been notified and will work on this.",
+        "dev_notes": "Check frontend/src/pages/dashboard for the click handler on element X.",
     }
 
     fake_client = MagicMock()
@@ -158,10 +163,26 @@ def test_phase_b_llm_classification(company, patched_catalog):
     assert issue.agent_triage_result.get("phase") == "llm"
     assert issue.triaged_by == "agent:issue-triage-validator"
 
-    comments = list(ProductIssueComment.objects.filter(issue=issue))
-    assert len(comments) == 1
-    assert "llm-triage" in comments[0].body
-    assert "bug" in comments[0].body.lower()
+    comments = list(ProductIssueComment.objects.filter(issue=issue).order_by("created_at"))
+    # Now two sibling comments: public + internal
+    assert len(comments) == 2
+
+    public_c = next(c for c in comments if c.visibility == "public")
+    internal_c = next(c for c in comments if c.visibility == "internal")
+
+    # Public is reporter-friendly
+    assert "llm-triage (public)" in public_c.body
+    assert "Thanks for reporting" in public_c.body
+    # Public does NOT leak dev jargon
+    assert "frontend/src/pages" not in public_c.body
+    assert "DevTools" not in public_c.body
+
+    # Internal carries the dev notes + classification + priority
+    assert "llm-triage (internal)" in internal_c.body
+    assert "INTERNAL" in internal_c.body
+    assert "frontend/src/pages/dashboard" in internal_c.body
+    assert "P1" in internal_c.body
+    assert "bug" in internal_c.body.lower()
 
 
 # ---------------------------------------------------------------------------
@@ -314,8 +335,9 @@ def test_llm_comment_localized_to_english_when_company_is_en(company, patched_ca
         "classification": "bug",
         "priority": "P1",
         "affected_area": "dashboard",
-        "reasoning": "It looks like a UI bug on the dashboard.",
-        "recommended_action": "Reproduce with DevTools open.",
+        "reasoning": "Looks like a UI bug.",
+        "reporter_message": "Thanks for the report — our dev team is on it.",
+        "dev_notes": "Check the click handler in frontend dashboard.",
     }
     fake_client = MagicMock()
     fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
@@ -330,19 +352,23 @@ def test_llm_comment_localized_to_english_when_company_is_en(company, patched_ca
         out = StringIO()
         call_command("triage_product_issues", "--limit", "10", stdout=out)
 
-    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
-    assert comment is not None
-    body = comment.body
+    # Two sibling comments emitted now
+    public_c = ProductIssueComment.objects.get(issue=issue, visibility="public")
+    internal_c = ProductIssueComment.objects.get(issue=issue, visibility="internal")
 
-    # English labels present
-    assert "Automatic LLM classification" in body
-    assert "Reasoning" in body
-    assert "Recommended action" in body
+    # PUBLIC body uses the EN labels (public_header / public_next_h / status label)
+    assert "Update on your report" in public_c.body
+    assert "What happens next" in public_c.body
+    # Dutch labels NOT present in EN public
+    assert "Update over je melding" not in public_c.body
+    assert "Wat gaat er nu gebeuren" not in public_c.body
 
-    # Dutch labels absent (this is the regression)
-    assert "Automatische LLM-classificatie" not in body
-    assert "Redenering" not in body
-    assert "Aanbevolen actie" not in body
+    # INTERNAL body uses the EN technical labels
+    assert "Triage analysis" in internal_c.body
+    assert "Reasoning" in internal_c.body
+    assert "Dev/admin notes" in internal_c.body
+    assert "Triage-analyse" not in internal_c.body
+    assert "Redenering" not in internal_c.body
 
     # And the LLM was called with the English system prompt
     call_kwargs = fake_client.messages.create.call_args.kwargs
@@ -369,7 +395,8 @@ def test_llm_comment_localized_to_dutch_when_company_is_nl(company, patched_cata
         "priority": "P1",
         "affected_area": "dashboard",
         "reasoning": "Het lijkt een UI-bug op het dashboard.",
-        "recommended_action": "Reproduceer met DevTools open.",
+        "reporter_message": "Bedankt voor je melding — ons dev-team is op de hoogte.",
+        "dev_notes": "Controleer de click-handler op het dashboard.",
     }
     fake_client = MagicMock()
     fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
@@ -384,12 +411,15 @@ def test_llm_comment_localized_to_dutch_when_company_is_nl(company, patched_cata
         out = StringIO()
         call_command("triage_product_issues", "--limit", "10", stdout=out)
 
-    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
-    assert comment is not None
-    body = comment.body
-    assert "Automatische LLM-classificatie" in body
-    assert "Redenering" in body
-    assert "Aanbevolen actie" in body
+    public_c = ProductIssueComment.objects.get(issue=issue, visibility="public")
+    internal_c = ProductIssueComment.objects.get(issue=issue, visibility="internal")
+
+    # Dutch labels present
+    assert "Update over je melding" in public_c.body
+    assert "Wat gaat er nu gebeuren" in public_c.body
+    assert "Triage-analyse" in internal_c.body
+    assert "Redenering" in internal_c.body
+    assert "Dev/admin notes" in internal_c.body  # technical label kept English
 
     # And the Dutch system prompt was used
     system_prompt = fake_client.messages.create.call_args.kwargs["system"]
@@ -420,7 +450,8 @@ def test_llm_triage_comment_has_no_markdown_asterisks(company, patched_catalog):
         "priority": "P1",
         "affected_area": "dashboard",
         "reasoning": "Looks like a UI bug.",
-        "recommended_action": "Reproduce with DevTools.",
+        "reporter_message": "Thanks — our dev team is on this.",
+        "dev_notes": "Check the click handler in dashboard.tsx",
     }
     fake_client = MagicMock()
     fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
@@ -434,30 +465,29 @@ def test_llm_triage_comment_has_no_markdown_asterisks(company, patched_catalog):
         out = StringIO()
         call_command("triage_product_issues", "--limit", "10", stdout=out)
 
-    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
-    assert comment is not None
-    body = comment.body
-    # No double-asterisk markdown anywhere
-    assert "**" not in body, f"Expected zero `**` in comment body, got: {body!r}"
-    # But labels themselves still present
-    assert "Reasoning" in body
-    assert "Recommended action" in body
-    # And bullet characters render the field-value lines
-    assert "• Classification: bug" in body
-    assert "• Priority: P1" in body
-    assert "• Affected area: dashboard" in body
+    # Both sibling comments must be markdown-free
+    for c in ProductIssueComment.objects.filter(issue=issue):
+        assert "**" not in c.body, (
+            f"Expected zero `**` in {c.visibility} comment body, got: {c.body!r}"
+        )
+
+    internal_c = ProductIssueComment.objects.get(issue=issue, visibility="internal")
+    assert "• Classification: bug" in internal_c.body
+    assert "• Priority: P1" in internal_c.body
+    assert "• Affected area: dashboard" in internal_c.body
 
 
 @pytest.mark.django_db
 def test_escalate_classification_routes_to_superadmin_not_reporter(company, patched_catalog):
     """When the LLM classifies as 'escalate' (issue needs dev/admin access
-    to diagnose: stack trace, Sentry, server logs), the comment must be
-    framed as a superadmin routing decision — NOT as a list of questions
-    for the reporter.
+    to diagnose: stack trace, Sentry, server logs), the dev jargon must
+    land in the INTERNAL comment, and the PUBLIC reporter-facing comment
+    must just say "our admin team is investigating" — no Sentry/log
+    jargon leaked.
 
-    Policy from user 2026-06-01: reporters are end users; screenshots +
-    links + descriptions are what they can provide. Anything more
-    technical must route to superadmin.
+    Policy 2026-06-01: reporters are end users; technical details
+    belong in admin-only `internal` comments. Reporter sees only a
+    friendly status update.
     """
     company.locale = "en"
     company.save(update_fields=["locale"])
@@ -474,7 +504,8 @@ def test_escalate_classification_routes_to_superadmin_not_reporter(company, patc
         "priority": "P1",
         "affected_area": "backend",
         "reasoning": "Vague 500 report — only diagnosable with Sentry + server logs, which an end user does not have.",
-        "recommended_action": "Check Sentry for 500s around the report timestamp; correlate with recent deploys; capture stack trace.",
+        "reporter_message": "Thanks for reporting. Our admin team is investigating directly — we'll update you once they have more information.",
+        "dev_notes": "Check Sentry for 500s around the report timestamp; correlate with recent deploys; capture stack trace; check logs/triage.log and api logs.",
     }
     fake_client = MagicMock()
     fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
@@ -489,25 +520,30 @@ def test_escalate_classification_routes_to_superadmin_not_reporter(company, patc
         call_command("triage_product_issues", "--limit", "10", stdout=out)
 
     issue.refresh_from_db()
-    # Status maps to triaging (active dev work, NOT needs-info / waiting on reporter)
     assert issue.status == "triaging"
     assert issue.priority == "P1"
     assert issue.agent_triage_result.get("classification") == "escalate"
 
-    comment = ProductIssueComment.objects.filter(issue=issue).order_by("-created_at").first()
-    assert comment is not None
-    body = comment.body
+    public_c = ProductIssueComment.objects.get(issue=issue, visibility="public")
+    internal_c = ProductIssueComment.objects.get(issue=issue, visibility="internal")
 
-    # Escalate marker visible
-    assert "ESCALATED TO SUPERADMIN" in body
-    assert "This report requires technical details" in body
-    # The action section is reframed for superadmin, NOT "Recommended action"
-    assert "Next steps for superadmin" in body
-    # The reporter is NOT being asked to do anything — no end-user-facing
-    # "Recommended action" header
-    assert "Recommended action" not in body
-    # Still no markdown
-    assert "**" not in body
+    # PUBLIC — friendly, no jargon
+    assert "admin team is investigating" in public_c.body
+    assert "Sentry" not in public_c.body
+    assert "stack trace" not in public_c.body.lower()
+    assert "logs/" not in public_c.body
+    # Public uses the localized status label for escalate
+    assert "Routed to our admin team" in public_c.body
+
+    # INTERNAL — dev jargon allowed + visible
+    assert "INTERNAL" in internal_c.body
+    assert "Sentry" in internal_c.body
+    assert "stack trace" in internal_c.body.lower()
+    assert "logs/triage.log" in internal_c.body
+
+    # No markdown in either
+    assert "**" not in public_c.body
+    assert "**" not in internal_c.body
 
 
 def test_llm_prompt_forbids_asking_reporter_for_dev_details_en():
@@ -546,6 +582,70 @@ def test_llm_prompt_forbids_asking_reporter_for_dev_details_nl():
     assert "stack trace" in prompt.lower() or "stacktrace" in prompt.lower()
     assert "screenshot" in prompt.lower()
     assert "URL" in prompt or "link" in prompt.lower()
+
+
+@pytest.mark.django_db
+def test_serializer_hides_internal_comments_from_non_staff(company, patched_catalog):
+    """The new dual-comment architecture writes both a public and an
+    internal comment per triage. The internal one must NEVER leak to a
+    non-staff viewer (i.e. the reporter who filed the issue).
+
+    Verifies `ProductIssueSerializer.get_comments()` filters by viewer
+    role: reporter sees only `visibility='public'`, admin/superadmin/
+    Django superuser see both.
+    """
+    from django.contrib.auth import get_user_model
+    from rest_framework.test import APIRequestFactory
+    from product_issues.models import ProductIssue, ProductIssueComment
+    from product_issues.serializers import ProductIssueSerializer
+
+    User = get_user_model()
+    reporter = User.objects.create_user(
+        username="enduser", email="end@example.com", password="x",
+        company=company, role="user",
+    )
+    admin = User.objects.create_user(
+        username="admin1", email="admin@example.com", password="x",
+        company=company, role="admin",
+    )
+
+    issue = ProductIssue.objects.create(
+        title="Test", description="Test", status="new",
+        source="user", capture_method="manual_form",
+        company=company, reporter=reporter,
+    )
+    ProductIssueComment.objects.create(
+        issue=issue, author="agent:issue-triage-validator",
+        body="PUBLIC body", is_triage_step=True, visibility="public",
+    )
+    ProductIssueComment.objects.create(
+        issue=issue, author="agent:issue-triage-validator",
+        body="INTERNAL body with file paths and Sentry queries",
+        is_triage_step=True, visibility="internal",
+    )
+
+    factory = APIRequestFactory()
+
+    # Reporter viewer — must NOT see the internal row
+    req_reporter = factory.get("/")
+    req_reporter.user = reporter
+    data_reporter = ProductIssueSerializer(
+        issue, context={"request": req_reporter}
+    ).data
+    assert len(data_reporter["comments"]) == 1
+    assert data_reporter["comments"][0]["body"] == "PUBLIC body"
+    assert data_reporter["comments"][0]["visibility"] == "public"
+
+    # Admin viewer — sees both
+    req_admin = factory.get("/")
+    req_admin.user = admin
+    data_admin = ProductIssueSerializer(
+        issue, context={"request": req_admin}
+    ).data
+    assert len(data_admin["comments"]) == 2
+    bodies = {c["body"] for c in data_admin["comments"]}
+    assert "PUBLIC body" in bodies
+    assert "INTERNAL body with file paths and Sentry queries" in bodies
 
 
 @pytest.mark.django_db
@@ -610,7 +710,8 @@ def test_llm_error_comment_does_not_block_retry(company, patched_catalog):
         "priority": "P2",
         "affected_area": "dashboard",
         "reasoning": "Test.",
-        "recommended_action": "Test.",
+        "reporter_message": "Thanks, dev team is on it.",
+        "dev_notes": "Test dev note.",
     }
     fake_client = MagicMock()
     fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
@@ -626,13 +727,21 @@ def test_llm_error_comment_does_not_block_retry(company, patched_catalog):
         call_command("triage_product_issues", "--issue-id", str(issue.id), stdout=out)
 
     issue.refresh_from_db()
-    # Retry must have succeeded — status updated, NEW comment added alongside the
-    # original llm-error comment (audit trail preserved).
+    # Retry must have succeeded — status updated, TWO new sibling triage
+    # comments added (public + internal) alongside the original llm-error
+    # comment (audit trail preserved).
     assert issue.status == "triaging"
-    comments = ProductIssueComment.objects.filter(issue=issue).order_by("created_at")
-    assert comments.count() == 2
+    comments = list(
+        ProductIssueComment.objects.filter(issue=issue).order_by("created_at")
+    )
+    assert len(comments) == 3
     assert "llm-error" in comments[0].body
+    # Order: error first (pre-seeded), then public + internal (creation order)
     assert "llm-triage" in comments[1].body
+    assert "llm-triage" in comments[2].body
+    # And one of them is the public variant, the other internal
+    visibilities = {c.visibility for c in comments[1:]}
+    assert visibilities == {"public", "internal"}
 
 
 # ---------------------------------------------------------------------------

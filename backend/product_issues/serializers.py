@@ -3,17 +3,60 @@ from rest_framework import serializers
 from .models import ProductIssue, ProductIssueComment
 
 
+# Roles that are allowed to see ProductIssueComment rows with
+# visibility='internal' (dev-jargon triage notes meant for staff, not
+# the end-user reporter). Kept here so view + serializer share one
+# definition.
+_STAFF_ROLES = {"admin", "superadmin"}
+
+
+def _user_can_see_internal_comments(user) -> bool:
+    """True if `user` is admin / superadmin / Django superuser.
+
+    Falls back to False for anonymous + plain authenticated users. The
+    reporter who filed the issue does NOT get to see internal notes,
+    even on their own issue — by design, since the internal note is the
+    dev-jargon explanation the LLM wrote for staff.
+    """
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    return getattr(user, "role", None) in _STAFF_ROLES
+
+
 class ProductIssueCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductIssueComment
-        fields = ["id", "issue", "author", "body", "is_triage_step", "created_at"]
+        fields = [
+            "id", "issue", "author", "body",
+            "is_triage_step", "visibility", "created_at",
+        ]
         read_only_fields = ["created_at"]
 
 
 class ProductIssueSerializer(serializers.ModelSerializer):
     """Full read/write serializer used by users + agent."""
 
-    comments = ProductIssueCommentSerializer(many=True, read_only=True)
+    comments = serializers.SerializerMethodField()
+
+    def get_comments(self, issue) -> list:
+        """Return the comments thread, filtered by viewer role.
+
+        `internal` comments (dev-jargon triage notes from the auto-triage
+        LLM) are hidden from anyone who isn't admin / superadmin /
+        Django superuser — including the original reporter of the issue.
+        Reporters should only see the friendly `public` comments that
+        the LLM produces alongside.
+        """
+        request = self.context.get("request")
+        viewer = getattr(request, "user", None)
+        qs = issue.comments.all()
+        if not _user_can_see_internal_comments(viewer):
+            qs = qs.exclude(visibility=ProductIssueComment.VISIBILITY_INTERNAL)
+        return ProductIssueCommentSerializer(
+            qs, many=True, context=self.context,
+        ).data
 
     class Meta:
         model = ProductIssue

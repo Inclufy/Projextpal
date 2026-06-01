@@ -91,6 +91,17 @@ export interface ProductIssueComment {
   author: string;
   body: string;
   is_triage_step: boolean;
+  /**
+   * Audience for this comment row:
+   * - "public"   = reporter + everyone with issue access sees it
+   * - "internal" = admin + superadmin only (dev jargon — file paths,
+   *                Sentry queries, fix hints). Filtered out by the
+   *                backend serializer for non-staff viewers, so a
+   *                reporter never receives an internal row in the API
+   *                response. Admin viewers DO receive it and the UI
+   *                renders an "Internal" badge.
+   */
+  visibility?: "public" | "internal";
   created_at: string;
 }
 
