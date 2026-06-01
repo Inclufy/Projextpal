@@ -153,10 +153,22 @@ def _today_signature(issue: ProductIssue) -> str:
 
 
 def _already_triaged_today(issue: ProductIssue) -> bool:
+    """
+    True only if a SUCCESSFUL triage comment exists for today.
+
+    Important: a transient `llm-error` comment from earlier today (e.g.
+    Anthropic key was missing) must NOT block the next run — otherwise a
+    single failed cron-fire takes the issue out of the queue for the rest
+    of the day. We match the date-sig prefix but explicitly exclude the
+    `llm-error` variant so retries can proceed once the upstream cause
+    (missing key, rate-limit, transient 5xx) is resolved.
+    """
     sig = _today_signature(issue)
     return ProductIssueComment.objects.filter(
         issue=issue,
         body__startswith=sig,
+    ).exclude(
+        body__startswith=f"{sig} llm-error",
     ).exists()
 
 

@@ -266,6 +266,66 @@ def test_idempotency_direct_guard(company, patched_catalog):
     assert ProductIssueComment.objects.filter(issue=issue).count() == 1
 
 
+@pytest.mark.django_db
+def test_llm_error_comment_does_not_block_retry(company, patched_catalog):
+    """A transient `llm-error` comment from earlier today (e.g. Anthropic
+    key was missing on a previous cron-fire) MUST NOT block a retry.
+
+    Bug discovered 2026-06-01: Anthropic key was added to .env after the
+    first 10 issues had already received an llm-error comment. The naïve
+    `body__startswith=sig` guard then skipped those issues for the rest of
+    the day, even though the upstream cause was already fixed. The fix:
+    exclude llm-error comments from the idempotency check.
+    """
+    issue = _make_issue(
+        company,
+        title="Brand-new dashboard glitch nobody catalogued",
+        description="A weird thing happens.",
+        error_trace="",  # no catalog match → must go to Phase B
+    )
+
+    # Pre-seed the failed earlier-today llm-error comment
+    from datetime import date
+    sig = f"[auto-triage-{date.today().isoformat()}] #{issue.id}"
+    ProductIssueComment.objects.create(
+        issue=issue,
+        author="agent:issue-triage-validator",
+        body=f"{sig} llm-error\n\nAuto-triage tijdelijk niet beschikbaar (...)",
+        is_triage_step=True,
+    )
+    assert ProductIssueComment.objects.filter(issue=issue).count() == 1
+
+    # Now re-run with a working LLM mock — must proceed despite the error comment
+    fake_payload = {
+        "classification": "bug",
+        "priority": "P2",
+        "affected_area": "dashboard",
+        "reasoning": "Test.",
+        "recommended_action": "Test.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client",
+        return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--issue-id", str(issue.id), stdout=out)
+
+    issue.refresh_from_db()
+    # Retry must have succeeded — status updated, NEW comment added alongside the
+    # original llm-error comment (audit trail preserved).
+    assert issue.status == "triaging"
+    comments = ProductIssueComment.objects.filter(issue=issue).order_by("created_at")
+    assert comments.count() == 2
+    assert "llm-error" in comments[0].body
+    assert "llm-triage" in comments[1].body
+
+
 # ---------------------------------------------------------------------------
 # 5. Signal email suppression — per-issue blocked, digest sent
 # ---------------------------------------------------------------------------
