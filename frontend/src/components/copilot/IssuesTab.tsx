@@ -714,7 +714,9 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
   const [comments, setComments] = useState<ProductIssueComment[] | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [newAttachments, setNewAttachments] = useState<IssueAttachment[]>([]);
   const [postingComment, setPostingComment] = useState(false);
+  const commentFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { language } = useLanguage();
   const isNl = language === "nl";
@@ -746,13 +748,15 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
   }
 
   async function handleAddComment() {
-    if (!newComment.trim()) return;
+    // Either body OR attachments must be present (backend enforces).
+    if (!newComment.trim() && newAttachments.length === 0) return;
     setPostingComment(true);
     try {
-      await addComment(issue.id, newComment.trim());
+      await addComment(issue.id, newComment.trim(), newAttachments);
       const detail = await fetchIssueDetail(issue.id);
       setComments(detail.comments);
       setNewComment("");
+      setNewAttachments([]);
       toast({ title: isNl ? "Reactie verstuurd" : "Comment sent" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -764,6 +768,58 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
     } finally {
       setPostingComment(false);
     }
+  }
+
+  /** Add files from the OS file picker to the pending comment. */
+  async function handleCommentFileChoose(e: ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+    const added: IssueAttachment[] = [];
+    for (const f of Array.from(files)) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast({
+          title: isNl ? "Bestand te groot" : "File too large",
+          description: `${f.name} > 5 MB`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      added.push(await fileToAttachment(f));
+    }
+    setNewAttachments((prev) => [...prev, ...added]);
+    e.target.value = "";
+  }
+
+  /** Paste a screenshot directly into the comment input. */
+  async function handleCommentPaste(e: ClipboardEvent<HTMLInputElement>) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            toast({
+              title: isNl ? "Schermafbeelding te groot" : "Screenshot too large",
+              description: `${Math.round(file.size / 1024)} KB > 5 MB`,
+              variant: "destructive",
+            });
+            return;
+          }
+          const att = await fileToAttachment(file);
+          setNewAttachments((prev) => [...prev, att]);
+          toast({
+            title: isNl ? "Screenshot toegevoegd" : "Screenshot attached",
+            description: file.name || "clipboard.png",
+          });
+        }
+      }
+    }
+  }
+
+  function removePendingAttachment(idx: number) {
+    setNewAttachments((prev) => prev.filter((_, i) => i !== idx));
   }
 
   const tri = (issue.agent_triage_result ?? {}) as Record<string, unknown>;
@@ -934,37 +990,144 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
                           {relativeTime(new Date(c.created_at), isNl)}
                         </span>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
+                      {c.body && (
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.body}</p>
+                      )}
+                      {/* Inline attachments — render images as thumbnails
+                          (click to open full-size in new tab); other types
+                          as a labelled chip with download link. */}
+                      {Array.isArray(c.attachments) && c.attachments.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {c.attachments.map((att, ai) => {
+                            const isImage = att.mime_type?.startsWith("image/");
+                            return isImage && att.data_url ? (
+                              <a
+                                key={ai}
+                                href={att.data_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`${att.name} (${Math.round((att.size_bytes || 0) / 1024)} KB)`}
+                              >
+                                <img
+                                  src={att.data_url}
+                                  alt={att.name}
+                                  className="max-h-32 max-w-full rounded border border-gray-200 dark:border-gray-700 hover:border-purple-400 transition-colors object-contain bg-white dark:bg-gray-900"
+                                />
+                              </a>
+                            ) : (
+                              <a
+                                key={ai}
+                                href={att.data_url || "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download={att.name}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-[10px] hover:border-purple-400 transition-colors"
+                                title={`${Math.round((att.size_bytes || 0) / 1024)} KB`}
+                              >
+                                <FileImage className="h-3 w-3 text-gray-500" />
+                                <span className="truncate max-w-[180px]">{att.name}</span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
             ) : null}
 
-            {/* Add comment form */}
-            <div className="mt-2 flex gap-1">
-              <Input
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={isNl ? "Reactie toevoegen..." : "Add comment..."}
-                className="text-[11px] h-7 flex-1"
-                disabled={postingComment}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddComment();
+            {/* Add comment form — text + attachments (paste / file picker) */}
+            <div className="mt-2 space-y-1.5">
+              {/* Pending attachments preview */}
+              {newAttachments.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {newAttachments.map((att, i) => {
+                    const isImage = att.mime_type?.startsWith("image/");
+                    return (
+                      <div
+                        key={i}
+                        className="relative group inline-flex items-center gap-1 px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded text-[10px]"
+                      >
+                        {isImage && att.data_url ? (
+                          <img
+                            src={att.data_url}
+                            alt={att.name}
+                            className="h-6 w-6 object-cover rounded"
+                          />
+                        ) : (
+                          <FileImage className="h-3 w-3 text-purple-600" />
+                        )}
+                        <span className="truncate max-w-[100px]">{att.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removePendingAttachment(i)}
+                          className="ml-0.5 text-gray-400 hover:text-red-500"
+                          title={isNl ? "Verwijderen" : "Remove"}
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex gap-1 items-center">
+                <Input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onPaste={handleCommentPaste}
+                  placeholder={
+                    isNl
+                      ? "Reactie toevoegen of plak een screenshot..."
+                      : "Add a comment or paste a screenshot..."
                   }
-                }}
-              />
-              <Button
-                size="sm"
-                className="h-7 px-2 bg-purple-600 hover:bg-purple-700 text-white"
-                disabled={postingComment || !newComment.trim()}
-                onClick={handleAddComment}
-                type="button"
-              >
-                {postingComment ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-              </Button>
+                  className="text-[11px] h-7 flex-1"
+                  disabled={postingComment}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddComment();
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  disabled={postingComment}
+                  onClick={() => commentFileInputRef.current?.click()}
+                  type="button"
+                  title={isNl ? "Bestand toevoegen" : "Attach file"}
+                >
+                  <Camera className="h-3 w-3" />
+                </Button>
+                <input
+                  ref={commentFileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,application/pdf,.har,.txt,.log"
+                  className="hidden"
+                  onChange={handleCommentFileChoose}
+                />
+                <Button
+                  size="sm"
+                  className="h-7 px-2 bg-purple-600 hover:bg-purple-700 text-white"
+                  disabled={
+                    postingComment ||
+                    (!newComment.trim() && newAttachments.length === 0)
+                  }
+                  onClick={handleAddComment}
+                  type="button"
+                >
+                  {postingComment ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Send className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -585,6 +585,137 @@ def test_llm_prompt_forbids_asking_reporter_for_dev_details_nl():
 
 
 @pytest.mark.django_db
+def test_comment_endpoint_accepts_attachments(company):
+    """
+    The POST /api/v1/product-issues/{id}/comment/ endpoint must accept
+    inline attachments — list of {name, mime_type, size_bytes, data_url}
+    — so reporters can answer needs-info follow-up questions with a
+    screenshot in the same comment as their text reply.
+
+    Bug from user 2026-06-02: "its not possible to add images into a
+    conversation only text". This test locks down the fix.
+    """
+    from django.contrib.auth import get_user_model
+    from rest_framework.test import APIClient
+    from product_issues.models import ProductIssue, ProductIssueComment
+
+    User = get_user_model()
+    user = User.objects.create_user(
+        username="reporter_with_screenshot", email="r@example.com",
+        password="x", company=company, role="user",
+    )
+
+    issue = ProductIssue.objects.create(
+        title="Test", description="x", status="new",
+        source="user", capture_method="manual_form",
+        company=company, reporter=user,
+    )
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    # 1×1 PNG transparent pixel as data URL (real but tiny)
+    tiny_png = (
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+    )
+
+    response = client.post(
+        f"/api/v1/product-issues/{issue.id}/comment/",
+        {
+            "body": "Here is the screenshot you asked for.",
+            "attachments": [{
+                "name": "error.png",
+                "mime_type": "image/png",
+                "size_bytes": 95,
+                "data_url": tiny_png,
+            }],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201, response.content
+    data = response.json()
+    assert data["body"] == "Here is the screenshot you asked for."
+    assert isinstance(data["attachments"], list)
+    assert len(data["attachments"]) == 1
+    assert data["attachments"][0]["name"] == "error.png"
+    assert data["attachments"][0]["mime_type"] == "image/png"
+    assert data["attachments"][0]["data_url"].startswith("data:image/png;")
+
+    # Also assert the DB row stores it
+    comment = ProductIssueComment.objects.get(pk=data["id"])
+    assert len(comment.attachments) == 1
+    assert comment.attachments[0]["name"] == "error.png"
+
+
+@pytest.mark.django_db
+def test_comment_endpoint_accepts_attachments_only_no_body(company):
+    """Pure image comments are valid — reporter answers "see screenshot"
+    by sending JUST the image, no text. Body OR attachments must be
+    non-empty, not both required."""
+    from django.contrib.auth import get_user_model
+    from rest_framework.test import APIClient
+
+    User = get_user_model()
+    user = User.objects.create_user(
+        username="silent_reporter", email="s@example.com",
+        password="x", company=company, role="user",
+    )
+    issue = ProductIssue.objects.create(
+        title="Test", description="x", status="new",
+        source="user", capture_method="manual_form",
+        company=company, reporter=user,
+    )
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+    response = client.post(
+        f"/api/v1/product-issues/{issue.id}/comment/",
+        {
+            "body": "",
+            "attachments": [{
+                "name": "shot.png", "mime_type": "image/png",
+                "size_bytes": 10,
+                "data_url": "data:image/png;base64,iVBORw0KGgo=",
+            }],
+        },
+        format="json",
+    )
+    assert response.status_code == 201, response.content
+    assert response.json()["body"] == ""
+    assert len(response.json()["attachments"]) == 1
+
+
+@pytest.mark.django_db
+def test_comment_endpoint_rejects_empty(company):
+    """Comment with neither body nor attachments must 400."""
+    from django.contrib.auth import get_user_model
+    from rest_framework.test import APIClient
+
+    User = get_user_model()
+    user = User.objects.create_user(
+        username="empty_reporter", email="e@example.com",
+        password="x", company=company, role="user",
+    )
+    issue = ProductIssue.objects.create(
+        title="Test", description="x", status="new",
+        source="user", capture_method="manual_form",
+        company=company, reporter=user,
+    )
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+    response = client.post(
+        f"/api/v1/product-issues/{issue.id}/comment/",
+        {"body": "", "attachments": []},
+        format="json",
+    )
+    assert response.status_code == 400
+    assert "required" in response.json()["error"].lower()
+
+
+@pytest.mark.django_db
 def test_needs_info_recheck_picks_up_reporter_response(company, patched_catalog):
     """
     When an issue is in status='needs-info' and the reporter posts a

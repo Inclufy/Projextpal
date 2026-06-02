@@ -91,6 +91,9 @@ export interface ProductIssueComment {
   author: string;
   body: string;
   is_triage_step: boolean;
+  /** Inline attachments — same shape as IssueAttachment. Set by
+   * reporters who reply to needs-info questions with a screenshot. */
+  attachments?: IssueAttachment[];
   /**
    * Audience for this comment row:
    * - "public"   = reporter + everyone with issue access sees it
@@ -250,8 +253,18 @@ export async function listRecentIssues(
   return data.results ?? [];
 }
 
-export function addComment(issueId: number, body: string): Promise<unknown> {
-  return api.post(`/product-issues/${issueId}/comment/`, { body });
+export function addComment(
+  issueId: number,
+  body: string,
+  attachments: IssueAttachment[] = [],
+): Promise<unknown> {
+  // Backend accepts either body or attachments (or both). Empty bodies
+  // are valid if the reporter is just attaching a screenshot in
+  // response to a needs-info question.
+  return api.post(`/product-issues/${issueId}/comment/`, {
+    body,
+    attachments,
+  });
 }
 
 /** Fetch full issue (Django detail response includes nested comments). */

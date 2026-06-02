@@ -273,6 +273,21 @@ class ProductIssueComment(models.Model):
             "confusing for an end-user reporter."
         ),
     )
+    attachments = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "Inline attachments posted with the comment — list of "
+            "{name, mime_type, size_bytes, data_url} objects. Mirrors "
+            "the IssueAttachment shape used by ProductIssue.environment."
+            "attachments_inline at issue-creation time, so the same "
+            "fileToAttachment() helper on the frontend can serialise "
+            "comments. Used by reporters to answer needs-info follow-up "
+            "questions with screenshots / clipboard paste / screen "
+            "capture — without it, the AI asks for a screenshot and the "
+            "reporter has no way to send one through the chat thread."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

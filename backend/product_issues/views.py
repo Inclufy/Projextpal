@@ -70,12 +70,54 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="comment")
     def comment(self, request, pk=None):
-        """Add a comment to an issue thread."""
+        """Add a comment to an issue thread.
+
+        Accepts:
+          - body (string, required unless attachments present)
+          - attachments (list of {name, mime_type, size_bytes, data_url}, optional)
+          - is_triage_step (bool, optional)
+          - author (string, optional — defaults to request.user.id)
+
+        Either body OR attachments must be non-empty so we don't accept
+        completely blank rows. The frontend uses this endpoint to let
+        reporters reply to needs-info follow-ups with text + screenshot
+        attachments in the same comment.
+        """
         issue = self.get_object()
-        body = request.data.get("body", "").strip()
-        if not body:
+        body = (request.data.get("body") or "").strip()
+        attachments = request.data.get("attachments") or []
+
+        # Defensive shape + size validation. Each attachment must be a
+        # dict and the total payload is capped at ~25MB so a malicious
+        # client can't blow up the JSON column.
+        if not isinstance(attachments, list):
             return Response(
-                {"error": "body is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "attachments must be a list"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        clean_attachments = []
+        total_bytes = 0
+        for a in attachments:
+            if not isinstance(a, dict):
+                continue
+            data_url = str(a.get("data_url") or "")[:30_000_000]  # 30MB hard cap
+            clean_attachments.append({
+                "name": str(a.get("name") or "attachment")[:255],
+                "mime_type": str(a.get("mime_type") or "application/octet-stream")[:128],
+                "size_bytes": int(a.get("size_bytes") or 0),
+                "data_url": data_url,
+            })
+            total_bytes += len(data_url)
+            if total_bytes > 25 * 1024 * 1024:
+                return Response(
+                    {"error": "attachments payload too large (max 25MB total)"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if not body and not clean_attachments:
+            return Response(
+                {"error": "body or attachments is required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         author = request.data.get("author") or str(request.user.id)
         is_triage_step = bool(request.data.get("is_triage_step", False))
@@ -84,6 +126,7 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
             author=author,
             body=body,
             is_triage_step=is_triage_step,
+            attachments=clean_attachments,
         )
         return Response(
             ProductIssueCommentSerializer(comment).data,

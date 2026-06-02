@@ -30,7 +30,7 @@ class ProductIssueCommentSerializer(serializers.ModelSerializer):
         model = ProductIssueComment
         fields = [
             "id", "issue", "author", "body",
-            "is_triage_step", "visibility", "created_at",
+            "is_triage_step", "visibility", "attachments", "created_at",
         ]
         read_only_fields = ["created_at"]
 
