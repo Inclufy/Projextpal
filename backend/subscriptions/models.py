@@ -17,11 +17,15 @@ class SubscriptionPlan(models.Model):
     ]
 
     PLAN_LEVELS = [
-        ("basic", "Basic"),
+        # Canonical 4-tier set used by the public pricing page:
         ("starter", "Starter"),
+        ("professional", "Professional"),
         ("business", "Business"),
-        ("premium", "Premium"),
         ("enterprise", "Enterprise"),
+        # Legacy tiers — kept so old rows still validate. New rows
+        # should use one of the four canonical levels above.
+        ("basic", "Basic (legacy)"),
+        ("premium", "Premium (legacy)"),
     ]
 
     name = models.CharField(max_length=100, help_text="Display name for the plan")

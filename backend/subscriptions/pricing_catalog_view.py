@@ -55,13 +55,13 @@ ITEMS = [
         "sku": "PXP-STARTER",
         "name": "ProjeXtPal Starter",
         "description": (
-            "Per gebruiker per maand. Web + mobile toegang, "
-            "Agile/Kanban/Waterfall, 3-role membership "
-            "(Owner/PM/Member), basis exports."
+            "Per gebruiker per maand. Web + mobiele app, onbeperkt "
+            "projecten, Agile/Kanban/Waterfall, taken-toewijzing, "
+            "basis dashboards, tijdregistratie, e-mail support."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 1900,
+        "unit_price_cents": 2500,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
@@ -71,30 +71,49 @@ ITEMS = [
         "sku": "PXP-PRO",
         "name": "ProjeXtPal Professional",
         "description": (
-            "Per gebruiker per maand. Inclusief Starter + 6-role "
-            "governance, push-back approval workflow, DOCX/PPTX exports, "
-            "category sub-totals + KPIs, AI Meeting Minutes, Gantt charts."
+            "Per gebruiker per maand. Inclusief Starter + geavanceerde "
+            "rollen & goedkeuringen, document-generatie (Word/PowerPoint), "
+            "AI-assistent voor notulen, Gantt-charts, KPI dashboards, "
+            "voorrang support."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 3900,
+        "unit_price_cents": 4900,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
         "metadata": {"tier": "professional", "quotable": True},
     },
     {
-        "sku": "PXP-ENTERPRISE",
-        "name": "ProjeXtPal Enterprise",
+        "sku": "PXP-BUSINESS",
+        "name": "ProjeXtPal Business",
         "description": (
-            "Per gebruiker per maand. Inclusief Professional + BYO LLM "
-            "keys, Fernet encryption at rest, full audit log + GDPR "
-            "data-export, e-sig project closing, TOTP 2FA, custom domain, "
-            "SLA 99.9%, dedicated manager."
+            "Per gebruiker per maand. Inclusief Professional + portfolio "
+            "management, multi-workspace, advanced analytics, resource "
+            "planning, standaard integraties (Slack/Teams/Drive), voorrang "
+            "op feature requests, 24/5 support."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
         "unit_price_cents": 7900,
+        "setup_fee_cents": 0,
+        "currency": "EUR",
+        "recurring_interval": "monthly",
+        "metadata": {"tier": "business", "quotable": True},
+    },
+    {
+        "sku": "PXP-ENTERPRISE",
+        "name": "ProjeXtPal Enterprise",
+        "description": (
+            "Per gebruiker per maand. Inclusief Business + eigen "
+            "AI-account, geavanceerde data-encryptie, volledige audit "
+            "trail + GDPR-export, digitale projectafsluiting, "
+            "SSO/SAML + 2FA + eigen domein, SLA 99.9%, dedicated success "
+            "manager, custom integraties (SAP/Jira)."
+        ),
+        "category": "license_variable",
+        "pricing_model": "per_user",
+        "unit_price_cents": 12000,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",

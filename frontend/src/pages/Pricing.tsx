@@ -58,35 +58,48 @@ interface Plan {
   stripeYearlyId?: string;
 }
 
-// CANONICAL PRICING — 3 per-user tiers, in lock-step with:
+// CANONICAL PRICING — 4 per-user tiers, in lock-step with:
 //   - backend/subscriptions/pricing_catalog_view.py (Finance offerte)
 //   - backend/subscriptions/management/commands/setup_stripe_products.py (Stripe)
 //   - inclufy-finance product_catalog_inclufy_ecosystem.sql seed
-// Any price change here MUST also update the three sources above —
+//   - DB SubscriptionPlan rows (api/v1/subscriptions/plans/)
+// Any price change here MUST also update the four sources above —
 // otherwise sales quotes / Stripe checkout / public page diverge.
+//
+// Tier ratios (well-tempered curve, 1.5-2× between adjacent tiers):
+//   Starter      €25         Pro/Starter   = 1.96×
+//   Professional €49         Biz/Pro       = 1.61×
+//   Business     €79         Ent/Biz       = 1.52×
+//   Enterprise   €120
+//
+// Features written in customer-benefit language, NOT implementation
+// detail. The reader is a buyer, not a developer:
+//   "Geavanceerde rollen & goedkeuringen"   not "6-role governance"
+//   "AI-assistent voor notulen"             not "transcript → DOCX flow"
+//   "Eigen AI-account"                      not "BYO LLM keys"
 const plans: Plan[] = [
   {
     name: 'Starter',
-    tagline: 'Voor individuen & kleine teams',
-    price: 19,
+    tagline: 'Voor zelfstandigen & kleine teams',
+    price: 25,
     period: '/gebruiker/maand',
-    description: 'Web + mobile, basis methodologies',
+    description: 'Alles om projecten netjes te draaien',
     icon: Zap,
     gradient: 'from-purple-600 via-purple-500 to-indigo-600',
     features: [
-      { text: '💻 Web + 📱 Mobile toegang', included: true },
-      { text: 'Per gebruiker per maand', included: true },
-      { text: 'Onbeperkte projecten', included: true },
-      { text: 'Agile / Kanban / Waterfall', included: true },
-      { text: '3-role membership', included: true },
-      { text: 'Basis exports', included: true },
-      { text: 'Email support', included: true },
+      { text: '💻 Web + 📱 Mobiele app', included: true },
+      { text: 'Onbeperkt aantal projecten', included: true },
+      { text: 'Agile, Kanban en Waterfall methodes', included: true },
+      { text: 'Taken, deadlines en team-toewijzing', included: true },
+      { text: 'Basis dashboards & rapportage', included: true },
+      { text: 'Tijdregistratie', included: true },
+      { text: 'E-mail support', included: true },
     ],
   },
   {
     name: 'Professional',
     tagline: 'Meest Gekozen',
-    price: 39,
+    price: 49,
     period: '/gebruiker/maand',
     description: 'Voor professionele PM-teams',
     icon: Crown,
@@ -94,32 +107,50 @@ const plans: Plan[] = [
     popular: true,
     features: [
       { text: 'Alles van Starter', included: true },
-      { text: '6-role governance (PM / leader / facilitator…)', included: true },
-      { text: 'Push-back approval workflow', included: true },
-      { text: 'DOCX & PPTX exports', included: true },
-      { text: 'Category sub-totals + KPIs', included: true },
-      { text: 'AI Meeting Minutes (transcript → DOCX)', included: true },
-      { text: 'Gantt charts & planning', included: true },
-      { text: 'Prioriteit support', included: true },
+      { text: 'Geavanceerde rollen & goedkeuringen', included: true },
+      { text: 'Documenten genereren (Word & PowerPoint)', included: true },
+      { text: 'AI-assistent voor notulen en samenvattingen', included: true },
+      { text: 'Gantt-charts & planning', included: true },
+      { text: 'KPI dashboards', included: true },
+      { text: 'Voorrang support', included: true },
+    ],
+  },
+  {
+    name: 'Business',
+    tagline: 'Voor PMOs en grotere teams',
+    price: 79,
+    period: '/gebruiker/maand',
+    description: 'Portfolio + advanced planning',
+    icon: TrendingUp,
+    gradient: 'from-pink-600 via-pink-500 to-rose-600',
+    features: [
+      { text: 'Alles van Professional', included: true },
+      { text: 'Portfolio management (meerdere projecten gegroepeerd)', included: true },
+      { text: 'Multi-workspace / afdelingen', included: true },
+      { text: 'Advanced analytics & custom dashboards', included: true },
+      { text: 'Resource planning (capaciteit per persoon)', included: true },
+      { text: 'Standaard integraties (Slack, Teams, Drive)', included: true },
+      { text: 'Voorrang op feature requests', included: true },
+      { text: '24/5 support (uitgebreide uren)', included: true },
     ],
   },
   {
     name: 'Enterprise',
-    tagline: 'Voor grote organisaties',
-    price: 79,
+    tagline: 'Voor compliance-eisen + SLA',
+    price: 120,
     period: '/gebruiker/maand',
-    description: 'Full compliance + SLA',
+    description: 'Volledige controle + compliance',
     icon: Building2,
     gradient: 'from-green-600 via-green-500 to-emerald-600',
     features: [
-      { text: 'Alles van Professional', included: true },
-      { text: 'BYO LLM keys (eigen Anthropic/OpenAI)', included: true },
-      { text: 'Fernet encryption at rest', included: true },
-      { text: 'Full audit log + GDPR data-export', included: true },
-      { text: 'E-sig project closing (canvas pad)', included: true },
-      { text: 'TOTP 2FA + custom domain', included: true },
-      { text: 'SLA 99.9% + dedicated manager', included: true },
-      { text: 'Custom integraties (SAP / Jira) — op aanvraag', included: true },
+      { text: 'Alles van Business', included: true },
+      { text: 'Eigen AI-account ("Bring your own AI")', included: true },
+      { text: 'Geavanceerde data-encryptie', included: true },
+      { text: 'Volledige audit trail & GDPR-export', included: true },
+      { text: 'Digitale projectafsluiting', included: true },
+      { text: 'SSO/SAML + 2FA + eigen domein', included: true },
+      { text: 'SLA 99.9% + dedicated success manager', included: true },
+      { text: 'Custom integraties (SAP, Jira — op aanvraag)', included: true },
     ],
   },
 ];
@@ -461,8 +492,8 @@ const Pricing = () => {
             </div>
           </div>
 
-          {/* Pricing Cards Grid - 3 tiers */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Pricing Cards Grid - 4 tiers (Starter / Professional / Business / Enterprise) */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {mergedPlans.map((plan, index) => (
               <PricingCard key={index} plan={plan} isAnnual={isAnnual} />
             ))}
