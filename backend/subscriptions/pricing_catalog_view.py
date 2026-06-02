@@ -34,14 +34,17 @@ from rest_framework.views import APIView
 # internal-only SKUs like volume discounts or partner-only bundles).
 #
 # Pricing decisions:
-#   - Tiered seats (Starter/Pro/Enterprise) replace the single PXP-SEAT
-#     so sales can sell up. Old PXP-SEAT kept as `deprecated` for quote-
-#     reproducibility — existing quotes that referenced it still resolve.
+#   - Tier prices (€19 / €39 / €79 per user / month) match exactly the
+#     public projextpal.com/pricing page AND the Stripe seed at
+#     management/commands/setup_stripe_products.py. Any tier-price
+#     change here MUST also update those two — otherwise a customer
+#     who reads the website (€39) gets quoted by sales (€25) and
+#     billed by Stripe (€75). Don't let that happen again.
 #   - Methodology modules (LSS / MSP / PRINCE2) priced per-org per-month
-#     since they're feature flags, not per-user.
+#     since they're feature flags, not per-user. Not on public page —
+#     enterprise sales-only.
 #   - Feature add-ons priced low-€/mo per-org so they're easy add-ons
-#     during quote-build (€29-99/mo each — under the procurement
-#     approval threshold of most enterprise buyers).
+#     during quote-build (€29-199/mo each).
 #   - Services (DPIA / AWS / Custom Integration) are one-off — show as
 #     setup_fee with recurring_interval=null.
 ITEMS = [
@@ -52,12 +55,13 @@ ITEMS = [
         "sku": "PXP-STARTER",
         "name": "ProjeXtPal Starter",
         "description": (
-            "Per gebruiker per maand. Agile/Kanban/Waterfall, 3-role "
-            "membership (Owner/PM/Member), basis exports."
+            "Per gebruiker per maand. Web + mobile toegang, "
+            "Agile/Kanban/Waterfall, 3-role membership "
+            "(Owner/PM/Member), basis exports."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 1500,
+        "unit_price_cents": 1900,
         "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
@@ -65,32 +69,33 @@ ITEMS = [
     },
     {
         "sku": "PXP-PRO",
-        "name": "ProjeXtPal Pro",
+        "name": "ProjeXtPal Professional",
         "description": (
             "Per gebruiker per maand. Inclusief Starter + 6-role "
             "governance, push-back approval workflow, DOCX/PPTX exports, "
-            "category sub-totals, AI Meeting Minutes."
+            "category sub-totals + KPIs, AI Meeting Minutes, Gantt charts."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 2500,
-        "setup_fee_cents": 25000,
+        "unit_price_cents": 3900,
+        "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
-        "metadata": {"tier": "pro", "quotable": True},
+        "metadata": {"tier": "professional", "quotable": True},
     },
     {
         "sku": "PXP-ENTERPRISE",
         "name": "ProjeXtPal Enterprise",
         "description": (
-            "Per gebruiker per maand. Inclusief Pro + BYO LLM keys, "
-            "Fernet encryption at rest, full audit log, e-sig project "
-            "closing, TOTP 2FA, custom domain, SLA 99.9%."
+            "Per gebruiker per maand. Inclusief Professional + BYO LLM "
+            "keys, Fernet encryption at rest, full audit log + GDPR "
+            "data-export, e-sig project closing, TOTP 2FA, custom domain, "
+            "SLA 99.9%, dedicated manager."
         ),
         "category": "license_variable",
         "pricing_model": "per_user",
-        "unit_price_cents": 4500,
-        "setup_fee_cents": 50000,
+        "unit_price_cents": 7900,
+        "setup_fee_cents": 0,
         "currency": "EUR",
         "recurring_interval": "monthly",
         "metadata": {"tier": "enterprise", "quotable": True},

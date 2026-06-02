@@ -58,99 +58,68 @@ interface Plan {
   stripeYearlyId?: string;
 }
 
+// CANONICAL PRICING — 3 per-user tiers, in lock-step with:
+//   - backend/subscriptions/pricing_catalog_view.py (Finance offerte)
+//   - backend/subscriptions/management/commands/setup_stripe_products.py (Stripe)
+//   - inclufy-finance product_catalog_inclufy_ecosystem.sql seed
+// Any price change here MUST also update the three sources above —
+// otherwise sales quotes / Stripe checkout / public page diverge.
 const plans: Plan[] = [
   {
-    name: 'Trial',
-    tagline: '7 Dagen Gratis',
-    price: 0,
-    period: '/7 dagen',
-    description: 'Probeer zonder risico',
-    icon: Sparkles,
-    gradient: 'from-emerald-600 via-emerald-500 to-teal-600',
-    features: [
-      { text: '📱 Mobile app toegang', included: true },
-      { text: '1 gebruiker', included: true },
-      { text: '3 projecten', included: true },
-      { text: 'Basis functies', included: true },
-      { text: 'Email support', included: true },
-      { text: 'Web toegang', included: false },
-      { text: 'AI assistent', included: false },
-    ],
-  },
-  {
     name: 'Starter',
-    tagline: 'Mobile Only',
-    price: 29,
-    period: '/maand',
-    description: 'Perfect voor individuen',
+    tagline: 'Voor individuen & kleine teams',
+    price: 19,
+    period: '/gebruiker/maand',
+    description: 'Web + mobile, basis methodologies',
     icon: Zap,
     gradient: 'from-purple-600 via-purple-500 to-indigo-600',
     features: [
-      { text: '📱 Mobile app toegang', included: true },
-      { text: '1 gebruiker', included: true },
-      { text: '5 projecten', included: true },
-      { text: 'Tijdregistratie', included: true },
-      { text: 'Basis AI assistent', included: true },
-      { text: 'Web toegang', included: false },
-      { text: 'Team features', included: false },
+      { text: '💻 Web + 📱 Mobile toegang', included: true },
+      { text: 'Per gebruiker per maand', included: true },
+      { text: 'Onbeperkte projecten', included: true },
+      { text: 'Agile / Kanban / Waterfall', included: true },
+      { text: '3-role membership', included: true },
+      { text: 'Basis exports', included: true },
+      { text: 'Email support', included: true },
     ],
   },
   {
     name: 'Professional',
     tagline: 'Meest Gekozen',
-    price: 49,
-    period: '/maand',
-    description: 'Voor serieuze project managers',
+    price: 39,
+    period: '/gebruiker/maand',
+    description: 'Voor professionele PM-teams',
     icon: Crown,
     gradient: 'from-blue-600 via-blue-500 to-cyan-600',
     popular: true,
     features: [
-      { text: '💻 Web + Mobile toegang', included: true },
-      { text: '1 gebruiker', included: true },
-      { text: '10 projecten', included: true },
       { text: 'Alles van Starter', included: true },
-      { text: 'Programmamanagement', included: true },
+      { text: '6-role governance (PM / leader / facilitator…)', included: true },
+      { text: 'Push-back approval workflow', included: true },
+      { text: 'DOCX & PPTX exports', included: true },
+      { text: 'Category sub-totals + KPIs', included: true },
+      { text: 'AI Meeting Minutes (transcript → DOCX)', included: true },
       { text: 'Gantt charts & planning', included: true },
-      { text: 'Geavanceerde AI', included: true },
       { text: 'Prioriteit support', included: true },
     ],
   },
   {
-    name: 'Team',
-    tagline: 'Voor Teams',
-    price: 39,
-    period: '/gebruiker/maand',
-    description: 'Samenwerken met je team',
-    icon: Users,
-    gradient: 'from-pink-600 via-pink-500 to-rose-600',
-    features: [
-      { text: '💻 Web + Mobile toegang', included: true },
-      { text: 'Tot 25 gebruikers', included: true },
-      { text: 'Onbeperkte projecten', included: true },
-      { text: 'Alles van Professional', included: true },
-      { text: 'Team collaboration', included: true },
-      { text: 'Gedeelde dashboards', included: true },
-      { text: 'Admin permissies', included: true },
-      { text: 'Portfolio management', included: true },
-    ],
-  },
-  {
     name: 'Enterprise',
-    tagline: 'Op Maat',
-    price: null,
-    period: 'Custom',
-    description: 'Volledige controle',
+    tagline: 'Voor grote organisaties',
+    price: 79,
+    period: '/gebruiker/maand',
+    description: 'Full compliance + SLA',
     icon: Building2,
     gradient: 'from-green-600 via-green-500 to-emerald-600',
     features: [
-      { text: '🏢 Alles + White-label', included: true },
-      { text: 'Onbeperkte gebruikers', included: true },
-      { text: 'Onbeperkte projecten', included: true },
-      { text: 'SSO/SAML integratie', included: true },
-      { text: 'API toegang', included: true },
-      { text: 'Custom workflows', included: true },
-      { text: 'Dedicated manager', included: true },
-      { text: 'SLA garantie', included: true },
+      { text: 'Alles van Professional', included: true },
+      { text: 'BYO LLM keys (eigen Anthropic/OpenAI)', included: true },
+      { text: 'Fernet encryption at rest', included: true },
+      { text: 'Full audit log + GDPR data-export', included: true },
+      { text: 'E-sig project closing (canvas pad)', included: true },
+      { text: 'TOTP 2FA + custom domain', included: true },
+      { text: 'SLA 99.9% + dedicated manager', included: true },
+      { text: 'Custom integraties (SAP / Jira) — op aanvraag', included: true },
     ],
   },
 ];
@@ -492,8 +461,8 @@ const Pricing = () => {
             </div>
           </div>
 
-          {/* Pricing Cards Grid - 5 columns */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-[1600px] mx-auto">
+          {/* Pricing Cards Grid - 3 tiers */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {mergedPlans.map((plan, index) => (
               <PricingCard key={index} plan={plan} isAnnual={isAnnual} />
             ))}
