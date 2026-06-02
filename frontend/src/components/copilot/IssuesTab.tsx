@@ -18,6 +18,7 @@ import {
   useState,
   type ChangeEvent,
   type ClipboardEvent,
+  type DragEvent,
 } from "react";
 import {
   AlertTriangle,
@@ -716,7 +717,12 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
   const [newComment, setNewComment] = useState("");
   const [newAttachments, setNewAttachments] = useState<IssueAttachment[]>([]);
   const [postingComment, setPostingComment] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
   const commentFileInputRef = useRef<HTMLInputElement>(null);
+  // Track drag-enter/leave depth — drag events fire on every child so we
+  // count nested enters/leaves to know when the cursor truly leaves the
+  // drop zone (vs just crossing into a child element).
+  const dragDepthRef = useRef(0);
   const { toast } = useToast();
   const { language } = useLanguage();
   const isNl = language === "nl";
@@ -820,6 +826,63 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
 
   function removePendingAttachment(idx: number) {
     setNewAttachments((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  /** Drag-over: signal we'll accept the drop. */
+  function handleCommentDragOver(e: DragEvent<HTMLDivElement>) {
+    // Only react if the drag actually carries files (not text selection).
+    if (e.dataTransfer?.types?.includes("Files")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }
+
+  function handleCommentDragEnter(e: DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes("Files")) return;
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setIsDraggingFile(true);
+  }
+
+  function handleCommentDragLeave(e: DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes("Files")) return;
+    e.preventDefault();
+    dragDepthRef.current -= 1;
+    if (dragDepthRef.current <= 0) {
+      dragDepthRef.current = 0;
+      setIsDraggingFile(false);
+    }
+  }
+
+  /** Drop: turn each dropped file into an attachment. */
+  async function handleCommentDrop(e: DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.files?.length) return;
+    e.preventDefault();
+    dragDepthRef.current = 0;
+    setIsDraggingFile(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const added: IssueAttachment[] = [];
+    for (const f of files) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast({
+          title: isNl ? "Bestand te groot" : "File too large",
+          description: `${f.name} > 5 MB`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      added.push(await fileToAttachment(f));
+    }
+    if (added.length > 0) {
+      setNewAttachments((prev) => [...prev, ...added]);
+      toast({
+        title: isNl
+          ? `${added.length} bestand${added.length > 1 ? "en" : ""} toegevoegd`
+          : `${added.length} file${added.length > 1 ? "s" : ""} attached`,
+        description: added.map((a) => a.name).join(", "),
+      });
+    }
   }
 
   const tri = (issue.agent_triage_result ?? {}) as Record<string, unknown>;
@@ -1037,8 +1100,27 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
               </div>
             ) : null}
 
-            {/* Add comment form — text + attachments (paste / file picker) */}
-            <div className="mt-2 space-y-1.5">
+            {/* Add comment form — text + attachments
+                (paste / drag-and-drop / file picker) */}
+            <div
+              className={`mt-2 space-y-1.5 rounded-md p-1.5 transition-colors ${
+                isDraggingFile
+                  ? "bg-purple-100/70 dark:bg-purple-950/40 border-2 border-dashed border-purple-400 ring-2 ring-purple-300/50"
+                  : "border-2 border-dashed border-transparent"
+              }`}
+              onDragOver={handleCommentDragOver}
+              onDragEnter={handleCommentDragEnter}
+              onDragLeave={handleCommentDragLeave}
+              onDrop={handleCommentDrop}
+            >
+              {/* Drop-zone overlay hint */}
+              {isDraggingFile && (
+                <div className="text-center text-[11px] text-purple-700 dark:text-purple-300 font-medium py-1">
+                  {isNl
+                    ? "📎 Laat los om bestand toe te voegen"
+                    : "📎 Drop file to attach"}
+                </div>
+              )}
               {/* Pending attachments preview */}
               {newAttachments.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -1080,8 +1162,8 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
                   onPaste={handleCommentPaste}
                   placeholder={
                     isNl
-                      ? "Reactie toevoegen of plak een screenshot..."
-                      : "Add a comment or paste a screenshot..."
+                      ? "Reactie toevoegen — plak, sleep of klik 📷 voor een screenshot"
+                      : "Add a comment — paste, drag-drop or click 📷 for a screenshot"
                   }
                   className="text-[11px] h-7 flex-1"
                   disabled={postingComment}
@@ -1099,7 +1181,11 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
                   disabled={postingComment}
                   onClick={() => commentFileInputRef.current?.click()}
                   type="button"
-                  title={isNl ? "Bestand toevoegen" : "Attach file"}
+                  title={
+                    isNl
+                      ? "Bestand toevoegen (of sleep een bestand hierheen)"
+                      : "Attach file (or drag a file here)"
+                  }
                 >
                   <Camera className="h-3 w-3" />
                 </Button>
