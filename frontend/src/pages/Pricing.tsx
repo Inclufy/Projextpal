@@ -512,12 +512,13 @@ const Pricing = () => {
                     WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  Leer projectmanagement van experts
+                  Leer projectmanagement in de praktijk
                 </span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Erkende certificeringen voor PRINCE2, Agile, Scrum, Waterfall,
-                Lean Six Sigma en MSP. Per learner of in een team-bundle.
+                Praktijkcursussen + <strong>Inclufy-erkenningscertificaat</strong> voor
+                PRINCE2, Agile, Scrum, Waterfall, Lean Six Sigma en MSP. Ideale
+                voorbereiding voor de officiële accreditatie-examens.
               </p>
             </div>
 
@@ -529,18 +530,19 @@ const Pricing = () => {
                     <BookOpen className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold mb-1">Individual Learner</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Per persoon, onbeperkte courses</p>
+                  <p className="text-sm text-muted-foreground mb-4">Per persoon — leermateriaal alle methodieken</p>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-bold">€15</span>
                     <span className="text-muted-foreground">/maand</span>
                   </div>
                   <div className="space-y-2.5 mb-6 text-sm">
                     {[
-                      'Toegang tot alle online cursussen',
+                      'Praktijkmateriaal alle methodieken',
                       'PRINCE2 / Agile / Scrum / Kanban',
                       'Lean Six Sigma Green & Black Belt',
                       'Video tutorials & oefenopdrachten',
                       'Voortgangstracking & badges',
+                      'Voorbereiding op officiële examens',
                       'E-mail support',
                     ].map((f, i) => (
                       <div key={i} className="flex items-start gap-2">
@@ -581,20 +583,21 @@ const Pricing = () => {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4 shadow-lg">
                     <Award className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-1">Course + Certificate</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Per certificering — eenmalig</p>
+                  <h3 className="text-2xl font-bold mb-1">Course + Inclufy Cert</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Per cursus — Inclufy-erkenning, eenmalig</p>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-bold">€99</span>
                     <span className="text-muted-foreground">/cert</span>
                   </div>
                   <div className="space-y-2.5 mb-6 text-sm">
                     {[
-                      'Volledige cursus + examen',
-                      'Erkend certificaat met /verify URL',
-                      'Chain-anchored — niet vervalsbaar',
+                      'Volledige cursus + Inclufy-examen',
+                      'Inclufy-erkenningscertificaat',
+                      'Chain-anchored met /verify URL',
                       'PDF download + LinkedIn-deelbaar',
                       'Levenslange toegang tot het curriculum',
                       'Mentor-feedback bij eindopdracht',
+                      'Goede basis voor officiële accreditatie',
                     ].map((f, i) => (
                       <div key={i} className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
@@ -677,6 +680,37 @@ const Pricing = () => {
                   Activeer ze hier →
                 </a>
               </p>
+            </div>
+
+            {/* Disclaimer — Inclufy-cert is NOT the official accreditation */}
+            <div className="mt-6 rounded-xl p-5 bg-muted/40 border border-border/60">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mt-0.5">
+                  <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                </div>
+                <div className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="font-semibold text-foreground mb-1">
+                    Over onze certificering
+                  </p>
+                  <p>
+                    Onze certificaten zijn <strong className="text-foreground">Inclufy-erkenningen</strong> —
+                    bewijs dat je de methodologie in de praktijk beheerst. Dit is
+                    <strong className="text-foreground"> géén vervanging</strong> voor
+                    officiële accreditatie. Voor de echte titel ga je naar de instantie:
+                    <span className="block mt-2 text-xs">
+                      <strong>PRINCE2</strong> → APMG (axelos.com) ·{' '}
+                      <strong>Scrum (CSM / PSM)</strong> → Scrum Alliance of Scrum.org ·{' '}
+                      <strong>Lean Six Sigma</strong> → IASSC of ASQ ·{' '}
+                      <strong>SAFe</strong> → Scaled Agile, Inc. ·{' '}
+                      <strong>MSP</strong> → APMG
+                    </span>
+                    <span className="block mt-2">
+                      Onze cursussen zijn uitstekende voorbereiding op die examens,
+                      maar het officiële diploma behaal je via die instantie zelf.
+                    </span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
