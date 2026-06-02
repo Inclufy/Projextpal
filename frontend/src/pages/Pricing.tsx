@@ -327,8 +327,6 @@ const Pricing = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
   const [isAnnual, setIsAnnual] = useState(false);
-  const [earlyAccessEmail, setEarlyAccessEmail] = useState('');
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [mergedPlans, setMergedPlans] = useState<Plan[]>(plans);
 
   // Fetch plans from API and merge with hardcoded config
@@ -367,18 +365,6 @@ const Pricing = () => {
 
     fetchPlans();
   }, []);
-
-  const handleEarlyAccessSignup = () => {
-    if (!earlyAccessEmail || !earlyAccessEmail.includes('@')) {
-      alert('Voer een geldig emailadres in');
-      return;
-    }
-
-    setEmailSubmitted(true);
-    setEarlyAccessEmail('');
-    
-    setTimeout(() => setEmailSubmitted(false), 5000);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -499,143 +485,199 @@ const Pricing = () => {
             ))}
           </div>
 
-          {/* eLearning Coming Soon Section */}
-          <div className="max-w-7xl mx-auto mt-16">
-            <Card className="relative overflow-hidden border-2 border-amber-200 dark:border-amber-900/50 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl" />
-              
-              <CardContent className="relative p-12">
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  <div className="space-y-6">
-                    <div className="inline-flex">
-                      <Badge 
-                        className="text-base px-5 py-2 font-bold animate-pulse"
-                        style={{ 
-                          background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})`,
-                          color: 'white',
-                        }}
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Coming Soon
-                      </Badge>
-                    </div>
+          {/* ─── ProjeXtPal Academy ─── Separate product line ───────── */}
+          {/* Academy is its own sub-brand (source_app="academy" in the
+              Finance offerte catalog with SKUs ACA-LEARNER, ACA-CERT,
+              ACA-BUNDLE-50). On the public pricing page we surface
+              the 3 commercial offers + the Enterprise-tier bundle
+              callout so a buyer who chose Enterprise sees they get
+              5 learner-seats for free. */}
+          <div className="max-w-7xl mx-auto mt-20">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold mb-6 border backdrop-blur-xl"
+                style={{
+                  backgroundColor: `${BRAND.amber}10`,
+                  color: BRAND.orange,
+                  borderColor: `${BRAND.amber}30`,
+                }}
+              >
+                <GraduationCap className="w-4 h-4" />
+                ProjeXtPal Academy
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-3">
+                <span
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.amber}, ${BRAND.orange})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Leer projectmanagement van experts
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Erkende certificeringen voor PRINCE2, Agile, Scrum, Waterfall,
+                Lean Six Sigma en MSP. Per learner of in een team-bundle.
+              </p>
+            </div>
 
-                    <div>
-                      <h2 className="text-4xl font-bold mb-3">
-                        <span 
-                          style={{ 
-                            background: `linear-gradient(135deg, ${BRAND.amber}, ${BRAND.orange})`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                          }}
-                        >
-                          ProjeXtPal Academy
-                        </span>
-                      </h2>
-                      <p className="text-xl text-muted-foreground">
-                        Leer projectmanagement van experts
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      {[
-                        { icon: BookOpen, title: 'Online Cursussen', desc: 'PRINCE2, Agile, Scrum, Waterfall certificeringen' },
-                        { icon: Video, title: 'Video Tutorials', desc: 'Stap-voor-stap uitleg van experts' },
-                        { icon: Users, title: 'Live Webinars', desc: 'Interactieve sessies met Q&A' },
-                        { icon: Award, title: 'Certificaten', desc: 'Erkende certificaten na voltooiing' },
-                      ].map((feature, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                            <feature.icon className="w-5 h-5 text-amber-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold">{feature.title}</p>
-                            <p className="text-sm text-muted-foreground">{feature.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-3 pt-4">
-                      <p className="text-sm font-semibold text-muted-foreground">
-                        Schrijf je in voor early access:
-                      </p>
-                      <div className="flex gap-3">
-                        <Input 
-                          type="email" 
-                          placeholder="jouw@email.com"
-                          value={earlyAccessEmail}
-                          onChange={(e) => setEarlyAccessEmail(e.target.value)}
-                          disabled={emailSubmitted}
-                          className="h-12 bg-white dark:bg-gray-900"
-                        />
-                        <Button 
-                          onClick={handleEarlyAccessSignup}
-                          disabled={emailSubmitted}
-                          className="h-12 px-6 font-bold whitespace-nowrap"
-                          style={{ 
-                            background: emailSubmitted 
-                              ? `linear-gradient(135deg, ${BRAND.green}, #10B981)`
-                              : `linear-gradient(135deg, ${BRAND.amber}, ${BRAND.orange})`,
-                            color: 'white',
-                          }}
-                        >
-                          {emailSubmitted ? (
-                            <>
-                              <Check className="w-4 h-4 mr-2" />
-                              Geregistreerd!
-                            </>
-                          ) : (
-                            'Notify Me'
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Wees de eerste die hoort wanneer we lanceren! 🎓
-                      </p>
-                    </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Individual Learner */}
+              <Card className="relative overflow-hidden border-2 border-amber-200/60 dark:border-amber-900/40 bg-gradient-to-br from-amber-50/40 to-transparent dark:from-amber-900/10 hover:border-amber-400 transition-all hover:-translate-y-1 hover:shadow-2xl">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-4 shadow-lg">
+                    <BookOpen className="w-8 h-8 text-white" />
                   </div>
-
-                  <div className="relative">
-                    <div className="relative aspect-square max-w-md mx-auto">
-                      <div 
-                        className="absolute inset-0 rounded-full opacity-20"
-                        style={{ background: `linear-gradient(135deg, ${BRAND.amber}, ${BRAND.orange})` }}
-                      />
-                      
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative w-full h-full">
-                          <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transform rotate-6 opacity-60" />
-                          <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transform rotate-3 opacity-80" />
-                          <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 flex flex-col items-center justify-center gap-4">
-                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                              <GraduationCap className="w-10 h-10 text-white" />
-                            </div>
-                            <div className="text-center">
-                              <p className="font-bold text-lg mb-1">Academy</p>
-                              <p className="text-xs text-muted-foreground">Learn • Practice • Certify</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <div className="w-12 h-1.5 bg-amber-500 rounded-full" />
-                              <div className="w-12 h-1.5 bg-amber-300 rounded-full" />
-                              <div className="w-12 h-1.5 bg-amber-200 rounded-full" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="absolute top-8 right-8 bg-white dark:bg-gray-800 rounded-full p-3 shadow-xl animate-bounce">
-                        <Star className="w-6 h-6 text-amber-500" fill="currentColor" />
-                      </div>
-                      <div className="absolute bottom-8 left-8 bg-white dark:bg-gray-800 rounded-full p-3 shadow-xl animate-pulse">
-                        <Award className="w-6 h-6 text-orange-500" fill="currentColor" />
-                      </div>
-                    </div>
+                  <h3 className="text-2xl font-bold mb-1">Individual Learner</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Per persoon, onbeperkte courses</p>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-bold">€15</span>
+                    <span className="text-muted-foreground">/maand</span>
                   </div>
+                  <div className="space-y-2.5 mb-6 text-sm">
+                    {[
+                      'Toegang tot alle online cursussen',
+                      'PRINCE2 / Agile / Scrum / Kanban',
+                      'Lean Six Sigma Green & Black Belt',
+                      'Video tutorials & oefenopdrachten',
+                      'Voortgangstracking & badges',
+                      'E-mail support',
+                    ].map((f, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    className="w-full h-11 font-bold"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND.amber}, ${BRAND.orange})`,
+                      color: 'white',
+                    }}
+                    onClick={() => navigate('/academy/checkout?plan=learner')}
+                  >
+                    Start leren
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Course + Certificate */}
+              <Card className="relative overflow-hidden border-2 border-orange-300 dark:border-orange-700/60 bg-gradient-to-br from-orange-50/60 to-amber-50/40 dark:from-orange-900/20 dark:to-amber-900/10 hover:-translate-y-1 hover:shadow-2xl transition-all">
+                <div className="absolute top-4 right-4">
+                  <Badge
+                    className="font-bold"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND.orange}, ${BRAND.amber})`,
+                      color: 'white',
+                    }}
+                  >
+                    <Star className="w-3 h-3 mr-1 fill-white" />
+                    Populair
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4 shadow-lg">
+                    <Award className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-1">Course + Certificate</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Per certificering — eenmalig</p>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-bold">€99</span>
+                    <span className="text-muted-foreground">/cert</span>
+                  </div>
+                  <div className="space-y-2.5 mb-6 text-sm">
+                    {[
+                      'Volledige cursus + examen',
+                      'Erkend certificaat met /verify URL',
+                      'Chain-anchored — niet vervalsbaar',
+                      'PDF download + LinkedIn-deelbaar',
+                      'Levenslange toegang tot het curriculum',
+                      'Mentor-feedback bij eindopdracht',
+                    ].map((f, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    className="w-full h-11 font-bold"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND.orange}, #DC2626)`,
+                      color: 'white',
+                    }}
+                    onClick={() => navigate('/academy')}
+                  >
+                    Bekijk certificeringen
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Team Bundle */}
+              <Card className="relative overflow-hidden border-2 border-amber-200/60 dark:border-amber-900/40 bg-gradient-to-br from-amber-50/40 to-transparent dark:from-amber-900/10 hover:border-amber-400 transition-all hover:-translate-y-1 hover:shadow-2xl">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-600 to-yellow-600 flex items-center justify-center mb-4 shadow-lg">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-1">Team Bundle</h3>
+                  <p className="text-sm text-muted-foreground mb-4">50 learners — €12/learner</p>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-bold">€600</span>
+                    <span className="text-muted-foreground">/maand</span>
+                  </div>
+                  <div className="space-y-2.5 mb-6 text-sm">
+                    {[
+                      'Tot 50 learners — €12 per learner',
+                      'Eigen team-dashboard met progressie',
+                      'Bulk-uitnodigingen via e-mail / CSV',
+                      'Team-leaderboard & badges',
+                      'Manager rapportages (CSV / PDF)',
+                      'Priority support + onboarding-sessie',
+                    ].map((f, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    className="w-full h-11 font-bold"
+                    variant="outline"
+                    onClick={() => window.location.href = 'mailto:info@projextpal.com?subject=Academy Team Bundle aanvraag'}
+                  >
+                    Vraag offerte aan
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Enterprise-tier bundle callout */}
+            <div
+              className="mt-8 rounded-2xl p-6 border-2 border-dashed text-center backdrop-blur-xl"
+              style={{
+                borderColor: `${BRAND.green}40`,
+                background: `linear-gradient(135deg, ${BRAND.green}08, ${BRAND.amber}08)`,
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Sparkles className="w-5 h-5" style={{ color: BRAND.green }} />
+                <p className="font-bold text-lg">
+                  ProjeXtPal Enterprise klanten
+                </p>
+                <Sparkles className="w-5 h-5" style={{ color: BRAND.green }} />
+              </div>
+              <p className="text-muted-foreground">
+                Krijg <span className="font-bold text-foreground">5 Academy learner-seats gratis</span> inbegrepen
+                bij je Enterprise-abonnement.{' '}
+                <a href="mailto:info@projextpal.com?subject=Enterprise Academy seats activeren" className="underline font-semibold" style={{ color: BRAND.green }}>
+                  Activeer ze hier →
+                </a>
+              </p>
+            </div>
           </div>
 
           {/* Trust Badges */}
