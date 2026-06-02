@@ -585,6 +585,168 @@ def test_llm_prompt_forbids_asking_reporter_for_dev_details_nl():
 
 
 @pytest.mark.django_db
+def test_needs_info_recheck_picks_up_reporter_response(company, patched_catalog):
+    """
+    When an issue is in status='needs-info' and the reporter posts a
+    non-agent comment AFTER the triaged_at timestamp, the next cron run
+    must pick it up as a re-triage candidate (NOT skip via idempotency).
+
+    The LLM gets a 'RE-TRIAGE CONTEXT' block in the user message with
+    the prior follow-up question and the new reporter response, so it
+    can decide whether the new info is now sufficient to re-classify.
+    """
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from datetime import timedelta
+
+    User = get_user_model()
+    reporter = User.objects.create_user(
+        username="enduser2", email="end2@example.com", password="x",
+        company=company, role="user",
+    )
+
+    # Set up an issue that was triaged as needs-info yesterday
+    issue = _make_issue(
+        company,
+        title="Adding a budget is failing",
+        description="It doesn't work.",
+        error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+    issue.reporter = reporter
+    issue.status = "needs-info"
+    issue.triaged_at = timezone.now() - timedelta(days=1)
+    issue.triaged_by = "agent:issue-triage-validator"
+    issue.priority = "P2"
+    issue.agent_triage_result = {"classification": "needs-info", "phase": "llm"}
+    issue.save()
+
+    # Prior follow-up question (sent by the agent)
+    ProductIssueComment.objects.create(
+        issue=issue,
+        author="agent:issue-triage-validator",
+        body=(
+            "[needs-info-followup] #x\n\n"
+            "Could you share a screenshot of the error and the URL of "
+            "the page where this happened?"
+        ),
+        is_triage_step=True,
+        visibility="public",
+    )
+
+    # Reporter responds with new info AFTER triaged_at
+    ProductIssueComment.objects.create(
+        issue=issue,
+        author=str(reporter.id),
+        body=(
+            "Yes! I was on https://projextpal.com/projects/9/waterfall/budget "
+            "and got a red error saying 'description is required' but there "
+            "is no description field in the form."
+        ),
+    )
+
+    # LLM should now have enough info → re-classify as bug
+    fake_payload = {
+        "classification": "bug",
+        "priority": "P1",
+        "affected_area": "waterfall budget",
+        "reasoning": "Reporter provided URL + error message — clear API/frontend mismatch.",
+        "reporter_message": "Thanks for the screenshot URL and error message! Our dev team is on it now.",
+        "dev_notes": "Backend serializer requires 'description' but frontend form omits it. Check WaterfallBudgetItemSerializer.",
+    }
+    fake_client = MagicMock()
+    fake_client.messages.create.return_value = _fake_anthropic_response(fake_payload)
+
+    with patch(
+        "core.llm_keys.get_anthropic_client", return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    # Status moved from needs-info → triaging (bug classification)
+    issue.refresh_from_db()
+    assert issue.status == "triaging"
+    assert issue.priority == "P1"
+    assert issue.agent_triage_result.get("classification") == "bug"
+
+    # New public + internal triage comments added (alongside the old
+    # follow-up + reporter response that were pre-seeded)
+    new_triage_public = ProductIssueComment.objects.filter(
+        issue=issue, visibility="public",
+        body__contains="llm-triage (public)",
+    ).first()
+    new_triage_internal = ProductIssueComment.objects.filter(
+        issue=issue, visibility="internal",
+        body__contains="llm-triage (internal)",
+    ).first()
+    assert new_triage_public is not None
+    assert "Thanks for the screenshot URL" in new_triage_public.body
+    assert new_triage_internal is not None
+    assert "WaterfallBudgetItemSerializer" in new_triage_internal.body
+
+    # The LLM was given the RE-TRIAGE CONTEXT block in the user message
+    user_message = fake_client.messages.create.call_args.kwargs["messages"][0]["content"]
+    assert "RE-TRIAGE CONTEXT" in user_message
+    assert "Prior follow-up question" in user_message
+    assert "Reporter responses since" in user_message
+    assert "description is required" in user_message  # reporter's words echoed
+
+
+@pytest.mark.django_db
+def test_needs_info_without_response_is_skipped(company, patched_catalog):
+    """
+    Needs-info issues with NO new reporter comment since triaged_at
+    must NOT be re-triaged — otherwise the cron would re-classify the
+    same stuck issue every 30 minutes and burn LLM budget for nothing.
+    """
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from datetime import timedelta
+
+    User = get_user_model()
+    reporter = User.objects.create_user(
+        username="enduser3", email="end3@example.com", password="x",
+        company=company, role="user",
+    )
+
+    issue = _make_issue(
+        company, title="Stuck waiting", description="x", error_trace="",
+        environment={"client": "web", "language": "en"},
+    )
+    issue.reporter = reporter
+    issue.status = "needs-info"
+    issue.triaged_at = timezone.now() - timedelta(days=2)
+    issue.save()
+
+    # Only the agent follow-up exists — NO reporter response
+    ProductIssueComment.objects.create(
+        issue=issue,
+        author="agent:issue-triage-validator",
+        body="[needs-info-followup] #x\n\nCould you share a screenshot?",
+        is_triage_step=True, visibility="public",
+    )
+
+    fake_client = MagicMock()  # should NEVER be called
+    with patch(
+        "core.llm_keys.get_anthropic_client", return_value=fake_client,
+    ), patch(
+        "product_issues.management.commands.triage_product_issues._send_digest_email",
+        return_value=None,
+    ):
+        out = StringIO()
+        call_command("triage_product_issues", "--limit", "10", stdout=out)
+
+    # No LLM call at all
+    fake_client.messages.create.assert_not_called()
+    # Status unchanged
+    issue.refresh_from_db()
+    assert issue.status == "needs-info"
+
+
+@pytest.mark.django_db
 def test_serializer_hides_internal_comments_from_non_staff(company, patched_catalog):
     """The new dual-comment architecture writes both a public and an
     internal comment per triage. The internal one must NEVER leak to a

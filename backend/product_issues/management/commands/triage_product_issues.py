@@ -154,22 +154,62 @@ def _today_signature(issue: ProductIssue) -> str:
 
 def _already_triaged_today(issue: ProductIssue) -> bool:
     """
-    True only if a SUCCESSFUL triage comment exists for today.
+    Should we skip this issue in the current cron run?
 
-    Important: a transient `llm-error` comment from earlier today (e.g.
-    Anthropic key was missing) must NOT block the next run — otherwise a
-    single failed cron-fire takes the issue out of the queue for the rest
-    of the day. We match the date-sig prefix but explicitly exclude the
-    `llm-error` variant so retries can proceed once the upstream cause
-    (missing key, rate-limit, transient 5xx) is resolved.
+    Rules (in order):
+      1. If there's NO successful triage comment with today's date sig,
+         we have not run today → don't skip.
+      2. If there IS a successful triage today AND the reporter has
+         posted a non-agent comment AFTER that triage → the reporter
+         responded with new info and we should re-triage. Don't skip.
+      3. Otherwise → skip (we've already done today's work for this issue).
+
+    The llm-error variant of today's signature is intentionally excluded
+    so a transient failure earlier today (e.g. missing Anthropic key)
+    doesn't block a retry once the upstream cause is fixed.
     """
     sig = _today_signature(issue)
-    return ProductIssueComment.objects.filter(
+    last_triage = (
+        ProductIssueComment.objects.filter(
+            issue=issue, body__startswith=sig,
+        ).exclude(
+            body__startswith=f"{sig} llm-error",
+        ).order_by("-created_at").first()
+    )
+    if last_triage is None:
+        return False  # never triaged today
+
+    # Reporter (human, non-agent) response since the last triage? If so,
+    # we want to re-triage even on the same day — otherwise needs-info
+    # issues whose reporter answers same-day stay stuck until tomorrow.
+    has_response = ProductIssueComment.objects.filter(
         issue=issue,
-        body__startswith=sig,
-    ).exclude(
-        body__startswith=f"{sig} llm-error",
-    ).exists()
+        created_at__gt=last_triage.created_at,
+    ).exclude(author__startswith="agent:").exists()
+    return not has_response
+
+
+def _needs_info_candidates_with_response(qs_base):
+    """
+    Issues currently in status='needs-info' where the reporter has
+    posted a non-agent comment AFTER the last triage_at timestamp.
+
+    These are the "reporter responded, re-triage please" candidates.
+    Filtered on top of `qs_base` (typically the org-scoped ProductIssue
+    queryset) so the caller can apply tenant or company filters.
+    """
+    from django.db.models import Exists, OuterRef
+
+    new_response = ProductIssueComment.objects.filter(
+        issue=OuterRef("pk"),
+        created_at__gt=OuterRef("triaged_at"),
+    ).exclude(author__startswith="agent:")
+
+    return (
+        qs_base.filter(status="needs-info", triaged_at__isnull=False)
+        .annotate(_has_response=Exists(new_response))
+        .filter(_has_response=True)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -244,6 +284,22 @@ _LLM_SYSTEM_PROMPTS = {
         "  performance metrics, security incidenten, database queries, "
         "  infrastructuur).\n"
         "- 'wontfix' = test-data, by-design, of out-of-scope.\n\n"
+        "Re-triage modus: Als het user-bericht een 'RE-TRIAGE CONTEXT' "
+        "blok bevat, dan is de reporter al eerder om extra info "
+        "gevraagd en heeft 'ie nu geantwoord. Lees de oude vervolgvraag "
+        "+ de antwoorden, en doe dan:\n"
+        "- Als de nieuwe info voldoende is → herclassificeer naar bug / "
+        "  feature / duplicate / escalate / wontfix. Bedank de reporter "
+        "  in reporter_message voor de extra details.\n"
+        "- Als de antwoorden nog steeds de vraag niet beantwoorden (vaag "
+        "  antwoord, off-topic, alleen 'zie screenshot' zonder screenshot) "
+        "  → classificeer opnieuw als 'needs-info' maar stel een ANDERE, "
+        "  specifiekere vraag in reporter_message (niet dezelfde "
+        "  herhalen). Blijf vriendelijk en geduldig.\n"
+        "- Als na herhaaldelijk vragen blijkt dat de reporter de info "
+        "  niet kan leveren (meerdere rondes vage antwoorden, of ze "
+        "  zeggen het zelf) → classificeer als 'escalate' om het issue "
+        "  naar admin door te sturen voor direct onderzoek.\n\n"
         "Priority: P0 = blocker (data verlies, productie down, security), "
         "P1 = belangrijke bug die meerdere gebruikers raakt, "
         "P2 = standaard, P3 = nice-to-have / kosmetisch.\n"
@@ -284,6 +340,22 @@ _LLM_SYSTEM_PROMPTS = {
         "  performance metrics, security incidents, database queries, "
         "  infrastructure).\n"
         "- 'wontfix' = test data, by-design, or out-of-scope.\n\n"
+        "Re-triage mode: If the user message contains a "
+        "'RE-TRIAGE CONTEXT' block, the reporter has already been asked "
+        "for more info once and has now responded. Read the prior "
+        "follow-up question + the responses, then:\n"
+        "- If the new info is sufficient → re-classify to bug / feature / "
+        "  duplicate / escalate / wontfix. Thank the reporter in "
+        "  reporter_message for the additional details.\n"
+        "- If the responses still don't answer the question (vague reply, "
+        "  off-topic, just 'see screenshot' without the screenshot) → "
+        "  classify as 'needs-info' again but write a DIFFERENT, more "
+        "  specific question in reporter_message (don't repeat the same "
+        "  one). Keep the tone patient and friendly.\n"
+        "- If after re-asking the reporter clearly can't provide what's "
+        "  needed (multiple rounds of vague replies, or they say so) → "
+        "  classify as 'escalate' to route the issue to admin for "
+        "  direct investigation.\n\n"
         "Priority: P0 = blocker (data loss, production down, security), "
         "P1 = important bug affecting multiple users, "
         "P2 = standard, P3 = nice-to-have / cosmetic.\n"
@@ -458,6 +530,58 @@ def _llm_user_message(issue: ProductIssue) -> str:
         f"Category: {issue.get_category_display() if issue.category else '(geen)'}",
         f"Source: {issue.get_source_display() if issue.source else '(geen)'}",
     ]
+
+    # Re-triage context: if this issue is currently in 'needs-info' and
+    # has been triaged before, surface the previous follow-up question
+    # AND the reporter's response(s) since then. Gives the LLM the
+    # context to decide whether the new info is enough to re-classify
+    # (bug / feature / escalate) or whether to keep asking.
+    if issue.status == "needs-info" and issue.triaged_at is not None:
+        prior_followup = (
+            ProductIssueComment.objects.filter(
+                issue=issue,
+                body__startswith="[needs-info-followup]",
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        # Cap each comment body length so a long thread can't blow the
+        # context window. Up to 5 most-recent reporter responses.
+        reporter_responses = list(
+            ProductIssueComment.objects.filter(
+                issue=issue,
+                created_at__gt=issue.triaged_at,
+            )
+            .exclude(author__startswith="agent:")
+            .order_by("-created_at")[:5]
+        )
+        reporter_responses.reverse()  # chronological for the prompt
+
+        if prior_followup or reporter_responses:
+            parts.append("")
+            parts.append("=== RE-TRIAGE CONTEXT (reporter has responded) ===")
+            parts.append(
+                "This issue was previously triaged as 'needs-info' on "
+                f"{issue.triaged_at.isoformat()}. The reporter has since "
+                f"posted {len(reporter_responses)} comment(s). Decide if "
+                "there's now enough info to re-classify (bug / feature / "
+                "escalate / etc.) or if you still need more — in which "
+                "case classify as 'needs-info' again and write a "
+                "different, more specific question in reporter_message."
+            )
+            if prior_followup:
+                parts.append("")
+                parts.append("Prior follow-up question we asked:")
+                parts.append(prior_followup.body[:800])
+            if reporter_responses:
+                parts.append("")
+                parts.append("Reporter responses since:")
+                for c in reporter_responses:
+                    parts.append(
+                        f"  [{c.created_at.date().isoformat()}] "
+                        f"{c.author}: {c.body[:600]}"
+                    )
+
     return "\n".join(parts)
 
 
@@ -653,13 +777,53 @@ class Command(BaseCommand):
         self.stdout.write(f"Catalog: loaded {len(catalog)} entries.")
 
         # ---- Select candidates --------------------------------------
-        qs = ProductIssue.objects.filter(status="new", triaged_at__isnull=True)
+        # Two source-streams of candidates:
+        #
+        #   1. NEW issues — never triaged. status='new', triaged_at IS NULL.
+        #      Get a Phase A catalog-match attempt + Phase B LLM
+        #      classification if no catalog hit.
+        #
+        #   2. NEEDS-INFO issues with a reporter response — already triaged
+        #      once as needs-info, but the reporter has posted a non-agent
+        #      comment since `triaged_at`. The LLM gets the original issue
+        #      + the prior follow-up question + the new reporter response,
+        #      so it can decide if there's now enough info to re-classify
+        #      (bug / feature / escalate) or whether to ask for more.
+        #
+        # Union of both streams is processed in the same loop — the
+        # prompt_extra_context() helper inside _llm_user_message adds the
+        # re-triage hint only when the issue's status is 'needs-info'.
         if issue_id is not None:
-            qs = qs.filter(pk=issue_id)
+            # Direct addressing: ignore the status filter, only the
+            # idempotency check below gates execution.
+            qs = ProductIssue.objects.filter(pk=issue_id)
         else:
-            qs = qs.order_by("created_at")[:limit]
+            new_qs = ProductIssue.objects.filter(
+                status="new", triaged_at__isnull=True,
+            )
+            recheck_qs = _needs_info_candidates_with_response(
+                ProductIssue.objects.all()
+            )
+            # Use a list-merge instead of qs.union() because union()
+            # plus order_by + slice gets fragile on Postgres. Fetch each
+            # stream, dedupe by pk, then sort.
+            merged = list(new_qs.order_by("created_at")) + list(
+                recheck_qs.order_by("triaged_at")
+            )
+            seen = set()
+            ordered = []
+            for issue in merged:
+                if issue.pk in seen:
+                    continue
+                seen.add(issue.pk)
+                ordered.append(issue)
+            qs = ordered[:limit]
         candidates = list(qs)
-        self.stdout.write(f"Candidates: {len(candidates)} issues to consider.")
+        n_recheck = sum(1 for i in candidates if i.status == "needs-info")
+        self.stdout.write(
+            f"Candidates: {len(candidates)} issues to consider "
+            f"({len(candidates) - n_recheck} new, {n_recheck} needs-info rechecks)."
+        )
 
         # Counters
         n_catalog = 0
