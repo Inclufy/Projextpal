@@ -24,11 +24,12 @@ const Prince2WorkPackages = () => {
   const [workPackages, setWorkPackages] = useState<any[]>([]);
   const [stages, setStages] = useState<any[]>([]);
   const [stagePlans, setStagePlans] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", stage: "", priority: "medium" });
+  const [form, setForm] = useState({ title: "", description: "", stage: "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -57,7 +58,17 @@ const Prince2WorkPackages = () => {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [id]);
+  const fetchUsers = async () => {
+    try {
+      const r = await fetch(`/api/v1/auth/company-users/members/`, { headers });
+      if (r.ok) { const d = await r.json(); setUsers(Array.isArray(d) ? d : d.results || []); }
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => { fetchData(); fetchUsers(); }, [id]);
+
+  const userLabel = (u: any) =>
+    u.full_name || u.name || `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email;
 
   // Stage Plans grouped by stage for the reverse-linkage breadcrumb on each WP card
   const stagePlansByStage = useMemo(() => {
@@ -90,13 +101,21 @@ const Prince2WorkPackages = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", description: "", stage: stages[0]?.id?.toString() || "", priority: "medium" });
+    setForm({ title: "", description: "", stage: stages[0]?.id?.toString() || "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (wp: any) => {
     setEditing(wp);
-    setForm({ title: wp.title, description: wp.description || "", stage: wp.stage?.toString() || "", priority: wp.priority || "medium" });
+    setForm({
+      title: wp.title,
+      description: wp.description || "",
+      stage: wp.stage?.toString() || "",
+      priority: wp.priority || "medium",
+      team_manager: wp.team_manager != null ? String(wp.team_manager) : "",
+      planned_start_date: wp.planned_start_date?.split("T")[0] || "",
+      planned_end_date: wp.planned_end_date?.split("T")[0] || "",
+    });
     setDialogOpen(true);
   };
 
@@ -106,6 +125,9 @@ const Prince2WorkPackages = () => {
     try {
       const body: any = { title: form.title, description: form.description, priority: form.priority };
       if (form.stage) body.stage = parseInt(form.stage);
+      body.team_manager = form.team_manager ? parseInt(form.team_manager) : null;
+      body.planned_start_date = form.planned_start_date || null;
+      body.planned_end_date = form.planned_end_date || null;
       const url = editing ? `/api/v1/projects/${id}/prince2/work-packages/${editing.id}/` : `/api/v1/projects/${id}/prince2/work-packages/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -238,6 +260,20 @@ const Prince2WorkPackages = () => {
                     </div>
                     <p className="font-medium">{wp.title}</p>
                     {wp.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{wp.description}</p>}
+                    {(wp.team_manager_name || wp.planned_start_date || wp.planned_end_date) && (
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+                        {wp.team_manager_name && (
+                          <span className="inline-flex items-center gap-1">
+                            <Package className="h-3 w-3" /> {wp.team_manager_name}
+                          </span>
+                        )}
+                        {(wp.planned_start_date || wp.planned_end_date) && (
+                          <span className="inline-flex items-center gap-1">
+                            {wp.planned_start_date || "—"} → {wp.planned_end_date || "—"}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-2">
                       <Progress value={wp.progress_percentage || 0} className="h-1.5 w-32" />
                       <span className="text-xs text-muted-foreground">{wp.progress_percentage || 0}%</span>
@@ -296,6 +332,26 @@ const Prince2WorkPackages = () => {
                   <SelectItem value="critical">Critical</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{pt("Team Manager")}</Label>
+              <Select value={form.team_manager || "unassigned"} onValueChange={(v) => setForm({ ...form, team_manager: v === "unassigned" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder={pt("Unassigned")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">{pt("Unassigned")}</SelectItem>
+                  {users.map((u) => <SelectItem key={u.id} value={u.id.toString()}>{userLabel(u)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{pt("Planned Start")}</Label>
+                <Input type="date" value={form.planned_start_date} onChange={(e) => setForm({ ...form, planned_start_date: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>{pt("Planned End")}</Label>
+                <Input type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} />
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>

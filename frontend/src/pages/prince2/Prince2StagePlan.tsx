@@ -25,7 +25,7 @@ const Prince2StagePlan = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ stage: "", plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft" });
+  const [form, setForm] = useState({ stage: "", plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft", planned_start_date: "", planned_end_date: "" });
 
   // Inline-create Work Package dialog state
   const [wpDialogOpen, setWpDialogOpen] = useState(false);
@@ -72,8 +72,25 @@ const Prince2StagePlan = () => {
 
   useEffect(() => { fetchData(); }, [id]);
 
-  const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft" }); setDialogOpen(true); };
-  const openEdit = (p: any) => { setEditing(p); setForm({ stage: p.stage?.toString() || "", plan_description: p.plan_description || "", resource_requirements: p.resource_requirements || "", quality_approach: p.quality_approach || "", dependencies: p.dependencies || "", assumptions: p.assumptions || "", budget: p.budget != null ? String(p.budget) : "", status: p.status || "draft" }); setDialogOpen(true); };
+  const stageDates = (stageId: string | number | null | undefined) => {
+    const s = stages.find((st) => String(st.id) === String(stageId));
+    return {
+      planned_start_date: s?.planned_start_date?.split("T")[0] || "",
+      planned_end_date: s?.planned_end_date?.split("T")[0] || "",
+    };
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    const firstStage = stages[0]?.id?.toString() || "";
+    setForm({ stage: firstStage, plan_description: "", resource_requirements: "", quality_approach: "", dependencies: "", assumptions: "", budget: "", status: "draft", ...stageDates(firstStage) });
+    setDialogOpen(true);
+  };
+  const openEdit = (p: any) => {
+    setEditing(p);
+    setForm({ stage: p.stage?.toString() || "", plan_description: p.plan_description || "", resource_requirements: p.resource_requirements || "", quality_approach: p.quality_approach || "", dependencies: p.dependencies || "", assumptions: p.assumptions || "", budget: p.budget != null ? String(p.budget) : "", status: p.status || "draft", ...stageDates(p.stage) });
+    setDialogOpen(true);
+  };
 
   const handleSave = async () => {
     if (!form.stage) { toast.error(pt("Please select a stage")); return; }
@@ -92,7 +109,19 @@ const Prince2StagePlan = () => {
       const url = editing ? `/api/v1/projects/${id}/prince2/stage-plans/${editing.id}/` : `/api/v1/projects/${id}/prince2/stage-plans/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (response.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      if (response.ok) {
+        // Stage schedule dates live on the parent Stage record, not the StagePlan.
+        // Persist them with a follow-up PATCH so the plan and the stage timeline stay in sync.
+        await fetch(`/api/v1/projects/${id}/prince2/stages/${parseInt(form.stage)}/`, {
+          method: "PATCH",
+          headers: jsonHeaders,
+          body: JSON.stringify({
+            planned_start_date: form.planned_start_date || null,
+            planned_end_date: form.planned_end_date || null,
+          }),
+        });
+        toast.success(pt("Saved")); setDialogOpen(false); fetchData();
+      }
       else toast.error(pt("Save failed"));
     } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
@@ -188,6 +217,14 @@ const Prince2StagePlan = () => {
                       </Badge>
                     </button>
                     <Badge variant={p.status === "approved" ? "default" : "outline"}>{p.status}</Badge>
+                    {(() => {
+                      const d = stageDates(p.stage);
+                      return (d.planned_start_date || d.planned_end_date) ? (
+                        <span className="text-xs text-muted-foreground">
+                          {d.planned_start_date || "—"} → {d.planned_end_date || "—"}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="flex gap-1">
                     {p.status !== "approved" && <Button variant="ghost" size="sm" onClick={() => handleApprove(p.id)} className="text-green-600"><CheckCircle2 className="h-4 w-4" /></Button>}
@@ -262,7 +299,11 @@ const Prince2StagePlan = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Create")} {pt("Stage Plan")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Stage</Label><Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v, ...stageDates(v) })}><SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger><SelectContent>{stages.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>{pt("Planned Start")}</Label><Input type="date" value={form.planned_start_date} onChange={(e) => setForm({ ...form, planned_start_date: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Planned End")}</Label><Input type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} /></div>
+            </div>
             <div className="space-y-2"><Label>{pt("Plan Description")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.plan_description} onChange={(e) => setForm({ ...form, plan_description: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Resource Requirements")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.resource_requirements} onChange={(e) => setForm({ ...form, resource_requirements: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Quality Approach")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.quality_approach} onChange={(e) => setForm({ ...form, quality_approach: e.target.value })} /></div>
