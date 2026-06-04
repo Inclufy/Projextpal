@@ -7,12 +7,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
-    Decision, Meeting, DecisionAuditLog,
+    Decision, Meeting, DecisionAuditLog, MeetingAction,
 )
 from .serializers import (
     PortfolioSerializer, GovernanceBoardSerializer,
     BoardMemberSerializer, GovernanceStakeholderSerializer,
     DecisionSerializer, MeetingSerializer, DecisionAuditLogSerializer,
+    MeetingActionSerializer,
 )
 
 
@@ -500,3 +501,58 @@ class MeetingViewSet(viewsets.ModelViewSet):
             serializer.save(facilitator=self.request.user)
         else:
             serializer.save()
+
+
+class MeetingActionViewSet(viewsets.ModelViewSet):
+    """Tracked follow-up actions from governance meetings (P0-2).
+
+    Closing an action (status → done/cancelled) stamps closed_at; re-opening
+    clears it. Tenant scoping reaches through the parent Meeting's program/board.
+    """
+    serializer_class = MeetingActionSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['meeting', 'status', 'owner']
+    search_fields = ['description']
+    ordering_fields = ['due_date', 'created_at', 'status']
+
+    def get_queryset(self):
+        from django.db.models import Q
+        user = self.request.user
+        if not user.is_authenticated:
+            return MeetingAction.objects.none()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
+        company = getattr(user, 'company', None)
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin and (all_tenants or not company):
+            return MeetingAction.objects.all()
+        if not company:
+            return MeetingAction.objects.none()
+        # Scope through the parent Meeting's program/board, same as MeetingViewSet.
+        return MeetingAction.objects.filter(
+            Q(meeting__program__company=company)
+            | Q(meeting__board__portfolio__company=company)
+            | Q(meeting__board__program__company=company)
+            | Q(meeting__board__project__company=company)
+        ).distinct()
+
+    @staticmethod
+    def _sync_closed_at(serializer):
+        """Stamp/clear closed_at based on the resulting status. Terminal states
+        (done/cancelled) get a timestamp on entry; re-opening clears it."""
+        status_val = serializer.validated_data.get(
+            'status',
+            getattr(serializer.instance, 'status', 'open'),
+        )
+        if status_val in MeetingAction.CLOSED_STATUSES:
+            # Only stamp on transition into closed (preserve an existing close time).
+            existing = getattr(serializer.instance, 'closed_at', None)
+            serializer.save(closed_at=existing or timezone.now())
+        else:
+            serializer.save(closed_at=None)
+
+    def perform_create(self, serializer):
+        self._sync_closed_at(serializer)
+
+    def perform_update(self, serializer):
+        self._sync_closed_at(serializer)

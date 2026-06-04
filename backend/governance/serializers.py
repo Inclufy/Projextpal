@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
-    Decision, Meeting, DecisionAuditLog,
+    Decision, Meeting, DecisionAuditLog, MeetingAction,
 )
 
 
@@ -162,3 +162,42 @@ class MeetingSerializer(serializers.ModelSerializer):
 
     def get_attendee_count(self, obj):
         return obj.attendees.count()
+
+
+class MeetingActionSerializer(serializers.ModelSerializer):
+    owner_name = serializers.SerializerMethodField()
+    owner_email = serializers.EmailField(source='owner.email', read_only=True)
+    is_overdue = serializers.BooleanField(read_only=True)
+    meeting_title = serializers.CharField(source='meeting.title', read_only=True)
+
+    class Meta:
+        model = MeetingAction
+        fields = '__all__'
+        # closed_at is stamped server-side when the action enters a terminal state.
+        read_only_fields = ['id', 'created_at', 'updated_at', 'closed_at']
+
+    def get_owner_name(self, obj):
+        if obj.owner:
+            return obj.owner.get_full_name() or obj.owner.email
+        return None
+
+    def validate_meeting(self, meeting):
+        """An action may only be attached to a meeting in the caller's tenant —
+        otherwise a user could plant follow-ups inside another tenant's minutes."""
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user is None or not user.is_authenticated:
+            raise serializers.ValidationError("Authentication required.")
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin:
+            return meeting
+        company_id = getattr(getattr(user, 'company', None), 'id', None)
+        owner_company_ids = {
+            getattr(getattr(meeting.program, 'company', None), 'id', None),
+            getattr(getattr(getattr(meeting.board, 'portfolio', None), 'company', None), 'id', None),
+            getattr(getattr(getattr(meeting.board, 'program', None), 'company', None), 'id', None),
+            getattr(getattr(getattr(meeting.board, 'project', None), 'company', None), 'id', None),
+        }
+        if company_id is None or company_id not in owner_company_ids:
+            raise serializers.ValidationError("Meeting is not in your tenant.")
+        return meeting

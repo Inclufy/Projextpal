@@ -363,3 +363,57 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_type_display()})"
+
+
+class MeetingAction(models.Model):
+    """A tracked action item coming out of a governance Meeting (P0-2).
+
+    Minutes used to be dead text — a meeting could 'agree' on follow-ups with
+    no record of who owns them or whether they ever closed. A MeetingAction
+    gives each follow-up an owner, a due date, and a lifecycle, so an open or
+    overdue action has consequence instead of disappearing into prose.
+    """
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    # Terminal states close the action — closed_at is stamped on entry.
+    CLOSED_STATUSES = frozenset({'done', 'cancelled'})
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    meeting = models.ForeignKey(
+        'governance.Meeting', on_delete=models.CASCADE,
+        related_name='actions',
+    )
+    description = models.TextField()
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='governance_meeting_actions',
+    )
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='open')
+    # Stamped automatically when status enters a terminal state (done/cancelled).
+    closed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Meeting Action'
+        verbose_name_plural = 'Meeting Actions'
+        # Open + overdue first (soonest due date), then newest.
+        ordering = ['status', 'due_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.description[:40]} ({self.get_status_display()})"
+
+    @property
+    def is_overdue(self):
+        """Open/in-progress action whose due date has passed."""
+        from django.utils import timezone
+        if self.status in self.CLOSED_STATUSES or not self.due_date:
+            return False
+        return self.due_date < timezone.now().date()

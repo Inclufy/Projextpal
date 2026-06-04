@@ -14,6 +14,7 @@ import {
   Briefcase, Layers, FolderKanban, Gavel, CalendarDays,
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import MeetingActionsPanel from "@/components/governance/MeetingActionsPanel";
 
 interface Board {
   id: string;
@@ -541,6 +542,14 @@ const BoardDetail: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Tracked Actions panel (P0-2) — turns meeting minutes into owned,
+          due-dated follow-ups with overdue flags and a close/reopen lifecycle.
+          Aggregates actions across all of this board's meetings. */}
+      <MeetingActionsPanel
+        meetings={meetings.map((m) => ({ id: m.id, title: m.title }))}
+        users={users}
+      />
 
       {/* Decisions panel — new in audit fix #5. Lists decisions taken by this
           board (Decision.board FK from governance migration 0005). Each row

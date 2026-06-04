@@ -7,6 +7,7 @@ from .views import (
     GovernanceStakeholderViewSet,
     DecisionViewSet,
     MeetingViewSet,
+    MeetingActionViewSet,
 )
 
 router = DefaultRouter()
@@ -17,6 +18,7 @@ router.register(r'stakeholders', GovernanceStakeholderViewSet, basename='governa
 # Real Decision + Meeting endpoints (replaces the previous Q3-2026 stubs).
 router.register(r'decisions', DecisionViewSet, basename='governance-decision')
 router.register(r'meetings', MeetingViewSet, basename='governance-meeting')
+router.register(r'meeting-actions', MeetingActionViewSet, basename='governance-meeting-action')
 
 urlpatterns = [
     path('', include(router.urls)),
