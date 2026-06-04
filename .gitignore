@@ -81,3 +81,4 @@ web/.next/
 
 # Recovery backup files from apply-to-main.sh
 **/*.bak.*
+backend/local_dev.sqlite3

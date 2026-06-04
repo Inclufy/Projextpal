@@ -365,6 +365,15 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
             'NAME': ':memory:',
         }
     }
+# Opt-in file-based SQLite for running the app locally without Docker/Postgres.
+# Default OFF so production (Postgres) is never affected. Enable with USE_SQLITE=1.
+elif decouple.config('USE_SQLITE', default=False, cast=bool):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'local_dev.sqlite3',
+        }
+    }
 
 # CORS allowed origins for frontend
 # Note: FRONTEND_URL is already set via decouple.config() above
