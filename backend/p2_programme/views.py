@@ -2,7 +2,7 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
-from projects.models import Project
+from programs.models import Program
 
 from .models import P2Blueprint, P2ProgrammeProject
 from .serializers import P2BlueprintSerializer, P2ProgrammeProjectSerializer
@@ -13,9 +13,15 @@ def _get_company(user):
 
 
 def _verify_programme_access(user, programme_id):
-    """Verify the user's company owns the target programme."""
+    """Verify the user's company owns the target programme.
+
+    Previously queried projects.Project by id — but P2Blueprint/P2ProgrammeProject
+    .programme is a FK to programs.Program. The mismatch denied every legitimate
+    nested create and risked a cross-tenant false-allow when a Project of another
+    tenant shared the id.
+    """
     company = _get_company(user)
-    if not company or not Project.objects.filter(id=programme_id, company=company).exists():
+    if not company or not Program.objects.filter(id=programme_id, company=company).exists():
         raise PermissionDenied("You do not have access to this programme.")
 
 

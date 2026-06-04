@@ -8,7 +8,8 @@ class P2BlueprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = P2Blueprint
         fields = '__all__'
-        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
+        # `programme` injected server-side from the nested URL in perform_create.
+        read_only_fields = ['id', 'programme', 'created_by', 'created_at', 'updated_at']
 
     def get_project_count(self, obj):
         return obj.projects.count()
@@ -18,4 +19,5 @@ class P2ProgrammeProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = P2ProgrammeProject
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `programme` injected server-side from the nested URL in perform_create.
+        read_only_fields = ['id', 'programme', 'created_at', 'updated_at']
