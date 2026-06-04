@@ -5,7 +5,7 @@ from .models import (
     DailyStandup, StandupUpdate, SprintReview, SprintRetrospective,
     Velocity, DefinitionOfDone, ScrumTeam,
     SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion,
-    DoDChecklistEntry,
+    DoDChecklistEntry, ProductGoal, RetroActionItem,
 )
 
 
@@ -13,6 +13,7 @@ class BacklogItemSerializer(serializers.ModelSerializer):
     assignee_name = serializers.CharField(source='assignee.get_full_name', read_only=True)
     reporter_name = serializers.CharField(source='reporter.get_full_name', read_only=True)
     sprint_name = serializers.CharField(source='sprint.name', read_only=True)
+    product_goal_title = serializers.CharField(source='product_goal.title', read_only=True)
     children_count = serializers.SerializerMethodField()
     children = serializers.SerializerMethodField()  # ✅ ADD THIS LINE
     
@@ -31,6 +32,34 @@ class BacklogItemSerializer(serializers.ModelSerializer):
         if not self.context.get('skip_children'):
             return BacklogItemSerializer(children, many=True, context={'skip_children': True}).data
         return []
+
+
+class ProductGoalSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    item_count = serializers.SerializerMethodField()
+    done_item_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductGoal
+        fields = '__all__'
+        read_only_fields = ['project', 'backlog', 'created_at', 'updated_at', 'created_by']
+
+    def get_item_count(self, obj):
+        return obj.items.count()
+
+    def get_done_item_count(self, obj):
+        return obj.items.filter(status='done').count()
+
+
+class RetroActionItemSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
+    sprint_name = serializers.CharField(source='sprint.name', read_only=True)
+    carried_to_sprint_name = serializers.CharField(source='carried_to_sprint.name', read_only=True)
+
+    class Meta:
+        model = RetroActionItem
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at', 'created_by', 'carried_to_sprint']
 
 
 class ProductBacklogSerializer(serializers.ModelSerializer):

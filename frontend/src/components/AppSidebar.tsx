@@ -338,6 +338,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Product Backlog",
           icon: ListChecks,
           items: [
+            { title: "Product Goals", url: `/projects/${projectId}/scrum/product-goals`, icon: Target },
             { title: "Backlog", url: `/projects/${projectId}/scrum/backlog`, icon: ListChecks },
           ],
         },
@@ -357,9 +358,10 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Users,
           items: [
             { title: "Daily Standup", url: `/projects/${projectId}/scrum/daily-standup`, icon: Users },
-            { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
             { title: "Sprint Planning", url: `/projects/${projectId}/scrum/sprint-planning`, icon: Calendar },
             { title: "Sprint Review", url: `/projects/${projectId}/scrum/sprint-review`, icon: Presentation },
+            { title: "Retrospective", url: `/projects/${projectId}/scrum/retrospective`, icon: Lightbulb },
+            { title: "Retro Actions", url: `/projects/${projectId}/scrum/retro-actions`, icon: Flag },
           ],
         },
       ];

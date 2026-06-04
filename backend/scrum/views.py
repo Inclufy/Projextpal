@@ -14,7 +14,7 @@ from .models import (
     DailyStandup, StandupUpdate, SprintReview, SprintRetrospective,
     Velocity, DefinitionOfDone, ScrumTeam,
     SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion,
-    DoDChecklistEntry,
+    DoDChecklistEntry, ProductGoal, RetroActionItem,
 )
 from .serializers import (
     ProductBacklogSerializer, BacklogItemSerializer, SprintSerializer,
@@ -23,6 +23,7 @@ from .serializers import (
     VelocitySerializer, DefinitionOfDoneSerializer, ScrumTeamSerializer,
     SprintGoalSerializer, SprintPlanningSerializer, IncrementSerializer,
     DoDChecklistCompletionSerializer, DoDChecklistEntrySerializer,
+    ProductGoalSerializer, RetroActionItemSerializer,
 )
 
 
@@ -127,6 +128,32 @@ class ProductBacklogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         return Response(ProductBacklogSerializer(backlog).data)
 
 
+class ProductGoalViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Scrum Product Goal — the long-term objective the Product Backlog serves.
+
+    Backlog items trace to a Product Goal (``BacklogItem.product_goal``) so a
+    Sprint's work can be shown to advance the product (Scrum Guide 2020).
+    """
+    serializer_class = ProductGoalSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        return self.get_project_queryset(ProductGoal)
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        backlog, _ = ProductBacklog.objects.get_or_create(project=project)
+        serializer.save(project=project, backlog=backlog, created_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def achieve(self, request, project_id=None, pk=None):
+        """Mark the Product Goal achieved."""
+        goal = self.get_object()
+        goal.status = 'achieved'
+        goal.save(update_fields=['status', 'updated_at'])
+        return Response(ProductGoalSerializer(goal).data)
+
+
 class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = BacklogItemSerializer
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
@@ -141,7 +168,8 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         sprint = self.request.query_params.get('sprint')
         status_filter = self.request.query_params.get('status')
         item_type = self.request.query_params.get('type')
-        
+        product_goal = self.request.query_params.get('product_goal')
+
         if sprint:
             queryset = queryset.filter(sprint_id=sprint)
         if sprint == 'null':
@@ -150,7 +178,11 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(status=status_filter)
         if item_type:
             queryset = queryset.filter(item_type=item_type)
-            
+        if product_goal == 'null':
+            queryset = queryset.filter(product_goal__isnull=True)
+        elif product_goal:
+            queryset = queryset.filter(product_goal_id=product_goal)
+
         return queryset
 
     def perform_create(self, serializer):
@@ -499,6 +531,81 @@ class SprintReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             sprint__project__company=self.request.user.company
         )
 
+    @action(detail=True, methods=['post'])
+    def record(self, request, project_id=None, pk=None):
+        """Record Sprint Review outcomes: accept or reject demoed items.
+
+        Accepting items marks them Done (gated on the sprint Definition of Done
+        — un-Done work cannot be accepted while DoD criteria are unmet, returning
+        409 ``dod_not_met`` BEFORE any change). Rejecting an item spawns a
+        follow-up Product Backlog Item carrying the reason and the same Product
+        Goal lineage, and returns the rejected item to the backlog.
+        """
+        review = self.get_object()
+        sprint = review.sprint
+        accepted_ids = request.data.get('accepted_item_ids', []) or []
+        rejected = request.data.get('rejected', []) or []
+
+        accepted_items = list(BacklogItem.objects.filter(
+            id__in=accepted_ids, sprint=sprint,
+        ))
+
+        # Gate acceptance on the sprint Definition of Done.
+        if accepted_items:
+            all_met, unmet = sprint.dod_status()
+            if not all_met:
+                return Response(
+                    {'detail': ('Definition of Done not met for this sprint — '
+                                'complete the DoD checklist before accepting work.'),
+                     'code': 'dod_not_met', 'unmet_criteria': unmet},
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+        # --- apply (no failures past this point) ---
+        for item in accepted_items:
+            item.status = 'done'
+            item.save(update_fields=['status', 'updated_at'])
+
+        backlog, _ = ProductBacklog.objects.get_or_create(project_id=project_id)
+        spawned = []
+        for r in rejected:
+            src = None
+            if r.get('item_id'):
+                src = BacklogItem.objects.filter(id=r['item_id'], sprint=sprint).first()
+            title = (r.get('title')
+                     or (f"Follow-up: {src.title}" if src else 'Follow-up item'))[:300]
+            new_item = BacklogItem.objects.create(
+                backlog=backlog,
+                title=title,
+                description=r.get('reason', ''),
+                item_type=src.item_type if src else 'user_story',
+                product_goal=src.product_goal if src else None,
+                parent=src if src else None,
+                reporter=request.user,
+                status='new',
+            )
+            if src:
+                src.sprint = None  # return rejected work to the backlog
+                src.save(update_fields=['sprint', 'updated_at'])
+            spawned.append(new_item.id)
+
+        review.completed_story_points = sprint.completed_story_points
+        review.sprint_goal_achieved = bool(request.data.get('sprint_goal_achieved', False))
+        review.status = 'completed'
+        review.save(update_fields=['completed_story_points', 'sprint_goal_achieved', 'status'])
+
+        # Reflect goal achievement onto the SprintGoal if present.
+        goal = getattr(sprint, 'sprint_goal', None)
+        if goal is not None:
+            goal.is_achieved = review.sprint_goal_achieved
+            goal.save(update_fields=['is_achieved', 'updated_at'])
+
+        return Response({
+            'review': SprintReviewSerializer(review).data,
+            'accepted_item_ids': [i.id for i in accepted_items],
+            'spawned_follow_up_ids': spawned,
+        })
+
 
 class SprintRetrospectiveViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     serializer_class = SprintRetrospectiveSerializer
@@ -510,6 +617,48 @@ class SprintRetrospectiveViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             sprint__project_id=project_id,
             sprint__project__company=self.request.user.company
         )
+
+
+class RetroActionItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Trackable retrospective improvement actions that carry across Sprints.
+
+    Each action is owned and has a lifecycle (open → in_progress → done). Still
+    open actions are surfaced in the next Sprint Planning and carried forward so
+    continuous-improvement commitments are never silently dropped.
+    """
+    serializer_class = RetroActionItemSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        qs = RetroActionItem.objects.filter(
+            project_id=project_id,
+            project__company=self.request.user.company,
+        )
+        sprint = self.request.query_params.get('sprint')
+        status_filter = self.request.query_params.get('status')
+        if sprint:
+            qs = qs.filter(sprint_id=sprint)
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        sprint = serializer.validated_data.get('sprint')
+        if sprint is not None and sprint.project_id != project.id:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'sprint': 'Sprint does not belong to this project.'})
+        serializer.save(project=project, created_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, project_id=None, pk=None):
+        """Mark a retro action done."""
+        action_item = self.get_object()
+        action_item.status = 'done'
+        action_item.carried_to_sprint = None
+        action_item.save(update_fields=['status', 'carried_to_sprint', 'updated_at'])
+        return Response(RetroActionItemSerializer(action_item).data)
 
 
 # =============================================================================
@@ -710,6 +859,108 @@ class SprintPlanningViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         planning.status = 'completed'
         planning.save()
         return Response(SprintPlanningSerializer(planning).data)
+
+    @action(detail=False, methods=['get'])
+    def open_retro_actions(self, request, project_id=None):
+        """Improvement actions from past retrospectives still owed.
+
+        Scrum Guide 2020 — impactful retrospective improvements are carried into
+        the next Sprint Planning so they are not lost. These surface as the
+        carry-forward candidates the team should commit to this Sprint.
+        """
+        qs = RetroActionItem.objects.filter(
+            project_id=project_id,
+            status__in=['open', 'in_progress', 'carried_forward'],
+        )
+        return Response(RetroActionItemSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def commit(self, request, project_id=None, pk=None):
+        """Commit the Sprint plan: a Sprint Goal + a selected set of PBIs.
+
+        Enforces the Scrum Planning outcome — a Sprint is not started until the
+        team commits a Sprint Goal (the *why*) AND selects the Product Backlog
+        Items that serve it (the *what*). Returns 400 with a machine-readable
+        ``code`` BEFORE any state change if either is missing. On success it
+        writes/updates the ``SprintGoal``, assigns items to the Sprint, records
+        committed points on the planning artifact, activates the Sprint, and
+        carries forward still-open retrospective actions.
+        """
+        planning = self.get_object()
+        sprint = planning.sprint
+        goal_text = (request.data.get('goal') or '').strip()
+        item_ids = request.data.get('item_ids', [])
+
+        if not goal_text:
+            return Response(
+                {'detail': 'A Sprint Goal is required to commit the plan.',
+                 'code': 'sprint_goal_required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not item_ids:
+            return Response(
+                {'detail': 'Select at least one Product Backlog Item to commit.',
+                 'code': 'no_items_selected'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        items = BacklogItem.objects.filter(
+            id__in=item_ids, backlog__project_id=project_id,
+        )
+        if items.count() != len(set(item_ids)):
+            return Response(
+                {'detail': 'One or more selected items do not belong to this project backlog.',
+                 'code': 'invalid_items'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --- commit (no failures past this point) ---
+        items.update(sprint=sprint)
+        committed = items.aggregate(total=Sum('story_points'))['total'] or 0
+
+        goal_obj, _ = SprintGoal.objects.update_or_create(
+            sprint=sprint,
+            defaults={
+                'description': goal_text,
+                'success_criteria': request.data.get('success_criteria', []),
+                'created_by': request.user,
+            },
+        )
+
+        sprint.goal = goal_text
+        sprint.status = 'active'
+        if not sprint.start_date:
+            sprint.start_date = timezone.now().date()
+        sprint.save(update_fields=['goal', 'status', 'start_date', 'updated_at'])
+
+        planning.committed_story_points = committed
+        planning.status = 'completed'
+        planning.save(update_fields=['committed_story_points', 'status', 'updated_at'])
+
+        carried = self._carry_forward_retro_actions(project_id, sprint)
+
+        return Response({
+            'sprint': SprintSerializer(sprint).data,
+            'sprint_goal': SprintGoalSerializer(goal_obj).data,
+            'committed_story_points': committed,
+            'committed_item_count': items.count(),
+            'carried_forward_actions': carried,
+        })
+
+    @staticmethod
+    def _carry_forward_retro_actions(project_id, sprint):
+        """Mark still-open retro actions as carried forward into ``sprint``."""
+        open_actions = RetroActionItem.objects.filter(
+            project_id=project_id,
+            status__in=['open', 'in_progress', 'carried_forward'],
+        ).exclude(carried_to_sprint=sprint).exclude(sprint=sprint)
+        carried = []
+        for a in open_actions:
+            a.status = 'carried_forward'
+            a.carried_to_sprint = sprint
+            a.save(update_fields=['status', 'carried_to_sprint', 'updated_at'])
+            carried.append(a.id)
+        return carried
 
 
 class IncrementViewSet(ProjectFilterMixin, viewsets.ModelViewSet):

@@ -13,6 +13,8 @@ from .views import (
     DoDChecklistEntryViewSet,
     ScrumSeedDemoView,
     ScrumClearDemoView,
+    ProductGoalViewSet,
+    RetroActionItemViewSet,
 )
 
 
@@ -34,6 +36,25 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/backlog/initialize/',
         ProductBacklogViewSet.as_view({'post': 'initialize'}),
         name='scrum-backlog-initialize'
+    ),
+
+    # =========================================================================
+    # PRODUCT GOALS (NEW — backlog-item traceability)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/scrum/product-goals/',
+        ProductGoalViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='scrum-product-goals-list'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/product-goals/<int:pk>/',
+        ProductGoalViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='scrum-product-goals-detail'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/product-goals/<int:pk>/achieve/',
+        ProductGoalViewSet.as_view({'post': 'achieve'}),
+        name='scrum-product-goals-achieve'
     ),
 
     # =========================================================================
@@ -137,6 +158,11 @@ urlpatterns = [
         name='scrum-reviews-detail'
     ),
     path(
+        'projects/<int:project_id>/scrum/reviews/<int:pk>/record/',
+        SprintReviewViewSet.as_view({'post': 'record'}),
+        name='scrum-reviews-record'
+    ),
+    path(
         'projects/<int:project_id>/scrum/retrospectives/',
         SprintRetrospectiveViewSet.as_view({'get': 'list', 'post': 'create'}),
         name='scrum-retros-list'
@@ -145,6 +171,25 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/retrospectives/<int:pk>/',
         SprintRetrospectiveViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='scrum-retros-detail'
+    ),
+
+    # =========================================================================
+    # RETRO ACTION ITEMS (NEW — carry-forward improvement actions)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/scrum/retro-actions/',
+        RetroActionItemViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='scrum-retro-actions-list'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/retro-actions/<int:pk>/',
+        RetroActionItemViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='scrum-retro-actions-detail'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/retro-actions/<int:pk>/resolve/',
+        RetroActionItemViewSet.as_view({'post': 'resolve'}),
+        name='scrum-retro-actions-resolve'
     ),
 
     # =========================================================================
@@ -226,6 +271,16 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/sprint-planning/<int:pk>/complete_meeting/',
         SprintPlanningViewSet.as_view({'post': 'complete_meeting'}),
         name='scrum-planning-complete'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/sprint-planning/<int:pk>/commit/',
+        SprintPlanningViewSet.as_view({'post': 'commit'}),
+        name='scrum-planning-commit'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/sprint-planning/open_retro_actions/',
+        SprintPlanningViewSet.as_view({'get': 'open_retro_actions'}),
+        name='scrum-planning-open-retro-actions'
     ),
 
     # =========================================================================

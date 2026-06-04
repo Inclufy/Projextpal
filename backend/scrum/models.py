@@ -15,6 +15,42 @@ class ProductBacklog(models.Model):
         return f"Backlog for {self.project.name}"
 
 
+class ProductGoal(models.Model):
+    """Scrum Product Goal — the single, long-term objective the Product Backlog
+    serves (Scrum Guide 2020). Backlog items trace to a Product Goal so the
+    team can show how each Sprint advances the product.
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('achieved', 'Achieved'),
+        ('abandoned', 'Abandoned'),
+    ]
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.CASCADE, related_name='scrum_product_goals'
+    )
+    backlog = models.ForeignKey(
+        ProductBacklog, on_delete=models.CASCADE, related_name='product_goals',
+        null=True, blank=True,
+    )
+    title = models.CharField(max_length=300, default='New Product Goal')
+    description = models.TextField(blank=True, null=True)
+    target_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    order = models.IntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='scrum_product_goals_created',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return f"Product Goal: {self.title}"
+
+
 class BacklogItem(models.Model):
     """Product Backlog Item (User Story, Bug, Task, etc.)"""
     TYPE_CHOICES = [
@@ -50,6 +86,11 @@ class BacklogItem(models.Model):
     
     # Parent for sub-tasks or epic linkage
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='children')
+
+    # Product Goal traceability (Scrum Guide 2020 — every PBI should serve the Product Goal)
+    product_goal = models.ForeignKey(
+        'ProductGoal', on_delete=models.SET_NULL, null=True, blank=True, related_name='items'
+    )
     
     # Assignment
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='scrum_assigned_items')
@@ -434,6 +475,55 @@ class SprintRetrospective(models.Model):
 
     def __str__(self):
         return f"Retro: {self.sprint.name} - {self.date}"
+
+
+class RetroActionItem(models.Model):
+    """A single, trackable retrospective improvement action.
+
+    Scrum Guide 2020 — "the most impactful improvements are addressed as soon
+    as possible. They may even be added to the Sprint Backlog for the next
+    Sprint." Open actions surface in the next Sprint Planning so they are not
+    lost; an unfinished action carries forward to the following sprint.
+    """
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+        ('carried_forward', 'Carried Forward'),
+    ]
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.CASCADE, related_name='scrum_retro_actions'
+    )
+    sprint = models.ForeignKey(
+        Sprint, on_delete=models.CASCADE, related_name='retro_action_items',
+        help_text='Sprint whose retrospective raised this action',
+    )
+    description = models.TextField()
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='scrum_retro_actions_owned',
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    # When carried forward, the sprint it was carried into (the next planning's sprint)
+    carried_to_sprint = models.ForeignKey(
+        Sprint, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='carried_in_retro_actions',
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='scrum_retro_actions_created',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['status', '-created_at']
+
+    def is_open(self):
+        return self.status in ('open', 'in_progress', 'carried_forward')
+
+    def __str__(self):
+        return f"Action [{self.status}]: {self.description[:40]}"
 
 
 class Velocity(models.Model):

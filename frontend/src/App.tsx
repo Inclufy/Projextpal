@@ -173,6 +173,8 @@ const ScrumRetrospective = lazy(() => import('./pages/scrum/ScrumRetrospective')
 const ScrumSprintPlanning = lazy(() => import('@/pages/scrum/ScrumSprintPlanning'));
 const ScrumSprintReview = lazy(() => import('@/pages/scrum/ScrumSprintReview'));
 const ScrumIncrements = lazy(() => import('@/pages/scrum/ScrumIncrements'));
+const ScrumProductGoals = lazy(() => import('@/pages/scrum/ScrumProductGoals'));
+const ScrumRetroActions = lazy(() => import('@/pages/scrum/ScrumRetroActions'));
 
 // Kanban Pages
 const KanbanOverview = lazy(() => import('./pages/kanban/KanbanOverview'));
@@ -914,6 +916,8 @@ const App = () => (
               <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/increments" element={<ProtectedPage><ScrumIncrements /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/product-goals" element={<ProtectedPage><ScrumProductGoals /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/retro-actions" element={<ProtectedPage><ScrumRetroActions /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Kanban Methodology Routes                    */}
