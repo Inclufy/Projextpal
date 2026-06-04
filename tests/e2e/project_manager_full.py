@@ -548,6 +548,12 @@ def walk_prince2(c: Client, r: Report, sf: SaveFailures, pid: int) -> None:
     )
     r.record(area, "work-package create", s, "POST")
     sf.record(area, "work-package create", s, resp)
+    wp_id = None
+    if 200 <= s < 300:
+        try:
+            wp_id = json.loads(resp).get("id")
+        except ValueError:
+            pass
 
     # Highlight report
     s, resp = c.post(
@@ -582,6 +588,99 @@ def walk_prince2(c: Client, r: Report, sf: SaveFailures, pid: int) -> None:
     )
     r.record(area, "product create", s, "POST")
     sf.record(area, "product create", s, resp)
+    product_id = None
+    if 200 <= s < 300:
+        try:
+            product_id = json.loads(resp).get("id")
+        except ValueError:
+            pass
+
+    # ----------------------------------------------------------------------
+    # WP -> Task assignment & roll-up (regression net for the 2026-06-04
+    # "Tasks under Work Packages" wiring). A task must be creatable with a
+    # work_package + product FK + a required milestone, and must then roll
+    # up under its WP both via the ?work_package= filter and the
+    # WorkPackageSerializer.task_count field. PRINCE2 doctrine-fidelity
+    # audits miss this because it's a usability/data-model gap, not a
+    # methodology gap — so it lives here, in the user-journey suite.
+    # ----------------------------------------------------------------------
+    if wp_id:
+        # Project-scoped milestone (Task.milestone is REQUIRED).
+        s, resp = c.post(
+            "/api/v1/projects/milestones/",
+            body={
+                "project": pid,
+                "name": "E2E PRINCE2 WP milestone",
+                "description": "Auto-created for WP-task roll-up",
+                "start_date": TODAY.isoformat(),
+                "end_date": NEXT_WEEK.isoformat(),
+                "status": "pending",
+            },
+        )
+        r.record(area, "wp-rollup milestone create", s, "POST")
+        sf.record(area, "wp-rollup milestone create", s, resp)
+        ms_id = None
+        if 200 <= s < 300:
+            try:
+                ms_id = json.loads(resp).get("id")
+            except ValueError:
+                pass
+
+        if ms_id:
+            # Task linked to the WP (+ optional deliverable/product).
+            task_body = {
+                "title": "E2E WP-linked task",
+                "milestone": ms_id,
+                "work_package": wp_id,
+                "status": "todo",
+            }
+            if product_id:
+                task_body["product"] = product_id
+            s, resp = c.post("/api/v1/projects/tasks/", body=task_body)
+            r.record(area, "wp-linked task create", s, "POST")
+            sf.record(area, "wp-linked task create", s, resp)
+            task_id = None
+            wp_echo = None
+            ms_name_echo = None
+            if 200 <= s < 300:
+                try:
+                    tj = json.loads(resp)
+                    task_id = tj.get("id")
+                    wp_echo = tj.get("work_package")
+                    ms_name_echo = tj.get("milestone_name")
+                except ValueError:
+                    pass
+            # Serializer must echo the FK + denormalized milestone_name.
+            ok_echo = 200 if (wp_echo == wp_id and ms_name_echo) else 500
+            r.record(area, "wp-linked task echoes work_package+milestone_name", ok_echo, "GET")
+            sf.record(area, "wp-linked task echoes work_package+milestone_name", ok_echo,
+                      f"work_package={wp_echo} expected={wp_id} milestone_name={ms_name_echo!r}")
+
+            # Roll-up A: ?work_package= filter returns the task.
+            s, resp = c.get(f"/api/v1/projects/tasks/?work_package={wp_id}")
+            found = False
+            if 200 <= s < 300:
+                try:
+                    data = json.loads(resp)
+                    rows = data if isinstance(data, list) else data.get("results", [])
+                    found = any(t.get("id") == task_id for t in rows)
+                except ValueError:
+                    pass
+            r.record(area, "task rolls up via ?work_package= filter", 200 if found else 500, "GET")
+            sf.record(area, "task rolls up via ?work_package= filter", 200 if found else 500,
+                      resp[:300])
+
+            # Roll-up B: WorkPackageSerializer.task_count reflects the task.
+            s, resp = c.get(f"{base}/work-packages/{wp_id}/")
+            tc_ok = 500
+            if 200 <= s < 300:
+                try:
+                    tc = json.loads(resp).get("task_count")
+                    tc_ok = 200 if (isinstance(tc, int) and tc >= 1) else 500
+                except ValueError:
+                    pass
+            r.record(area, "WorkPackage.task_count >= 1", tc_ok, "GET")
+            sf.record(area, "WorkPackage.task_count >= 1", tc_ok, resp[:300])
 
     # Lesson — TYPE = positive/negative; CATEGORY = process/technology/people/...
     s, resp = c.post(
