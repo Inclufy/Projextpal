@@ -16,7 +16,7 @@ from .models import (
     WaterfallDesignDocument, WaterfallTask, WaterfallTestCase,
     WaterfallMilestone, WaterfallGanttTask, WaterfallChangeRequest,
     WaterfallDeploymentChecklist, WaterfallMaintenanceItem,
-    WaterfallBudget, WaterfallBudgetItem,
+    WaterfallBudget, WaterfallBudgetItem, EarnedValueRecord,
     WaterfallRisk, WaterfallIssue, WaterfallDeliverable, WaterfallBaseline
 )
 from .serializers import (
@@ -27,6 +27,7 @@ from .serializers import (
     WaterfallGanttTaskSerializer, WaterfallChangeRequestSerializer,
     WaterfallDeploymentChecklistSerializer, WaterfallMaintenanceItemSerializer,
     WaterfallBudgetSerializer, WaterfallBudgetItemSerializer,
+    EarnedValueRecordSerializer,
     WaterfallDashboardSerializer,
     WaterfallRiskSerializer, WaterfallIssueSerializer,
     WaterfallDeliverableSerializer, WaterfallBaselineSerializer
@@ -869,6 +870,42 @@ class WaterfallBudgetViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def recompute(self, request, project_id=None):
+        """Derive PV/EV/AC from budget line items + phase progress and persist
+        the snapshot. Optionally records a historical EarnedValueRecord for the
+        current reporting period when persist=true is passed."""
+        project = _gated_project_lookup(request.user, project_id)
+        budget, _ = WaterfallBudget.objects.get_or_create(project=project)
+        metrics = budget.recompute_evm(commit=True)
+        if str(request.data.get('snapshot', '')).lower() in ('1', 'true', 'yes'):
+            today = timezone.now().date()
+            EarnedValueRecord.objects.update_or_create(
+                project=project,
+                period_end=today,
+                defaults={
+                    'period_start': request.data.get('period_start') or today,
+                    'planned_value': budget.planned_value,
+                    'earned_value': budget.earned_value,
+                    'actual_cost': budget.actual_cost,
+                    'recorded_by': request.user if request.user.is_authenticated else None,
+                },
+            )
+        return Response(WaterfallBudgetSerializer(budget).data)
+
+
+class EarnedValueRecordViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
+    """Historical EVM series for a Waterfall project (PMBoK status periods)."""
+    queryset = EarnedValueRecord.objects.all()
+    serializer_class = EarnedValueRecordSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        serializer.save(
+            project=project,
+            recorded_by=self.request.user if self.request.user.is_authenticated else None,
+        )
 
 
 class WaterfallBudgetItemViewSet(viewsets.ModelViewSet):

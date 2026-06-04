@@ -6,7 +6,7 @@ from .models import (
     WaterfallDesignDocument, WaterfallTask, WaterfallTestCase,
     WaterfallMilestone, WaterfallGanttTask, WaterfallChangeRequest,
     WaterfallDeploymentChecklist, WaterfallMaintenanceItem,
-    WaterfallBudget, WaterfallBudgetItem
+    WaterfallBudget, WaterfallBudgetItem, EarnedValueRecord
 )
 
 User = get_user_model()
@@ -253,27 +253,84 @@ class WaterfallBudgetSerializer(serializers.ModelSerializer):
     remaining = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     utilization_percentage = serializers.SerializerMethodField()
     by_phase = serializers.SerializerMethodField()
-    
+    # EVM (PMBoK 7 §4.5) — read-only, derived snapshot
+    cost_variance = serializers.SerializerMethodField()
+    schedule_variance = serializers.SerializerMethodField()
+    cpi = serializers.SerializerMethodField()
+    spi = serializers.SerializerMethodField()
+
     class Meta:
         model = WaterfallBudget
         fields = [
             'id', 'total_budget', 'currency', 'contingency_percentage',
             'total_spent', 'remaining', 'utilization_percentage',
+            'planned_value', 'earned_value', 'actual_cost',
+            'cost_variance', 'schedule_variance', 'cpi', 'spi',
             'by_phase', 'items', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
-    
+        read_only_fields = [
+            'created_at', 'updated_at',
+            'planned_value', 'earned_value', 'actual_cost',
+        ]
+
     def get_utilization_percentage(self, obj):
         if obj.total_budget == 0:
             return 0
         return round((obj.total_spent / obj.total_budget) * 100, 1)
-    
+
     def get_by_phase(self, obj):
         from django.db.models import Sum
         return list(obj.items.values('phase__name').annotate(
             planned=Sum('planned_amount'),
             actual=Sum('actual_amount')
         ))
+
+    def get_cost_variance(self, obj):
+        return float(obj.cost_variance)
+
+    def get_schedule_variance(self, obj):
+        return float(obj.schedule_variance)
+
+    def get_cpi(self, obj):
+        return obj.cpi
+
+    def get_spi(self, obj):
+        return obj.spi
+
+
+class EarnedValueRecordSerializer(serializers.ModelSerializer):
+    cost_variance = serializers.SerializerMethodField()
+    schedule_variance = serializers.SerializerMethodField()
+    cpi = serializers.SerializerMethodField()
+    spi = serializers.SerializerMethodField()
+    recorded_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EarnedValueRecord
+        fields = [
+            'id', 'period_start', 'period_end',
+            'planned_value', 'earned_value', 'actual_cost',
+            'cost_variance', 'schedule_variance', 'cpi', 'spi',
+            'notes', 'recorded_by', 'recorded_by_name', 'created_at',
+        ]
+        read_only_fields = ['recorded_by', 'created_at']
+
+    def get_cost_variance(self, obj):
+        return float(obj.cost_variance)
+
+    def get_schedule_variance(self, obj):
+        return float(obj.schedule_variance)
+
+    def get_cpi(self, obj):
+        return obj.cpi
+
+    def get_spi(self, obj):
+        return obj.spi
+
+    def get_recorded_by_name(self, obj):
+        if obj.recorded_by:
+            return obj.recorded_by.get_full_name() or obj.recorded_by.username
+        return None
 
 
 # Dashboard Serializer

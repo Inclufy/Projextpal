@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Euro, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Euro, Pencil, Trash2, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 
 const WaterfallBudget = () => {
@@ -25,6 +25,7 @@ const WaterfallBudget = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [recomputing, setRecomputing] = useState(false);
   const [form, setForm] = useState({ name: "", amount: "", category: "development", status: "planned" });
   const token = localStorage.getItem("access_token"); const headers: Record<string, string> = { Authorization: `Bearer ${token}` }; const jsonHeaders = { ...headers, "Content-Type": "application/json" };
   const fetchData = async () => { try { const [bRes, biRes] = await Promise.all([fetch(`/api/v1/projects/${id}/waterfall/budget/`, { headers }), fetch(`/api/v1/projects/${id}/waterfall/budget/items/`, { headers })]); if (bRes.ok) setBudget(await bRes.json()); if (biRes.ok) { const d = await biRes.json(); setItems(Array.isArray(d) ? d : d.results || []); } } catch (err) { console.error(err); } finally { setLoading(false); } };
@@ -33,13 +34,36 @@ const WaterfallBudget = () => {
   const openEdit = (bi: any) => { setEditing(bi); setForm({ name: bi.name || "", amount: String(bi.amount || ""), category: bi.category || "development", status: bi.status || "planned" }); setDialogOpen(true); };
   const handleSave = async () => { if (!form.name || !form.amount) { toast.error("Naam en bedrag verplicht"); return; } setSubmitting(true); try { const body = { ...form, amount: parseFloat(form.amount) }; const url = editing ? `/api/v1/projects/${id}/waterfall/budget/items/${editing.id}/` : `/api/v1/projects/${id}/waterfall/budget/items/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success("Opgeslagen"); setDialogOpen(false); fetchData(); } else toast.error("Opslaan mislukt"); } catch { toast.error("Opslaan mislukt"); } finally { setSubmitting(false); } };
   const handleDelete = async (biId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/waterfall/budget/items/${biId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
+  const recomputeEvm = async () => { setRecomputing(true); try { const r = await fetch(`/api/v1/projects/${id}/waterfall/budget/recompute/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ snapshot: true }) }); if (r.ok) { setBudget(await r.json()); toast.success(pt("Earned value recomputed")); } else toast.error(pt("Recompute failed")); } catch { toast.error(pt("Recompute failed")); } finally { setRecomputing(false); } };
   const totalBudget = budget?.total_budget || 0; const totalSpent = budget?.total_spent || items.filter(i => i.status === "spent").reduce((s, i) => s + parseFloat(i.amount || 0), 0); const pct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
+  const fmtIdx = (v: number | null | undefined) => (v === null || v === undefined ? "—" : Number(v).toFixed(2));
+  const num = (v: any) => Number(v || 0);
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
       <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Euro className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("Budget")}</h1></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button></div>
       <div className="grid grid-cols-3 gap-4"><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Total Budget")}</p><p className="text-2xl font-bold">{formatCurrency(totalBudget)}</p></CardContent></Card><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Spent")}</p><p className="text-2xl font-bold">{formatCurrency(totalSpent)}</p><Progress value={pct} className="h-2 mt-2" /></CardContent></Card><Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Remaining")}</p><p className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-500" : "text-green-500"}`}>{formatCurrency(totalBudget - totalSpent)}</p></CardContent></Card></div>
+
+      {/* Earned Value Management (PMBoK) */}
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-cyan-500" /><h2 className="text-lg font-semibold">{pt("Earned Value")}</h2><Badge variant="outline" className="text-xs">EVM</Badge></div>
+            <Button variant="outline" size="sm" onClick={recomputeEvm} disabled={recomputing} className="gap-2">{recomputing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} {pt("Recompute")}</Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div><p className="text-xs text-muted-foreground">{pt("Planned Value")} (PV)</p><p className="text-xl font-bold">{formatCurrency(num(budget?.planned_value))}</p></div>
+            <div><p className="text-xs text-muted-foreground">{pt("Earned Value")} (EV)</p><p className="text-xl font-bold">{formatCurrency(num(budget?.earned_value))}</p></div>
+            <div><p className="text-xs text-muted-foreground">{pt("Actual Cost")} (AC)</p><p className="text-xl font-bold">{formatCurrency(num(budget?.actual_cost))}</p></div>
+            <div><p className="text-xs text-muted-foreground">{pt("Cost Variance")} (CV)</p><p className={`text-xl font-bold ${num(budget?.cost_variance) < 0 ? "text-red-500" : "text-green-500"}`}>{formatCurrency(num(budget?.cost_variance))}</p></div>
+            <div><p className="text-xs text-muted-foreground">{pt("Schedule Variance")} (SV)</p><p className={`text-xl font-bold ${num(budget?.schedule_variance) < 0 ? "text-red-500" : "text-green-500"}`}>{formatCurrency(num(budget?.schedule_variance))}</p></div>
+            <div><p className="text-xs text-muted-foreground flex items-center gap-1">CPI / SPI {num(budget?.cpi) >= 1 ? <TrendingUp className="h-3 w-3 text-green-500" /> : <TrendingDown className="h-3 w-3 text-red-500" />}</p><p className="text-xl font-bold"><span className={num(budget?.cpi) < 1 ? "text-red-500" : "text-green-500"}>{fmtIdx(budget?.cpi)}</span> <span className="text-muted-foreground">/</span> <span className={num(budget?.spi) < 1 ? "text-red-500" : "text-green-500"}>{fmtIdx(budget?.spi)}</span></p></div>
+          </div>
+          <p className="text-xs text-muted-foreground">{pt("Derived from budget line items × phase progress. CPI/SPI > 1 means under budget / ahead of schedule.")}</p>
+        </CardContent>
+      </Card>
+
       {items.length === 0 ? <Card className="p-8 text-center"><Euro className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No budget items yet")}</h3></Card> : (
         <Card><CardContent className="p-0"><div className="divide-y">{items.map(bi => (<div key={bi.id} className="flex items-center justify-between p-4 hover:bg-muted/50"><div><p className="font-medium">{bi.name}</p><div className="flex gap-2 mt-1"><Badge variant="outline" className="text-xs">{bi.category}</Badge><Badge variant={bi.status === "spent" ? "default" : "secondary"} className="text-xs">{bi.status}</Badge></div></div><div className="flex items-center gap-2"><span className="font-bold">{formatCurrency(parseFloat(bi.amount))}</span><Button variant="ghost" size="sm" onClick={() => openEdit(bi)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(bi.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></div>))}</div></CardContent></Card>
       )}

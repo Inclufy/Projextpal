@@ -17,6 +17,7 @@ from .views import (
     WaterfallMaintenanceItemViewSet,
     WaterfallBudgetViewSet,
     WaterfallBudgetItemViewSet,
+    EarnedValueRecordViewSet,
     WaterfallRiskViewSet,
     WaterfallIssueViewSet,
     WaterfallDeliverableViewSet,
@@ -92,8 +93,13 @@ urlpatterns = [
     
     # Budget
     path('projects/<int:project_id>/waterfall/budget/', WaterfallBudgetViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'update'}), name='waterfall-budget'),
+    path('projects/<int:project_id>/waterfall/budget/recompute/', WaterfallBudgetViewSet.as_view({'post': 'recompute'}), name='waterfall-budget-recompute'),
     path('projects/<int:project_id>/waterfall/budget/items/', WaterfallBudgetItemViewSet.as_view({'get': 'list', 'post': 'create'}), name='waterfall-budget-items-list'),
     path('projects/<int:project_id>/waterfall/budget/items/<int:pk>/', WaterfallBudgetItemViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='waterfall-budget-items-detail'),
+
+    # Earned Value (EVM) historical series
+    path('projects/<int:project_id>/waterfall/evm-records/', EarnedValueRecordViewSet.as_view({'get': 'list', 'post': 'create'}), name='waterfall-evm-list'),
+    path('projects/<int:project_id>/waterfall/evm-records/<int:pk>/', EarnedValueRecordViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='waterfall-evm-detail'),
 
     # Risk Management
     path('projects/<int:project_id>/waterfall/risks/', WaterfallRiskViewSet.as_view({'get': 'list', 'post': 'create'}), name='waterfall-risks-list'),

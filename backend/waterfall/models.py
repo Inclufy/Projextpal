@@ -478,6 +478,56 @@ class WaterfallBudget(models.Model):
             return None
         return float(self.earned_value or 0) / float(self.planned_value)
 
+    # ------------------------------------------------------------------
+    # EVM derivation from budget line items + phase progress
+    # ------------------------------------------------------------------
+    def recompute_evm(self, commit=True):
+        """Derive PV/EV/AC from budget line items instead of hand-entry.
+
+        AC = Σ actual_amount over all items (cost already incurred).
+        EV = Σ planned_amount × (phase.progress / 100) — value earned in
+             proportion to how far each item's phase has progressed; items
+             with no phase fall back to 100% if their actual_amount > 0 else 0.
+        PV = Σ planned_amount for items whose phase is scheduled to be
+             underway by now (status in_progress / completed). Items with no
+             phase count their planned_amount as scheduled.
+
+        Returns a dict of the recomputed metrics. Persists the snapshot to
+        the WaterfallBudget row when commit=True.
+        """
+        from decimal import Decimal
+        ac = Decimal('0')
+        ev = Decimal('0')
+        pv = Decimal('0')
+        for item in self.items.select_related('phase').all():
+            planned = item.planned_amount or Decimal('0')
+            actual = item.actual_amount or Decimal('0')
+            ac += actual
+            phase = item.phase
+            if phase is None:
+                # Unphased item: earned if money was spent, always scheduled.
+                ev += planned if actual > 0 else Decimal('0')
+                pv += planned
+            else:
+                progress = Decimal(str(phase.progress or 0)) / Decimal('100')
+                ev += planned * progress
+                if phase.status in ('in_progress', 'completed'):
+                    pv += planned
+        self.planned_value = pv
+        self.earned_value = ev
+        self.actual_cost = ac
+        if commit:
+            self.save(update_fields=['planned_value', 'earned_value', 'actual_cost', 'updated_at'])
+        return {
+            'planned_value': float(pv),
+            'earned_value': float(ev),
+            'actual_cost': float(ac),
+            'cost_variance': float(self.cost_variance),
+            'schedule_variance': float(self.schedule_variance),
+            'cpi': self.cpi,
+            'spi': self.spi,
+        }
+
 
 class EarnedValueRecord(models.Model):
     """Per-reporting-period EVM snapshot for a Waterfall project.
