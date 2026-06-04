@@ -982,7 +982,9 @@ const contentSections = useMemo(() => {
   }
   if (currentSection.trim()) rawSections.push(currentSection.trim());
 
-  const sections = rawSections.slice(0, 4);
+  // Render ALL sections — never truncate the lesson body. (Cap is a sanity
+  // bound for pathological inputs, far above any real transcript.)
+  const sections = rawSections.slice(0, 12);
 
   const icons = [
     <Target className="w-8 h-8 text-white" />,
@@ -999,42 +1001,27 @@ const contentSections = useMemo(() => {
   ];
 
   return sections.map((sectionText, index) => {
-    // Use API visual type for the first section, auto-detect for subsequent
+    // The topic visual is DECORATIVE — it only leads the first section and
+    // only when the API explicitly configured one. The canned topic templates
+    // (methodology/project_def/…) render hardcoded graphics that ignore the
+    // transcript, so they must never REPLACE the lesson content. The actual
+    // lesson text is always rendered below via renderMarkdownBlock, so every
+    // lesson shows its own content (this fixes PRINCE2 et al. where every
+    // transcript matched the generic "methodology" visual).
     const visualType = index === 0 && apiVisualType !== 'auto' ? apiVisualType : 'auto';
     const visualData = index === 0 ? apiVisualData : null;
+    const showDecorativeVisual =
+      index === 0 && (visualType !== 'auto' || !!apiVisualData?.preview_image_url);
 
-    // Get topic type for title/subtitle (either from API or auto-detected)
-    const resolvedType = visualType !== 'auto' ? visualType : detectTopicType(sectionText);
-
-    let title = '';
-    let subtitle = '';
-
-    if (resolvedType === 'project_def') {
-      title = isNL ? 'Wat is een Project?' : 'What is a Project?';
-      subtitle = isNL ? 'De 3 kernkenmerken' : 'The 3 core characteristics';
-    } else if (resolvedType === 'triple_constraint') {
-      title = isNL ? 'De Triple Constraint' : 'The Triple Constraint';
-      subtitle = isNL ? 'Tijd, Budget & Scope' : 'Time, Budget & Scope';
-    } else if (resolvedType === 'pm_role') {
-      title = isNL ? 'De Rol van de PM' : 'The Role of the PM';
-      subtitle = isNL ? 'Verantwoordelijkheden' : 'Responsibilities';
-    } else if (resolvedType === 'comparison') {
-      title = isNL ? 'Project vs. Operatie' : 'Project vs. Operation';
-      subtitle = isNL ? 'Ken het verschil' : 'Know the difference';
-    } else if (resolvedType === 'lifecycle') {
-      title = isNL ? 'Projectlevenscyclus' : 'Project Lifecycle';
-      subtitle = isNL ? 'De fasen van een project' : 'The phases of a project';
-    } else if (resolvedType === 'stakeholder') {
-      title = isNL ? 'Stakeholder Management' : 'Stakeholder Management';
-      subtitle = isNL ? 'Belanghebbenden in kaart' : 'Mapping stakeholders';
-    } else if (resolvedType === 'risk') {
-      title = isNL ? 'Risicomanagement' : 'Risk Management';
-      subtitle = isNL ? 'Identificeer & beheers risico\'s' : 'Identify & manage risks';
-    } else {
-      const firstSentence = sectionText.split(/[.!?]/)[0]?.trim() || '';
-      title = firstSentence.length > 60 ? firstSentence.substring(0, 60) + '...' : firstSentence;
-      subtitle = `${isNL ? 'Deel' : 'Part'} ${index + 1}`;
-    }
+    // Title/subtitle derive from the section's OWN text so each lesson section
+    // is labelled by its real content, not a generic topic name. Strip leading
+    // markdown markers (**, ##, -, >) so the header reads cleanly.
+    const firstSentence = (sectionText.split(/[.!?\n]/)[0] || '')
+      .replace(/^[#>\-\*\s]+/, '')
+      .replace(/\*\*/g, '')
+      .trim();
+    const title = firstSentence.length > 60 ? firstSentence.substring(0, 60) + '…' : firstSentence;
+    const subtitle = `${isNL ? 'Deel' : 'Part'} ${index + 1} ${isNL ? 'van' : 'of'} ${sections.length}`;
 
     return {
       title,
@@ -1043,13 +1030,21 @@ const contentSections = useMemo(() => {
       color: colors[index % 4],
       content: '', // No longer using HTML strings
       reactContent: (
-        <VisualTemplateRenderer
-          visualType={visualType}
-          visualData={visualData}
-          content={sectionText}
-          isNL={isNL}
-          index={index}
-        />
+        <div className="space-y-6">
+          {showDecorativeVisual && (
+            <VisualTemplateRenderer
+              visualType={visualType}
+              visualData={visualData}
+              content={sectionText}
+              isNL={isNL}
+              index={index}
+            />
+          )}
+          {/* Always render the real lesson content */}
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            {renderMarkdownBlock(sectionText)}
+          </div>
+        </div>
       ),
       keyPoints: [] as string[],
     };
