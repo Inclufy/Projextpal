@@ -923,6 +923,19 @@ class LessonsLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         positives = [l for l in lessons if l.lesson_type == 'positive']
         negatives = [l for l in lessons if l.lesson_type == 'negative']
 
+        # Ingest lessons captured via the project's lessons-learned Survey
+        # (surveys.ArchivedLesson) so the survey feeds the PRINCE2 Lessons
+        # Report rather than living in a separate silo.
+        survey_insights = []
+        try:
+            from surveys.models import ArchivedLesson
+            for al in ArchivedLesson.objects.filter(project=project).select_related('survey'):
+                for insight in al.insights_list():
+                    src = al.survey.name if al.survey_id else 'Lessons-learned survey'
+                    survey_insights.append(f'- {insight} (from: {src})')
+        except Exception:
+            survey_insights = []
+
         def _join(items):
             return '\n'.join(
                 f'- {l.title}: {l.recommendation or l.description or ""}'.rstrip(': ').strip()
@@ -935,15 +948,19 @@ class LessonsLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         )
         report.title = report.title or f'Lessons Report — {project.name}'
         report.summary = (
-            f'{len(lessons)} lesson(s) captured across the project '
-            f'({len(positives)} positive, {len(negatives)} negative).'
+            f'{len(lessons)} lesson(s) from the Lessons Log '
+            f'({len(positives)} positive, {len(negatives)} negative) '
+            f'plus {len(survey_insights)} insight(s) from the lessons-learned survey.'
         )
-        report.what_went_well = _join(positives)
+        well = _join(positives)
+        if survey_insights:
+            well = (well + '\n' if well else '') + '\n'.join(survey_insights)
+        report.what_went_well = well
         report.what_went_badly = _join(negatives)
         report.recommendations = _join(
             [l for l in lessons if (l.recommendation or '').strip()]
         )
-        report.lessons_count = len(lessons)
+        report.lessons_count = len(lessons) + len(survey_insights)
         report.compiled_by = request.user
         report.report_date = timezone.now().date()
         report.save()
@@ -960,8 +977,9 @@ class LessonsLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         can apply them before this project starts. Scoped to projects the user
         can access; excludes the current project."""
         project = self.get_project()
+        accessible = self._accessible_project_qs()
         prior = (
-            LessonsLog.objects.filter(project__in=self._accessible_project_qs())
+            LessonsLog.objects.filter(project__in=accessible)
             .exclude(project_id=project.id)
             .select_related('project')
             .order_by('-date_logged', '-created_at')[:25]
@@ -970,7 +988,36 @@ class LessonsLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         for l in prior:
             row = LessonsLogSerializer(l).data
             row['project_name'] = l.project.name
+            row['source'] = 'lessons_log'
             data.append(row)
+
+        # Also surface lessons captured via lessons-learned Surveys on other
+        # projects (surveys.ArchivedLesson), so the team learns from experience
+        # at Starting up a Project regardless of where the lesson was recorded.
+        try:
+            from surveys.models import ArchivedLesson
+            archived = (
+                ArchivedLesson.objects.filter(project__in=accessible)
+                .exclude(project_id=project.id)
+                .select_related('project', 'survey')
+                .order_by('-date', '-created_at')[:25]
+            )
+            for al in archived:
+                for insight in al.insights_list():
+                    data.append({
+                        'title': insight,
+                        'description': '',
+                        'lesson_type': 'positive',
+                        'category': None,
+                        'recommendation': '',
+                        'project_name': al.project.name,
+                        'date_logged': al.date.isoformat() if al.date else None,
+                        'source': 'survey',
+                        'survey_name': al.survey.name if al.survey_id else None,
+                    })
+        except Exception:
+            pass
+
         return Response(data)
 
 

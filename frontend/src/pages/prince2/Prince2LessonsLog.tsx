@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, BookOpen, FileText } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, BookOpen, FileText, ClipboardList, History } from "lucide-react";
 import { toast } from "sonner";
 
 const Prince2LessonsLog = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [lessons, setLessons] = useState<any[]>([]);
+  const [priorLessons, setPriorLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lessonDialog, setLessonDialog] = useState(false);
   const [editingLesson, setEditingLesson] = useState<any>(null);
@@ -29,6 +31,8 @@ const Prince2LessonsLog = () => {
     try {
       const lRes = await fetch(`/api/v1/projects/${id}/prince2/lessons/`, { headers });
       if (lRes.ok) { const d = await lRes.json(); setLessons(Array.isArray(d) ? d : d.results || []); }
+      const pRes = await fetch(`/api/v1/projects/${id}/prince2/lessons/prior_lessons/`, { headers });
+      if (pRes.ok) { const d = await pRes.json(); setPriorLessons(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -85,7 +89,8 @@ const Prince2LessonsLog = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={compileReport} disabled={compiling || lessons.length === 0} className="gap-1" title={pt("Compile a Lessons Report from the log (required for closure)")}>{compiling ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} {pt("Compile Report")}</Button>
+            <Button variant="outline" onClick={() => navigate(`/projects/${id}/monitoring/lessons-surveys`)} className="gap-1" title={pt("Capture lessons through a lessons-learned survey; survey insights feed into the compiled Lessons Report")}><ClipboardList className="h-4 w-4" /> {pt("Lessons-learned survey")}</Button>
+            <Button variant="outline" onClick={compileReport} disabled={compiling || lessons.length === 0} className="gap-1" title={pt("Compile a Lessons Report from the log + survey insights (required for closure)")}>{compiling ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} {pt("Compile Report")}</Button>
             <Button onClick={openCreateLesson} className="gap-1"><Plus className="h-4 w-4" /> {pt("Add")}</Button>
           </div>
         </div>
@@ -114,6 +119,26 @@ const Prince2LessonsLog = () => {
             )}
           </CardContent>
         </Card>
+
+        {priorLessons.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base"><History className="h-4 w-4 text-muted-foreground" /> {pt("Prior lessons to apply")} ({priorLessons.length})</CardTitle>
+              <p className="text-xs text-muted-foreground">{pt("Lessons from earlier projects and lessons-learned surveys — PRINCE2 'Learn from experience' (review before planning).")}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">{priorLessons.map((p, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 border rounded-md">
+                  <Badge variant={p.source === "survey" ? "secondary" : "outline"} className="text-[10px] mt-0.5 shrink-0">{p.source === "survey" ? pt("Survey") : pt("Project log")}</Badge>
+                  <div className="min-w-0">
+                    <p className="text-sm">{p.title}</p>
+                    {(p.project_name || p.survey_name) && <p className="text-[11px] text-muted-foreground">{p.survey_name || p.project_name}</p>}
+                  </div>
+                </div>
+              ))}</div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Dialog open={lessonDialog} onOpenChange={setLessonDialog}>
