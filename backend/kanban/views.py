@@ -12,7 +12,8 @@ from projects.permissions import MethodologyMatchesProjectPermission
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
     CardHistory, CardComment, CardChecklist, ChecklistItem,
-    CumulativeFlowData, KanbanMetrics, WipLimitViolation, WorkPolicy
+    CumulativeFlowData, KanbanMetrics, WipLimitViolation, WorkPolicy,
+    BlockEvent, KaizenAction, KanbanCadence,
 )
 from .serializers import (
     WorkPolicySerializer,
@@ -21,7 +22,8 @@ from .serializers import (
     KanbanSwimlaneSerializer, KanbanCardSerializer, KanbanCardDetailSerializer,
     CardCommentSerializer, CardChecklistSerializer, ChecklistItemSerializer,
     CardHistorySerializer, CumulativeFlowDataSerializer, KanbanMetricsSerializer,
-    WipLimitViolationSerializer
+    WipLimitViolationSerializer,
+    BlockEventSerializer, KaizenActionSerializer, KanbanCadenceSerializer,
 )
 
 
@@ -260,6 +262,12 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         new_swimlane_id = request.data.get('swimlane_id')
         new_order = request.data.get('order')
 
+        # Optional class-of-service override on the move (e.g. promote to
+        # expedite when pulling an incident forward).
+        new_class_of_service = request.data.get('class_of_service')
+        if new_class_of_service in dict(KanbanCard.CLASS_OF_SERVICE_CHOICES):
+            card.class_of_service = new_class_of_service
+
         if new_column_id:
             new_column = get_object_or_404(KanbanColumn, id=new_column_id)
             is_column_change = new_column.id != old_column.id
@@ -274,7 +282,10 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                         id=new_swimlane_id
                     ).first()
 
-                if not self._is_expedite_lane(target_swimlane):
+                # Expedite bypasses WIP via EITHER an expedite class of service
+                # on the card OR a dedicated expedite swimlane (legacy convention).
+                expedite_bypass = card.is_expedite or self._is_expedite_lane(target_swimlane)
+                if not expedite_bypass:
                     # Occupancy excluding this card (it isn't in new_column yet,
                     # but exclude defensively against same-column edge cases).
                     occupancy = new_column.cards.exclude(pk=card.pk).count()
@@ -329,10 +340,26 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def toggle_blocked(self, request, project_id=None, pk=None):
-        """Toggle blocked status"""
+        """Toggle blocked status — and record the block episode.
+
+        Blocking stamps blocked_at and opens a BlockEvent; unblocking clears the
+        stamp and closes the open BlockEvent. This turns the boolean flag into a
+        measurable blocked-time history (aging-WIP + blocked-time tiles).
+        """
         card = self.get_object()
         card.is_blocked = not card.is_blocked
-        card.blocked_reason = request.data.get('reason', '') if card.is_blocked else None
+        if card.is_blocked:
+            reason = request.data.get('reason', '')
+            card.blocked_reason = reason
+            card.blocked_at = timezone.now()
+            BlockEvent.objects.create(card=card, reason=reason, blocked_by=request.user)
+        else:
+            card.blocked_reason = None
+            card.blocked_at = None
+            open_event = card.block_events.filter(unblocked_at__isnull=True).first()
+            if open_event:
+                open_event.unblocked_at = timezone.now()
+                open_event.save(update_fields=['unblocked_at'])
         card.save()
         return Response(KanbanCardSerializer(card).data)
 
@@ -535,8 +562,69 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             board=board,
             date__gte=start_date
         ).order_by('date')
-        
+
         return Response(KanbanMetricsSerializer(metrics, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def flow_metrics(self, request, project_id=None):
+        """Live flow signals that the persisted daily snapshot can't capture:
+        class-of-service mix, aging WIP, blocked cards + blocked time, and SLE
+        breaches. Computed from the cards that are currently in flow.
+        """
+        project = self.get_project()
+        board = get_object_or_404(KanbanBoard, project=project)
+
+        wip_columns = board.columns.filter(column_type__in=['in_progress', 'review'])
+        wip_cards = KanbanCard.objects.filter(column__in=wip_columns).select_related('column')
+
+        now = timezone.now()
+        blocked_cards = []
+        aging_cards = []
+        sle_breaches = []
+        expedite_count = 0
+        total_blocked_hours = 0.0
+        ages = []
+
+        for card in wip_cards:
+            if card.is_expedite:
+                expedite_count += 1
+            age = card.age_in_column_hours
+            if age is not None:
+                ages.append(age)
+                # "Aging" = sitting in its current column longer than 72h.
+                if age > 72:
+                    aging_cards.append({'id': card.id, 'title': card.title,
+                                        'column': card.column.name, 'age_hours': age})
+            if card.is_blocked and card.blocked_at:
+                bh = round((now - card.blocked_at).total_seconds() / 3600, 2)
+                total_blocked_hours += bh
+                blocked_cards.append({'id': card.id, 'title': card.title,
+                                     'reason': card.blocked_reason or '', 'blocked_hours': bh})
+            if card.is_sle_breached:
+                sle_breaches.append({'id': card.id, 'title': card.title,
+                                    'sle_days': card.sle_days, 'flow_age_hours': card.flow_age_hours})
+
+        # Per-class-of-service breakdown over all non-done cards.
+        active_cards = KanbanCard.objects.filter(board=board).exclude(column__is_done_column=True)
+        cos_breakdown = dict(
+            active_cards.values('class_of_service')
+            .annotate(n=Count('id'))
+            .values_list('class_of_service', 'n')
+        )
+
+        return Response({
+            'current_wip': wip_cards.count(),
+            'avg_age_in_column_hours': round(sum(ages) / len(ages), 2) if ages else 0,
+            'oldest_age_in_column_hours': round(max(ages), 2) if ages else 0,
+            'class_of_service_breakdown': cos_breakdown,
+            'expedite_in_flight': expedite_count,
+            'blocked_count': len(blocked_cards),
+            'total_blocked_hours': round(total_blocked_hours, 2),
+            'blocked_cards': blocked_cards,
+            'aging_cards': aging_cards,
+            'sle_breach_count': len(sle_breaches),
+            'sle_breaches': sle_breaches,
+        })
 
 
 # =============================================================================
@@ -625,11 +713,73 @@ class WorkPolicyViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
-        return WorkPolicy.objects.filter(project_id=project_id)
+        qs = WorkPolicy.objects.filter(project_id=project_id)
+        # Column-scoped fetch lets a column header render only its explicit policies.
+        column = self.request.query_params.get('column')
+        if column == 'board':
+            qs = qs.filter(column__isnull=True)
+        elif column:
+            qs = qs.filter(column_id=column)
+        return qs
 
     def perform_create(self, serializer):
         project = self.get_project()
         serializer.save(project=project)
+
+
+class KaizenActionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Continuous-improvement actions raised from the flow."""
+    serializer_class = KaizenActionSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        qs = KaizenAction.objects.filter(project_id=project_id)
+        status_f = self.request.query_params.get('status')
+        if status_f:
+            qs = qs.filter(status=status_f)
+        return qs
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        board = KanbanBoard.objects.filter(project=project).first()
+        serializer.save(project=project, board=serializer.validated_data.get('board') or board,
+                        created_by=self.request.user)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        # Stamp resolved_at when an action is closed out.
+        if instance.status in ('done', 'dropped') and not instance.resolved_at:
+            instance.resolved_at = timezone.now()
+            instance.save(update_fields=['resolved_at'])
+        elif instance.status in ('open', 'in_progress') and instance.resolved_at:
+            instance.resolved_at = None
+            instance.save(update_fields=['resolved_at'])
+
+
+class KanbanCadenceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Recurring Kanban feedback cadences (replenishment, standup, reviews…)."""
+    serializer_class = KanbanCadenceSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return KanbanCadence.objects.filter(project_id=project_id)
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        board = KanbanBoard.objects.filter(project=project).first()
+        serializer.save(project=project, board=serializer.validated_data.get('board') or board)
+
+
+class BlockEventViewSet(ProjectFilterMixin, viewsets.ReadOnlyModelViewSet):
+    """Read-only blocked-time history for the board (audit + tiles)."""
+    serializer_class = BlockEventSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return BlockEvent.objects.filter(card__board__project_id=project_id)
 
 
 class KanbanSeedDemoView(APIView):

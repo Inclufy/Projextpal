@@ -4,7 +4,8 @@ from rest_framework import serializers
 from .models import (
     KanbanBoard, KanbanColumn, KanbanSwimlane, KanbanCard,
     CardHistory, CardComment, CardChecklist, ChecklistItem,
-    CumulativeFlowData, KanbanMetrics, WipLimitViolation
+    CumulativeFlowData, KanbanMetrics, WipLimitViolation,
+    BlockEvent, KaizenAction, KanbanCadence,
 )
 
 
@@ -58,17 +59,30 @@ class KanbanCardSerializer(serializers.ModelSerializer):
     swimlane_name = serializers.CharField(source='swimlane.name', read_only=True)
     comments_count = serializers.SerializerMethodField()
     checklists_count = serializers.SerializerMethodField()
-    
+    # Class-of-service + flow signals surfaced on every card.
+    is_expedite = serializers.BooleanField(read_only=True)
+    is_sle_breached = serializers.BooleanField(read_only=True)
+    age_in_column_hours = serializers.FloatField(read_only=True)
+    flow_age_hours = serializers.FloatField(read_only=True)
+    blocked_hours = serializers.SerializerMethodField()
+
     class Meta:
         model = KanbanCard
         fields = '__all__'
-        read_only_fields = ['board', 'created_at', 'updated_at', 'entered_column_at']
-    
+        read_only_fields = ['board', 'created_at', 'updated_at', 'entered_column_at', 'blocked_at']
+
     def get_comments_count(self, obj):
         return obj.comments.count()
-    
+
     def get_checklists_count(self, obj):
         return obj.checklists.count()
+
+    def get_blocked_hours(self, obj):
+        """Hours the card has been blocked in its currently-open block episode."""
+        if not obj.is_blocked or not obj.blocked_at:
+            return 0
+        from django.utils import timezone
+        return round((timezone.now() - obj.blocked_at).total_seconds() / 3600, 2)
 
 
 class KanbanCardDetailSerializer(KanbanCardSerializer):
@@ -142,7 +156,47 @@ class WipLimitViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class WorkPolicySerializer(serializers.ModelSerializer):
+    column_name = serializers.CharField(source='column.name', read_only=True)
+
     class Meta:
         model = WorkPolicy
-        fields = ['id', 'project', 'title', 'description', 'category', 'is_active', 'order', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'column', 'column_name', 'title', 'description',
+                  'category', 'is_active', 'order', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
+
+
+class BlockEventSerializer(serializers.ModelSerializer):
+    blocked_hours = serializers.FloatField(read_only=True)
+    is_open = serializers.BooleanField(read_only=True)
+    blocked_by_name = serializers.CharField(source='blocked_by.get_full_name', read_only=True)
+    card_title = serializers.CharField(source='card.title', read_only=True)
+
+    class Meta:
+        model = BlockEvent
+        fields = ['id', 'card', 'card_title', 'reason', 'blocked_at', 'unblocked_at',
+                  'blocked_by', 'blocked_by_name', 'blocked_hours', 'is_open']
+        read_only_fields = ['id', 'card', 'blocked_at', 'blocked_by']
+
+
+class KaizenActionSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
+    source_card_title = serializers.CharField(source='source_card.title', read_only=True)
+
+    class Meta:
+        model = KaizenAction
+        fields = ['id', 'project', 'board', 'title', 'description', 'trigger', 'status',
+                  'owner', 'owner_name', 'source_card', 'source_card_title',
+                  'created_by', 'created_at', 'updated_at', 'resolved_at']
+        read_only_fields = ['id', 'project', 'created_by', 'created_at', 'updated_at']
+
+
+class KanbanCadenceSerializer(serializers.ModelSerializer):
+    cadence_type_display = serializers.CharField(source='get_cadence_type_display', read_only=True)
+    frequency_display = serializers.CharField(source='get_frequency_display', read_only=True)
+
+    class Meta:
+        model = KanbanCadence
+        fields = ['id', 'project', 'board', 'name', 'cadence_type', 'cadence_type_display',
+                  'frequency', 'frequency_display', 'day_of_week', 'notes', 'is_active',
+                  'order', 'created_at', 'updated_at']
         read_only_fields = ['id', 'project', 'created_at', 'updated_at']

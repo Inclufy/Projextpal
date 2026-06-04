@@ -2147,6 +2147,34 @@
    "last_test_status": "pass",
    "last_test_response_status": 409,
    "notes": "2026-06-05: Covered by backend/agile/tests_flow.py (9 tests green; full agile suite 9 green). Goal→Epic→Item trace surfaces product_goal + product_goal_title on the item and ?product_goal= filters the board; transition to done with one of two required DoD criteria unmet -> 409 dod_not_met (item stays review, completed_at null) then succeeds once both ticked via the dod endpoint (sets completed_at); only a non-required criterion -> done allowed (vacuously met); WIP limit 1 with one in_progress -> next transition to in_progress 409 wip_limit_exceeded (item unchanged); entering in_progress stamps started_at; assign a team member ok, assign a non-member -> 400 not_a_team_member; flow-metrics computes avg_cycle_time_hours 36.0 over two completed items (24h+48h), throughput 2, current_wip 1, column_counts; cross-tenant transition -> 403/404. Live endpoint needs auth (defer like other authed entries)."
+  },
+  {
+   "id": "FEAT-042",
+   "title": "Kanban: classes of service + column-scoped policies + flow events — class_of_service on KanbanCard (expedite bypasses the column WIP limit even in a normal swimlane and sorts to the top; the move endpoint can promote a card to expedite inline; SLE breach flagged when flow age > sle_days), block episodes (toggle_blocked stamps blocked_at and opens/closes a BlockEvent so blocked time is measurable, not a boolean), column-scoped WorkPolicy (column FK; ?column= / ?column=board filters so policies render at the column header), live flow-metrics endpoint (current WIP, class-of-service breakdown, expedite-in-flight, blocked count + total blocked hours, aging WIP, SLE breach list), and kaizen action + cadence models (improvement loop + feedback cadences; kaizen stamps resolved_at when closed)",
+   "severity": "P2",
+   "area": "kanban",
+   "endpoint": "GET /api/v1/projects/{project_id}/kanban/metrics/flow-metrics/",
+   "method": "GET",
+   "expected_status": 200,
+   "previous_status": 404,
+   "request_body": {},
+   "expected_response_contains": [
+    "current_wip",
+    "class_of_service_breakdown",
+    "sle_breach_count"
+   ],
+   "previous_error_contains": [
+    "Not Found"
+   ],
+   "root_cause": "Before #42 Kanban stored a board but enforced no real class-of-service flow: there was no class_of_service field so the only WIP bypass was a name-matched expedite swimlane convention; blocked was a boolean with no blocked_at/history so blocked time could not be measured; WorkPolicy was board-wide only (no column FK) so policies could not render at the column header (Make Policies Explicit); there were no SLE/aging signals and no live flow-metrics endpoint surfacing class-of-service mix, aging WIP, blocked time or SLE breaches; and there was no kaizen/cadence model to close the improvement loop Kanban expects from its feedback cadences.",
+   "fix_location": "backend/kanban/{models,serializers,views,urls}.py (KanbanCard.class_of_service/sle_days/blocked_at + is_expedite/age_in_column_hours/flow_age_hours/is_sle_breached props; WorkPolicy.column FK; BlockEvent/KaizenAction/KanbanCadence models; KanbanCardViewSet.move expedite-class bypass + inline class_of_service override; toggle_blocked opens/closes BlockEvent + stamps blocked_at; KanbanMetricsViewSet.flow_metrics action; WorkPolicyViewSet column filter; KaizenActionViewSet[resolved_at stamp]/KanbanCadenceViewSet/BlockEventViewSet) migration kanban/0003 + backend/kanban/tests_flow.py + frontend KanbanBoard (class-of-service + SLE + aging + blocked-hours badges, expedite sort to top, column-header policies, wip_limit_reached toast) + KanbanFlowMetrics (live flow signals: expedite/blocked/SLE/oldest tiles + class-of-service breakdown + aging/blocked lists)",
+   "found": "2026-06-05",
+   "found_by": "methodology audit BACKLOG-2026-06-04 (#42)",
+   "status": "fixed_verified",
+   "last_tested": "2026-06-05",
+   "last_test_status": "pass",
+   "last_test_response_status": 200,
+   "notes": "2026-06-05: Covered by backend/kanban/tests_flow.py (9 tests green; with the 4 existing tests_wip.py tests still green = 13). expedite class-of-service card pulls into a full WIP column -> 200 (over-fills by design) while a standard card -> 409 wip_limit_reached and stays put; move with class_of_service=expedite promotes a standard card and lets it bypass; toggle_blocked opens a BlockEvent (is_open, blocked_at set) then closes it (unblocked_at set, blocked_at cleared); flow-metrics surfaces blocked_count 1, sle_breach_count 1 (card created 3d ago with sle_days 1), expedite_in_flight 1, class_of_service_breakdown.expedite 1, current_wip>=3; ?column= narrows work-policies to the column and ?column=board to board-wide; kaizen PATCH to done stamps resolved_at; cadence create persists; cross-tenant flow-metrics -> 403/404. Live endpoint needs auth (defer like other authed entries)."
   }
  ]
 }

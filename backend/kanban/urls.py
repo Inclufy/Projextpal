@@ -7,6 +7,7 @@ from .views import (
     KanbanCardViewSet, CardCommentViewSet, CardChecklistViewSet,
     KanbanMetricsViewSet, KanbanDashboardView, WorkPolicyViewSet,
     KanbanSeedDemoView, KanbanClearDemoView,
+    KaizenActionViewSet, KanbanCadenceViewSet, BlockEventViewSet,
 )
 
 
@@ -47,6 +48,7 @@ urlpatterns = [
     path('projects/<int:project_id>/kanban/metrics/record_daily/', KanbanMetricsViewSet.as_view({'post': 'record_daily'}), name='kanban-metrics-record'),
     path('projects/<int:project_id>/kanban/metrics/cfd/', KanbanMetricsViewSet.as_view({'get': 'cfd'}), name='kanban-metrics-cfd'),
     path('projects/<int:project_id>/kanban/metrics/throughput/', KanbanMetricsViewSet.as_view({'get': 'throughput'}), name='kanban-metrics-throughput'),
+    path('projects/<int:project_id>/kanban/metrics/flow-metrics/', KanbanMetricsViewSet.as_view({'get': 'flow_metrics'}), name='kanban-metrics-flow'),
 
     # DASHBOARD
     path('projects/<int:project_id>/kanban/dashboard/', KanbanDashboardView.as_view(), name='kanban-dashboard'),
@@ -54,6 +56,17 @@ urlpatterns = [
     # WORK POLICIES
     path('projects/<int:project_id>/kanban/work-policies/', WorkPolicyViewSet.as_view({'get': 'list', 'post': 'create'}), name='work-policies-list'),
     path('projects/<int:project_id>/kanban/work-policies/<int:pk>/', WorkPolicyViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='work-policies-detail'),
+
+    # KAIZEN ACTIONS (continuous improvement)
+    path('projects/<int:project_id>/kanban/kaizen/', KaizenActionViewSet.as_view({'get': 'list', 'post': 'create'}), name='kanban-kaizen-list'),
+    path('projects/<int:project_id>/kanban/kaizen/<int:pk>/', KaizenActionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='kanban-kaizen-detail'),
+
+    # CADENCES (feedback loops)
+    path('projects/<int:project_id>/kanban/cadences/', KanbanCadenceViewSet.as_view({'get': 'list', 'post': 'create'}), name='kanban-cadences-list'),
+    path('projects/<int:project_id>/kanban/cadences/<int:pk>/', KanbanCadenceViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='kanban-cadences-detail'),
+
+    # BLOCK EVENTS (blocked-time history, read-only)
+    path('projects/<int:project_id>/kanban/block-events/', BlockEventViewSet.as_view({'get': 'list'}), name='kanban-block-events-list'),
 
     # SEED DEMO
     path('projects/<int:project_id>/kanban/seed-demo/', KanbanSeedDemoView.as_view(), name='kanban-seed-demo'),
