@@ -1977,6 +1977,37 @@
       "last_test_status": "pass",
       "last_test_response_status": 409,
       "notes": "2026-06-05: Covered by backend/msp/tests_tranche_blueprint.py \u2014 benefit actual-vs-baseline variance + variance_pct; tranche close blocked 409 no_measurements then boundary_review_required, succeeds 200 after boundary_review_done + a measurement; Blueprint POTI create; cross-tenant isolation. Live close endpoint needs auth (defer like other authed entries)."
+    },
+    {
+      "id": "FEAT-036",
+      "title": "PMI component status is gate-only (decide action records PMIGateDecision; raw PATCH ignored) + charter/benefits/stakeholders endpoints",
+      "severity": "P2",
+      "area": "pmi",
+      "endpoint": "POST /api/v1/pmi/components/{id}/decide/",
+      "method": "POST",
+      "expected_status": 201,
+      "previous_status": 404,
+      "request_body": {
+        "outcome": "authorize",
+        "gate": "Gate 1",
+        "rationale": "Business case sound"
+      },
+      "expected_response_contains": [
+        "decision",
+        "component"
+      ],
+      "previous_error_contains": [
+        "Not Found"
+      ],
+      "root_cause": "Before #36 a PMIComponent stored a free-text status that any raw PATCH could move, with no recorded governance decision; there were no charter/benefit/stakeholder/roadmap endpoints under /api/v1/pmi/ and the PMI program pages rendered the shared placeholder ProgramDashboard.",
+      "fix_location": "backend/pmi/{models,serializers,views,urls}.py (PMIGateDecision + component.decide action with status read-only on serializer; PMIProgramCharter/PMIBenefit/PMIStakeholder/PMIRoadmapItem + nested routes) + frontend/src/pages/ProgramPMI.tsx wired to App.tsx PMI routes (/charter,/components,/benefit-register,/stakeholder-grid)",
+      "found": "2026-06-05",
+      "found_by": "methodology audit BACKLOG-2026-06-04 (#36)",
+      "status": "fixed_verified",
+      "last_tested": "2026-06-05",
+      "last_test_status": "pass",
+      "last_test_response_status": 201,
+      "notes": "2026-06-05: Covered by backend/pmi/tests_gate_decision.py \u2014 raw PATCH of status is ignored (status read_only), decide records a PMIGateDecision and applies authorize->approved/continue->active/stop->cancelled with a 3-row audit trail, hold leaves status unchanged, unknown outcome -> 400 {code:invalid_outcome}; charter/benefit/stakeholder create + quadrant=manage_closely; cross-tenant isolation. Live decide endpoint needs auth (defer like other authed entries)."
     }
   ]
 }

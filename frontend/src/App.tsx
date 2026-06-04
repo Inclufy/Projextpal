@@ -103,6 +103,7 @@ const ProgramDashboard = lazy(() => import("./pages/ProgramDashboard"));
 const ProgramBenefits = lazy(() => import("./pages/ProgramBenefits"));
 const ProgramSafe = lazy(() => import("./pages/ProgramSafe"));
 const ProgramMSP = lazy(() => import("./pages/ProgramMSP"));
+const ProgramPMI = lazy(() => import("./pages/ProgramPMI"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
@@ -698,7 +699,22 @@ const App = () => (
               {/* PMI-specific routes */}
               <Route path="/programs/:id/charter" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramPMI /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/components" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramPMI /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/benefit-register" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramPMI /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/stakeholder-grid" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramPMI /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/milestones" element={

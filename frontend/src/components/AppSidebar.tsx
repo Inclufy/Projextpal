@@ -155,7 +155,7 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           items: [
             { title: "Dashboard", url: `/programs/${programId}/dashboard`, icon: LayoutDashboard },
             { title: "Charter", url: `/programs/${programId}/charter`, icon: FileCheck },
-            { title: "Projects", url: `/programs/${programId}/projects`, icon: FolderKanban },
+            { title: "Components", url: `/programs/${programId}/components`, icon: FolderKanban },
           ],
         },
         {
@@ -173,7 +173,7 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           title: "Benefits Realization",
           icon: Target,
           items: [
-            { title: "Benefits Register", url: `/programs/${programId}/benefits`, icon: Target },
+            { title: "Benefit Register", url: `/programs/${programId}/benefit-register`, icon: Target },
             { title: "KPIs", url: `/programs/${programId}/kpis`, icon: Gauge },
           ],
         },
@@ -182,7 +182,7 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           title: "Program Management",
           icon: Shield,
           items: [
-            { title: "Stakeholders", url: `/programs/${programId}/stakeholders`, icon: Users },
+            { title: "Stakeholders", url: `/programs/${programId}/stakeholder-grid`, icon: Users },
             { title: "Resources", url: `/programs/${programId}/resources`, icon: Users },
             { title: "Governance", url: `/programs/${programId}/governance`, icon: Shield },
             { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
