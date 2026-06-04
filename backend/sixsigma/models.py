@@ -1117,6 +1117,71 @@ class TollgateReview(models.Model):
     def __str__(self):
         return f"{self.project.name} - {self.get_phase_display()} Tollgate"
 
+    # ------------------------------------------------------------------
+    # Real tollgate gating (LSS audit #1) — a tollgate must verify the
+    # phase's required DMAIC deliverables exist/are approved AND the prior
+    # phase's tollgate has passed before it may be approved.
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _safe_related(obj, name):
+        """Reverse OneToOne access that returns None when absent."""
+        try:
+            return getattr(obj, name)
+        except Exception:
+            return None
+
+    def phase_deliverable_blockers(self):
+        """Required deliverables per DMAIC phase that are missing/unapproved."""
+        project = self.project
+        phase = self.phase
+        blockers = []
+        if phase == 'define':
+            charter = self._safe_related(project, 'sixsigma_charter')
+            if charter is None:
+                blockers.append('Project charter not created')
+            elif not charter.approved:
+                blockers.append('Project charter not approved')
+            if self._safe_related(project, 'sipoc_diagram') is None:
+                blockers.append('SIPOC diagram not created')
+            if not project.voc_items.exists():
+                blockers.append('No Voice of Customer / CTQ captured')
+        elif phase == 'measure':
+            if not project.baseline_metrics.exists():
+                blockers.append('No baseline metric captured')
+            if self._safe_related(project, 'data_collection_plan') is None:
+                blockers.append('Data collection plan not created')
+        elif phase == 'analyze':
+            diagram = self._safe_related(project, 'fishbone_diagram')
+            has_root = bool(diagram and diagram.causes.filter(is_root_cause=True).exists())
+            if not has_root:
+                blockers.append('No validated root cause identified')
+        elif phase == 'improve':
+            if not project.solutions.exists():
+                blockers.append('No solution defined')
+            if not PilotPlan.objects.filter(solution__project=project).exists():
+                blockers.append('No pilot plan for any solution')
+        elif phase == 'control':
+            if self._safe_related(project, 'control_plan') is None:
+                blockers.append('Control plan not created')
+            if not project.control_charts.exists():
+                blockers.append('No control chart created')
+        return blockers
+
+    def can_pass(self):
+        """Return (ok, blockers[]). A tollgate may pass only when its phase
+        deliverables are complete AND the prior phase tollgate has passed."""
+        blockers = list(self.phase_deliverable_blockers())
+        order = [p for p, _ in self.PHASE_CHOICES]
+        idx = order.index(self.phase)
+        if idx > 0:
+            prior_phase = order[idx - 1]
+            prior = TollgateReview.objects.filter(
+                project=self.project, phase=prior_phase
+            ).first()
+            if prior is None or prior.status not in ('passed', 'conditional'):
+                blockers.append(f"Prior tollgate '{prior_phase}' not passed")
+        return (len(blockers) == 0), blockers
+
 
 class ProjectClosure(models.Model):
     """Six Sigma Project Closure"""

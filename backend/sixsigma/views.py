@@ -669,8 +669,23 @@ class TollgateReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def approve(self, request, project_id=None, pk=None):
-        """Approve a tollgate"""
+        """Approve a tollgate.
+
+        Real gate (LSS audit #1): refuses to pass unless the phase's required
+        DMAIC deliverables exist/are approved AND the prior phase tollgate has
+        already passed. Returns 409 with the list of blockers otherwise.
+        """
         tollgate = self.get_object()
+        ok, blockers = tollgate.can_pass()
+        if not ok:
+            return Response(
+                {
+                    'detail': 'Tollgate cannot pass: required deliverables incomplete.',
+                    'code': 'tollgate_blocked',
+                    'blockers': blockers,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
         tollgate.approved = True
         tollgate.approved_by = request.user
         tollgate.status = 'passed'

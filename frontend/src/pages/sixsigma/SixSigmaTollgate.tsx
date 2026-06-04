@@ -16,7 +16,7 @@ const SixSigmaTollgate = () => { const { pt } = usePageTranslations(); const { i
     const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) });
     if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed"));
   } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
-  const approve = async (tId: number) => { try { const r = await fetch(`${BASE(id!)}/tollgates/${tId}/approve/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Goedgekeurd"); fetchData(); } } catch {} };
+  const approve = async (tId: number) => { try { const r = await fetch(`${BASE(id!)}/tollgates/${tId}/approve/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Goedgekeurd"); fetchData(); return; } const err = await r.json().catch(() => ({})); const blockers = Array.isArray(err.blockers) ? err.blockers : []; toast.error(err.detail || pt("Action failed"), blockers.length ? { description: blockers.join(" • ") } : undefined); } catch { toast.error(pt("Action failed")); } };
   const reject = async (tId: number) => { try { const r = await fetch(`${BASE(id!)}/tollgates/${tId}/reject/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Afgekeurd"); fetchData(); } } catch {} };
   const handleDelete = async (tId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { await fetch(`${BASE(id!)}/tollgates/${tId}/`, { method: "DELETE", headers }); fetchData(); } catch {} };
   const phaseColors: Record<string, string> = { define: "bg-blue-500", measure: "bg-green-500", analyze: "bg-yellow-500", improve: "bg-orange-500", control: "bg-red-500" };
