@@ -21,6 +21,7 @@ type EpicForm = {
   description: string;
   priority: string;
   color: string;
+  product_goal: string;
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -58,12 +59,13 @@ const AgileEpics = () => {
 
   const [epics, setEpics] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
-  const [form, setForm] = useState<EpicForm>({ title: "", description: "", priority: "should_have", color: "blue" });
+  const [form, setForm] = useState<EpicForm>({ title: "", description: "", priority: "should_have", color: "blue", product_goal: "none" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -71,12 +73,14 @@ const AgileEpics = () => {
 
   const fetchData = async () => {
     try {
-      const [eRes, bRes] = await Promise.all([
+      const [eRes, bRes, gRes] = await Promise.all([
         fetch(`/api/v1/projects/${id}/agile/epics/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/backlog/`, { headers }),
+        fetch(`/api/v1/projects/${id}/agile/goals/`, { headers }),
       ]);
       if (eRes.ok) { const d = await eRes.json(); setEpics(Array.isArray(d) ? d : d.results || []); }
       if (bRes.ok) { const d = await bRes.json(); setItems(Array.isArray(d) ? d : d.results || []); }
+      if (gRes.ok) { const d = await gRes.json(); setGoals(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -122,7 +126,7 @@ const AgileEpics = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", description: "", priority: "should_have", color: "blue" });
+    setForm({ title: "", description: "", priority: "should_have", color: "blue", product_goal: "none" });
     setDialogOpen(true);
   };
 
@@ -133,6 +137,7 @@ const AgileEpics = () => {
       description: epic.description || "",
       priority: epic.priority || "should_have",
       color: epic.color || "blue",
+      product_goal: epic.product_goal ? String(epic.product_goal) : "none",
     });
     setDialogOpen(true);
   };
@@ -146,6 +151,7 @@ const AgileEpics = () => {
         description: form.description,
         priority: form.priority,
         color: form.color,
+        product_goal: form.product_goal === "none" ? null : parseInt(form.product_goal),
       };
       const url = editing
         ? `/api/v1/projects/${id}/agile/epics/${editing.id}/`
@@ -242,6 +248,11 @@ const AgileEpics = () => {
                           {typeof epic.total_points === "number" && epic.total_points > 0 && (
                             <Badge variant="outline" className="text-xs">
                               {epic.completed_points || 0} / {epic.total_points} pts
+                            </Badge>
+                          )}
+                          {epic.product_goal_title && (
+                            <Badge variant="outline" className="text-xs text-emerald-600">
+                              🎯 {epic.product_goal_title}
                             </Badge>
                           )}
                         </div>
@@ -367,6 +378,17 @@ const AgileEpics = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{pt("Product Goal")}</Label>
+              <Select value={form.product_goal} onValueChange={(v) => setForm({ ...form, product_goal: v })}>
+                <SelectTrigger><SelectValue placeholder={pt("Link to a Product Goal (optional)")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{pt("No goal")}</SelectItem>
+                  {goals.map((g) => <SelectItem key={g.id} value={String(g.id)}>{g.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{pt("Every epic advances one Product Goal — so each backlog item rolls up to an outcome.")}</p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>

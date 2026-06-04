@@ -18,6 +18,8 @@ from .views import (
     AgileBudgetViewSet,
     AgileBudgetItemViewSet,
     DefinitionOfDoneViewSet,
+    AgileFlowConfigViewSet,
+    AgileFlowMetricsViewSet,
     AgileSeedDemoView,
     AgileClearDemoView,
 )
@@ -124,6 +126,21 @@ urlpatterns = [
         'projects/<int:project_id>/agile/backlog/<int:pk>/move-to-iteration/',
         AgileBacklogItemViewSet.as_view({'post': 'move_to_iteration'}),
         name='agile-backlog-move'
+    ),
+    path(
+        'projects/<int:project_id>/agile/backlog/<int:pk>/transition/',
+        AgileBacklogItemViewSet.as_view({'post': 'transition'}),
+        name='agile-backlog-transition'
+    ),
+    path(
+        'projects/<int:project_id>/agile/backlog/<int:pk>/assign/',
+        AgileBacklogItemViewSet.as_view({'post': 'assign'}),
+        name='agile-backlog-assign'
+    ),
+    path(
+        'projects/<int:project_id>/agile/backlog/<int:pk>/dod/',
+        AgileBacklogItemViewSet.as_view({'get': 'dod', 'post': 'dod'}),
+        name='agile-backlog-dod'
     ),
     path(
         'projects/<int:project_id>/agile/backlog/reorder/',
@@ -244,6 +261,19 @@ urlpatterns = [
         "projects/<int:project_id>/agile/definition-of-done/<int:pk>/",
         DefinitionOfDoneViewSet.as_view({"get": "retrieve", "put": "update", "patch": "partial_update", "delete": "destroy"}),
         name="agile-definition-of-done-detail"
+    ),
+    # =========================================================================
+    # FLOW (continuous-flow cadence config + outcome metrics)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/agile/flow-config/',
+        AgileFlowConfigViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'update'}),
+        name='agile-flow-config'
+    ),
+    path(
+        'projects/<int:project_id>/agile/flow-metrics/',
+        AgileFlowMetricsViewSet.as_view({'get': 'retrieve'}),
+        name='agile-flow-metrics'
     ),
 ]
 

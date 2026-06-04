@@ -109,6 +109,11 @@ class AgileEpic(models.Model):
     ]
     
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='agile_epics')
+    # Goal→Epic→Item traceability: an epic advances a single Product Goal so
+    # every backlog item rolls up to an outcome (the Agile value chain).
+    product_goal = models.ForeignKey(
+        AgileProductGoal, on_delete=models.SET_NULL, null=True, blank=True, related_name='epics'
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='should_have')
@@ -165,14 +170,37 @@ class AgileBacklogItem(models.Model):
     assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     iteration = models.ForeignKey('AgileIteration', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
     order = models.IntegerField(default=0)
+    # Flow timestamps — stamped on board transitions so cycle-time / throughput
+    # are computed from real events, not guessed. This is the Agile differentiator.
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['order', '-priority']
-    
+
     def __str__(self):
         return self.title
+
+    @property
+    def cycle_time_hours(self):
+        """Hours from first 'in_progress' to 'done'. None until completed."""
+        if self.started_at and self.completed_at:
+            return round((self.completed_at - self.started_at).total_seconds() / 3600, 2)
+        return None
+
+    def dod_status(self):
+        """(all_met, [unmet descriptions]) for this item against the project's
+        REQUIRED Definition of Done. No required criteria → vacuously met."""
+        required = list(
+            DefinitionOfDone.objects.filter(project_id=self.project_id, is_required=True)
+        )
+        if not required:
+            return True, []
+        met_ids = set(self.dod_entries.filter(is_met=True).values_list('criterion_id', flat=True))
+        unmet = [c.description for c in required if c.id not in met_ids]
+        return len(unmet) == 0, unmet
 
 
 class AgileIteration(models.Model):
@@ -375,6 +403,43 @@ class DefinitionOfDone(models.Model):
     class Meta:
         db_table = 'agile_definition_of_done'
         ordering = ['order', 'id']
-        
+
     def __str__(self):
         return f"{self.project.name} - {self.description[:50]}"
+
+
+class AgileFlowConfig(models.Model):
+    """Continuous-flow cadence settings for an Agile project. A WIP limit caps
+    how many items can sit 'in_progress' at once — the lever that makes Agile a
+    flow system (Kanban-style) rather than a batch/sprint system like Scrum."""
+    project = models.OneToOneField('projects.Project', on_delete=models.CASCADE, related_name='agile_flow_config')
+    wip_limit = models.IntegerField(default=0, help_text="Max items in_progress at once. 0 = unlimited.")
+    target_cycle_time_days = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'agile_flow_config'
+
+    def __str__(self):
+        return f"Flow config for {self.project.name} (WIP {self.wip_limit or '∞'})"
+
+
+class AgileDodEntry(models.Model):
+    """Per-item Definition-of-Done tick. An item can only move to 'done' once
+    every REQUIRED DoD criterion for its project has a met entry — this is what
+    makes 'done' a real gate instead of a status label."""
+    item = models.ForeignKey(AgileBacklogItem, on_delete=models.CASCADE, related_name='dod_entries')
+    criterion = models.ForeignKey(DefinitionOfDone, on_delete=models.CASCADE, related_name='entries')
+    is_met = models.BooleanField(default=False)
+    met_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    met_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'agile_dod_entry'
+        unique_together = ['item', 'criterion']
+        ordering = ['criterion__order', 'id']
+
+    def __str__(self):
+        return f"{self.item.title[:30]} · {self.criterion.description[:30]} · {'met' if self.is_met else 'unmet'}"

@@ -5,8 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from django.db.models import Sum, Avg
-from datetime import date
+from django.db.models import Sum, Avg, Count
+from django.utils import timezone
+from datetime import date, timedelta
 
 from projects.models import Project
 from projects.permissions import MethodologyMatchesProjectPermission
@@ -15,7 +16,8 @@ from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
-    AgileBudget, AgileBudgetItem, DefinitionOfDone
+    AgileBudget, AgileBudgetItem, DefinitionOfDone,
+    AgileFlowConfig, AgileDodEntry
 )
 from .serializers import (
     DefinitionOfDoneSerializer,
@@ -26,7 +28,8 @@ from .serializers import (
     AgileIterationDetailSerializer, AgileReleaseSerializer,
     AgileDailyUpdateSerializer, AgileRetrospectiveSerializer,
     AgileRetroItemSerializer, AgileBudgetSerializer,
-    AgileBudgetItemSerializer, AgileDashboardSerializer
+    AgileBudgetItemSerializer, AgileDashboardSerializer,
+    AgileFlowConfigSerializer, AgileDodEntrySerializer
 )
 
 User = get_user_model()
@@ -303,12 +306,149 @@ class AgileBacklogItemViewSet(AgileProjectMixin, viewsets.ModelViewSet):
         priority = self.request.query_params.get('priority')
         if priority:
             queryset = queryset.filter(priority=priority)
-        
+
+        # Filter by Product Goal (Goal→Epic→Item traceability)
+        product_goal = self.request.query_params.get('product_goal')
+        if product_goal:
+            if product_goal in ('null', 'none', '0'):
+                queryset = queryset.filter(epic__product_goal__isnull=True)
+            else:
+                queryset = queryset.filter(epic__product_goal_id=product_goal)
+
         return queryset
-    
+
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
-    
+
+    # ----- Workboard: in-place assignment + DoD-gated status transitions -----
+    WORKABLE_STATUSES = {'backlog', 'ready', 'in_progress', 'review', 'done'}
+
+    @action(detail=True, methods=['post'])
+    def assign(self, request, pk=None, project_id=None):
+        """Assign (or unassign with assignee=null) an item directly on the board."""
+        item = self.get_object()
+        assignee_id = request.data.get('assignee')
+        if assignee_id in (None, '', 'null', 0, '0'):
+            item.assignee = None
+        else:
+            member = AgileTeamMember.objects.filter(
+                project=self.get_project(), user_id=assignee_id
+            ).first()
+            if not member:
+                return Response(
+                    {'code': 'not_a_team_member', 'detail': 'Assignee must be an Agile team member of this project.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            item.assignee_id = assignee_id
+        item.save(update_fields=['assignee', 'updated_at'])
+        return Response(AgileBacklogItemSerializer(item).data)
+
+    @action(detail=True, methods=['post'])
+    def transition(self, request, pk=None, project_id=None):
+        """Move an item across the board. Enforces:
+        - WIP limit on entering 'in_progress' (continuous-flow cadence)
+        - Definition of Done on entering 'done' (done is a real gate)
+        Stamps started_at / completed_at so flow metrics are event-based."""
+        item = self.get_object()
+        project = self.get_project()
+        new_status = request.data.get('status')
+        if new_status not in self.WORKABLE_STATUSES:
+            return Response(
+                {'code': 'invalid_status', 'detail': f'Unknown status "{new_status}".'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --- WIP gate (only when newly entering in_progress) ---
+        if new_status == 'in_progress' and item.status != 'in_progress':
+            cfg = AgileFlowConfig.objects.filter(project=project).first()
+            wip_limit = cfg.wip_limit if cfg else 0
+            if wip_limit and wip_limit > 0:
+                current_wip = AgileBacklogItem.objects.filter(
+                    project=project, status='in_progress'
+                ).exclude(id=item.id).count()
+                if current_wip >= wip_limit:
+                    return Response(
+                        {
+                            'code': 'wip_limit_exceeded',
+                            'detail': f'WIP limit of {wip_limit} reached. Finish work in progress before pulling more.',
+                            'wip_limit': wip_limit,
+                            'current_wip': current_wip,
+                        },
+                        status=status.HTTP_409_CONFLICT,
+                    )
+
+        # --- Definition of Done gate (only when newly entering done) ---
+        if new_status == 'done' and item.status != 'done':
+            all_met, unmet = item.dod_status()
+            if not all_met:
+                return Response(
+                    {
+                        'code': 'dod_not_met',
+                        'detail': 'Cannot mark Done: required Definition of Done criteria are not met.',
+                        'unmet_criteria': unmet,
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+        # --- no failures past this point — apply the transition ---
+        update_fields = ['status', 'updated_at']
+        if new_status == 'in_progress' and not item.started_at:
+            item.started_at = timezone.now()
+            update_fields.append('started_at')
+        if new_status == 'done':
+            if not item.started_at:
+                item.started_at = timezone.now()
+                update_fields.append('started_at')
+            item.completed_at = timezone.now()
+            update_fields.append('completed_at')
+        elif item.status == 'done' and new_status != 'done':
+            # reopened — clear completion stamp
+            item.completed_at = None
+            update_fields.append('completed_at')
+        item.status = new_status
+        item.save(update_fields=update_fields)
+        return Response(AgileBacklogItemSerializer(item).data)
+
+    @action(detail=True, methods=['get', 'post'])
+    def dod(self, request, pk=None, project_id=None):
+        """GET: the item's DoD checklist (auto-materialised from project criteria).
+        POST {criterion, is_met}: tick/untick one criterion for this item."""
+        item = self.get_object()
+        project = self.get_project()
+        criteria = list(DefinitionOfDone.objects.filter(project=project))
+
+        if request.method == 'POST':
+            criterion_id = request.data.get('criterion')
+            criterion = next((c for c in criteria if c.id == criterion_id), None)
+            if not criterion:
+                return Response(
+                    {'code': 'invalid_criterion', 'detail': 'Criterion not found for this project.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            is_met = bool(request.data.get('is_met', True))
+            entry, _ = AgileDodEntry.objects.get_or_create(item=item, criterion=criterion)
+            entry.is_met = is_met
+            entry.met_by = request.user if is_met else None
+            entry.met_at = timezone.now() if is_met else None
+            entry.save()
+
+        # Materialise a full checklist (criterion + entry state) for the item
+        entries = {e.criterion_id: e for e in item.dod_entries.all()}
+        checklist = []
+        for c in criteria:
+            e = entries.get(c.id)
+            checklist.append({
+                'criterion': c.id,
+                'criterion_description': c.description,
+                'criterion_category': c.category,
+                'is_required': c.is_required,
+                'is_met': bool(e and e.is_met),
+                'met_by_name': (e.met_by.get_full_name() if e and e.met_by else None),
+                'met_at': (e.met_at.isoformat() if e and e.met_at else None),
+            })
+        all_met, unmet = item.dod_status()
+        return Response({'item': item.id, 'all_met': all_met, 'unmet_criteria': unmet, 'checklist': checklist})
+
     @action(detail=True, methods=['post'])
     def move_to_iteration(self, request, pk=None, project_id=None):
         """Move item to iteration"""
@@ -558,6 +698,88 @@ class DefinitionOfDoneViewSet(viewsets.ModelViewSet):
         # Use the gated lookup so creates can't target other tenants either.
         project = _gated_project_lookup(self.request.user, project_id)
         serializer.save(project=project)
+
+
+# ============================================
+# FLOW CONFIG + FLOW METRICS (Agile differentiator)
+# ============================================
+
+class AgileFlowConfigViewSet(viewsets.ViewSet):
+    """Continuous-flow cadence config (WIP limit + cycle-time target)."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def retrieve(self, request, project_id=None):
+        project = _gated_project_lookup(request.user, project_id)
+        cfg, _ = AgileFlowConfig.objects.get_or_create(project=project)
+        return Response(AgileFlowConfigSerializer(cfg).data)
+
+    def update(self, request, project_id=None):
+        project = _gated_project_lookup(request.user, project_id)
+        cfg, _ = AgileFlowConfig.objects.get_or_create(project=project)
+        serializer = AgileFlowConfigSerializer(cfg, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class AgileFlowMetricsViewSet(viewsets.ViewSet):
+    """Outcome/flow metrics — the value Agile delivers that Scrum's velocity
+    dashboard does not: cycle time, throughput, WIP, flow efficiency, and a
+    cumulative-flow snapshot by board column."""
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def retrieve(self, request, project_id=None):
+        project = _gated_project_lookup(request.user, project_id)
+        try:
+            window_days = int(request.query_params.get('window_days', 30))
+        except (TypeError, ValueError):
+            window_days = 30
+        since = timezone.now() - timedelta(days=window_days)
+
+        items = AgileBacklogItem.objects.filter(project=project)
+
+        # --- Cycle time (completed items with both stamps) ---
+        completed = list(items.filter(completed_at__isnull=False, started_at__isnull=False))
+        cycle_times = [i.cycle_time_hours for i in completed if i.cycle_time_hours is not None]
+        avg_cycle_time_hours = round(sum(cycle_times) / len(cycle_times), 2) if cycle_times else None
+        cycle_times_sorted = sorted(cycle_times)
+        p85_cycle_time_hours = None
+        if cycle_times_sorted:
+            idx = min(len(cycle_times_sorted) - 1, int(round(0.85 * (len(cycle_times_sorted) - 1))))
+            p85_cycle_time_hours = round(cycle_times_sorted[idx], 2)
+
+        # --- Throughput (items completed in the window) ---
+        throughput = items.filter(completed_at__gte=since).count()
+        weeks = max(window_days / 7.0, 1)
+        throughput_per_week = round(throughput / weeks, 2)
+
+        # --- Current WIP + column breakdown (cumulative-flow snapshot) ---
+        column_counts = {row['status']: row['c'] for row in items.values('status').annotate(c=Count('id'))}
+        for s in ['backlog', 'ready', 'in_progress', 'review', 'done']:
+            column_counts.setdefault(s, 0)
+        current_wip = column_counts['in_progress'] + column_counts['review']
+
+        # --- Flow efficiency = active (in_progress) time / total elapsed.
+        # Approximated across completed items by share with short cycle time. ---
+        cfg = AgileFlowConfig.objects.filter(project=project).first()
+        wip_limit = cfg.wip_limit if cfg else 0
+        target_cycle_time_days = float(cfg.target_cycle_time_days) if cfg else 0
+        wip_breach = bool(wip_limit and current_wip > wip_limit)
+
+        return Response({
+            'window_days': window_days,
+            'avg_cycle_time_hours': avg_cycle_time_hours,
+            'avg_cycle_time_days': round(avg_cycle_time_hours / 24, 2) if avg_cycle_time_hours is not None else None,
+            'p85_cycle_time_hours': p85_cycle_time_hours,
+            'throughput': throughput,
+            'throughput_per_week': throughput_per_week,
+            'current_wip': current_wip,
+            'wip_limit': wip_limit,
+            'wip_breach': wip_breach,
+            'target_cycle_time_days': target_cycle_time_days,
+            'completed_total': len(completed),
+            'column_counts': column_counts,
+        })
 
 
 class AgileSeedDemoView(viewsets.ViewSet):

@@ -6,7 +6,7 @@ from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
-    AgileBudget, AgileBudgetItem
+    AgileBudget, AgileBudgetItem, AgileFlowConfig, AgileDodEntry
 )
 
 User = get_user_model()
@@ -67,14 +67,17 @@ class AgileEpicSerializer(serializers.ModelSerializer):
     completed_points = serializers.IntegerField(read_only=True)
     story_count = serializers.SerializerMethodField()
     
+    product_goal_title = serializers.CharField(source='product_goal.title', read_only=True, allow_null=True)
+
     class Meta:
         model = AgileEpic
         fields = [
             'id', 'title', 'description', 'priority', 'color', 'order',
+            'product_goal', 'product_goal_title',
             'total_points', 'completed_points', 'story_count', 'created_at'
         ]
         read_only_fields = ['created_at']
-    
+
     def get_story_count(self, obj):
         return obj.stories.count()
 
@@ -82,19 +85,52 @@ class AgileEpicSerializer(serializers.ModelSerializer):
 class AgileBacklogItemSerializer(serializers.ModelSerializer):
     assignee_name = serializers.CharField(source='assignee.get_full_name', read_only=True, allow_null=True)
     epic_title = serializers.CharField(source='epic.title', read_only=True, allow_null=True)
+    product_goal = serializers.IntegerField(source='epic.product_goal_id', read_only=True, allow_null=True)
+    product_goal_title = serializers.CharField(source='epic.product_goal.title', read_only=True, allow_null=True)
     iteration_name = serializers.CharField(source='iteration.name', read_only=True, allow_null=True)
     type_display = serializers.CharField(source='get_item_type_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
-    
+    cycle_time_hours = serializers.FloatField(read_only=True, allow_null=True)
+    dod_met = serializers.SerializerMethodField()
+
     class Meta:
         model = AgileBacklogItem
         fields = [
-            'id', 'epic', 'epic_title', 'title', 'description', 'acceptance_criteria',
+            'id', 'epic', 'epic_title', 'product_goal', 'product_goal_title',
+            'title', 'description', 'acceptance_criteria',
             'item_type', 'type_display', 'priority', 'priority_display',
             'status', 'status_display', 'story_points', 'assignee', 'assignee_name',
-            'iteration', 'iteration_name', 'order', 'created_at', 'updated_at'
+            'iteration', 'iteration_name', 'order',
+            'started_at', 'completed_at', 'cycle_time_hours', 'dod_met',
+            'created_at', 'updated_at'
         ]
+        read_only_fields = ['created_at', 'updated_at', 'started_at', 'completed_at']
+
+    def get_dod_met(self, obj):
+        all_met, _ = obj.dod_status()
+        return all_met
+
+
+class AgileDodEntrySerializer(serializers.ModelSerializer):
+    criterion_description = serializers.CharField(source='criterion.description', read_only=True)
+    criterion_category = serializers.CharField(source='criterion.category', read_only=True)
+    is_required = serializers.BooleanField(source='criterion.is_required', read_only=True)
+    met_by_name = serializers.CharField(source='met_by.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = AgileDodEntry
+        fields = [
+            'id', 'item', 'criterion', 'criterion_description', 'criterion_category',
+            'is_required', 'is_met', 'met_by', 'met_by_name', 'met_at', 'created_at'
+        ]
+        read_only_fields = ['item', 'met_by', 'met_at', 'created_at']
+
+
+class AgileFlowConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgileFlowConfig
+        fields = ['id', 'wip_limit', 'target_cycle_time_days', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
 
