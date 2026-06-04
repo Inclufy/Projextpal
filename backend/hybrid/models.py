@@ -48,12 +48,29 @@ class HybridConfiguration(models.Model):
 
 
 class PhaseMethodology(models.Model):
-    """Mapping of methodology to project phase for hybrid projects"""
+    """Mapping of methodology to project phase for hybrid projects.
+
+    The methodology is NOT decorative: it selects the *governance strategy* a
+    phase is completed under. A predictive phase (waterfall/prince2/pmbok)
+    requires a recorded gate sign-off before it can complete; an adaptive phase
+    (scrum/agile/safe) requires its Definition-of-Done checklist + all tasks
+    done; a flow phase (kanban/lean) requires all tasks pulled to done. The
+    `complete` action enforces the strategy that matches the phase methodology.
+    """
+
+    # The canonical methodology vocabulary + its strategy mapping live in
+    # constants.py (kept serializer-level so it needs no migration — see #33).
+
+    GATE_STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('signed_off', 'Signed Off'),   # predictive: gate review passed
+        ('complete', 'Complete'),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='hybrid_phase_methodologies')
     phase = models.CharField(max_length=100)
-    methodology = models.CharField(max_length=50)
+    methodology = models.CharField(max_length=50, default='waterfall')
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
     start_date = models.DateField(null=True, blank=True)
@@ -62,6 +79,19 @@ class PhaseMethodology(models.Model):
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
+    # Mixed-governance gate state. Set ONLY by the signoff / complete actions.
+    gate_status = models.CharField(max_length=20, choices=GATE_STATUS_CHOICES, default='open')
+    entry_criteria = models.TextField(blank=True)
+    exit_criteria = models.TextField(blank=True)
+    # Adaptive phases compute completion from this Definition-of-Done checklist,
+    # a list of {"text": str, "done": bool}.
+    dod_checklist = models.JSONField(default=list, blank=True)
+    signed_off_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='hybrid_signed_phases',
+    )
+    signed_off_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,6 +102,11 @@ class PhaseMethodology(models.Model):
 
     def __str__(self):
         return f"{self.phase} -> {self.methodology}"
+
+    @property
+    def strategy(self):
+        from .constants import strategy_for
+        return strategy_for(self.methodology)
 
 
 class HybridTask(models.Model):

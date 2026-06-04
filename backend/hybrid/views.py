@@ -1,9 +1,11 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import models
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from projects.models import Project
@@ -179,6 +181,134 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
+    # ---- Mixed-governance gates (backlog #38) -------------------------------
+    # A phase completes under the governance STRATEGY its methodology maps to
+    # (see constants.STRATEGY_BY_METHODOLOGY). These two actions are the ONLY
+    # writers of gate_status / completed_at — a raw PATCH cannot advance a phase
+    # (gate fields are read_only in the serializer; progress>=100 is rejected).
+
+    @action(detail=True, methods=['post'])
+    def signoff(self, request, pk=None, project_id=None):
+        """Record a predictive gate review sign-off.
+
+        Only predictive phases (waterfall / prince2 / lean_six_sigma_*) have a
+        formal gate review. Signing off flips gate_status open -> signed_off,
+        which is the precondition `complete` checks for a predictive phase.
+        """
+        phase = self.get_object()
+        if phase.strategy != 'predictive':
+            return Response(
+                {
+                    'detail': (
+                        f"Phase '{phase.phase}' is governed by the "
+                        f"{phase.strategy} strategy, which has no gate sign-off. "
+                        "Complete it via its strategy's criteria instead."
+                    ),
+                    'code': 'signoff_not_applicable',
+                    'strategy': phase.strategy,
+                },
+                status=409,
+            )
+        if phase.gate_status == 'complete':
+            return Response(
+                {'detail': 'Phase is already complete.', 'code': 'already_complete'},
+                status=409,
+            )
+        phase.gate_status = 'signed_off'
+        phase.signed_off_by = request.user
+        phase.signed_off_at = timezone.now()
+        phase.save(update_fields=['gate_status', 'signed_off_by', 'signed_off_at', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None, project_id=None):
+        """Complete a phase under its methodology's governance strategy.
+
+        predictive -> requires a recorded gate sign-off (409 signoff_required)
+        adaptive   -> requires every DoD item checked + every phase task done
+                      (409 dod_incomplete, with the open blockers listed)
+        flow       -> requires every phase task pulled to done
+                      (409 work_in_progress, with the not-done tasks listed)
+
+        On success: progress=100, gate_status='complete', completed_at=now.
+        """
+        phase = self.get_object()
+        if phase.gate_status == 'complete':
+            return Response(
+                {'detail': 'Phase is already complete.', 'code': 'already_complete'},
+                status=409,
+            )
+
+        strategy = phase.strategy
+
+        if strategy == 'predictive':
+            if phase.gate_status != 'signed_off':
+                return Response(
+                    {
+                        'detail': (
+                            f"Predictive phase '{phase.phase}' needs a gate "
+                            "review sign-off before it can complete."
+                        ),
+                        'code': 'signoff_required',
+                        'strategy': strategy,
+                    },
+                    status=409,
+                )
+
+        elif strategy == 'adaptive':
+            checklist = phase.dod_checklist or []
+            open_dod = [
+                item.get('text', '(unnamed)')
+                for item in checklist
+                if isinstance(item, dict) and not item.get('done')
+            ]
+            open_tasks = list(
+                phase.tasks.exclude(status='done').values_list('title', flat=True)
+            )
+            if not checklist:
+                open_dod = ['Definition of Done checklist is empty']
+            if open_dod or open_tasks:
+                return Response(
+                    {
+                        'detail': (
+                            f"Adaptive phase '{phase.phase}' is not Done: its "
+                            "Definition-of-Done checklist and all tasks must be "
+                            "complete."
+                        ),
+                        'code': 'dod_incomplete',
+                        'strategy': strategy,
+                        'blockers': {
+                            'open_dod_items': open_dod,
+                            'open_tasks': open_tasks,
+                        },
+                    },
+                    status=409,
+                )
+
+        else:  # flow
+            open_tasks = list(
+                phase.tasks.exclude(status='done').values_list('title', flat=True)
+            )
+            if open_tasks:
+                return Response(
+                    {
+                        'detail': (
+                            f"Flow phase '{phase.phase}' still has work in "
+                            "progress; drain every task to Done first."
+                        ),
+                        'code': 'work_in_progress',
+                        'strategy': strategy,
+                        'blockers': {'open_tasks': open_tasks},
+                    },
+                    status=409,
+                )
+
+        phase.progress = 100
+        phase.gate_status = 'complete'
+        phase.completed_at = timezone.now()
+        phase.save(update_fields=['progress', 'gate_status', 'completed_at', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
 
 class HybridTaskViewSet(viewsets.ModelViewSet):
     serializer_class = HybridTaskSerializer
@@ -236,12 +366,12 @@ class HybridSeedDemoView(viewsets.ViewSet):
             ph_count = 0
             if not PhaseMethodology.objects.filter(project=project).exists():
                 phase_seed = [
-                    ('Discovery', 'Waterfall', 'Stakeholder interviews + requirements doc; signed-off baseline.'),
-                    ('Design', 'Waterfall', 'Architecture + UX/UI deliverables reviewed and approved.'),
-                    ('Build', 'Scrum', 'Sprints of 2 weeks delivering backlog increments.'),
-                    ('Test & Validate', 'Scrum', 'Test cases executed in-sprint; UAT at end of sprints.'),
-                    ('Launch', 'Waterfall', 'Go/no-go gate; production cutover; signed-off release.'),
-                    ('Operate', 'Kanban', 'Continuous flow of bug fixes + small enhancements.'),
+                    ('Discovery', 'waterfall', 'Stakeholder interviews + requirements doc; signed-off baseline.'),
+                    ('Design', 'waterfall', 'Architecture + UX/UI deliverables reviewed and approved.'),
+                    ('Build', 'scrum', 'Sprints of 2 weeks delivering backlog increments.'),
+                    ('Test & Validate', 'scrum', 'Test cases executed in-sprint; UAT at end of sprints.'),
+                    ('Launch', 'waterfall', 'Go/no-go gate; production cutover; signed-off release.'),
+                    ('Operate', 'kanban', 'Continuous flow of bug fixes + small enhancements.'),
                 ]
                 for order, (phase, method, desc) in enumerate(phase_seed):
                     PhaseMethodology.objects.create(

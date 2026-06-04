@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Target, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Loader2, Plus, Target, Pencil, Trash2, CheckCircle2, Stamp, ListChecks, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 const fetchJson = async (url: string) => {
@@ -24,6 +24,31 @@ const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
 
 // Canonical Hybrid vocabulary — must mirror backend/hybrid/constants.py
 const METHODOLOGIES = ["prince2", "agile", "scrum", "kanban", "waterfall", "lean_six_sigma_green", "lean_six_sigma_black"];
+
+// Governance strategy per methodology — mirror backend/hybrid/constants.py
+// STRATEGY_BY_METHODOLOGY. Drives which completion gate a phase uses.
+const STRATEGY_BY_METHODOLOGY: Record<string, "predictive" | "adaptive" | "flow"> = {
+  prince2: "predictive", waterfall: "predictive",
+  lean_six_sigma_green: "predictive", lean_six_sigma_black: "predictive",
+  agile: "adaptive", scrum: "adaptive", kanban: "flow",
+};
+const strategyOf = (p: any): "predictive" | "adaptive" | "flow" =>
+  p?.strategy || STRATEGY_BY_METHODOLOGY[p?.methodology] || "predictive";
+
+const STRATEGY_LABEL: Record<string, string> = {
+  predictive: "Predictive — gate sign-off",
+  adaptive: "Adaptive — DoD + tasks",
+  flow: "Flow — drain all tasks",
+};
+
+// Map backend 409 `code` -> a human message for the toast.
+const COMPLETE_ERRORS: Record<string, string> = {
+  signoff_required: "This predictive phase needs a gate sign-off before it can complete.",
+  dod_incomplete: "Definition-of-Done items and/or tasks are still open.",
+  work_in_progress: "Drain every task to Done before completing this flow phase.",
+  already_complete: "This phase is already complete.",
+  signoff_not_applicable: "Only predictive phases have a gate sign-off.",
+};
 
 const HybridPhases = () => {
   const { pt } = usePageTranslations();
@@ -69,9 +94,46 @@ const HybridPhases = () => {
     try { const r = await fetch(`/api/v1/projects/${id}/hybrid/phase-methodologies/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); refresh(); } } catch { toast.error(pt("Delete failed")); }
   };
 
-  const markComplete = async (p: any) => {
-    try { const r = await fetch(`/api/v1/projects/${id}/hybrid/phase-methodologies/${p.id}/`, { method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ progress: 100 }) }); if (r.ok) { toast.success(pt("Phase completed")); refresh(); } } catch { toast.error(pt("Update failed")); }
+  // Record a predictive gate review sign-off (gate_status open -> signed_off).
+  const signOff = async (p: any) => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/hybrid/phase-methodologies/${p.id}/signoff/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      if (r.ok) { toast.success(pt("Gate signed off")); refresh(); return; }
+      const err = await r.json().catch(() => ({}));
+      toast.error(pt(COMPLETE_ERRORS[err?.code] || err?.detail || "Sign-off failed"));
+    } catch { toast.error(pt("Sign-off failed")); }
   };
+
+  // Complete a phase under its methodology's governance strategy. The backend
+  // enforces the gate and returns 409 + `code` + (for adaptive/flow) blockers.
+  const markComplete = async (p: any) => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/hybrid/phase-methodologies/${p.id}/complete/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      if (r.ok) { toast.success(pt("Phase completed")); refresh(); return; }
+      const err = await r.json().catch(() => ({}));
+      const blockers = err?.blockers;
+      const extra = blockers
+        ? [...(blockers.open_dod_items || []), ...(blockers.open_tasks || [])].slice(0, 4).join(", ")
+        : "";
+      toast.error(pt(COMPLETE_ERRORS[err?.code] || err?.detail || "Completion blocked") + (extra ? `: ${extra}` : ""));
+    } catch { toast.error(pt("Update failed")); }
+  };
+
+  // ---- Definition-of-Done editor (adaptive phases) ----------------------
+  const [dodPhase, setDodPhase] = useState<any>(null);
+  const [dodItems, setDodItems] = useState<Array<{ text: string; done: boolean }>>([]);
+  const [dodNew, setDodNew] = useState("");
+  const openDod = (p: any) => { setDodPhase(p); setDodItems(Array.isArray(p.dod_checklist) ? p.dod_checklist : []); setDodNew(""); };
+  const saveDod = async (items: Array<{ text: string; done: boolean }>) => {
+    if (!dodPhase) return;
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/hybrid/phase-methodologies/${dodPhase.id}/`, { method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ dod_checklist: items }) });
+      if (r.ok) { setDodItems(items); refresh(); } else toast.error(pt("Save failed"));
+    } catch { toast.error(pt("Save failed")); }
+  };
+  const addDodItem = () => { if (!dodNew.trim()) return; const next = [...dodItems, { text: dodNew.trim(), done: false }]; setDodNew(""); saveDod(next); };
+  const toggleDodItem = (i: number) => { const next = dodItems.map((it, idx) => idx === i ? { ...it, done: !it.done } : it); saveDod(next); };
+  const removeDodItem = (i: number) => { const next = dodItems.filter((_, idx) => idx !== i); saveDod(next); };
 
   const phaseProgress = (p: any) => {
     const phaseTasks = tasks.filter((t: any) => t.phase === p.id);
@@ -93,24 +155,35 @@ const HybridPhases = () => {
 
         {phases.length === 0 ? <Card className="p-8 text-center"><Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No phases yet")}</h3></Card> : (
           <div className="space-y-3">{phases.map((p: any) => {
-            const prog = phaseProgress(p);
+            const strategy = strategyOf(p);
+            const complete = p.gate_status === "complete" || (p.progress ?? 0) >= 100;
+            const prog = complete ? 100 : phaseProgress(p);
+            const signed = p.gate_status === "signed_off";
+            const dod = Array.isArray(p.dod_checklist) ? p.dod_checklist : [];
+            const dodDone = dod.filter((it: any) => it?.done).length;
             return (
               <Card key={p.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span className="font-semibold">{p.phase}</span>
                       <Badge variant="outline" className="text-xs">{p.methodology}</Badge>
-                      <Badge className={`text-xs ${prog >= 100 ? "bg-green-100 text-green-700" : prog > 0 ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{prog >= 100 ? pt("completed") : prog > 0 ? pt("in progress") : pt("not started")}</Badge>
+                      <Badge variant="secondary" className="text-xs" title={STRATEGY_LABEL[strategy]}>{STRATEGY_LABEL[strategy]}</Badge>
+                      <Badge className={`text-xs ${complete ? "bg-green-100 text-green-700" : signed ? "bg-amber-100 text-amber-700" : prog > 0 ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{complete ? pt("completed") : signed ? pt("gate signed off") : prog > 0 ? pt("in progress") : pt("not started")}</Badge>
                     </div>
                     <div className="flex gap-1">
-                      {prog < 100 && <Button variant="ghost" size="sm" onClick={() => markComplete(p)}><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /></Button>}
+                      {!complete && strategy === "predictive" && !signed && <Button variant="ghost" size="sm" title={pt("Sign off gate")} onClick={() => signOff(p)}><Stamp className="h-3.5 w-3.5 text-amber-600" /></Button>}
+                      {!complete && strategy === "adaptive" && <Button variant="ghost" size="sm" title={pt("Definition of Done")} onClick={() => openDod(p)}><ListChecks className="h-3.5 w-3.5 text-purple-600" /></Button>}
+                      {!complete && <Button variant="ghost" size="sm" title={pt("Complete phase")} onClick={() => markComplete(p)}>{strategy === "predictive" ? <ShieldCheck className="h-3.5 w-3.5 text-green-600" /> : <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />}</Button>}
                       <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                     </div>
                   </div>
                   {p.description && <p className="text-sm text-muted-foreground mb-2">{p.description}</p>}
-                  <div className="text-xs text-muted-foreground mb-2">{p.start_date || "—"} → {p.end_date || "—"}</div>
+                  <div className="text-xs text-muted-foreground mb-2 flex items-center gap-3">
+                    <span>{p.start_date || "—"} → {p.end_date || "—"}</span>
+                    {strategy === "adaptive" && dod.length > 0 && <span className="inline-flex items-center gap-1"><ListChecks className="h-3 w-3" />{dodDone}/{dod.length} DoD</span>}
+                  </div>
                   <div className="flex items-center gap-3"><Progress value={prog} className="h-2 flex-1" /><span className="text-xs font-medium w-10 text-right">{prog}%</span></div>
                 </CardContent>
               </Card>
@@ -132,8 +205,30 @@ const HybridPhases = () => {
             <div className="space-y-2"><Label>{pt("Start Date")}</Label><Input type="date" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("End Date")}</Label><Input type="date" value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} /></div>
           </div>
-          <div className="space-y-2"><Label>{pt("Progress")} (%)</Label><Input type="number" min="0" max="100" value={form.progress} onChange={e => setForm({ ...form, progress: e.target.value })} /></div>
+          <div className="space-y-2"><Label>{pt("Progress")} (%)</Label><Input type="number" min="0" max="99" value={form.progress} onChange={e => setForm({ ...form, progress: e.target.value })} /><p className="text-xs text-muted-foreground">{pt("100% is set by completing the phase through its gate — not here.")}</p></div>
           <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button><Button onClick={handleSave} disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
+
+      <Dialog open={!!dodPhase} onOpenChange={(o) => !o && setDodPhase(null)}><DialogContent>
+        <DialogHeader><DialogTitle>{pt("Definition of Done")} — {dodPhase?.phase}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">{pt("Every item must be checked (and all phase tasks Done) before this adaptive phase can complete.")}</p>
+          <div className="space-y-2">
+            {dodItems.length === 0 && <p className="text-sm text-muted-foreground">{pt("No criteria yet.")}</p>}
+            {dodItems.map((it, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input type="checkbox" checked={!!it.done} onChange={() => toggleDodItem(i)} className="h-4 w-4" />
+                <span className={`flex-1 text-sm ${it.done ? "line-through text-muted-foreground" : ""}`}>{it.text}</span>
+                <Button variant="ghost" size="sm" onClick={() => removeDodItem(i)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input value={dodNew} placeholder={pt("Add a Done criterion")} onChange={e => setDodNew(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addDodItem(); } }} />
+            <Button onClick={addDodItem}><Plus className="h-4 w-4" /></Button>
+          </div>
+          <div className="flex justify-end"><Button variant="outline" onClick={() => setDodPhase(null)}>{pt("Close")}</Button></div>
         </div>
       </DialogContent></Dialog>
     </div>

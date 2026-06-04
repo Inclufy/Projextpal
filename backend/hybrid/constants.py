@@ -20,3 +20,23 @@ HYBRID_METHODOLOGIES = [
 ]
 
 HYBRID_METHODOLOGY_SET = frozenset(HYBRID_METHODOLOGIES)
+
+# Each phase methodology completes under one of three governance STRATEGIES.
+# This is what makes the methodology label behaviour-changing (backlog #38):
+#   predictive -> gate review must be signed off before the phase can complete
+#   adaptive   -> Definition-of-Done checklist + all phase tasks done
+#   flow       -> all phase tasks pulled to done (continuous flow drained)
+STRATEGY_BY_METHODOLOGY = {
+    "prince2": "predictive",
+    "waterfall": "predictive",
+    "lean_six_sigma_green": "predictive",
+    "lean_six_sigma_black": "predictive",
+    "agile": "adaptive",
+    "scrum": "adaptive",
+    "kanban": "flow",
+}
+
+
+def strategy_for(methodology):
+    """Governance strategy for a phase methodology (defaults to predictive)."""
+    return STRATEGY_BY_METHODOLOGY.get(methodology, "predictive")
