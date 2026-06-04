@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, ListChecks, Pencil, Trash2, ArrowUpDown } from "lucide-react";
+import { Loader2, Plus, ListChecks, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 const ScrumBacklog = () => {
@@ -78,6 +78,23 @@ const ScrumBacklog = () => {
     } catch { toast.error(pt("Assignment failed")); }
   };
 
+  const moveItem = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= backlogItems.length) return;
+    const reordered = [...backlogItems];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const payload = reordered.map((it, i) => ({ id: it.id, order: i }));
+    // optimistic update so the UI reflects the new order immediately
+    const orderMap = new Map(payload.map(p => [p.id, p.order]));
+    setItems(prev => prev.map(it => orderMap.has(it.id) ? { ...it, order: orderMap.get(it.id) } : it));
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/scrum/items/reorder/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify({ items: payload }),
+      });
+      if (!r.ok) { toast.error(pt("Reorder failed")); fetchData(); }
+    } catch { toast.error(pt("Reorder failed")); fetchData(); }
+  };
+
   const updateStatus = async (itemId: number, status: string) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/update_status/`, {
@@ -92,7 +109,7 @@ const ScrumBacklog = () => {
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
-  const backlogItems = items.filter(i => !i.sprint);
+  const backlogItems = items.filter(i => !i.sprint).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const sprintItems = items.filter(i => i.sprint);
 
   return (
@@ -109,9 +126,13 @@ const ScrumBacklog = () => {
           <CardHeader className="pb-3"><CardTitle>{pt("Backlog")} ({backlogItems.length})</CardTitle></CardHeader>
           <CardContent>
             {backlogItems.length === 0 ? <p className="text-muted-foreground text-center py-6">{pt("No backlog items")}</p> : (
-              <div className="space-y-2">{backlogItems.map((item) => (
+              <div className="space-y-2">{backlogItems.map((item, idx) => (
                 <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
                   <div className="flex items-center gap-3 flex-1">
+                    <div className="flex flex-col -my-1">
+                      <Button variant="ghost" size="sm" className="h-4 w-6 p-0" disabled={idx === 0} onClick={() => moveItem(idx, -1)} title={pt("Move up")}><ChevronUp className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="sm" className="h-4 w-6 p-0" disabled={idx === backlogItems.length - 1} onClick={() => moveItem(idx, 1)} title={pt("Move down")}><ChevronDown className="h-3 w-3" /></Button>
+                    </div>
                     <Badge className={`text-xs ${typeColors[item.item_type] || ""}`}>{item.item_type}</Badge>
                     <span className="font-medium text-sm">{item.title}</span>
                     <Badge className={`text-xs ${priorityColors[item.priority] || ""}`}>{item.priority}</Badge>

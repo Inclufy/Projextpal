@@ -8,7 +8,8 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Play, CheckCircle2, LayoutDashboard, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Play, CheckCircle2, LayoutDashboard, Pencil, Trash2, TrendingDown } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 
 const ScrumSprintBoard = () => {
@@ -16,6 +17,7 @@ const ScrumSprintBoard = () => {
   const { id } = useParams<{ id: string }>();
   const [sprints, setSprints] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [burndown, setBurndown] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,9 +39,25 @@ const ScrumSprintBoard = () => {
     finally { setLoading(false); }
   };
 
+  const fetchBurndown = async (sprintId: number) => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/`, { headers });
+      if (r.ok) { const d = await r.json(); setBurndown(Array.isArray(d.burndown_data) ? d.burndown_data : []); }
+    } catch (err) { console.error(err); }
+  };
+
+  const recordBurndown = async (sprintId: number) => {
+    try {
+      await fetch(`/api/v1/projects/${id}/scrum/sprints/${sprintId}/record_burndown/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({}) });
+      fetchBurndown(sprintId);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => { fetchData(); }, [id]);
 
   const activeSprint = sprints.find(s => s.status === "active");
+
+  useEffect(() => { if (activeSprint) fetchBurndown(activeSprint.id); else setBurndown([]); }, [activeSprint?.id]);
   const sprintItems = activeSprint ? items.filter(i => i.sprint === activeSprint.id) : [];
   const columns = { todo: sprintItems.filter(i => i.status === "new" || i.status === "ready"), in_progress: sprintItems.filter(i => i.status === "in_progress"), done: sprintItems.filter(i => i.status === "done") };
 
@@ -65,7 +83,7 @@ const ScrumSprintBoard = () => {
   const updateItemStatus = async (itemId: number, status: string) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/update_status/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ status }) });
-      if (r.ok) { fetchData(); return; }
+      if (r.ok) { fetchData(); if (activeSprint) recordBurndown(activeSprint.id); return; }
       const err = await r.json().catch(() => ({}));
       if (err.code === "dod_not_met") {
         const unmet = Array.isArray(err.unmet_criteria) ? err.unmet_criteria : [];
@@ -103,6 +121,27 @@ const ScrumSprintBoard = () => {
             </div>
           ))}
         </div>
+
+        {/* Burndown */}
+        {activeSprint && (
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><TrendingDown className="h-4 w-4 text-blue-500" />{pt("Sprint Burndown")}</CardTitle></CardHeader>
+            <CardContent>
+              {burndown.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6 text-sm">{pt("No burndown data yet — move an item to update it.")}</p>
+              ) : (
+                <div className="h-56"><ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={burndown.map((b) => ({ date: String(b.date).slice(5), remaining: b.remaining_points, completed: b.completed_points, ideal: b.ideal_remaining != null ? Number(b.ideal_remaining) : undefined }))}>
+                    <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Legend />
+                    <Line type="monotone" dataKey="remaining" name={pt("Remaining")} stroke="#3b82f6" dot />
+                    <Line type="monotone" dataKey="completed" name={pt("Completed")} stroke="#22c55e" dot />
+                    {burndown.some((b) => b.ideal_remaining != null) && <Line type="monotone" dataKey="ideal" name={pt("Ideal")} stroke="#94a3b8" strokeDasharray="5 5" dot={false} />}
+                  </LineChart>
+                </ResponsiveContainer></div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Board */}
         {!activeSprint ? (
