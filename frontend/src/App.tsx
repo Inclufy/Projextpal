@@ -101,6 +101,7 @@ const ProgramsOverview = lazy(() => import("./pages/ProgramsOverview"));
 const CreateProgram = lazy(() => import("./pages/CreateProgram"));
 const ProgramDashboard = lazy(() => import("./pages/ProgramDashboard"));
 const ProgramBenefits = lazy(() => import("./pages/ProgramBenefits"));
+const ProgramSafe = lazy(() => import("./pages/ProgramSafe"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
@@ -629,40 +630,40 @@ const App = () => (
                 </FeatureGuard>
               } />
               
-              {/* SAFe-specific routes */}
+              {/* SAFe-specific routes — real executable PI loop (#34) */}
               <Route path="/programs/:id/art" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/pi/current" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/pi/planning" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/pi/objectives" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/features" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/demos" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/inspect-adapt" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramSafe /></ProtectedPage>
                 </FeatureGuard>
               } />
               
