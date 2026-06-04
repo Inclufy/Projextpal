@@ -95,6 +95,8 @@ interface GuideFeature {
   icon: LucideIcon;
   title: string;
   description: string;
+  /** Optional in-app navigation target; when set the feature card becomes clickable. */
+  path?: string;
 }
 
 interface GuideHowTo {
@@ -390,6 +392,41 @@ const DEFAULT_GUIDE: GuideContent = {
   ],
 };
 
+/* ─── Methodology-specific guides (project-scoped, with deep links) ───
+   These are built per project because their feature links need the project id.
+   Resolved from the pathname (e.g. /projects/:id/prince2/...) so the guide
+   reflects the methodology you're actually in instead of the generic
+   "Projecten" guide. */
+const buildPrince2Guide = (projectId: string): GuideContent => ({
+  pageTitle: "PRINCE2",
+  pageDescription: "Beheer dit project volgens PRINCE2: processen (SU→IP→CS→SB→CP), thema's en managementproducten. Klik op een functie om er direct naartoe te gaan.",
+  features: [
+    { icon: Layout, title: "Overzicht", description: "Procesflow, fasen en managementproducten in één beeld", path: `/projects/${projectId}/prince2/dashboard` },
+    { icon: Briefcase, title: "Business Case", description: "Doorlopende zakelijke rechtvaardiging onderbouwen", path: `/projects/${projectId}/prince2/business-case` },
+    { icon: Workflow, title: "Werkpakketten", description: "Werk autoriseren, accepteren en uitvoeren (CS/MP)", path: `/projects/${projectId}/prince2/work-packages` },
+    { icon: Shield, title: "Fasepoorten", description: "Faseovergangen met go/no-go-besluit van de Project Board", path: `/projects/${projectId}/prince2/stage-gates` },
+    { icon: AlertTriangle, title: "Toleranties", description: "Tolerantiegrenzen bewaken — manage by exception", path: `/projects/${projectId}/prince2/tolerances` },
+    { icon: CheckCircle2, title: "Quality Register", description: "Kwaliteitscontroles van producten registreren", path: `/projects/${projectId}/prince2/quality-register` },
+    { icon: ListChecks, title: "Product Status", description: "Status en kwaliteitscontroles per product (§A.18)", path: `/projects/${projectId}/prince2/product-status` },
+    { icon: BookOpen, title: "Geleerde Lessen", description: "Lessen vastleggen + enquête-inzichten + Lessenrapport", path: `/projects/${projectId}/prince2/lessons-log` },
+    { icon: FileText, title: "Projectafsluiting", description: "Eindprojectrapport en gecontroleerde afsluiting (CP)", path: `/projects/${projectId}/prince2/end-project-report` },
+  ],
+  howTos: [
+    { title: "Een fase doorlopen (CS)", steps: ["Open Werkpakketten en autoriseer werk (fase moet actief zijn)", "Teammanager accepteert het werkpakket", "Start het werk zodra afhankelijkheden voltooid zijn", "Leg risico's & issues vast", "Stel een Highlight Report op voor de Project Board"] },
+    { title: "Een fasepoort passeren (SB)", steps: ["Open Fasepoorten", "Controleer dat producten goedgekeurd zijn", "Werk de Business Case en het volgende Faseplan bij", "Vraag de Project Board om go/no-go-besluit"] },
+    { title: "Het project afsluiten (CP)", steps: ["Stel via Geleerde Lessen het Lessenrapport samen", "Zorg dat alle producten goedgekeurd zijn", "Vul het Eindprojectrapport in", "Keur het rapport goed om af te sluiten"] },
+  ],
+  tips: [
+    "Een project is alleen PRINCE2 als alle 7 principes worden toegepast.",
+    "Manage by exception: escaleer pas naar de Project Board bij dreigende tolerantie-overschrijding.",
+    "Stel het Lessenrapport samen vóór afsluiting — het is een voorwaarde voor de Project Board.",
+    "Gebruik 'Tailor to suit the project' om de methode passend te maken voor de omvang en het risico.",
+  ],
+  tourSteps: [
+    { title: "PRINCE2-procesflow", description: "Bovenaan ziet u de procesflow SU→IP→CS→SB→CP met de huidige fase. Volg de functies hieronder om elk onderdeel te beheren." },
+  ],
+});
+
 /* ─── Related pages navigation ─── */
 interface NavLink {
   label: string;
@@ -529,7 +566,12 @@ export default function AICopilotSidebar() {
 
   // Resolve current path for guide
   const currentPath = "/" + location.pathname.split("/").filter(Boolean)[0];
-  const guide = GUIDE_MAP[location.pathname] || GUIDE_MAP[currentPath] || DEFAULT_GUIDE;
+  // Methodology-specific guides take precedence so a project page shows its own
+  // guide (with working deep links) instead of the generic "Projecten" guide.
+  const prince2Match = location.pathname.match(/^\/projects\/([^/]+)\/prince2(?:\/|$)/);
+  const guide = prince2Match
+    ? buildPrince2Guide(prince2Match[1])
+    : GUIDE_MAP[location.pathname] || GUIDE_MAP[currentPath] || DEFAULT_GUIDE;
 
   const suggestions = language === "nl" ? suggestionsData.nl : suggestionsData.en;
   const quickActions = language === "nl" ? quickActionsData.nl : quickActionsData.en;
@@ -640,15 +682,30 @@ export default function AICopilotSidebar() {
           <div className="grid grid-cols-1 gap-1.5">
             {guide.features.map((feature, i) => {
               const Icon = feature.icon;
-              return (
-                <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg border border-border hover:bg-accent/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              const clickable = !!feature.path;
+              const inner = (
+                <>
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5 transition-colors">
                     <Icon className="h-3.5 w-3.5 text-purple-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground">{feature.title}</p>
+                    <p className="text-xs font-semibold text-foreground group-hover:text-purple-600 transition-colors">{feature.title}</p>
                     <p className="text-[10px] text-muted-foreground leading-snug">{feature.description}</p>
                   </div>
+                  {clickable && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground ml-auto self-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
+                </>
+              );
+              return clickable ? (
+                <button
+                  key={i}
+                  onClick={() => navigate(feature.path!)}
+                  className="group flex items-start gap-2.5 p-2.5 rounded-lg border border-border hover:bg-accent/40 hover:border-purple-300 transition-all text-left w-full cursor-pointer"
+                >
+                  {inner}
+                </button>
+              ) : (
+                <div key={i} className="group flex items-start gap-2.5 p-2.5 rounded-lg border border-border hover:bg-accent/30 transition-colors">
+                  {inner}
                 </div>
               );
             })}
