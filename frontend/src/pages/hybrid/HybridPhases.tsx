@@ -22,7 +22,8 @@ const fetchJson = async (url: string) => {
 };
 const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
 
-const METHODOLOGIES = ["scrum", "kanban", "waterfall", "agile", "prince2", "lean_six_sigma_green", "lean_six_sigma_black"];
+// Canonical Hybrid vocabulary — must mirror backend/hybrid/constants.py
+const METHODOLOGIES = ["prince2", "agile", "scrum", "kanban", "waterfall", "lean_six_sigma_green", "lean_six_sigma_black"];
 
 const HybridPhases = () => {
   const { pt } = usePageTranslations();
