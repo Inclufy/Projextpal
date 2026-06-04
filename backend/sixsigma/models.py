@@ -535,7 +535,18 @@ class HypothesisTest(models.Model):
         max_length=20, choices=CONCLUSION_CHOICES, blank=True
     )
     interpretation = models.TextField(blank=True)
-    
+
+    # Decision-spine link: the Analyze-phase root cause this test verifies.
+    # Makes the chain Fishbone cause → hypothesis test → (Solution) traceable.
+    root_cause = models.ForeignKey(
+        FishboneCause,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='hypothesis_tests',
+        help_text="The fishbone root cause this test sets out to verify"
+    )
+
     test_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -552,6 +563,15 @@ class HypothesisTest(models.Model):
         if self.p_value is None:
             return None
         return self.p_value < self.alpha
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Close the analyze-phase loop: a test that rejects H0 (a real effect)
+        # and is wired to a fishbone cause verifies that cause with data.
+        if self.root_cause and self.conclusion == 'reject' and not self.root_cause.verified:
+            self.root_cause.verified = True
+            self.root_cause.is_root_cause = True
+            self.root_cause.save(update_fields=['verified', 'is_root_cause'])
 
 
 # =============================================================================
@@ -938,6 +958,16 @@ class ControlChart(models.Model):
         on_delete=models.CASCADE,
         related_name='control_charts'
     )
+    # Decision-spine link: the Control Plan this chart monitors. An SPC chart
+    # that breaches should drive the linked plan's reaction plan.
+    control_plan = models.ForeignKey(
+        'ControlPlan',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='control_charts',
+        help_text="The Control Plan this SPC chart monitors"
+    )
     name = models.CharField(max_length=255)
     chart_type = models.CharField(max_length=10, choices=CHART_TYPE_CHOICES)
     metric_name = models.CharField(max_length=255)
@@ -1268,3 +1298,78 @@ class ProjectClosure(models.Model):
                 2
             )
         return None
+
+
+class SavingsValidation(models.Model):
+    """A single claimed-savings line that must be Champion-validated before it
+    counts as a benefit. Turns 'projected/realized savings' on the closure from
+    a free-text number into an auditable ledger with a sign-off gate — claimed
+    amounts only become validated benefits once the Champion (and optionally
+    Finance) sign off."""
+    CATEGORY_CHOICES = [
+        ('hard', 'Hard Savings (P&L)'),
+        ('soft', 'Soft Savings'),
+        ('cost_avoidance', 'Cost Avoidance'),
+        ('revenue', 'Revenue Increase'),
+        ('working_capital', 'Working Capital'),
+    ]
+    STATUS_CHOICES = [
+        ('claimed', 'Claimed'),
+        ('under_review', 'Under Review'),
+        ('validated', 'Validated'),
+        ('rejected', 'Rejected'),
+    ]
+
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.CASCADE, related_name='savings_validations'
+    )
+    solution = models.ForeignKey(
+        Solution, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='savings_validations',
+        help_text="The improvement that produced this saving"
+    )
+    title = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='hard')
+    claimed_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    validated_amount = models.DecimalField(
+        max_digits=14, decimal_places=2, null=True, blank=True,
+        help_text="Amount the Champion validated (may differ from claimed)"
+    )
+    currency = models.CharField(max_length=8, default='EUR')
+    period_start = models.DateField(null=True, blank=True)
+    period_end = models.DateField(null=True, blank=True)
+    basis = models.TextField(blank=True, help_text="How the saving was calculated")
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='claimed')
+
+    claimed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='claimed_savings'
+    )
+    # Champion sign-off gate.
+    champion = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='championed_savings'
+    )
+    champion_signed_off = models.BooleanField(default=False)
+    champion_signed_off_at = models.DateTimeField(null=True, blank=True)
+    finance_validated = models.BooleanField(default=False)
+    rejection_reason = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Savings Validation"
+        verbose_name_plural = "Savings Validations"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title}: {self.claimed_amount} {self.currency} ({self.status})"
+
+    @property
+    def recognized_amount(self):
+        """Only validated lines count toward recognized benefits."""
+        if self.status == 'validated':
+            return self.validated_amount if self.validated_amount is not None else self.claimed_amount
+        return 0

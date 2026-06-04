@@ -69,6 +69,14 @@ class DesignOfExperiment(models.Model):
     objective = models.TextField(blank=True)
     results = models.JSONField(default=dict, blank=True)
     conclusion = models.TextField(blank=True)
+    # Decision-spine link: the canonical sixsigma Solution this experiment
+    # optimises. DOE is the Black-Belt-only tool; its output feeds the shared
+    # Improve-phase Solution rather than a duplicate Black-Belt record.
+    improves_solution = models.ForeignKey(
+        'sixsigma.Solution', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='design_experiments',
+        help_text="The Improve-phase Solution this DOE optimises"
+    )
     responsible = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='lss_black_doe'

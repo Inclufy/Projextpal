@@ -10,7 +10,7 @@ from .models import (
     Solution, PilotPlan, FMEA, ImplementationPlan,
     # Control
     ControlPlan, ControlPlanItem, ControlChart, ControlChartData,
-    TollgateReview, ProjectClosure,
+    TollgateReview, ProjectClosure, SavingsValidation,
 )
 
 
@@ -267,7 +267,7 @@ class HypothesisTestSerializer(serializers.ModelSerializer):
             'null_hypothesis', 'alt_hypothesis', 'alpha', 'sample_size',
             'test_statistic', 'p_value', 'confidence_interval_lower',
             'confidence_interval_upper', 'conclusion', 'conclusion_display',
-            'interpretation', 'is_significant', 'test_date',
+            'interpretation', 'is_significant', 'test_date', 'root_cause',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -404,7 +404,7 @@ class ControlChartSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'project', 'name', 'chart_type', 'chart_type_display',
             'metric_name', 'unit', 'ucl', 'lcl', 'center_line',
-            'usl', 'lsl', 'target', 'cp', 'cpk',
+            'usl', 'lsl', 'target', 'cp', 'cpk', 'control_plan',
             'is_active', 'total_violations', 'is_in_control',
             'data_points', 'recent_data', 'created_at', 'updated_at'
         ]
@@ -477,6 +477,31 @@ class ProjectClosureSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class SavingsValidationSerializer(serializers.ModelSerializer):
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    recognized_amount = serializers.ReadOnlyField()
+    solution_name = serializers.CharField(source='solution.name', read_only=True)
+    champion_name = serializers.CharField(source='champion.get_full_name', read_only=True)
+    claimed_by_name = serializers.CharField(source='claimed_by.get_full_name', read_only=True)
+
+    class Meta:
+        model = SavingsValidation
+        fields = [
+            'id', 'project', 'solution', 'solution_name', 'title',
+            'category', 'category_display', 'claimed_amount', 'validated_amount',
+            'currency', 'period_start', 'period_end', 'basis',
+            'status', 'status_display', 'recognized_amount',
+            'claimed_by', 'claimed_by_name', 'champion', 'champion_name',
+            'champion_signed_off', 'champion_signed_off_at', 'finance_validated',
+            'rejection_reason', 'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'project', 'claimed_by', 'champion_signed_off',
+            'champion_signed_off_at', 'created_at', 'updated_at',
+        ]
 
 
 # =============================================================================

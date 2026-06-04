@@ -2175,6 +2175,30 @@
    "last_test_status": "pass",
    "last_test_response_status": 200,
    "notes": "2026-06-05: Covered by backend/kanban/tests_flow.py (9 tests green; with the 4 existing tests_wip.py tests still green = 13). expedite class-of-service card pulls into a full WIP column -> 200 (over-fills by design) while a standard card -> 409 wip_limit_reached and stays put; move with class_of_service=expedite promotes a standard card and lets it bypass; toggle_blocked opens a BlockEvent (is_open, blocked_at set) then closes it (unblocked_at set, blocked_at cleared); flow-metrics surfaces blocked_count 1, sle_breach_count 1 (card created 3d ago with sle_days 1), expedite_in_flight 1, class_of_service_breakdown.expedite 1, current_wip>=3; ?column= narrows work-policies to the column and ?column=board to board-wide; kaizen PATCH to done stamps resolved_at; cadence create persists; cross-tenant flow-metrics -> 403/404. Live endpoint needs auth (defer like other authed entries)."
+  },
+  {
+   "id": "FEAT-043",
+   "title": "LSS one DMAIC spine + compute capability + special-cause engine + savings ledger — the Six Sigma app now COMPUTES capability instead of just storing limits (capability action returns real Cp/Cpk/Pp/Ppk + sigma level + DPMO + yield from the chart's actual data points against its USL/LSL: short-term sigma via average moving range/d2=1.128, long-term via overall stdev, DPMO/yield via the normal-approximation erfc; 400 insufficient_data when <2 points or no spec); a special-cause rule engine (detect_special_causes applies Nelson/Western-Electric rules 1-4 over the ordered series and persists is_violation + violation_rule per point, so an out-of-control signal is flagged, not just an outside-limit dot); the analyze-phase loop closes (HypothesisTest.root_cause FK to FishboneCause + save() hook: a test that rejects H0 verifies the cause with data — sets verified + is_root_cause); and a claimed-savings ledger with a Champion sign-off gate (SavingsValidation: validate refuses with 409 champion_signoff_required until the Champion signs off, then recognises the benefit — recognized_amount is 0 until status=validated). Decision-spine FKs added: ControlChart.control_plan, DOE.improves_solution(sixsigma.Solution)",
+   "severity": "P2",
+   "area": "sixsigma",
+   "endpoint": "POST /api/v1/sixsigma/projects/{project_id}/sixsigma/savings-validations/{id}/validate/",
+   "method": "POST",
+   "expected_status": 409,
+   "previous_status": null,
+   "request_body": {},
+   "expected_response_contains": [
+    "champion_signoff_required"
+   ],
+   "previous_error_contains": [],
+   "root_cause": "Before #43 the LSS apps stored doctrine without enforcing it: ControlChart held USL/LSL/cp/cpk fields but nothing computed capability from the data points (Cp/Cpk/Pp/Ppk/sigma/DPMO were manual), so the Measure/Improve numbers were unverifiable; the only special-cause detection was ControlChartData.save() flagging a single point outside the 3-sigma limits (rule 1) — runs/trends/2-of-3-beyond-2-sigma (rules 2-4) were never detected so a drifting-but-in-limits process read as in control; the Analyze chain Fishbone cause -> hypothesis test was not wired, so rejecting H0 did not verify the root cause; and realized/projected savings lived as free-text numbers on the closure with no per-claim ledger and no Champion sign-off gate, so a benefit could be claimed without validation. Advanced Black-Belt tools (DOE) and the SPC chart were also not linked to the shared sixsigma Solution/ControlPlan spine.",
+   "fix_location": "backend/sixsigma/{models,serializers,views,urls}.py (compute_capability + _normal_sf + detect_special_causes helpers; ControlChartViewSet.capability[GET/POST persists cp/cpk, 400 insufficient_data] + detect_special_causes[persists is_violation/violation_rule]; HypothesisTest.root_cause FK + save() verify-on-reject; SavingsValidation model + SavingsValidationViewSet[sign_off/validate(409 champion_signoff_required)/reject]; ControlChart.control_plan FK) + backend/lss_black/models.py (DesignOfExperiment.improves_solution FK to sixsigma.Solution) + migrations sixsigma/0002 + lss_black/0003 + backend/sixsigma/tests_flow.py + frontend SixSigmaControlChart (Cpk + Signals buttons, capability tiles Cp/Cpk/Pp/Ppk/sigma/DPMO, violation dots with rule tooltip) + SixSigmaClosure (savings-validation ledger: claim, Champion sign-off, validate with champion_signoff_required toast, reject, recognised-total badge)",
+   "found": "2026-06-05",
+   "found_by": "methodology audit BACKLOG-2026-06-04 (#43)",
+   "status": "fixed_verified",
+   "last_tested": "2026-06-05",
+   "last_test_status": "pass",
+   "last_test_response_status": 409,
+   "notes": "2026-06-05: Covered by backend/sixsigma/tests_flow.py (15 tests green; full sixsigma suite 20 green incl. the existing tollgate-gate tests). compute_capability on a tight centred series vs a wide spec -> Cpk>1.33 is_capable, sigma_level==cpk*3+1.5, DPMO<1000; an off-centre series -> Cpk<Cp not capable; returns None (=> endpoint 400 insufficient_data) with no spec or <2 points. detect_special_causes flags rule 1 (point beyond limits) and rule 2 (9 same side) and returns [] for an in-control series; the capability POST persists cp/cpk; detect_special_causes persists is_violation on the 12.5 outlier. HypothesisTest conclusion=reject + root_cause verifies the FishboneCause (verified+is_root_cause) while fail_to_reject does not. SavingsValidation validate -> 409 champion_signoff_required before sign-off (recognized_amount 0); after sign_off(validated_amount 45000) + validate -> 200 status=validated recognized_amount 45000; cross-tenant savings list hidden. Live endpoints need auth (defer like other authed entries). DEFERRED per spec (data-loss/migration risk near live customer): hard-collapsing the 3 duplicate metric stores into one and retiring the duplicate lss_black HypothesisTest/ControlPlan/SPCChart models, and the Green-Belt mentoring link — tracked for a later migration behind a data-guardian backup."
   }
  ]
 }

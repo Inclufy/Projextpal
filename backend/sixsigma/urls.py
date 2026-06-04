@@ -13,6 +13,7 @@ from .views import (
     ControlPlanViewSet, ControlPlanItemViewSet,
     ControlChartViewSet, ControlChartDataViewSet,
     TollgateReviewViewSet, ProjectClosureViewSet,
+    SavingsValidationViewSet,
     # Dashboard
     SixSigmaDashboardView,
 )
@@ -378,7 +379,17 @@ urlpatterns = [
         ControlChartViewSet.as_view({'post': 'recalculate_limits'}),
         name='sixsigma-control-charts-recalculate'
     ),
-    
+    path(
+        'projects/<int:project_id>/sixsigma/control-charts/<int:pk>/capability/',
+        ControlChartViewSet.as_view({'get': 'capability', 'post': 'capability'}),
+        name='sixsigma-control-charts-capability'
+    ),
+    path(
+        'projects/<int:project_id>/sixsigma/control-charts/<int:pk>/detect_special_causes/',
+        ControlChartViewSet.as_view({'post': 'detect_special_causes'}),
+        name='sixsigma-control-charts-detect-special-causes'
+    ),
+
     # Control Chart Data
     path(
         'projects/<int:project_id>/sixsigma/chart-data/',
@@ -435,6 +446,33 @@ urlpatterns = [
         name='sixsigma-closure-approve'
     ),
     
+    # Savings Validation (claimed-savings ledger + Champion sign-off gate)
+    path(
+        'projects/<int:project_id>/sixsigma/savings-validations/',
+        SavingsValidationViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='sixsigma-savings-validations-list'
+    ),
+    path(
+        'projects/<int:project_id>/sixsigma/savings-validations/<int:pk>/',
+        SavingsValidationViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='sixsigma-savings-validations-detail'
+    ),
+    path(
+        'projects/<int:project_id>/sixsigma/savings-validations/<int:pk>/sign_off/',
+        SavingsValidationViewSet.as_view({'post': 'sign_off'}),
+        name='sixsigma-savings-validations-sign-off'
+    ),
+    path(
+        'projects/<int:project_id>/sixsigma/savings-validations/<int:pk>/validate/',
+        SavingsValidationViewSet.as_view({'post': 'validate'}),
+        name='sixsigma-savings-validations-validate'
+    ),
+    path(
+        'projects/<int:project_id>/sixsigma/savings-validations/<int:pk>/reject/',
+        SavingsValidationViewSet.as_view({'post': 'reject'}),
+        name='sixsigma-savings-validations-reject'
+    ),
+
     # =========================================================================
     # DASHBOARD
     # =========================================================================

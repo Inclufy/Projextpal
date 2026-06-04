@@ -17,7 +17,7 @@ from .models import (
     Solution, PilotPlan, FMEA, ImplementationPlan,
     # Control
     ControlPlan, ControlPlanItem, ControlChart, ControlChartData,
-    TollgateReview, ProjectClosure,
+    TollgateReview, ProjectClosure, SavingsValidation,
 )
 from .serializers import (
     # Define
@@ -34,10 +34,149 @@ from .serializers import (
     # Control
     ControlPlanSerializer, ControlPlanItemSerializer,
     ControlChartSerializer, ControlChartListSerializer, ControlChartDataSerializer,
-    TollgateReviewSerializer, ProjectClosureSerializer,
+    TollgateReviewSerializer, ProjectClosureSerializer, SavingsValidationSerializer,
     # Dashboard
     SixSigmaDashboardSerializer,
 )
+
+
+# =============================================================================
+# PROCESS-CAPABILITY + SPC RULE-ENGINE HELPERS (#43)
+# =============================================================================
+
+def _normal_sf(z):
+    """Upper-tail probability of the standard normal (1 - CDF), via erfc."""
+    import math
+    return 0.5 * math.erfc(z / math.sqrt(2))
+
+
+def compute_capability(values, usl, lsl, target=None):
+    """Compute process capability (Cp/Cpk/Pp/Ppk), sigma level, DPMO and yield
+    from real measurements against spec limits. Returns None if not computable.
+
+    Cp/Cpk use a short-term sigma estimate from the average moving range
+    (d2=1.128 for n=2); Pp/Ppk use the overall sample stdev. With one-sided
+    specs only the relevant index is reported.
+    """
+    import statistics
+    vals = [float(v) for v in values if v is not None]
+    n = len(vals)
+    if n < 2 or (usl is None and lsl is None):
+        return None
+    usl = float(usl) if usl is not None else None
+    lsl = float(lsl) if lsl is not None else None
+
+    mean = statistics.mean(vals)
+    sigma_overall = statistics.stdev(vals)  # long-term / Pp,Ppk
+    # Short-term sigma from average moving range (within-subgroup proxy).
+    moving_ranges = [abs(vals[i] - vals[i - 1]) for i in range(1, n)]
+    mr_bar = (sum(moving_ranges) / len(moving_ranges)) if moving_ranges else 0
+    sigma_within = (mr_bar / 1.128) if mr_bar > 0 else sigma_overall
+
+    def _indices(sigma):
+        if sigma <= 0:
+            return None, None
+        if usl is not None and lsl is not None:
+            cp = (usl - lsl) / (6 * sigma)
+            cpu = (usl - mean) / (3 * sigma)
+            cpl = (mean - lsl) / (3 * sigma)
+            cpk = min(cpu, cpl)
+        elif usl is not None:
+            cp = None
+            cpk = (usl - mean) / (3 * sigma)
+        else:
+            cp = None
+            cpk = (mean - lsl) / (3 * sigma)
+        return cp, cpk
+
+    cp, cpk = _indices(sigma_within)
+    pp, ppk = _indices(sigma_overall)
+
+    # Defect proportion outside the spec window (normal approximation).
+    p_out = 0.0
+    if sigma_overall > 0:
+        if usl is not None:
+            p_out += _normal_sf((usl - mean) / sigma_overall)
+        if lsl is not None:
+            p_out += _normal_sf((mean - lsl) / sigma_overall)
+    dpmo = round(p_out * 1_000_000, 1)
+    yield_pct = round((1 - p_out) * 100, 4)
+    # Sigma level (long-term Z plus the conventional 1.5σ shift).
+    sigma_level = None
+    if cpk is not None:
+        sigma_level = round(cpk * 3 + 1.5, 2)
+
+    return {
+        'n': n,
+        'mean': round(mean, 4),
+        'sigma_overall': round(sigma_overall, 4),
+        'sigma_within': round(sigma_within, 4),
+        'usl': usl, 'lsl': lsl, 'target': float(target) if target is not None else None,
+        'cp': round(cp, 3) if cp is not None else None,
+        'cpk': round(cpk, 3) if cpk is not None else None,
+        'pp': round(pp, 3) if pp is not None else None,
+        'ppk': round(ppk, 3) if ppk is not None else None,
+        'dpmo': dpmo,
+        'yield_pct': yield_pct,
+        'sigma_level': sigma_level,
+        'is_capable': bool(cpk is not None and cpk >= 1.33),
+    }
+
+
+def detect_special_causes(values, ucl, lcl, center):
+    """Western Electric / Nelson special-cause rules over an ordered series.
+
+    Returns a list of {index, value, rule} flags. Implements the four most
+    common rules:
+      1  any point beyond the 3σ control limits
+      2  nine points in a row on the same side of the centre line
+      3  six points in a row steadily increasing or decreasing
+      4  two of three consecutive points beyond 2σ (same side)
+    """
+    vals = [float(v) for v in values]
+    n = len(vals)
+    if n == 0:
+        return []
+    ucl = float(ucl); lcl = float(lcl); center = float(center)
+    sigma = (ucl - center) / 3 if ucl > center else 0
+    flags = []
+
+    # Rule 1 — outside control limits
+    for i, v in enumerate(vals):
+        if v > ucl or v < lcl:
+            flags.append({'index': i, 'value': v, 'rule': 'Rule 1: beyond 3σ control limit'})
+
+    # Rule 2 — 9 in a row same side of centre
+    run, run_sign = 0, 0
+    for i, v in enumerate(vals):
+        sign = 1 if v > center else (-1 if v < center else 0)
+        if sign != 0 and sign == run_sign:
+            run += 1
+        else:
+            run, run_sign = 1, sign
+        if run >= 9:
+            flags.append({'index': i, 'value': v, 'rule': 'Rule 2: 9 points same side of centre'})
+
+    # Rule 3 — 6 in a row trending
+    inc = dec = 1
+    for i in range(1, n):
+        inc = inc + 1 if vals[i] > vals[i - 1] else 1
+        dec = dec + 1 if vals[i] < vals[i - 1] else 1
+        if inc >= 6 or dec >= 6:
+            flags.append({'index': i, 'value': vals[i], 'rule': 'Rule 3: 6 points trending'})
+
+    # Rule 4 — 2 of 3 beyond 2σ on the same side
+    if sigma > 0:
+        upper2 = center + 2 * sigma
+        lower2 = center - 2 * sigma
+        for i in range(2, n):
+            window = vals[i - 2:i + 1]
+            if sum(1 for w in window if w > upper2) >= 2:
+                flags.append({'index': i, 'value': vals[i], 'rule': 'Rule 4: 2 of 3 beyond 2σ (high)'})
+            elif sum(1 for w in window if w < lower2) >= 2:
+                flags.append({'index': i, 'value': vals[i], 'rule': 'Rule 4: 2 of 3 beyond 2σ (low)'})
+
+    return flags
 
 
 class ProjectFilterMixin:
@@ -609,6 +748,62 @@ class ControlChartViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         violations = chart.data_points.filter(is_violation=True)
         return Response(ControlChartDataSerializer(violations, many=True).data)
 
+    @action(detail=True, methods=['get', 'post'])
+    def capability(self, request, project_id=None, pk=None):
+        """Compute process capability (Cp/Cpk/Pp/Ppk + sigma level + DPMO +
+        yield) from the chart's real data points against its spec limits.
+
+        POST persists the computed cp/cpk onto the chart; GET is read-only.
+        Returns 400 insufficient_data when there are <2 points or no spec limit.
+        """
+        chart = self.get_object()
+        values = [dp.value for dp in chart.data_points.order_by('date')]
+        report = compute_capability(values, chart.usl, chart.lsl, chart.target)
+        if report is None:
+            return Response(
+                {
+                    'detail': 'Capability needs at least 2 data points and at least one specification limit (USL/LSL).',
+                    'code': 'insufficient_data',
+                    'data_points': len(values),
+                    'has_spec_limits': bool(chart.usl is not None or chart.lsl is not None),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if request.method == 'POST':
+            chart.cp = report['cp']
+            chart.cpk = report['cpk']
+            chart.save(update_fields=['cp', 'cpk', 'updated_at'])
+        return Response(report)
+
+    @action(detail=True, methods=['post'])
+    def detect_special_causes(self, request, project_id=None, pk=None):
+        """Run the Nelson / Western Electric special-cause rules across the
+        chart's ordered data points and persist the flags onto each point
+        (is_violation + violation_rule). Returns the list of flagged points.
+        """
+        chart = self.get_object()
+        points = list(chart.data_points.order_by('date'))
+        values = [dp.value for dp in points]
+        flags = detect_special_causes(values, chart.ucl, chart.lcl, chart.center_line)
+        flagged_by_index = {}
+        for f in flags:
+            flagged_by_index.setdefault(f['index'], f['rule'])
+        # Persist: a point is a violation if any rule flagged it.
+        for i, dp in enumerate(points):
+            should = i in flagged_by_index
+            rule = flagged_by_index.get(i, '')
+            if dp.is_violation != should or (should and dp.violation_rule != rule):
+                dp.is_violation = should
+                if should:
+                    dp.violation_rule = rule
+                dp.save(update_fields=['is_violation', 'violation_rule'])
+        return Response({
+            'total_points': len(points),
+            'flagged_count': len(flagged_by_index),
+            'flags': flags,
+            'in_control': len(flagged_by_index) == 0,
+        })
+
     @action(detail=True, methods=['post'])
     def recalculate_limits(self, request, project_id=None, pk=None):
         """Recalculate control limits based on data"""
@@ -653,6 +848,77 @@ class ControlChartDataViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(recorded_by=self.request.user)
+
+
+class SavingsValidationViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Claimed-savings ledger with a Champion sign-off gate.
+
+    A claimed saving only becomes a recognised benefit once the Champion signs
+    off. `validate` refuses to set status='validated' until that has happened
+    (409 champion_signoff_required), so the realised-savings number on the
+    project closure can never be inflated by an unsigned claim.
+    """
+    serializer_class = SavingsValidationSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        return self.get_project_queryset(SavingsValidation)
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        serializer.save(project=project, claimed_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def sign_off(self, request, project_id=None, pk=None):
+        """Champion signs off the claim. Records who signed and when, and may
+        set the validated_amount (defaults to the claimed amount)."""
+        from django.utils import timezone
+        record = self.get_object()
+        record.champion = request.user
+        record.champion_signed_off = True
+        record.champion_signed_off_at = timezone.now()
+        validated_amount = request.data.get('validated_amount')
+        if validated_amount is not None:
+            record.validated_amount = validated_amount
+        if record.status == 'claimed':
+            record.status = 'under_review'
+        record.save(update_fields=[
+            'champion', 'champion_signed_off', 'champion_signed_off_at',
+            'validated_amount', 'status', 'updated_at',
+        ])
+        return Response(self.get_serializer(record).data)
+
+    @action(detail=True, methods=['post'])
+    def validate(self, request, project_id=None, pk=None):
+        """Promote a claim to a recognised benefit. GATE: refuses if the
+        Champion has not signed off yet."""
+        record = self.get_object()
+        if not record.champion_signed_off:
+            return Response(
+                {
+                    'detail': 'This saving cannot be validated until the Champion has signed it off.',
+                    'code': 'champion_signoff_required',
+                    'champion_signed_off': False,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        if record.validated_amount is None:
+            record.validated_amount = record.claimed_amount
+        record.finance_validated = bool(request.data.get('finance_validated', record.finance_validated))
+        record.status = 'validated'
+        record.save(update_fields=[
+            'validated_amount', 'finance_validated', 'status', 'updated_at',
+        ])
+        return Response(self.get_serializer(record).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, project_id=None, pk=None):
+        """Reject a claim with a reason."""
+        record = self.get_object()
+        record.status = 'rejected'
+        record.rejection_reason = request.data.get('rejection_reason', '')
+        record.save(update_fields=['status', 'rejection_reason', 'updated_at'])
+        return Response(self.get_serializer(record).data)
 
 
 class TollgateReviewViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
