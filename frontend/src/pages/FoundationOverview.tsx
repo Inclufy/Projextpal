@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useProject } from "@/hooks/useApi";
 import { MethodologyDashboard } from "@/components/dashboards";
 import { Loader2, LayoutDashboard, List } from "lucide-react";
@@ -37,6 +37,17 @@ const FoundationOverview = () => {
         </div>
       </div>
     );
+  }
+
+  // Methodologies that have a dedicated, richer dashboard land there directly
+  // instead of the generic Project Overview (keeps the project entry point in
+  // sync with the methodology sidebar's "Overview" link).
+  const METHODOLOGY_LANDING: Record<string, string> = {
+    prince2: "prince2/dashboard",
+  };
+  const landing = METHODOLOGY_LANDING[project?.methodology?.toLowerCase()];
+  if (landing && id) {
+    return <Navigate to={`/projects/${id}/${landing}`} replace />;
   }
 
   const getMethodologyLabel = (methodology: string) => {
