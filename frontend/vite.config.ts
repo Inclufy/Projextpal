@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
-    allowedHosts: ["projextpal.com", "www.projextpal.com"],
+    allowedHosts: ["projextpal.com", "www.projextpal.com", "localhost", "127.0.0.1"],
     host: "::",
     port: 8083,
     proxy: {

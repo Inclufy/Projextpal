@@ -11,10 +11,11 @@ import {
   Loader2, RefreshCw, FileText, Briefcase, Shield,
   ChevronRight, AlertTriangle, CheckCircle2, Clock, Layers,
   Plus, TrendingUp, ShieldAlert, GitBranch, Workflow,
-  Euro, Wallet, Gavel, Check, X, Inbox
+  Euro, Wallet, Gavel, Check, X, Inbox, GraduationCap
 } from "lucide-react";
 import { toast } from "sonner";
 import Prince2ProcessFlow from "./Prince2ProcessFlow";
+import Prince2MethodologyOverview from "./Prince2MethodologyOverview";
 
 const riskBadge: Record<string, string> = { high: "bg-red-100 text-red-700", medium: "bg-amber-100 text-amber-700", low: "bg-blue-100 text-blue-700" };
 
@@ -272,14 +273,28 @@ const Prince2Dashboard = () => {
         {/* PRINCE2 Process Flow */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Workflow className="h-5 w-5 text-purple-600" /> {pt("PRINCE2 Process Flow")}
-            </CardTitle>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Workflow className="h-5 w-5 text-purple-600" /> {pt("PRINCE2 Process Flow")}
+              </CardTitle>
+              <button
+                type="button"
+                onClick={() => navigate("/academy/course/prince2-foundation")}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100 dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-300"
+                title={pt("Open the PRINCE2 Foundation course in the Academy")}
+              >
+                <GraduationCap className="h-3.5 w-3.5" />
+                {pt("PRINCE2 course")}
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <Prince2ProcessFlow current={dashboard?.current_process} progress={dashboard?.process_progress} onNavigate={nav} />
           </CardContent>
         </Card>
+
+        {/* PRINCE2 methodology at a glance — 7 principles + 7 themes, linked to Academy */}
+        <Prince2MethodologyOverview projectId={id} defaultOpen={false} />
 
         {/* Board approvals inbox + Budget governance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
