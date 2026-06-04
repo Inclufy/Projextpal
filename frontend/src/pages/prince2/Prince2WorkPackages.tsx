@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil, FileText, Layers, X } from "lucide-react";
+import { Loader2, Plus, Package, Play, CheckCircle2, Trash2, Pencil, FileText, Layers, X, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -154,7 +154,7 @@ const Prince2WorkPackages = () => {
         method: "POST", headers: jsonHeaders,
       });
       if (response.ok) { toast.success(pt("Action completed")); fetchData(); }
-      else toast.error(pt("Action failed"));
+      else { const d = await response.json().catch(() => null); toast.error(d?.detail || pt("Action failed"), { duration: 5000 }); }
     } catch { toast.error(pt("Action failed")); }
   };
 
@@ -293,13 +293,18 @@ const Prince2WorkPackages = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 ml-4">
-                    {wp.status === "pending" && (
-                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "authorize")} title="Authorize">
+                    {(wp.status === "pending" || wp.status === "draft") && (
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "authorize")} title={pt("Authorize (stage must be active)")}>
                         <CheckCircle2 className="h-4 w-4 text-blue-500" />
                       </Button>
                     )}
+                    {wp.status === "authorized" && !wp.accepted_by_tm && (
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "accept")} title={pt("Team Manager accepts the Work Package")}>
+                        <UserCheck className="h-4 w-4 text-indigo-500" />
+                      </Button>
+                    )}
                     {wp.status === "authorized" && (
-                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "start")} title="Start">
+                      <Button variant="ghost" size="sm" onClick={() => handleAction(wp.id, "start")} title={pt("Start (dependencies must be complete + accepted)")}>
                         <Play className="h-4 w-4 text-green-500" />
                       </Button>
                     )}

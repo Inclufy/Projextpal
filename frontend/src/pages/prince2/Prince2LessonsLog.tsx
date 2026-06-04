@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, BookOpen, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 const Prince2LessonsLog = () => {
@@ -49,6 +49,16 @@ const Prince2LessonsLog = () => {
     } catch { toast.error(pt("Save failed")); }
   };
 
+  const [compiling, setCompiling] = useState(false);
+  const compileReport = async () => {
+    setCompiling(true);
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/prince2/lessons/compile_report/`, { method: "POST", headers: jsonHeaders });
+      if (r.ok) { const d = await r.json(); toast.success(pt("Lessons Report compiled") + ` (${d.lessons_count ?? 0})`); }
+      else { const d = await r.json().catch(() => null); toast.error(d?.detail || pt("Compile failed")); }
+    } catch { toast.error(pt("Compile failed")); } finally { setCompiling(false); }
+  };
+
   const deleteLesson = async (lId: number) => {
     if (!confirm(pt("Are you sure you want to delete this?"))) return;
     try {
@@ -74,7 +84,10 @@ const Prince2LessonsLog = () => {
               <p className="text-sm text-muted-foreground">{lessons.length} {pt("lessons recorded")} — {positiveCount} {pt("Positive")} / {negativeCount} {pt("Negative")}</p>
             </div>
           </div>
-          <Button onClick={openCreateLesson} className="gap-1"><Plus className="h-4 w-4" /> {pt("Add")}</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={compileReport} disabled={compiling || lessons.length === 0} className="gap-1" title={pt("Compile a Lessons Report from the log (required for closure)")}>{compiling ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} {pt("Compile Report")}</Button>
+            <Button onClick={openCreateLesson} className="gap-1"><Plus className="h-4 w-4" /> {pt("Add")}</Button>
+          </div>
         </div>
 
         <Card>

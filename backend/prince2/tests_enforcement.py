@@ -18,6 +18,8 @@ from projects.models import Project
 from prince2.models import (
     Stage, StageGate, ProjectTolerance, Prince2ExceptionReport,
     BusinessCase, ProjectBrief, ProjectInitiationDocument,
+    WorkPackage, Prince2Issue, EndProjectReport, Product,
+    Prince2LessonsReport, LessonsLog, Prince2ConfigItem,
 )
 
 
@@ -103,3 +105,141 @@ class Prince2EnforcementTests(TestCase):
         self.assertEqual(resp.status_code, 200, resp.content)
         pid.refresh_from_db()
         self.assertEqual(pid.status, "baselined")
+
+    # ---- #4 Change theme: Change Authority gate on RFCs ------------------
+    def test_rfc_cannot_be_resolved_without_change_authority_approval(self):
+        issue = Prince2Issue.objects.create(
+            project=self.project, title="Add export feature",
+            issue_type="request_for_change", status="open",
+        )
+        detail = f"/api/v1/projects/{self.project.id}/prince2/issues/{issue.id}/"
+
+        # resolving an un-approved RFC is blocked
+        resp = self.client.patch(detail, {"status": "resolved"}, format="json")
+        self.assertEqual(resp.status_code, 400, resp.content)
+        issue.refresh_from_db()
+        self.assertEqual(issue.status, "open")
+
+        # Change Authority approves it
+        ca_url = f"{detail}change-authority-decision/"
+        resp = self.client.post(ca_url, {"decision": "approved"}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        issue.refresh_from_db()
+        self.assertEqual(issue.change_authority_decision, "approved")
+
+        # now it can be resolved
+        resp = self.client.patch(detail, {"status": "resolved"}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+        issue.refresh_from_db()
+        self.assertEqual(issue.status, "resolved")
+
+    def test_problem_concern_resolves_without_change_authority(self):
+        # Non-RFC issues are not change-controlled — they resolve freely.
+        issue = Prince2Issue.objects.create(
+            project=self.project, title="Server slow",
+            issue_type="problem_concern", status="open",
+        )
+        detail = f"/api/v1/projects/{self.project.id}/prince2/issues/{issue.id}/"
+        resp = self.client.patch(detail, {"status": "resolved"}, format="json")
+        self.assertEqual(resp.status_code, 200, resp.content)
+
+    # ---- #5 Controlled closure (Closing a Project) ----------------------
+    def test_closure_blocked_until_products_lessons_and_benefits(self):
+        pid = ProjectInitiationDocument.objects.create(project=self.project, status="baselined")
+        report = EndProjectReport.objects.create(project=self.project, status="draft")
+        Product.objects.create(project=self.project, title="System", status="in_progress")
+        url = f"/api/v1/projects/{self.project.id}/prince2/end-project-report/{report.id}/approve/"
+
+        # product not accepted, no lessons report, no benefits -> blocked
+        self.assertEqual(self.client.post(url).status_code, 400)
+
+        # accept the product
+        Product.objects.filter(project=self.project).update(status="approved")
+        self.assertEqual(self.client.post(url).status_code, 400, "still missing lessons + benefits")
+
+        # compile a lessons report
+        Prince2LessonsReport.objects.create(project=self.project, title="LR")
+        self.assertEqual(self.client.post(url).status_code, 400, "still missing benefits handover")
+
+        # record benefits handover
+        report.follow_on_actions = "Hand over benefits realisation to operations."
+        report.save()
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 200, resp.content)
+        report.refresh_from_db()
+        self.assertEqual(report.status, "approved")
+
+    def test_lessons_report_compiles_from_log(self):
+        LessonsLog.objects.create(
+            project=self.project, title="Daily standups worked",
+            lesson_type="positive", recommendation="Keep them.",
+        )
+        LessonsLog.objects.create(
+            project=self.project, title="Scope crept",
+            lesson_type="negative", recommendation="Baseline scope earlier.",
+        )
+        url = f"/api/v1/projects/{self.project.id}/prince2/lessons/compile_report/"
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 201, resp.content)
+        lr = Prince2LessonsReport.objects.get(project=self.project)
+        self.assertEqual(lr.lessons_count, 2)
+
+    # ---- #6 CS->MP: WP authorise gate + accept + depends_on -------------
+    def test_wp_authorize_blocked_unless_owning_stage_active(self):
+        stage = Stage.objects.create(project=self.project, name="S1", order=1, status="planned")
+        wp = WorkPackage.objects.create(project=self.project, stage=stage, title="WP1", status="draft")
+        url = f"/api/v1/projects/{self.project.id}/prince2/work-packages/{wp.id}/authorize/"
+
+        # owning stage not active -> blocked
+        self.assertEqual(self.client.post(url).status_code, 400)
+
+        # activate the stage -> authorise allowed
+        stage.status = "active"
+        stage.save()
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 200, resp.content)
+        wp.refresh_from_db()
+        self.assertEqual(wp.status, "authorized")
+
+    def test_wp_start_requires_accept_and_completed_dependencies(self):
+        stage = Stage.objects.create(project=self.project, name="S1", order=1, status="active")
+        dep = WorkPackage.objects.create(project=self.project, stage=stage, title="Dep", status="in_progress")
+        wp = WorkPackage.objects.create(project=self.project, stage=stage, title="WP2", status="authorized")
+        wp.depends_on.add(dep)
+        start_url = f"/api/v1/projects/{self.project.id}/prince2/work-packages/{wp.id}/start/"
+
+        # dependency not completed -> blocked
+        self.assertEqual(self.client.post(start_url).status_code, 400)
+
+        # complete the dependency, but TM has not accepted yet -> still blocked
+        dep.status = "completed"
+        dep.save()
+        self.assertEqual(self.client.post(start_url).status_code, 400)
+
+        # Team Manager accepts -> start allowed
+        accept_url = f"/api/v1/projects/{self.project.id}/prince2/work-packages/{wp.id}/accept/"
+        self.assertEqual(self.client.post(accept_url).status_code, 200)
+        resp = self.client.post(start_url)
+        self.assertEqual(resp.status_code, 200, resp.content)
+        wp.refresh_from_db()
+        self.assertEqual(wp.status, "in_progress")
+
+    # ---- #7 Tailoring scales behaviour (Principle 7) --------------------
+    def test_simple_tailoring_relaxes_wp_authorize_gate(self):
+        ProjectInitiationDocument.objects.create(
+            project=self.project, status="baselined", tailoring_profile="simple",
+        )
+        stage = Stage.objects.create(project=self.project, name="S1", order=1, status="planned")
+        wp = WorkPackage.objects.create(project=self.project, stage=stage, title="WP1", status="draft")
+        url = f"/api/v1/projects/{self.project.id}/prince2/work-packages/{wp.id}/authorize/"
+        # simple profile: authorise allowed even though stage is not active
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 200, resp.content)
+
+    # ---- #8 Configuration Item Records (Change theme §A.5) --------------
+    def test_config_item_auto_numbers_and_persists(self):
+        url = f"/api/v1/projects/{self.project.id}/prince2/config-items/"
+        resp = self.client.post(url, {"title": "Source code"}, format="json")
+        self.assertEqual(resp.status_code, 201, resp.content)
+        ci = Prince2ConfigItem.objects.get(project=self.project)
+        self.assertEqual(ci.identifier, "CI-001")

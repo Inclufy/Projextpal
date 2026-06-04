@@ -13,6 +13,7 @@ from .views import (
     Prince2RiskViewSet, Prince2IssueViewSet, Prince2ExceptionReportViewSet,
     ManagementApproachViewSet, QualityRegisterViewSet, DailyLogViewSet,
     ExceptionPlanViewSet, ProductStatusAccountView,
+    Prince2LessonsReportViewSet, Prince2ConfigItemViewSet,
     Prince2DashboardView,
     ProjectBriefComputedView, ProjectClosureComputedView,
     Prince2SeedDemoView, Prince2ClearDemoView,
@@ -206,6 +207,11 @@ urlpatterns = [
         name='prince2-wp-authorize'
     ),
     path(
+        'projects/<int:project_id>/prince2/work-packages/<int:pk>/accept/',
+        WorkPackageViewSet.as_view({'post': 'accept'}),
+        name='prince2-wp-accept'
+    ),
+    path(
         'projects/<int:project_id>/prince2/work-packages/<int:pk>/start/',
         WorkPackageViewSet.as_view({'post': 'start'}),
         name='prince2-wp-start'
@@ -240,6 +246,11 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/issues/<int:pk>/',
         Prince2IssueViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='prince2-issue-detail'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/issues/<int:pk>/change-authority-decision/',
+        Prince2IssueViewSet.as_view({'post': 'change_authority_decision'}),
+        name='prince2-issue-ca-decision'
     ),
     path(
         'projects/<int:project_id>/prince2/work-packages/<int:pk>/update_progress/',
@@ -451,6 +462,40 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/lessons/by_category/',
         LessonsLogViewSet.as_view({'get': 'by_category'}),
         name='prince2-lessons-by-category'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/lessons/compile_report/',
+        LessonsLogViewSet.as_view({'post': 'compile_report'}),
+        name='prince2-lessons-compile-report'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/lessons/prior_lessons/',
+        LessonsLogViewSet.as_view({'get': 'prior_lessons'}),
+        name='prince2-lessons-prior'
+    ),
+
+    # Lessons Report (compiled management product)
+    path(
+        'projects/<int:project_id>/prince2/lessons-reports/',
+        Prince2LessonsReportViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-lessons-reports-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/lessons-reports/<int:pk>/',
+        Prince2LessonsReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-lessons-reports-detail'
+    ),
+
+    # Configuration Item Records
+    path(
+        'projects/<int:project_id>/prince2/config-items/',
+        Prince2ConfigItemViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-config-items-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/config-items/<int:pk>/',
+        Prince2ConfigItemViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-config-items-detail'
     ),
 
     path(

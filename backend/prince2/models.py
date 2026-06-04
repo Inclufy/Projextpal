@@ -134,6 +134,15 @@ class ProjectInitiationDocument(models.Model):
     communication_management_approach = models.TextField(blank=True, default='')
     project_controls = models.TextField(blank=True, null=True)
     tailoring = models.TextField(blank=True, null=True)
+    # *Tailor to suit the project* (Principle 7) — scales which PRINCE2 gates
+    # are enforced. 'full' enforces every gate; 'simple' relaxes the lighter
+    # ceremony (WP stage-authorisation check, Team-Manager accept handshake,
+    # Lessons-Report-at-closure requirement) for small / low-risk projects.
+    TAILORING_PROFILE_CHOICES = [
+        ('full', 'Full method'),
+        ('simple', 'Simplified / lightweight'),
+    ]
+    tailoring_profile = models.CharField(max_length=20, choices=TAILORING_PROFILE_CHOICES, default='full')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     version = models.CharField(max_length=10, default='1.0')
     baseline_date = models.DateField(blank=True, null=True)
@@ -249,6 +258,10 @@ class WorkPackage(models.Model):
     reporting_requirements = models.TextField(blank=True, null=True)
     team_manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     depends_on = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='dependents')
+    # Managing Product Delivery handshake — the Team Manager accepts an
+    # authorised Work Package before work begins (CS->MP authorise a Work Package).
+    accepted_by_tm = models.BooleanField(default=False)
+    accepted_at = models.DateTimeField(blank=True, null=True)
     planned_start_date = models.DateField(blank=True, null=True)
     planned_end_date = models.DateField(blank=True, null=True)
     actual_start_date = models.DateField(blank=True, null=True)
@@ -705,6 +718,13 @@ class Prince2Issue(models.Model):
         ('resolved', 'Resolved'),
         ('closed', 'Closed'),
     ]
+    # Change Authority verdict on RFCs / Off-Specifications (Change theme).
+    CA_DECISION_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('deferred', 'Deferred to Project Board'),
+    ]
 
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_issues')
     related_risk = models.ForeignKey('Prince2Risk', on_delete=models.SET_NULL, null=True, blank=True, related_name='issues')
@@ -715,6 +735,12 @@ class Prince2Issue(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_owned_issues')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     resolution = models.TextField(blank=True, default='')
+    # Change Authority gate — an RFC / Off-Spec may not be resolved/closed until
+    # the Change Authority records an 'approved' decision (Change theme control).
+    change_authority_decision = models.CharField(max_length=20, choices=CA_DECISION_CHOICES, default='pending')
+    change_authority = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_ca_decisions')
+    change_authority_rationale = models.TextField(blank=True, default='')
+    change_authority_date = models.DateField(blank=True, null=True)
     date_raised = models.DateField(blank=True, null=True)
     date_resolved = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -926,3 +952,68 @@ class Prince2ExceptionReport(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.project.name})"
+
+
+class Prince2LessonsReport(models.Model):
+    """PRINCE2 Lessons Report (6th Ed §A.15) — *Learn from experience*.
+
+    Compiled at *Closing a Project* from the running Lessons Log. Unlike the
+    Lessons Log (a continuously-updated register), the Lessons Report is a
+    point-in-time management product that summarises what worked, what did not,
+    and the recommendations to pass to future projects / corporate. Its presence
+    is a precondition for controlled project closure.
+    """
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_lessons_reports')
+    title = models.CharField(max_length=200, blank=True, default='Lessons Report')
+    summary = models.TextField(blank=True, default='', help_text='Narrative overview of the lessons learned.')
+    what_went_well = models.TextField(blank=True, default='')
+    what_went_badly = models.TextField(blank=True, default='')
+    recommendations = models.TextField(blank=True, default='', help_text='Recommendations for future projects / corporate.')
+    lessons_count = models.IntegerField(default=0, help_text='Number of Lessons Log entries compiled into this report.')
+    compiled_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_lessons_reports')
+    report_date = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"
+
+
+class Prince2ConfigItem(models.Model):
+    """PRINCE2 Configuration Item Record (6th Ed §A.5) — Change theme.
+
+    Tracks the identity, version, status, ownership and copy-holders of each
+    product (configuration item) under change control, so that change control
+    is *controlled* and not merely recorded. Linked to a Product where possible.
+    """
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('in_progress', 'In Progress'),
+        ('in_review', 'In Review'),
+        ('approved', 'Approved'),
+        ('baselined', 'Baselined'),
+        ('archived', 'Archived'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_config_items')
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='config_items')
+    identifier = models.CharField(max_length=50, blank=True, default='', help_text='Configuration item reference, e.g. CI-001.')
+    title = models.CharField(max_length=200)
+    item_type = models.CharField(max_length=100, blank=True, default='', help_text='Type / classification of the item.')
+    version = models.CharField(max_length=20, blank=True, default='1.0')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_owned_config_items')
+    copy_holders = models.TextField(blank=True, default='', help_text='Who holds copies of this item.')
+    location = models.CharField(max_length=255, blank=True, default='', help_text='Where the item is stored.')
+    description = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['identifier', 'title']
+
+    def __str__(self):
+        return f"{self.identifier or self.title} v{self.version} ({self.project.name})"

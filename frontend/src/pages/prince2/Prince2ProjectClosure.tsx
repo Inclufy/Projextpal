@@ -84,6 +84,7 @@ const Prince2ProjectClosure = () => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/end-project-report/${endReport.id}/approve/`, { method: "POST", headers: jsonHeaders });
       if (r.ok) { toast.success(pt("Approved")); fetchData(); }
+      else { const d = await r.json().catch(() => null); toast.error(d?.detail || pt("Cannot close yet — closure preconditions not met."), { duration: 6000 }); }
     } catch { toast.error(pt("Action failed")); }
   };
 

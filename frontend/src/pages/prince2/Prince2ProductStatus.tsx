@@ -34,7 +34,7 @@ const Prince2ProductStatus = () => {
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3"><Boxes className="h-6 w-6 text-cyan-500" /><div><h1 className="text-2xl font-bold">{pt("Product Status Account")}</h1><p className="text-xs text-muted-foreground">{pt("Status of every product across the project, with its quality-check record (PRINCE2 §A.18)")}</p></div><Badge variant="outline">{data?.total_products ?? 0}</Badge></div>
+        <div className="flex items-center gap-3"><Boxes className="h-6 w-6 text-cyan-500" /><div><h1 className="text-2xl font-bold">{pt("Product Status Account")}</h1><p className="text-xs text-muted-foreground">{pt("Status of every product across the project, with its quality-check record (PRINCE2 §A.18)")}</p></div><Badge variant="outline">{data?.total_products ?? 0}</Badge>{(data?.config_items_total ?? 0) > 0 && <Badge variant="secondary" className="text-xs">{data.config_items_total} {pt("config items")}</Badge>}</div>
         <div className="w-56"><Select value={stageFilter} onValueChange={setStageFilter}><SelectTrigger><SelectValue placeholder={pt("All stages")} /></SelectTrigger><SelectContent><SelectItem value="all">{pt("All stages")}</SelectItem>{stages.map((s) => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}</SelectContent></Select></div>
       </div>
 
@@ -50,7 +50,7 @@ const Prince2ProductStatus = () => {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2 px-4 font-medium">{pt("Product")}</th><th className="py-2 px-4 font-medium">{pt("Type")}</th><th className="py-2 px-4 font-medium">{pt("Status")}</th><th className="py-2 px-4 font-medium">{pt("Work Package")}</th><th className="py-2 px-4 font-medium">{pt("Owner")}</th><th className="py-2 px-4 font-medium text-center">{pt("Quality checks")}</th></tr></thead>
+                <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2 px-4 font-medium">{pt("Product")}</th><th className="py-2 px-4 font-medium">{pt("Type")}</th><th className="py-2 px-4 font-medium">{pt("Status")}</th><th className="py-2 px-4 font-medium">{pt("Work Package")}</th><th className="py-2 px-4 font-medium">{pt("Owner")}</th><th className="py-2 px-4 font-medium text-center">{pt("Quality checks")}</th><th className="py-2 px-4 font-medium">{pt("Config items")}</th></tr></thead>
                 <tbody>
                   {rows.map((p: any) => (
                     <tr key={p.id} className="border-b last:border-0 hover:bg-muted/40">
@@ -67,6 +67,11 @@ const Prince2ProductStatus = () => {
                             <span className="flex items-center gap-1 text-amber-600" title={pt("Pending")}><Clock className="h-3.5 w-3.5" />{p.quality_checks_pending}</span>
                           </>)}
                         </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        {(p.config_items?.length ?? 0) === 0 ? <span className="text-xs text-muted-foreground italic">{pt("none")}</span> : (
+                          <div className="flex flex-wrap gap-1">{p.config_items.map((c: any) => (<Badge key={c.id} variant="outline" className="text-[10px]" title={c.status}>{c.identifier || "CI"} v{c.version}</Badge>))}</div>
+                        )}
                       </td>
                     </tr>
                   ))}

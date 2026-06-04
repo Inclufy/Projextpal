@@ -14,6 +14,7 @@ from .models import (
     EndProjectReport, LessonsLog, ProjectTolerance,
     Prince2Risk, Prince2Issue, Prince2ExceptionReport,
     ManagementApproach, QualityRegisterEntry, DailyLog, ExceptionPlan,
+    Prince2LessonsReport, Prince2ConfigItem,
 )
 from .serializers import (
     ProductSerializer,
@@ -26,7 +27,23 @@ from .serializers import (
     Prince2RiskSerializer, Prince2IssueSerializer, Prince2ExceptionReportSerializer,
     ManagementApproachSerializer, QualityRegisterEntrySerializer,
     DailyLogSerializer, ExceptionPlanSerializer,
+    Prince2LessonsReportSerializer, Prince2ConfigItemSerializer,
 )
+
+
+def prince2_tailoring_profile(project):
+    """Resolve the project's PRINCE2 tailoring profile ('full' | 'simple').
+
+    Reads the most recent PID; defaults to 'full' (enforce every gate) when no
+    PID exists yet, so integrity is the safe default. A 'simple' profile relaxes
+    the lighter-ceremony gates (Principle 7 — Tailor to suit the project).
+    """
+    pid = (
+        ProjectInitiationDocument.objects.filter(project=project)
+        .order_by('-created_at')
+        .first()
+    )
+    return (getattr(pid, 'tailoring_profile', None) or 'full') if pid else 'full'
 
 
 class ProjectFilterMixin:
@@ -351,14 +368,75 @@ class WorkPackageViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def authorize(self, request, project_id=None, pk=None):
+        """CS — Authorise a Work Package. PRINCE2 only lets work be authorised
+        within an *active* management stage (Manage by Stages). The 'simple'
+        tailoring profile relaxes this for lightweight projects."""
         wp = self.get_object()
+        profile = prince2_tailoring_profile(self.get_project())
+        if profile == 'full':
+            if wp.stage is None:
+                return Response(
+                    {'detail': 'Work Package must belong to a management stage before it can be authorised.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if wp.stage.status != 'active':
+                return Response(
+                    {'detail': f"Cannot authorise — owning stage '{wp.stage.name}' is not active "
+                               f"(status: {wp.stage.status}). Start the stage first."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         wp.status = 'authorized'
         wp.save()
         return Response(WorkPackageSerializer(wp).data)
 
     @action(detail=True, methods=['post'])
-    def start(self, request, project_id=None, pk=None):
+    def accept(self, request, project_id=None, pk=None):
+        """MP — the Team Manager accepts an authorised Work Package before
+        beginning delivery (the CS->MP handshake)."""
         wp = self.get_object()
+        if wp.status not in ('authorized', 'in_progress'):
+            return Response(
+                {'detail': 'Only an authorised Work Package can be accepted by the Team Manager.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        wp.accepted_by_tm = True
+        wp.accepted_at = timezone.now()
+        if not wp.team_manager_id:
+            wp.team_manager = request.user
+        wp.save()
+        return Response(WorkPackageSerializer(wp).data)
+
+    @action(detail=True, methods=['post'])
+    def start(self, request, project_id=None, pk=None):
+        """MP — start delivery. Doctrine guards: the WP must be authorised,
+        all its dependencies (depends_on) must be completed, and (full profile)
+        the Team Manager must have accepted it."""
+        wp = self.get_object()
+        profile = prince2_tailoring_profile(self.get_project())
+
+        if wp.status not in ('authorized', 'in_progress'):
+            return Response(
+                {'detail': 'Work Package must be authorised before work can start.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        blocking = [
+            dep for dep in wp.depends_on.all()
+            if dep.status not in ('completed', 'closed')
+        ]
+        if blocking:
+            titles = ', '.join(d.title or d.reference for d in blocking)
+            return Response(
+                {'detail': f'Cannot start — dependencies not completed: {titles}.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if profile == 'full' and not wp.accepted_by_tm:
+            return Response(
+                {'detail': 'Work Package must be accepted by the Team Manager before work can start.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         wp.status = 'in_progress'
         wp.actual_start_date = timezone.now().date()
         wp.save()
@@ -420,6 +498,55 @@ class Prince2IssueViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
+
+    # Issue types that require a Change Authority verdict before resolution.
+    CA_GATED_TYPES = ('request_for_change', 'off_specification')
+
+    def perform_update(self, serializer):
+        """Change control gate: an RFC / Off-Specification cannot transition to
+        'resolved' or 'closed' until the Change Authority has *approved* it.
+        Change control becomes controlled, not merely recorded."""
+        from rest_framework.exceptions import ValidationError
+        instance = self.get_object()
+        new_status = serializer.validated_data.get('status', instance.status)
+        new_type = serializer.validated_data.get('issue_type', instance.issue_type)
+        ca_decision = instance.change_authority_decision
+        if (
+            new_type in self.CA_GATED_TYPES
+            and new_status in ('resolved', 'closed')
+            and ca_decision != 'approved'
+        ):
+            raise ValidationError({
+                'status': (
+                    'This request for change / off-specification must be approved '
+                    'by the Change Authority before it can be resolved or closed.'
+                )
+            })
+        serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='change-authority-decision')
+    def change_authority_decision(self, request, project_id=None, pk=None):
+        """Change Authority records a verdict on an RFC / Off-Specification
+        (Change theme). Only after an 'approved' verdict may the issue be
+        resolved or closed."""
+        issue = self.get_object()
+        if issue.issue_type not in self.CA_GATED_TYPES:
+            return Response(
+                {'detail': 'Only a request for change or off-specification needs a Change Authority decision.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        decision = request.data.get('decision')
+        if decision not in ('approved', 'rejected', 'deferred'):
+            return Response(
+                {'detail': "decision must be one of: approved, rejected, deferred."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        issue.change_authority_decision = decision
+        issue.change_authority = request.user
+        issue.change_authority_date = timezone.now().date()
+        issue.change_authority_rationale = request.data.get('rationale', '')
+        issue.save()
+        return Response(Prince2IssueSerializer(issue).data)
 
 
 class Prince2ExceptionReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
@@ -722,7 +849,37 @@ class EndProjectReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def approve(self, request, project_id=None, pk=None):
+        """Closing a Project — controlled closure. The End Project Report cannot
+        be approved (project closed) until:
+          1. every Product has been accepted (status 'approved'),
+          2. a Lessons Report has been compiled (full profile), and
+          3. benefits handover / follow-on actions are recorded.
+        Closure is a confirmed acceptance, not a free status flip."""
         report = self.get_object()
+        project = self.get_project()
+        profile = prince2_tailoring_profile(project)
+
+        blocking = []
+
+        products = Product.objects.filter(project=project)
+        if products.exists() and products.exclude(status='approved').exists():
+            unaccepted = products.exclude(status='approved').count()
+            blocking.append(
+                f'{unaccepted} product(s) have not been accepted — all products must be approved before closure.'
+            )
+
+        if profile == 'full' and not Prince2LessonsReport.objects.filter(project=project).exists():
+            blocking.append('A Lessons Report must be compiled before the project can be closed.')
+
+        if not (report.follow_on_actions or '').strip() and not (report.benefits_achieved or '').strip():
+            blocking.append('Record benefits handover / follow-on actions before closure.')
+
+        if blocking:
+            return Response(
+                {'detail': ' '.join(blocking), 'blocking': blocking},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         report.status = 'approved'
         report.report_date = timezone.now().date()
         report.save()
@@ -752,6 +909,69 @@ class LessonsLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             items = queryset.filter(category=category)
             result[category] = LessonsLogSerializer(items, many=True).data
         return Response(result)
+
+    @action(detail=False, methods=['post'])
+    def compile_report(self, request, project_id=None):
+        """Closing a Project — compile a Lessons Report from the Lessons Log.
+
+        Aggregates the running log into a point-in-time management product
+        (what went well / badly + recommendations), which the closure gate
+        then requires before the project can be closed. Idempotent: re-running
+        refreshes the single report for the project."""
+        project = self.get_project()
+        lessons = list(self.get_queryset())
+        positives = [l for l in lessons if l.lesson_type == 'positive']
+        negatives = [l for l in lessons if l.lesson_type == 'negative']
+
+        def _join(items):
+            return '\n'.join(
+                f'- {l.title}: {l.recommendation or l.description or ""}'.rstrip(': ').strip()
+                for l in items
+            )
+
+        report, _ = Prince2LessonsReport.objects.get_or_create(
+            project=project,
+            defaults={'title': f'Lessons Report — {project.name}'},
+        )
+        report.title = report.title or f'Lessons Report — {project.name}'
+        report.summary = (
+            f'{len(lessons)} lesson(s) captured across the project '
+            f'({len(positives)} positive, {len(negatives)} negative).'
+        )
+        report.what_went_well = _join(positives)
+        report.what_went_badly = _join(negatives)
+        report.recommendations = _join(
+            [l for l in lessons if (l.recommendation or '').strip()]
+        )
+        report.lessons_count = len(lessons)
+        report.compiled_by = request.user
+        report.report_date = timezone.now().date()
+        report.save()
+        return Response(
+            Prince2LessonsReportSerializer(report).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=['get'])
+    def prior_lessons(self, request, project_id=None):
+        """Starting up a Project — *Learn from experience* at the front end.
+
+        Surfaces lessons captured on the company's OTHER projects so the team
+        can apply them before this project starts. Scoped to projects the user
+        can access; excludes the current project."""
+        project = self.get_project()
+        prior = (
+            LessonsLog.objects.filter(project__in=self._accessible_project_qs())
+            .exclude(project_id=project.id)
+            .select_related('project')
+            .order_by('-date_logged', '-created_at')[:25]
+        )
+        data = []
+        for l in prior:
+            row = LessonsLogSerializer(l).data
+            row['project_name'] = l.project.name
+            data.append(row)
+        return Response(data)
 
 
 class ProjectToleranceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
@@ -1277,6 +1497,7 @@ class ProductStatusAccountView(APIView):
         status_tally = {}
         for p in products.select_related('work_package', 'owner'):
             checks = QualityRegisterEntry.objects.filter(product=p)
+            config_items = Prince2ConfigItem.objects.filter(product=p)
             rows.append({
                 'id': p.id,
                 'title': p.title,
@@ -1288,6 +1509,10 @@ class ProductStatusAccountView(APIView):
                 'quality_checks_passed': checks.filter(result='pass').count(),
                 'quality_checks_failed': checks.filter(result='fail').count(),
                 'quality_checks_pending': checks.filter(result='pending').count(),
+                'config_items': [
+                    {'id': c.id, 'identifier': c.identifier, 'version': c.version, 'status': c.status}
+                    for c in config_items
+                ],
             })
             status_tally[p.status] = status_tally.get(p.status, 0) + 1
 
@@ -1297,6 +1522,7 @@ class ProductStatusAccountView(APIView):
             'total_products': products.count(),
             'status_summary': status_tally,
             'products': rows,
+            'config_items_total': Prince2ConfigItem.objects.filter(project=project).count(),
         })
 
 
@@ -1328,6 +1554,47 @@ class ProductViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         product.status = 'rejected'
         product.save()
         return Response(ProductSerializer(product).data)
+
+
+# =============================================================================
+# LESSONS REPORT (compiled product) + CONFIGURATION ITEM RECORDS
+# =============================================================================
+
+class Prince2LessonsReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """PRINCE2 Lessons Report (6th Ed §A.15). Compiled from the Lessons Log via
+    LessonsLogViewSet.compile_report; also directly CRUD-able."""
+    serializer_class = Prince2LessonsReportSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        return self.get_project_queryset(Prince2LessonsReport)
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project(), compiled_by=self.request.user)
+
+
+class Prince2ConfigItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """PRINCE2 Configuration Item Records (6th Ed §A.5) — change control."""
+    serializer_class = Prince2ConfigItemSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(Prince2ConfigItem)
+        product = self.request.query_params.get('product')
+        status_filter = self.request.query_params.get('status')
+        if product:
+            queryset = queryset.filter(product_id=product)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        return queryset
+
+    def perform_create(self, serializer):
+        project = self.get_project()
+        if not serializer.validated_data.get('identifier'):
+            count = Prince2ConfigItem.objects.filter(project=project).count()
+            serializer.save(project=project, identifier=f'CI-{count + 1:03d}')
+        else:
+            serializer.save(project=project)
 
 
 # =============================================================================

@@ -7,6 +7,7 @@ from .models import (
     EndProjectReport, LessonsLog, ProjectTolerance,
     Prince2Risk, Prince2Issue, Prince2ExceptionReport,
     ManagementApproach, QualityRegisterEntry, DailyLog, ExceptionPlan,
+    Prince2LessonsReport, Prince2ConfigItem,
 )
 
 
@@ -149,11 +150,15 @@ class Prince2RiskSerializer(serializers.ModelSerializer):
 class Prince2IssueSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.get_full_name', read_only=True, allow_null=True)
     related_risk_title = serializers.CharField(source='related_risk.title', read_only=True, allow_null=True)
+    change_authority_name = serializers.CharField(source='change_authority.get_full_name', read_only=True, allow_null=True)
 
     class Meta:
         model = Prince2Issue
         fields = '__all__'
-        read_only_fields = ['project', 'created_at', 'updated_at']
+        read_only_fields = [
+            'project', 'created_at', 'updated_at',
+            'change_authority', 'change_authority_date',
+        ]
 
 
 class Prince2ExceptionReportSerializer(serializers.ModelSerializer):
@@ -325,8 +330,27 @@ class ProjectToleranceSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
     quality_responsibility_name = serializers.CharField(source='quality_responsibility.get_full_name', read_only=True)
-    
+
     class Meta:
         model = Product
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class Prince2LessonsReportSerializer(serializers.ModelSerializer):
+    compiled_by_name = serializers.CharField(source='compiled_by.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Prince2LessonsReport
+        fields = '__all__'
+        read_only_fields = ['project', 'compiled_by', 'created_at', 'updated_at']
+
+
+class Prince2ConfigItemSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True, allow_null=True)
+    product_title = serializers.CharField(source='product.title', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Prince2ConfigItem
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']

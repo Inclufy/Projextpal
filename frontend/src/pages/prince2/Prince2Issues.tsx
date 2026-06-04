@@ -9,10 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, ClipboardList, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, ClipboardList, Pencil, Trash2, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 
 const TYPE_LABELS: Record<string, string> = { request_for_change: "Request for Change", off_specification: "Off-Specification", problem_concern: "Problem / Concern" };
+const CA_GATED = ["request_for_change", "off_specification"];
+const CA_BADGE: Record<string, string> = { approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700", deferred: "bg-purple-100 text-purple-700", pending: "bg-gray-100 text-gray-600" };
 
 const Prince2Issues = () => {
   const { pt } = usePageTranslations();
@@ -42,17 +44,25 @@ const Prince2Issues = () => {
       const url = editing ? `/api/v1/projects/${id}/prince2/issues/${editing.id}/` : `/api/v1/projects/${id}/prince2/issues/`;
       const method = editing ? "PATCH" : "POST";
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed"));
+      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      else { const d = await r.json().catch(() => null); toast.error(d?.detail || d?.status?.[0] || pt("Save failed")); }
     } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); }
   };
   const handleDelete = async (rId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/${id}/prince2/issues/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
+  const handleCADecision = async (issueId: number, decision: "approved" | "rejected") => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/prince2/issues/${issueId}/change-authority-decision/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ decision }) });
+      if (r.ok) { toast.success(pt(decision === "approved" ? "Change approved by Change Authority" : "Change rejected")); fetchData(); }
+      else { const d = await r.json().catch(() => null); toast.error(d?.detail || pt("Action failed")); }
+    } catch { toast.error(pt("Action failed")); }
+  };
   const priorityColors: Record<string, string> = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-yellow-100 text-yellow-700", low: "bg-green-100 text-green-700" };
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
       <div className="flex items-center justify-between"><div className="flex items-center gap-3"><ClipboardList className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Issue Register")}</h1><Badge variant="outline">{items.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
       {items.length === 0 ? <Card className="p-8 text-center"><ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No issues raised yet")}</h3></Card> : (
-        <div className="space-y-2">{items.map(i => (<Card key={i.id}><CardContent className="p-4 flex items-center justify-between"><div className="flex-1"><div className="flex items-center gap-2 mb-1 flex-wrap"><span className="font-medium">{i.title}</span><Badge variant="outline" className="text-xs">{TYPE_LABELS[i.issue_type] || i.issue_type}</Badge><Badge className={`text-xs ${priorityColors[i.priority] || ""}`}>{i.priority}</Badge><Badge variant={i.status === "resolved" || i.status === "closed" ? "secondary" : "default"} className="text-xs">{i.status}</Badge>{i.owner_name && <Badge variant="secondary" className="text-xs">{i.owner_name}</Badge>}{i.related_risk_title && <Badge variant="outline" className="text-xs">↪ {i.related_risk_title}</Badge>}</div>{i.description && <p className="text-sm text-muted-foreground">{i.description}</p>}{i.resolution && <p className="text-xs mt-1"><span className="font-medium">{pt("Resolution")}:</span> {i.resolution}</p>}</div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>))}</div>
+        <div className="space-y-2">{items.map(i => (<Card key={i.id}><CardContent className="p-4 flex items-center justify-between"><div className="flex-1"><div className="flex items-center gap-2 mb-1 flex-wrap"><span className="font-medium">{i.title}</span><Badge variant="outline" className="text-xs">{TYPE_LABELS[i.issue_type] || i.issue_type}</Badge><Badge className={`text-xs ${priorityColors[i.priority] || ""}`}>{i.priority}</Badge><Badge variant={i.status === "resolved" || i.status === "closed" ? "secondary" : "default"} className="text-xs">{i.status}</Badge>{i.owner_name && <Badge variant="secondary" className="text-xs">{i.owner_name}</Badge>}{i.related_risk_title && <Badge variant="outline" className="text-xs">↪ {i.related_risk_title}</Badge>}{CA_GATED.includes(i.issue_type) && <Badge className={`text-xs ${CA_BADGE[i.change_authority_decision] || CA_BADGE.pending}`}>{pt("Change Authority")}: {i.change_authority_decision || "pending"}</Badge>}</div>{i.description && <p className="text-sm text-muted-foreground">{i.description}</p>}{i.resolution && <p className="text-xs mt-1"><span className="font-medium">{pt("Resolution")}:</span> {i.resolution}</p>}{CA_GATED.includes(i.issue_type) && i.change_authority_decision !== "approved" && <p className="text-[11px] mt-1 text-muted-foreground">{pt("A request for change must be approved by the Change Authority before it can be resolved or closed.")}</p>}</div><div className="flex gap-1">{CA_GATED.includes(i.issue_type) && i.change_authority_decision !== "approved" && (<><Button variant="ghost" size="sm" title={pt("Approve as Change Authority")} onClick={() => handleCADecision(i.id, "approved")}><ShieldCheck className="h-3.5 w-3.5 text-green-600" /></Button><Button variant="ghost" size="sm" title={pt("Reject as Change Authority")} onClick={() => handleCADecision(i.id, "rejected")}><ShieldX className="h-3.5 w-3.5 text-red-600" /></Button></>)}<Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>))}</div>
       )}
     </div>
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("Add")} {pt("Issue")}</DialogTitle></DialogHeader><div className="space-y-4">
