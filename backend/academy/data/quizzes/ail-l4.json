@@ -1,0 +1,183 @@
+{
+  "id": "ail-l4",
+  "title": "Module 1 Quiz",
+  "titleNL": "Module 1 Quiz",
+  "courseId": "ai-literacy",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "ail-q1-1",
+      "text": "Wat is de correcte hiërarchische relatie tussen AI, ML, Deep Learning en LLMs?",
+      "textNL": "Wat is de correcte hiërarchische relatie tussen AI, ML, Deep Learning en LLMs?",
+      "question": "Wat is de correcte hiërarchische relatie tussen AI, ML, Deep Learning en LLMs?",
+      "questionEN": "Wat is de correcte hiërarchische relatie tussen AI, ML, Deep Learning en LLMs?",
+      "options": [
+        "LLMs ⊃ Deep Learning ⊃ ML ⊃ AI (van breed naar smal)",
+        "AI ⊃ ML ⊃ Deep Learning ⊃ LLMs (van breed naar smal)",
+        "ML ⊃ AI ⊃ LLMs ⊃ Deep Learning",
+        "Ze zijn nevengeschikte begrippen zonder hiërarchie"
+      ],
+      "optionsEN": [
+        "LLMs ⊃ Deep Learning ⊃ ML ⊃ AI (van breed naar smal)",
+        "AI ⊃ ML ⊃ Deep Learning ⊃ LLMs (van breed naar smal)",
+        "ML ⊃ AI ⊃ LLMs ⊃ Deep Learning",
+        "Ze zijn nevengeschikte begrippen zonder hiërarchie"
+      ],
+      "optionsNL": [
+        "LLMs ⊃ Deep Learning ⊃ ML ⊃ AI (van breed naar smal)",
+        "AI ⊃ ML ⊃ Deep Learning ⊃ LLMs (van breed naar smal)",
+        "ML ⊃ AI ⊃ LLMs ⊃ Deep Learning",
+        "Ze zijn nevengeschikte begrippen zonder hiërarchie"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "AI is de overkoepelende term. ML is een deelgebied van AI. Deep Learning is een deelgebied van ML dat neurale netwerken gebruikt. LLMs zijn een specifiek type Deep Learning-model gebaseerd op de Transformer-architectuur.",
+      "explanationNL": "AI is de overkoepelende term. ML is een deelgebied van AI. Deep Learning is een deelgebied van ML dat neurale netwerken gebruikt. LLMs zijn een specifiek type Deep Learning-model gebaseerd op de Transformer-architectuur."
+    },
+    {
+      "id": "ail-q1-2",
+      "text": "Wat is de kernfunctie van een Large Language Model (LLM)?",
+      "textNL": "Wat is de kernfunctie van een Large Language Model (LLM)?",
+      "question": "Wat is de kernfunctie van een Large Language Model (LLM)?",
+      "questionEN": "Wat is de kernfunctie van een Large Language Model (LLM)?",
+      "options": [
+        "Het opzoeken van feiten in een kennisbank",
+        "Het begrijpen van de betekenis van tekst op menselijk niveau",
+        "Het voorspellen van het volgende token gegeven een reeks tokens",
+        "Het uitvoeren van logische redeneringen op basis van regels"
+      ],
+      "optionsEN": [
+        "Het opzoeken van feiten in een kennisbank",
+        "Het begrijpen van de betekenis van tekst op menselijk niveau",
+        "Het voorspellen van het volgende token gegeven een reeks tokens",
+        "Het uitvoeren van logische redeneringen op basis van regels"
+      ],
+      "optionsNL": [
+        "Het opzoeken van feiten in een kennisbank",
+        "Het begrijpen van de betekenis van tekst op menselijk niveau",
+        "Het voorspellen van het volgende token gegeven een reeks tokens",
+        "Het uitvoeren van logische redeneringen op basis van regels"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Een LLM is getraind op één taak: het meest-waarschijnlijke volgende token voorspellen. Alle andere gedragingen — samenvatten, code schrijven, redeneren — zijn emergent gedrag dat volgt uit die ene taak, uitgevoerd in een loop.",
+      "explanationNL": "Een LLM is getraind op één taak: het meest-waarschijnlijke volgende token voorspellen. Alle andere gedragingen — samenvatten, code schrijven, redeneren — zijn emergent gedrag dat volgt uit die ene taak, uitgevoerd in een loop."
+    },
+    {
+      "id": "ail-q1-3",
+      "text": "Wat onderscheidt een AI-agent van een gewone LLM-aanroep?",
+      "textNL": "Wat onderscheidt een AI-agent van een gewone LLM-aanroep?",
+      "question": "Wat onderscheidt een AI-agent van een gewone LLM-aanroep?",
+      "questionEN": "Wat onderscheidt een AI-agent van een gewone LLM-aanroep?",
+      "options": [
+        "Een agent gebruikt meer parameters en is daardoor slimmer",
+        "Een agent heeft bewustzijn en kan zelfstandig beslissingen nemen",
+        "Een agent draait een LLM in een loop met toegang tot tools",
+        "Een agent is een LLM die specifiek getraind is op acties uitvoeren"
+      ],
+      "optionsEN": [
+        "Een agent gebruikt meer parameters en is daardoor slimmer",
+        "Een agent heeft bewustzijn en kan zelfstandig beslissingen nemen",
+        "Een agent draait een LLM in een loop met toegang tot tools",
+        "Een agent is een LLM die specifiek getraind is op acties uitvoeren"
+      ],
+      "optionsNL": [
+        "Een agent gebruikt meer parameters en is daardoor slimmer",
+        "Een agent heeft bewustzijn en kan zelfstandig beslissingen nemen",
+        "Een agent draait een LLM in een loop met toegang tot tools",
+        "Een agent is een LLM die specifiek getraind is op acties uitvoeren"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Een agent is per definitie: een LLM in een run-loop, met tool access. De loop stelt het in staat stappen te plannen en uit te voeren (bijv. web search, code uitvoeren, API aanroepen). Het is geen super-intelligentie en heeft geen bewustzijn.",
+      "explanationNL": "Een agent is per definitie: een LLM in een run-loop, met tool access. De loop stelt het in staat stappen te plannen en uit te voeren (bijv. web search, code uitvoeren, API aanroepen). Het is geen super-intelligentie en heeft geen bewustzijn."
+    },
+    {
+      "id": "ail-q1-4",
+      "text": "Een projectmanager vraagt ChatGPT om een specifiek marktcijfer uit 2023. Het model geeft een precies getal met twee decimalen, maar je kunt de bron niet vinden. Wat is het meest waarschijnlijke probleem?",
+      "textNL": "Een projectmanager vraagt ChatGPT om een specifiek marktcijfer uit 2023. Het model geeft een precies getal met twee decimalen, maar je kunt de bron niet vinden. Wat is het meest waarschijnlijke probleem?",
+      "question": "Een projectmanager vraagt ChatGPT om een specifiek marktcijfer uit 2023. Het model geeft een precies getal met twee decimalen, maar je kunt de bron niet vinden. Wat is het meest waarschijnlijke probleem?",
+      "questionEN": "Een projectmanager vraagt ChatGPT om een specifiek marktcijfer uit 2023. Het model geeft een precies getal met twee decimalen, maar je kunt de bron niet vinden. Wat is het meest waarschijnlijke probleem?",
+      "options": [
+        "De PM heeft de vraag niet duidelijk genoeg gesteld",
+        "Het model hallucineert: het heeft een plausibel getal gegenereerd zonder dat het in de trainingsdata stond",
+        "ChatGPT heeft geen toegang tot internet en geeft daarom verouderde data",
+        "Het getal is afkomstig uit een geheim trainingsbestand dat niet publiek raadpleegbaar is"
+      ],
+      "optionsEN": [
+        "De PM heeft de vraag niet duidelijk genoeg gesteld",
+        "Het model hallucineert: het heeft een plausibel getal gegenereerd zonder dat het in de trainingsdata stond",
+        "ChatGPT heeft geen toegang tot internet en geeft daarom verouderde data",
+        "Het getal is afkomstig uit een geheim trainingsbestand dat niet publiek raadpleegbaar is"
+      ],
+      "optionsNL": [
+        "De PM heeft de vraag niet duidelijk genoeg gesteld",
+        "Het model hallucineert: het heeft een plausibel getal gegenereerd zonder dat het in de trainingsdata stond",
+        "ChatGPT heeft geen toegang tot internet en geeft daarom verouderde data",
+        "Het getal is afkomstig uit een geheim trainingsbestand dat niet publiek raadpleegbaar is"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Dit is een klassieke feit-hallucinatie. Als een LLM gevraagd wordt naar een specifiek detail dat zelden of niet in de trainingsdata voorkwam, genereert het een plausibel klinkend antwoord op basis van token-predictie. De precisie (twee decimalen) is juist een waarschuwingsteken, geen betrouwbaarheidsindicator.",
+      "explanationNL": "Dit is een klassieke feit-hallucinatie. Als een LLM gevraagd wordt naar een specifiek detail dat zelden of niet in de trainingsdata voorkwam, genereert het een plausibel klinkend antwoord op basis van token-predictie. De precisie (twee decimalen) is juist een waarschuwingsteken, geen betrouwbaarheidsindicator."
+    },
+    {
+      "id": "ail-q1-5",
+      "text": "Welke van de volgende taken voert een LLM van nature het minst betrouwbaar uit?",
+      "textNL": "Welke van de volgende taken voert een LLM van nature het minst betrouwbaar uit?",
+      "question": "Welke van de volgende taken voert een LLM van nature het minst betrouwbaar uit?",
+      "questionEN": "Welke van de volgende taken voert een LLM van nature het minst betrouwbaar uit?",
+      "options": [
+        "Het samenvatten van een lang document in drie alinea's",
+        "Het omzetten van requirements naar user stories",
+        "Het uitrekenen van 847 × 293 zonder hulpmiddelen",
+        "Het opstellen van een formele stakeholder-e-mail"
+      ],
+      "optionsEN": [
+        "Het samenvatten van een lang document in drie alinea's",
+        "Het omzetten van requirements naar user stories",
+        "Het uitrekenen van 847 × 293 zonder hulpmiddelen",
+        "Het opstellen van een formele stakeholder-e-mail"
+      ],
+      "optionsNL": [
+        "Het samenvatten van een lang document in drie alinea's",
+        "Het omzetten van requirements naar user stories",
+        "Het uitrekenen van 847 × 293 zonder hulpmiddelen",
+        "Het opstellen van een formele stakeholder-e-mail"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "LLMs maken aantoonbaar fouten bij niet-triviale rekensommen omdat rekenen niet hun trainingspatroon is — token-predictie is dat wel. De andere drie taken (samenvatten, user stories schrijven, e-mail opstellen) zijn allemaal tekst-naar-tekst taken waarbij LLMs sterk zijn.",
+      "explanationNL": "LLMs maken aantoonbaar fouten bij niet-triviale rekensommen omdat rekenen niet hun trainingspatroon is — token-predictie is dat wel. De andere drie taken (samenvatten, user stories schrijven, e-mail opstellen) zijn allemaal tekst-naar-tekst taken waarbij LLMs sterk zijn."
+    },
+    {
+      "id": "ail-q1-6",
+      "text": "Wat bepaalt hoeveel van een conversatie een LLM \"onthoudt\"?",
+      "textNL": "Wat bepaalt hoeveel van een conversatie een LLM \"onthoudt\"?",
+      "question": "Wat bepaalt hoeveel van een conversatie een LLM \"onthoudt\"?",
+      "questionEN": "Wat bepaalt hoeveel van een conversatie een LLM \"onthoudt\"?",
+      "options": [
+        "Het aantal berichten in de conversatie",
+        "De grootte van het model in parameters",
+        "De context window, uitgedrukt in tokens",
+        "De snelheid van de server waarop het model draait"
+      ],
+      "optionsEN": [
+        "Het aantal berichten in de conversatie",
+        "De grootte van het model in parameters",
+        "De context window, uitgedrukt in tokens",
+        "De snelheid van de server waarop het model draait"
+      ],
+      "optionsNL": [
+        "Het aantal berichten in de conversatie",
+        "De grootte van het model in parameters",
+        "De context window, uitgedrukt in tokens",
+        "De snelheid van de server waarop het model draait"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "De context window is het maximale aantal tokens dat een LLM in één inferentie-aanroep kan verwerken. Als de conversatie de context window overschrijdt, raakt het model het begin kwijt. Grootte van het model of serversnelheid bepaalt dit niet.",
+      "explanationNL": "De context window is het maximale aantal tokens dat een LLM in één inferentie-aanroep kan verwerken. Als de conversatie de context window overschrijdt, raakt het model het begin kwijt. Grootte van het model of serversnelheid bepaalt dit niet."
+    }
+  ]
+}

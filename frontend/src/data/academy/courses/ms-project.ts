@@ -3628,12 +3628,779 @@ Pick three shortcuts from this list, write them on a sticky note next to your mo
     },
     {
       id: 'msp-l17',
-      title: 'Quiz: Final',
-      titleNL: 'Quiz: Eindexamen',
+      title: 'Quiz: Reporting & Collaboration',
+      titleNL: 'Quiz: Rapportage & Samenwerking',
       type: 'quiz',
       duration: '12:00',
       icon: 'HelpCircle',
-      quiz: [],
+      quiz: [
+        {
+          id: 'msp-q-r1',
+          question: 'Which MS Project feature lets you add custom columns to any view for fields like "Workstream" or "Risk Score"?',
+          questionNL: 'Welke MS Project functie laat je aangepaste kolommen toevoegen aan elke weergave voor velden zoals "Workstream" of "Risicoscore"?',
+          options: [
+            'Group By',
+            'Custom Fields',
+            'AutoFilter',
+            'Table Styles',
+          ],
+          optionsNL: [
+            'Groeperen op',
+            'Aangepaste velden',
+            'AutoFilter',
+            'Tabelstijlen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Custom Fields (Project tab → Custom Fields) give you up to 30 Text, 30 Number, 30 Cost, and 10 Outline Code fields per project. Lookup fields with predefined values prevent typos and enable clean grouping across views.',
+          explanationNL: 'Aangepaste velden (Project tab → Aangepaste velden) geven je tot 30 Tekst-, 30 Getal-, 30 Kosten- en 10 Overzichtscode-velden per project. Opzoekvelden met vooraf gedefinieerde waarden voorkomen typefouten en zorgen voor nette groepering.',
+        },
+        {
+          id: 'msp-q-r2',
+          question: 'What is the correct sequence to export a Gantt chart as a PDF in MS Project?',
+          questionNL: 'Wat is de juiste volgorde om een Gantt-diagram als PDF te exporteren in MS Project?',
+          options: [
+            'View tab → Copy → Paste Special → PDF',
+            'File → Export → Save Project as File → PDF Format',
+            'Report tab → Print → Save as PDF',
+            'Format tab → Copy Picture → Save as PDF',
+          ],
+          optionsNL: [
+            'Weergave tab → Kopiëren → Plakken speciaal → PDF',
+            'Bestand → Exporteren → Project opslaan als bestand → PDF-indeling',
+            'Rapport tab → Afdrukken → Opslaan als PDF',
+            'Opmaak tab → Afbeelding kopiëren → Opslaan als PDF',
+          ],
+          correctAnswer: 1,
+          explanation: 'File → Export → Save Project as File → PDF Format is the correct path. This preserves timescale, filters, and page setup options and generates a clean, stakeholder-ready document.',
+          explanationNL: 'Bestand → Exporteren → Project opslaan als bestand → PDF-indeling is het juiste pad. Dit behoudt tijdschaal, filters en pagina-instellingen en genereert een nette, stakeholder-klaar document.',
+        },
+        {
+          id: 'msp-q-r3',
+          question: 'Which view in MS Project is best for analysing resource workload across all tasks over time?',
+          questionNL: 'Welke weergave in MS Project is het meest geschikt voor het analyseren van de resourcebelasting over alle taken in de tijd?',
+          options: [
+            'Gantt Chart',
+            'Network Diagram',
+            'Resource Usage',
+            'Task Sheet',
+          ],
+          optionsNL: [
+            'Gantt-diagram',
+            'Netwerkdiagram',
+            'Resourcegebruik',
+            'Takenblad',
+          ],
+          correctAnswer: 2,
+          explanation: 'Resource Usage view shows each resource with its assigned tasks and the hours worked per time period. It is the primary view for spotting over-allocation peaks and comparing planned versus actual work per resource.',
+          explanationNL: 'De weergave Resourcegebruik toont elke resource met de toegewezen taken en de gewerkte uren per tijdsperiode. Het is de primaire weergave voor het herkennen van overbelastingspieken en het vergelijken van geplande versus werkelijke uren per resource.',
+        },
+        {
+          id: 'msp-q-r4',
+          question: 'What does the "Copy Picture" command (Format tab) do differently from a regular Ctrl+C copy in MS Project?',
+          questionNL: 'Wat doet het commando "Afbeelding kopiëren" (Opmaak tab) anders dan een gewone Ctrl+C-kopie in MS Project?',
+          options: [
+            'It copies the entire project file to the clipboard',
+            'It captures a rendered image of the current view including the timescale, respecting filters and page range',
+            'It only copies selected tasks as text',
+            'It copies only the Gantt bars, not the entry table',
+          ],
+          optionsNL: [
+            'Het kopieert het volledige projectbestand naar het klembord',
+            'Het legt een gerenderde afbeelding van de huidige weergave vast inclusief de tijdschaal, met respect voor filters en paginabereik',
+            'Het kopieert alleen geselecteerde taken als tekst',
+            'Het kopieert alleen de Gantt-balken, niet de invoertabel',
+          ],
+          correctAnswer: 1,
+          explanation: 'Copy Picture renders the current view — including the timescale, bar styles, and any active filters — as an image. This is the recommended method for pasting a Gantt into PowerPoint or Word because formatting is fully preserved.',
+          explanationNL: 'Afbeelding kopiëren rendert de huidige weergave — inclusief tijdschaal, balkstijlen en actieve filters — als afbeelding. Dit is de aanbevolen methode voor het plakken van een Gantt in PowerPoint of Word omdat de opmaak volledig behouden blijft.',
+        },
+        {
+          id: 'msp-q-r5',
+          question: 'You want all your custom views, filters, and tables to be available in every new project you create. What is the correct action?',
+          questionNL: 'Je wilt dat al je aangepaste weergaven, filters en tabellen beschikbaar zijn in elk nieuw project dat je aanmaakt. Wat is de juiste handeling?',
+          options: [
+            'Save the project as a template (.mpt)',
+            'Copy the customizations to Global.MPT via File → Info → Organizer',
+            'Use File → Options → Save to set a default view',
+            'Export the customizations as an XML file',
+          ],
+          optionsNL: [
+            'Sla het project op als een sjabloon (.mpt)',
+            'Kopieer de aanpassingen naar Global.MPT via Bestand → Info → Organizer',
+            'Gebruik Bestand → Opties → Opslaan om een standaardweergave in te stellen',
+            'Exporteer de aanpassingen als een XML-bestand',
+          ],
+          correctAnswer: 1,
+          explanation: 'Global.MPT is the global template that loads for every new project. Copying items to it via the Organizer (File → Info → Organizer) is the only way to make custom views, tables, filters, and reports permanently available in all future projects.',
+          explanationNL: 'Global.MPT is het globale sjabloon dat voor elk nieuw project geladen wordt. Items ernaar kopiëren via de Organizer (Bestand → Info → Organizer) is de enige manier om aangepaste weergaven, tabellen, filters en rapporten permanent beschikbaar te maken in alle toekomstige projecten.',
+        },
+        {
+          id: 'msp-q-r6',
+          question: 'A project manager wants to give the steering committee a live, interactive view of the project schedule. Which sharing method is most appropriate?',
+          questionNL: 'Een projectmanager wil het stuurcomité een live, interactieve weergave van het projectschema geven. Welke deelmethode is het meest geschikt?',
+          options: [
+            'Export to PDF and email it weekly',
+            'Publish the schedule to Project Online / SharePoint for co-viewing',
+            'Copy Picture to a PNG and post it on the intranet',
+            'Export to Excel and share the workbook',
+          ],
+          optionsNL: [
+            'Exporteer naar PDF en stuur het wekelijks per e-mail',
+            'Publiceer het schema naar Project Online / SharePoint voor gezamenlijke weergave',
+            'Kopieer afbeelding naar een PNG en plaats het op het intranet',
+            'Exporteer naar Excel en deel de werkmap',
+          ],
+          correctAnswer: 1,
+          explanation: 'Publishing to Project Online or storing the .mpp on SharePoint provides live access with version history. Stakeholders can open or view the schedule without receiving stale email attachments, and the project manager retains control of the source of truth.',
+          explanationNL: 'Publiceren naar Project Online of het opslaan van het .mpp-bestand op SharePoint biedt live toegang met versiebeheer. Stakeholders kunnen het schema openen of bekijken zonder verouderde e-mailbijlagen te ontvangen, en de projectmanager behoudt de controle over de enige bron van waarheid.',
+        },
+        {
+          id: 'msp-q-r7',
+          question: 'Which shortcut key recalculates the project schedule when MS Project is set to manual calculation?',
+          questionNL: 'Welke sneltoets herberekent het projectschema wanneer MS Project is ingesteld op handmatige berekening?',
+          options: ['F5', 'F7', 'F9', 'F11'],
+          optionsNL: ['F5', 'F7', 'F9', 'F11'],
+          correctAnswer: 2,
+          explanation: 'F9 recalculates the schedule when calculation is set to Manual (File → Options → Schedule → Calculation). In Manual mode MS Project waits for F9 before propagating changes, which speeds up editing on large plans.',
+          explanationNL: 'F9 herberekent het schema wanneer berekening is ingesteld op Handmatig (Bestand → Opties → Planning → Berekening). In handmatige modus wacht MS Project op F9 voordat wijzigingen worden doorgevoerd, wat het bewerken van grote plannen versnelt.',
+        },
+        {
+          id: 'msp-q-r8',
+          question: 'When exporting project data to Excel using the Export Wizard, what is the advantage of selecting "Use existing map" instead of creating a new map each time?',
+          questionNL: 'Bij het exporteren van projectgegevens naar Excel via de Exportwizard, wat is het voordeel van "Bestaande toewijzing gebruiken" in plaats van elke keer een nieuwe toewijzing te maken?',
+          options: [
+            'It allows you to export to older Excel formats',
+            'It keeps field selections consistent across multiple exports, preventing column drift between reports',
+            'It automatically formats the Excel workbook with corporate colours',
+            'It merges the exported data with the existing workbook',
+          ],
+          optionsNL: [
+            'Hiermee kun je exporteren naar oudere Excel-formaten',
+            'Het houdt veldkeuzes consistent over meerdere exports, waardoor kolomdrift tussen rapporten wordt voorkomen',
+            'Het formatteert de Excel-werkmap automatisch met bedrijfskleuren',
+            'Het voegt de geëxporteerde gegevens samen met de bestaande werkmap',
+          ],
+          correctAnswer: 1,
+          explanation: 'Reusing an existing export map locks in the same fields, order, and header names every time. This is critical for recurring PMO reports where analysts rely on consistent column positions to feed Power BI or pivot tables.',
+          explanationNL: 'Het hergebruiken van een bestaande exporttoewijzing vergrendelt dezelfde velden, volgorde en kolomnamen elke keer. Dit is essentieel voor terugkerende PMO-rapporten waarbij analisten vertrouwen op consistente kolomposities voor Power BI of draaitabellen.',
+        },
+      ],
+    },
+    {
+      id: 'msp-l19',
+      title: 'Hands-On Assignment: Office Relocation Plan',
+      titleNL: 'Praktijkopdracht: Kantoorverhuisplan',
+      type: 'assignment',
+      duration: '60:00',
+      videoUrl: '',
+      icon: 'ClipboardList',
+      transcript: `This assignment is your capstone practical exercise. You will build a complete Microsoft Project schedule for a realistic office relocation and then stress-test it by simulating a delay on the critical path. By the end you will have a .mpp file that demonstrates every major skill covered in this course.
+
+## Scenario
+
+Your company is moving its 80-person Amsterdam office to a new building 2 km away. The move must be completed within 10 weeks starting from Monday of the week you begin this assignment. You are the project manager and MS Project is your scheduling tool.
+
+## Step 1 — Project Setup (10 minutes)
+
+1. Open MS Project and create a new blank project.
+2. Set the project start date to next Monday via **Project tab → Project Information**.
+3. Confirm the **Standard (Mon–Fri, 08:00–17:00)** calendar is selected as the Project Calendar.
+4. Save the file as \`OfficeRelocation_YourName.mpp\`.
+
+## Step 2 — Build the Work Breakdown Structure (20 minutes)
+
+Create at least 15 tasks organised under the following five summary phases. Use **indent** (Tab key or Task tab → Indent) to make them subtasks:
+
+| Phase | Subtasks to include (minimum) |
+|---|---|
+| 1. Preparation | Kick-off meeting, Inventory current assets, Notify staff, Arrange parking/access |
+| 2. New Office Fit-Out | Confirm floor plan, IT cabling, Furniture delivery, Safety inspection |
+| 3. IT & Telecoms | Disconnect servers, Transport servers, Reconnect & test network, Test phones |
+| 4. Physical Move | Pack workstations, Hire removal firm, Transport equipment, Unpack & place |
+| 5. Closure | Final walkthrough, Key handback, Post-move survey, Project sign-off |
+
+Rules:
+- Every subtask must have a realistic duration (1–10 days).
+- Summary tasks must have **0 assigned duration** (MS Project calculates them).
+- "Kick-off meeting" and "Project sign-off" are milestones — set duration to **0d**.
+
+## Step 3 — Add Task Dependencies (10 minutes)
+
+Link tasks so the schedule is logic-driven, not date-driven:
+
+- All Phase 1 subtasks must finish before Phase 2 begins (FS dependency on summary tasks).
+- "IT cabling" and "Furniture delivery" can start at the same time as "Confirm floor plan" finishes (FS).
+- "Safety inspection" must finish before Phase 3 begins.
+- "Disconnect servers" → "Transport servers" → "Reconnect & test network" → "Test phones" (FS chain).
+- "Transport equipment" starts 2 days after "Pack workstations" starts — model this with a **SS+2d lag**.
+
+Add at least one **FF (Finish-to-Finish)** dependency anywhere it makes real-world sense and document why in the task Notes field.
+
+## Step 4 — Assign Resources (10 minutes)
+
+Create the following resources in the **Resource Sheet**:
+
+| Name | Type | Std. Rate |
+|---|---|---|
+| Project Manager | Work | €80/hr |
+| IT Engineer | Work | €70/hr |
+| Facilities Manager | Work | €60/hr |
+| Removal Firm | Material | €2,500/unit |
+| Travel Budget | Cost | — |
+
+Assign at least one resource to every non-milestone task. Assign the "Removal Firm" material resource (1 unit) to the "Transport equipment" task. Assign "Travel Budget" (€500) to "Post-move survey".
+
+After assigning, check the **Resource Sheet** for red names indicating over-allocation. If you see any, use **Resource tab → Level All** to resolve conflicts automatically, then review whether the finish date is still within 10 weeks.
+
+## Step 5 — Set a Baseline (5 minutes)
+
+Once your schedule is complete and logical:
+
+1. **Project tab → Set Baseline → Set Baseline → OK** (Baseline 0).
+2. Apply the **Tracking Gantt** view to confirm grey baseline bars appear beneath the coloured bars.
+3. Record the **Baseline Finish date** — you will need it in Step 6.
+
+## Step 6 — Simulate a Delay and Report the Impact (10 minutes)
+
+Now simulate a real-world problem:
+
+1. Identify the **critical path** (View tab → Highlight → Critical or format critical tasks in red).
+2. Find the critical task with the **longest duration** in Phase 3 (IT & Telecoms).
+3. Extend that task's duration by **+3 days**.
+4. Note the new **project finish date**.
+5. In a task Note on the summary task "3. IT & Telecoms", write: *"Simulated 3-day slip on [task name]. New finish: [date]. Original baseline finish: [date]. Variance: +3 days."*
+
+## Deliverables
+
+Submit your \`OfficeRelocation_YourName.mpp\` file. It will be assessed against the rubric below.
+
+## Assessment Rubric
+
+| Criterion | Points | Evidence required |
+|---|---|---|
+| WBS has 5 summary phases + ≥15 subtasks with correct indent | 20 | File structure |
+| All durations are in range 0d (milestone) or 1–10d | 10 | Task list |
+| At least 10 FS dependencies + 1 SS+lag + 1 FF | 20 | Predecessors column |
+| All resources created with correct types and rates | 15 | Resource Sheet |
+| Baseline set (grey bars visible in Tracking Gantt) | 15 | Tracking Gantt view |
+| Critical path identified and 3-day slip applied correctly | 15 | Task durations + finish date |
+| Slip impact documented in task Note | 5 | Notes column |
+| **Total** | **100** | Pass ≥ 70 |
+
+## Key Takeaways
+
+- A logic-driven WBS with proper dependencies is the foundation of any credible MS Project schedule.
+- Baselines are your contract with reality — without one, you cannot measure variance.
+- Every delay on the critical path moves the project finish date by the same amount.
+- Resource leveling resolves over-allocation but may extend the schedule — always check the new finish date after leveling.
+- Documenting slip impacts in task Notes creates an audit trail that protects the project manager.`,
+      transcriptNL: `Deze opdracht is je afsluitende praktijkoefening. Je bouwt een volledig Microsoft Project-schema voor een realistische kantoorverhuizing en test het vervolgens door een vertraging op het kritieke pad te simuleren. Aan het einde heb je een .mpp-bestand dat elke belangrijke vaardigheid uit deze cursus demonstreert.
+
+## Scenario
+
+Je bedrijf verplaatst zijn 80-persoons Amsterdamse kantoor naar een nieuw gebouw 2 km verderop. De verhuizing moet binnen 10 weken worden voltooid, startend op de maandag van de week dat je met deze opdracht begint. Jij bent de projectmanager en MS Project is je planningshulpmiddel.
+
+## Stap 1 — Projectinstellingen (10 minuten)
+
+1. Open MS Project en maak een nieuw leeg project aan.
+2. Stel de projectstartdatum in op aanstaande maandag via **Project tab → Projectinformatie**.
+3. Bevestig dat de **Standaard (ma–vr, 08:00–17:00)** kalender is geselecteerd als Projectkalender.
+4. Sla het bestand op als \`Kantoorverhuizing_JouwNaam.mpp\`.
+
+## Stap 2 — Work Breakdown Structure bouwen (20 minuten)
+
+Maak minimaal 15 taken georganiseerd onder de volgende vijf samenvattingsfasen. Gebruik **inspringen** (Tab-toets of Taak tab → Inspringen) om ze subtaken te maken:
+
+| Fase | Subtaken (minimaal) |
+|---|---|
+| 1. Voorbereiding | Kick-off vergadering, Huidige assets inventariseren, Personeel informeren, Parkeren/toegang regelen |
+| 2. Inrichting nieuw kantoor | Vloerplan bevestigen, IT-bekabeling, Meubels leveren, Veiligheidsinspectie |
+| 3. IT & Telecom | Servers loskoppelen, Servers transporteren, Netwerk heraansluiten & testen, Telefoons testen |
+| 4. Fysieke verhuizing | Werkstations inpakken, Verhuisbedrijf inhuren, Apparatuur transporteren, Uitpakken & plaatsen |
+| 5. Afsluiting | Eindcontrole, Sleutels teruggeven, Enquête na verhuizing, Projectafsluiting |
+
+Regels:
+- Elke subtaak moet een realistische duur hebben (1–10 dagen).
+- Samenvattingstaken mogen **geen toegewezen duur** hebben (MS Project berekent deze).
+- "Kick-off vergadering" en "Projectafsluiting" zijn mijlpalen — stel duur in op **0d**.
+
+## Stap 3 — Taakafhankelijkheden toevoegen (10 minuten)
+
+Koppel taken zodat het schema logica-gestuurd is, niet datumgestuurd. Voeg minimaal toe: alle FS-afhankelijkheden tussen fasen, één SS+2d vertraging, één FF-afhankelijkheid gedocumenteerd in Notities.
+
+## Stap 4 — Resources toewijzen (10 minuten)
+
+Maak de gevraagde resources aan in het **Resourceblad** met correcte types en tarieven. Wijs minimaal één resource toe aan elke niet-mijlpaaltaak. Los over-allocaties op via **Resource tab → Alles nivelleren**.
+
+## Stap 5 — Baseline instellen (5 minuten)
+
+**Project tab → Baseline instellen → Baseline instellen → OK** (Baseline 0). Bevestig de grijze baseline-balken in de Tracking Gantt-weergave. Noteer de **Baseline Einddatum**.
+
+## Stap 6 — Vertraging simuleren en impact rapporteren (10 minuten)
+
+Identificeer het kritieke pad, vind de langste kritieke taak in Fase 3, verleng de duur met **+3 dagen** en documenteer de nieuwe projecteinddatum en variance in een taaknotitie.
+
+## Beoordelingsrubric
+
+| Criterium | Punten |
+|---|---|
+| WBS met 5 fasen + ≥15 subtaken correct ingesprongen | 20 |
+| Alle duren in bereik 0d of 1–10d | 10 |
+| Minimaal 10 FS + 1 SS+vertraging + 1 FF | 20 |
+| Alle resources correct aangemaakt | 15 |
+| Baseline ingesteld (grijze balken zichtbaar) | 15 |
+| Kritiek pad geïdentificeerd, 3-daagse vertraging correct toegepast | 15 |
+| Impact gedocumenteerd in taaknotitie | 5 |
+| **Totaal** | **100** | Geslaagd ≥ 70 |
+
+## Belangrijkste Leerpunten
+
+- Een logica-gestuurd WBS met correcte afhankelijkheden is de basis van elk geloofwaardig MS Project-schema.
+- Baselines zijn je contract met de werkelijkheid — zonder een baseline kun je geen variance meten.
+- Elke vertraging op het kritieke pad verschuift de projecteinddatum met hetzelfde aantal dagen.
+- Resource-nivellering lost over-allocatie op maar kan het schema verlengen — controleer altijd de nieuwe einddatum na nivellering.
+- Het documenteren van vertragingsimpacts in taaknotities creëert een auditspoor dat de projectmanager beschermt.`,
+      keyTakeaways: [
+        'A WBS with 5+ phases and 15+ properly indented tasks forms the skeleton of a professional schedule.',
+        'Logic-driven dependencies (not hard date constraints) make the plan self-updating when durations change.',
+        'Setting a baseline before kickoff is mandatory — it is the only way to measure schedule variance later.',
+        'Every day of delay on the critical path equals one day of slippage on the project finish date.',
+        'Resource leveling resolves over-allocation but always check the new finish date afterwards.',
+      ],
+      keyTakeawaysNL: [
+        'Een WBS met 5+ fasen en 15+ correct ingesprongen taken vormt het skelet van een professioneel schema.',
+        'Logica-gestuurde afhankelijkheden (geen harde datumbeperkingen) maken het plan zelfactualiseerend wanneer duren veranderen.',
+        'Een baseline instellen vóór de kickoff is verplicht — het is de enige manier om later planningsvariance te meten.',
+        'Elke dag vertraging op het kritieke pad is gelijk aan één dag uitloop op de projecteinddatum.',
+        'Resource-nivellering lost over-allocatie op, maar controleer altijd de nieuwe einddatum daarna.',
+      ],
+    },
+    {
+      id: 'msp-l20',
+      title: 'Final Exam: Microsoft Project Masterclass',
+      titleNL: 'Eindexamen: Microsoft Project Masterclass',
+      type: 'exam',
+      duration: '40:00',
+      videoUrl: '',
+      icon: 'GraduationCap',
+      transcript: `Welcome to the Microsoft Project Masterclass Final Exam.
+
+This exam covers all three modules of the course: Getting Started, Advanced Scheduling, and Reporting & Collaboration.
+
+**Format:** 20 multiple-choice questions. Each question has four options and one correct answer.
+
+**Pass mark:** 70% (14 out of 20 correct).
+
+**Time allowed:** 40 minutes. You may navigate back and forth between questions before submitting.
+
+**Topics covered:**
+- MS Project interface and navigation
+- Task types, durations, and the WBS
+- All four dependency types (FS, SS, FF, SF) with lag and lead
+- Critical path method and float
+- Resource types, assignment, and over-allocation leveling
+- Calendars and their priority hierarchy
+- Baselines and progress tracking (% Complete vs % Work Complete)
+- Earned Value Analysis (BCWS/BCWP/ACWP, SPI, CPI)
+- Gantt chart customization and views
+- Reporting, exporting, and sharing
+
+Good luck!`,
+      transcriptNL: `Welkom bij het eindexamen van de Microsoft Project Masterclass.
+
+Dit examen omvat alle drie modules van de cursus: Aan de Slag, Geavanceerde Planning, en Rapportage & Samenwerking.
+
+**Indeling:** 20 meerkeuzevragen. Elke vraag heeft vier opties en één correct antwoord.
+
+**Slagingsgrens:** 70% (14 van de 20 vragen correct).
+
+**Toegestane tijd:** 40 minuten. Je kunt voor- en achteruit navigeren tussen vragen voordat je indient.
+
+**Behandelde onderwerpen:**
+- MS Project interface en navigatie
+- Taaktypen, duren en de WBS
+- Alle vier afhankelijkheidstypen (FS, SS, FF, SF) met vertraging en voorsprong
+- Kritieke pad methode en speling
+- Resourcetypen, toewijzing en over-allocatie-nivellering
+- Kalenders en hun prioriteitshiërarchie
+- Baselines en voortgangsbewaking (% Voltooid vs % Werk Voltooid)
+- Earned Value Analyse (BCWS/BCWP/ACWP, SPI, CPI)
+- Gantt-diagram aanpassen en weergaven
+- Rapportage, exporteren en delen
+
+Veel succes!`,
+      keyTakeaways: [
+        'Pass mark is 70% (14/20). Review any module where you score below 80%.',
+        'Earned Value (SPI/CPI) and critical path questions carry the highest exam weight.',
+        'On completion, your certificate is generated automatically in the next lesson.',
+      ],
+      keyTakeawaysNL: [
+        'Slagingsgrens is 70% (14/20). Herhaal elke module waarbij je onder de 80% scoort.',
+        'Vragen over Earned Value (SPI/CPI) en het kritieke pad hebben het hoogste examenaandeel.',
+        'Na voltooiing wordt je certificaat automatisch gegenereerd in de volgende les.',
+      ],
+      quiz: [
+        {
+          id: 'msp-exam-q1',
+          question: 'You are building a project plan and need to set the project start date. Where is the correct location in MS Project?',
+          questionNL: 'Je bouwt een projectplan en moet de projectstartdatum instellen. Waar is de juiste locatie in MS Project?',
+          options: [
+            'Task tab → Task Information',
+            'Project tab → Project Information',
+            'View tab → Timeline',
+            'File tab → Properties',
+          ],
+          optionsNL: [
+            'Taak tab → Taakinformatie',
+            'Project tab → Projectinformatie',
+            'Weergave tab → Tijdlijn',
+            'Bestand tab → Eigenschappen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Project tab → Project Information is the only place to set the project start (or finish) date. All task dates are calculated from this anchor point.',
+          explanationNL: 'Project tab → Projectinformatie is de enige plek om de projectstart- (of eind-) datum in te stellen. Alle taakdatums worden berekend vanaf dit ankerpunt.',
+        },
+        {
+          id: 'msp-exam-q2',
+          question: 'Which task type in MS Project has a duration of 0 days and appears as a diamond (◆) on the Gantt chart?',
+          questionNL: 'Welk taaktype in MS Project heeft een duur van 0 dagen en verschijnt als een diamant (◆) op het Gantt-diagram?',
+          options: ['Summary Task', 'Recurring Task', 'Milestone', 'Fixed Duration Task'],
+          optionsNL: ['Samenvattingstaak', 'Terugkerende taak', 'Mijlpaal', 'Taak met vaste duur'],
+          correctAnswer: 2,
+          explanation: 'A Milestone has 0 duration and is displayed as a diamond shape on the Gantt chart. It marks a significant event or decision point in the project.',
+          explanationNL: 'Een mijlpaal heeft een duur van 0 dagen en wordt weergegeven als een diamantvorm op het Gantt-diagram. Het markeert een significant moment of beslissingspunt in het project.',
+        },
+        {
+          id: 'msp-exam-q3',
+          question: 'Task A (5 days) must finish before Task B (3 days) can start. Task B also has a 1-day waiting period after Task A finishes before it can begin. How is this modelled?',
+          questionNL: 'Taak A (5 dagen) moet eindigen voordat Taak B (3 dagen) kan starten. Taak B heeft ook een wachttijd van 1 dag na het einde van Taak A. Hoe wordt dit gemodelleerd?',
+          options: [
+            'FS dependency with -1d lead',
+            'SS dependency with +1d lag',
+            'FS dependency with +1d lag',
+            'FF dependency with +1d lag',
+          ],
+          optionsNL: [
+            'FS-afhankelijkheid met -1d voorsprong',
+            'SS-afhankelijkheid met +1d vertraging',
+            'FS-afhankelijkheid met +1d vertraging',
+            'FF-afhankelijkheid met +1d vertraging',
+          ],
+          correctAnswer: 2,
+          explanation: 'A Finish-to-Start (FS) dependency with a +1d lag means Task B starts 1 day after Task A finishes. Positive lag adds waiting time; negative lag (lead) allows overlap.',
+          explanationNL: 'Een FS-afhankelijkheid (Einde naar Start) met een +1d vertraging betekent dat Taak B 1 dag na het einde van Taak A start. Positieve vertraging voegt wachttijd toe; negatieve vertraging (voorsprong) maakt overlap mogelijk.',
+        },
+        {
+          id: 'msp-exam-q4',
+          question: 'In a network diagram, "Total Float" (also called Slack) on a task represents:',
+          questionNL: 'In een netwerkdiagram vertegenwoordigt "Totale Speling" (ook wel Slack) op een taak:',
+          options: [
+            'The number of days a task can be delayed without delaying the project finish date',
+            'The number of resources available for the task',
+            'The difference between planned cost and actual cost',
+            'The number of days between the task start and the project start',
+          ],
+          optionsNL: [
+            'Het aantal dagen dat een taak vertraagd kan worden zonder de projecteinddatum te vertragen',
+            'Het aantal beschikbare resources voor de taak',
+            'Het verschil tussen geplande kosten en werkelijke kosten',
+            'Het aantal dagen tussen de taakstart en de projectstart',
+          ],
+          correctAnswer: 0,
+          explanation: 'Total Float is the amount of time a task can slip before it affects the project finish date. Tasks on the critical path have 0 float. Tasks with positive float have schedule flexibility.',
+          explanationNL: 'Totale Speling is de hoeveelheid tijd dat een taak kan uitlopen voordat het de projecteinddatum beïnvloedt. Taken op het kritieke pad hebben 0 speling. Taken met positieve speling hebben planningsflexibiliteit.',
+        },
+        {
+          id: 'msp-exam-q5',
+          question: 'Which dependency type is used when two tasks must finish at the same time, regardless of when they started?',
+          questionNL: 'Welk afhankelijkheidstype wordt gebruikt wanneer twee taken tegelijk moeten eindigen, ongeacht wanneer ze zijn gestart?',
+          options: ['Finish-to-Start (FS)', 'Start-to-Start (SS)', 'Finish-to-Finish (FF)', 'Start-to-Finish (SF)'],
+          optionsNL: ['Einde naar Start (FS)', 'Start naar Start (SS)', 'Einde naar Einde (FF)', 'Start naar Einde (SF)'],
+          correctAnswer: 2,
+          explanation: 'Finish-to-Finish (FF) constrains two tasks to finish at the same time. A common example: "Write documentation" must finish at the same time as "Develop the feature."',
+          explanationNL: 'Einde naar Einde (FF) dwingt twee taken om tegelijk te eindigen. Een veelvoorkomend voorbeeld: "Documentatie schrijven" moet eindigen op hetzelfde moment als "De functie ontwikkelen."',
+        },
+        {
+          id: 'msp-exam-q6',
+          question: 'You assign a resource at 100% to two overlapping tasks. In MS Project, what visual indicator signals the over-allocation?',
+          questionNL: 'Je wijst een resource voor 100% toe aan twee overlappende taken. Welke visuele indicator in MS Project signaleert de over-allocatie?',
+          options: [
+            'The resource name turns blue',
+            'A warning triangle (⚠) appears on the tasks',
+            'The resource name turns red in the Resource Sheet',
+            'The task bar turns orange on the Gantt chart',
+          ],
+          optionsNL: [
+            'De resourcenaam wordt blauw',
+            'Een waarschuwingsdriehoek (⚠) verschijnt op de taken',
+            'De resourcenaam wordt rood in het Resourceblad',
+            'De taakbalk wordt oranje op het Gantt-diagram',
+          ],
+          correctAnswer: 2,
+          explanation: 'An over-allocated resource is shown in red in the Resource Sheet. This is the primary signal. You resolve it via Resource Leveling (Resource tab → Level All) or by adjusting assignment percentages.',
+          explanationNL: 'Een over-toegewezen resource wordt rood weergegeven in het Resourceblad. Dit is het primaire signaal. Je lost het op via Resource-nivellering (Resource tab → Alles nivelleren) of door toewijzingspercentages aan te passen.',
+        },
+        {
+          id: 'msp-exam-q7',
+          question: 'In MS Project\'s calendar hierarchy, which calendar takes the highest priority when there is a conflict?',
+          questionNL: 'In de MS Project-kalenderhiërarchie, welke kalender heeft de hoogste prioriteit bij een conflict?',
+          options: ['Base Calendar', 'Project Calendar', 'Task Calendar', 'Resource Calendar'],
+          optionsNL: ['Basiskalender', 'Projectkalender', 'Taakkalender', 'Resourcekalender'],
+          correctAnswer: 3,
+          explanation: 'Resource Calendar has the highest priority (most specific). The order is: Resource Calendar → Task Calendar → Project Calendar → Base Calendar. If a resource\'s calendar marks a day as non-working, the task will not be scheduled on that day even if the project calendar shows it as working.',
+          explanationNL: 'De Resourcekalender heeft de hoogste prioriteit (meest specifiek). De volgorde is: Resourcekalender → Taakkalender → Projectkalender → Basiskalender. Als de kalender van een resource een dag als niet-werkend markeert, wordt de taak op die dag niet gepland, zelfs als de projectkalender die dag als werkend toont.',
+        },
+        {
+          id: 'msp-exam-q8',
+          question: 'You set a baseline on Monday. By Wednesday, one task has spent €1,000 (ACWP) but the planned value for work done was €800 (BCWP). What does this indicate?',
+          questionNL: 'Je stelt een baseline in op maandag. Tegen woensdag heeft één taak €1.000 uitgegeven (ACWP) maar de geplande waarde voor het uitgevoerde werk was €800 (BCWP). Wat geeft dit aan?',
+          options: [
+            'The task is ahead of schedule',
+            'The task is over budget (CPI < 1)',
+            'The task is under budget (CPI > 1)',
+            'The task is on the critical path',
+          ],
+          optionsNL: [
+            'De taak loopt voor op schema',
+            'De taak overschrijdt het budget (CPI < 1)',
+            'De taak is binnen het budget (CPI > 1)',
+            'De taak bevindt zich op het kritieke pad',
+          ],
+          correctAnswer: 1,
+          explanation: 'CPI = BCWP / ACWP = 800 / 1000 = 0.8. A CPI below 1.0 means you are spending more than planned for the work accomplished — the task is over budget. A CPI above 1.0 means under budget.',
+          explanationNL: 'KPI = BCWP / ACWP = 800 / 1000 = 0,8. Een KPI onder 1,0 betekent dat je meer uitgeeft dan gepland voor het uitgevoerde werk — de taak overschrijdt het budget. Een KPI boven 1,0 betekent binnen het budget.',
+        },
+        {
+          id: 'msp-exam-q9',
+          question: 'BCWS in Earned Value Analysis is also known as:',
+          questionNL: 'BCWS in Earned Value Analyse staat ook bekend als:',
+          options: [
+            'Actual Cost of Work Performed',
+            'Budgeted Cost of Work Performed',
+            'Planned Value (PV)',
+            'Estimate at Completion (EAC)',
+          ],
+          optionsNL: [
+            'Werkelijke kosten van uitgevoerd werk',
+            'Gebudgetteerde kosten van uitgevoerd werk',
+            'Geplande waarde (PV)',
+            'Schatting bij voltooiing (SAV)',
+          ],
+          correctAnswer: 2,
+          explanation: 'BCWS (Budgeted Cost of Work Scheduled) = Planned Value (PV). It is the authorised budget assigned to scheduled work. BCWP = Earned Value (EV); ACWP = Actual Cost (AC).',
+          explanationNL: 'BCWS (Gebudgetteerde kosten van gepland werk) = Geplande Waarde (PV). Het is het geautoriseerde budget toegewezen aan gepland werk. BCWP = Verdiende Waarde (EV); ACWP = Werkelijke Kosten (WK).',
+        },
+        {
+          id: 'msp-exam-q10',
+          question: 'At project status date, SPI = 0.85. What does this mean?',
+          questionNL: 'Op de projectstatusdatum is SPI = 0,85. Wat betekent dit?',
+          options: [
+            'The project is 15% over budget',
+            'The project is delivering only 85 cents of planned value for every €1 of scheduled work — behind schedule',
+            'The project is 15% ahead of schedule',
+            'The project will finish 15 days late',
+          ],
+          optionsNL: [
+            'Het project is 15% boven budget',
+            'Het project levert slechts 85 cent geplande waarde op voor elke €1 gepland werk — achter op schema',
+            'Het project loopt 15% voor op schema',
+            'Het project eindigt 15 dagen te laat',
+          ],
+          correctAnswer: 1,
+          explanation: 'SPI = EV / PV. An SPI of 0.85 means you have accomplished only 85% of the planned work value, so the project is behind schedule. SPI > 1 = ahead of schedule; SPI < 1 = behind.',
+          explanationNL: 'SPI = EV / PV. Een SPI van 0,85 betekent dat je slechts 85% van de geplande werkwaarde hebt bereikt, dus het project loopt achter op schema. SPI > 1 = voor op schema; SPI < 1 = achter.',
+        },
+        {
+          id: 'msp-exam-q11',
+          question: 'What is the purpose of "As Soon As Possible" (ASAP) constraint, and why is it the recommended default?',
+          questionNL: 'Wat is het doel van de beperking "Zo Snel Mogelijk" (ZSAM), en waarom is het de aanbevolen standaard?',
+          options: [
+            'It forces every task to start on the project start date',
+            'It lets MS Project calculate the earliest possible date for each task based on dependencies and calendars, keeping the plan dynamic',
+            'It prevents tasks from being rescheduled',
+            'It assigns the highest priority to the task during resource leveling',
+          ],
+          optionsNL: [
+            'Het dwingt elke taak om te starten op de projectstartdatum',
+            'Het laat MS Project de vroegst mogelijke datum berekenen voor elke taak op basis van afhankelijkheden en kalenders, waardoor het plan dynamisch blijft',
+            'Het voorkomt dat taken worden hergepland',
+            'Het kent de hoogste prioriteit toe aan de taak tijdens resource-nivellering',
+          ],
+          correctAnswer: 1,
+          explanation: 'ASAP keeps the schedule dynamic. MS Project calculates the earliest date each task can start based on its predecessors and resource calendars. Hard constraints like "Must Start On" override this logic and cause incorrect schedules when durations change.',
+          explanationNL: 'ZSAM houdt het schema dynamisch. MS Project berekent de vroegst mogelijke startdatum voor elke taak op basis van zijn voorgangers en resourcekalenders. Harde beperkingen zoals "Moet Starten Op" overschrijven deze logica en veroorzaken onjuiste schema\'s wanneer duren veranderen.',
+        },
+        {
+          id: 'msp-exam-q12',
+          question: 'You want to track both schedule and cost performance in one number. You note EV = €40,000 and AC = €50,000. What is the CPI and what does it tell you?',
+          questionNL: 'Je wilt zowel de schema- als kostenprestatie in één getal bijhouden. Je ziet EV = €40.000 en WK = €50.000. Wat is de KPI en wat vertelt het je?',
+          options: [
+            'CPI = 1.25 — under budget',
+            'CPI = 0.80 — over budget (spending more than the value earned)',
+            'CPI = 0.80 — behind schedule',
+            'CPI = 1.25 — ahead of schedule',
+          ],
+          optionsNL: [
+            'KPI = 1,25 — binnen budget',
+            'KPI = 0,80 — boven budget (meer uitgeven dan de verdiende waarde)',
+            'KPI = 0,80 — achter op schema',
+            'KPI = 1,25 — voor op schema',
+          ],
+          correctAnswer: 1,
+          explanation: 'CPI = EV / AC = 40,000 / 50,000 = 0.80. CPI below 1.0 means you are spending more money than the value of work accomplished — the project is over budget. CPI measures cost efficiency, not schedule efficiency (that is SPI).',
+          explanationNL: 'KPI = EV / WK = 40.000 / 50.000 = 0,80. KPI onder 1,0 betekent dat je meer geld uitgeeft dan de waarde van het uitgevoerde werk — het project is boven budget. KPI meet kostenefficiëntie, niet schema-efficiëntie (dat is SPI).',
+        },
+        {
+          id: 'msp-exam-q13',
+          question: 'When you save a project as a Project Template (.mpt), what should you strip out before saving to protect confidentiality and keep the template reusable?',
+          questionNL: 'Wanneer je een project opslaat als een Projectsjabloon (.mpt), wat moet je verwijderen voordat je opslaat om vertrouwelijkheid te beschermen en het sjabloon herbruikbaar te houden?',
+          options: [
+            'Task names and durations',
+            'Baselines, actuals, and resource cost rates',
+            'Dependencies and constraints',
+            'The project calendar',
+          ],
+          optionsNL: [
+            'Taaknamen en duren',
+            'Baselines, werkelijke waarden en resourcekostentarieven',
+            'Afhankelijkheden en beperkingen',
+            'De projectkalender',
+          ],
+          correctAnswer: 1,
+          explanation: 'Before saving a template, strip baselines (which contain original planned dates/costs), actuals (which contain real spend/progress data), and resource cost rates (which may be confidential). The WBS structure, dependencies, and calendars should be kept.',
+          explanationNL: 'Verwijder voor het opslaan van een sjabloon de baselines (die originele geplande datums/kosten bevatten), werkelijke waarden (die werkelijke uitgaven/voortgangsgegevens bevatten) en resourcekostentarieven (die vertrouwelijk kunnen zijn). De WBS-structuur, afhankelijkheden en kalenders moeten worden bewaard.',
+        },
+        {
+          id: 'msp-exam-q14',
+          question: 'Resource Leveling in MS Project resolves over-allocation by:',
+          questionNL: 'Resource-nivellering in MS Project lost over-allocatie op door:',
+          options: [
+            'Reducing the resource\'s standard rate',
+            'Delaying or splitting tasks so the resource is never assigned more than 100% in any time period',
+            'Removing the resource from all but one task',
+            'Extending all task durations by 20%',
+          ],
+          optionsNL: [
+            'Het standaardtarief van de resource te verlagen',
+            'Taken te vertragen of te splitsen zodat de resource in geen enkele tijdsperiode meer dan 100% is toegewezen',
+            'De resource van alle taken behalve één te verwijderen',
+            'Alle taakduren met 20% te verlengen',
+          ],
+          correctAnswer: 1,
+          explanation: 'Resource Leveling delays or splits tasks (within their available float, or beyond if necessary) so no resource is scheduled above 100% in any given time window. This may extend the project finish date.',
+          explanationNL: 'Resource-nivellering vertraagt of splitst taken (binnen hun beschikbare speling, of daarbuiten indien nodig) zodat geen resource boven 100% wordt gepland in enig gegeven tijdvenster. Dit kan de projecteinddatum verlengen.',
+        },
+        {
+          id: 'msp-exam-q15',
+          question: 'What is the difference between "% Complete" and "% Work Complete" in MS Project?',
+          questionNL: 'Wat is het verschil tussen "% Voltooid" en "% Werk Voltooid" in MS Project?',
+          options: [
+            'They are the same field with different labels',
+            '% Complete is duration-based (time elapsed); % Work Complete is effort-based (hours spent)',
+            '% Complete is for summary tasks only; % Work Complete is for regular tasks',
+            '% Work Complete includes overtime; % Complete does not',
+          ],
+          optionsNL: [
+            'Ze zijn hetzelfde veld met verschillende labels',
+            '% Voltooid is gebaseerd op duur (verstreken tijd); % Werk Voltooid is gebaseerd op inspanning (bestede uren)',
+            '% Voltooid is alleen voor samenvattingstaken; % Werk Voltooid is voor gewone taken',
+            '% Werk Voltooid omvat overwerk; % Voltooid niet',
+          ],
+          correctAnswer: 1,
+          explanation: '% Complete is duration-based: if a 10-day task has used 5 days, it is 50% complete regardless of hours. % Work Complete is effort-based: if 40 of 80 planned hours have been logged, it is 50% work complete. They diverge when resources work more or fewer hours per day than planned.',
+          explanationNL: '% Voltooid is gebaseerd op duur: als een taak van 10 dagen 5 dagen heeft gebruikt, is het 50% voltooid ongeacht de uren. % Werk Voltooid is gebaseerd op inspanning: als 40 van de 80 geplande uren zijn geregistreerd, is het 50% werk voltooid. Ze wijken af wanneer resources meer of minder uren per dag werken dan gepland.',
+        },
+        {
+          id: 'msp-exam-q16',
+          question: 'Which MS Project view shows each resource with its assigned tasks and the planned/actual hours per day or week?',
+          questionNL: 'Welke MS Project-weergave toont elke resource met zijn toegewezen taken en de geplande/werkelijke uren per dag of week?',
+          options: ['Gantt Chart', 'Resource Sheet', 'Resource Usage', 'Task Usage'],
+          optionsNL: ['Gantt-diagram', 'Resourceblad', 'Resourcegebruik', 'Taakgebruik'],
+          correctAnswer: 2,
+          explanation: 'Resource Usage view shows resources as rows with their assigned tasks nested beneath, and a time-phased grid showing planned work, actual work, and remaining work per time period. It is the primary view for workload analysis.',
+          explanationNL: 'De weergave Resourcegebruik toont resources als rijen met hun toegewezen taken eronder genest, en een tijdsgefaseerd raster met gepland werk, werkelijk werk en resterend werk per tijdsperiode. Het is de primaire weergave voor werklastanalyse.',
+        },
+        {
+          id: 'msp-exam-q17',
+          question: 'You have a project with tasks A → B → C → D (all FS). Task A takes 3d, B takes 5d, C takes 2d, D takes 4d. There is also a parallel path: A → E (7d) → D. What is the critical path and the project duration?',
+          questionNL: 'Je hebt een project met taken A → B → C → D (allemaal FS). Taak A duurt 3d, B duurt 5d, C duurt 2d, D duurt 4d. Er is ook een parallel pad: A → E (7d) → D. Wat is het kritieke pad en de projectduur?',
+          options: [
+            'A → B → C → D = 14 days; this is the critical path',
+            'A → E → D = 14 days; this is the critical path',
+            'Both paths are critical at 14 days each',
+            'A → B → C → D = 14 days; A → E → D = 14 days; both paths are critical',
+          ],
+          optionsNL: [
+            'A → B → C → D = 14 dagen; dit is het kritieke pad',
+            'A → E → D = 14 dagen; dit is het kritieke pad',
+            'Beide paden zijn kritiek met elk 14 dagen',
+            'A → B → C → D = 14 dagen; A → E → D = 14 dagen; beide paden zijn kritiek',
+          ],
+          correctAnswer: 3,
+          explanation: 'Path 1: A(3) + B(5) + C(2) + D(4) = 14 days. Path 2: A(3) + E(7) + D(4) = 14 days. Both paths are 14 days long, so both are critical. Any delay on any task in either path delays the project.',
+          explanationNL: 'Pad 1: A(3) + B(5) + C(2) + D(4) = 14 dagen. Pad 2: A(3) + E(7) + D(4) = 14 dagen. Beide paden zijn 14 dagen lang, dus beide zijn kritiek. Elke vertraging op een taak in een van beide paden vertraagt het project.',
+        },
+        {
+          id: 'msp-exam-q18',
+          question: 'A task has constraint type "Must Finish On: 15 March". What is the risk of using this constraint in MS Project?',
+          questionNL: 'Een taak heeft het beperkingstype "Moet Eindigen Op: 15 maart". Wat is het risico van het gebruik van deze beperking in MS Project?',
+          options: [
+            'The task will be deleted if the date passes',
+            'The constraint overrides dependency logic; if predecessors slip, the task will still show 15 March as finish, hiding the real schedule impact',
+            'MS Project will automatically extend the task duration to meet the date',
+            'The task will be moved to a separate calendar',
+          ],
+          optionsNL: [
+            'De taak wordt verwijderd als de datum verstrijkt',
+            'De beperking overschrijft de afhankelijkheidslogica; als voorgangers uitlopen, toont de taak nog steeds 15 maart als einddatum, waardoor de werkelijke planningsimpact verborgen blijft',
+            'MS Project verlengt automatisch de taakduur om de datum te halen',
+            'De taak wordt verplaatst naar een aparte kalender',
+          ],
+          correctAnswer: 1,
+          explanation: 'Hard constraints like "Must Finish On" override the forward-scheduling logic. If a predecessor slips, the constrained task will not move, creating negative float and hiding the real impact. Best practice is to use ASAP with a Deadline marker instead.',
+          explanationNL: 'Harde beperkingen zoals "Moet Eindigen Op" overschrijven de voorwaartse planningslogica. Als een voorganger uitloopt, wordt de beperkte taak niet verplaatst, wat negatieve speling creëert en de werkelijke impact verbergt. De beste praktijk is ZSAM te gebruiken met een Deadline-markering in plaats daarvan.',
+        },
+        {
+          id: 'msp-exam-q19',
+          question: 'What is the purpose of the Organizer (File → Info → Organizer) in MS Project?',
+          questionNL: 'Wat is het doel van de Organizer (Bestand → Info → Organizer) in MS Project?',
+          options: [
+            'To sort tasks alphabetically across all modules',
+            'To copy custom views, tables, filters, calendars, and reports between project files and Global.MPT',
+            'To merge two project files into one master project',
+            'To generate an automated project status report',
+          ],
+          optionsNL: [
+            'Om taken alfabetisch te sorteren over alle modules',
+            'Om aangepaste weergaven, tabellen, filters, kalenders en rapporten te kopiëren tussen projectbestanden en Global.MPT',
+            'Om twee projectbestanden samen te voegen tot één masterproject',
+            'Om een geautomatiseerd projectstatusrapport te genereren',
+          ],
+          correctAnswer: 1,
+          explanation: 'The Organizer lets you copy project-specific customizations (views, tables, filters, calendars, reports, fields) to Global.MPT so they become available in all future projects. It is also used to rename or delete these objects.',
+          explanationNL: 'De Organizer laat je projectspecifieke aanpassingen (weergaven, tabellen, filters, kalenders, rapporten, velden) kopiëren naar Global.MPT zodat ze beschikbaar worden in alle toekomstige projecten. Het wordt ook gebruikt om deze objecten te hernoemen of te verwijderen.',
+        },
+        {
+          id: 'msp-exam-q20',
+          question: 'After completing a project of a type you will repeat (e.g. a product launch), what is the best practice for preserving the reusable schedule structure?',
+          questionNL: 'Na het voltooien van een project van een type dat je zult herhalen (bijv. een productlancering), wat is de beste praktijk voor het bewaren van de herbruikbare planningsstructuur?',
+          options: [
+            'Keep the .mpp file and manually delete actuals each time',
+            'File → Save As → Project Template (.mpt), stripping baselines and actuals before saving',
+            'Export to Excel and rebuild from the spreadsheet next time',
+            'Use File → Copy Project to create a duplicate',
+          ],
+          optionsNL: [
+            'Bewaar het .mpp-bestand en verwijder elke keer handmatig de werkelijke waarden',
+            'Bestand → Opslaan als → Projectsjabloon (.mpt), met verwijdering van baselines en werkelijke waarden voor het opslaan',
+            'Exporteer naar Excel en herbouw vanuit de spreadsheet de volgende keer',
+            'Gebruik Bestand → Project kopiëren om een duplicaat te maken',
+          ],
+          correctAnswer: 1,
+          explanation: 'Saving as a Project Template (.mpt) preserves the WBS, dependencies, calendars, and resource list while stripping confidential actuals and baselines. The next project then starts with a clean, logic-complete structure instead of rebuilding from scratch.',
+          explanationNL: 'Opslaan als een Projectsjabloon (.mpt) behoudt de WBS, afhankelijkheden, kalenders en resourcelijst terwijl vertrouwelijke werkelijke waarden en baselines worden verwijderd. Het volgende project start dan met een schone, logisch-volledige structuur in plaats van vanaf nul te herbouwen.',
+        },
+      ],
     },
     {
       id: 'msp-l18',

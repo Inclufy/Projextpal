@@ -1,0 +1,593 @@
+{
+  "id": "safe-l19",
+  "title": "Final Exam: SAFe Practitioner",
+  "titleNL": "Eindexamen: SAFe Practitioner",
+  "courseId": "safe-scaling-agile",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "safe-exam-q1",
+      "text": "Which of the four SAFe Core Values directly addresses the requirement that trust requires visibility?",
+      "textNL": "Welke van de vier SAFe Kernwaarden richt zich direct op de vereiste dat vertrouwen zichtbaarheid vereist?",
+      "question": "Welke van de vier SAFe Kernwaarden richt zich direct op de vereiste dat vertrouwen zichtbaarheid vereist?",
+      "questionEN": "Which of the four SAFe Core Values directly addresses the requirement that trust requires visibility?",
+      "options": [
+        "Alignment",
+        "Built-In Quality",
+        "Transparency",
+        "Program Execution"
+      ],
+      "optionsEN": [
+        "Alignment",
+        "Built-In Quality",
+        "Transparency",
+        "Program Execution"
+      ],
+      "optionsNL": [
+        "Afstemming",
+        "Ingebouwde Kwaliteit",
+        "Transparantie",
+        "Programma-uitvoering"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Transparency is the SAFe Core Value that holds \"trust requires visibility\". It is achieved through open backlogs, public WIP boards, honest impediment reporting, and real demos. (SAFe 6.0, Core Values)",
+      "explanationNL": "Transparantie is de SAFe Kernwaarde die stelt dat \"vertrouwen zichtbaarheid vereist\". Dit wordt bereikt door open backlogs, openbare WIP-borden, eerlijke impedimentrapportage en echte demo's. (SAFe 6.0, Kernwaarden)"
+    },
+    {
+      "id": "safe-exam-q2",
+      "text": "Which SAFe Lean-Agile Principle specifically addresses Set-Based Design and preserving options until more information is available?",
+      "textNL": "Welk SAFe Lean-Agile Principe richt zich specifiek op Set-Based Design en het bewaren van opties totdat er meer informatie beschikbaar is?",
+      "question": "Welk SAFe Lean-Agile Principe richt zich specifiek op Set-Based Design en het bewaren van opties totdat er meer informatie beschikbaar is?",
+      "questionEN": "Which SAFe Lean-Agile Principle specifically addresses Set-Based Design and preserving options until more information is available?",
+      "options": [
+        "Principle #1 — Take an economic view",
+        "Principle #3 — Assume variability; preserve options",
+        "Principle #6 — Make value flow without interruptions",
+        "Principle #9 — Decentralize decision-making"
+      ],
+      "optionsEN": [
+        "Principle #1 — Take an economic view",
+        "Principle #3 — Assume variability; preserve options",
+        "Principle #6 — Make value flow without interruptions",
+        "Principle #9 — Decentralize decision-making"
+      ],
+      "optionsNL": [
+        "Principe #1 — Neem een economisch perspectief",
+        "Principe #3 — Neem variabiliteit aan; bewaar opties",
+        "Principe #6 — Laat waarde stromen zonder onderbrekingen",
+        "Principe #9 — Decentraliseer besluitvorming"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Principle #3 — \"Assume variability; preserve options\" — recommends Set-Based Design: explore multiple solution paths simultaneously and converge late when more is known, rather than committing prematurely to one approach. (SAFe 6.0, Principle #3)",
+      "explanationNL": "Principe #3 — \"Neem variabiliteit aan; bewaar opties\" — beveelt Set-Based Design aan: verken meerdere oplossingsroutes tegelijkertijd en convergeer laat wanneer meer bekend is, in plaats van vroegtijdig te committeren aan één aanpak. (SAFe 6.0, Principe #3)"
+    },
+    {
+      "id": "safe-exam-q3",
+      "text": "An organization has 6 ARTs all delivering components of one highly integrated avionics system. Which SAFe configuration is most appropriate?",
+      "textNL": "Een organisatie heeft 6 ARTs die allemaal componenten leveren van één sterk geïntegreerd avionicasysteem. Welke SAFe-configuratie is het meest geschikt?",
+      "question": "Een organisatie heeft 6 ARTs die allemaal componenten leveren van één sterk geïntegreerd avionicasysteem. Welke SAFe-configuratie is het meest geschikt?",
+      "questionEN": "An organization has 6 ARTs all delivering components of one highly integrated avionics system. Which SAFe configuration is most appropriate?",
+      "options": [
+        "Essential SAFe with a strong RTE",
+        "Portfolio SAFe with Lean Budgets",
+        "Large Solution SAFe with a Solution Train",
+        "Full SAFe is always required for 6 ARTs"
+      ],
+      "optionsEN": [
+        "Essential SAFe with a strong RTE",
+        "Portfolio SAFe with Lean Budgets",
+        "Large Solution SAFe with a Solution Train",
+        "Full SAFe is always required for 6 ARTs"
+      ],
+      "optionsNL": [
+        "Essential SAFe met een sterke RTE",
+        "Portfolio SAFe met Lean Budgets",
+        "Large Solution SAFe met een Solution Train",
+        "Full SAFe is altijd vereist voor 6 ARTs"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "When multiple ARTs collaborate on a single highly integrated solution, Large Solution SAFe is the correct configuration. It adds the Solution Train to coordinate ARTs, Pre- and Post-PI Planning, the Solution Demo, and solution-level roles. (SAFe 6.0, Large Solution SAFe)",
+      "explanationNL": "Wanneer meerdere ARTs samenwerken aan één sterk geïntegreerde oplossing, is Large Solution SAFe de juiste configuratie. Het voegt de Solution Train toe om ARTs te coördineren, Pre- en Post-PI Planning, de Solution Demo en rollen op solutieniveau. (SAFe 6.0, Large Solution SAFe)"
+    },
+    {
+      "id": "safe-exam-q4",
+      "text": "What is the role of Business Owners during PI Planning?",
+      "textNL": "Wat is de rol van Business Owners tijdens PI Planning?",
+      "question": "Wat is de rol van Business Owners tijdens PI Planning?",
+      "questionEN": "What is the role of Business Owners during PI Planning?",
+      "options": [
+        "They observe from a distance and receive a summary report after the event",
+        "They set business context on Day 1, accept PI Objectives, and assign business value scores to team commitments",
+        "They are responsible for writing all features for the program backlog",
+        "Their role is limited to approving the budget for the PI"
+      ],
+      "optionsEN": [
+        "They observe from a distance and receive a summary report after the event",
+        "They set business context on Day 1, accept PI Objectives, and assign business value scores to team commitments",
+        "They are responsible for writing all features for the program backlog",
+        "Their role is limited to approving the budget for the PI"
+      ],
+      "optionsNL": [
+        "Ze observeren op afstand en ontvangen een samenvattingsrapport na het evenement",
+        "Ze stellen zakelijke context op dag 1, accepteren PI Doelstellingen en kennen bedrijfswaardescores toe aan teamcommitments",
+        "Ze zijn verantwoordelijk voor het schrijven van alle features voor de program backlog",
+        "Hun rol is beperkt tot het goedkeuren van het budget voor de PI"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Business Owners are accountable executives who present business context on Day 1, negotiate and accept PI Objectives, and assign Business Value scores (1–10) to each team's objectives. Their presence and engagement is essential for PI Planning to produce real commitments. (SAFe 6.0, PI Planning)",
+      "explanationNL": "Business Owners zijn verantwoordelijke leidinggevenden die zakelijke context presenteren op dag 1, PI Doelstellingen onderhandelen en accepteren, en Business Value-scores (1–10) toekennen aan de doelstellingen van elk team. Hun aanwezigheid en betrokkenheid is essentieel om echte commitments te produceren. (SAFe 6.0, PI Planning)"
+    },
+    {
+      "id": "safe-exam-q5",
+      "text": "In SAFe, which artifact produced during PI Planning captures features, inter-team dependencies, and key milestones across the PI?",
+      "textNL": "Welk artefact dat tijdens PI Planning wordt geproduceerd legt features, inter-team afhankelijkheden en sleutelmijlpalen vast gedurende het PI?",
+      "question": "Welk artefact dat tijdens PI Planning wordt geproduceerd legt features, inter-team afhankelijkheden en sleutelmijlpalen vast gedurende het PI?",
+      "questionEN": "In SAFe, which artifact produced during PI Planning captures features, inter-team dependencies, and key milestones across the PI?",
+      "options": [
+        "The Sprint Backlog",
+        "The Program Board",
+        "The Solution Intent",
+        "The Portfolio Kanban"
+      ],
+      "optionsEN": [
+        "The Sprint Backlog",
+        "The Program Board",
+        "The Solution Intent",
+        "The Portfolio Kanban"
+      ],
+      "optionsNL": [
+        "De Sprint Backlog",
+        "Het Program Board",
+        "De Solution Intent",
+        "De Portfolio Kanban"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Program Board is a key PI Planning output. It is a physical or digital wall displaying features per team, dependencies between teams (shown as strings or arrows), milestones, and external dates. It persists throughout the PI and is updated as the situation evolves. (SAFe 6.0, PI Planning)",
+      "explanationNL": "Het Program Board is een sleutelresultaat van PI Planning. Het is een fysieke of digitale muur met features per team, afhankelijkheden tussen teams (weergegeven als strings of pijlen), mijlpalen en externe datums. Het blijft gedurende het PI bestaan en wordt bijgewerkt naarmate de situatie evolueert. (SAFe 6.0, PI Planning)"
+    },
+    {
+      "id": "safe-exam-q6",
+      "text": "Which role in the ART owns the Program Backlog and is responsible for deciding what the ART builds and in what order?",
+      "textNL": "Welke rol in de ART bezit de Program Backlog en is verantwoordelijk voor het bepalen wat de ART bouwt en in welke volgorde?",
+      "question": "Welke rol in de ART bezit de Program Backlog en is verantwoordelijk voor het bepalen wat de ART bouwt en in welke volgorde?",
+      "questionEN": "Which role in the ART owns the Program Backlog and is responsible for deciding what the ART builds and in what order?",
+      "options": [
+        "Release Train Engineer (RTE)",
+        "System Architect",
+        "Product Management",
+        "Product Owner"
+      ],
+      "optionsEN": [
+        "Release Train Engineer (RTE)",
+        "System Architect",
+        "Product Management",
+        "Product Owner"
+      ],
+      "optionsNL": [
+        "Release Train Engineer (RTE)",
+        "Systeemarchitect",
+        "Product Management",
+        "Product Owner"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Product Management owns the Program Backlog — the prioritized list of features for the ART — and is responsible for what gets built and in what sequence. Product Owners own the team-level backlogs (stories and tasks). The RTE owns facilitation and impediment removal. (SAFe 6.0, Product Management)",
+      "explanationNL": "Product Management bezit de Program Backlog — de geprioriteerde lijst van features voor de ART — en is verantwoordelijk voor wat er gebouwd wordt en in welke volgorde. Product Owners bezitten de backlogs op teamniveau (stories en taken). De RTE bezit facilitering en het verwijderen van impedimenten. (SAFe 6.0, Product Management)"
+    },
+    {
+      "id": "safe-exam-q7",
+      "text": "What does the SAFe IP Iteration primarily serve?",
+      "textNL": "Wat dient de SAFe IP Iteratie primair?",
+      "question": "Wat dient de SAFe IP Iteratie primair?",
+      "questionEN": "What does the SAFe IP Iteration primarily serve?",
+      "options": [
+        "A buffer sprint to complete unfinished user stories",
+        "Innovation, architectural spikes, training, Inspect & Adapt, and PI Planning preparation",
+        "A dedicated hardening sprint for regression testing only",
+        "An executive review and governance checkpoint"
+      ],
+      "optionsEN": [
+        "A buffer sprint to complete unfinished user stories",
+        "Innovation, architectural spikes, training, Inspect & Adapt, and PI Planning preparation",
+        "A dedicated hardening sprint for regression testing only",
+        "An executive review and governance checkpoint"
+      ],
+      "optionsNL": [
+        "Een buffersprint om onafgemaakte user stories te voltooien",
+        "Innovatie, architectuurspikes, training, Inspect & Adapt en voorbereiding van PI Planning",
+        "Een dedicated hardeningssprint voor alleen regressietesten",
+        "Een leidinggevendereview en governancecheckpoint"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The IP (Innovation and Planning) iteration is SAFe's designated time for innovation, technical debt reduction, exploration spikes, team training, the Inspect & Adapt event, and PI Planning preparation. It is explicitly not a buffer for unfinished work. (SAFe 6.0, Innovation and Planning Iteration)",
+      "explanationNL": "De IP (Innovatie en Planning) iteratie is SAFe's aangewezen tijd voor innovatie, vermindering van technische schuld, exploratieve spikes, teamtraining, het Inspect & Adapt-event en voorbereiding van PI Planning. Het is expliciet geen buffer voor onafgewerkt werk. (SAFe 6.0, Innovatie en Planning Iteratie)"
+    },
+    {
+      "id": "safe-exam-q8",
+      "text": "The SAFe House of Lean identifies four pillars that support the goal of value delivery. Which of the following is one of those pillars?",
+      "textNL": "Het SAFe Lean-huis identificeert vier pilaren die het doel van waardebezorging ondersteunen. Welke van de volgende is zo'n pilaar?",
+      "question": "Het SAFe Lean-huis identificeert vier pilaren die het doel van waardebezorging ondersteunen. Welke van de volgende is zo'n pilaar?",
+      "questionEN": "The SAFe House of Lean identifies four pillars that support the goal of value delivery. Which of the following is one of those pillars?",
+      "options": [
+        "Sprint Reviews",
+        "Respect for People and Culture",
+        "Definition of Done",
+        "Epic Approval Gates"
+      ],
+      "optionsEN": [
+        "Sprint Reviews",
+        "Respect for People and Culture",
+        "Definition of Done",
+        "Epic Approval Gates"
+      ],
+      "optionsNL": [
+        "Sprint Reviews",
+        "Respect voor Mensen en Cultuur",
+        "Definition of Done",
+        "Epic Goedkeuringspoorten"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The four pillars of the SAFe House of Lean are: Respect for People and Culture, Flow, Innovation, and Relentless Improvement. Leadership forms the foundation, and Value sits at the roof. (SAFe 6.0, House of Lean)",
+      "explanationNL": "De vier pilaren van het SAFe Lean-huis zijn: Respect voor Mensen en Cultuur, Flow, Innovatie en Meedogenloze Verbetering. Leiderschap vormt het fundament en Waarde staat aan de top. (SAFe 6.0, Lean-huis)"
+    },
+    {
+      "id": "safe-exam-q9",
+      "text": "In SAFe, Lean Portfolio Management uses Guardrails to do what?",
+      "textNL": "In SAFe gebruikt Lean Portfolio Management Guardrails om wat te doen?",
+      "question": "In SAFe gebruikt Lean Portfolio Management Guardrails om wat te doen?",
+      "questionEN": "In SAFe, Lean Portfolio Management uses Guardrails to do what?",
+      "options": [
+        "Replace the need for any financial oversight",
+        "Govern how value streams spend their Lean Budgets without reverting to project-by-project approvals",
+        "Prevent teams from making any local decisions",
+        "Replace the Portfolio Kanban with a fixed spending plan"
+      ],
+      "optionsEN": [
+        "Replace the need for any financial oversight",
+        "Govern how value streams spend their Lean Budgets without reverting to project-by-project approvals",
+        "Prevent teams from making any local decisions",
+        "Replace the Portfolio Kanban with a fixed spending plan"
+      ],
+      "optionsNL": [
+        "De noodzaak voor financieel toezicht vervangen",
+        "Sturen hoe waardestromen hun Lean Budgets besteden zonder terug te keren naar project-voor-project goedkeuringen",
+        "Teams verhinderen lokale beslissingen te nemen",
+        "De Portfolio Kanban vervangen door een vast uitgavenplan"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Guardrails are LPM spending policies that govern how value streams use their Lean Budgets. They define what spending is appropriate, when significant initiatives need business case review, and how to keep architectural runway healthy — without requiring project-by-project approval. (SAFe 6.0, Lean Portfolio Management)",
+      "explanationNL": "Guardrails zijn LPM-uitgavenbeleid dat bepaalt hoe waardestromen hun Lean Budgets gebruiken. Ze definiëren welke uitgaven geschikt zijn, wanneer significante initiatieven een business case-review nodig hebben en hoe architectuurrunway gezond te houden — zonder project-voor-project goedkeuring te vereisen. (SAFe 6.0, Lean Portfolio Management)"
+    },
+    {
+      "id": "safe-exam-q10",
+      "text": "WSJF prioritization is calculated as:",
+      "textNL": "WSJF-prioritering wordt berekend als:",
+      "question": "WSJF-prioritering wordt berekend als:",
+      "questionEN": "WSJF prioritization is calculated as:",
+      "options": [
+        "Story Points × Business Value",
+        "Cost of Delay ÷ Job Duration (or job size)",
+        "Team Velocity × Sprint Length",
+        "Risk Score × Complexity"
+      ],
+      "optionsEN": [
+        "Story Points × Business Value",
+        "Cost of Delay ÷ Job Duration (or job size)",
+        "Team Velocity × Sprint Length",
+        "Risk Score × Complexity"
+      ],
+      "optionsNL": [
+        "Story Points × Bedrijfswaarde",
+        "Cost of Delay ÷ Jobduur (of jobgrootte)",
+        "Teamsnelheid × Sprintlengte",
+        "Risicoscore × Complexiteit"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "WSJF = Cost of Delay / Job Duration (or a proxy for job size). Cost of Delay has three components: User-Business Value, Time Criticality, and Risk Reduction/Opportunity Enablement. The item with the highest WSJF score is sequenced first. (SAFe 6.0, WSJF)",
+      "explanationNL": "WSJF = Cost of Delay / Jobduur (of een proxy voor jobgrootte). Cost of Delay heeft drie componenten: User-Business Value, Time Criticality en Risk Reduction/Opportunity Enablement. Het item met de hoogste WSJF-score wordt het eerst gepland. (SAFe 6.0, WSJF)"
+    },
+    {
+      "id": "safe-exam-q11",
+      "text": "Which statement about the SAFe System Demo is correct?",
+      "textNL": "Welke stelling over de SAFe System Demo is correct?",
+      "question": "Welke stelling over de SAFe System Demo is correct?",
+      "questionEN": "Which statement about the SAFe System Demo is correct?",
+      "options": [
+        "It replaces individual team iteration reviews",
+        "It demonstrates integrated, working software from all teams in a real environment every two weeks",
+        "It is held only at the end of each PI, not during the PI",
+        "Its primary audience is the development team, not stakeholders"
+      ],
+      "optionsEN": [
+        "It replaces individual team iteration reviews",
+        "It demonstrates integrated, working software from all teams in a real environment every two weeks",
+        "It is held only at the end of each PI, not during the PI",
+        "Its primary audience is the development team, not stakeholders"
+      ],
+      "optionsNL": [
+        "Het vervangt individuele teamiteratiereviews",
+        "Het demonstreert geïntegreerde, werkende software van alle teams in een echte omgeving elke twee weken",
+        "Het wordt alleen aan het einde van elk PI gehouden, niet tijdens het PI",
+        "Het primaire publiek zijn de ontwikkelteams, niet stakeholders"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The System Demo is held at the end of every two-week iteration (not just end-of-PI) and must demonstrate integrated working software, not slides. It is for stakeholders and Business Owners. It runs in parallel with — not instead of — team-level iteration reviews. (SAFe 6.0, System Demo)",
+      "explanationNL": "De System Demo wordt gehouden aan het einde van elke twee weken durende iteratie (niet alleen einde-PI) en moet geïntegreerde werkende software demonstreren, geen slides. Het is voor stakeholders en Business Owners. Het loopt parallel aan — en niet in plaats van — teamiteration reviews. (SAFe 6.0, System Demo)"
+    },
+    {
+      "id": "safe-exam-q12",
+      "text": "What is the difference between a Feature (in SAFe) and a Capability?",
+      "textNL": "Wat is het verschil tussen een Feature (in SAFe) en een Capability?",
+      "question": "Wat is het verschil tussen een Feature (in SAFe) en een Capability?",
+      "questionEN": "What is the difference between a Feature (in SAFe) and a Capability?",
+      "options": [
+        "Features are for hardware; Capabilities are for software",
+        "Features are ART-level deliverables that deliver value within one PI; Capabilities are Solution-level deliverables that may span multiple ARTs",
+        "Features and Capabilities are synonyms in SAFe 6.0",
+        "Capabilities belong to teams; Features belong to portfolio"
+      ],
+      "optionsEN": [
+        "Features are for hardware; Capabilities are for software",
+        "Features are ART-level deliverables that deliver value within one PI; Capabilities are Solution-level deliverables that may span multiple ARTs",
+        "Features and Capabilities are synonyms in SAFe 6.0",
+        "Capabilities belong to teams; Features belong to portfolio"
+      ],
+      "optionsNL": [
+        "Features zijn voor hardware; Capabilities zijn voor software",
+        "Features zijn ART-niveau leveringen die waarde leveren binnen één PI; Capabilities zijn Solution-niveau leveringen die meerdere ARTs kunnen omspannen",
+        "Features en Capabilities zijn synoniemen in SAFe 6.0",
+        "Capabilities behoren tot teams; Features behoren tot portfolio"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "In SAFe, a Feature is an ART-level artifact representing a service or function deliverable within one PI. A Capability is the Solution-level equivalent — larger in scope, potentially spanning multiple ARTs and PIs. Capabilities are held in the Solution Backlog; Features in the Program Backlog. (SAFe 6.0, SAFe Backlog Levels)",
+      "explanationNL": "In SAFe is een Feature een ART-niveau artefact dat een dienst of functie vertegenwoordigt die binnen één PI leverbaar is. Een Capability is het equivalent op solutieniveau — groter in omvang, mogelijk meerdere ARTs en PIs omspannend. Capabilities zijn in de Solution Backlog; Features in de Program Backlog. (SAFe 6.0, SAFe Backloglagen)"
+    },
+    {
+      "id": "safe-exam-q13",
+      "text": "SAFe Principle #4 — \"Build incrementally with fast, integrated learning cycles\" — is best demonstrated by which practice?",
+      "textNL": "SAFe Principe #4 — \"Bouw incrementeel met snelle, geïntegreerde leercycli\" — wordt het beste gedemonstreerd door welke praktijk?",
+      "question": "SAFe Principe #4 — \"Bouw incrementeel met snelle, geïntegreerde leercycli\" — wordt het beste gedemonstreerd door welke praktijk?",
+      "questionEN": "SAFe Principle #4 — \"Build incrementally with fast, integrated learning cycles\" — is best demonstrated by which practice?",
+      "options": [
+        "Publishing detailed quarterly project status reports",
+        "Delivering a System Demo every two weeks using working, integrated software",
+        "Conducting annual user research before starting development",
+        "Writing comprehensive specifications before coding begins"
+      ],
+      "optionsEN": [
+        "Publishing detailed quarterly project status reports",
+        "Delivering a System Demo every two weeks using working, integrated software",
+        "Conducting annual user research before starting development",
+        "Writing comprehensive specifications before coding begins"
+      ],
+      "optionsNL": [
+        "Gedetailleerde kwartaalprojectstatusrapporten publiceren",
+        "Een System Demo leveren elke twee weken met werkende, geïntegreerde software",
+        "Jaarlijks gebruikersonderzoek uitvoeren voordat de ontwikkeling begint",
+        "Uitgebreide specificaties schrijven voordat het coderen begint"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Principle #4 is embodied by the bi-weekly System Demo. Working integrated software is delivered every two weeks, generating real feedback and enabling rapid course correction. This directly applies the principle: short cycles, integration, learning, adjustment. (SAFe 6.0, Principle #4)",
+      "explanationNL": "Principe #4 wordt belichaamd door de tweewekelijkse System Demo. Werkende geïntegreerde software wordt elke twee weken geleverd, wat echte feedback genereert en snelle bijsturing mogelijk maakt. Dit past het principe direct toe: korte cycli, integratie, leren, aanpassen. (SAFe 6.0, Principe #4)"
+    },
+    {
+      "id": "safe-exam-q14",
+      "text": "In the Inspect & Adapt event, the Problem-Solving Workshop uses which root-cause analysis tools?",
+      "textNL": "In het Inspect & Adapt-event gebruikt de Problem-Solving Workshop welke oorzaakanalysetools?",
+      "question": "In het Inspect & Adapt-event gebruikt de Problem-Solving Workshop welke oorzaakanalysetools?",
+      "questionEN": "In the Inspect & Adapt event, the Problem-Solving Workshop uses which root-cause analysis tools?",
+      "options": [
+        "SWOT analysis and Balanced Scorecard",
+        "Fishbone diagram (Ishikawa) and 5-Whys",
+        "Risk matrix and probability-impact grid",
+        "Affinity map and impact/effort matrix"
+      ],
+      "optionsEN": [
+        "SWOT analysis and Balanced Scorecard",
+        "Fishbone diagram (Ishikawa) and 5-Whys",
+        "Risk matrix and probability-impact grid",
+        "Affinity map and impact/effort matrix"
+      ],
+      "optionsNL": [
+        "SWOT-analyse en Balanced Scorecard",
+        "Visgraatdiagram (Ishikawa) en 5-Waaroms",
+        "Risicomatrix en waarschijnlijkheids-impactgrid",
+        "Affiniteitskaart en impact/inspanningsmatrix"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "SAFe's I&A Problem-Solving Workshop uses the Fishbone diagram (cause-and-effect / Ishikawa) and the 5-Whys technique to identify root causes. A Pareto vote then selects the biggest root cause to address first. (SAFe 6.0, Inspect & Adapt)",
+      "explanationNL": "SAFe's I&A Problem-Solving Workshop gebruikt het visgraatdiagram (oorzaak-gevolg / Ishikawa) en de 5-Waaroms-techniek om grondoorzaken te identificeren. Een Pareto-stemming selecteert vervolgens de grootste grondoorzaak om als eerste aan te pakken. (SAFe 6.0, Inspect & Adapt)"
+    },
+    {
+      "id": "safe-exam-q15",
+      "text": "Which of the following is a valid signal that an organization may need to add Large Solution SAFe?",
+      "textNL": "Welke van de volgende is een geldige indicatie dat een organisatie mogelijk Large Solution SAFe moet toevoegen?",
+      "question": "Welke van de volgende is een geldige indicatie dat een organisatie mogelijk Large Solution SAFe moet toevoegen?",
+      "questionEN": "Which of the following is a valid signal that an organization may need to add Large Solution SAFe?",
+      "options": [
+        "The organization has more than one ART delivering independent products",
+        "A single solution requires 4+ ARTs working together on one integrated deliverable",
+        "The portfolio needs Lean Budgets instead of project funding",
+        "One ART has grown to 130 people"
+      ],
+      "optionsEN": [
+        "The organization has more than one ART delivering independent products",
+        "A single solution requires 4+ ARTs working together on one integrated deliverable",
+        "The portfolio needs Lean Budgets instead of project funding",
+        "One ART has grown to 130 people"
+      ],
+      "optionsNL": [
+        "De organisatie heeft meer dan één ART die onafhankelijke producten levert",
+        "Een enkele oplossing vereist 4+ ARTs die samenwerken aan één geïntegreerde oplevering",
+        "Het portfolio heeft Lean Budgets nodig in plaats van projectfinanciering",
+        "Één ART is gegroeid tot 130 mensen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Large Solution SAFe is warranted when a single integrated solution requires multiple ARTs working together. Multiple ARTs delivering separate products belong in Portfolio SAFe, not a Solution Train. Need for Lean Budgets signals Portfolio SAFe. An ART at 130 should be split into two ARTs. (SAFe 6.0, Choosing a Configuration)",
+      "explanationNL": "Large Solution SAFe is gerechtvaardigd wanneer een enkele geïntegreerde oplossing meerdere ARTs vereist die samenwerken. Meerdere ARTs die afzonderlijke producten leveren horen thuis in Portfolio SAFe, niet een Solution Train. Behoefte aan Lean Budgets geeft Portfolio SAFe aan. Een ART van 130 mensen moet worden gesplitst in twee ARTs. (SAFe 6.0, Een Configuratie Kiezen)"
+    },
+    {
+      "id": "safe-exam-q16",
+      "text": "SAFe's Release on Demand concept requires that which technical capability be in place?",
+      "textNL": "SAFe's Release on Demand-concept vereist dat welke technische mogelijkheid aanwezig is?",
+      "question": "SAFe's Release on Demand-concept vereist dat welke technische mogelijkheid aanwezig is?",
+      "questionEN": "SAFe's Release on Demand concept requires that which technical capability be in place?",
+      "options": [
+        "A dedicated release manager who approves every deployment",
+        "Continuous Integration, Continuous Deployment, feature flags, and automated monitoring",
+        "Monthly release windows approved by the Change Advisory Board",
+        "Manual regression testing performed by a dedicated QA team before every release"
+      ],
+      "optionsEN": [
+        "A dedicated release manager who approves every deployment",
+        "Continuous Integration, Continuous Deployment, feature flags, and automated monitoring",
+        "Monthly release windows approved by the Change Advisory Board",
+        "Manual regression testing performed by a dedicated QA team before every release"
+      ],
+      "optionsNL": [
+        "Een dedicated release manager die elke deployment goedkeurt",
+        "Continue Integratie, Continue Deployment, feature flags en geautomatiseerde monitoring",
+        "Maandelijkse releasevensters goedgekeurd door de Change Advisory Board",
+        "Handmatige regressietesten uitgevoerd door een dedicated QA-team voor elke release"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Release on Demand requires Continuous Integration, Continuous Deployment, feature flags (to decouple deployment from release), automated monitoring, and rollback automation. Without these engineering foundations, \"release on demand\" is a fiction. (SAFe 6.0, Release on Demand)",
+      "explanationNL": "Release on Demand vereist Continue Integratie, Continue Deployment, feature flags (om deployment te ontkoppelen van release), geautomatiseerde monitoring en rollback-automatisering. Zonder deze engineeringfundamenten is \"release on demand\" fictie. (SAFe 6.0, Release on Demand)"
+    },
+    {
+      "id": "safe-exam-q17",
+      "text": "SAFe Flow Metrics include Flow Efficiency, which measures what?",
+      "textNL": "SAFe Flow Metrics omvatten Flow Efficiency, die wat meet?",
+      "question": "SAFe Flow Metrics omvatten Flow Efficiency, die wat meet?",
+      "questionEN": "SAFe Flow Metrics include Flow Efficiency, which measures what?",
+      "options": [
+        "The number of story points completed per iteration",
+        "The percentage of flow time that items spend in active work (not waiting)",
+        "The ratio of planned features to delivered features",
+        "Employee satisfaction with the ART cadence"
+      ],
+      "optionsEN": [
+        "The number of story points completed per iteration",
+        "The percentage of flow time that items spend in active work (not waiting)",
+        "The ratio of planned features to delivered features",
+        "Employee satisfaction with the ART cadence"
+      ],
+      "optionsNL": [
+        "Het aantal story points voltooid per iteratie",
+        "Het percentage van de flow-tijd dat items in actief werk doorbrengen (niet wachten)",
+        "De verhouding van geplande features tot geleverde features",
+        "Medewerkerstevredenheid met de ART-cadans"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Flow Efficiency = Active Time / (Active Time + Wait Time). It measures the proportion of total flow time that items spend being actively worked on. Most systems are 5–20% efficient, meaning 80–95% of time is spent waiting. Improving Flow Efficiency means reducing queues and handoffs. (SAFe 6.0, Flow Metrics)",
+      "explanationNL": "Flow Efficiency = Actieve Tijd / (Actieve Tijd + Wachttijd). Het meet het aandeel van de totale flow-tijd dat items actief worden bewerkt. De meeste systemen zijn 5–20% efficiënt, wat betekent dat 80–95% van de tijd wordt besteed aan wachten. Flow Efficiency verbeteren betekent wachtrijen en overdrachten verminderen. (SAFe 6.0, Flow Metrics)"
+    },
+    {
+      "id": "safe-exam-q18",
+      "text": "What is the Solution Train Engineer's (STE) primary responsibility in Large Solution SAFe?",
+      "textNL": "Wat is de primaire verantwoordelijkheid van de Solution Train Engineer (STE) in Large Solution SAFe?",
+      "question": "Wat is de primaire verantwoordelijkheid van de Solution Train Engineer (STE) in Large Solution SAFe?",
+      "questionEN": "What is the Solution Train Engineer's (STE) primary responsibility in Large Solution SAFe?",
+      "options": [
+        "Writing the Solution Backlog items (Capabilities)",
+        "Acting as the chief Scrum Master across all ARTs in the Solution Train",
+        "Approving all technical decisions across ARTs",
+        "Managing the portfolio budget allocation"
+      ],
+      "optionsEN": [
+        "Writing the Solution Backlog items (Capabilities)",
+        "Acting as the chief Scrum Master across all ARTs in the Solution Train",
+        "Approving all technical decisions across ARTs",
+        "Managing the portfolio budget allocation"
+      ],
+      "optionsNL": [
+        "De Solution Backlog-items (Capabilities) schrijven",
+        "Fungeren als de chief Scrum Master over alle ARTs in de Solution Train",
+        "Alle technische beslissingen over ARTs goedkeuren",
+        "De portefeuillebudgettoewijzing beheren"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Solution Train Engineer (STE) is the chief Scrum Master for the Solution Train — the STE-equivalent of the RTE across multiple ARTs. The STE facilitates Solution Train events, removes systemic impediments across ARTs, and coaches the train. (SAFe 6.0, Solution Train Engineer)",
+      "explanationNL": "De Solution Train Engineer (STE) is de chief Scrum Master voor de Solution Train — het STE-equivalent van de RTE over meerdere ARTs. De STE faciliteert Solution Train-events, verwijdert systemische impedimenten over ARTs en coacht de trein. (SAFe 6.0, Solution Train Engineer)"
+    },
+    {
+      "id": "safe-exam-q19",
+      "text": "A portfolio has three value streams with different strategic priorities. According to SAFe LPM, how should budget be allocated?",
+      "textNL": "Een portfolio heeft drie waardestromen met verschillende strategische prioriteiten. Hoe moet het budget volgens SAFe LPM worden toegewezen?",
+      "question": "Een portfolio heeft drie waardestromen met verschillende strategische prioriteiten. Hoe moet het budget volgens SAFe LPM worden toegewezen?",
+      "questionEN": "A portfolio has three value streams with different strategic priorities. According to SAFe LPM, how should budget be allocated?",
+      "options": [
+        "Equally split across all value streams regardless of strategic priority",
+        "Entirely to the highest-priority value stream until it is complete",
+        "As Lean Budgets to each value stream aligned to Strategic Themes, adjusted as evidence accumulates",
+        "Only through project-by-project proposals to the finance committee"
+      ],
+      "optionsEN": [
+        "Equally split across all value streams regardless of strategic priority",
+        "Entirely to the highest-priority value stream until it is complete",
+        "As Lean Budgets to each value stream aligned to Strategic Themes, adjusted as evidence accumulates",
+        "Only through project-by-project proposals to the finance committee"
+      ],
+      "optionsNL": [
+        "Gelijkelijk verdeeld over alle waardestromen ongeacht strategische prioriteit",
+        "Volledig naar de hoogst-prioritaire waardestroom totdat deze voltooid is",
+        "Als Lean Budgets aan elke waardestroom afgestemd op Strategische Thema's, aangepast naarmate bewijs zich opstapelt",
+        "Alleen via project-voor-project voorstellen aan de financiecommissie"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "LPM allocates Lean Budgets to each value stream based on Strategic Themes and investment priorities. Budgets are persistent (not project-by-project) and are adjusted periodically — typically at quarterly Portfolio Syncs — as evidence of value delivery or strategic shift accumulates. (SAFe 6.0, Lean Budgets)",
+      "explanationNL": "LPM wijst Lean Budgets toe aan elke waardestroom op basis van Strategische Thema's en investeringsprioriteiten. Budgetten zijn persistent (niet project-voor-project) en worden periodiek aangepast — doorgaans bij kwartaalse Portfolio Syncs — naarmate bewijs van waardebezorging of strategische verschuiving zich opstapelt. (SAFe 6.0, Lean Budgets)"
+    },
+    {
+      "id": "safe-exam-q20",
+      "text": "Which statement about SAFe teams at the team level is correct?",
+      "textNL": "Welke stelling over SAFe-teams op teamniveau is correct?",
+      "question": "Welke stelling over SAFe-teams op teamniveau is correct?",
+      "questionEN": "Which statement about SAFe teams at the team level is correct?",
+      "options": [
+        "SAFe teams must use Scrum exclusively; Kanban is not permitted",
+        "SAFe teams use Scrum, Kanban, or a hybrid; the team-level process is flexible within the ART cadence",
+        "SAFe teams work on two-month iterations aligned to PI boundaries",
+        "SAFe teams do not have Product Owners — that role is eliminated at team level"
+      ],
+      "optionsEN": [
+        "SAFe teams must use Scrum exclusively; Kanban is not permitted",
+        "SAFe teams use Scrum, Kanban, or a hybrid; the team-level process is flexible within the ART cadence",
+        "SAFe teams work on two-month iterations aligned to PI boundaries",
+        "SAFe teams do not have Product Owners — that role is eliminated at team level"
+      ],
+      "optionsNL": [
+        "SAFe-teams moeten exclusief Scrum gebruiken; Kanban is niet toegestaan",
+        "SAFe-teams gebruiken Scrum, Kanban of een hybride; het teamniveau-proces is flexibel binnen de ART-cadans",
+        "SAFe-teams werken aan iteraties van twee maanden die zijn afgestemd op PI-grenzen",
+        "SAFe-teams hebben geen Product Owners — die rol is geëlimineerd op teamniveau"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "SAFe supports Scrum, Kanban, and hybrid (Scrumban) at the team level. Teams choose the method that fits their work type. All teams, regardless of method, synchronize to the ART's two-week iteration cadence. Product Owners exist at team level in SAFe. (SAFe 6.0, Team and Technical Agility)",
+      "explanationNL": "SAFe ondersteunt Scrum, Kanban en hybride (Scrumban) op teamniveau. Teams kiezen de methode die past bij hun werktype. Alle teams, ongeacht methode, synchroniseren met de tweewekelijkse iteratiecadans van de ART. Product Owners bestaan op teamniveau in SAFe. (SAFe 6.0, Team en Technische Wendbaarheid)"
+    }
+  ],
+  "description": "Final exam — SAFe & Scaling Agile",
+  "descriptionNL": "Eindexamen — SAFe & Agile Schalen",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

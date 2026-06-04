@@ -46,6 +46,10 @@ urlpatterns = [
     # corresponding attempt/progress record so Enrollment.certificate_eligibility
     # can open the gate.
     path('exam/<int:exam_id>/submit/', quiz_exam_api.submit_exam, name='submit-exam'),
+    # String-keyed exam routes for hardcoded/frontend courses (lesson id e.g. 'safe-l19').
+    # The <int:> submit route above is matched first for numeric ids; these catch the rest.
+    path('exam/<str:lesson_id>/submit/', quiz_exam_api.submit_exam_by_lesson, name='submit-exam-by-lesson'),
+    path('exam/<str:lesson_id>/', quiz_exam_api.get_exam, name='get-exam'),
     path('lessons/<str:lesson_id>/complete/', quiz_exam_api.mark_lesson_complete, name='lesson-complete'),
     
     # AI Content Generation endpoints

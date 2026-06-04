@@ -1558,6 +1558,448 @@ Selecteer 5–8 Product Backlog-items die het team in deze Sprint aanpakt.
 **Tip:** Denk altijd: "Wat zegt de Scrum Guide?"
 
 Succes!`,
+      quiz: [
+        {
+          id: 'scrum-exam-q1',
+          question: 'Which three pillars uphold empiricism in Scrum?',
+          questionNL: 'Welke drie pijlers ondersteunen empirisme in Scrum?',
+          options: [
+            'Planning, Execution, Review',
+            'Transparency, Inspection, Adaptation',
+            'Commitment, Focus, Openness',
+            'Vision, Value, Velocity'
+          ],
+          optionsNL: [
+            'Planning, Uitvoering, Review',
+            'Transparantie, Inspectie, Adaptatie',
+            'Commitment, Focus, Openheid',
+            'Visie, Waarde, Snelheid'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 explicitly names Transparency, Inspection, and Adaptation as the three pillars of empiricism on which Scrum is founded.',
+          explanationNL: 'De Scrum Guide 2020 noemt expliciet Transparantie, Inspectie en Adaptatie als de drie pijlers van empirisme waarop Scrum is gebaseerd.',
+        },
+        {
+          id: 'scrum-exam-q2',
+          question: 'What are the five Scrum Values?',
+          questionNL: 'Wat zijn de vijf Scrum Waarden?',
+          options: [
+            'Collaboration, Communication, Courage, Creativity, Commitment',
+            'Commitment, Focus, Openness, Respect, Courage',
+            'Transparency, Inspection, Adaptation, Trust, Respect',
+            'Integrity, Focus, Openness, Respect, Courage'
+          ],
+          optionsNL: [
+            'Samenwerking, Communicatie, Moed, Creativiteit, Commitment',
+            'Commitment, Focus, Openheid, Respect, Moed',
+            'Transparantie, Inspectie, Adaptatie, Vertrouwen, Respect',
+            'Integriteit, Focus, Openheid, Respect, Moed'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 lists exactly five Scrum Values: Commitment, Focus, Openness, Respect, and Courage. These values give direction to the work and behaviour of the Scrum Team.',
+          explanationNL: 'De Scrum Guide 2020 noemt precies vijf Scrum Waarden: Commitment, Focus, Openheid, Respect en Moed. Deze waarden geven richting aan het werk en gedrag van het Scrum Team.',
+        },
+        {
+          id: 'scrum-exam-q3',
+          question: 'According to the Scrum Guide 2020, what is the correct term for the people who do the work of the Sprint?',
+          questionNL: 'Wat is de correcte term voor de mensen die het werk van de Sprint uitvoeren, volgens de Scrum Guide 2020?',
+          options: [
+            'Team Members',
+            'Development Team',
+            'Developers',
+            'Sprint Team'
+          ],
+          optionsNL: [
+            'Teamleden',
+            'Development Team',
+            'Developers',
+            'Sprint Team'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 replaced the term "Development Team" with "Developers" to avoid implying only software work. "Developers" is anyone in the Scrum Team committed to creating any aspect of a usable Increment each Sprint.',
+          explanationNL: 'De Scrum Guide 2020 verving de term "Development Team" door "Developers" om te vermijden dat het alleen softwarewerk impliceert. "Developers" zijn iedereen in het Scrum Team die zich committeert aan het creëren van een bruikbaar Increment elke Sprint.',
+        },
+        {
+          id: 'scrum-exam-q4',
+          question: 'What is the maximum timebox for the Daily Scrum?',
+          questionNL: 'Wat is de maximale timebox voor de Daily Scrum?',
+          options: [
+            '30 minutes',
+            '10 minutes',
+            '15 minutes',
+            '1 hour'
+          ],
+          optionsNL: [
+            '30 minuten',
+            '10 minuten',
+            '15 minuten',
+            '1 uur'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 sets the Daily Scrum timebox at 15 minutes. It is held every day of the Sprint and is for the Developers to inspect progress toward the Sprint Goal and adapt the Sprint Backlog.',
+          explanationNL: 'De Scrum Guide 2020 stelt de timebox van de Daily Scrum op 15 minuten. Het wordt elke dag van de Sprint gehouden en is voor de Developers om voortgang naar het Sprint Goal te inspecteren en de Sprint Backlog aan te passen.',
+        },
+        {
+          id: 'scrum-exam-q5',
+          question: 'For a one-month Sprint, what is the maximum timebox for Sprint Planning?',
+          questionNL: 'Voor een Sprint van één maand, wat is de maximale timebox voor Sprint Planning?',
+          options: [
+            '4 hours',
+            '6 hours',
+            '8 hours',
+            '2 hours'
+          ],
+          optionsNL: [
+            '4 uur',
+            '6 uur',
+            '8 uur',
+            '2 uur'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 specifies that Sprint Planning is timeboxed to a maximum of 8 hours for a one-month Sprint. For shorter Sprints the event is usually shorter.',
+          explanationNL: 'De Scrum Guide 2020 specificeert dat Sprint Planning is timeboxed tot maximaal 8 uur voor een Sprint van één maand. Voor kortere Sprints is het event meestal korter.',
+        },
+        {
+          id: 'scrum-exam-q6',
+          question: 'What is the commitment associated with the Product Backlog?',
+          questionNL: 'Wat is de commitment die hoort bij de Product Backlog?',
+          options: [
+            'Sprint Goal',
+            'Definition of Done',
+            'Product Goal',
+            'Release Plan'
+          ],
+          optionsNL: [
+            'Sprint Goal',
+            'Definition of Done',
+            'Product Goal',
+            'Releaseplan'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 introduced explicit commitments for each artifact. The Product Goal is the commitment for the Product Backlog; the Sprint Goal for the Sprint Backlog; and the Definition of Done for the Increment.',
+          explanationNL: 'De Scrum Guide 2020 introduceerde expliciete commitments voor elk artifact. De Product Goal is de commitment voor de Product Backlog; de Sprint Goal voor de Sprint Backlog; en de Definition of Done voor het Increment.',
+        },
+        {
+          id: 'scrum-exam-q7',
+          question: 'What is the maximum recommended size of a Scrum Team according to the Scrum Guide 2020?',
+          questionNL: 'Wat is de maximaal aanbevolen grootte van een Scrum Team volgens de Scrum Guide 2020?',
+          options: [
+            '7 people',
+            '9 people',
+            '10 people',
+            '12 people'
+          ],
+          optionsNL: [
+            '7 mensen',
+            '9 mensen',
+            '10 mensen',
+            '12 mensen'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 states that the Scrum Team should be small enough to remain nimble and large enough to complete significant work within a Sprint, typically 10 or fewer people. The team includes the Product Owner, Scrum Master, and Developers.',
+          explanationNL: 'De Scrum Guide 2020 stelt dat het Scrum Team klein genoeg moet zijn om wendbaar te blijven en groot genoeg om significant werk te voltooien binnen een Sprint, typisch 10 of minder mensen. Het team omvat de Product Owner, Scrum Master en Developers.',
+        },
+        {
+          id: 'scrum-exam-q8',
+          question: 'Which statement about the Sprint is correct according to the Scrum Guide 2020?',
+          questionNL: 'Welke uitspraak over de Sprint is correct volgens de Scrum Guide 2020?',
+          options: [
+            'Sprints can be extended if the team needs more time to complete the Sprint Backlog',
+            'The Sprint is a container for all other Scrum events',
+            'A new Sprint starts after a mandatory rest period following the Sprint Review',
+            'The Sprint duration can change during the project to accommodate scope changes'
+          ],
+          optionsNL: [
+            'Sprints kunnen worden verlengd als het team meer tijd nodig heeft om de Sprint Backlog te voltooien',
+            'De Sprint is een container voor alle andere Scrum events',
+            'Een nieuwe Sprint begint na een verplichte rustperiode na de Sprint Review',
+            'De Sprintduur kan veranderen tijdens het project om scope-wijzigingen op te vangen'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 describes the Sprint as a container for all other events. A new Sprint starts immediately after the conclusion of the previous Sprint. Sprints cannot be extended; if the Sprint Goal becomes obsolete, the Sprint may be cancelled.',
+          explanationNL: 'De Scrum Guide 2020 beschrijft de Sprint als een container voor alle andere events. Een nieuwe Sprint begint onmiddellijk na de conclusie van de vorige Sprint. Sprints kunnen niet worden verlengd; als de Sprint Goal achterhaald wordt, kan de Sprint worden geannuleerd.',
+        },
+        {
+          id: 'scrum-exam-q9',
+          question: 'Who is accountable for cancelling a Sprint?',
+          questionNL: 'Wie is verantwoordelijk voor het annuleren van een Sprint?',
+          options: [
+            'The Scrum Master',
+            'The Developers',
+            'The Product Owner',
+            'Any Scrum Team member'
+          ],
+          optionsNL: [
+            'De Scrum Master',
+            'De Developers',
+            'De Product Owner',
+            'Elk Scrum Team lid'
+          ],
+          correctAnswer: 2,
+          explanation: 'According to the Scrum Guide 2020, only the Product Owner has the authority to cancel a Sprint, and only if the Sprint Goal becomes obsolete. This is a rare occurrence.',
+          explanationNL: 'Volgens de Scrum Guide 2020 heeft alleen de Product Owner de bevoegdheid om een Sprint te annuleren, en alleen als de Sprint Goal achterhaald wordt. Dit is een zeldzame gebeurtenis.',
+        },
+        {
+          id: 'scrum-exam-q10',
+          question: 'What does the Scrum Guide 2020 say about the structure of the Daily Scrum?',
+          questionNL: 'Wat zegt de Scrum Guide 2020 over de structuur van de Daily Scrum?',
+          options: [
+            'Each Developer must answer three fixed questions: What did I do yesterday, what will I do today, any impediments?',
+            'The Scrum Master must facilitate and take notes during the Daily Scrum',
+            'The Developers can choose their own structure and techniques as long as the event focuses on progress toward the Sprint Goal',
+            'The Daily Scrum must be held at the same time and place but the format is up to the Product Owner'
+          ],
+          optionsNL: [
+            'Elke Developer moet drie vaste vragen beantwoorden: Wat deed ik gisteren, wat doe ik vandaag, zijn er obstakels?',
+            'De Scrum Master moet faciliteren en notities maken tijdens de Daily Scrum',
+            'De Developers kunnen hun eigen structuur en technieken kiezen zolang het event gericht is op voortgang naar de Sprint Goal',
+            'De Daily Scrum moet op dezelfde tijd en plaats worden gehouden maar het format is aan de Product Owner'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 removed the mandatory three-question format. The Developers can use any structure they prefer. The event is for the Developers and is focused on progress toward the Sprint Goal and adapting the Sprint Backlog.',
+          explanationNL: 'De Scrum Guide 2020 verwijderde het verplichte drie-vragenformaat. De Developers kunnen elke structuur gebruiken die ze prefereren. Het event is voor de Developers en is gericht op voortgang naar de Sprint Goal en het aanpassen van de Sprint Backlog.',
+        },
+        {
+          id: 'scrum-exam-q11',
+          question: 'What is the commitment associated with the Sprint Backlog?',
+          questionNL: 'Wat is de commitment die hoort bij de Sprint Backlog?',
+          options: [
+            'Product Goal',
+            'Definition of Done',
+            'Sprint Goal',
+            'Increment Target'
+          ],
+          optionsNL: [
+            'Product Goal',
+            'Definition of Done',
+            'Sprint Goal',
+            'Increment Doel'
+          ],
+          correctAnswer: 2,
+          explanation: 'According to the Scrum Guide 2020, the Sprint Goal is the commitment for the Sprint Backlog. The Sprint Goal is created during Sprint Planning and provides focus and flexibility to the Developers.',
+          explanationNL: 'Volgens de Scrum Guide 2020 is de Sprint Goal de commitment voor de Sprint Backlog. De Sprint Goal wordt gemaakt tijdens Sprint Planning en biedt focus en flexibiliteit aan de Developers.',
+        },
+        {
+          id: 'scrum-exam-q12',
+          question: 'Who is accountable for the Product Backlog?',
+          questionNL: 'Wie is verantwoordelijk voor de Product Backlog?',
+          options: [
+            'The Scrum Master',
+            'The Developers',
+            'The entire Scrum Team collectively',
+            'The Product Owner'
+          ],
+          optionsNL: [
+            'De Scrum Master',
+            'De Developers',
+            'Het gehele Scrum Team gezamenlijk',
+            'De Product Owner'
+          ],
+          correctAnswer: 3,
+          explanation: 'The Scrum Guide 2020 assigns the Product Owner as accountable for the Product Backlog, including its content, availability, and ordering. While others may add items, the Product Owner has final accountability.',
+          explanationNL: 'De Scrum Guide 2020 wijst de Product Owner aan als verantwoordelijke voor de Product Backlog, inclusief de inhoud, beschikbaarheid en volgorde. Hoewel anderen items kunnen toevoegen, heeft de Product Owner de uiteindelijke verantwoordelijkheid.',
+        },
+        {
+          id: 'scrum-exam-q13',
+          question: 'For a one-month Sprint, what is the maximum timebox for the Sprint Retrospective?',
+          questionNL: 'Voor een Sprint van één maand, wat is de maximale timebox voor de Sprint Retrospective?',
+          options: [
+            '2 hours',
+            '3 hours',
+            '4 hours',
+            '1 hour'
+          ],
+          optionsNL: [
+            '2 uur',
+            '3 uur',
+            '4 uur',
+            '1 uur'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 sets the Sprint Retrospective timebox at 3 hours maximum for a one-month Sprint. It is the last event of the Sprint and focuses on how the team can increase quality and effectiveness.',
+          explanationNL: 'De Scrum Guide 2020 stelt de timebox van de Sprint Retrospective op maximaal 3 uur voor een Sprint van één maand. Het is het laatste event van de Sprint en richt zich op hoe het team kwaliteit en effectiviteit kan vergroten.',
+        },
+        {
+          id: 'scrum-exam-q14',
+          question: 'What is the correct definition of an Increment in Scrum?',
+          questionNL: 'Wat is de correcte definitie van een Increment in Scrum?',
+          options: [
+            'Everything completed in the current Sprint only',
+            'A concrete stepping stone toward the Product Goal that is additive to all prior Increments and must meet the Definition of Done',
+            'Any work item that has been started but not yet delivered',
+            'The set of Product Backlog items selected for the current Sprint'
+          ],
+          optionsNL: [
+            'Alles wat is voltooid in de huidige Sprint alleen',
+            'Een concrete stapteen naar de Product Goal die additief is aan alle eerdere Increments en moet voldoen aan de Definition of Done',
+            'Elk werkitem dat is gestart maar nog niet is opgeleverd',
+            'De set van Product Backlog items geselecteerd voor de huidige Sprint'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 defines the Increment as a concrete stepping stone toward the Product Goal. Each Increment is additive to all prior Increments and thoroughly verified so that all Increments work together. It must meet the Definition of Done to be delivered.',
+          explanationNL: 'De Scrum Guide 2020 definieert het Increment als een concrete stapsteen naar de Product Goal. Elk Increment is additief aan alle eerdere Increments en grondig geverifieerd zodat alle Increments samenwerken. Het moet voldoen aan de Definition of Done om te worden opgeleverd.',
+        },
+        {
+          id: 'scrum-exam-q15',
+          question: 'What is the primary purpose of the Sprint Review?',
+          questionNL: 'Wat is het primaire doel van de Sprint Review?',
+          options: [
+            'For the Scrum Master to present metrics to stakeholders',
+            'To inspect the outcome of the Sprint and determine future adaptations — it is a working session, not a demo',
+            'For the Developers to show their technical work to the Product Owner for approval',
+            'To formally accept or reject the Increment before it can be released'
+          ],
+          optionsNL: [
+            'Voor de Scrum Master om metrics te presenteren aan stakeholders',
+            'Om de uitkomst van de Sprint te inspecteren en toekomstige aanpassingen te bepalen — het is een werksessie, geen demo',
+            'Voor de Developers om hun technisch werk te tonen aan de Product Owner ter goedkeuring',
+            'Om het Increment formeel te accepteren of af te wijzen voordat het kan worden uitgebracht'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 describes the Sprint Review as a working session where the Scrum Team and stakeholders inspect the outcome and determine future adaptations. It is explicitly noted that the Sprint Review should not be considered a gate or a formal acceptance ceremony.',
+          explanationNL: 'De Scrum Guide 2020 beschrijft de Sprint Review als een werksessie waarbij het Scrum Team en stakeholders de uitkomst inspecteren en toekomstige aanpassingen bepalen. Er wordt expliciet opgemerkt dat de Sprint Review niet als een gate of formele acceptatieprocedure moet worden beschouwd.',
+        },
+        {
+          id: 'scrum-exam-q16',
+          question: 'Who is responsible for creating the Definition of Done?',
+          questionNL: 'Wie is verantwoordelijk voor het creëren van de Definition of Done?',
+          options: [
+            'The Product Owner alone',
+            'The Scrum Master alone',
+            'The Developers alone',
+            'The Scrum Team as a whole, or it is adopted from the wider organisation if one exists'
+          ],
+          optionsNL: [
+            'De Product Owner alleen',
+            'De Scrum Master alleen',
+            'De Developers alleen',
+            'Het Scrum Team als geheel, of het wordt overgenomen van de bredere organisatie als er een bestaat'
+          ],
+          correctAnswer: 3,
+          explanation: 'The Scrum Guide 2020 states that if the Definition of Done is not an organisational standard, the Scrum Team must create one appropriate for the product. All Scrum Team members are accountable for upholding the Definition of Done.',
+          explanationNL: 'De Scrum Guide 2020 stelt dat als de Definition of Done geen organisatiestandaard is, het Scrum Team er een moet creëren die geschikt is voor het product. Alle Scrum Team leden zijn verantwoordelijk voor het handhaven van de Definition of Done.',
+        },
+        {
+          id: 'scrum-exam-q17',
+          question: 'According to the Scrum Guide 2020, what describes the Scrum Team?',
+          questionNL: 'Wat beschrijft het Scrum Team volgens de Scrum Guide 2020?',
+          options: [
+            'A hierarchical team with the Product Owner at the top and Developers at the bottom',
+            'A self-managing, cross-functional team with no sub-teams or hierarchies',
+            'A team managed by the Scrum Master who assigns work to Developers',
+            'A group of independent contractors who report to the Product Owner'
+          ],
+          optionsNL: [
+            'Een hiërarchisch team met de Product Owner aan de top en Developers onderaan',
+            'Een zelf-managend, cross-functioneel team zonder subteams of hiërarchieën',
+            'Een team beheerd door de Scrum Master die werk toewijst aan Developers',
+            'Een groep onafhankelijke aannemers die rapporteren aan de Product Owner'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 describes the Scrum Team as a cohesive unit of professionals that is self-managing (decides internally who does what, when, and how) and cross-functional (has all the skills necessary to create value each Sprint). There are no sub-teams or hierarchies.',
+          explanationNL: 'De Scrum Guide 2020 beschrijft het Scrum Team als een hechte eenheid van professionals die zelf-managend is (intern beslist wie wat doet, wanneer en hoe) en cross-functioneel (alle vaardigheden heeft die nodig zijn om elke Sprint waarde te creëren). Er zijn geen subteams of hiërarchieën.',
+        },
+        {
+          id: 'scrum-exam-q18',
+          question: 'Which statement about changes during a Sprint is correct according to the Scrum Guide 2020?',
+          questionNL: 'Welke uitspraak over wijzigingen tijdens een Sprint is correct volgens de Scrum Guide 2020?',
+          options: [
+            'No changes whatsoever are allowed once Sprint Planning is complete',
+            'The scope can be renegotiated between the Product Owner and Developers as more is learned, but no changes are made that endanger the Sprint Goal',
+            'Only the Scrum Master can approve scope changes during a Sprint',
+            'Changes require a formal change request approved by all stakeholders'
+          ],
+          optionsNL: [
+            'Er zijn helemaal geen wijzigingen toegestaan zodra Sprint Planning is voltooid',
+            'De scope kan worden heronderhandeld tussen de Product Owner en Developers naarmate meer wordt geleerd, maar er worden geen wijzigingen gemaakt die de Sprint Goal in gevaar brengen',
+            'Alleen de Scrum Master kan scope-wijzigingen goedkeuren tijdens een Sprint',
+            'Wijzigingen vereisen een formeel wijzigingsverzoek goedgekeurd door alle stakeholders'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 states that as the Developers learn more during the Sprint, they may renegotiate the scope with the Product Owner. However, no changes should be made that endanger the Sprint Goal — this is a key protection of the Sprint.',
+          explanationNL: 'De Scrum Guide 2020 stelt dat naarmate de Developers meer leren tijdens de Sprint, ze de scope kunnen heronderhandelen met de Product Owner. Er mogen echter geen wijzigingen worden gemaakt die de Sprint Goal in gevaar brengen — dit is een sleutelbescherming van de Sprint.',
+        },
+        {
+          id: 'scrum-exam-q19',
+          question: 'What is the Scrum Master\'s primary accountability according to the Scrum Guide 2020?',
+          questionNL: 'Wat is de primaire verantwoordelijkheid van de Scrum Master volgens de Scrum Guide 2020?',
+          options: [
+            'Managing the Scrum Team and assigning tasks to Developers',
+            'Establishing Scrum as defined in the Scrum Guide by helping everyone understand Scrum theory and practice',
+            'Reporting Sprint progress to senior management',
+            'Approving the Sprint Backlog before the Sprint begins'
+          ],
+          optionsNL: [
+            'Het Scrum Team beheren en taken toewijzen aan Developers',
+            'Scrum vestigen zoals gedefinieerd in de Scrum Guide door iedereen te helpen Scrum theorie en praktijk te begrijpen',
+            'Sprint voortgang rapporteren aan senior management',
+            'De Sprint Backlog goedkeuren voordat de Sprint begint'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 defines the Scrum Master as accountable for establishing Scrum as defined in the Scrum Guide. The Scrum Master is a true leader who serves the Scrum Team and the wider organisation, not a manager who assigns work.',
+          explanationNL: 'De Scrum Guide 2020 definieert de Scrum Master als verantwoordelijk voor het vestigen van Scrum zoals gedefinieerd in de Scrum Guide. De Scrum Master is een echte leider die het Scrum Team en de bredere organisatie dient, niet een manager die werk toewijst.',
+        },
+        {
+          id: 'scrum-exam-q20',
+          question: 'For a one-month Sprint, what is the maximum timebox for the Sprint Review?',
+          questionNL: 'Voor een Sprint van één maand, wat is de maximale timebox voor de Sprint Review?',
+          options: [
+            '2 hours',
+            '3 hours',
+            '4 hours',
+            '8 hours'
+          ],
+          optionsNL: [
+            '2 uur',
+            '3 uur',
+            '4 uur',
+            '8 uur'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Scrum Guide 2020 timeboxes the Sprint Review to a maximum of 4 hours for a one-month Sprint. For shorter Sprints the event is usually shorter.',
+          explanationNL: 'De Scrum Guide 2020 stelt de timebox van de Sprint Review op maximaal 4 uur voor een Sprint van één maand. Voor kortere Sprints is het event meestal korter.',
+        },
+        {
+          id: 'scrum-exam-q21',
+          question: 'What does the Scrum Guide 2020 say about multiple Increments in a single Sprint?',
+          questionNL: 'Wat zegt de Scrum Guide 2020 over meerdere Increments in één Sprint?',
+          options: [
+            'Only one Increment per Sprint is allowed to maintain predictability',
+            'Multiple Increments may be created within a Sprint and may be delivered to stakeholders before the Sprint ends',
+            'Multiple Increments require separate Sprint Goals',
+            'Additional Increments must be approved by the Product Owner in writing'
+          ],
+          optionsNL: [
+            'Slechts één Increment per Sprint is toegestaan om voorspelbaarheid te behouden',
+            'Meerdere Increments kunnen worden gecreëerd binnen een Sprint en kunnen worden geleverd aan stakeholders voordat de Sprint eindigt',
+            'Meerdere Increments vereisen afzonderlijke Sprint Goals',
+            'Extra Increments moeten schriftelijk worden goedgekeurd door de Product Owner'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 explicitly states that multiple Increments may be created within a Sprint. The sum of the Increments is presented at the Sprint Review and may be delivered to stakeholders prior to the end of the Sprint.',
+          explanationNL: 'De Scrum Guide 2020 stelt expliciet dat meerdere Increments kunnen worden gecreëerd binnen een Sprint. De som van de Increments wordt gepresenteerd bij de Sprint Review en kan worden geleverd aan stakeholders vóór het einde van de Sprint.',
+        },
+        {
+          id: 'scrum-exam-q22',
+          question: 'Which of the following best describes Lean thinking as applied in Scrum?',
+          questionNL: 'Welke van de volgende beschrijvingen past het beste bij Lean thinking zoals toegepast in Scrum?',
+          options: [
+            'Maximising the work done by the team to increase output',
+            'Reducing waste and focusing on essentials to improve the flow of value',
+            'Following a strict process to eliminate variability',
+            'Centralising decision-making to avoid unnecessary collaboration'
+          ],
+          optionsNL: [
+            'Het maximaliseren van het werk dat door het team wordt gedaan om de output te verhogen',
+            'Verspilling verminderen en focussen op essentiëles om de stroom van waarde te verbeteren',
+            'Een strikt proces volgen om variabiliteit te elimineren',
+            'Besluitvorming centraliseren om onnodige samenwerking te vermijden'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Scrum Guide 2020 states that Scrum is founded on empiricism and Lean thinking. Lean thinking reduces waste and focuses on essentials. Together with empiricism, this forms the foundation for the Scrum approach to complex problems.',
+          explanationNL: 'De Scrum Guide 2020 stelt dat Scrum is gebaseerd op empirisme en Lean thinking. Lean thinking vermindert verspilling en richt zich op essentiëles. Samen met empirisme vormt dit de basis voor de Scrum-aanpak van complexe problemen.',
+        },
+      ],
     },
     {
       id: 'scrum-l13',

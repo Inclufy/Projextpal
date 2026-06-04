@@ -1,0 +1,154 @@
+{
+  "id": "pm-l20",
+  "title": "Quiz: Execution & Monitoring",
+  "titleNL": "Quiz: Uitvoering & Monitoring",
+  "courseId": "pm-fundamentals",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q-m4-1",
+      "text": "In welke fase van Tuckman's model ontstaan de meeste conflicten?",
+      "textNL": "In welke fase van Tuckman's model ontstaan de meeste conflicten?",
+      "question": "In welke fase van Tuckman's model ontstaan de meeste conflicten?",
+      "questionEN": "In welke fase van Tuckman's model ontstaan de meeste conflicten?",
+      "options": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "optionsEN": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "optionsNL": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "In de Storming fase botsen werkstijlen en ontstaan conflicten over rollen en posities. Dit is een normale fase in teamontwikkeling.",
+      "explanationNL": "In de Storming fase botsen werkstijlen en ontstaan conflicten over rollen en posities. Dit is een normale fase in teamontwikkeling."
+    },
+    {
+      "id": "q-m4-2",
+      "text": "Wat is de beste conflictstijl voor een belangrijk issue waarbij je tijd hebt?",
+      "textNL": "Wat is de beste conflictstijl voor een belangrijk issue waarbij je tijd hebt?",
+      "question": "Wat is de beste conflictstijl voor een belangrijk issue waarbij je tijd hebt?",
+      "questionEN": "Wat is de beste conflictstijl voor een belangrijk issue waarbij je tijd hebt?",
+      "options": [
+        "Competing",
+        "Avoiding",
+        "Compromising",
+        "Collaborating"
+      ],
+      "optionsEN": [
+        "Competing",
+        "Avoiding",
+        "Compromising",
+        "Collaborating"
+      ],
+      "optionsNL": [
+        "Competing",
+        "Avoiding",
+        "Compromising",
+        "Collaborating"
+      ],
+      "correct": 3,
+      "points": 1,
+      "explanation": "Collaborating (samenwerken) leidt tot win-win en is ideaal voor belangrijke issues wanneer je de tijd hebt om samen te werken naar een oplossing.",
+      "explanationNL": "Collaborating (samenwerken) leidt tot win-win en is ideaal voor belangrijke issues wanneer je de tijd hebt om samen te werken naar een oplossing."
+    },
+    {
+      "id": "q-m4-3",
+      "text": "EV = €40.000, PV = €50.000, AC = €55.000. Wat is de Schedule Variance?",
+      "textNL": "EV = €40.000, PV = €50.000, AC = €55.000. Wat is de Schedule Variance?",
+      "question": "EV = €40.000, PV = €50.000, AC = €55.000. Wat is de Schedule Variance?",
+      "questionEN": "EV = €40.000, PV = €50.000, AC = €55.000. Wat is de Schedule Variance?",
+      "options": [
+        "+€10.000",
+        "-€10.000",
+        "+€15.000",
+        "-€15.000"
+      ],
+      "optionsEN": [
+        "+€10.000",
+        "-€10.000",
+        "+€15.000",
+        "-€15.000"
+      ],
+      "optionsNL": [
+        "+€10.000",
+        "-€10.000",
+        "+€15.000",
+        "-€15.000"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Schedule Variance (SV) = EV - PV = €40.000 - €50.000 = -€10.000. Negatief betekent achter op schema.",
+      "explanationNL": "Schedule Variance (SV) = EV - PV = €40.000 - €50.000 = -€10.000. Negatief betekent achter op schema."
+    },
+    {
+      "id": "q-m4-4",
+      "text": "Een CPI van 0.8 betekent:",
+      "textNL": "Een CPI van 0.8 betekent:",
+      "question": "Een CPI van 0.8 betekent:",
+      "questionEN": "Een CPI van 0.8 betekent:",
+      "options": [
+        "Je krijgt €0.80 waarde voor elke €1 uitgegeven",
+        "Je bent 80% klaar met het project",
+        "Je bent 20% onder budget",
+        "Je bent 80% voor op schema"
+      ],
+      "optionsEN": [
+        "Je krijgt €0.80 waarde voor elke €1 uitgegeven",
+        "Je bent 80% klaar met het project",
+        "Je bent 20% onder budget",
+        "Je bent 80% voor op schema"
+      ],
+      "optionsNL": [
+        "Je krijgt €0.80 waarde voor elke €1 uitgegeven",
+        "Je bent 80% klaar met het project",
+        "Je bent 20% onder budget",
+        "Je bent 80% voor op schema"
+      ],
+      "correct": 0,
+      "points": 1,
+      "explanation": "CPI = EV/AC. Een CPI van 0.8 betekent dat je voor elke €1 die je uitgeeft, slechts €0.80 aan waarde krijgt. Je bent over budget.",
+      "explanationNL": "CPI = EV/AC. Een CPI van 0.8 betekent dat je voor elke €1 die je uitgeeft, slechts €0.80 aan waarde krijgt. Je bent over budget."
+    },
+    {
+      "id": "q-m4-5",
+      "text": "Wat is \"gold plating\" in projectmanagement?",
+      "textNL": "Wat is \"gold plating\" in projectmanagement?",
+      "question": "Wat is \"gold plating\" in projectmanagement?",
+      "questionEN": "Wat is \"gold plating\" in projectmanagement?",
+      "options": [
+        "Het project succesvol afronden",
+        "Extra features toevoegen die niet gevraagd zijn",
+        "Premium klanten speciale behandeling geven",
+        "Kwaliteitsstandaarden overtreffen"
+      ],
+      "optionsEN": [
+        "Het project succesvol afronden",
+        "Extra features toevoegen die niet gevraagd zijn",
+        "Premium klanten speciale behandeling geven",
+        "Kwaliteitsstandaarden overtreffen"
+      ],
+      "optionsNL": [
+        "Het project succesvol afronden",
+        "Extra features toevoegen die niet gevraagd zijn",
+        "Premium klanten speciale behandeling geven",
+        "Kwaliteitsstandaarden overtreffen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Gold plating is het toevoegen van extra functionaliteit of features die niet door de klant zijn gevraagd. Dit is net zo schadelijk als scope creep.",
+      "explanationNL": "Gold plating is het toevoegen van extra functionaliteit of features die niet door de klant zijn gevraagd. Dit is net zo schadelijk als scope creep."
+    }
+  ]
+}

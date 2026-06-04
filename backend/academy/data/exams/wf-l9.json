@@ -1,0 +1,651 @@
+{
+  "id": "wf-l9",
+  "title": "Final Exam",
+  "titleNL": "Eindexamen",
+  "courseId": "waterfall-pm",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "wf-exam-q1",
+      "text": "Who is credited with formally describing the Waterfall model in a widely-cited 1970 paper?",
+      "textNL": "Wie wordt gecrediteerd voor het formeel beschrijven van het Waterfall-model in een veelgeciteerd artikel uit 1970?",
+      "question": "Wie wordt gecrediteerd voor het formeel beschrijven van het Waterfall-model in een veelgeciteerd artikel uit 1970?",
+      "questionEN": "Who is credited with formally describing the Waterfall model in a widely-cited 1970 paper?",
+      "options": [
+        "Barry Boehm",
+        "Winston Royce",
+        "Ken Schwaber",
+        "Frederick Brooks"
+      ],
+      "optionsEN": [
+        "Barry Boehm",
+        "Winston Royce",
+        "Ken Schwaber",
+        "Frederick Brooks"
+      ],
+      "optionsNL": [
+        "Barry Boehm",
+        "Winston Royce",
+        "Ken Schwaber",
+        "Frederick Brooks"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Winston Royce's 1970 paper \"Managing the Development of Large Software Systems\" is the canonical origin of the Waterfall model, even though Royce himself noted that the purely sequential version was risky.",
+      "explanationNL": "Winston Royce's artikel uit 1970 \"Managing the Development of Large Software Systems\" is de canonieke oorsprong van het Waterfall-model, hoewel Royce zelf opmerkte dat de puur sequentiële versie risicovol was."
+    },
+    {
+      "id": "wf-exam-q2",
+      "text": "What is the correct sequence of phases in the classic Waterfall model?",
+      "textNL": "Wat is de juiste volgorde van fasen in het klassieke Waterfall-model?",
+      "question": "Wat is de juiste volgorde van fasen in het klassieke Waterfall-model?",
+      "questionEN": "What is the correct sequence of phases in the classic Waterfall model?",
+      "options": [
+        "Design → Requirements → Implementation → Testing → Deployment → Maintenance",
+        "Requirements → Design → Implementation → Testing → Deployment → Maintenance",
+        "Requirements → Implementation → Design → Testing → Deployment → Maintenance",
+        "Planning → Requirements → Design → Testing → Implementation → Deployment"
+      ],
+      "optionsEN": [
+        "Design → Requirements → Implementation → Testing → Deployment → Maintenance",
+        "Requirements → Design → Implementation → Testing → Deployment → Maintenance",
+        "Requirements → Implementation → Design → Testing → Deployment → Maintenance",
+        "Planning → Requirements → Design → Testing → Implementation → Deployment"
+      ],
+      "optionsNL": [
+        "Ontwerp → Requirements → Implementatie → Testen → Deployment → Onderhoud",
+        "Requirements → Ontwerp → Implementatie → Testen → Deployment → Onderhoud",
+        "Requirements → Implementatie → Ontwerp → Testen → Deployment → Onderhoud",
+        "Planning → Requirements → Ontwerp → Testen → Implementatie → Deployment"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The classic Waterfall sequence is: Requirements → Design → Implementation → Testing (Verification) → Deployment → Maintenance. Each phase must be completed and signed off before the next begins.",
+      "explanationNL": "De klassieke Waterfall-volgorde is: Requirements → Ontwerp → Implementatie → Testen (Verificatie) → Deployment → Onderhoud. Elke fase moet worden afgerond en goedgekeurd voordat de volgende begint."
+    },
+    {
+      "id": "wf-exam-q3",
+      "text": "What is the primary purpose of a phase gate (stage gate) in a Waterfall project?",
+      "textNL": "Wat is het primaire doel van een fase-gate (stage gate) in een Waterfall-project?",
+      "question": "Wat is het primaire doel van een fase-gate (stage gate) in een Waterfall-project?",
+      "questionEN": "What is the primary purpose of a phase gate (stage gate) in a Waterfall project?",
+      "options": [
+        "To allow team members to request scope changes at any time",
+        "To formally verify that phase deliverables meet criteria before the next phase begins",
+        "To review the project budget for cost overruns",
+        "To assign tasks to the development team for the upcoming phase"
+      ],
+      "optionsEN": [
+        "To allow team members to request scope changes at any time",
+        "To formally verify that phase deliverables meet criteria before the next phase begins",
+        "To review the project budget for cost overruns",
+        "To assign tasks to the development team for the upcoming phase"
+      ],
+      "optionsNL": [
+        "Om teamleden toe te staan op elk moment scopewijzigingen aan te vragen",
+        "Om formeel te verifiëren dat fase-deliverables aan criteria voldoen voordat de volgende fase begint",
+        "Om het projectbudget te reviewen op kostenoverschrijdingen",
+        "Om taken toe te wijzen aan het ontwikkelteam voor de komende fase"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A phase gate is a formal checkpoint where project deliverables are reviewed against predefined criteria (quality, completeness, compliance). Only after approval — a sign-off — does the project proceed to the next phase.",
+      "explanationNL": "Een fase-gate is een formeel controlepunt waarbij projectdeliverables worden gereviewed aan de hand van vooraf bepaalde criteria (kwaliteit, volledigheid, compliance). Alleen na goedkeuring — een aftekening — gaat het project door naar de volgende fase."
+    },
+    {
+      "id": "wf-exam-q4",
+      "text": "The \"cost of change\" curve in Waterfall states that the cost of fixing a defect or changing a requirement:",
+      "textNL": "De \"kosten van verandering\"-curve in Waterfall stelt dat de kosten voor het oplossen van een defect of wijzigen van een requirement:",
+      "question": "De \"kosten van verandering\"-curve in Waterfall stelt dat de kosten voor het oplossen van een defect of wijzigen van een requirement:",
+      "questionEN": "The \"cost of change\" curve in Waterfall states that the cost of fixing a defect or changing a requirement:",
+      "options": [
+        "Remain constant throughout all project phases",
+        "Are highest during the Requirements phase",
+        "Increase exponentially the later in the lifecycle the change is made",
+        "Decrease after the system is deployed because users find issues quickly"
+      ],
+      "optionsEN": [
+        "Remain constant throughout all project phases",
+        "Are highest during the Requirements phase",
+        "Increase exponentially the later in the lifecycle the change is made",
+        "Decrease after the system is deployed because users find issues quickly"
+      ],
+      "optionsNL": [
+        "Door alle projectfasen heen constant blijven",
+        "Het hoogst zijn tijdens de Requirements-fase",
+        "Exponentieel toenemen naarmate de wijziging later in de levenscyclus wordt gemaakt",
+        "Afnemen na deployment omdat gebruikers problemen snel vinden"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Barry Boehm's research quantified that defects found during maintenance can cost 100× more to fix than those found during requirements. This cost-of-change curve is a core justification for Waterfall's upfront documentation investment.",
+      "explanationNL": "Barry Boehm's onderzoek kwantificeerde dat defecten gevonden tijdens onderhoud 100× meer kunnen kosten om te repareren dan die gevonden tijdens requirements. Deze kosten-van-verandering-curve is een kernrechtvaardiging voor Waterfall's upfront documentatie-investering."
+    },
+    {
+      "id": "wf-exam-q5",
+      "text": "Which document type is the primary output of the Requirements phase in a Waterfall project?",
+      "textNL": "Welk documenttype is de primaire output van de Requirements-fase in een Waterfall-project?",
+      "question": "Welk documenttype is de primaire output van de Requirements-fase in een Waterfall-project?",
+      "questionEN": "Which document type is the primary output of the Requirements phase in a Waterfall project?",
+      "options": [
+        "Sprint Backlog",
+        "Software Requirements Specification (SRS) or equivalent requirements baseline",
+        "Work Breakdown Structure (WBS)",
+        "Risk Register"
+      ],
+      "optionsEN": [
+        "Sprint Backlog",
+        "Software Requirements Specification (SRS) or equivalent requirements baseline",
+        "Work Breakdown Structure (WBS)",
+        "Risk Register"
+      ],
+      "optionsNL": [
+        "Sprint Backlog",
+        "Software Requirements Specification (SRS) of equivalent requirements baseline",
+        "Work Breakdown Structure (WBS)",
+        "Risicoregister"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Requirements phase produces a frozen requirements baseline — typically an SRS or Business Requirements Document (BRD). This baseline drives all downstream design and development and is subject to formal change control if amendments are needed.",
+      "explanationNL": "De Requirements-fase produceert een bevroren requirements-baseline — typisch een SRS of Business Requirements Document (BRD). Deze baseline stuurt alle downstream ontwerp en ontwikkeling en is onderhevig aan formeel wijzigingsbeheer als aanpassingen nodig zijn."
+    },
+    {
+      "id": "wf-exam-q6",
+      "text": "Requirements Traceability in Waterfall means:",
+      "textNL": "Requirements Traceability in Waterfall betekent:",
+      "question": "Requirements Traceability in Waterfall betekent:",
+      "questionEN": "Requirements Traceability in Waterfall means:",
+      "options": [
+        "Tracking which developer wrote each line of code",
+        "Ensuring every requirement can be linked forward to a design element and backward to a business objective",
+        "Logging all defects in a traceability matrix after testing",
+        "Recording the history of who signed off each phase gate"
+      ],
+      "optionsEN": [
+        "Tracking which developer wrote each line of code",
+        "Ensuring every requirement can be linked forward to a design element and backward to a business objective",
+        "Logging all defects in a traceability matrix after testing",
+        "Recording the history of who signed off each phase gate"
+      ],
+      "optionsNL": [
+        "Bijhouden welke ontwikkelaar elke coderegel heeft geschreven",
+        "Ervoor zorgen dat elke requirement voorwaarts gekoppeld kan worden aan een ontwerpelement en achterwaarts aan een bedrijfsdoelstelling",
+        "Alle defecten loggen in een traceabiliteitsmatrix na testen",
+        "Bijhouden van de geschiedenis van wie elke fase-gate heeft afgetekend"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A Requirements Traceability Matrix (RTM) maps each requirement to its source business need and forward to the design component, code module, and test case that address it — ensuring nothing is missed and scope is controlled.",
+      "explanationNL": "Een Requirements Traceability Matrix (RTM) koppelt elke requirement aan zijn bron-bedrijfsbehoefte en voorwaarts aan het ontwerpelement, codemodule en testgeval die het adresseren — zodat niets wordt gemist en de scope gecontroleerd is."
+    },
+    {
+      "id": "wf-exam-q7",
+      "text": "In Waterfall, formal Change Control is required because:",
+      "textNL": "In Waterfall is formeel wijzigingsbeheer vereist omdat:",
+      "question": "In Waterfall is formeel wijzigingsbeheer vereist omdat:",
+      "questionEN": "In Waterfall, formal Change Control is required because:",
+      "options": [
+        "The project manager prefers bureaucracy over speed",
+        "Requirements are baselined and any change must be assessed for scope, cost, and schedule impact before approval",
+        "Agile teams use change control so Waterfall must too",
+        "Change control is only needed for budget changes, not scope changes"
+      ],
+      "optionsEN": [
+        "The project manager prefers bureaucracy over speed",
+        "Requirements are baselined and any change must be assessed for scope, cost, and schedule impact before approval",
+        "Agile teams use change control so Waterfall must too",
+        "Change control is only needed for budget changes, not scope changes"
+      ],
+      "optionsNL": [
+        "De projectmanager de voorkeur geeft aan bureaucratie boven snelheid",
+        "Requirements zijn bevroren en elke wijziging moet worden beoordeeld op scope-, kosten- en planningsimpact vóór goedkeuring",
+        "Agile-teams gebruiken wijzigingsbeheer dus Waterfall ook",
+        "Wijzigingsbeheer is alleen nodig voor budgetwijzigingen, niet voor scopewijzigingen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Once requirements are baselined and a phase gate is signed off, any change triggers a formal Change Request process: impact analysis, approval by a Change Control Board, and update to scope, budget, and schedule baselines.",
+      "explanationNL": "Zodra requirements zijn bevroren en een fase-gate is afgetekend, triggert elke wijziging een formeel Wijzigingsverzoek-proces: impactanalyse, goedkeuring door een Wijzigingsbeheerraad, en bijwerking van scope-, budget- en planningsbases."
+    },
+    {
+      "id": "wf-exam-q8",
+      "text": "A Gantt chart in Waterfall project planning is primarily used to:",
+      "textNL": "Een Gantt-diagram in Waterfall-projectplanning wordt primair gebruikt om:",
+      "question": "Een Gantt-diagram in Waterfall-projectplanning wordt primair gebruikt om:",
+      "questionEN": "A Gantt chart in Waterfall project planning is primarily used to:",
+      "options": [
+        "Visualise the product backlog prioritised by business value",
+        "Show team velocity across multiple sprints",
+        "Display tasks, durations, dependencies, and milestones on a timeline",
+        "Track defect counts per module during the testing phase"
+      ],
+      "optionsEN": [
+        "Visualise the product backlog prioritised by business value",
+        "Show team velocity across multiple sprints",
+        "Display tasks, durations, dependencies, and milestones on a timeline",
+        "Track defect counts per module during the testing phase"
+      ],
+      "optionsNL": [
+        "De productbacklog te visualiseren geprioriteerd op bedrijfswaarde",
+        "Teamsnelheid over meerdere sprints te tonen",
+        "Taken, doorlooptijden, afhankelijkheden en mijlpalen op een tijdlijn weer te geven",
+        "Defecttelling per module bij te houden tijdens de testfase"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "A Gantt chart plots each task or phase as a horizontal bar across a calendar timeline, showing start/end dates, task dependencies (finish-to-start links), and project milestones — making the overall schedule visible at a glance.",
+      "explanationNL": "Een Gantt-diagram toont elke taak of fase als een horizontale balk op een kalendertijdlijn, met start-/einddatums, taakafhankelijkheden (finish-to-start-koppelingen) en projectmijlpalen — waardoor het totale schema in één oogopslag zichtbaar is."
+    },
+    {
+      "id": "wf-exam-q9",
+      "text": "The Critical Path in a Waterfall project schedule is defined as:",
+      "textNL": "Het kritieke pad in een Waterfall-projectplanning is gedefinieerd als:",
+      "question": "Het kritieke pad in een Waterfall-projectplanning is gedefinieerd als:",
+      "questionEN": "The Critical Path in a Waterfall project schedule is defined as:",
+      "options": [
+        "The set of tasks with the highest risk of technical failure",
+        "The sequence of dependent tasks that determines the earliest possible project completion date",
+        "The list of tasks assigned to the most senior team members",
+        "The phase with the highest budget allocation"
+      ],
+      "optionsEN": [
+        "The set of tasks with the highest risk of technical failure",
+        "The sequence of dependent tasks that determines the earliest possible project completion date",
+        "The list of tasks assigned to the most senior team members",
+        "The phase with the highest budget allocation"
+      ],
+      "optionsNL": [
+        "De set taken met het hoogste risico op technisch falen",
+        "De reeks afhankelijke taken die de vroegst mogelijke projecteinddatum bepaalt",
+        "De lijst van taken toegewezen aan de meest senior teamleden",
+        "De fase met de hoogste budgetallocatie"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Critical Path Method (CPM) identifies the longest chain of dependent tasks (zero float). Any delay on a critical-path task delays the entire project end date — making it the primary focus of schedule management in Waterfall.",
+      "explanationNL": "De Critical Path Method (CPM) identificeert de langste keten van afhankelijke taken (nul speelruimte). Elke vertraging op een kritiek-pad-taak vertraagt de volledige projecteinddatum — waardoor het de primaire focus is van planningsbeheer in Waterfall."
+    },
+    {
+      "id": "wf-exam-q10",
+      "text": "Which project characteristics make Waterfall the most appropriate delivery approach?",
+      "textNL": "Welke projectkenmerken maken Waterfall de meest geschikte leveringsaanpak?",
+      "question": "Welke projectkenmerken maken Waterfall de meest geschikte leveringsaanpak?",
+      "questionEN": "Which project characteristics make Waterfall the most appropriate delivery approach?",
+      "options": [
+        "High uncertainty, frequent stakeholder feedback loops, evolving requirements",
+        "Well-understood, stable requirements; fixed scope; regulated environment requiring formal documentation",
+        "Small co-located team; two-week delivery cycles; continuous deployment pipeline",
+        "Innovative product with unknown market fit; first-time technology stack"
+      ],
+      "optionsEN": [
+        "High uncertainty, frequent stakeholder feedback loops, evolving requirements",
+        "Well-understood, stable requirements; fixed scope; regulated environment requiring formal documentation",
+        "Small co-located team; two-week delivery cycles; continuous deployment pipeline",
+        "Innovative product with unknown market fit; first-time technology stack"
+      ],
+      "optionsNL": [
+        "Hoge onzekerheid, frequente feedbacklussen met stakeholders, veranderende requirements",
+        "Goed begrepen, stabiele requirements; vaste scope; gereguleerde omgeving die formele documentatie vereist",
+        "Klein co-located team; tweewekelijkse leveringscycli; continuous deployment-pipeline",
+        "Innovatief product met onbekende marktfit; eerste keer dat een technologiestapel wordt gebruikt"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Waterfall excels when requirements are stable and well-understood upfront, scope is fixed (e.g. under a fixed-price contract), and the domain mandates formal documentation and traceability — such as aerospace, defence, medical devices, and construction.",
+      "explanationNL": "Waterfall blinkt uit wanneer requirements stabiel en goed begrepen zijn van tevoren, de scope vast is (bijv. onder een vaste-prijs-contract), en het domein formele documentatie en traceerbaarheid vereist — zoals lucht- en ruimtevaart, defensie, medische hulpmiddelen en bouw."
+    },
+    {
+      "id": "wf-exam-q11",
+      "text": "Why does Waterfall struggle most in projects with high requirement uncertainty?",
+      "textNL": "Waarom heeft Waterfall de meeste moeite in projecten met hoge requirementsonzekerheid?",
+      "question": "Waarom heeft Waterfall de meeste moeite in projecten met hoge requirementsonzekerheid?",
+      "questionEN": "Why does Waterfall struggle most in projects with high requirement uncertainty?",
+      "options": [
+        "Because it lacks a Definition of Done",
+        "Because late-phase feedback from users cannot be incorporated without triggering expensive rework across all prior phases",
+        "Because it requires daily stand-up meetings that slow down progress",
+        "Because Waterfall does not allow any project planning before work starts"
+      ],
+      "optionsEN": [
+        "Because it lacks a Definition of Done",
+        "Because late-phase feedback from users cannot be incorporated without triggering expensive rework across all prior phases",
+        "Because it requires daily stand-up meetings that slow down progress",
+        "Because Waterfall does not allow any project planning before work starts"
+      ],
+      "optionsNL": [
+        "Omdat het een Definition of Done mist",
+        "Omdat late feedback van gebruikers in latere fasen niet kan worden verwerkt zonder dure herwerking in alle eerdere fasen te triggeren",
+        "Omdat het dagelijkse stand-up meetings vereist die de voortgang vertragen",
+        "Omdat Waterfall geen projectplanning toestaat voordat het werk begint"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Because phases are sequential and gated, a design flaw discovered during User Acceptance Testing forces rework in Testing, then Implementation, then possibly Design — cascading cost and delay. This is why high-uncertainty projects favour iterative/Agile approaches.",
+      "explanationNL": "Omdat fasen sequentieel en geblokkeerd zijn, dwingt een ontwerpfout die tijdens User Acceptance Testing wordt ontdekt tot herwerking in Testen, dan Implementatie, dan mogelijk Ontwerp — wat kosten en vertraging veroorzaakt. Daarom geven hoog-onzekere projecten de voorkeur aan iteratieve/Agile aanpakken."
+    },
+    {
+      "id": "wf-exam-q12",
+      "text": "What is the key difference between Waterfall and an iterative/Agile approach?",
+      "textNL": "Wat is het belangrijkste verschil tussen Waterfall en een iteratieve/Agile aanpak?",
+      "question": "Wat is het belangrijkste verschil tussen Waterfall en een iteratieve/Agile aanpak?",
+      "questionEN": "What is the key difference between Waterfall and an iterative/Agile approach?",
+      "options": [
+        "Waterfall uses user stories; Agile uses functional specifications",
+        "Waterfall delivers the full product at project end after sequential phases; Agile delivers working increments in short cycles with continuous feedback",
+        "Waterfall has no testing phase; Agile tests every sprint",
+        "Waterfall is only used for software; Agile is used for all industries"
+      ],
+      "optionsEN": [
+        "Waterfall uses user stories; Agile uses functional specifications",
+        "Waterfall delivers the full product at project end after sequential phases; Agile delivers working increments in short cycles with continuous feedback",
+        "Waterfall has no testing phase; Agile tests every sprint",
+        "Waterfall is only used for software; Agile is used for all industries"
+      ],
+      "optionsNL": [
+        "Waterfall gebruikt user stories; Agile gebruikt functionele specificaties",
+        "Waterfall levert het volledige product aan het projecteinde na sequentiële fasen; Agile levert werkende incrementen in korte cycli met continue feedback",
+        "Waterfall heeft geen testfase; Agile test elke sprint",
+        "Waterfall wordt alleen gebruikt voor software; Agile wordt voor alle industrieën gebruikt"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The fundamental distinction is timing of feedback and delivery. Waterfall is plan-driven: value is delivered once, at the end. Agile is inspect-and-adapt: value is delivered incrementally, enabling earlier ROI and course correction.",
+      "explanationNL": "Het fundamentele onderscheid is het tijdstip van feedback en levering. Waterfall is plangestuurd: waarde wordt eenmalig geleverd, aan het einde. Agile is inspect-and-adapt: waarde wordt incrementeel geleverd, wat vroegere ROI en bijsturing mogelijk maakt."
+    },
+    {
+      "id": "wf-exam-q13",
+      "text": "In the Waterfall Design phase, what is typically the output that guides the Implementation phase?",
+      "textNL": "Wat is in de Waterfall-ontwerpfase typisch de output die de implementatiefase stuurt?",
+      "question": "Wat is in de Waterfall-ontwerpfase typisch de output die de implementatiefase stuurt?",
+      "questionEN": "In the Waterfall Design phase, what is typically the output that guides the Implementation phase?",
+      "options": [
+        "A release plan with story points per sprint",
+        "High-level and detailed design documents (architecture, data models, interface specifications)",
+        "A Kanban board with tasks in \"To Do\", \"In Progress\", and \"Done\" columns",
+        "A retrospective report from the previous phase"
+      ],
+      "optionsEN": [
+        "A release plan with story points per sprint",
+        "High-level and detailed design documents (architecture, data models, interface specifications)",
+        "A Kanban board with tasks in \"To Do\", \"In Progress\", and \"Done\" columns",
+        "A retrospective report from the previous phase"
+      ],
+      "optionsNL": [
+        "Een releaseplan met story points per sprint",
+        "High-level en gedetailleerde ontwerpdocumenten (architectuur, datamodellen, interfacespecificaties)",
+        "Een Kanban-bord met taken in kolommen \"Te doen\", \"In uitvoering\" en \"Klaar\"",
+        "Een retrospectief rapport van de vorige fase"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Design phase produces architectural and detailed design documents — system architecture diagrams, data models, database schemas, UI/UX wireframes, and interface specifications — which serve as the technical blueprint developers follow during Implementation.",
+      "explanationNL": "De ontwerpfase produceert architecturele en gedetailleerde ontwerpdocumenten — systeemarchitectuurdiagrammen, datamodellen, databaseschema's, UI/UX-wireframes en interfacespecificaties — die dienen als technische blauwdruk die ontwikkelaars volgen tijdens de implementatie."
+    },
+    {
+      "id": "wf-exam-q14",
+      "text": "Which testing level verifies that individual units of code function correctly in isolation?",
+      "textNL": "Welk testniveau verifieert dat individuele code-eenheden correct functioneren in isolatie?",
+      "question": "Welk testniveau verifieert dat individuele code-eenheden correct functioneren in isolatie?",
+      "questionEN": "Which testing level verifies that individual units of code function correctly in isolation?",
+      "options": [
+        "User Acceptance Testing (UAT)",
+        "System Testing",
+        "Unit Testing",
+        "Integration Testing"
+      ],
+      "optionsEN": [
+        "User Acceptance Testing (UAT)",
+        "System Testing",
+        "Unit Testing",
+        "Integration Testing"
+      ],
+      "optionsNL": [
+        "User Acceptance Testing (UAT)",
+        "Systeemtesten",
+        "Unit Testing",
+        "Integratietesten"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Unit Testing targets the smallest testable parts of a system (functions, methods, classes) in isolation. It is typically performed by developers during or immediately after Implementation, before Integration Testing assembles components.",
+      "explanationNL": "Unit Testing richt zich op de kleinste testbare onderdelen van een systeem (functies, methoden, klassen) in isolatie. Het wordt typisch uitgevoerd door ontwikkelaars tijdens of direct na de implementatie, voordat integratietesten componenten samenvoegt."
+    },
+    {
+      "id": "wf-exam-q15",
+      "text": "User Acceptance Testing (UAT) in Waterfall is primarily performed by:",
+      "textNL": "User Acceptance Testing (UAT) in Waterfall wordt primair uitgevoerd door:",
+      "question": "User Acceptance Testing (UAT) in Waterfall wordt primair uitgevoerd door:",
+      "questionEN": "User Acceptance Testing (UAT) in Waterfall is primarily performed by:",
+      "options": [
+        "The development team to check code quality",
+        "The QA team to verify test coverage metrics",
+        "The end users or business representatives to confirm the system meets business requirements",
+        "External auditors checking regulatory compliance"
+      ],
+      "optionsEN": [
+        "The development team to check code quality",
+        "The QA team to verify test coverage metrics",
+        "The end users or business representatives to confirm the system meets business requirements",
+        "External auditors checking regulatory compliance"
+      ],
+      "optionsNL": [
+        "Het ontwikkelteam om codekwaliteit te controleren",
+        "Het QA-team om testdekkingsstatistieken te verifiëren",
+        "De eindgebruikers of bedrijfsvertegenwoordigers om te bevestigen dat het systeem voldoet aan bedrijfsrequirements",
+        "Externe auditors die regelgevingsnaleving controleren"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "UAT is the final validation gate before deployment. Business representatives or end users execute pre-defined acceptance test cases against the system to confirm it satisfies the original business requirements — a business sign-off, not a technical test.",
+      "explanationNL": "UAT is de laatste validatiepoort vóór deployment. Bedrijfsvertegenwoordigers of eindgebruikers voeren vooraf gedefinieerde acceptatietestgevallen uit op het systeem om te bevestigen dat het voldoet aan de oorspronkelijke bedrijfsrequirements — een bedrijfsaftekening, geen technische test."
+    },
+    {
+      "id": "wf-exam-q16",
+      "text": "A project baseline in Waterfall refers to:",
+      "textNL": "Een projectbaseline in Waterfall verwijst naar:",
+      "question": "Een projectbaseline in Waterfall verwijst naar:",
+      "questionEN": "A project baseline in Waterfall refers to:",
+      "options": [
+        "The initial team velocity estimate used for sprint planning",
+        "The approved, frozen snapshot of scope, schedule, and cost against which actual performance is measured",
+        "The minimum viable version of the product that can be released",
+        "The risk threshold below which no mitigation action is required"
+      ],
+      "optionsEN": [
+        "The initial team velocity estimate used for sprint planning",
+        "The approved, frozen snapshot of scope, schedule, and cost against which actual performance is measured",
+        "The minimum viable version of the product that can be released",
+        "The risk threshold below which no mitigation action is required"
+      ],
+      "optionsNL": [
+        "De initiële teamsnelheidsschatting gebruikt voor sprintplanning",
+        "De goedgekeurde, bevroren momentopname van scope, planning en kosten waaraan werkelijke prestaties worden gemeten",
+        "De minimale levensvatbare versie van het product die kan worden uitgebracht",
+        "De risicodrempel waaronder geen mitigatieactie vereist is"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A baseline (scope baseline, schedule baseline, cost baseline) is the approved plan, locked at a phase gate. Variances from the baseline trigger change control or corrective action. It is the reference point for performance reporting (Earned Value Management).",
+      "explanationNL": "Een baseline (scope-baseline, planningsbaseline, kostenbaseline) is het goedgekeurde plan, vergrendeld bij een fase-gate. Afwijkingen van de baseline triggeren wijzigingsbeheer of corrigerende actie. Het is het referentiepunt voor prestatierapportage (Earned Value Management)."
+    },
+    {
+      "id": "wf-exam-q17",
+      "text": "What does \"plan-driven\" mean in the context of Waterfall project management?",
+      "textNL": "Wat betekent \"plan-gestuurd\" in de context van Waterfall-projectmanagement?",
+      "question": "Wat betekent \"plan-gestuurd\" in de context van Waterfall-projectmanagement?",
+      "questionEN": "What does \"plan-driven\" mean in the context of Waterfall project management?",
+      "options": [
+        "The team creates a new plan at the start of each iteration",
+        "The project is governed by a comprehensive upfront plan that defines scope, schedule, and budget; all work follows this plan",
+        "The project manager updates the plan daily based on team feedback",
+        "Planning is delegated entirely to individual team members"
+      ],
+      "optionsEN": [
+        "The team creates a new plan at the start of each iteration",
+        "The project is governed by a comprehensive upfront plan that defines scope, schedule, and budget; all work follows this plan",
+        "The project manager updates the plan daily based on team feedback",
+        "Planning is delegated entirely to individual team members"
+      ],
+      "optionsNL": [
+        "Het team maakt aan het begin van elke iteratie een nieuw plan",
+        "Het project wordt beheerst door een uitgebreid vooraf plan dat scope, planning en budget definieert; al het werk volgt dit plan",
+        "De projectmanager werkt het plan dagelijks bij op basis van teamfeedback",
+        "Planning wordt volledig gedelegeerd aan individuele teamleden"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Plan-driven (also called predictive) means the full project scope, schedule, and budget are defined and baselined upfront. The project then executes against that plan. Deviations are managed through formal change control rather than through plan adaptation.",
+      "explanationNL": "Plangestuurd (ook wel voorspellend genoemd) betekent dat de volledige projectscope, -planning en -budget vooraf worden gedefinieerd en als baseline vastgelegd. Het project voert vervolgens uit op basis van dat plan. Afwijkingen worden beheerd via formeel wijzigingsbeheer in plaats van planadaptatie."
+    },
+    {
+      "id": "wf-exam-q18",
+      "text": "In a hybrid project approach combining Waterfall and Agile, which component is most commonly kept as Waterfall?",
+      "textNL": "In een hybride projectaanpak die Waterfall en Agile combineert, welk onderdeel wordt het meest als Waterfall gehouden?",
+      "question": "In een hybride projectaanpak die Waterfall en Agile combineert, welk onderdeel wordt het meest als Waterfall gehouden?",
+      "questionEN": "In a hybrid project approach combining Waterfall and Agile, which component is most commonly kept as Waterfall?",
+      "options": [
+        "The daily development work and coding tasks",
+        "Governance, budgeting, and high-level milestone planning while delivery is Agile sprints",
+        "Retrospectives and continuous improvement ceremonies",
+        "User story writing and backlog grooming"
+      ],
+      "optionsEN": [
+        "The daily development work and coding tasks",
+        "Governance, budgeting, and high-level milestone planning while delivery is Agile sprints",
+        "Retrospectives and continuous improvement ceremonies",
+        "User story writing and backlog grooming"
+      ],
+      "optionsNL": [
+        "Het dagelijkse ontwikkelingswerk en codetaken",
+        "Governance, budgettering en high-level mijlpaalplanning terwijl levering via Agile-sprints verloopt",
+        "Retrospectives en ceremonies voor continue verbetering",
+        "Het schrijven van user stories en backlog grooming"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Hybrid models typically keep Waterfall-style governance, procurement, and funding cycles (which require fixed-scope commitments) while using Agile sprints for iterative delivery within each phase — giving both predictability to sponsors and flexibility to teams.",
+      "explanationNL": "Hybride modellen handhaven doorgaans Waterfall-achtige governance, aanbestedingsen financieringscycli (die vaste scopeverplichtingen vereisen) terwijl Agile-sprints worden gebruikt voor iteratieve levering binnen elke fase — wat zowel voorspelbaarheid voor sponsors als flexibiliteit voor teams biedt."
+    },
+    {
+      "id": "wf-exam-q19",
+      "text": "What is the primary purpose of a milestone in a Waterfall schedule?",
+      "textNL": "Wat is het primaire doel van een mijlpaal in een Waterfall-planning?",
+      "question": "Wat is het primaire doel van een mijlpaal in een Waterfall-planning?",
+      "questionEN": "What is the primary purpose of a milestone in a Waterfall schedule?",
+      "options": [
+        "To assign a specific team member as accountable for a work package",
+        "To mark a significant event or decision point — typically the completion of a phase deliverable or gate review",
+        "To indicate a point where the budget should be reviewed and adjusted",
+        "To signal the start of a new sprint cycle within the phase"
+      ],
+      "optionsEN": [
+        "To assign a specific team member as accountable for a work package",
+        "To mark a significant event or decision point — typically the completion of a phase deliverable or gate review",
+        "To indicate a point where the budget should be reviewed and adjusted",
+        "To signal the start of a new sprint cycle within the phase"
+      ],
+      "optionsNL": [
+        "Om een specifiek teamlid als verantwoordelijke aan te wijzen voor een werkpakket",
+        "Om een significante gebeurtenis of beslissingspunt te markeren — typisch de voltooiing van een fase-deliverable of gate review",
+        "Om een punt aan te geven waarop het budget moet worden gereviewed en aangepast",
+        "Om het begin van een nieuwe sprintcyclus binnen de fase te signaleren"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A milestone is a zero-duration scheduling event that marks a key point in the project — such as \"Requirements Baseline Approved\", \"Design Sign-off\", or \"UAT Complete\". Milestones are used to track schedule progress and trigger gate review activities.",
+      "explanationNL": "Een mijlpaal is een planningsevenement met nul duur dat een belangrijk punt in het project markeert — zoals \"Requirements Baseline Goedgekeurd\", \"Ontwerp Aftekening\" of \"UAT Voltooid\". Mijlpalen worden gebruikt om planningsvoortgang bij te houden en gate review-activiteiten te triggeren."
+    },
+    {
+      "id": "wf-exam-q20",
+      "text": "Which of the following industries MOST commonly mandates Waterfall-style sequential, documented delivery?",
+      "textNL": "Welke van de volgende industrieën verplicht het MEEST Waterfall-achtige sequentiële, gedocumenteerde levering?",
+      "question": "Welke van de volgende industrieën verplicht het MEEST Waterfall-achtige sequentiële, gedocumenteerde levering?",
+      "questionEN": "Which of the following industries MOST commonly mandates Waterfall-style sequential, documented delivery?",
+      "options": [
+        "Social media app development and consumer mobile gaming",
+        "Aerospace, defence, medical devices, and nuclear engineering",
+        "E-commerce website redesign and marketing campaign management",
+        "Internal IT help-desk tooling and employee onboarding portals"
+      ],
+      "optionsEN": [
+        "Social media app development and consumer mobile gaming",
+        "Aerospace, defence, medical devices, and nuclear engineering",
+        "E-commerce website redesign and marketing campaign management",
+        "Internal IT help-desk tooling and employee onboarding portals"
+      ],
+      "optionsNL": [
+        "Ontwikkeling van sociale media-apps en consumenten mobiele games",
+        "Lucht- en ruimtevaart, defensie, medische hulpmiddelen en kernenergie-engineering",
+        "E-commerce website-herontwerp en marketingcampagnebeheer",
+        "Interne IT-helpdesk-tooling en medewerker-onboardingportalen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Regulated high-risk industries — aerospace (DO-178C), defence (MIL-STD), medical devices (IEC 62304, FDA 21 CFR Part 11), and nuclear — mandate formal phase-by-phase documentation, independent verification, and traceability by law or safety standard. Waterfall's structure directly satisfies these requirements.",
+      "explanationNL": "Gereguleerde hoog-risico-industrieën — lucht- en ruimtevaart (DO-178C), defensie (MIL-STD), medische hulpmiddelen (IEC 62304, FDA 21 CFR Part 11) en kernenergie — verplichten formele fase-voor-fase documentatie, onafhankelijke verificatie en traceerbaarheid bij wet of veiligheidsnorm. De structuur van Waterfall voldoet hier direct aan."
+    },
+    {
+      "id": "wf-exam-q21",
+      "text": "Earned Value Management (EVM) in a Waterfall project uses three key values. Which set is correct?",
+      "textNL": "Earned Value Management (EVM) in een Waterfall-project gebruikt drie sleutelwaarden. Welke set is correct?",
+      "question": "Earned Value Management (EVM) in een Waterfall-project gebruikt drie sleutelwaarden. Welke set is correct?",
+      "questionEN": "Earned Value Management (EVM) in a Waterfall project uses three key values. Which set is correct?",
+      "options": [
+        "Velocity, Burn Rate, and Throughput",
+        "Planned Value (PV), Earned Value (EV), and Actual Cost (AC)",
+        "Budget at Completion, Estimate to Complete, and Cost Variance",
+        "Risk Exposure, Contingency Reserve, and Management Reserve"
+      ],
+      "optionsEN": [
+        "Velocity, Burn Rate, and Throughput",
+        "Planned Value (PV), Earned Value (EV), and Actual Cost (AC)",
+        "Budget at Completion, Estimate to Complete, and Cost Variance",
+        "Risk Exposure, Contingency Reserve, and Management Reserve"
+      ],
+      "optionsNL": [
+        "Snelheid, burn rate en doorvoer",
+        "Planned Value (PV), Earned Value (EV) en Actual Cost (AC)",
+        "Budget at Completion, Estimate to Complete en Cost Variance",
+        "Risicoblootstelling, contingentiereserve en managementreserve"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "EVM uses PV (the budgeted cost of work scheduled), EV (the budgeted cost of work actually performed), and AC (the actual cost incurred). From these three, Schedule Variance (SV = EV − PV), Cost Variance (CV = EV − AC), SPI, and CPI are derived — the standard Waterfall performance reporting metrics.",
+      "explanationNL": "EVM gebruikt PV (de gebudgetteerde kosten van gepland werk), EV (de gebudgetteerde kosten van daadwerkelijk uitgevoerd werk) en AC (de werkelijke gemaakte kosten). Uit deze drie worden Schedule Variance (SV = EV − PV), Cost Variance (CV = EV − AC), SPI en CPI afgeleid — de standaard Waterfall-prestatierapporten."
+    },
+    {
+      "id": "wf-exam-q22",
+      "text": "A project team discovers a significant design flaw during System Testing. In Waterfall, what is the correct process to follow?",
+      "textNL": "Een projectteam ontdekt een significant ontwerpfout tijdens systeemtesten. Wat is in Waterfall het juiste proces om te volgen?",
+      "question": "Een projectteam ontdekt een significant ontwerpfout tijdens systeemtesten. Wat is in Waterfall het juiste proces om te volgen?",
+      "questionEN": "A project team discovers a significant design flaw during System Testing. In Waterfall, what is the correct process to follow?",
+      "options": [
+        "Immediately fix the code without documentation to avoid schedule delay",
+        "Raise a formal defect report; assess impact; if a design change is required, raise a Change Request and update the Design baseline before reworking Implementation",
+        "Accept the defect as technical debt and add it to the next-phase backlog",
+        "Ask the end user to adjust their expectations so no design change is needed"
+      ],
+      "optionsEN": [
+        "Immediately fix the code without documentation to avoid schedule delay",
+        "Raise a formal defect report; assess impact; if a design change is required, raise a Change Request and update the Design baseline before reworking Implementation",
+        "Accept the defect as technical debt and add it to the next-phase backlog",
+        "Ask the end user to adjust their expectations so no design change is needed"
+      ],
+      "optionsNL": [
+        "Onmiddellijk de code repareren zonder documentatie om planningsvertraging te vermijden",
+        "Een formeel defectrapport opstellen; impact beoordelen; als een ontwerpwijziging vereist is, een wijzigingsverzoek indienen en de ontwerp-baseline bijwerken voordat de implementatie wordt herwerkt",
+        "Het defect accepteren als technische schuld en toevoegen aan de backlog van de volgende fase",
+        "De eindgebruiker vragen zijn verwachtingen aan te passen zodat geen ontwerpwijziging nodig is"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Waterfall mandates formal defect management and change control. A design flaw found in testing requires a defect log entry, root-cause analysis, a Change Request if a baseline must change, CCB approval, and then controlled rework of the affected Design and Implementation artefacts before re-testing.",
+      "explanationNL": "Waterfall vereist formeel defectbeheer en wijzigingsbeheer. Een ontwerpfout gevonden tijdens testen vereist een defectlogboekvermelding, oorzaakanalyse, een wijzigingsverzoek als een baseline moet wijzigen, CCB-goedkeuring en vervolgens gecontroleerde herwerking van de betrokken ontwerp- en implementatieartefacten vóór hertesten."
+    }
+  ],
+  "description": "Final exam — Waterfall Project Management",
+  "descriptionNL": "Eindexamen — Waterfall Project Management",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

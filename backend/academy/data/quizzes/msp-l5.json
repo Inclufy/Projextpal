@@ -1,0 +1,299 @@
+{
+  "id": "msp-l5",
+  "title": "Quiz: Basics",
+  "titleNL": "Quiz: Basis",
+  "courseId": "ms-project-masterclass",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "msp-q1",
+      "text": "What is the default view in MS Project?",
+      "textNL": "Wat is de standaard weergave in MS Project?",
+      "question": "Wat is de standaard weergave in MS Project?",
+      "questionEN": "What is the default view in MS Project?",
+      "options": [
+        "Timeline",
+        "Gantt Chart",
+        "Resource Sheet",
+        "Calendar"
+      ],
+      "optionsEN": [
+        "Timeline",
+        "Gantt Chart",
+        "Resource Sheet",
+        "Calendar"
+      ],
+      "optionsNL": [
+        "Tijdlijn",
+        "Gantt Diagram",
+        "Resourceblad",
+        "Kalender"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Gantt Chart is the default view, showing the task list on the left and timeline bars on the right. It's the most popular view because it combines task details with visual scheduling.",
+      "explanationNL": "Gantt Diagram is de standaard weergave, met de takenlijst links en tijdlijnbalken rechts. Het is de populairste weergave omdat het taakdetails combineert met visuele planning."
+    },
+    {
+      "id": "msp-q2",
+      "text": "Where do you set the project start date?",
+      "textNL": "Waar stel je de projectstartdatum in?",
+      "question": "Waar stel je de projectstartdatum in?",
+      "questionEN": "Where do you set the project start date?",
+      "options": [
+        "Task tab",
+        "Project tab → Project Information",
+        "View tab",
+        "Format tab"
+      ],
+      "optionsEN": [
+        "Task tab",
+        "Project tab → Project Information",
+        "View tab",
+        "Format tab"
+      ],
+      "optionsNL": [
+        "Taak tab",
+        "Project tab → Projectinformatie",
+        "Weergave tab",
+        "Opmaak tab"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Project start date is set in Project tab → Project Information dialog. This is critical because MS Project calculates all task dates from this starting point.",
+      "explanationNL": "Projectstartdatum wordt ingesteld in Project tab → Projectinformatie dialoog. Dit is kritiek omdat MS Project alle taakdatums vanaf dit startpunt berekent."
+    },
+    {
+      "id": "msp-q3",
+      "text": "What happens when you set a task duration to 0 days?",
+      "textNL": "Wat gebeurt er als je een taakduur instelt op 0 dagen?",
+      "question": "Wat gebeurt er als je een taakduur instelt op 0 dagen?",
+      "questionEN": "What happens when you set a task duration to 0 days?",
+      "options": [
+        "Task is deleted",
+        "Task becomes a Milestone",
+        "Task is hidden",
+        "Error occurs"
+      ],
+      "optionsEN": [
+        "Task is deleted",
+        "Task becomes a Milestone",
+        "Task is hidden",
+        "Error occurs"
+      ],
+      "optionsNL": [
+        "Taak wordt verwijderd",
+        "Taak wordt een Mijlpaal",
+        "Taak wordt verborgen",
+        "Fout treedt op"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Setting duration to 0 days converts the task into a Milestone, which appears as a diamond (◆) on the Gantt chart. Milestones mark important project events.",
+      "explanationNL": "Duur instellen op 0 dagen converteert de taak naar een Mijlpaal, die verschijnt als een diamant (◆) op het Gantt diagram. Mijlpalen markeren belangrijke project gebeurtenissen."
+    },
+    {
+      "id": "msp-q4",
+      "text": "What is the purpose of a Summary Task?",
+      "textNL": "Wat is het doel van een Samenvattingstaak?",
+      "question": "Wat is het doel van een Samenvattingstaak?",
+      "questionEN": "What is the purpose of a Summary Task?",
+      "options": [
+        "To add extra detail to a task",
+        "To group related subtasks and auto-calculate duration",
+        "To create a backup of tasks",
+        "To print a summary report"
+      ],
+      "optionsEN": [
+        "To add extra detail to a task",
+        "To group related subtasks and auto-calculate duration",
+        "To create a backup of tasks",
+        "To print a summary report"
+      ],
+      "optionsNL": [
+        "Om extra detail toe te voegen aan een taak",
+        "Om gerelateerde subtaken te groeperen en duur auto te berekenen",
+        "Om een backup van taken te maken",
+        "Om een samenvattingsrapport af te drukken"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Summary Tasks group related subtasks together and automatically calculate their duration based on the earliest start and latest finish of their subtasks. They help organize projects into logical phases.",
+      "explanationNL": "Samenvattingstaken groeperen gerelateerde subtaken samen en berekenen automatisch hun duur gebaseerd op de vroegste start en laatste einde van hun subtaken. Ze helpen projecten organiseren in logische fasen."
+    },
+    {
+      "id": "msp-q5",
+      "text": "In the calendar hierarchy, which calendar has the highest priority?",
+      "textNL": "In de kalender hiërarchie, welke kalender heeft de hoogste prioriteit?",
+      "question": "In de kalender hiërarchie, welke kalender heeft de hoogste prioriteit?",
+      "questionEN": "In the calendar hierarchy, which calendar has the highest priority?",
+      "options": [
+        "Base Calendar",
+        "Project Calendar",
+        "Resource Calendar",
+        "Task Calendar"
+      ],
+      "optionsEN": [
+        "Base Calendar",
+        "Project Calendar",
+        "Resource Calendar",
+        "Task Calendar"
+      ],
+      "optionsNL": [
+        "Basis Kalender",
+        "Project Kalender",
+        "Resource Kalender",
+        "Taak Kalender"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Resource Calendar has the highest priority (most specific). When there's a conflict, MS Project uses: 1) Resource Calendar, 2) Task Calendar, 3) Project Calendar, 4) Base Calendar.",
+      "explanationNL": "Resource Kalender heeft de hoogste prioriteit (meest specifiek). Bij een conflict gebruikt MS Project: 1) Resource Kalender, 2) Taak Kalender, 3) Project Kalender, 4) Basis Kalender."
+    },
+    {
+      "id": "msp-q6",
+      "text": "What is the difference between Views and Tables in MS Project?",
+      "textNL": "Wat is het verschil tussen Weergaven en Tabellen in MS Project?",
+      "question": "Wat is het verschil tussen Weergaven en Tabellen in MS Project?",
+      "questionEN": "What is the difference between Views and Tables in MS Project?",
+      "options": [
+        "There is no difference",
+        "Views control HOW you see data, Tables control WHICH columns appear",
+        "Views are for printing, Tables are for editing",
+        "Tables are only for resources"
+      ],
+      "optionsEN": [
+        "There is no difference",
+        "Views control HOW you see data, Tables control WHICH columns appear",
+        "Views are for printing, Tables are for editing",
+        "Tables are only for resources"
+      ],
+      "optionsNL": [
+        "Er is geen verschil",
+        "Weergaven bepalen HOE je data ziet, Tabellen bepalen WELKE kolommen verschijnen",
+        "Weergaven zijn voor printen, Tabellen voor bewerken",
+        "Tabellen zijn alleen voor resources"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Views determine HOW you see the data (Gantt Chart, Calendar, etc.) while Tables determine WHICH columns are displayed (Entry, Cost, Work, etc.). You can combine any view with any table.",
+      "explanationNL": "Weergaven bepalen HOE je de data ziet (Gantt Diagram, Kalender, etc.) terwijl Tabellen bepalen WELKE kolommen worden weergegeven (Invoer, Kosten, Werk, etc.). Je kunt elke weergave combineren met elke tabel."
+    },
+    {
+      "id": "msp-q7",
+      "text": "Which task mode allows MS Project to automatically calculate dates?",
+      "textNL": "Welke taakmodus laat MS Project automatisch datums berekenen?",
+      "question": "Welke taakmodus laat MS Project automatisch datums berekenen?",
+      "questionEN": "Which task mode allows MS Project to automatically calculate dates?",
+      "options": [
+        "Manually Scheduled",
+        "Auto-Scheduled",
+        "Fixed Duration",
+        "Locked Mode"
+      ],
+      "optionsEN": [
+        "Manually Scheduled",
+        "Auto-Scheduled",
+        "Fixed Duration",
+        "Locked Mode"
+      ],
+      "optionsNL": [
+        "Handmatig Gepland",
+        "Auto-Gepland",
+        "Vaste Duur",
+        "Vergrendelde Modus"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Auto-Scheduled mode (recommended) lets MS Project calculate dates based on dependencies, duration, and calendars. Manually Scheduled mode gives you full control but you lose automatic calculation benefits.",
+      "explanationNL": "Auto-Gepland modus (aanbevolen) laat MS Project datums berekenen gebaseerd op afhankelijkheden, duur en kalenders. Handmatig Gepland modus geeft je volledige controle maar je verliest automatische berekening voordelen."
+    },
+    {
+      "id": "msp-q8",
+      "text": "What should you do BEFORE adding tasks to a new project?",
+      "textNL": "Wat moet je doen VOORDAT je taken toevoegt aan een nieuw project?",
+      "question": "Wat moet je doen VOORDAT je taken toevoegt aan een nieuw project?",
+      "questionEN": "What should you do BEFORE adding tasks to a new project?",
+      "options": [
+        "Assign resources first",
+        "Set the project start date",
+        "Create a baseline",
+        "Link all tasks"
+      ],
+      "optionsEN": [
+        "Assign resources first",
+        "Set the project start date",
+        "Create a baseline",
+        "Link all tasks"
+      ],
+      "optionsNL": [
+        "Wijs eerst resources toe",
+        "Stel de projectstartdatum in",
+        "Creëer een baseline",
+        "Koppel alle taken"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Always set the project start date BEFORE adding tasks. MS Project calculates all task dates from this starting point, so setting it first ensures accurate scheduling from the beginning.",
+      "explanationNL": "Stel altijd de projectstartdatum in VOORDAT je taken toevoegt. MS Project berekent alle taakdatums vanaf dit startpunt, dus het eerst instellen zorgt voor nauwkeurige planning vanaf het begin."
+    },
+    {
+      "id": "msp-q9",
+      "text": "Which keyboard shortcut saves your project?",
+      "textNL": "Welke sneltoets slaat je project op?",
+      "question": "Welke sneltoets slaat je project op?",
+      "questionEN": "Which keyboard shortcut saves your project?",
+      "options": [
+        "Ctrl + P",
+        "Ctrl + S",
+        "Ctrl + W",
+        "Ctrl + O"
+      ],
+      "optionsEN": [
+        "Ctrl + P",
+        "Ctrl + S",
+        "Ctrl + W",
+        "Ctrl + O"
+      ],
+      "optionsNL": [
+        "Ctrl + P",
+        "Ctrl + S",
+        "Ctrl + W",
+        "Ctrl + O"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Ctrl + S saves your project. This is one of the most important shortcuts to remember - save frequently to avoid losing work!",
+      "explanationNL": "Ctrl + S slaat je project op. Dit is een van de belangrijkste sneltoetsen om te onthouden - sla vaak op om werk niet te verliezen!"
+    },
+    {
+      "id": "msp-q10",
+      "text": "What is the recommended ideal duration range for individual tasks?",
+      "textNL": "Wat is het aanbevolen ideale duur bereik voor individuele taken?",
+      "question": "Wat is het aanbevolen ideale duur bereik voor individuele taken?",
+      "questionEN": "What is the recommended ideal duration range for individual tasks?",
+      "options": [
+        "1-3 hours",
+        "1-10 days",
+        "2-4 weeks",
+        "1-3 months"
+      ],
+      "optionsEN": [
+        "1-3 hours",
+        "1-10 days",
+        "2-4 weeks",
+        "1-3 months"
+      ],
+      "optionsNL": [
+        "1-3 uur",
+        "1-10 dagen",
+        "2-4 weken",
+        "1-3 maanden"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "1-10 days is the ideal range for most tasks. Tasks shorter than 1 day create too much detail, while tasks longer than 10 days are hard to track accurately. Use summary tasks for larger chunks of work.",
+      "explanationNL": "1-10 dagen is het ideale bereik voor meeste taken. Taken korter dan 1 dag creëren te veel detail, terwijl taken langer dan 10 dagen moeilijk nauwkeurig te volgen zijn. Gebruik samenvattingstaken voor grotere werkblokken."
+    }
+  ]
+}

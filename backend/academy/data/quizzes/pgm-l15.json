@@ -1,0 +1,183 @@
+{
+  "id": "pgm-l15",
+  "title": "Quiz: Final",
+  "titleNL": "Quiz: Eindexamen",
+  "courseId": "program-management-pro",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "pm-q7",
+      "text": "In MSP, the Vision Statement serves which primary purpose?",
+      "textNL": "Welk primair doel dient de Vision Statement in MSP?",
+      "question": "Welk primair doel dient de Vision Statement in MSP?",
+      "questionEN": "In MSP, the Vision Statement serves which primary purpose?",
+      "options": [
+        "It replaces the Business Case as the financial justification for the programme",
+        "It provides an inspiring, concise description of the future state that motivates stakeholders and guides decision-making",
+        "It lists the technical requirements for all component projects within the programme",
+        "It documents the risk appetite thresholds agreed by the Sponsoring Group"
+      ],
+      "optionsEN": [
+        "It replaces the Business Case as the financial justification for the programme",
+        "It provides an inspiring, concise description of the future state that motivates stakeholders and guides decision-making",
+        "It lists the technical requirements for all component projects within the programme",
+        "It documents the risk appetite thresholds agreed by the Sponsoring Group"
+      ],
+      "optionsNL": [
+        "Het vervangt de Business Case als financiële rechtvaardiging voor het programma",
+        "Het biedt een inspirerende, beknopte beschrijving van de toekomstige staat die stakeholders motiveert en besluitvorming begeleidt",
+        "Het somt de technische vereisten op voor alle componentprojecten binnen het programma",
+        "Het documenteert de risicobereidheidsdrempels die zijn overeengekomen door de Sponsoring Group"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The MSP Vision Statement is a clear and compelling picture of the future state the programme aims to achieve. It is deliberately short and motivational, anchoring all programme decisions and communications. It differs from the Blueprint (which is detailed and technical) and from the Business Case (which is financial).",
+      "explanationNL": "De MSP Vision Statement is een duidelijk en overtuigend beeld van de toekomstige staat die het programma wil bereiken. Het is bewust kort en motiverend, en verankert alle programmabesluiten en -communicaties. Het verschilt van de Blueprint (gedetailleerd en technisch) en van de Business Case (financieel)."
+    },
+    {
+      "id": "pm-q8",
+      "text": "Benefits Management in MSP is BEST described as:",
+      "textNL": "Benefits Management in MSP wordt het BESTE omschreven als:",
+      "question": "Benefits Management in MSP wordt het BESTE omschreven als:",
+      "questionEN": "Benefits Management in MSP is BEST described as:",
+      "options": [
+        "A one-time activity performed at programme closure to confirm whether benefits were achieved",
+        "A continuous process from identification through realisation and review, spanning the full programme and beyond",
+        "The responsibility of component project managers to report on delivered outputs",
+        "An optional governance activity only required for public-sector programmes"
+      ],
+      "optionsEN": [
+        "A one-time activity performed at programme closure to confirm whether benefits were achieved",
+        "A continuous process from identification through realisation and review, spanning the full programme and beyond",
+        "The responsibility of component project managers to report on delivered outputs",
+        "An optional governance activity only required for public-sector programmes"
+      ],
+      "optionsNL": [
+        "Een eenmalige activiteit die bij programmasluiting wordt uitgevoerd om te bevestigen of baten zijn gerealiseerd",
+        "Een continu proces van identificatie tot realisatie en evaluatie, dat het volledige programma en daarna omvat",
+        "De verantwoordelijkheid van componentprojectmanagers om over geleverde producten te rapporteren",
+        "Een optionele governance-activiteit die alleen vereist is voor programma's in de publieke sector"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "MSP treats Benefits Management as a lifecycle-spanning discipline. It begins during Identifying (defining the Benefits Map), continues through Defining (Benefits Realisation Plan), is tracked through each Tranche, and extends post-programme into the Benefits Realisation period. The Business Change Manager owns day-to-day benefits tracking within each operational area.",
+      "explanationNL": "MSP behandelt Benefits Management als een discipline die de gehele levenscyclus omspant. Het begint tijdens Identifying (het definiëren van de Benefits Map), gaat door tijdens Defining (Benefits Realisation Plan), wordt bijgehouden gedurende elke Tranche en loopt door na het programma in de Benefits Realisatieperiode. De Business Change Manager is dagelijks verantwoordelijk voor het bijhouden van baten binnen elk operationeel gebied."
+    },
+    {
+      "id": "pm-q9",
+      "text": "A Benefits Map (or Benefits Dependency Network) in MSP shows:",
+      "textNL": "Een Benefits Map (of Benefits Dependency Network) in MSP toont:",
+      "question": "Een Benefits Map (of Benefits Dependency Network) in MSP toont:",
+      "questionEN": "A Benefits Map (or Benefits Dependency Network) in MSP shows:",
+      "options": [
+        "The organisational chart of the programme governance structure",
+        "The financial NPV calculation for the Business Case",
+        "The causal chain from enabling changes and business changes through to end benefits and strategic objectives",
+        "A Gantt chart of benefit realisation milestones per tranche"
+      ],
+      "optionsEN": [
+        "The organisational chart of the programme governance structure",
+        "The financial NPV calculation for the Business Case",
+        "The causal chain from enabling changes and business changes through to end benefits and strategic objectives",
+        "A Gantt chart of benefit realisation milestones per tranche"
+      ],
+      "optionsNL": [
+        "Het organisatieschema van de programmabeheerstructuur",
+        "De financiële NPV-berekening voor de Business Case",
+        "De causale keten van activerende veranderingen en bedrijfsveranderingen tot eindresultaten en strategische doelstellingen",
+        "Een Gantt-diagram van batenrealisatiemijlpalen per tranche"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "A Benefits Map (called Benefits Dependency Network in some MSP editions) is a visual tool that traces the dependency chain: strategic objectives → end benefits → intermediate benefits → business changes → enabling changes (outputs from projects). It makes the logic of benefit delivery explicit and helps identify which projects are truly essential.",
+      "explanationNL": "Een Benefits Map (in sommige MSP-edities Benefits Dependency Network genoemd) is een visueel hulpmiddel dat de afhankelijkheidsketen in beeld brengt: strategische doelstellingen → eindbaten → tussentijdse baten → bedrijfsveranderingen → activerende veranderingen (producten van projecten). Het maakt de logica van batenlevering expliciet en helpt te identificeren welke projecten werkelijk essentieel zijn."
+    },
+    {
+      "id": "pm-q10",
+      "text": "What is the primary purpose of the MSP Business Case at programme level?",
+      "textNL": "Wat is het primaire doel van de MSP Business Case op programmaniveau?",
+      "question": "Wat is het primaire doel van de MSP Business Case op programmaniveau?",
+      "questionEN": "What is the primary purpose of the MSP Business Case at programme level?",
+      "options": [
+        "To provide a one-time investment approval document submitted to the finance committee before the programme starts",
+        "To serve as a living document that continuously justifies the programme investment throughout its lifecycle",
+        "To replace the Benefits Realisation Plan by documenting expected and achieved benefits in a single artefact",
+        "To define the technical architecture that the programme will implement"
+      ],
+      "optionsEN": [
+        "To provide a one-time investment approval document submitted to the finance committee before the programme starts",
+        "To serve as a living document that continuously justifies the programme investment throughout its lifecycle",
+        "To replace the Benefits Realisation Plan by documenting expected and achieved benefits in a single artefact",
+        "To define the technical architecture that the programme will implement"
+      ],
+      "optionsNL": [
+        "Om een eenmalig investeringsgoedkeuringsdocument te zijn dat vóór de start van het programma wordt ingediend bij de financiële commissie",
+        "Om als levend document te dienen dat de programmainvestering gedurende de hele levenscyclus continu rechtvaardigt",
+        "Om het Benefits Realisation Plan te vervangen door verwachte en gerealiseerde baten in één artefact te documenteren",
+        "Om de technische architectuur te definiëren die het programma zal implementeren"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "In MSP, the Business Case is a living document revisited at each Tranche boundary and major decision point. It must demonstrate continued viability (the investment is still worth making given current information). If the Business Case can no longer be justified, MSP requires that the programme be stopped or restructured.",
+      "explanationNL": "In MSP is de Business Case een levend document dat bij elke Tranche-grens en elk belangrijk beslismoment wordt herzien. Het moet aantoonbaar blijven dat de investering nog steeds de moeite waard is gezien de actuele informatie. Als de Business Case niet langer gerechtvaardigd kan worden, vereist MSP dat het programma wordt gestopt of geherstructureerd."
+    },
+    {
+      "id": "pm-q11",
+      "text": "In MSP, which role is specifically responsible for managing organisational change and embedding new ways of working so that benefits are actually realised?",
+      "textNL": "Welke rol in MSP is specifiek verantwoordelijk voor het managen van organisatieverandering en het verankeren van nieuwe werkwijzen zodat baten daadwerkelijk worden gerealiseerd?",
+      "question": "Welke rol in MSP is specifiek verantwoordelijk voor het managen van organisatieverandering en het verankeren van nieuwe werkwijzen zodat baten daadwerkelijk worden gerealiseerd?",
+      "questionEN": "In MSP, which role is specifically responsible for managing organisational change and embedding new ways of working so that benefits are actually realised?",
+      "options": [
+        "Senior Responsible Owner (SRO)",
+        "Programme Manager",
+        "Business Change Manager (BCM)",
+        "Programme Office Manager"
+      ],
+      "optionsEN": [
+        "Senior Responsible Owner (SRO)",
+        "Programme Manager",
+        "Business Change Manager (BCM)",
+        "Programme Office Manager"
+      ],
+      "optionsNL": [
+        "Senior Responsible Owner (SRO)",
+        "Programme Manager",
+        "Business Change Manager (BCM)",
+        "Programme Office Manager"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The Business Change Manager (BCM) in MSP sits within the business area that is changing. Their unique role is to ensure that the capabilities delivered by projects are actually adopted, embedded, and leveraged so that benefits are realised. They represent the \"business side\" of the programme and are distinct from the Programme Manager who runs the programme itself.",
+      "explanationNL": "De Business Change Manager (BCM) in MSP bevindt zich in het bedrijfsgebied dat verandert. Hun unieke rol is ervoor te zorgen dat de capaciteiten die door projecten worden geleverd daadwerkelijk worden geadopteerd, verankerd en benut zodat baten worden gerealiseerd. Ze vertegenwoordigen de \"businesskant\" van het programma en zijn onderscheiden van de Programme Manager die het programma zelf beheert."
+    },
+    {
+      "id": "pm-q12",
+      "text": "During programme closure in MSP, which action is explicitly required before the programme can be formally closed?",
+      "textNL": "Welke actie is tijdens programmasluiting in MSP expliciet vereist voordat het programma formeel kan worden gesloten?",
+      "question": "Welke actie is tijdens programmasluiting in MSP expliciet vereist voordat het programma formeel kan worden gesloten?",
+      "questionEN": "During programme closure in MSP, which action is explicitly required before the programme can be formally closed?",
+      "options": [
+        "All component projects must achieve zero open risks and issues",
+        "The programme budget must show a surplus against the original Business Case",
+        "Outstanding benefits realisation responsibilities must be formally handed over to operational management",
+        "The SRO must have personally reviewed every project closure report"
+      ],
+      "optionsEN": [
+        "All component projects must achieve zero open risks and issues",
+        "The programme budget must show a surplus against the original Business Case",
+        "Outstanding benefits realisation responsibilities must be formally handed over to operational management",
+        "The SRO must have personally reviewed every project closure report"
+      ],
+      "optionsNL": [
+        "Alle componentprojecten moeten nul openstaande risico's en issues hebben",
+        "Het programmabueget moet een overschot laten zien ten opzichte van de originele Business Case",
+        "Uitstaande verantwoordelijkheden voor batenrealisatie moeten formeel worden overgedragen aan het operationeel management",
+        "De SRO moet persoonlijk elk projectsluitingsrapport hebben beoordeeld"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "MSP requires that before formal programme closure, all ongoing benefits realisation responsibilities are formally transferred to operational management (typically line management in the affected business areas). Benefits realisation often continues for months or years after the programme ends, and MSP requires a named owner with accountability for each benefit post-closure.",
+      "explanationNL": "MSP vereist dat vóór formele programmasluiting alle lopende verantwoordelijkheden voor batenrealisatie formeel worden overgedragen aan het operationeel management (doorgaans lijnmanagement in de betrokken bedrijfsgebieden). Batenrealisatie gaat vaak maanden of jaren door nadat het programma is beëindigd, en MSP vereist een benoemde eigenaar met verantwoordelijkheid voor elke bate na sluiting."
+    }
+  ]
+}

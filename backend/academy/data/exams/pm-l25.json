@@ -1,0 +1,738 @@
+{
+  "id": "pm-l25",
+  "title": "Final exam: Project Management Fundamentals",
+  "titleNL": "Eindexamen: Project Management Fundamentals",
+  "courseId": "pm-fundamentals",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "pmf-exam-q1",
+      "text": "Which characteristic BEST distinguishes a project from ongoing operations?",
+      "textNL": "Welk kenmerk onderscheidt een project het BESTE van doorlopende activiteiten?",
+      "question": "Welk kenmerk onderscheidt een project het BESTE van doorlopende activiteiten?",
+      "questionEN": "Which characteristic BEST distinguishes a project from ongoing operations?",
+      "options": [
+        "Projects always have a larger budget than operations",
+        "Projects are temporary endeavours undertaken to create a unique result",
+        "Projects are performed by permanent teams with no deadlines",
+        "Projects are repeated regularly to maintain business continuity"
+      ],
+      "optionsEN": [
+        "Projects always have a larger budget than operations",
+        "Projects are temporary endeavours undertaken to create a unique result",
+        "Projects are performed by permanent teams with no deadlines",
+        "Projects are repeated regularly to maintain business continuity"
+      ],
+      "optionsNL": [
+        "Projecten hebben altijd een groter budget dan operaties",
+        "Projecten zijn tijdelijke inspanningen om een uniek resultaat te creëren",
+        "Projecten worden uitgevoerd door vaste teams zonder deadlines",
+        "Projecten worden regelmatig herhaald om bedrijfscontinuïteit te handhaven"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Per PMBOK 7, a project is a temporary endeavour undertaken to create a unique product, service, or result. Temporariness and uniqueness are the two defining characteristics that separate projects from operations.",
+      "explanationNL": "Volgens PMBOK 7 is een project een tijdelijke inspanning om een uniek product, dienst of resultaat te creëren. Tijdelijkheid en uniciteit zijn de twee bepalende kenmerken die projecten onderscheiden van operaties."
+    },
+    {
+      "id": "pmf-exam-q2",
+      "text": "The \"triple constraint\" (iron triangle) in project management refers to which three competing factors?",
+      "textNL": "De \"driedubbele beperking\" (ijzeren driehoek) in projectmanagement verwijst naar welke drie concurrerende factoren?",
+      "question": "De \"driedubbele beperking\" (ijzeren driehoek) in projectmanagement verwijst naar welke drie concurrerende factoren?",
+      "questionEN": "The \"triple constraint\" (iron triangle) in project management refers to which three competing factors?",
+      "options": [
+        "People, process, and technology",
+        "Scope, schedule (time), and cost",
+        "Quality, risk, and stakeholders",
+        "Initiating, planning, and executing"
+      ],
+      "optionsEN": [
+        "People, process, and technology",
+        "Scope, schedule (time), and cost",
+        "Quality, risk, and stakeholders",
+        "Initiating, planning, and executing"
+      ],
+      "optionsNL": [
+        "Mensen, proces en technologie",
+        "Scope, planning (tijd) en kosten",
+        "Kwaliteit, risico en stakeholders",
+        "Initiëren, plannen en uitvoeren"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The iron triangle consists of scope, schedule (time), and cost. Changes to one side of the triangle typically affect the other two. Quality is often shown at the centre as the outcome of managing all three.",
+      "explanationNL": "De ijzeren driehoek bestaat uit scope, planning (tijd) en kosten. Wijzigingen aan één zijde van de driehoek beïnvloeden doorgaans de andere twee. Kwaliteit wordt vaak in het midden weergegeven als het resultaat van het beheren van alle drie."
+    },
+    {
+      "id": "pmf-exam-q3",
+      "text": "Which PMBOK process group authorises the project and defines the project charter?",
+      "textNL": "Welke PMBOK-procesgroep autoriseert het project en definieert het projecthandvest?",
+      "question": "Welke PMBOK-procesgroep autoriseert het project en definieert het projecthandvest?",
+      "questionEN": "Which PMBOK process group authorises the project and defines the project charter?",
+      "options": [
+        "Planning",
+        "Executing",
+        "Initiating",
+        "Monitoring & Controlling"
+      ],
+      "optionsEN": [
+        "Planning",
+        "Executing",
+        "Initiating",
+        "Monitoring & Controlling"
+      ],
+      "optionsNL": [
+        "Plannen",
+        "Uitvoeren",
+        "Initiëren",
+        "Bewaken & Beheersen"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Initiating process group formally authorises a new project or phase, produces the project charter, and identifies the initial stakeholders. It is the entry gate into the project.",
+      "explanationNL": "De procesgroep Initiëren autoriseert formeel een nieuw project of fase, produceert het projecthandvest en identificeert de initiële stakeholders. Het is de toegangspoort tot het project."
+    },
+    {
+      "id": "pmf-exam-q4",
+      "text": "A project charter primarily serves to:",
+      "textNL": "Een projecthandvest dient primair om:",
+      "question": "Een projecthandvest dient primair om:",
+      "questionEN": "A project charter primarily serves to:",
+      "options": [
+        "List every task the team must complete during execution",
+        "Formally authorise the project and grant the project manager authority to apply resources",
+        "Document all identified project risks and their mitigation plans",
+        "Define the detailed schedule and budget baselines"
+      ],
+      "optionsEN": [
+        "List every task the team must complete during execution",
+        "Formally authorise the project and grant the project manager authority to apply resources",
+        "Document all identified project risks and their mitigation plans",
+        "Define the detailed schedule and budget baselines"
+      ],
+      "optionsNL": [
+        "Elke taak te vermelden die het team tijdens de uitvoering moet voltooien",
+        "Het project formeel te autoriseren en de projectmanager autoriteit te verlenen om middelen in te zetten",
+        "Alle geïdentificeerde projectrisico's en hun mitigatieplannen te documenteren",
+        "De gedetailleerde planning- en budgetbasislijnen te definiëren"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The project charter formally authorises the project and gives the project manager authority to use organisational resources. It is a high-level document — not a detailed schedule or risk register.",
+      "explanationNL": "Het projecthandvest autoriseert het project formeel en geeft de projectmanager autoriteit om organisatiemiddelen te gebruiken. Het is een document op hoog niveau — geen gedetailleerde planning of risicoregister."
+    },
+    {
+      "id": "pmf-exam-q5",
+      "text": "The Work Breakdown Structure (WBS) is used primarily to:",
+      "textNL": "De Work Breakdown Structure (WBS) wordt primair gebruikt om:",
+      "question": "De Work Breakdown Structure (WBS) wordt primair gebruikt om:",
+      "questionEN": "The Work Breakdown Structure (WBS) is used primarily to:",
+      "options": [
+        "Schedule tasks on a Gantt chart",
+        "Decompose the total project scope into manageable work packages",
+        "Identify all project stakeholders and their interests",
+        "Estimate the probability of project risks"
+      ],
+      "optionsEN": [
+        "Schedule tasks on a Gantt chart",
+        "Decompose the total project scope into manageable work packages",
+        "Identify all project stakeholders and their interests",
+        "Estimate the probability of project risks"
+      ],
+      "optionsNL": [
+        "Taken op een Gantt-diagram te plannen",
+        "De totale projectscope op te splitsen in beheersbare werkpakketten",
+        "Alle projectstakeholders en hun belangen te identificeren",
+        "De kans op projectrisico's te schatten"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The WBS decomposes the total scope of work into progressively smaller components (work packages) that can be estimated, assigned, and controlled. It is a scope management tool, not a scheduling tool.",
+      "explanationNL": "De WBS splitst de totale scope op in steeds kleinere componenten (werkpakketten) die geschat, toegewezen en beheerd kunnen worden. Het is een scopebeheersinstrument, geen planningsinstrument."
+    },
+    {
+      "id": "pmf-exam-q6",
+      "text": "Which technique is used to determine the LONGEST path through a project network diagram, thereby identifying the minimum project duration?",
+      "textNL": "Welke techniek wordt gebruikt om het LANGSTE pad door een projectnetwerkdiagram te bepalen, waarmee de minimale projectduur wordt vastgesteld?",
+      "question": "Welke techniek wordt gebruikt om het LANGSTE pad door een projectnetwerkdiagram te bepalen, waarmee de minimale projectduur wordt vastgesteld?",
+      "questionEN": "Which technique is used to determine the LONGEST path through a project network diagram, thereby identifying the minimum project duration?",
+      "options": [
+        "Work Breakdown Structure (WBS)",
+        "RACI matrix",
+        "Critical Path Method (CPM)",
+        "Earned Value Analysis (EVA)"
+      ],
+      "optionsEN": [
+        "Work Breakdown Structure (WBS)",
+        "RACI matrix",
+        "Critical Path Method (CPM)",
+        "Earned Value Analysis (EVA)"
+      ],
+      "optionsNL": [
+        "Work Breakdown Structure (WBS)",
+        "RACI-matrix",
+        "Critical Path Method (CPM)",
+        "Earned Value Analysis (EVA)"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Critical Path Method (CPM) identifies the longest sequence of dependent activities. Any delay on the critical path delays the entire project; it also reveals total float for non-critical activities.",
+      "explanationNL": "De Critical Path Method (CPM) identificeert de langste reeks afhankelijke activiteiten. Een vertraging op het kritieke pad vertraagt het hele project; het laat ook de totale speling zien voor niet-kritieke activiteiten."
+    },
+    {
+      "id": "pmf-exam-q7",
+      "text": "Float (slack) in a project schedule refers to:",
+      "textNL": "Speling (float) in een projectplanning verwijst naar:",
+      "question": "Speling (float) in een projectplanning verwijst naar:",
+      "questionEN": "Float (slack) in a project schedule refers to:",
+      "options": [
+        "The total budget reserve set aside for unforeseen costs",
+        "The amount of time an activity can be delayed without delaying the project end date",
+        "The difference between planned and actual costs at a given point",
+        "The number of resources assigned to a single task"
+      ],
+      "optionsEN": [
+        "The total budget reserve set aside for unforeseen costs",
+        "The amount of time an activity can be delayed without delaying the project end date",
+        "The difference between planned and actual costs at a given point",
+        "The number of resources assigned to a single task"
+      ],
+      "optionsNL": [
+        "De totale budgetreserve die is gereserveerd voor onvoorziene kosten",
+        "De hoeveelheid tijd dat een activiteit vertraagd kan worden zonder de projecteinddatum te vertragen",
+        "Het verschil tussen geplande en werkelijke kosten op een bepaald moment",
+        "Het aantal middelen dat aan een enkele taak is toegewezen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Float (or slack) is the amount of time a non-critical activity can slip without affecting the project end date. Activities on the critical path have zero float.",
+      "explanationNL": "Speling (of slack) is de hoeveelheid tijd dat een niet-kritieke activiteit kan verschuiven zonder de projecteinddatum te beïnvloeden. Activiteiten op het kritieke pad hebben nul speling."
+    },
+    {
+      "id": "pmf-exam-q8",
+      "text": "Earned Value Management (EVM) defines Schedule Variance (SV) as:",
+      "textNL": "Earned Value Management (EVM) definieert Planningsvariantie (SV) als:",
+      "question": "Earned Value Management (EVM) definieert Planningsvariantie (SV) als:",
+      "questionEN": "Earned Value Management (EVM) defines Schedule Variance (SV) as:",
+      "options": [
+        "Planned Value (PV) minus Actual Cost (AC)",
+        "Earned Value (EV) minus Planned Value (PV)",
+        "Budget At Completion (BAC) minus Actual Cost (AC)",
+        "Earned Value (EV) minus Actual Cost (AC)"
+      ],
+      "optionsEN": [
+        "Planned Value (PV) minus Actual Cost (AC)",
+        "Earned Value (EV) minus Planned Value (PV)",
+        "Budget At Completion (BAC) minus Actual Cost (AC)",
+        "Earned Value (EV) minus Actual Cost (AC)"
+      ],
+      "optionsNL": [
+        "Geplande Waarde (PV) minus Werkelijke Kosten (AC)",
+        "Verdiende Waarde (EV) minus Geplande Waarde (PV)",
+        "Budget bij Voltooiing (BAC) minus Werkelijke Kosten (AC)",
+        "Verdiende Waarde (EV) minus Werkelijke Kosten (AC)"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "SV = EV − PV. A positive SV means the project is ahead of schedule; a negative SV means it is behind. Cost Variance (CV) = EV − AC.",
+      "explanationNL": "SV = EV − PV. Een positieve SV betekent dat het project voor ligt op schema; een negatieve SV betekent dat het achter ligt. Kostenvariantie (CV) = EV − AC."
+    },
+    {
+      "id": "pmf-exam-q9",
+      "text": "Which document describes WHO should receive WHAT information, WHEN, and through WHICH channel?",
+      "textNL": "Welk document beschrijft WIE WELKE informatie ontvangt, WANNEER en via WELK kanaal?",
+      "question": "Welk document beschrijft WIE WELKE informatie ontvangt, WANNEER en via WELK kanaal?",
+      "questionEN": "Which document describes WHO should receive WHAT information, WHEN, and through WHICH channel?",
+      "options": [
+        "Risk Register",
+        "Project Charter",
+        "Communications Management Plan",
+        "Responsibility Assignment Matrix (RAM)"
+      ],
+      "optionsEN": [
+        "Risk Register",
+        "Project Charter",
+        "Communications Management Plan",
+        "Responsibility Assignment Matrix (RAM)"
+      ],
+      "optionsNL": [
+        "Risicoregister",
+        "Projecthandvest",
+        "Communicatiemanagementplan",
+        "Verantwoordelijkheidsverdelingsmatrix (RAM)"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Communications Management Plan defines what information is communicated, to whom, how often, and via which medium. It ensures the right stakeholders receive timely, relevant information.",
+      "explanationNL": "Het Communicatiemanagementplan definieert welke informatie wordt gecommuniceerd, aan wie, hoe vaak en via welk medium. Het zorgt ervoor dat de juiste stakeholders tijdig relevante informatie ontvangen."
+    },
+    {
+      "id": "pmf-exam-q10",
+      "text": "The FIRST step in the risk management process is:",
+      "textNL": "De EERSTE stap in het risicomanagementproces is:",
+      "question": "De EERSTE stap in het risicomanagementproces is:",
+      "questionEN": "The FIRST step in the risk management process is:",
+      "options": [
+        "Quantitative risk analysis",
+        "Risk response planning",
+        "Risk identification",
+        "Risk monitoring and control"
+      ],
+      "optionsEN": [
+        "Quantitative risk analysis",
+        "Risk response planning",
+        "Risk identification",
+        "Risk monitoring and control"
+      ],
+      "optionsNL": [
+        "Kwantitatieve risicoanalyse",
+        "Risicoresponsplanning",
+        "Risicoidentificatie",
+        "Risicobewaking en -beheersing"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Risk management follows the sequence: Identify → Analyse (qualitative then quantitative) → Plan responses → Implement responses → Monitor. You cannot analyse or respond to a risk you have not yet identified.",
+      "explanationNL": "Risicomanagement volgt de volgorde: Identificeren → Analyseren (kwalitatief dan kwantitatief) → Responsen plannen → Responsen implementeren → Bewaken. Je kunt een risico dat je nog niet hebt geïdentificeerd niet analyseren of erop reageren."
+    },
+    {
+      "id": "pmf-exam-q11",
+      "text": "Qualitative risk analysis differs from quantitative risk analysis in that qualitative analysis:",
+      "textNL": "Kwalitatieve risicoanalyse verschilt van kwantitatieve risicoanalyse doordat kwalitatieve analyse:",
+      "question": "Kwalitatieve risicoanalyse verschilt van kwantitatieve risicoanalyse doordat kwalitatieve analyse:",
+      "questionEN": "Qualitative risk analysis differs from quantitative risk analysis in that qualitative analysis:",
+      "options": [
+        "Uses Monte Carlo simulations and decision trees",
+        "Prioritises risks using probability and impact ratings without assigning numerical values",
+        "Calculates the exact monetary value of each risk",
+        "Is only applicable to schedule risks, not cost risks"
+      ],
+      "optionsEN": [
+        "Uses Monte Carlo simulations and decision trees",
+        "Prioritises risks using probability and impact ratings without assigning numerical values",
+        "Calculates the exact monetary value of each risk",
+        "Is only applicable to schedule risks, not cost risks"
+      ],
+      "optionsNL": [
+        "Monte Carlo-simulaties en beslisbomen gebruikt",
+        "Risico's prioriteert op basis van kans- en impactbeoordelingen zonder numerieke waarden toe te kennen",
+        "De exacte geldwaarde van elk risico berekent",
+        "Alleen van toepassing is op planningsrisico's, niet op kostenrisico's"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Qualitative analysis uses probability/impact matrices and scoring scales (High/Medium/Low) to prioritise risks quickly and cost-effectively. Quantitative analysis applies numerical techniques (Monte Carlo, expected monetary value) for high-priority risks.",
+      "explanationNL": "Kwalitatieve analyse gebruikt kans/impact-matrices en beoordelingsschalen (Hoog/Gemiddeld/Laag) om risico's snel en kosteneffectief te prioriteren. Kwantitatieve analyse past numerieke technieken toe (Monte Carlo, verwachte geldwaarde) voor hoogprioritaire risico's."
+    },
+    {
+      "id": "pmf-exam-q12",
+      "text": "Which risk response strategy involves shifting the negative impact of a risk to a third party, such as buying insurance?",
+      "textNL": "Welke risicoresponstrategie houdt in dat de negatieve impact van een risico wordt overgedragen aan een derde partij, zoals het afsluiten van een verzekering?",
+      "question": "Welke risicoresponstrategie houdt in dat de negatieve impact van een risico wordt overgedragen aan een derde partij, zoals het afsluiten van een verzekering?",
+      "questionEN": "Which risk response strategy involves shifting the negative impact of a risk to a third party, such as buying insurance?",
+      "options": [
+        "Avoid",
+        "Mitigate",
+        "Transfer",
+        "Accept"
+      ],
+      "optionsEN": [
+        "Avoid",
+        "Mitigate",
+        "Transfer",
+        "Accept"
+      ],
+      "optionsNL": [
+        "Vermijden",
+        "Mitigeren",
+        "Overdragen",
+        "Accepteren"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Transfer shifts the financial impact of a threat to a third party (insurance, fixed-price contracts, performance bonds). Note that it does not eliminate the risk — it reassigns the liability.",
+      "explanationNL": "Overdragen verschuift de financiële impact van een bedreiging naar een derde partij (verzekering, vaste-prijscontracten, prestatieborgstellingen). Merk op dat het risico niet wordt geëlimineerd — alleen de aansprakelijkheid wordt overgedragen."
+    },
+    {
+      "id": "pmf-exam-q13",
+      "text": "What is the difference between quality and grade in project management?",
+      "textNL": "Wat is het verschil tussen kwaliteit en klasse in projectmanagement?",
+      "question": "Wat is het verschil tussen kwaliteit en klasse in projectmanagement?",
+      "questionEN": "What is the difference between quality and grade in project management?",
+      "options": [
+        "Quality is about meeting requirements; grade refers to the category of features — low grade is not necessarily a problem if it meets requirements",
+        "Quality and grade are synonymous terms used interchangeably in PMBOK",
+        "Grade refers to the experience level of team members; quality refers to deliverable accuracy",
+        "Low quality is acceptable if approved by the sponsor; low grade never is"
+      ],
+      "optionsEN": [
+        "Quality is about meeting requirements; grade refers to the category of features — low grade is not necessarily a problem if it meets requirements",
+        "Quality and grade are synonymous terms used interchangeably in PMBOK",
+        "Grade refers to the experience level of team members; quality refers to deliverable accuracy",
+        "Low quality is acceptable if approved by the sponsor; low grade never is"
+      ],
+      "optionsNL": [
+        "Kwaliteit gaat over het voldoen aan eisen; klasse verwijst naar de categorie kenmerken — lage klasse is niet per se een probleem als aan de eisen wordt voldaan",
+        "Kwaliteit en klasse zijn synoniemen die uitwisselbaar worden gebruikt in PMBOK",
+        "Klasse verwijst naar het ervaringsniveau van teamleden; kwaliteit verwijst naar de nauwkeurigheid van deliverables",
+        "Lage kwaliteit is acceptabel indien goedgekeurd door de sponsor; lage klasse nooit"
+      ],
+      "correct": 0,
+      "points": 5,
+      "explanation": "Per PMBOK, quality is the degree to which characteristics fulfil requirements. Grade is a category assigned based on functional characteristics (e.g., a budget hotel vs a five-star hotel). Low grade may be intentional; low quality is always a problem.",
+      "explanationNL": "Volgens PMBOK is kwaliteit de mate waarin kenmerken aan eisen voldoen. Klasse is een categorie op basis van functionele kenmerken (bijv. een budgethotel vs een vijfsterrenhotel). Lage klasse kan opzettelijk zijn; lage kwaliteit is altijd een probleem."
+    },
+    {
+      "id": "pmf-exam-q14",
+      "text": "A stakeholder register is BEST described as:",
+      "textNL": "Een stakeholderregister wordt het BESTE omschreven als:",
+      "question": "Een stakeholderregister wordt het BESTE omschreven als:",
+      "questionEN": "A stakeholder register is BEST described as:",
+      "options": [
+        "A list of all project team members and their roles",
+        "A document identifying individuals and groups with an interest in the project, including their influence and engagement levels",
+        "A log of all stakeholder complaints and issues raised during the project",
+        "The approved budget allocated to stakeholder communication activities"
+      ],
+      "optionsEN": [
+        "A list of all project team members and their roles",
+        "A document identifying individuals and groups with an interest in the project, including their influence and engagement levels",
+        "A log of all stakeholder complaints and issues raised during the project",
+        "The approved budget allocated to stakeholder communication activities"
+      ],
+      "optionsNL": [
+        "Een lijst van alle projectteamleden en hun rollen",
+        "Een document dat individuen en groepen identificeert met een belang in het project, inclusief hun invloed en betrokkenheidsniveaus",
+        "Een logboek van alle klachten en problemen van stakeholders die tijdens het project zijn gemeld",
+        "Het goedgekeurde budget dat is toegewezen aan stakeholdercommunicatieactiviteiten"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The stakeholder register captures who the stakeholders are, their requirements, interests, involvement, and potential impact on project success. It is created during the Initiating process group and updated throughout the project.",
+      "explanationNL": "Het stakeholderregister legt vast wie de stakeholders zijn, hun eisen, belangen, betrokkenheid en potentiële impact op het projectsucces. Het wordt aangemaakt tijdens de procesgroep Initiëren en gedurende het project bijgewerkt."
+    },
+    {
+      "id": "pmf-exam-q15",
+      "text": "The Initiating, Planning, Executing, Monitoring & Controlling, and Closing groups in PMBOK are known as:",
+      "textNL": "De groepen Initiëren, Plannen, Uitvoeren, Bewaken & Beheersen en Afsluiten in PMBOK worden aangeduid als:",
+      "question": "De groepen Initiëren, Plannen, Uitvoeren, Bewaken & Beheersen en Afsluiten in PMBOK worden aangeduid als:",
+      "questionEN": "The Initiating, Planning, Executing, Monitoring & Controlling, and Closing groups in PMBOK are known as:",
+      "options": [
+        "Knowledge areas",
+        "Process groups",
+        "Project phases",
+        "Delivery domains"
+      ],
+      "optionsEN": [
+        "Knowledge areas",
+        "Process groups",
+        "Project phases",
+        "Delivery domains"
+      ],
+      "optionsNL": [
+        "Kennisgebieden",
+        "Procesgroepen",
+        "Projectfasen",
+        "Leveringsgebieden"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "PMBOK organises its processes into five process groups (Initiating, Planning, Executing, Monitoring & Controlling, Closing) and ten knowledge areas. Process groups are NOT the same as project phases — multiple process groups can be active simultaneously within a single phase.",
+      "explanationNL": "PMBOK organiseert zijn processen in vijf procesgroepen (Initiëren, Plannen, Uitvoeren, Bewaken & Beheersen, Afsluiten) en tien kennisgebieden. Procesgroepen zijn NIET hetzelfde als projectfasen — meerdere procesgroepen kunnen gelijktijdig actief zijn binnen één fase."
+    },
+    {
+      "id": "pmf-exam-q16",
+      "text": "Which process group is active throughout the ENTIRE project lifecycle, running in parallel with all other groups?",
+      "textNL": "Welke procesgroep is actief gedurende de GEHELE projectlevenscyclus en loopt parallel aan alle andere groepen?",
+      "question": "Welke procesgroep is actief gedurende de GEHELE projectlevenscyclus en loopt parallel aan alle andere groepen?",
+      "questionEN": "Which process group is active throughout the ENTIRE project lifecycle, running in parallel with all other groups?",
+      "options": [
+        "Planning",
+        "Executing",
+        "Monitoring & Controlling",
+        "Closing"
+      ],
+      "optionsEN": [
+        "Planning",
+        "Executing",
+        "Monitoring & Controlling",
+        "Closing"
+      ],
+      "optionsNL": [
+        "Plannen",
+        "Uitvoeren",
+        "Bewaken & Beheersen",
+        "Afsluiten"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Monitoring & Controlling runs continuously throughout the project. It tracks, reviews, and regulates progress and performance, and manages changes. It does not start after execution — it runs from initiating through closing.",
+      "explanationNL": "Bewaken & Beheersen loopt continu gedurende het project. Het volgt, beoordeelt en reguleert voortgang en prestaties, en beheert wijzigingen. Het begint niet na de uitvoering — het loopt van initiëren tot afsluiting."
+    },
+    {
+      "id": "pmf-exam-q17",
+      "text": "Scope creep is BEST defined as:",
+      "textNL": "Scope creep wordt het BESTE gedefinieerd als:",
+      "question": "Scope creep wordt het BESTE gedefinieerd als:",
+      "questionEN": "Scope creep is BEST defined as:",
+      "options": [
+        "A deliberate increase in project scope approved through formal change control",
+        "Uncontrolled expansion of project scope without corresponding adjustments to time, cost, or resources",
+        "A reduction in deliverable quality caused by compressed schedules",
+        "The progressive elaboration of the project management plan over time"
+      ],
+      "optionsEN": [
+        "A deliberate increase in project scope approved through formal change control",
+        "Uncontrolled expansion of project scope without corresponding adjustments to time, cost, or resources",
+        "A reduction in deliverable quality caused by compressed schedules",
+        "The progressive elaboration of the project management plan over time"
+      ],
+      "optionsNL": [
+        "Een opzettelijke uitbreiding van de projectscope goedgekeurd via formele wijzigingsbeheersing",
+        "Ongecontroleerde uitbreiding van de projectscope zonder overeenkomstige aanpassingen aan tijd, kosten of middelen",
+        "Een vermindering van de kwaliteit van deliverables veroorzaakt door gecomprimeerde planningen",
+        "De progressieve uitwerking van het projectmanagementplan in de loop van de tijd"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Scope creep is uncontrolled change or continuous growth in a project's scope, typically without adjustments to budget, schedule, or resources. It is a leading cause of project failure and is prevented by rigorous change control.",
+      "explanationNL": "Scope creep is ongecontroleerde verandering of continue groei van de projectscope, doorgaans zonder aanpassingen aan het budget, de planning of de middelen. Het is een belangrijke oorzaak van projectmislukking en wordt voorkomen door rigoureuze wijzigingsbeheersing."
+    },
+    {
+      "id": "pmf-exam-q18",
+      "text": "A Change Control Board (CCB) is responsible for:",
+      "textNL": "Een Change Control Board (CCB) is verantwoordelijk voor:",
+      "question": "Een Change Control Board (CCB) is verantwoordelijk voor:",
+      "questionEN": "A Change Control Board (CCB) is responsible for:",
+      "options": [
+        "Identifying and documenting all project risks",
+        "Reviewing, evaluating, approving, or rejecting requested changes to the project",
+        "Assigning tasks to team members during execution",
+        "Conducting quality audits on project deliverables"
+      ],
+      "optionsEN": [
+        "Identifying and documenting all project risks",
+        "Reviewing, evaluating, approving, or rejecting requested changes to the project",
+        "Assigning tasks to team members during execution",
+        "Conducting quality audits on project deliverables"
+      ],
+      "optionsNL": [
+        "Het identificeren en documenteren van alle projectrisico's",
+        "Het beoordelen, evalueren, goedkeuren of afwijzen van gevraagde wijzigingen aan het project",
+        "Het toewijzen van taken aan teamleden tijdens de uitvoering",
+        "Het uitvoeren van kwaliteitsaudits op projectdeliverables"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A CCB is a formally chartered group responsible for reviewing change requests and approving or rejecting them based on impact analysis. It is the cornerstone of integrated change control.",
+      "explanationNL": "Een CCB is een formeel gemandateerde groep verantwoordelijk voor het beoordelen van wijzigingsverzoeken en het goedkeuren of afwijzen ervan op basis van impactanalyse. Het is de hoeksteen van geïntegreerde wijzigingsbeheersing."
+    },
+    {
+      "id": "pmf-exam-q19",
+      "text": "Which project lifecycle type is MOST appropriate when requirements are well-defined and unlikely to change?",
+      "textNL": "Welk type projectlevenscyclus is het MEEST geschikt wanneer eisen goed gedefinieerd zijn en waarschijnlijk niet zullen veranderen?",
+      "question": "Welk type projectlevenscyclus is het MEEST geschikt wanneer eisen goed gedefinieerd zijn en waarschijnlijk niet zullen veranderen?",
+      "questionEN": "Which project lifecycle type is MOST appropriate when requirements are well-defined and unlikely to change?",
+      "options": [
+        "Agile (iterative/incremental)",
+        "Predictive (waterfall)",
+        "Hybrid",
+        "Adaptive"
+      ],
+      "optionsEN": [
+        "Agile (iterative/incremental)",
+        "Predictive (waterfall)",
+        "Hybrid",
+        "Adaptive"
+      ],
+      "optionsNL": [
+        "Agile (iteratief/incrementeel)",
+        "Voorspellend (waterval)",
+        "Hybride",
+        "Adaptief"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A predictive (waterfall) lifecycle is suited to projects with stable, well-understood requirements where the full scope can be defined upfront. Agile and adaptive lifecycles are preferred when requirements are expected to evolve.",
+      "explanationNL": "Een voorspellende (waterval) levenscyclus is geschikt voor projecten met stabiele, goed begrepen eisen waarbij de volledige scope vooraf gedefinieerd kan worden. Agile en adaptieve levenscycli hebben de voorkeur wanneer eisen naar verwachting zullen evolueren."
+    },
+    {
+      "id": "pmf-exam-q20",
+      "text": "The project management plan is BEST described as:",
+      "textNL": "Het projectmanagementplan wordt het BESTE omschreven als:",
+      "question": "Het projectmanagementplan wordt het BESTE omschreven als:",
+      "questionEN": "The project management plan is BEST described as:",
+      "options": [
+        "A single-page summary of the project charter approved by the sponsor",
+        "A comprehensive document describing how the project will be executed, monitored, and closed",
+        "The detailed work schedule showing all task start and finish dates",
+        "A financial forecast showing expected costs week by week"
+      ],
+      "optionsEN": [
+        "A single-page summary of the project charter approved by the sponsor",
+        "A comprehensive document describing how the project will be executed, monitored, and closed",
+        "The detailed work schedule showing all task start and finish dates",
+        "A financial forecast showing expected costs week by week"
+      ],
+      "optionsNL": [
+        "Een eenpaginasamenvatting van het projecthandvest goedgekeurd door de sponsor",
+        "Een uitgebreid document dat beschrijft hoe het project zal worden uitgevoerd, bewaakt en afgesloten",
+        "Het gedetailleerde werkschema dat alle begin- en einddatums van taken toont",
+        "Een financiële prognose die verwachte kosten week per week toont"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The project management plan integrates and consolidates all subsidiary plans (scope, schedule, cost, quality, communications, risk, procurement, stakeholder). It describes the baselines and how the project will be managed across all knowledge areas.",
+      "explanationNL": "Het projectmanagementplan integreert en consolideert alle deelplannen (scope, planning, kosten, kwaliteit, communicatie, risico, inkoop, stakeholders). Het beschrijft de basislijnen en hoe het project zal worden beheerd over alle kennisgebieden."
+    },
+    {
+      "id": "pmf-exam-q21",
+      "text": "According to project management best practice, what should happen when a project can no longer achieve its objectives?",
+      "textNL": "Wat zou er volgens best practices in projectmanagement moeten gebeuren wanneer een project zijn doelstellingen niet meer kan bereiken?",
+      "question": "Wat zou er volgens best practices in projectmanagement moeten gebeuren wanneer een project zijn doelstellingen niet meer kan bereiken?",
+      "questionEN": "According to project management best practice, what should happen when a project can no longer achieve its objectives?",
+      "options": [
+        "The project manager should negotiate a lower quality standard to meet the deadline",
+        "The project should be formally closed even if it has not delivered all planned outputs",
+        "The project should automatically transition to operations management",
+        "The project sponsor should be replaced to restore confidence"
+      ],
+      "optionsEN": [
+        "The project manager should negotiate a lower quality standard to meet the deadline",
+        "The project should be formally closed even if it has not delivered all planned outputs",
+        "The project should automatically transition to operations management",
+        "The project sponsor should be replaced to restore confidence"
+      ],
+      "optionsNL": [
+        "De projectmanager moet een lagere kwaliteitsstandaard onderhandelen om de deadline te halen",
+        "Het project moet formeel worden afgesloten, ook als niet alle geplande outputs zijn geleverd",
+        "Het project moet automatisch overgaan naar operationeel management",
+        "De projectsponsor moet worden vervangen om het vertrouwen te herstellen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A project should be formally closed whenever it can no longer meet its objectives — whether it completes successfully or is terminated early. Closing processes ensure lessons learned are captured and resources are released properly.",
+      "explanationNL": "Een project moet formeel worden afgesloten wanneer het zijn doelstellingen niet meer kan realiseren — of het nu succesvol wordt afgerond of vroegtijdig wordt beëindigd. Afsluitingsprocessen zorgen ervoor dat geleerde lessen worden vastgelegd en middelen correct worden vrijgegeven."
+    },
+    {
+      "id": "pmf-exam-q22",
+      "text": "A project milestone is BEST described as:",
+      "textNL": "Een projectmijlpaal wordt het BESTE omschreven als:",
+      "question": "Een projectmijlpaal wordt het BESTE omschreven als:",
+      "questionEN": "A project milestone is BEST described as:",
+      "options": [
+        "A task on the critical path with zero float",
+        "A significant point or event in a project with zero duration",
+        "The approved project budget at a specific reporting date",
+        "A mandatory deliverable required by the project sponsor"
+      ],
+      "optionsEN": [
+        "A task on the critical path with zero float",
+        "A significant point or event in a project with zero duration",
+        "The approved project budget at a specific reporting date",
+        "A mandatory deliverable required by the project sponsor"
+      ],
+      "optionsNL": [
+        "Een taak op het kritieke pad met nul speling",
+        "Een significant punt of gebeurtenis in een project met nul duur",
+        "Het goedgekeurde projectbudget op een specifieke rapportagedatum",
+        "Een verplichte deliverable vereist door de projectsponsor"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A milestone is a significant event or point in the project schedule — it has zero duration. Milestones mark the completion of a phase, achievement of a goal, or a key decision point.",
+      "explanationNL": "Een mijlpaal is een significante gebeurtenis of punt in de projectplanning — het heeft nul duur. Mijlpalen markeren de voltooiing van een fase, het bereiken van een doel of een belangrijk beslismoment."
+    },
+    {
+      "id": "pmf-exam-q23",
+      "text": "Which procurement contract type places MOST of the cost risk on the BUYER?",
+      "textNL": "Welk type inkoopcontract plaatst het MEESTE kostenrisico bij de KOPER?",
+      "question": "Welk type inkoopcontract plaatst het MEESTE kostenrisico bij de KOPER?",
+      "questionEN": "Which procurement contract type places MOST of the cost risk on the BUYER?",
+      "options": [
+        "Firm Fixed Price (FFP)",
+        "Fixed Price Incentive Fee (FPIF)",
+        "Cost Plus Fixed Fee (CPFF)",
+        "Fixed Price with Economic Price Adjustment (FPEPA)"
+      ],
+      "optionsEN": [
+        "Firm Fixed Price (FFP)",
+        "Fixed Price Incentive Fee (FPIF)",
+        "Cost Plus Fixed Fee (CPFF)",
+        "Fixed Price with Economic Price Adjustment (FPEPA)"
+      ],
+      "optionsNL": [
+        "Vaste Vaste Prijs (FFP)",
+        "Vaste Prijs met Incentief Vergoeding (FPIF)",
+        "Kosten Plus Vaste Vergoeding (CPFF)",
+        "Vaste Prijs met Economische Prijsaanpassing (FPEPA)"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Cost-reimbursable contracts (like CPFF) place the greatest cost risk on the buyer because the buyer reimburses all allowable costs regardless of how high they go. Fixed-price contracts shift risk to the seller.",
+      "explanationNL": "Kostenvergoedingscontracten (zoals CPFF) plaatsen het grootste kostenrisico bij de koper omdat de koper alle toegestane kosten vergoedt, ongeacht hoe hoog ze worden. Vaste-prijscontracten verschuiven het risico naar de verkoper."
+    },
+    {
+      "id": "pmf-exam-q24",
+      "text": "The RACI matrix in a project defines:",
+      "textNL": "De RACI-matrix in een project definieert:",
+      "question": "De RACI-matrix in een project definieert:",
+      "questionEN": "The RACI matrix in a project defines:",
+      "options": [
+        "Risk, Assumption, Constraint, and Issue for each deliverable",
+        "Roles and responsibilities — who is Responsible, Accountable, Consulted, and Informed for each activity",
+        "The sequence of project phases: Review, Assign, Control, and Initiate",
+        "A scoring system for ranking stakeholder engagement levels"
+      ],
+      "optionsEN": [
+        "Risk, Assumption, Constraint, and Issue for each deliverable",
+        "Roles and responsibilities — who is Responsible, Accountable, Consulted, and Informed for each activity",
+        "The sequence of project phases: Review, Assign, Control, and Initiate",
+        "A scoring system for ranking stakeholder engagement levels"
+      ],
+      "optionsNL": [
+        "Risico, Aanname, Beperking en Probleem voor elke deliverable",
+        "Rollen en verantwoordelijkheden — wie is Verantwoordelijk, Aansprakelijk, Geconsulteerd en Geïnformeerd voor elke activiteit",
+        "De volgorde van projectfasen: Beoordelen, Toewijzen, Beheersen en Initiëren",
+        "Een beoordelingssysteem voor het rangschikken van betrokkenheidsniveaus van stakeholders"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "RACI stands for Responsible (does the work), Accountable (owns the outcome — one per task), Consulted (provides input), and Informed (kept up to date). It is a Responsibility Assignment Matrix used to clarify roles across project activities.",
+      "explanationNL": "RACI staat voor Responsible (doet het werk), Accountable (eigenaar van het resultaat — één per taak), Consulted (geeft input) en Informed (wordt op de hoogte gehouden). Het is een Verantwoordelijkheidsverdelingsmatrix die wordt gebruikt om rollen in projectactiviteiten te verduidelijken."
+    },
+    {
+      "id": "pmf-exam-q25",
+      "text": "Which skill is considered a CORE competency of an effective project manager?",
+      "textNL": "Welke vaardigheid wordt beschouwd als een KERN competentie van een effectieve projectmanager?",
+      "question": "Welke vaardigheid wordt beschouwd als een KERN competentie van een effectieve projectmanager?",
+      "questionEN": "Which skill is considered a CORE competency of an effective project manager?",
+      "options": [
+        "Deep technical expertise in the project's subject matter",
+        "The ability to write advanced SQL queries for project reporting",
+        "Integration management — balancing competing demands across scope, time, cost, quality, risk, and stakeholders",
+        "Personal authority to approve all project expenditures without sponsor sign-off"
+      ],
+      "optionsEN": [
+        "Deep technical expertise in the project's subject matter",
+        "The ability to write advanced SQL queries for project reporting",
+        "Integration management — balancing competing demands across scope, time, cost, quality, risk, and stakeholders",
+        "Personal authority to approve all project expenditures without sponsor sign-off"
+      ],
+      "optionsNL": [
+        "Diepe technische expertise in het vakgebied van het project",
+        "Het vermogen om geavanceerde SQL-queries te schrijven voor projectrapportage",
+        "Integratiebeheer — het balanceren van concurrerende eisen op het gebied van scope, tijd, kosten, kwaliteit, risico en stakeholders",
+        "Persoonlijke autoriteit om alle projectuitgaven goed te keuren zonder goedkeuring van de sponsor"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Integration management is the core competency that ties everything together. A project manager must balance all ten knowledge areas simultaneously, make trade-off decisions, and keep the project aligned to business objectives — regardless of technical domain expertise.",
+      "explanationNL": "Integratiebeheer is de kerncompetentie die alles samenbrengt. Een projectmanager moet alle tien kennisgebieden gelijktijdig balanceren, afwegingsbeslissingen nemen en het project in lijn houden met bedrijfsdoelstellingen — ongeacht technische domeinexpertise."
+    }
+  ],
+  "description": "Final exam — Project Management Fundamentals",
+  "descriptionNL": "Eindexamen — Project Management Fundamentals",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

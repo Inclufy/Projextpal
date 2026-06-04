@@ -1582,7 +1582,128 @@ Draft a one-page Governance Plan for a current or fictional program: name the bo
       type: 'quiz',
       duration: '10:00',
       icon: 'HelpCircle',
-      quiz: [],
+      quiz: [
+        {
+          id: 'pm-q1',
+          question: 'According to MSP (Managing Successful Programmes), what is the primary distinction between a programme and a project?',
+          questionNL: 'Wat is volgens MSP (Managing Successful Programmes) het belangrijkste onderscheid tussen een programma en een project?',
+          options: [
+            'A programme always has a larger budget than a project',
+            'A programme delivers strategic benefits and organisational change; a project delivers a defined output',
+            'A programme is managed by a Portfolio Director, a project by a Programme Manager',
+            'A programme runs in parallel workstreams; a project runs sequentially',
+          ],
+          optionsNL: [
+            'Een programma heeft altijd een groter budget dan een project',
+            'Een programma levert strategische baten en organisatieverandering; een project levert een vastgesteld resultaat',
+            'Een programma wordt geleid door een Portfolio Director, een project door een Programme Manager',
+            'Een programma loopt in parallelle workstreams; een project loopt sequentieel',
+          ],
+          correctAnswer: 1,
+          explanation: 'MSP defines a programme as a temporary, flexible organisation created to coordinate, direct and oversee the implementation of a set of related projects and activities in order to deliver outcomes and benefits related to strategic objectives. The key differentiator is outcomes and benefits (change), not just outputs (deliverables).',
+          explanationNL: 'MSP definieert een programma als een tijdelijke, flexibele organisatie die is opgericht om een reeks gerelateerde projecten en activiteiten te coördineren, te sturen en te bewaken, met als doel het realiseren van resultaten en baten die verband houden met strategische doelstellingen. De kern is baten (verandering), niet alleen producten (deliverables).',
+        },
+        {
+          id: 'pm-q2',
+          question: 'In the MSP Transformational Flow, which activity directly follows "Identifying a Programme"?',
+          questionNL: 'In de MSP Transformational Flow, welke activiteit volgt direct op "Identifying a Programme"?',
+          options: [
+            'Managing Tranches',
+            'Delivering Capability',
+            'Defining a Programme',
+            'Closing a Programme',
+          ],
+          optionsNL: [
+            'Managing Tranches',
+            'Delivering Capability',
+            'Defining a Programme',
+            'Closing a Programme',
+          ],
+          correctAnswer: 2,
+          explanation: 'The MSP Transformational Flow has six sequential activities: Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. "Defining a Programme" immediately follows identification, during which the Programme Brief is elaborated into the full Programme Definition Document.',
+          explanationNL: 'De MSP Transformational Flow heeft zes sequentiële activiteiten: Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. "Defining a Programme" volgt direct op de identificatiefase, waarin het Programme Brief wordt uitgewerkt tot het volledige Programme Definition Document.',
+        },
+        {
+          id: 'pm-q3',
+          question: 'What is the purpose of the Blueprint in MSP?',
+          questionNL: 'Wat is het doel van de Blueprint in MSP?',
+          options: [
+            'It lists all individual project schedules within the programme',
+            'It describes the desired future state of the organisation that the programme will deliver',
+            'It records all risks and issues raised during the programme lifecycle',
+            'It defines the financial baseline and budget allocations per project',
+          ],
+          optionsNL: [
+            'Het geeft een overzicht van alle individuele projectplanningen binnen het programma',
+            'Het beschrijft de gewenste toekomstige staat van de organisatie die het programma zal opleveren',
+            'Het legt alle risico\'s en issues vast die tijdens de programmalevenscyclus zijn opgeworpen',
+            'Het definieert de financiële baseline en budgettoewijzingen per project',
+          ],
+          correctAnswer: 1,
+          explanation: 'The Blueprint is an MSP governance document that describes the target operating model — the future state of the organisation after the programme closes. It covers processes, information systems, organisational structures, technology, and capabilities. It is the primary design document that all component projects must deliver towards.',
+          explanationNL: 'De Blueprint is een MSP-beheersdocument dat het doelbedrijfsmodel beschrijft — de toekomstige staat van de organisatie nadat het programma is gesloten. Het omvat processen, informatiesystemen, organisatiestructuren, technologie en capaciteiten. Het is het primaire ontwerpdocument waaraan alle componentprojecten moeten bijdragen.',
+        },
+        {
+          id: 'pm-q4',
+          question: 'Which role in MSP is accountable for ensuring that the programme delivers its expected benefits?',
+          questionNL: 'Welke rol in MSP is verantwoordelijk voor het waarborgen dat het programma de verwachte baten oplevert?',
+          options: [
+            'Programme Manager',
+            'Business Change Manager',
+            'Senior Responsible Owner (SRO)',
+            'Programme Office Manager',
+          ],
+          optionsNL: [
+            'Programme Manager',
+            'Business Change Manager',
+            'Senior Responsible Owner (SRO)',
+            'Programme Office Manager',
+          ],
+          correctAnswer: 2,
+          explanation: 'The Senior Responsible Owner (SRO) is the single individual accountable to the organisation for the programme achieving its objectives, delivering expected benefits, and carrying the authority to direct the programme. The Business Change Manager facilitates benefits realisation within their area, but ultimate accountability sits with the SRO.',
+          explanationNL: 'De Senior Responsible Owner (SRO) is de enige persoon die aan de organisatie verantwoording aflegt voor het halen van de programmadoelstellingen, het realiseren van de verwachte baten en heeft de bevoegdheid om het programma aan te sturen. De Business Change Manager faciliteert de batenrealisatie binnen zijn/haar gebied, maar de uiteindelijke verantwoordelijkheid ligt bij de SRO.',
+        },
+        {
+          id: 'pm-q5',
+          question: 'What is a Tranche in MSP terminology?',
+          questionNL: 'Wat is een Tranche in MSP-terminologie?',
+          options: [
+            'A financial instalment released to a component project upon milestone achievement',
+            'A grouping of related projects and activities that together deliver a step change in capability',
+            'A risk-ranked list of programme-level dependencies',
+            'A time-boxed sprint within an agile component project',
+          ],
+          optionsNL: [
+            'Een financiële termijn die wordt vrijgegeven aan een componentproject bij het bereiken van een mijlpaal',
+            'Een groepering van gerelateerde projecten en activiteiten die samen een stapsgewijze verbetering in capaciteit leveren',
+            'Een risicogerangschikte lijst van afhankelijkheden op programmaniveau',
+            'Een time-boxed sprint binnen een agile componentproject',
+          ],
+          correctAnswer: 1,
+          explanation: 'In MSP, a Tranche is a group of projects and activities structured around a distinct step-change in capability that moves the organisation closer to the Blueprint. Each tranche ends with a tranche review / stage gate where governance assesses whether to proceed, redirect, or close the programme. Tranches are the primary rhythm of programme governance.',
+          explanationNL: 'In MSP is een Tranche een groep projecten en activiteiten gestructureerd rond een duidelijke stapsgewijze verbetering in capaciteit die de organisatie dichter bij de Blueprint brengt. Elke tranche eindigt met een tranche review / stage gate waar governance beoordeelt of het programma moet worden voortgezet, bijgestuurd of afgesloten. Tranches zijn het primaire ritme van programmabeheer.',
+        },
+        {
+          id: 'pm-q6',
+          question: 'Which of the following BEST describes effective programme governance according to MSP?',
+          questionNL: 'Welke van de volgende omschrijvingen beschrijft effectief programmabeheer het BESTE volgens MSP?',
+          options: [
+            'A single Programme Board that makes all decisions and is chaired by the Programme Manager',
+            'An ad-hoc decision-making process driven by whichever stakeholder has the most urgent concern',
+            'A defined structure of sponsoring group, programme board, and project boards with clear decision rights and accountability',
+            'Governance is only relevant during the Identifying phase; execution is self-organising',
+          ],
+          optionsNL: [
+            'Een enkel Programme Board dat alle beslissingen neemt en wordt voorgezeten door de Programme Manager',
+            'Een ad-hoc besluitvormingsproces aangestuurd door de meest urgente stakeholder',
+            'Een gedefinieerde structuur van sponsoring group, programme board en project boards met duidelijke beslissingsbevoegdheden en verantwoordelijkheden',
+            'Governance is alleen relevant tijdens de Identifying-fase; uitvoering is zelforganiserend',
+          ],
+          correctAnswer: 2,
+          explanation: 'MSP requires a layered governance structure: the Sponsoring Group provides strategic direction and investment authority; the Programme Board manages the programme and holds the SRO; individual Project Boards govern component projects. Each level has defined decision rights. This separation of levels prevents strategic decisions being made in the wrong forum.',
+          explanationNL: 'MSP vereist een gelaagde governancestructuur: de Sponsoring Group biedt strategische richting en investeringsautoriteit; het Programme Board beheert het programma en houdt de SRO ter verantwoording; individuele Project Boards besturen componentprojecten. Elk niveau heeft vastgestelde beslissingsbevoegdheden. Deze scheiding van niveaus voorkomt dat strategische beslissingen in het verkeerde forum worden genomen.',
+        },
+      ],
     },
   ],
 };
@@ -2656,7 +2777,782 @@ Sketch the table of contents for a closure report for your current program. If y
       type: 'quiz',
       duration: '15:00',
       icon: 'HelpCircle',
-      quiz: [],
+      quiz: [
+        {
+          id: 'pm-q7',
+          question: 'In MSP, the Vision Statement serves which primary purpose?',
+          questionNL: 'Welk primair doel dient de Vision Statement in MSP?',
+          options: [
+            'It replaces the Business Case as the financial justification for the programme',
+            'It provides an inspiring, concise description of the future state that motivates stakeholders and guides decision-making',
+            'It lists the technical requirements for all component projects within the programme',
+            'It documents the risk appetite thresholds agreed by the Sponsoring Group',
+          ],
+          optionsNL: [
+            'Het vervangt de Business Case als financiële rechtvaardiging voor het programma',
+            'Het biedt een inspirerende, beknopte beschrijving van de toekomstige staat die stakeholders motiveert en besluitvorming begeleidt',
+            'Het somt de technische vereisten op voor alle componentprojecten binnen het programma',
+            'Het documenteert de risicobereidheidsdrempels die zijn overeengekomen door de Sponsoring Group',
+          ],
+          correctAnswer: 1,
+          explanation: 'The MSP Vision Statement is a clear and compelling picture of the future state the programme aims to achieve. It is deliberately short and motivational, anchoring all programme decisions and communications. It differs from the Blueprint (which is detailed and technical) and from the Business Case (which is financial).',
+          explanationNL: 'De MSP Vision Statement is een duidelijk en overtuigend beeld van de toekomstige staat die het programma wil bereiken. Het is bewust kort en motiverend, en verankert alle programmabesluiten en -communicaties. Het verschilt van de Blueprint (gedetailleerd en technisch) en van de Business Case (financieel).',
+        },
+        {
+          id: 'pm-q8',
+          question: 'Benefits Management in MSP is BEST described as:',
+          questionNL: 'Benefits Management in MSP wordt het BESTE omschreven als:',
+          options: [
+            'A one-time activity performed at programme closure to confirm whether benefits were achieved',
+            'A continuous process from identification through realisation and review, spanning the full programme and beyond',
+            'The responsibility of component project managers to report on delivered outputs',
+            'An optional governance activity only required for public-sector programmes',
+          ],
+          optionsNL: [
+            'Een eenmalige activiteit die bij programmasluiting wordt uitgevoerd om te bevestigen of baten zijn gerealiseerd',
+            'Een continu proces van identificatie tot realisatie en evaluatie, dat het volledige programma en daarna omvat',
+            'De verantwoordelijkheid van componentprojectmanagers om over geleverde producten te rapporteren',
+            'Een optionele governance-activiteit die alleen vereist is voor programma\'s in de publieke sector',
+          ],
+          correctAnswer: 1,
+          explanation: 'MSP treats Benefits Management as a lifecycle-spanning discipline. It begins during Identifying (defining the Benefits Map), continues through Defining (Benefits Realisation Plan), is tracked through each Tranche, and extends post-programme into the Benefits Realisation period. The Business Change Manager owns day-to-day benefits tracking within each operational area.',
+          explanationNL: 'MSP behandelt Benefits Management als een discipline die de gehele levenscyclus omspant. Het begint tijdens Identifying (het definiëren van de Benefits Map), gaat door tijdens Defining (Benefits Realisation Plan), wordt bijgehouden gedurende elke Tranche en loopt door na het programma in de Benefits Realisatieperiode. De Business Change Manager is dagelijks verantwoordelijk voor het bijhouden van baten binnen elk operationeel gebied.',
+        },
+        {
+          id: 'pm-q9',
+          question: 'A Benefits Map (or Benefits Dependency Network) in MSP shows:',
+          questionNL: 'Een Benefits Map (of Benefits Dependency Network) in MSP toont:',
+          options: [
+            'The organisational chart of the programme governance structure',
+            'The financial NPV calculation for the Business Case',
+            'The causal chain from enabling changes and business changes through to end benefits and strategic objectives',
+            'A Gantt chart of benefit realisation milestones per tranche',
+          ],
+          optionsNL: [
+            'Het organisatieschema van de programmabeheerstructuur',
+            'De financiële NPV-berekening voor de Business Case',
+            'De causale keten van activerende veranderingen en bedrijfsveranderingen tot eindresultaten en strategische doelstellingen',
+            'Een Gantt-diagram van batenrealisatiemijlpalen per tranche',
+          ],
+          correctAnswer: 2,
+          explanation: 'A Benefits Map (called Benefits Dependency Network in some MSP editions) is a visual tool that traces the dependency chain: strategic objectives → end benefits → intermediate benefits → business changes → enabling changes (outputs from projects). It makes the logic of benefit delivery explicit and helps identify which projects are truly essential.',
+          explanationNL: 'Een Benefits Map (in sommige MSP-edities Benefits Dependency Network genoemd) is een visueel hulpmiddel dat de afhankelijkheidsketen in beeld brengt: strategische doelstellingen → eindbaten → tussentijdse baten → bedrijfsveranderingen → activerende veranderingen (producten van projecten). Het maakt de logica van batenlevering expliciet en helpt te identificeren welke projecten werkelijk essentieel zijn.',
+        },
+        {
+          id: 'pm-q10',
+          question: 'What is the primary purpose of the MSP Business Case at programme level?',
+          questionNL: 'Wat is het primaire doel van de MSP Business Case op programmaniveau?',
+          options: [
+            'To provide a one-time investment approval document submitted to the finance committee before the programme starts',
+            'To serve as a living document that continuously justifies the programme investment throughout its lifecycle',
+            'To replace the Benefits Realisation Plan by documenting expected and achieved benefits in a single artefact',
+            'To define the technical architecture that the programme will implement',
+          ],
+          optionsNL: [
+            'Om een eenmalig investeringsgoedkeuringsdocument te zijn dat vóór de start van het programma wordt ingediend bij de financiële commissie',
+            'Om als levend document te dienen dat de programmainvestering gedurende de hele levenscyclus continu rechtvaardigt',
+            'Om het Benefits Realisation Plan te vervangen door verwachte en gerealiseerde baten in één artefact te documenteren',
+            'Om de technische architectuur te definiëren die het programma zal implementeren',
+          ],
+          correctAnswer: 1,
+          explanation: 'In MSP, the Business Case is a living document revisited at each Tranche boundary and major decision point. It must demonstrate continued viability (the investment is still worth making given current information). If the Business Case can no longer be justified, MSP requires that the programme be stopped or restructured.',
+          explanationNL: 'In MSP is de Business Case een levend document dat bij elke Tranche-grens en elk belangrijk beslismoment wordt herzien. Het moet aantoonbaar blijven dat de investering nog steeds de moeite waard is gezien de actuele informatie. Als de Business Case niet langer gerechtvaardigd kan worden, vereist MSP dat het programma wordt gestopt of geherstructureerd.',
+        },
+        {
+          id: 'pm-q11',
+          question: 'In MSP, which role is specifically responsible for managing organisational change and embedding new ways of working so that benefits are actually realised?',
+          questionNL: 'Welke rol in MSP is specifiek verantwoordelijk voor het managen van organisatieverandering en het verankeren van nieuwe werkwijzen zodat baten daadwerkelijk worden gerealiseerd?',
+          options: [
+            'Senior Responsible Owner (SRO)',
+            'Programme Manager',
+            'Business Change Manager (BCM)',
+            'Programme Office Manager',
+          ],
+          optionsNL: [
+            'Senior Responsible Owner (SRO)',
+            'Programme Manager',
+            'Business Change Manager (BCM)',
+            'Programme Office Manager',
+          ],
+          correctAnswer: 2,
+          explanation: 'The Business Change Manager (BCM) in MSP sits within the business area that is changing. Their unique role is to ensure that the capabilities delivered by projects are actually adopted, embedded, and leveraged so that benefits are realised. They represent the "business side" of the programme and are distinct from the Programme Manager who runs the programme itself.',
+          explanationNL: 'De Business Change Manager (BCM) in MSP bevindt zich in het bedrijfsgebied dat verandert. Hun unieke rol is ervoor te zorgen dat de capaciteiten die door projecten worden geleverd daadwerkelijk worden geadopteerd, verankerd en benut zodat baten worden gerealiseerd. Ze vertegenwoordigen de "businesskant" van het programma en zijn onderscheiden van de Programme Manager die het programma zelf beheert.',
+        },
+        {
+          id: 'pm-q12',
+          question: 'During programme closure in MSP, which action is explicitly required before the programme can be formally closed?',
+          questionNL: 'Welke actie is tijdens programmasluiting in MSP expliciet vereist voordat het programma formeel kan worden gesloten?',
+          options: [
+            'All component projects must achieve zero open risks and issues',
+            'The programme budget must show a surplus against the original Business Case',
+            'Outstanding benefits realisation responsibilities must be formally handed over to operational management',
+            'The SRO must have personally reviewed every project closure report',
+          ],
+          optionsNL: [
+            'Alle componentprojecten moeten nul openstaande risico\'s en issues hebben',
+            'Het programmabueget moet een overschot laten zien ten opzichte van de originele Business Case',
+            'Uitstaande verantwoordelijkheden voor batenrealisatie moeten formeel worden overgedragen aan het operationeel management',
+            'De SRO moet persoonlijk elk projectsluitingsrapport hebben beoordeeld',
+          ],
+          correctAnswer: 2,
+          explanation: 'MSP requires that before formal programme closure, all ongoing benefits realisation responsibilities are formally transferred to operational management (typically line management in the affected business areas). Benefits realisation often continues for months or years after the programme ends, and MSP requires a named owner with accountability for each benefit post-closure.',
+          explanationNL: 'MSP vereist dat vóór formele programmasluiting alle lopende verantwoordelijkheden voor batenrealisatie formeel worden overgedragen aan het operationeel management (doorgaans lijnmanagement in de betrokken bedrijfsgebieden). Batenrealisatie gaat vaak maanden of jaren door nadat het programma is beëindigd, en MSP vereist een benoemde eigenaar met verantwoordelijkheid voor elke bate na sluiting.',
+        },
+      ],
+    },
+    {
+      id: 'pgm-l17',
+      title: 'Practical Assignment: Programme Blueprint, Benefits Map & Tranche Plan',
+      titleNL: 'Praktijkopdracht: Programme Blueprint, Benefits Map & Tranche Plan',
+      type: 'assignment',
+      duration: '60:00',
+      videoUrl: '',
+      transcript: `## Practical Assignment — Programme Blueprint, Benefits Map & Tranche Plan
+
+### Purpose
+
+This assignment bridges theory and practice. You will apply MSP doctrine to a realistic fictional transformation programme, producing three core governance artefacts that any Programme Manager would be expected to produce during the Defining phase.
+
+Completing this assignment demonstrates that you can translate strategic intent into structured programme design — the hallmark of a capable programme professional.
+
+---
+
+### The Fictional Programme: "HealthLink 2027"
+
+**Organisation:** RegionCare NV — a mid-sized regional healthcare provider operating 4 hospitals and 22 community clinics across the Netherlands.
+
+**Strategic trigger:** RegionCare's board has mandated a digital health transformation to reduce patient waiting times by 40%, improve cross-facility care coordination, and generate €12M in operational savings by Q4 2027.
+
+**Programme scope:** Three component projects have been identified:
+1. **Digital Patient Record Unification** — replace 3 legacy EPR systems with a single platform
+2. **Integrated Scheduling System** — cross-facility appointment and resource scheduling
+3. **Staff Capability Development** — training 2,400 clinical and administrative staff on new systems and processes
+
+The programme is expected to run 30 months, split into two tranches.
+
+---
+
+### Deliverable 1 — Programme Blueprint (one page, A4)
+
+Produce a one-page Blueprint describing RegionCare's target operating model at programme completion. Include:
+
+- **Processes:** Which core processes will change (e.g. patient admissions, referrals, discharge planning)?
+- **Information & data:** What information systems will be in place and what data will flow between them?
+- **Organisation & culture:** Any structural or cultural changes required (e.g. new cross-facility coordination roles)?
+- **Technology:** Key technology capabilities that will be operational
+- **People & skills:** Core competencies that staff will need to demonstrate
+
+**Format:** A table or structured prose, max one A4 page. The Blueprint must clearly contrast the current state ("as-is") with the future state ("to-be") for at least three dimensions.
+
+---
+
+### Deliverable 2 — Benefits Map (one page)
+
+Draw or describe a Benefits Map (Benefits Dependency Network) for HealthLink 2027. The map must show:
+
+- At least **3 end benefits** traceable to the strategic objectives (e.g. "40% reduction in waiting times", "€12M operational saving", "improved patient outcomes score")
+- At least **4 intermediate benefits** that flow into the end benefits
+- At least **4 business changes** (changes in how RegionCare operates) that enable the intermediate benefits
+- At least **3 enabling changes** (outputs that component projects must deliver, e.g. "live EPR platform", "trained staff cohort")
+
+**Format:** A diagram (hand-drawn scan, Visio, Miro, or any tool) OR a structured table with columns: Enabling Change → Business Change → Intermediate Benefit → End Benefit → Strategic Objective. Arrows/linkages must be explicit.
+
+---
+
+### Deliverable 3 — Tranche Plan (one page)
+
+HealthLink 2027 runs in two tranches. Produce a Tranche Plan covering:
+
+- **Tranche 1 (months 1–15):** Which projects are active? What capability step-change does this tranche deliver? What is the tranche-end review criterion (what must be true before Tranche 2 begins)?
+- **Tranche 2 (months 16–30):** Same structure
+- **Benefits realisation period (months 31–42):** Which benefits are measured post-programme, by whom, by when?
+
+For each tranche, identify the top 2 risks and the corresponding mitigation approach.
+
+**Format:** A structured table or timeline narrative, max one A4 page.
+
+---
+
+### Assessment Rubric
+
+| Criterion | Excellent (4) | Acceptable (2) | Insufficient (0) |
+|---|---|---|---|
+| **Blueprint completeness** | All 5 dimensions covered, clear as-is vs to-be contrast | 3–4 dimensions, partial contrast | Fewer than 3 dimensions or no contrast |
+| **Benefits Map logic** | Full causal chain, all linkages explained, 3+ end benefits | Partial chain, some linkages missing | No causal logic or fewer than 2 benefits |
+| **Tranche Plan coherence** | Both tranches defined, clear step-change, gate criteria explicit | One tranche complete, gate criteria vague | Single undifferentiated delivery plan |
+| **MSP terminology** | SRO, BCM, Blueprint, Vision, Tranche, Benefits Realisation used correctly | Some correct use of MSP terms | No MSP terminology or terms misused |
+| **Practical realism** | Artefacts could plausibly be used in a real programme | Minor gaps but structurally sound | Too abstract or generic to be useful |
+
+**Pass mark:** Score 10 or above out of 20. Assignments are reviewed by your programme tutor within 5 business days.
+
+---
+
+### Submission
+
+Submit your three artefacts as a single PDF or ZIP file. Include your name, the course name, and today's date on the cover page. Your submission will be reviewed against the rubric above and returned with written feedback.`,
+      transcriptNL: `## Praktijkopdracht — Programme Blueprint, Benefits Map & Tranche Plan
+
+### Doel
+
+Deze opdracht overbrugt theorie en praktijk. U past MSP-doctrine toe op een realistische fictieve transformatieprogramma en produceert drie kernbeheersartefacten die elke Programme Manager wordt geacht te produceren tijdens de Defining-fase.
+
+Het voltooien van deze opdracht toont aan dat u strategische intentie kunt vertalen naar gestructureerd programmontwerp — het kenmerk van een bekwame programmaprofessional.
+
+---
+
+### Het Fictieve Programma: "HealthLink 2027"
+
+**Organisatie:** RegionCare NV — een middelgrote regionale zorgaanbieder met 4 ziekenhuizen en 22 gemeenschapsklinieken in Nederland.
+
+**Strategische aanleiding:** De raad van bestuur van RegionCare heeft een digitale gezondheidstransformatie verplicht gesteld om de wachttijden voor patiënten met 40% te verminderen, de zorgcoördinatie tussen faciliteiten te verbeteren en €12M aan operationele besparingen te genereren voor Q4 2027.
+
+**Programmascope:** Drie componentprojecten zijn geïdentificeerd:
+1. **Digitale Patiëntdossier Unificatie** — 3 verouderde EPR-systemen vervangen door één platform
+2. **Geïntegreerd Planningssysteem** — cross-facility afspraken- en resourceplanning
+3. **Personeelscapaciteitsontwikkeling** — training van 2.400 klinische en administratieve medewerkers
+
+Het programma duurt naar verwachting 30 maanden, verdeeld over twee tranches.
+
+---
+
+### Deliverable 1 — Programme Blueprint (één pagina, A4)
+
+Produceer een één pagina Blueprint die het doelbedrijfsmodel van RegionCare bij voltooiing van het programma beschrijft. Omvat:
+
+- **Processen:** Welke kernprocessen veranderen (bijv. patiëntopname, verwijzingen, ontslagplanning)?
+- **Informatie & data:** Welke informatiesystemen zijn aanwezig en welke data stroomt daartussen?
+- **Organisatie & cultuur:** Eventuele structurele of culturele veranderingen (bijv. nieuwe cross-facility coördinatierollen)?
+- **Technologie:** Sleuteltechnologiecapaciteiten die operationeel zullen zijn
+- **Mensen & vaardigheden:** Kerncompetenties die medewerkers moeten aantonen
+
+**Formaat:** Een tabel of gestructureerde proza, maximaal één A4-pagina. De Blueprint moet duidelijk het huidige (as-is) en toekomstige (to-be) contrast tonen voor ten minste drie dimensies.
+
+---
+
+### Deliverable 2 — Benefits Map (één pagina)
+
+Teken of beschrijf een Benefits Map (Benefits Dependency Network) voor HealthLink 2027. De kaart moet tonen:
+
+- Ten minste **3 eindbaten** herleidbaar tot de strategische doelstellingen
+- Ten minste **4 tussentijdse baten** die doorstromen naar de eindbaten
+- Ten minste **4 bedrijfsveranderingen** die de tussentijdse baten mogelijk maken
+- Ten minste **3 activerende veranderingen** (producten die componentprojecten moeten leveren)
+
+**Formaat:** Een diagram of gestructureerde tabel met kolommen: Activerende Verandering → Bedrijfsverandering → Tussentijdse Bate → Eindbate → Strategisch Doel.
+
+---
+
+### Deliverable 3 — Tranche Plan (één pagina)
+
+HealthLink 2027 loopt in twee tranches. Produceer een Tranche Plan:
+
+- **Tranche 1 (maanden 1–15):** Welke projecten zijn actief? Welke capaciteitsstap levert deze tranche? Wat is het reviewcriterium aan het einde van de tranche?
+- **Tranche 2 (maanden 16–30):** Dezelfde structuur
+- **Batenrealisatieperiode (maanden 31–42):** Welke baten worden na het programma gemeten, door wie, wanneer?
+
+Per tranche: identificeer de top 2 risico's en de bijbehorende mitigatiebenadering.
+
+---
+
+### Beoordelingsrubric
+
+| Criterium | Uitstekend (4) | Acceptabel (2) | Onvoldoende (0) |
+|---|---|---|---|
+| **Blueprint volledigheid** | Alle 5 dimensies, duidelijk as-is vs to-be contrast | 3–4 dimensies, gedeeltelijk contrast | Minder dan 3 dimensies of geen contrast |
+| **Benefits Map logica** | Volledige causale keten, alle koppelingen uitgelegd | Gedeeltelijke keten, enkele koppelingen ontbreken | Geen causale logica |
+| **Tranche Plan coherentie** | Beide tranches gedefinieerd, duidelijke stap, gate-criteria expliciet | Één tranche volledig, gate-criteria vaag | Ongedifferentieerd leveringsplan |
+| **MSP-terminologie** | SRO, BCM, Blueprint, Vision, Tranche correct gebruikt | Sommige MSP-termen correct | Geen of verkeerd gebruik van MSP-termen |
+| **Praktische realisme** | Artefacten kunnen plausibel in een echt programma worden gebruikt | Kleine hiaten maar structureel solide | Te abstract of generiek |
+
+**Cijfergrens:** 10 of hoger van 20. Opdrachten worden beoordeeld door uw programmatutor binnen 5 werkdagen.
+
+---
+
+### Indiening
+
+Dien uw drie artefacten in als één PDF of ZIP-bestand. Vermeld uw naam, de cursusnaam en de datum van vandaag op de voorpagina.`,
+      keyTakeaways: [
+        'A Programme Blueprint defines the target operating model — the future state the programme must deliver',
+        'A Benefits Map traces the causal chain from project outputs through business changes to strategic objectives',
+        'Tranches segment the programme into discrete capability step-changes, each with a formal review gate',
+        'Applying MSP artefacts to a realistic scenario reveals gaps in your programme design before they become costly',
+      ],
+      keyTakeawaysNL: [
+        'Een Programme Blueprint definieert het doelbedrijfsmodel — de toekomstige staat die het programma moet leveren',
+        'Een Benefits Map traceert de causale keten van projectproducten via bedrijfsveranderingen naar strategische doelstellingen',
+        'Tranches segmenteren het programma in afzonderlijke capaciteitsstappen, elk met een formele reviewgate',
+        'MSP-artefacten toepassen op een realistisch scenario onthult hiaten in uw programmontwerp voordat ze kostbaar worden',
+      ],
+    },
+    {
+      id: 'pgm-l18',
+      title: 'Final Exam: Program Management Professional',
+      titleNL: 'Eindexamen: Programma Management Professional',
+      type: 'exam',
+      duration: '45:00',
+      videoUrl: '',
+      transcript: `## Final Exam — Program Management Professional
+
+### Format
+
+This exam consists of **25 multiple-choice questions**. Each question has four options; select the single best answer.
+
+- **Time allowed:** 45 minutes
+- **Pass mark:** 70% (18 out of 25 correct)
+- **Retakes:** Unlimited; a cooling-off period of 24 hours applies between attempts
+- **Certification:** Learners who pass receive the ProjeXtPal Programme Management Professional certificate of completion, recognised by Inclufy
+
+### Scope
+
+The exam covers the full course across all three modules:
+
+- Module 1 — Programme Management Basics: programme vs project distinction, governance structures, the MSP Transformational Flow, Blueprint, roles (SRO, Programme Manager, BCM)
+- Module 2 — Strategic Alignment: linking programmes to strategy, stakeholder engagement, benefits identification and mapping, the Business Case lifecycle
+- Module 3 — Programme Lifecycle & Closure: Tranche management, benefits realisation, programme closure, lessons learned, post-programme transition
+
+### Tips
+
+- Re-read your Blueprint, Benefits Map, and Tranche Plan from the practical assignment before sitting the exam
+- Focus on MSP terminology precision — distractors are designed to use near-correct language
+- If unsure, eliminate answers that contradict core MSP principles (benefits-led, governance-driven, stakeholder-engaged)`,
+      transcriptNL: `## Eindexamen — Programma Management Professional
+
+### Formaat
+
+Dit examen bestaat uit **25 meerkeuzevragen**. Elke vraag heeft vier opties; selecteer het beste antwoord.
+
+- **Toegestane tijd:** 45 minuten
+- **Cijfergrens:** 70% (18 van de 25 vragen correct)
+- **Herkansingen:** Onbeperkt; een afkoelperiode van 24 uur geldt tussen pogingen
+- **Certificering:** Cursisten die slagen ontvangen het ProjeXtPal Programma Management Professional voltooiingscertificaat, erkend door Inclufy
+
+### Scope
+
+Het examen beslaat de volledige cursus over alle drie modules:
+
+- Module 1 — Programma Management Basis: programma vs project onderscheid, governancestructuren, de MSP Transformational Flow, Blueprint, rollen (SRO, Programme Manager, BCM)
+- Module 2 — Strategische Afstemming: programma's koppelen aan strategie, stakeholdersbetrokkenheid, batenidentificatie en -mapping, de Business Case-levenscyclus
+- Module 3 — Programma-levenscyclus & Sluiting: Tranche-management, batenrealisatie, programmasluiting, lessen geleerd, post-programmatransitie
+
+### Tips
+
+- Herlees uw Blueprint, Benefits Map en Tranche Plan uit de praktijkopdracht voordat u het examen aflegt
+- Focus op MSP-terminologieprecisie — afleiders zijn ontworpen om bijna-correcte taal te gebruiken
+- Als u twijfelt, elimineer antwoorden die de kern-MSP-principes tegenspreken (baten-gedreven, governance-gedreven, stakeholder-betrokken)`,
+      keyTakeaways: [
+        '25 questions, 45 minutes, 70% pass mark',
+        'Covers all three modules: Basics, Strategic Alignment, and Programme Lifecycle',
+        'MSP doctrine is the primary source — focus on roles, artefacts, and the Transformational Flow',
+        'Passing awards the ProjeXtPal Programme Management Professional certificate',
+      ],
+      keyTakeawaysNL: [
+        '25 vragen, 45 minuten, 70% cijfergrens',
+        'Beslaat alle drie modules: Basis, Strategische Afstemming en Programma-levenscyclus',
+        'MSP-doctrine is de primaire bron — focus op rollen, artefacten en de Transformational Flow',
+        'Slagen levert het ProjeXtPal Programma Management Professional certificaat op',
+      ],
+      quiz: [
+        {
+          id: 'pm-exam-q1',
+          question: 'MSP defines a programme as a temporary, flexible organisation created to coordinate, direct and oversee related projects and activities in order to deliver:',
+          questionNL: 'MSP definieert een programma als een tijdelijke, flexibele organisatie die is opgericht om gerelateerde projecten en activiteiten te coördineren, te sturen en te bewaken om het volgende te leveren:',
+          options: [
+            'A set of technical outputs within an agreed budget and schedule',
+            'Outcomes and benefits related to strategic objectives',
+            'A portfolio of independent projects managed by a single PMO',
+            'A series of operational improvements without a defined end date',
+          ],
+          optionsNL: [
+            'Een reeks technische producten binnen een overeengekomen budget en planning',
+            'Resultaten en baten gerelateerd aan strategische doelstellingen',
+            'Een portfolio van onafhankelijke projecten beheerd door één PMO',
+            'Een reeks operationele verbeteringen zonder een gedefinieerde einddatum',
+          ],
+          correctAnswer: 1,
+          explanation: 'This is the core MSP definition of a programme. The key phrase is "outcomes and benefits related to strategic objectives" — it is this benefits-led, strategy-anchored nature that distinguishes a programme from a project or portfolio.',
+          explanationNL: 'Dit is de kernomschrijving van een programma in MSP. De sleutelzin is "resultaten en baten gerelateerd aan strategische doelstellingen" — het is dit baten-gerichte, strategisch verankerde karakter dat een programma onderscheidt van een project of portfolio.',
+        },
+        {
+          id: 'pm-exam-q2',
+          question: 'The correct order of the MSP Transformational Flow is:',
+          questionNL: 'De juiste volgorde van de MSP Transformational Flow is:',
+          options: [
+            'Defining → Identifying → Managing Tranches → Delivering Capability → Realising Benefits → Closing',
+            'Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing',
+            'Identifying → Defining → Delivering Capability → Managing Tranches → Realising Benefits → Closing',
+            'Identifying → Managing Tranches → Defining → Delivering Capability → Closing → Realising Benefits',
+          ],
+          optionsNL: [
+            'Defining → Identifying → Managing Tranches → Delivering Capability → Realising Benefits → Closing',
+            'Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing',
+            'Identifying → Defining → Delivering Capability → Managing Tranches → Realising Benefits → Closing',
+            'Identifying → Managing Tranches → Defining → Delivering Capability → Closing → Realising Benefits',
+          ],
+          correctAnswer: 1,
+          explanation: 'The MSP Transformational Flow proceeds: Identifying a Programme → Defining a Programme → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. This sequence reflects the logical progression from strategic vision through delivery to benefit capture and formal closure.',
+          explanationNL: 'De MSP Transformational Flow verloopt: Identifying a Programme → Defining a Programme → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. Deze volgorde weerspiegelt de logische progressie van strategische visie via levering naar batenopname en formele sluiting.',
+        },
+        {
+          id: 'pm-exam-q3',
+          question: 'The Blueprint document in MSP is BEST described as:',
+          questionNL: 'Het Blueprint-document in MSP wordt het BESTE omschreven als:',
+          options: [
+            'A financial model showing programme costs and expected ROI',
+            'A detailed description of the target operating model the programme will deliver',
+            'A risk register aggregated from all component projects',
+            'A stakeholder engagement plan covering all programme communications',
+          ],
+          optionsNL: [
+            'Een financieel model dat programmakostenen verwachte ROI toont',
+            'Een gedetailleerde beschrijving van het doelbedrijfsmodel dat het programma zal leveren',
+            'Een risicoregister geaggregeerd van alle componentprojecten',
+            'Een stakeholdersbetrokkenheidsplan dat alle programmacommunicaties omvat',
+          ],
+          correctAnswer: 1,
+          explanation: 'The MSP Blueprint describes the target operating model — the future state of the organisation in terms of processes, information, organisation, technology, and people. It is the primary design reference that all component projects must contribute towards, and is contrasted with the current state to make transformation progress measurable.',
+          explanationNL: 'De MSP Blueprint beschrijft het doelbedrijfsmodel — de toekomstige staat van de organisatie in termen van processen, informatie, organisatie, technologie en mensen. Het is de primaire ontwerprefentie waaraan alle componentprojecten moeten bijdragen en wordt afgezet tegen de huidige staat om transformatievoortgang meetbaar te maken.',
+        },
+        {
+          id: 'pm-exam-q4',
+          question: 'Who holds ultimate accountability for a programme achieving its objectives and delivering expected benefits in MSP?',
+          questionNL: 'Wie draagt de uiteindelijke verantwoordelijkheid voor het behalen van programmadoelstellingen en het leveren van verwachte baten in MSP?',
+          options: [
+            'Programme Manager',
+            'Business Change Manager',
+            'Senior Responsible Owner (SRO)',
+            'Sponsoring Group Chair',
+          ],
+          optionsNL: [
+            'Programme Manager',
+            'Business Change Manager',
+            'Senior Responsible Owner (SRO)',
+            'Voorzitter van de Sponsoring Group',
+          ],
+          correctAnswer: 2,
+          explanation: 'The SRO is the single point of accountability for the programme. They own the Business Case, chair or sponsor the Programme Board, and are personally accountable to the Sponsoring Group for outcomes and benefits. This undivided accountability is a fundamental MSP governance principle.',
+          explanationNL: 'De SRO is het enige verantwoordingspunt voor het programma. Ze zijn eigenaar van de Business Case, leiden of sponsoren het Programme Board en zijn persoonlijk verantwoordelijk aan de Sponsoring Group voor resultaten en baten. Deze ongedeelde verantwoordelijkheid is een fundamenteel MSP-governanceprincipe.',
+        },
+        {
+          id: 'pm-exam-q5',
+          question: 'A Tranche in MSP represents:',
+          questionNL: 'Een Tranche in MSP vertegenwoordigt:',
+          options: [
+            'A financial release to a component project upon passing a milestone gate',
+            'A grouping of projects delivering a distinct step-change in organisational capability',
+            'A time-boxed planning horizon equivalent to a project sprint',
+            'A risk contingency reserve held at programme level',
+          ],
+          optionsNL: [
+            'Een financiële vrijgave aan een componentproject bij het passeren van een mijlpaalgate',
+            'Een groepering van projecten die een duidelijke stapsgewijze verbetering in organisatorische capaciteit leveren',
+            'Een time-boxed planningshorizon equivalent aan een projectsprint',
+            'Een risicoreserve aangehouden op programmaniveau',
+          ],
+          correctAnswer: 1,
+          explanation: 'A Tranche is MSP\'s mechanism for segmenting programme delivery into discrete waves of change. Each tranche delivers a measurable step-change in capability that moves the organisation closer to the Blueprint. Tranches end with a formal review and decision point (continue, redirect, or close).',
+          explanationNL: 'Een Tranche is het MSP-mechanisme voor het segmenteren van programmaleving in afzonderlijke veranderingsgolven. Elke tranche levert een meetbare stapsgewijze verbetering in capaciteit die de organisatie dichter bij de Blueprint brengt. Tranches eindigen met een formele review en beslismoment (doorgaan, bijsturen of sluiten).',
+        },
+        {
+          id: 'pm-exam-q6',
+          question: 'The Vision Statement in MSP is specifically designed to be:',
+          questionNL: 'De Vision Statement in MSP is specifiek ontworpen om te zijn:',
+          options: [
+            'A comprehensive technical specification of the future state',
+            'A short, inspiring description of what the programme will achieve, used to motivate and align',
+            'A detailed financial justification replacing the Business Case at programme initiation',
+            'A legal contract between the programme and its component projects',
+          ],
+          optionsNL: [
+            'Een uitgebreide technische specificatie van de toekomstige staat',
+            'Een korte, inspirerende beschrijving van wat het programma zal bereiken, gebruikt om te motiveren en af te stemmen',
+            'Een gedetailleerde financiële rechtvaardiging ter vervanging van de Business Case bij programmanitiatie',
+            'Een juridisch contract tussen het programma en zijn componentprojecten',
+          ],
+          correctAnswer: 1,
+          explanation: 'The Vision Statement is a brief motivational document (often one page or less) that captures WHY the programme matters in human terms. It is used to communicate with stakeholders, maintain alignment under pressure, and guide decision-making when the detailed Blueprint is not accessible. It complements but never replaces the Blueprint or Business Case.',
+          explanationNL: 'De Vision Statement is een kort motiverend document (vaak één pagina of minder) dat vastlegt WAAROM het programma van belang is in menselijke termen. Het wordt gebruikt om te communiceren met stakeholders, afstemming te behouden onder druk en besluitvorming te begeleiden wanneer de gedetailleerde Blueprint niet toegankelijk is. Het vult de Blueprint en Business Case aan maar vervangt ze nooit.',
+        },
+        {
+          id: 'pm-exam-q7',
+          question: 'Benefits Management in MSP is characterised as:',
+          questionNL: 'Benefits Management in MSP wordt gekenmerkt als:',
+          options: [
+            'A one-time activity at programme closure to confirm benefit delivery',
+            'A continuous process spanning the full programme lifecycle and beyond, into operational management',
+            'The exclusive responsibility of component project managers',
+            'An optional activity for public sector programmes only',
+          ],
+          optionsNL: [
+            'Een eenmalige activiteit bij programmasluiting om batenlevering te bevestigen',
+            'Een continu proces dat de volledige programmalevenscyclus en daarna omspant, in operationeel management',
+            'De exclusieve verantwoordelijkheid van componentprojectmanagers',
+            'Een optionele activiteit alleen voor publieke sector programma\'s',
+          ],
+          correctAnswer: 1,
+          explanation: 'MSP treats Benefits Management as a continuous discipline from the first identification of potential benefits (during Identifying) through to post-programme realisation reviews. It does not end when the programme closes — the Benefits Realisation Plan assigns owners responsible for tracking benefits into operations.',
+          explanationNL: 'MSP behandelt Benefits Management als een continue discipline van de eerste identificatie van potentiële baten (tijdens Identifying) tot aan post-programmarealisatiereviews. Het eindigt niet wanneer het programma sluit — het Benefits Realisation Plan wijst eigenaren toe die verantwoordelijk zijn voor het bijhouden van baten in de operaties.',
+        },
+        {
+          id: 'pm-exam-q8',
+          question: 'A Benefits Map (Benefits Dependency Network) shows:',
+          questionNL: 'Een Benefits Map (Benefits Dependency Network) toont:',
+          options: [
+            'A Gantt chart of benefit realisation milestones across tranches',
+            'The organisational hierarchy of roles responsible for each benefit',
+            'The causal chain from project outputs through business changes to end benefits and strategic objectives',
+            'A financial discounted cash flow model for all programme benefits',
+          ],
+          optionsNL: [
+            'Een Gantt-diagram van batenrealisatiemijlpalen over tranches',
+            'De organisatorische hiërarchie van rollen verantwoordelijk voor elke bate',
+            'De causale keten van projectproducten via bedrijfsveranderingen naar eindbaten en strategische doelstellingen',
+            'Een financieel verdisconteerd kasstroommodel voor alle programmabaten',
+          ],
+          correctAnswer: 2,
+          explanation: 'A Benefits Map visualises the dependency logic: enabling changes (outputs) → business changes (new ways of working) → intermediate benefits → end benefits → strategic objectives. This causal chain makes it explicit which project outputs are truly essential and which benefits depend on which organisational changes.',
+          explanationNL: 'Een Benefits Map visualiseert de afhankelijkheidslogica: activerende veranderingen (producten) → bedrijfsveranderingen (nieuwe werkwijzen) → tussentijdse baten → eindbaten → strategische doelstellingen. Deze causale keten maakt expliciet welke projectproducten werkelijk essentieel zijn en welke baten afhangen van welke organisatorische veranderingen.',
+        },
+        {
+          id: 'pm-exam-q9',
+          question: 'The role of Business Change Manager (BCM) in MSP is PRIMARILY to:',
+          questionNL: 'De rol van Business Change Manager (BCM) in MSP is PRIMAIR om:',
+          options: [
+            'Manage the day-to-day delivery of component projects',
+            'Prepare the programme financial reports for the Sponsoring Group',
+            'Ensure delivered capabilities are adopted and embedded in the business so benefits are realised',
+            'Represent the programme at portfolio governance forums',
+          ],
+          optionsNL: [
+            'De dagelijkse levering van componentprojecten beheren',
+            'De financiële programmarapporten voorbereiden voor de Sponsoring Group',
+            'Zorgen dat geleverde capaciteiten worden geadopteerd en verankerd in het bedrijf zodat baten worden gerealiseerd',
+            'Het programma vertegenwoordigen bij portfolio governance forums',
+          ],
+          correctAnswer: 2,
+          explanation: 'The BCM bridges delivery and benefit realisation. They sit in the business area being changed, not in the programme team, and their job is to manage the transition — ensuring staff adopt new processes, systems, and behaviours so that the capabilities delivered by projects actually generate measurable benefits.',
+          explanationNL: 'De BCM overbrugt levering en batenrealisatie. Ze bevinden zich in het bedrijfsgebied dat verandert, niet in het programmateam, en hun taak is de transitie te beheren — zorgen dat medewerkers nieuwe processen, systemen en gedragingen adopteren zodat de capaciteiten die door projecten worden geleverd daadwerkelijk meetbare baten genereren.',
+        },
+        {
+          id: 'pm-exam-q10',
+          question: 'The MSP Programme Business Case differs from a project business case primarily because it:',
+          questionNL: 'De MSP Programme Business Case verschilt van een projectbusiness case voornamelijk omdat het:',
+          options: [
+            'Is prepared by an external consultant rather than the programme team',
+            'Is reviewed and updated at each Tranche boundary to confirm continued viability',
+            'Contains technical specifications for all component projects',
+            'Is only submitted once, at programme initiation, and not revised thereafter',
+          ],
+          optionsNL: [
+            'Wordt opgesteld door een externe consultant in plaats van het programmateam',
+            'Bij elke Tranche-grens wordt herzien en bijgewerkt om voortdurende levensvatbaarheid te bevestigen',
+            'Technische specificaties bevat voor alle componentprojecten',
+            'Slechts eenmaal wordt ingediend, bij programmanitiatie, en daarna niet wordt herzien',
+          ],
+          correctAnswer: 1,
+          explanation: 'The MSP Business Case is a living document. At each Tranche boundary, the Sponsoring Group and SRO review it against current evidence of benefit delivery and organisational context. If the Business Case can no longer be justified, MSP requires the programme be stopped — the ongoing review is what distinguishes programme-level governance from project-level governance.',
+          explanationNL: 'De MSP Business Case is een levend document. Bij elke Tranche-grens bekijken de Sponsoring Group en SRO het op basis van huidig bewijs van batenlevering en organisatorische context. Als de Business Case niet langer gerechtvaardigd kan worden, vereist MSP dat het programma wordt gestopt — de doorlopende review is wat programmabeleid onderscheidt van projectbeleid.',
+        },
+        {
+          id: 'pm-exam-q11',
+          question: 'Strategic alignment in programme management means:',
+          questionNL: 'Strategische afstemming in programmamanagement betekent:',
+          options: [
+            'All component project managers have read the corporate strategy document',
+            'There is a traceable line from corporate scorecard metrics through programme benefits to the specific outputs being delivered',
+            'The programme was approved by the CEO rather than a department head',
+            'The programme budget is aligned with the annual operating plan',
+          ],
+          optionsNL: [
+            'Alle componentprojectmanagers hebben het bedrijfsstrategiedocument gelezen',
+            'Er is een traceerbare lijn van bedrijfsscorecardmetrieken via programmabaten naar de specifieke producten die worden geleverd',
+            'Het programma werd goedgekeurd door de CEO in plaats van een afdelingshoofd',
+            'Het programmabudget is afgestemd op het jaarlijks operationeel plan',
+          ],
+          correctAnswer: 1,
+          explanation: 'Strategic alignment is demonstrated by traceability: you should be able to draw a line from a specific corporate KPI or strategic objective, through a programme-level benefit, to the specific project output that will enable that benefit. If any link in that chain is missing or assumed, the programme is not truly aligned.',
+          explanationNL: 'Strategische afstemming wordt aangetoond door traceerbaarheid: u zou een lijn moeten kunnen trekken van een specifieke bedrijfs-KPI of strategisch doel, via een programmabate, naar het specifieke projectproduct dat die bate mogelijk maakt. Als een schakel in die keten ontbreekt of aangenomen is, is het programma niet echt afgestemd.',
+        },
+        {
+          id: 'pm-exam-q12',
+          question: 'Stakeholder engagement at programme level differs from project-level stakeholder management because:',
+          questionNL: 'Stakeholdersbetrokkenheid op programmaniveau verschilt van stakeholdersbeheer op projectniveau omdat:',
+          options: [
+            'Programmes only need to engage with executive stakeholders; projects engage operational ones',
+            'Programmes must manage a larger, more diverse stakeholder community including those affected by organisational change, often over a multi-year horizon',
+            'Programme stakeholder engagement is delegated entirely to the BCM',
+            'Project stakeholders are external; programme stakeholders are always internal',
+          ],
+          optionsNL: [
+            'Programma\'s hoeven alleen betrokkenheid te hebben met uitvoerende stakeholders; projecten betrekken operationele stakeholders',
+            'Programma\'s moeten een grotere, meer diverse gemeenschap van stakeholders beheren, inclusief degenen die worden beïnvloed door organisatieverandering, vaak over een meerjarige horizon',
+            'Programmastakeholdersbetrokkenheid wordt volledig gedelegeerd aan de BCM',
+            'Projectstakeholders zijn extern; programmastakeholders zijn altijd intern',
+          ],
+          correctAnswer: 1,
+          explanation: 'Programme stakeholder communities span strategic sponsors, operational staff, customers, regulators, and union representatives — often thousands of people affected by the transformation. Engagement must be sustained over years and adapt as the programme moves through tranches and the change becomes real to people\'s working lives.',
+          explanationNL: 'Programmastakeholdergemeenschappen omvatten strategische sponsors, operationele medewerkers, klanten, regelgevers en vakbondsvertegenwoordigers — vaak duizenden mensen die worden beïnvloed door de transformatie. Betrokkenheid moet jaren worden volgehouden en aanpassen naarmate het programma door tranches beweegt en de verandering realiteit wordt in het werkleven van mensen.',
+        },
+        {
+          id: 'pm-exam-q13',
+          question: 'Which governance body in MSP provides strategic investment authority for the programme?',
+          questionNL: 'Welk governanceorgaan in MSP biedt strategische investeringsautoriteit voor het programma?',
+          options: [
+            'The Programme Board',
+            'The Project Boards of component projects',
+            'The Sponsoring Group',
+            'The Programme Office',
+          ],
+          optionsNL: [
+            'Het Programme Board',
+            'De Project Boards van componentprojecten',
+            'De Sponsoring Group',
+            'Het Programme Office',
+          ],
+          correctAnswer: 2,
+          explanation: 'The Sponsoring Group holds the corporate investment authority. They commission the programme, approve the Business Case, and hold the SRO accountable. The Programme Board manages the programme day-to-day and reports to the Sponsoring Group. This separation ensures strategic decisions remain at the right organisational level.',
+          explanationNL: 'De Sponsoring Group houdt de bedrijfsinvesteringsautoriteit. Ze geven de opdracht voor het programma, keuren de Business Case goed en houden de SRO ter verantwoording. Het Programme Board beheert het programma dagelijks en rapporteert aan de Sponsoring Group. Deze scheiding zorgt ervoor dat strategische beslissingen op het juiste organisatorische niveau blijven.',
+        },
+        {
+          id: 'pm-exam-q14',
+          question: 'Programme closure in MSP can be triggered by which of the following?',
+          questionNL: 'Programmasluiting in MSP kan worden getriggerd door welke van de volgende?',
+          options: [
+            'Only by successful delivery of all planned outputs',
+            'Successful benefit realisation, strategic objective change, or the Business Case no longer being viable',
+            'Only when the SRO personally confirms all projects are closed',
+            'When the programme budget is fully spent, regardless of benefit delivery',
+          ],
+          optionsNL: [
+            'Alleen door succesvolle levering van alle geplande producten',
+            'Succesvolle batenrealisatie, verandering van strategisch doel of de Business Case niet langer levensvatbaar zijn',
+            'Alleen wanneer de SRO persoonlijk bevestigt dat alle projecten zijn gesloten',
+            'Wanneer het programmabudget volledig is besteed, ongeacht batenlevering',
+          ],
+          correctAnswer: 1,
+          explanation: 'MSP recognises three legitimate closure triggers: (1) the programme has achieved its objectives and benefits are being realised; (2) the strategic context has changed so the programme is no longer needed or relevant; (3) the Business Case is no longer viable. All three are valid; MSP does not require "completion" to close a programme.',
+          explanationNL: 'MSP erkent drie legitieme sluitingstriggers: (1) het programma heeft zijn doelstellingen bereikt en baten worden gerealiseerd; (2) de strategische context is veranderd zodat het programma niet langer nodig of relevant is; (3) de Business Case is niet langer levensvatbaar. Alle drie zijn geldig; MSP vereist geen "voltooiing" om een programma te sluiten.',
+        },
+        {
+          id: 'pm-exam-q15',
+          question: 'Benefits realisation in MSP typically extends:',
+          questionNL: 'Batenrealisatie in MSP strekt zich typisch uit:',
+          options: [
+            'Only until the final project within the programme is closed',
+            'For 30 days after programme closure — the post-closure review period',
+            'Beyond programme closure, into the operational phase, with named benefit owners accountable for measurement',
+            'Until the Sponsoring Group signs the programme closure report',
+          ],
+          optionsNL: [
+            'Alleen totdat het laatste project binnen het programma is gesloten',
+            'Gedurende 30 dagen na programmasluiting — de post-sluitingsreviewperiode',
+            'Na programmasluiting, de operationele fase in, met benoemde baten-eigenaren verantwoordelijk voor meting',
+            'Totdat de Sponsoring Group het programmasluitingsrapport ondertekent',
+          ],
+          correctAnswer: 2,
+          explanation: 'Many programme benefits are realised months or years after the programme closes — cost savings accumulate, customer satisfaction improves gradually, or new capabilities are leveraged over time. MSP requires the Benefits Realisation Plan to name operational owners who track and report benefits post-closure, ensuring accountability does not disappear when the programme team disbands.',
+          explanationNL: 'Veel programmabaten worden maanden of jaren na het sluiten van het programma gerealiseerd — kostenbesparingen stapelen zich op, klanttevredenheid verbetert geleidelijk of nieuwe capaciteiten worden na verloop van tijd benut. MSP vereist dat het Benefits Realisation Plan operationele eigenaren noemt die baten post-sluiting bijhouden en rapporteren, zodat verantwoordelijkheid niet verdwijnt wanneer het programmateam uiteenvalt.',
+        },
+        {
+          id: 'pm-exam-q16',
+          question: 'A programme vs project portfolio: which statement BEST describes the key difference?',
+          questionNL: 'Programma vs projectportfolio: welke uitspraak beschrijft het BESTE het belangrijkste verschil?',
+          options: [
+            'A programme always contains more projects than a portfolio',
+            'A portfolio maximises overall organisational value across a collection of initiatives; a programme coordinates related work to achieve a specific transformational outcome',
+            'A portfolio is managed by a Programme Manager; a programme is managed by a Portfolio Director',
+            'There is no meaningful difference — both terms refer to groups of projects',
+          ],
+          optionsNL: [
+            'Een programma bevat altijd meer projecten dan een portfolio',
+            'Een portfolio maximaliseert de algehele organisatorische waarde over een verzameling initiatieven; een programma coördineert gerelateerd werk om een specifiek transformatieresultaat te bereiken',
+            'Een portfolio wordt beheerd door een Programme Manager; een programma wordt beheerd door een Portfolio Director',
+            'Er is geen zinvol verschil — beide termen verwijzen naar groepen projecten',
+          ],
+          correctAnswer: 1,
+          explanation: 'A portfolio is a strategic selection mechanism — it prioritises and balances a mix of projects and programmes to maximise value to the organisation. A programme is a coordinated delivery mechanism — it manages related work to achieve a specific beneficial change. Both govern multiple projects, but their purpose and scope are fundamentally different.',
+          explanationNL: 'Een portfolio is een strategisch selectiemechanisme — het prioriteert en balanceert een mix van projecten en programma\'s om de waarde voor de organisatie te maximaliseren. Een programma is een gecoördineerd leveringsmechanisme — het beheert gerelateerd werk om een specifieke gunstige verandering te bereiken. Beide besturen meerdere projecten, maar hun doel en scope zijn fundamenteel verschillend.',
+        },
+        {
+          id: 'pm-exam-q17',
+          question: 'The Programme Manager in MSP is primarily responsible for:',
+          questionNL: 'De Programme Manager in MSP is primair verantwoordelijk voor:',
+          options: [
+            'Holding the corporate investment authority for the programme Business Case',
+            'Day-to-day leadership and management of the programme, coordinating component projects and ensuring delivery aligns with the Blueprint',
+            'Embedding organisational change and ensuring benefit realisation in the affected business units',
+            'Approving all changes to component project scope and budgets',
+          ],
+          optionsNL: [
+            'Het houden van de bedrijfsinvesteringsautoriteit voor de programmabusiness case',
+            'Dagelijkse leiding en beheer van het programma, coördinatie van componentprojecten en zorgen dat levering aansluit bij de Blueprint',
+            'Organisatieverandering verankeren en zorgen voor batenrealisatie in de betrokken bedrijfseenheden',
+            'Alle wijzigingen in scope en budgetten van componentprojecten goedkeuren',
+          ],
+          correctAnswer: 1,
+          explanation: 'The Programme Manager focuses on delivery: coordinating component projects, managing programme-level risks and dependencies, ensuring the programme stays aligned to the Blueprint, and reporting to the SRO. The SRO holds investment accountability; the BCM handles change embedding and benefit realisation.',
+          explanationNL: 'De Programme Manager richt zich op levering: coördineren van componentprojecten, beheren van risico\'s en afhankelijkheden op programmaniveau, zorgen dat het programma afgestemd blijft op de Blueprint en rapporteren aan de SRO. De SRO houdt investeringsverantwoordelijkheid; de BCM behandelt veranderingsverankering en batenrealisatie.',
+        },
+        {
+          id: 'pm-exam-q18',
+          question: 'When a Tranche Review in MSP concludes that the Business Case can no longer be justified, the correct action is:',
+          questionNL: 'Wanneer een Tranche Review in MSP concludeert dat de Business Case niet langer gerechtvaardigd kan worden, is de juiste actie:',
+          options: [
+            'Continue into the next tranche and re-evaluate after 6 months',
+            'Immediately replace the SRO and appoint a turnaround Programme Manager',
+            'Close the programme or fundamentally restructure it so a viable Business Case can be re-established',
+            'Transfer the remaining projects to portfolio management without closure formalities',
+          ],
+          optionsNL: [
+            'Doorgaan naar de volgende tranche en na 6 maanden opnieuw beoordelen',
+            'Onmiddellijk de SRO vervangen en een turnaround Programme Manager aanstellen',
+            'Het programma sluiten of fundamenteel herstructureren zodat een levensvatbare Business Case opnieuw kan worden vastgesteld',
+            'De resterende projecten overdragen aan portfoliobeheer zonder sluitingsformaliteiten',
+          ],
+          correctAnswer: 2,
+          explanation: 'MSP is explicit: if the Business Case is no longer viable, the programme must be stopped or fundamentally restructured. Continuing an unjustifiable programme is a failure of governance. This rule is one of the key differences between MSP\'s governance rigour and informal programme management practice.',
+          explanationNL: 'MSP is expliciet: als de Business Case niet langer levensvatbaar is, moet het programma worden gestopt of fundamenteel geherstructureerd. Doorgaan met een niet te rechtvaardigen programma is een falen van governance. Deze regel is een van de belangrijkste verschillen tussen de governance-striktheid van MSP en informele programmamanagementpraktijk.',
+        },
+        {
+          id: 'pm-exam-q19',
+          question: 'Lessons Learned at programme closure in MSP should PRIMARILY be:',
+          questionNL: 'Lessen Geleerd bij programmasluiting in MSP moeten PRIMAIR:',
+          options: [
+            'Kept confidential within the programme team to protect individual reputations',
+            'Published and actively shared with the PMO and future programme leaders to improve organisational capability',
+            'Summarised in one slide in the final Steering Committee deck and then archived',
+            'Only recorded if the programme missed its original targets',
+          ],
+          optionsNL: [
+            'Vertrouwelijk blijven binnen het programmateam om individuele reputaties te beschermen',
+            'Gepubliceerd en actief gedeeld met de PMO en toekomstige programmaleiders om de organisatorische capaciteit te verbeteren',
+            'Samengevat in één dia in het eindrapport van het Steering Committee en daarna gearchiveerd',
+            'Alleen geregistreerd als het programma zijn oorspronkelijke doelstellingen heeft gemist',
+          ],
+          correctAnswer: 1,
+          explanation: 'MSP treats Lessons Learned as an organisational asset, not a personal reflection exercise. The intent is institutional learning: lessons should be presented to PMO, incorporated into updated standards and templates, and briefed to teams of upcoming programmes. This is how organisations improve their programme management capability over time.',
+          explanationNL: 'MSP behandelt Lessen Geleerd als een organisatorisch actief, niet als een persoonlijke reflectieoefening. De bedoeling is institutioneel leren: lessen moeten worden gepresenteerd aan de PMO, worden opgenomen in bijgewerkte normen en sjablonen en worden gecommuniceerd aan teams van aankomende programma\'s. Dit is hoe organisaties hun programmamanagementcapaciteit in de loop van de tijd verbeteren.',
+        },
+        {
+          id: 'pm-exam-q20',
+          question: 'Risk management at programme level in MSP differs from project-level risk management because:',
+          questionNL: 'Risicobeheer op programmaniveau in MSP verschilt van risicobeheer op projectniveau omdat:',
+          options: [
+            'Programmes do not maintain risk registers — only component projects do',
+            'Programme-level risks focus on strategic threats to benefit delivery and transformational outcomes, not just project delivery risk',
+            'Risk ownership at programme level is always the responsibility of the Programme Office',
+            'Programme risks are always financial; project risks are always technical',
+          ],
+          optionsNL: [
+            'Programma\'s houden geen risicoregisters bij — alleen componentprojecten doen dat',
+            'Risico\'s op programmaniveau richten zich op strategische bedreigingen voor batenlevering en transformationele resultaten, niet alleen op projectleveringsrisico',
+            'Risico-eigenaarschap op programmaniveau is altijd de verantwoordelijkheid van het Programme Office',
+            'Programmrisico\'s zijn altijd financieel; projectrisico\'s zijn altijd technisch',
+          ],
+          correctAnswer: 1,
+          explanation: 'Programme-level risk management looks beyond project delivery risk to encompass strategic risk (will the strategy change?), benefits risk (will the benefits be realised?), change risk (will the organisation absorb the change?), and dependency risk (if one component fails, which benefits collapse?). These systemic risks cannot be managed at project level alone.',
+          explanationNL: 'Risicobeheer op programmaniveau kijkt verder dan projectleveringsrisico om strategisch risico (zal de strategie veranderen?), batenrisico (zullen de baten worden gerealiseerd?), veranderingsrisico (zal de organisatie de verandering absorberen?) en afhankelijkheidsrisico (als één component faalt, welke baten vallen dan weg?) te omvatten. Deze systemische risico\'s kunnen niet alleen op projectniveau worden beheerd.',
+        },
+      ],
     },
     {
       id: 'pgm-l16',

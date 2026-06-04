@@ -1,0 +1,241 @@
+{
+  "id": "lss-l3",
+  "title": "Quiz: Define Phase",
+  "titleNL": "Quiz: Define Fase",
+  "courseId": "lean-six-sigma",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "lss-q1",
+      "text": "What does DMAIC stand for?",
+      "textNL": "Wat betekent DMAIC?",
+      "question": "Wat betekent DMAIC?",
+      "questionEN": "What does DMAIC stand for?",
+      "options": [
+        "Design, Make, Analyze, Implement, Check",
+        "Define, Measure, Analyze, Improve, Control",
+        "Define, Monitor, Act, Improve, Close",
+        "Develop, Measure, Assess, Integrate, Complete"
+      ],
+      "optionsEN": [
+        "Design, Make, Analyze, Implement, Check",
+        "Define, Measure, Analyze, Improve, Control",
+        "Define, Monitor, Act, Improve, Close",
+        "Develop, Measure, Assess, Integrate, Complete"
+      ],
+      "optionsNL": [
+        "Design, Make, Analyze, Implement, Check",
+        "Define, Measure, Analyze, Improve, Control",
+        "Define, Monitor, Act, Improve, Close",
+        "Develop, Measure, Assess, Integrate, Complete"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "DMAIC stands for Define, Measure, Analyze, Improve, Control — the five-phase structured problem-solving methodology at the core of Six Sigma.",
+      "explanationNL": "DMAIC staat voor Define, Measure, Analyze, Improve, Control — de vijffasige gestructureerde probleemoplossingsmethodologie die de kern vormt van Six Sigma."
+    },
+    {
+      "id": "lss-q2",
+      "text": "Which of the following does NOT belong in a good problem statement?",
+      "textNL": "Wat hoort NIET in een goede problem statement?",
+      "question": "Wat hoort NIET in een goede problem statement?",
+      "questionEN": "Which of the following does NOT belong in a good problem statement?",
+      "options": [
+        "The current performance level",
+        "The business impact",
+        "The cause of the problem",
+        "A measurable description"
+      ],
+      "optionsEN": [
+        "The current performance level",
+        "The business impact",
+        "The cause of the problem",
+        "A measurable description"
+      ],
+      "optionsNL": [
+        "De huidige performance",
+        "De business impact",
+        "De oorzaak van het probleem",
+        "Een meetbare beschrijving"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "A problem statement must not include causes or solutions — those are discovered later in the Analyze and Improve phases respectively. Including them biases the investigation.",
+      "explanationNL": "Een problem statement mag geen oorzaken of oplossingen bevatten — die worden later gevonden in respectievelijk de Analyze- en Improve-fase. Ze opnemen beïnvloedt het onderzoek."
+    },
+    {
+      "id": "lss-q3",
+      "text": "What is a CTQ?",
+      "textNL": "Wat is een CTQ?",
+      "question": "Wat is een CTQ?",
+      "questionEN": "What is a CTQ?",
+      "options": [
+        "Cost To Quality — the cost of quality",
+        "Critical To Quality — a measurable customer requirement",
+        "Control The Quality — a control method",
+        "Customer Total Quality — total customer quality"
+      ],
+      "optionsEN": [
+        "Cost To Quality — the cost of quality",
+        "Critical To Quality — a measurable customer requirement",
+        "Control The Quality — a control method",
+        "Customer Total Quality — total customer quality"
+      ],
+      "optionsNL": [
+        "Cost To Quality - de kosten van kwaliteit",
+        "Critical To Quality - een meetbare klantbehoefte",
+        "Control The Quality - een controle methode",
+        "Customer Total Quality - totale klantkwaliteit"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "CTQ = Critical To Quality, a measurable translation of customer needs derived from the Voice of the Customer (VOC).",
+      "explanationNL": "CTQ = Critical To Quality, een meetbare vertaling van klantbehoeften afgeleid van de Voice of the Customer (VOC)."
+    },
+    {
+      "id": "lss-q4",
+      "text": "Which of the following is NOT one of the 8 wastes in the DOWNTIME mnemonic?",
+      "textNL": "Welk van de volgende is GEEN van de 8 verspillingen in het DOWNTIME-ezelsbruggetje?",
+      "question": "Welk van de volgende is GEEN van de 8 verspillingen in het DOWNTIME-ezelsbruggetje?",
+      "questionEN": "Which of the following is NOT one of the 8 wastes in the DOWNTIME mnemonic?",
+      "options": [
+        "Non-utilized talent",
+        "Transportation",
+        "Documentation",
+        "Overproduction"
+      ],
+      "optionsEN": [
+        "Non-utilized talent",
+        "Transportation",
+        "Documentation",
+        "Overproduction"
+      ],
+      "optionsNL": [
+        "Niet-benut talent",
+        "Transport",
+        "Documentatie",
+        "Overproductie"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "DOWNTIME stands for Defects, Overproduction, Waiting, Non-utilized talent, Transportation, Inventory, Motion, Extra-processing. Documentation is not one of the 8 wastes.",
+      "explanationNL": "DOWNTIME staat voor Defects (Defecten), Overproduction (Overproductie), Waiting (Wachten), Non-utilized talent (Niet-benut talent), Transportation (Transport), Inventory (Voorraad), Motion (Beweging), Extra-processing (Extra bewerking). Documentatie hoort hier niet bij."
+    },
+    {
+      "id": "lss-q5",
+      "text": "In SIPOC, what does the \"S\" stand for?",
+      "textNL": "In SIPOC, waar staat de \"S\" voor?",
+      "question": "In SIPOC, waar staat de \"S\" voor?",
+      "questionEN": "In SIPOC, what does the \"S\" stand for?",
+      "options": [
+        "Standards",
+        "Suppliers",
+        "Scope",
+        "Stakeholders"
+      ],
+      "optionsEN": [
+        "Standards",
+        "Suppliers",
+        "Scope",
+        "Stakeholders"
+      ],
+      "optionsNL": [
+        "Standaarden",
+        "Leveranciers",
+        "Scope",
+        "Stakeholders"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "SIPOC stands for Suppliers, Inputs, Process, Outputs, Customers. It is a high-level process map used in the Define phase to establish scope.",
+      "explanationNL": "SIPOC staat voor Suppliers (Leveranciers), Inputs, Process (Proces), Outputs, Customers (Klanten). Het is een high-level proceskaart die in de Define fase wordt gebruikt om scope vast te stellen."
+    },
+    {
+      "id": "lss-q6",
+      "text": "What is the primary purpose of a Project Charter in the Define phase?",
+      "textNL": "Wat is het primaire doel van een Project Charter in de Define fase?",
+      "question": "Wat is het primaire doel van een Project Charter in de Define fase?",
+      "questionEN": "What is the primary purpose of a Project Charter in the Define phase?",
+      "options": [
+        "To document the root cause of the problem",
+        "To formally authorize the project and align stakeholders on scope, goal, and timeline",
+        "To list all possible solutions to the problem",
+        "To establish the control plan for sustaining improvements"
+      ],
+      "optionsEN": [
+        "To document the root cause of the problem",
+        "To formally authorize the project and align stakeholders on scope, goal, and timeline",
+        "To list all possible solutions to the problem",
+        "To establish the control plan for sustaining improvements"
+      ],
+      "optionsNL": [
+        "Om de grondoorzaak van het probleem te documenteren",
+        "Om het project formeel te autoriseren en stakeholders te aligneren op scope, doel en tijdlijn",
+        "Om alle mogelijke oplossingen voor het probleem op te sommen",
+        "Om het controleplan op te stellen voor het borgen van verbeteringen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The Project Charter formally authorizes the LSS project, aligns all stakeholders on the problem statement, goal (SMART), scope, team, and timeline. It is the primary deliverable of the Define phase.",
+      "explanationNL": "Het Project Charter autoriseert het LSS-project formeel en aligneert alle stakeholders op de probleemstelling, het doel (SMART), scope, team en tijdlijn. Het is de primaire deliverable van de Define fase."
+    },
+    {
+      "id": "lss-q7",
+      "text": "Voice of the Customer (VOC) data is transformed into measurable CTQs through which sequence?",
+      "textNL": "Via welke volgorde worden Voice of the Customer (VOC)-data omgezet in meetbare CTQs?",
+      "question": "Via welke volgorde worden Voice of the Customer (VOC)-data omgezet in meetbare CTQs?",
+      "questionEN": "Voice of the Customer (VOC) data is transformed into measurable CTQs through which sequence?",
+      "options": [
+        "VOC → Solutions → CTQs",
+        "VOC → Needs → CTQs",
+        "VOC → SIPOC → CTQs",
+        "VOC → FMEA → CTQs"
+      ],
+      "optionsEN": [
+        "VOC → Solutions → CTQs",
+        "VOC → Needs → CTQs",
+        "VOC → SIPOC → CTQs",
+        "VOC → FMEA → CTQs"
+      ],
+      "optionsNL": [
+        "VOC → Oplossingen → CTQs",
+        "VOC → Behoeften → CTQs",
+        "VOC → SIPOC → CTQs",
+        "VOC → FMEA → CTQs"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The VOC → Needs → CTQs sequence is the standard LSS approach: capture customer voice, translate it into underlying needs, then convert needs into measurable Critical-to-Quality requirements.",
+      "explanationNL": "De VOC → Behoeften → CTQs-volgorde is de standaard LSS-aanpak: klantgeluiden vastleggen, vertalen naar onderliggende behoeften en die behoeften omzetten in meetbare Critical-to-Quality-eisen."
+    },
+    {
+      "id": "lss-q8",
+      "text": "At a Six Sigma performance level, approximately how many Defects Per Million Opportunities (DPMO) are expected?",
+      "textNL": "Bij een Six Sigma prestatieniveau, hoeveel Defects Per Million Opportunities (DPMO) worden er ongeveer verwacht?",
+      "question": "Bij een Six Sigma prestatieniveau, hoeveel Defects Per Million Opportunities (DPMO) worden er ongeveer verwacht?",
+      "questionEN": "At a Six Sigma performance level, approximately how many Defects Per Million Opportunities (DPMO) are expected?",
+      "options": [
+        "66,807 DPMO",
+        "6,210 DPMO",
+        "3.4 DPMO",
+        "233 DPMO"
+      ],
+      "optionsEN": [
+        "66,807 DPMO",
+        "6,210 DPMO",
+        "3.4 DPMO",
+        "233 DPMO"
+      ],
+      "optionsNL": [
+        "66.807 DPMO",
+        "6.210 DPMO",
+        "3,4 DPMO",
+        "233 DPMO"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Six Sigma quality means only 3.4 DPMO, assuming a 1.5-sigma long-term shift. This corresponds to 99.99966% of outputs meeting specifications.",
+      "explanationNL": "Six Sigma kwaliteit betekent slechts 3,4 DPMO, uitgaande van een 1,5-sigma langetermijnverschuiving. Dit komt overeen met 99,99966% van de outputs die aan de specificaties voldoen."
+    }
+  ]
+}

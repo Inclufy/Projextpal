@@ -42,6 +42,11 @@ export interface QuizQuestion {
   questionEN?: string;
   optionsEN?: string[];
   explanationEN?: string;
+  // Optional NL companion fields — used by EN-first courses (e.g. leadership) where
+  // question/options/explanation are English and these hold the Dutch translation.
+  questionNL?: string;
+  optionsNL?: string[];
+  explanationNL?: string;
   // Bloom taxonomy level for adaptive difficulty surfacing
   difficulty?: 'foundation' | 'application' | 'evaluation';
 }
@@ -57,7 +62,10 @@ export interface Lesson {
   type: 'video' | 'quiz' | 'exam' | 'assignment' | 'certificate' | 'reading';
   videoUrl?: string;
   transcript?: string;
+  // Dutch translation of the transcript for EN-first courses (e.g. leadership).
+  transcriptNL?: string;
   keyTakeaways?: string[];
+  keyTakeawaysNL?: string[];
   resources?: Resource[];
   quiz?: QuizQuestion[];
   completed?: boolean;

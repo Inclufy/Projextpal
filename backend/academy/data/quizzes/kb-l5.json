@@ -1,0 +1,154 @@
+{
+  "id": "kb-l5",
+  "title": "Quiz: Kanban Fundamentals",
+  "titleNL": "Quiz: Kanban Fundamenten",
+  "courseId": "kanban-practitioner",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "kb-q1",
+      "text": "Wat betekent Kanban letterlijk?",
+      "textNL": "Wat betekent Kanban letterlijk?",
+      "question": "Wat betekent Kanban letterlijk?",
+      "questionEN": "Wat betekent Kanban letterlijk?",
+      "options": [
+        "Agile methode",
+        "Visueel signaal",
+        "Workflow management",
+        "Continue verbetering"
+      ],
+      "optionsEN": [
+        "Agile methode",
+        "Visueel signaal",
+        "Workflow management",
+        "Continue verbetering"
+      ],
+      "optionsNL": [
+        "Agile methode",
+        "Visueel signaal",
+        "Workflow management",
+        "Continue verbetering"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Kanban (看板) is Japans voor \"visueel signaal\" of \"kaart\".",
+      "explanationNL": "Kanban (看板) is Japans voor \"visueel signaal\" of \"kaart\"."
+    },
+    {
+      "id": "kb-q2",
+      "text": "Wat is Little's Law?",
+      "textNL": "Wat is Little's Law?",
+      "question": "Wat is Little's Law?",
+      "questionEN": "Wat is Little's Law?",
+      "options": [
+        "WIP = Lead Time × Throughput",
+        "Lead Time = WIP / Throughput",
+        "Throughput = Lead Time × WIP",
+        "WIP = Throughput / Lead Time"
+      ],
+      "optionsEN": [
+        "WIP = Lead Time × Throughput",
+        "Lead Time = WIP / Throughput",
+        "Throughput = Lead Time × WIP",
+        "WIP = Throughput / Lead Time"
+      ],
+      "optionsNL": [
+        "WIP = Lead Time × Throughput",
+        "Lead Time = WIP / Throughput",
+        "Throughput = Lead Time × WIP",
+        "WIP = Throughput / Lead Time"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Little's Law stelt dat Lead Time = WIP / Throughput.",
+      "explanationNL": "Little's Law stelt dat Lead Time = WIP / Throughput."
+    },
+    {
+      "id": "kb-q3",
+      "text": "Waarom zijn WIP limieten pijnlijk?",
+      "textNL": "Waarom zijn WIP limieten pijnlijk?",
+      "question": "Waarom zijn WIP limieten pijnlijk?",
+      "questionEN": "Waarom zijn WIP limieten pijnlijk?",
+      "options": [
+        "Omdat ze te hoog zijn",
+        "Omdat ze problemen onthullen die je moet oplossen",
+        "Omdat niemand ze begrijpt",
+        "Omdat ze de throughput verlagen"
+      ],
+      "optionsEN": [
+        "Omdat ze te hoog zijn",
+        "Omdat ze problemen onthullen die je moet oplossen",
+        "Omdat niemand ze begrijpt",
+        "Omdat ze de throughput verlagen"
+      ],
+      "optionsNL": [
+        "Omdat ze te hoog zijn",
+        "Omdat ze problemen onthullen die je moet oplossen",
+        "Omdat niemand ze begrijpt",
+        "Omdat ze de throughput verlagen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "WIP limieten zijn bedoeld om pijnlijk te zijn - ze onthullen bottlenecks en problemen.",
+      "explanationNL": "WIP limieten zijn bedoeld om pijnlijk te zijn - ze onthullen bottlenecks en problemen."
+    },
+    {
+      "id": "kb-q4",
+      "text": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "textNL": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "question": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "questionEN": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "options": [
+        "Alleen throughput",
+        "WIP, lead time, throughput en bottlenecks",
+        "Alleen blokkades",
+        "Team velocity"
+      ],
+      "optionsEN": [
+        "Alleen throughput",
+        "WIP, lead time, throughput en bottlenecks",
+        "Alleen blokkades",
+        "Team velocity"
+      ],
+      "optionsNL": [
+        "Alleen throughput",
+        "WIP, lead time, throughput en bottlenecks",
+        "Alleen blokkades",
+        "Team velocity"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De CFD toont WIP, lead time, throughput en bottlenecks in één visualisatie.",
+      "explanationNL": "De CFD toont WIP, lead time, throughput en bottlenecks in één visualisatie."
+    },
+    {
+      "id": "kb-q5",
+      "text": "Wat is typisch de flow efficiency in kenniswerk?",
+      "textNL": "Wat is typisch de flow efficiency in kenniswerk?",
+      "question": "Wat is typisch de flow efficiency in kenniswerk?",
+      "questionEN": "Wat is typisch de flow efficiency in kenniswerk?",
+      "options": [
+        "50-60%",
+        "30-40%",
+        "5-15%",
+        "80-90%"
+      ],
+      "optionsEN": [
+        "50-60%",
+        "30-40%",
+        "5-15%",
+        "80-90%"
+      ],
+      "optionsNL": [
+        "50-60%",
+        "30-40%",
+        "5-15%",
+        "80-90%"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Flow efficiency in kenniswerk is typisch 5-15%, wat betekent dat 85-95% wachttijd is.",
+      "explanationNL": "Flow efficiency in kenniswerk is typisch 5-15%, wat betekent dat 85-95% wachttijd is."
+    }
+  ]
+}

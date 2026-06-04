@@ -1,0 +1,299 @@
+{
+  "id": "lead-l11",
+  "title": "Quiz: Teams",
+  "titleNL": "Quiz: Teams",
+  "courseId": "leadership-pm",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "lead-q-t1",
+      "text": "According to Lencioni, what is the foundation of a high-performance team?",
+      "textNL": "Volgens Lencioni, wat is het fundament van een high-performance team?",
+      "question": "Volgens Lencioni, wat is het fundament van een high-performance team?",
+      "questionEN": "According to Lencioni, what is the foundation of a high-performance team?",
+      "options": [
+        "Clear goals",
+        "Trust",
+        "Strong leadership",
+        "Good processes"
+      ],
+      "optionsEN": [
+        "Clear goals",
+        "Trust",
+        "Strong leadership",
+        "Good processes"
+      ],
+      "optionsNL": [
+        "Duidelijke doelen",
+        "Vertrouwen",
+        "Sterk leiderschap",
+        "Goede processen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Trust is the foundation. Without vulnerability-based trust, teams cannot engage in healthy conflict, commit to decisions, hold each other accountable, or focus on results.",
+      "explanationNL": "Vertrouwen is het fundament. Zonder kwetsbaarheid-gebaseerd vertrouwen kunnen teams niet aangaan in gezond conflict, zich committeren aan beslissingen, elkaar verantwoordelijk houden of focussen op resultaten."
+    },
+    {
+      "id": "lead-q-t2",
+      "text": "In Tuckman's model, which stage involves conflict and resistance?",
+      "textNL": "In Tuckmans model, welke fase omvat conflict en weerstand?",
+      "question": "In Tuckmans model, welke fase omvat conflict en weerstand?",
+      "questionEN": "In Tuckman's model, which stage involves conflict and resistance?",
+      "options": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "optionsEN": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "optionsNL": [
+        "Forming",
+        "Storming",
+        "Norming",
+        "Performing"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Storming is when reality sets in, differences emerge, and conflicts arise. This stage must be weathered, not avoided, for teams to reach high performance.",
+      "explanationNL": "Storming is wanneer de realiteit indaalt, verschillen naar voren komen en conflicten ontstaan. Deze fase moet worden doorstaan, niet vermeden, om high performance te bereiken."
+    },
+    {
+      "id": "lead-q-t3",
+      "text": "What conflict style should you use for important issues when time allows?",
+      "textNL": "Welke conflictstijl moet je gebruiken voor belangrijke issues wanneer tijd het toelaat?",
+      "question": "Welke conflictstijl moet je gebruiken voor belangrijke issues wanneer tijd het toelaat?",
+      "questionEN": "What conflict style should you use for important issues when time allows?",
+      "options": [
+        "Competing (Win-Lose)",
+        "Avoiding (Lose-Lose)",
+        "Compromising (Half-Half)",
+        "Collaborating (Win-Win)"
+      ],
+      "optionsEN": [
+        "Competing (Win-Lose)",
+        "Avoiding (Lose-Lose)",
+        "Compromising (Half-Half)",
+        "Collaborating (Win-Win)"
+      ],
+      "optionsNL": [
+        "Competing (Win-Verlies)",
+        "Avoiding (Verlies-Verlies)",
+        "Compromising (Half-Half)",
+        "Collaborating (Win-Win)"
+      ],
+      "correct": 3,
+      "points": 1,
+      "explanation": "Collaborating (win-win) is ideal for important conflicts when time allows. Both parties' needs are met, relationships strengthen, and commitment is high.",
+      "explanationNL": "Collaborating (win-win) is ideaal voor belangrijke conflicten wanneer tijd het toelaat. Beide partijen's behoeften worden vervuld, relaties versterken en commitment is hoog."
+    },
+    {
+      "id": "lead-q-t4",
+      "text": "What should you do FIRST when delegating a task?",
+      "textNL": "Wat moet je als EERSTE doen bij het delegeren van een taak?",
+      "question": "Wat moet je als EERSTE doen bij het delegeren van een taak?",
+      "questionEN": "What should you do FIRST when delegating a task?",
+      "options": [
+        "Set up check-in meetings",
+        "Provide context and explain why it matters",
+        "Give detailed instructions on how to do it",
+        "Set the deadline"
+      ],
+      "optionsEN": [
+        "Set up check-in meetings",
+        "Provide context and explain why it matters",
+        "Give detailed instructions on how to do it",
+        "Set the deadline"
+      ],
+      "optionsNL": [
+        "Check-in meetings inplannen",
+        "Context geven en uitleggen waarom het belangrijk is",
+        "Gedetailleerde instructies geven over hoe het te doen",
+        "De deadline bepalen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Start by setting context - why the task matters and how it fits the bigger picture. This builds buy-in and helps the person make good decisions.",
+      "explanationNL": "Begin met context geven - waarom de taak belangrijk is en hoe het past in het grotere geheel. Dit bouwt buy-in op en helpt de persoon goede beslissingen te nemen."
+    },
+    {
+      "id": "lead-q-t5",
+      "text": "In the RACI matrix, who is ultimately answerable for a task?",
+      "textNL": "In de RACI matrix, wie is uiteindelijk verantwoordelijk voor een taak?",
+      "question": "In de RACI matrix, wie is uiteindelijk verantwoordelijk voor een taak?",
+      "questionEN": "In the RACI matrix, who is ultimately answerable for a task?",
+      "options": [
+        "Responsible (does the work)",
+        "Accountable (ultimately answerable)",
+        "Consulted (provides input)",
+        "Informed (kept in loop)"
+      ],
+      "optionsEN": [
+        "Responsible (does the work)",
+        "Accountable (ultimately answerable)",
+        "Consulted (provides input)",
+        "Informed (kept in loop)"
+      ],
+      "optionsNL": [
+        "Responsible (doet het werk)",
+        "Accountable (uiteindelijk verantwoordelijk)",
+        "Consulted (geeft input)",
+        "Informed (gehouden in loop)"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Accountable (A) is ultimately answerable for the task. There should only be ONE person accountable for each task. Responsible (R) does the actual work.",
+      "explanationNL": "Accountable (A) is uiteindelijk verantwoordelijk voor de taak. Er mag slechts ÉÉN persoon accountable zijn voor elke taak. Responsible (R) doet het daadwerkelijke werk."
+    },
+    {
+      "id": "lead-q-t6",
+      "text": "According to Dan Pink, what are the three elements of intrinsic motivation?",
+      "textNL": "Volgens Dan Pink, wat zijn de drie elementen van intrinsieke motivatie?",
+      "question": "Volgens Dan Pink, wat zijn de drie elementen van intrinsieke motivatie?",
+      "questionEN": "According to Dan Pink, what are the three elements of intrinsic motivation?",
+      "options": [
+        "Money, Status, Security",
+        "Autonomy, Mastery, Purpose",
+        "Achievement, Power, Affiliation",
+        "Physiological, Safety, Social"
+      ],
+      "optionsEN": [
+        "Money, Status, Security",
+        "Autonomy, Mastery, Purpose",
+        "Achievement, Power, Affiliation",
+        "Physiological, Safety, Social"
+      ],
+      "optionsNL": [
+        "Geld, Status, Zekerheid",
+        "Autonomie, Meesterschap, Doel",
+        "Prestatie, Macht, Affiliatie",
+        "Fysiologisch, Veiligheid, Sociaal"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Pink's three elements are Autonomy (desire to direct our lives), Mastery (urge to get better), and Purpose (yearning for meaningful work).",
+      "explanationNL": "Pink's drie elementen zijn Autonomie (wens om ons leven te sturen), Meesterschap (drang om beter te worden), en Doel (verlangen naar betekenisvol werk)."
+    },
+    {
+      "id": "lead-q-t7",
+      "text": "Which conflict approach focuses on interests rather than positions?",
+      "textNL": "Welke conflictaanpak focust op interesses in plaats van posities?",
+      "question": "Welke conflictaanpak focust op interesses in plaats van posities?",
+      "questionEN": "Which conflict approach focuses on interests rather than positions?",
+      "options": [
+        "Competing",
+        "Avoiding",
+        "Interest-based approach",
+        "Compromising"
+      ],
+      "optionsEN": [
+        "Competing",
+        "Avoiding",
+        "Interest-based approach",
+        "Compromising"
+      ],
+      "optionsNL": [
+        "Competing",
+        "Avoiding",
+        "Interesse-gebaseerde aanpak",
+        "Compromising"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The interest-based approach asks \"why\" people want something (interests) rather than just \"what\" they say they want (positions). This leads to creative solutions.",
+      "explanationNL": "De interesse-gebaseerde aanpak vraagt \"waarom\" mensen iets willen (interesses) in plaats van alleen \"wat\" ze zeggen dat ze willen (posities). Dit leidt tot creatieve oplossingen."
+    },
+    {
+      "id": "lead-q-t8",
+      "text": "What is \"reverse delegation\"?",
+      "textNL": "Wat is \"omgekeerde delegatie\"?",
+      "question": "Wat is \"omgekeerde delegatie\"?",
+      "questionEN": "What is \"reverse delegation\"?",
+      "options": [
+        "Delegating upward to your manager",
+        "When the person delegates the task back to you",
+        "Delegating the same task twice",
+        "Removing delegation"
+      ],
+      "optionsEN": [
+        "Delegating upward to your manager",
+        "When the person delegates the task back to you",
+        "Delegating the same task twice",
+        "Removing delegation"
+      ],
+      "optionsNL": [
+        "Naar boven delegeren naar je manager",
+        "Wanneer de persoon de taak terug delegeert naar jou",
+        "Dezelfde taak twee keer delegeren",
+        "Delegatie verwijderen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Reverse delegation is when the person you delegated to tries to give the task back to you (\"What should I do?\"). Combat this by coaching problem-solving instead of giving answers.",
+      "explanationNL": "Omgekeerde delegatie is wanneer de persoon aan wie je delegeerde probeert de taak terug te geven aan jou (\"Wat moet ik doen?\"). Bestrijd dit door probleemoplossing te coachen in plaats van antwoorden te geven."
+    },
+    {
+      "id": "lead-q-t9",
+      "text": "According to Herzberg, which is a TRUE motivator (not just a hygiene factor)?",
+      "textNL": "Volgens Herzberg, wat is een ECHTE motivator (niet alleen een hygiëne factor)?",
+      "question": "Volgens Herzberg, wat is een ECHTE motivator (niet alleen een hygiëne factor)?",
+      "questionEN": "According to Herzberg, which is a TRUE motivator (not just a hygiene factor)?",
+      "options": [
+        "Salary increase",
+        "Better working conditions",
+        "Recognition for achievement",
+        "Job security"
+      ],
+      "optionsEN": [
+        "Salary increase",
+        "Better working conditions",
+        "Recognition for achievement",
+        "Job security"
+      ],
+      "optionsNL": [
+        "Salaris verhoging",
+        "Betere werkomstandigheden",
+        "Erkenning voor prestatie",
+        "Baan zekerheid"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Recognition is a true motivator. Salary, working conditions, and job security are hygiene factors - their absence causes dissatisfaction but their presence doesn't motivate.",
+      "explanationNL": "Erkenning is een echte motivator. Salaris, werkomstandigheden en baanzekerheid zijn hygiëne factoren - hun afwezigheid veroorzaakt ontevredenheid maar hun aanwezigheid motiveert niet."
+    },
+    {
+      "id": "lead-q-t10",
+      "text": "In Tuckman's stages, how should your leadership style evolve?",
+      "textNL": "In Tuckmans fasen, hoe moet je leiderschapsstijl evolueren?",
+      "question": "In Tuckmans fasen, hoe moet je leiderschapsstijl evolueren?",
+      "questionEN": "In Tuckman's stages, how should your leadership style evolve?",
+      "options": [
+        "Stay directive throughout",
+        "Start delegating and become more directive",
+        "Start directive and gradually become more delegating",
+        "Always be hands-off"
+      ],
+      "optionsEN": [
+        "Stay directive throughout",
+        "Start delegating and become more directive",
+        "Start directive and gradually become more delegating",
+        "Always be hands-off"
+      ],
+      "optionsNL": [
+        "Blijf directief gedurende",
+        "Begin delegerend en word meer directief",
+        "Begin directief en word geleidelijk meer delegerend",
+        "Altijd hands-off zijn"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Your style should evolve: Forming (directive), Storming (coaching), Norming (supporting), Performing (delegating). Teams need more direction early, more autonomy later.",
+      "explanationNL": "Je stijl moet evolueren: Forming (directief), Storming (coaching), Norming (ondersteunend), Performing (delegerend). Teams hebben vroeg meer richting nodig, later meer autonomie."
+    }
+  ]
+}

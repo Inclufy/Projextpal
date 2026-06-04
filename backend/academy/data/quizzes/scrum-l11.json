@@ -1,0 +1,154 @@
+{
+  "id": "scrum-l11",
+  "title": "Quiz: Scrum Master Role & Practice",
+  "titleNL": "Quiz: Scrum Master Rol & Praktijk",
+  "courseId": "scrum-master",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "scrum-q6",
+      "text": "Wat is de belangrijkste taak van de Scrum Master?",
+      "textNL": "Wat is de belangrijkste taak van de Scrum Master?",
+      "question": "Wat is de belangrijkste taak van de Scrum Master?",
+      "questionEN": "Wat is de belangrijkste taak van de Scrum Master?",
+      "options": [
+        "Het team managen",
+        "De Product Backlog beheren",
+        "Het team helpen effectief te werken",
+        "De Sprint Planning leiden"
+      ],
+      "optionsEN": [
+        "Het team managen",
+        "De Product Backlog beheren",
+        "Het team helpen effectief te werken",
+        "De Sprint Planning leiden"
+      ],
+      "optionsNL": [
+        "Het team managen",
+        "De Product Backlog beheren",
+        "Het team helpen effectief te werken",
+        "De Sprint Planning leiden"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "De Scrum Master is een servant-leader die het team helpt effectief te werken.",
+      "explanationNL": "De Scrum Master is een servant-leader die het team helpt effectief te werken."
+    },
+    {
+      "id": "scrum-q7",
+      "text": "Wat is velocity?",
+      "textNL": "Wat is velocity?",
+      "question": "Wat is velocity?",
+      "questionEN": "Wat is velocity?",
+      "options": [
+        "De snelheid waarmee het team werkt",
+        "De hoeveelheid werk die het team gemiddeld per Sprint afrondt",
+        "Het aantal uren dat het team per Sprint werkt",
+        "De productiviteit van individuele teamleden"
+      ],
+      "optionsEN": [
+        "De snelheid waarmee het team werkt",
+        "De hoeveelheid werk die het team gemiddeld per Sprint afrondt",
+        "Het aantal uren dat het team per Sprint werkt",
+        "De productiviteit van individuele teamleden"
+      ],
+      "optionsNL": [
+        "De snelheid waarmee het team werkt",
+        "De hoeveelheid werk die het team gemiddeld per Sprint afrondt",
+        "Het aantal uren dat het team per Sprint werkt",
+        "De productiviteit van individuele teamleden"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Velocity is de hoeveelheid werk (in story points) die het team gemiddeld per Sprint afrondt.",
+      "explanationNL": "Velocity is de hoeveelheid werk (in story points) die het team gemiddeld per Sprint afrondt."
+    },
+    {
+      "id": "scrum-q8",
+      "text": "Wie faciliteert de Sprint Retrospective?",
+      "textNL": "Wie faciliteert de Sprint Retrospective?",
+      "question": "Wie faciliteert de Sprint Retrospective?",
+      "questionEN": "Wie faciliteert de Sprint Retrospective?",
+      "options": [
+        "Product Owner",
+        "Management",
+        "Scrum Master",
+        "Senior Developer"
+      ],
+      "optionsEN": [
+        "Product Owner",
+        "Management",
+        "Scrum Master",
+        "Senior Developer"
+      ],
+      "optionsNL": [
+        "Product Owner",
+        "Management",
+        "Scrum Master",
+        "Senior Developer"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "De Scrum Master faciliteert de Sprint Retrospective.",
+      "explanationNL": "De Scrum Master faciliteert de Sprint Retrospective."
+    },
+    {
+      "id": "scrum-q9",
+      "text": "Wat moet je NIET doen met velocity?",
+      "textNL": "Wat moet je NIET doen met velocity?",
+      "question": "Wat moet je NIET doen met velocity?",
+      "questionEN": "Wat moet je NIET doen met velocity?",
+      "options": [
+        "Forecasting voor toekomstige Sprints",
+        "Trends over tijd monitoren",
+        "Teams met elkaar vergelijken",
+        "Stabiliteit meten"
+      ],
+      "optionsEN": [
+        "Forecasting voor toekomstige Sprints",
+        "Trends over tijd monitoren",
+        "Teams met elkaar vergelijken",
+        "Stabiliteit meten"
+      ],
+      "optionsNL": [
+        "Forecasting voor toekomstige Sprints",
+        "Trends over tijd monitoren",
+        "Teams met elkaar vergelijken",
+        "Stabiliteit meten"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Velocity moet niet worden gebruikt om teams met elkaar te vergelijken.",
+      "explanationNL": "Velocity moet niet worden gebruikt om teams met elkaar te vergelijken."
+    },
+    {
+      "id": "scrum-q10",
+      "text": "Wat is een impediment?",
+      "textNL": "Wat is een impediment?",
+      "question": "Wat is een impediment?",
+      "questionEN": "Wat is een impediment?",
+      "options": [
+        "Een taak die moet worden gedaan",
+        "Een obstakel dat het team hindert",
+        "Een bug in de software",
+        "Een meeting die te lang duurt"
+      ],
+      "optionsEN": [
+        "Een taak die moet worden gedaan",
+        "Een obstakel dat het team hindert",
+        "Een bug in de software",
+        "Een meeting die te lang duurt"
+      ],
+      "optionsNL": [
+        "Een taak die moet worden gedaan",
+        "Een obstakel dat het team hindert",
+        "Een bug in de software",
+        "Een meeting die te lang duurt"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Een impediment is een obstakel dat het team hindert in het leveren van waarde.",
+      "explanationNL": "Een impediment is een obstakel dat het team hindert in het leveren van waarde."
+    }
+  ]
+}

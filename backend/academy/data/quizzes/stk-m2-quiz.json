@@ -1,0 +1,154 @@
+{
+  "id": "stk-m2-quiz",
+  "title": "Module 2 Quiz — Betrokkenheid",
+  "titleNL": "Module 2 Quiz — Betrokkenheid",
+  "courseId": "stakeholder-management",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "stk-q2-1",
+      "text": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "textNL": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "question": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "questionEN": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "options": [
+        "PMBOK 7th Edition — Stakeholder Performance Domain",
+        "AA1000SES Stakeholder Engagement Standard (AccountAbility, 2015)",
+        "ISO 21500 — Guidance on Project Management",
+        "PRINCE2 7th Edition — Communication Theme"
+      ],
+      "optionsEN": [
+        "PMBOK 7th Edition — Stakeholder Performance Domain",
+        "AA1000SES Stakeholder Engagement Standard (AccountAbility, 2015)",
+        "ISO 21500 — Guidance on Project Management",
+        "PRINCE2 7th Edition — Communication Theme"
+      ],
+      "optionsNL": [
+        "PMBOK 7th Edition — Stakeholder Performance Domain",
+        "AA1000SES Stakeholder Engagement Standard (AccountAbility, 2015)",
+        "ISO 21500 — Guidance on Project Management",
+        "PRINCE2 7th Edition — Communication Theme"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De AA1000SES (AccountAbility Stakeholder Engagement Standard, 2015) is de internationale norm die vijf betrokkenheidsniveaus definieert: monitor, informeer, consulteer, samenwerk en empoweer. Ze vormen een oplopende schaal van éénrichtingscommunicatie naar gedeelde besluitvorming.",
+      "explanationNL": "De AA1000SES (AccountAbility Stakeholder Engagement Standard, 2015) is de internationale norm die vijf betrokkenheidsniveaus definieert: monitor, informeer, consulteer, samenwerk en empoweer. Ze vormen een oplopende schaal van éénrichtingscommunicatie naar gedeelde besluitvorming."
+    },
+    {
+      "id": "stk-q2-2",
+      "text": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "textNL": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "question": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "questionEN": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "options": [
+        "Informeer",
+        "Consulteer",
+        "Samenwerk",
+        "Empoweer"
+      ],
+      "optionsEN": [
+        "Informeer",
+        "Consulteer",
+        "Samenwerk",
+        "Empoweer"
+      ],
+      "optionsNL": [
+        "Informeer",
+        "Consulteer",
+        "Samenwerk",
+        "Empoweer"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Consulteer (niveau 3) houdt in dat je input en feedback vraagt maar de beslissingsbevoegdheid bij de organisatie houdt. Enquêtes, interviews en focusgroepen zijn typische consultatietechnieken. Bij samenwerken (niveau 4) wordt de beslissing gezamenlijk genomen; bij empoweren (niveau 5) wordt ze gedelegeerd.",
+      "explanationNL": "Consulteer (niveau 3) houdt in dat je input en feedback vraagt maar de beslissingsbevoegdheid bij de organisatie houdt. Enquêtes, interviews en focusgroepen zijn typische consultatietechnieken. Bij samenwerken (niveau 4) wordt de beslissing gezamenlijk genomen; bij empoweren (niveau 5) wordt ze gedelegeerd."
+    },
+    {
+      "id": "stk-q2-3",
+      "text": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "textNL": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "question": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "questionEN": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "options": [
+        "Splits mensen van het probleem",
+        "Gebruik objectieve criteria",
+        "Focus op belangen, niet posities",
+        "Creëer meerdere opties"
+      ],
+      "optionsEN": [
+        "Splits mensen van het probleem",
+        "Gebruik objectieve criteria",
+        "Focus op belangen, niet posities",
+        "Creëer meerdere opties"
+      ],
+      "optionsNL": [
+        "Splits mensen van het probleem",
+        "Gebruik objectieve criteria",
+        "Focus op belangen, niet posities",
+        "Creëer meerdere opties"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Het derde principe van Fisher & Ury: focus op belangen, niet posities. Een positie is wat een stakeholder zegt te willen; een belang is waarom ze dat willen. Belangen zijn vaak gemakkelijker te adresseren dan posities, en er zijn vaak meerdere manieren om hetzelfde belang te bevredigen.",
+      "explanationNL": "Het derde principe van Fisher & Ury: focus op belangen, niet posities. Een positie is wat een stakeholder zegt te willen; een belang is waarom ze dat willen. Belangen zijn vaak gemakkelijker te adresseren dan posities, en er zijn vaak meerdere manieren om hetzelfde belang te bevredigen."
+    },
+    {
+      "id": "stk-q2-4",
+      "text": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "textNL": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "question": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "questionEN": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "options": [
+        "Kanaal",
+        "Frequentie",
+        "Eigenaar",
+        "Doel"
+      ],
+      "optionsEN": [
+        "Kanaal",
+        "Frequentie",
+        "Eigenaar",
+        "Doel"
+      ],
+      "optionsNL": [
+        "Kanaal",
+        "Frequentie",
+        "Eigenaar",
+        "Doel"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "De eigenaar-component van het communicatieplan definieert wie verantwoordelijk is voor het daadwerkelijk verzenden van de communicatie. Zonder expliciete eigenaar per stroom vallen communicatielijnen weg zodra de projectmanager overbelast raakt of het team wisselt.",
+      "explanationNL": "De eigenaar-component van het communicatieplan definieert wie verantwoordelijk is voor het daadwerkelijk verzenden van de communicatie. Zonder expliciete eigenaar per stroom vallen communicatielijnen weg zodra de projectmanager overbelast raakt of het team wisselt."
+    },
+    {
+      "id": "stk-q2-5",
+      "text": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "textNL": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "question": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "questionEN": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "options": [
+        "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
+        "Een herinnering om altijd vanuit het perspectief van de ontvanger te communiceren: What's In It For Me?",
+        "Een techniek om een communicatieboodschap op drie niveaus te testen: waarschijnlijk, ideaal, feitelijk",
+        "Een raamwerk voor het meten van communicatie-effectiviteit op kwartaalbasis"
+      ],
+      "optionsEN": [
+        "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
+        "Een herinnering om altijd vanuit het perspectief van de ontvanger te communiceren: What's In It For Me?",
+        "Een techniek om een communicatieboodschap op drie niveaus te testen: waarschijnlijk, ideaal, feitelijk",
+        "Een raamwerk voor het meten van communicatie-effectiviteit op kwartaalbasis"
+      ],
+      "optionsNL": [
+        "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
+        "Een herinnering om altijd vanuit het perspectief van de ontvanger te communiceren: What's In It For Me?",
+        "Een techniek om een communicatieboodschap op drie niveaus te testen: waarschijnlijk, ideaal, feitelijk",
+        "Een raamwerk voor het meten van communicatie-effectiviteit op kwartaalbasis"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "WIIFM staat voor \"What's In It For Me?\" — de onbewuste vraag die elke stakeholder stelt bij het ontvangen van een projectboodschap. Gerichte communicatie beantwoordt deze vraag expliciet per doelgroep: wat levert het hen op, welke angsten worden weggenomen, welke succescriteria worden bereikt?",
+      "explanationNL": "WIIFM staat voor \"What's In It For Me?\" — de onbewuste vraag die elke stakeholder stelt bij het ontvangen van een projectboodschap. Gerichte communicatie beantwoordt deze vraag expliciet per doelgroep: wat levert het hen op, welke angsten worden weggenomen, welke succescriteria worden bereikt?"
+    }
+  ]
+}

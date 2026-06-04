@@ -1115,6 +1115,448 @@ Jouw taak is een volledig Kanban-systeemontwerp opleveren dat direct bruikbaar i
 - Continue verbetering
 
 Succes!`,
+      quiz: [
+        {
+          id: 'kanban-exam-q1',
+          question: 'Which of the following is one of the four foundational principles of the Kanban Method?',
+          questionNL: 'Welk van de volgende is een van de vier fundamentele principes van de Kanban Methode?',
+          options: [
+            'Define sprint goals before every iteration',
+            'Start with what you do now',
+            'Assign dedicated roles to all team members',
+            'Limit the number of team members per board'
+          ],
+          optionsNL: [
+            'Definieer sprintdoelen vóór elke iteratie',
+            'Begin met wat je nu doet',
+            'Wijs vaste rollen toe aan alle teamleden',
+            'Beperk het aantal teamleden per bord'
+          ],
+          correctAnswer: 1,
+          explanation: '"Start with what you do now" is one of the four foundational Kanban principles (David J. Anderson). It means Kanban does not require you to change your existing process before starting — you visualize the current state first.',
+          explanationNL: '"Begin met wat je nu doet" is een van de vier fundamentele Kanban-principes (David J. Anderson). Het betekent dat Kanban niet vereist dat je je bestaand proces verandert voordat je begint — je visualiseert eerst de huidige situatie.',
+        },
+        {
+          id: 'kanban-exam-q2',
+          question: 'Which statement best describes the Kanban principle "Agree to pursue incremental, evolutionary change"?',
+          questionNL: 'Welke uitspraak beschrijft het Kanban-principe "Streef naar incrementele, evolutionaire verandering" het best?',
+          options: [
+            'Replace the entire process at once with the Kanban system',
+            'Make small, continuous improvements rather than large disruptive changes',
+            'Only change the process after a retrospective vote',
+            'Incremental change applies only to software delivery'
+          ],
+          optionsNL: [
+            'Vervang het volledige proces in één keer door het Kanban-systeem',
+            'Maak kleine, continue verbeteringen in plaats van grote disruptieve wijzigingen',
+            'Verander het proces alleen na een retrospectieve stemming',
+            'Incrementele verandering geldt alleen voor softwareontwikkeling'
+          ],
+          correctAnswer: 1,
+          explanation: 'The principle emphasizes evolutionary change — small improvements over time — to reduce organizational resistance and avoid the disruption caused by large-scale process overhauls.',
+          explanationNL: 'Het principe benadrukt evolutionaire verandering — kleine verbeteringen over tijd — om organisatieweerstand te verminderen en de verstoring van grootschalige proceswijzigingen te vermijden.',
+        },
+        {
+          id: 'kanban-exam-q3',
+          question: 'What is the primary purpose of WIP limits in a Kanban system?',
+          questionNL: 'Wat is het primaire doel van WIP-limieten in een Kanbansysteem?',
+          options: [
+            'To prevent the team from taking on too many projects per year',
+            'To expose bottlenecks and improve flow by limiting work in process',
+            'To assign a maximum number of tasks per person per sprint',
+            'To restrict the number of columns on the Kanban board'
+          ],
+          optionsNL: [
+            'Om het team te verhinderen te veel projecten per jaar op te nemen',
+            'Om knelpunten bloot te leggen en de flow te verbeteren door werk in uitvoering te beperken',
+            'Om een maximaal aantal taken per persoon per sprint toe te wijzen',
+            'Om het aantal kolommen op het Kanbanbord te beperken'
+          ],
+          correctAnswer: 1,
+          explanation: 'WIP limits constrain the number of items in active states, which causes bottlenecks to become visible (work piles up at the constrained stage) and creates pressure to resolve them, improving overall flow.',
+          explanationNL: 'WIP-limieten beperken het aantal items in actieve statussen, waardoor knelpunten zichtbaar worden (werk stapelt zich op bij de beperkte fase) en er druk ontstaat om ze op te lossen, wat de algehele flow verbetert.',
+        },
+        {
+          id: 'kanban-exam-q4',
+          question: 'According to Little\'s Law, if a team\'s average throughput is 5 items per week and the average WIP is 20 items, what is the average lead time?',
+          questionNL: 'Volgens de wet van Little, als de gemiddelde throughput van een team 5 items per week is en de gemiddelde WIP 20 items, wat is dan de gemiddelde doorlooptijd?',
+          options: [
+            '100 weeks',
+            '4 weeks',
+            '0.25 weeks',
+            '15 weeks'
+          ],
+          optionsNL: [
+            '100 weken',
+            '4 weken',
+            '0,25 weken',
+            '15 weken'
+          ],
+          correctAnswer: 1,
+          explanation: 'Little\'s Law: Lead Time = WIP / Throughput. So 20 / 5 = 4 weeks. Reducing WIP directly reduces lead time when throughput is held constant.',
+          explanationNL: 'Wet van Little: Doorlooptijd = WIP / Throughput. Dus 20 / 5 = 4 weken. Het verlagen van WIP verlaagt direct de doorlooptijd als de throughput constant blijft.',
+        },
+        {
+          id: 'kanban-exam-q5',
+          question: 'What does a Cumulative Flow Diagram (CFD) primarily show?',
+          questionNL: 'Wat toont een Cumulatief Stroomdiagram (CFD) primair?',
+          options: [
+            'The velocity of each team member over time',
+            'The number of items in each workflow state over time, revealing flow health',
+            'The total budget spent per sprint',
+            'The burndown of remaining story points'
+          ],
+          optionsNL: [
+            'De snelheid van elk teamlid over tijd',
+            'Het aantal items in elke workflowstatus over tijd, wat de flowgezondheid onthult',
+            'Het totale budget besteed per sprint',
+            'De burndown van resterende storypunten'
+          ],
+          correctAnswer: 1,
+          explanation: 'A CFD plots the cumulative count of items in each workflow state (columns) over time. Widening bands indicate growing WIP or bottlenecks; parallel bands with constant width indicate smooth flow.',
+          explanationNL: 'Een CFD toont het cumulatieve aantal items in elke workflowstatus (kolommen) over tijd. Verbredende banden wijzen op groeiend WIP of knelpunten; parallelle banden met constante breedte wijzen op soepele flow.',
+        },
+        {
+          id: 'kanban-exam-q6',
+          question: 'What is the difference between lead time and cycle time in a Kanban system?',
+          questionNL: 'Wat is het verschil tussen doorlooptijd en cyclustijd in een Kanbansysteem?',
+          options: [
+            'Lead time is measured in sprints; cycle time is measured in hours',
+            'Lead time starts when a request is made; cycle time starts when work actively begins',
+            'Cycle time includes customer waiting time; lead time does not',
+            'They are synonyms for the same metric'
+          ],
+          optionsNL: [
+            'Doorlooptijd wordt gemeten in sprints; cyclustijd wordt gemeten in uren',
+            'Doorlooptijd begint wanneer een verzoek wordt ingediend; cyclustijd begint wanneer het werk actief begint',
+            'Cyclustijd omvat wachttijd van de klant; doorlooptijd niet',
+            'Ze zijn synoniemen voor dezelfde metric'
+          ],
+          correctAnswer: 1,
+          explanation: 'Lead time is the total elapsed time from when a customer request enters the system to when it is delivered. Cycle time only counts the active working period (from "work started" to "done"), excluding queuing time.',
+          explanationNL: 'Doorlooptijd is de totale verstreken tijd vanaf het moment dat een klantverzoek het systeem binnengaat tot het wordt geleverd. Cyclustijd telt alleen de actieve werkperiode (van "werk gestart" tot "klaar"), exclusief wachttijd.',
+        },
+        {
+          id: 'kanban-exam-q7',
+          question: 'Which of the six Kanban core practices directly addresses the need to surface and communicate agreed rules of the system?',
+          questionNL: 'Welke van de zes Kanban-kernpraktijken pakt direct de noodzaak aan om overeengekomen regels van het systeem zichtbaar te maken en te communiceren?',
+          options: [
+            'Limit WIP',
+            'Manage Flow',
+            'Make Policies Explicit',
+            'Implement Feedback Loops'
+          ],
+          optionsNL: [
+            'Beperk WIP',
+            'Beheer Flow',
+            'Maak Beleid Expliciet',
+            'Implementeer Feedbacklussen'
+          ],
+          correctAnswer: 2,
+          explanation: '"Make Policies Explicit" means that the rules governing how work moves through the system (entry criteria, exit criteria, WIP limits, escalation paths) are visible and understood by everyone — reducing ambiguity and enabling self-organisation.',
+          explanationNL: '"Maak Beleid Expliciet" betekent dat de regels die bepalen hoe werk door het systeem beweegt (ingangs- en uitgangscriteria, WIP-limieten, escalatiepaden) zichtbaar en begrepen zijn door iedereen — waardoor ambiguïteit wordt verminderd en zelforganisatie mogelijk wordt.',
+        },
+        {
+          id: 'kanban-exam-q8',
+          question: 'In the Theory of Constraints applied to Kanban, what is the correct approach when a bottleneck stage is identified?',
+          questionNL: 'Wat is de juiste aanpak wanneer een knelpuntstap wordt geïdentificeerd in de Theorie van Beperkingen toegepast op Kanban?',
+          options: [
+            'Remove the bottleneck step from the board entirely',
+            'Exploit the constraint first, then subordinate all other steps to it, and only then elevate it',
+            'Immediately hire more staff for the bottleneck step',
+            'Raise the WIP limit at the bottleneck stage to allow more work through'
+          ],
+          optionsNL: [
+            'Verwijder de knelpuntstap volledig van het bord',
+            'Benut de beperking eerst, laat vervolgens alle andere stappen eraan ondergeschikt zijn, en verhoog hem dan pas',
+            'Neem onmiddellijk meer personeel aan voor de knelpuntstap',
+            'Verhoog de WIP-limiet bij de knelpuntstap om meer werk door te laten'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Theory of Constraints (Goldratt) prescribes: (1) Identify the constraint, (2) Exploit it — get maximum output from it as-is, (3) Subordinate everything else to the constraint\'s pace, (4) Elevate — invest to increase capacity only if needed. Raising the WIP limit at the bottleneck worsens flow.',
+          explanationNL: 'De Theorie van Beperkingen (Goldratt) schrijft voor: (1) Identificeer de beperking, (2) Benut hem — haal maximale output uit de huidige situatie, (3) Maak alles ondergeschikt aan het tempo van de beperking, (4) Verhoog — investeer om capaciteit te vergroten alleen indien nodig. Het verhogen van de WIP-limiet bij het knelpunt verslechtert de flow.',
+        },
+        {
+          id: 'kanban-exam-q9',
+          question: 'A Kanban pull system means that:',
+          questionNL: 'Een Kanban pull-systeem betekent dat:',
+          options: [
+            'The manager pushes new work items to team members based on capacity',
+            'Work is pulled into the next stage only when there is available capacity there',
+            'Customer requests are pulled from the backlog every two weeks',
+            'The team pulls work from upstream teams during stand-ups'
+          ],
+          optionsNL: [
+            'De manager nieuwe werkitems naar teamleden pusht op basis van capaciteit',
+            'Werk alleen naar de volgende fase wordt getrokken wanneer daar beschikbare capaciteit is',
+            'Klantverzoeken elke twee weken uit de backlog worden getrokken',
+            'Het team werk van upstream-teams trekt tijdens stand-ups'
+          ],
+          correctAnswer: 1,
+          explanation: 'In a pull system, a downstream stage signals its capacity by pulling a work item from the upstream queue. This is the opposite of a push system where work is assigned regardless of downstream capacity, and it is fundamental to controlling WIP and flow.',
+          explanationNL: 'In een pull-systeem signaleert een stroomafwaartse fase zijn capaciteit door een werkitem uit de stroomopwaartse wachtrij te trekken. Dit is het tegenovergestelde van een push-systeem waarbij werk wordt toegewezen ongeacht de stroomafwaartse capaciteit, en het is fundamenteel voor het beheersen van WIP en flow.',
+        },
+        {
+          id: 'kanban-exam-q10',
+          question: 'Which Kanban feedback cadence focuses specifically on understanding and improving the flow of work items through the system?',
+          questionNL: 'Welke Kanban-feedbackcadans richt zich specifiek op het begrijpen en verbeteren van de doorstroom van werkitems door het systeem?',
+          options: [
+            'Strategy Review',
+            'Operations Review',
+            'Flow Review (Kanban Meeting / Standup)',
+            'Service Delivery Review'
+          ],
+          optionsNL: [
+            'Strategiereview',
+            'Operationele review',
+            'Flowreview (Kanban-meeting / stand-up)',
+            'Serviceleveringsreview'
+          ],
+          correctAnswer: 2,
+          explanation: 'The daily Kanban Meeting (standup / flow review) focuses on the board: blocked items, flow impediments, and items at risk. It is the most frequent cadence and directly manages day-to-day flow. The Service Delivery Review and Operations Review operate at longer intervals for different audiences.',
+          explanationNL: 'De dagelijkse Kanban-meeting (stand-up / flowreview) richt zich op het bord: geblokkeerde items, stroombelemmeringen en items die risico lopen. Het is de meest frequente cadans en beheert direct de dagelijkse flow. De Serviceleveringsreview en Operationele review werken op langere intervallen voor andere doelgroepen.',
+        },
+        {
+          id: 'kanban-exam-q11',
+          question: 'What is a "Class of Service" in the Kanban Method?',
+          questionNL: 'Wat is een "Klasse van Service" in de Kanban Methode?',
+          options: [
+            'A tier of subscription pricing offered to Kanban tool users',
+            'A policy that assigns different priority, SLAs, and workflow rules to different types of work items',
+            'A certification level for Kanban practitioners',
+            'The category of the team (IT, HR, Marketing) that uses the Kanban board'
+          ],
+          optionsNL: [
+            'Een abonnementsprijsniveau aangeboden aan gebruikers van Kanban-tools',
+            'Een beleid dat verschillende prioriteit, SLA\'s en workflowregels toekent aan verschillende typen werkitems',
+            'Een certificeringsniveau voor Kanban-beoefenaars',
+            'De categorie van het team (IT, HR, Marketing) dat het Kanbanbord gebruikt'
+          ],
+          correctAnswer: 1,
+          explanation: 'Classes of Service (e.g. Expedite, Fixed Date, Standard, Intangible) define how different work types are handled — including their WIP slots, scheduling policies, and acceptable lead-time ranges. They make differentiated service delivery explicit on the board.',
+          explanationNL: 'Klassen van Service (bijv. Expedite, Vaste Datum, Standaard, Immaterieel) definiëren hoe verschillende werktypen worden behandeld — inclusief hun WIP-slots, planningsbeleid en acceptabele doorlooptijdranges. Ze maken gedifferentieerde servicelevering expliciet op het bord.',
+        },
+        {
+          id: 'kanban-exam-q12',
+          question: 'How does Kanban fundamentally differ from Scrum regarding iterations?',
+          questionNL: 'Hoe verschilt Kanban fundamenteel van Scrum wat betreft iteraties?',
+          options: [
+            'Kanban uses two-week iterations; Scrum uses one-week sprints',
+            'Kanban has no fixed-length iterations; work flows continuously based on pull',
+            'Kanban requires a sprint review at the end of each month',
+            'Scrum has no time-boxes; Kanban does'
+          ],
+          optionsNL: [
+            'Kanban gebruikt iteraties van twee weken; Scrum gebruikt sprints van één week',
+            'Kanban heeft geen vaste iteraties; werk stroomt continu op basis van pull',
+            'Kanban vereist een sprintreview aan het einde van elke maand',
+            'Scrum heeft geen timeboxen; Kanban wel'
+          ],
+          correctAnswer: 1,
+          explanation: 'Scrum is built around fixed-length Sprints (1–4 weeks) with defined ceremonies. Kanban does not prescribe iterations — work items flow through the system on a continuous pull basis, and releases can happen at any time.',
+          explanationNL: 'Scrum is gebouwd rondom sprints van vaste lengte (1–4 weken) met gedefinieerde ceremonies. Kanban schrijft geen iteraties voor — werkitems stromen op continue pull-basis door het systeem, en releases kunnen op elk moment plaatsvinden.',
+        },
+        {
+          id: 'kanban-exam-q13',
+          question: 'Which of the following is NOT a prescribed role in the Kanban Method?',
+          questionNL: 'Welke van de volgende is GEEN voorgeschreven rol in de Kanban Methode?',
+          options: [
+            'Service Request Manager',
+            'Service Delivery Manager',
+            'Kanban Master',
+            'Flow Manager'
+          ],
+          optionsNL: [
+            'Service Request Manager',
+            'Service Delivery Manager',
+            'Kanban Master',
+            'Flow Manager'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Kanban Method defines two optional roles: Service Request Manager (manages the upstream, customer-facing side) and Service Delivery Manager (manages flow through the system). "Kanban Master" is not a role in the Kanban Method — it is sometimes used informally or confused with Scrum Master.',
+          explanationNL: 'De Kanban Methode definieert twee optionele rollen: Service Request Manager (beheert de stroomopwaartse, klantgerichte kant) en Service Delivery Manager (beheert de flow door het systeem). "Kanban Master" is geen rol in de Kanban Methode — het wordt soms informeel gebruikt of verward met Scrum Master.',
+        },
+        {
+          id: 'kanban-exam-q14',
+          question: 'What does "flow efficiency" measure in a Kanban system?',
+          questionNL: 'Wat meet "flowefficiëntie" in een Kanbansysteem?',
+          options: [
+            'The percentage of work items delivered on time',
+            'The ratio of active work time to total lead time (active + waiting)',
+            'The number of items completed per week divided by team size',
+            'The throughput of the bottleneck stage divided by total throughput'
+          ],
+          optionsNL: [
+            'Het percentage werkitems dat op tijd is geleverd',
+            'De verhouding van actieve werktijd tot totale doorlooptijd (actief + wachten)',
+            'Het aantal items voltooid per week gedeeld door teamgrootte',
+            'De throughput van de knelpuntstap gedeeld door de totale throughput'
+          ],
+          correctAnswer: 1,
+          explanation: 'Flow efficiency = (active time / total lead time) × 100%. Most knowledge-work systems have flow efficiency of 5–15%, meaning 85–95% of lead time is waiting time. Improving flow efficiency means reducing handoff waits, queues, and blocked time.',
+          explanationNL: 'Flowefficiëntie = (actieve tijd / totale doorlooptijd) × 100%. De meeste kenniswerksystemen hebben een flowefficiëntie van 5–15%, wat betekent dat 85–95% van de doorlooptijd wachttijd is. Flowefficiëntie verbeteren betekent handoff-wachttijden, wachtrijen en geblokkeerde tijd verminderen.',
+        },
+        {
+          id: 'kanban-exam-q15',
+          question: 'A team notices that work items consistently pile up in the "Code Review" column. According to Kanban thinking, what is the FIRST action?',
+          questionNL: 'Een team merkt dat werkitems consistent ophopen in de kolom "Code Review". Wat is de EERSTE actie volgens Kanban-denken?',
+          options: [
+            'Delete the Code Review column and merge it with Development',
+            'Raise the WIP limit for Code Review to allow more items',
+            'Recognise Code Review as the current bottleneck and swarm resources to it',
+            'Escalate to management to hire additional reviewers immediately'
+          ],
+          optionsNL: [
+            'Verwijder de Code Review-kolom en voeg deze samen met Ontwikkeling',
+            'Verhoog de WIP-limiet voor Code Review om meer items toe te staan',
+            'Herken Code Review als het huidige knelpunt en concentreer resources erop',
+            'Escaleer naar management om onmiddellijk extra reviewers aan te nemen'
+          ],
+          correctAnswer: 2,
+          explanation: 'Per Theory of Constraints, the first step is to exploit the constraint — focus existing capacity on the bottleneck (swarming, pairing, reducing batch size of reviews). Raising the WIP limit at a bottleneck makes flow worse, not better.',
+          explanationNL: 'Volgens de Theorie van Beperkingen is de eerste stap het benutten van de beperking — bestaande capaciteit concentreren op het knelpunt (swarmen, pairen, batchgrootte van reviews verkleinen). Het verhogen van de WIP-limiet bij een knelpunt maakt de flow slechter, niet beter.',
+        },
+        {
+          id: 'kanban-exam-q16',
+          question: 'Which Kanban practice states that the team should use empirical data and experiments to guide process improvements rather than prescribing a fixed method upfront?',
+          questionNL: 'Welke Kanban-praktijk stelt dat het team empirische gegevens en experimenten moet gebruiken om procesverbeteringen te sturen in plaats van vooraf een vaste methode voor te schrijven?',
+          options: [
+            'Visualize the Workflow',
+            'Limit WIP',
+            'Implement Feedback Loops',
+            'Improve Collaboratively, Evolve Experimentally (using models and the scientific method)'
+          ],
+          optionsNL: [
+            'Visualiseer de Workflow',
+            'Beperk WIP',
+            'Implementeer Feedbacklussen',
+            'Verbeter Samenwerkend, Evolueer Experimenteel (met modellen en de wetenschappelijke methode)'
+          ],
+          correctAnswer: 3,
+          explanation: '"Improve Collaboratively, Evolve Experimentally" (the sixth Kanban practice) explicitly calls for using models (e.g., Theory of Constraints, Lean, Systems Thinking) and a scientific, hypothesis-driven approach to change — rather than copying a prescribed framework.',
+          explanationNL: '"Verbeter Samenwerkend, Evolueer Experimenteel" (de zesde Kanban-praktijk) roept expliciet op tot het gebruik van modellen (bijv. Theorie van Beperkingen, Lean, Systeemdenken) en een wetenschappelijke, hypothese-gestuurde aanpak voor verandering — in plaats van een voorgeschreven raamwerk te kopiëren.',
+        },
+        {
+          id: 'kanban-exam-q17',
+          question: 'What is the "Replenishment Meeting" cadence used for in a Kanban system?',
+          questionNL: 'Waarvoor wordt de "Aanvullingsmeeting"-cadans gebruikt in een Kanbansysteem?',
+          options: [
+            'To review completed work with stakeholders and gather feedback',
+            'To pull new work items from the options pool into the commitment point based on capacity',
+            'To assign story points to unestimated backlog items',
+            'To present the quarterly roadmap to senior management'
+          ],
+          optionsNL: [
+            'Om voltooid werk met belanghebbenden te reviewen en feedback te verzamelen',
+            'Om nieuwe werkitems vanuit de optiepoel naar het toezeggingspunt te trekken op basis van capaciteit',
+            'Om storypunten toe te wijzen aan niet-geschatte backlog-items',
+            'Om de kwartaalroadmap te presenteren aan senior management'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Replenishment Meeting is a regular cadence (often weekly) at which the team reviews the options pool (upstream queue) and pulls the highest-priority items into the active workflow up to available WIP capacity — making it the Kanban equivalent of Sprint Planning.',
+          explanationNL: 'De Aanvullingsmeeting is een reguliere cadans (vaak wekelijks) waarbij het team de optiepoel (stroomopwaartse wachtrij) beoordeelt en de hoogstgeprioriteerde items trekt naar de actieve workflow tot aan de beschikbare WIP-capaciteit — wat het maakt tot het Kanban-equivalent van Sprint Planning.',
+        },
+        {
+          id: 'kanban-exam-q18',
+          question: 'On a Kanban board, what is the difference between a "buffer" column and a "queue" column?',
+          questionNL: 'Wat is het verschil tussen een "buffer"-kolom en een "wachtrij"-kolom op een Kanbanbord?',
+          options: [
+            'Buffer columns count toward WIP limits; queue columns do not',
+            'Queue columns are placed before active stages and are decoupled from WIP limits; buffer columns absorb variability between stages',
+            'They are identical concepts used interchangeably in the Kanban literature',
+            'Buffer columns are only used in manufacturing Kanban, not knowledge-work Kanban'
+          ],
+          optionsNL: [
+            'Bufferkolommen tellen mee voor WIP-limieten; wachtrij-kolommen niet',
+            'Wachtrij-kolommen staan vóór actieve fasen en zijn losgekoppeld van WIP-limieten; bufferkolommen absorberen variabiliteit tussen fasen',
+            'Het zijn identieke concepten die door elkaar worden gebruikt in de Kanban-literatuur',
+            'Bufferkolommen worden alleen gebruikt in productie-Kanban, niet in kenniswerk-Kanban'
+          ],
+          correctAnswer: 1,
+          explanation: 'In Kanban board design, queue (waiting) columns hold items not yet actively worked — they decouple stages and absorb variability. Buffer columns (sometimes called "Done" sub-columns) sit between two active stages. Critically, queue/buffer columns are often excluded from WIP limits so they act as shock absorbers without artificially blocking flow.',
+          explanationNL: 'In Kanbanbordontwerp bevatten wachtrij-kolommen items die nog niet actief worden bewerkt — ze ontkoppelen fasen en absorberen variabiliteit. Bufferkolommen (soms "Klaar"-subkolommen) bevinden zich tussen twee actieve fasen. Cruciaal is dat wachtrij-/bufferkolommen vaak worden uitgesloten van WIP-limieten zodat ze als schokdempers werken zonder de flow kunstmatig te blokkeren.',
+        },
+        {
+          id: 'kanban-exam-q19',
+          question: 'A Service Level Expectation (SLE) in Kanban is BEST described as:',
+          questionNL: 'Een Service Level Expectation (SLE) in Kanban wordt het BESTE omschreven als:',
+          options: [
+            'A legally binding contract between the team and its customers',
+            'A forecast of how long a work item of a given class of service is likely to take, expressed as a probability statement',
+            'The maximum number of items the team commits to deliver per sprint',
+            'A target throughput rate defined by senior management'
+          ],
+          optionsNL: [
+            'Een juridisch bindend contract tussen het team en zijn klanten',
+            'Een voorspelling van hoe lang een werkitem van een bepaalde klasse van service waarschijnlijk duurt, uitgedrukt als een kansverklaring',
+            'Het maximale aantal items dat het team per sprint toezegt te leveren',
+            'Een doelthroughputsnelheid gedefinieerd door senior management'
+          ],
+          correctAnswer: 1,
+          explanation: 'An SLE is a probabilistic statement — e.g. "85% of Standard items will be completed within 10 days" — derived from historical lead time data. It is not a contractual guarantee but a transparency tool that sets realistic expectations and triggers escalation when breached.',
+          explanationNL: 'Een SLE is een probabilistische uitspraak — bijv. "85% van de Standaard-items wordt binnen 10 dagen voltooid" — afgeleid van historische doorlooptijdgegevens. Het is geen contractuele garantie maar een transparantietool die realistische verwachtingen stelt en escalatie triggert wanneer geschonden.',
+        },
+        {
+          id: 'kanban-exam-q20',
+          question: 'Which of the following correctly describes a "Kanban system" vs a "Kanban board"?',
+          questionNL: 'Welke van de volgende beschrijft correct een "Kanbansysteem" versus een "Kanbanbord"?',
+          options: [
+            'They are the same thing; "Kanban system" is just a more formal term',
+            'A Kanban board is one visual tool; a Kanban system encompasses the full set of policies, WIP limits, cadences, and roles that govern flow',
+            'A Kanban system is a digital tool; a Kanban board is always physical',
+            'A Kanban board is used in software teams; a Kanban system is used in manufacturing'
+          ],
+          optionsNL: [
+            'Het zijn hetzelfde; "Kanbansysteem" is gewoon een meer formele term',
+            'Een Kanbanbord is één visueel hulpmiddel; een Kanbansysteem omvat de volledige set beleidsregels, WIP-limieten, cadansen en rollen die de flow besturen',
+            'Een Kanbansysteem is een digitaal hulpmiddel; een Kanbanbord is altijd fysiek',
+            'Een Kanbanbord wordt gebruikt in softwareteams; een Kanbansysteem wordt gebruikt in de productie'
+          ],
+          correctAnswer: 1,
+          explanation: 'A Kanban board is the primary visualisation artefact. A Kanban system is the broader sociotechnical system including the board, WIP limits, policies, feedback cadences, and the social agreements around them. You can have a board without a functioning Kanban system if the supporting elements are absent.',
+          explanationNL: 'Een Kanbanbord is het primaire visualisatieartefact. Een Kanbansysteem is het bredere sociotechnische systeem inclusief het bord, WIP-limieten, beleidsregels, feedbackcadansen en de sociale afspraken eromheen. Je kunt een bord hebben zonder een functionerend Kanbansysteem als de ondersteunende elementen ontbreken.',
+        },
+        {
+          id: 'kanban-exam-q21',
+          question: 'What does the "Visualize" practice in Kanban require beyond simply drawing columns on a board?',
+          questionNL: 'Wat vereist de "Visualiseer"-praktijk in Kanban naast het simpelweg tekenen van kolommen op een bord?',
+          options: [
+            'Using only digital tools so the board is accessible remotely',
+            'Making work, workflow, business rules, blockers, and work item types visible so the system is understood by all',
+            'Assigning a unique colour to every team member\'s tasks',
+            'Displaying velocity charts next to the board at all times'
+          ],
+          optionsNL: [
+            'Alleen digitale tools gebruiken zodat het bord op afstand toegankelijk is',
+            'Werk, workflow, bedrijfsregels, blokkades en werkitemtypen zichtbaar maken zodat het systeem door iedereen wordt begrepen',
+            'Een unieke kleur toewijzen aan de taken van elk teamlid',
+            'Snelheidsgrafieken altijd naast het bord weergeven'
+          ],
+          correctAnswer: 1,
+          explanation: 'Visualisation in Kanban means exposing not just the work items but the rules and policies of the system — WIP limits, blocked items, classes of service, aging work, and workflow definitions — so that the true state of the system is transparent and actionable for the whole team.',
+          explanationNL: 'Visualisatie in Kanban betekent niet alleen werkitems blootleggen maar ook de regels en beleidsregels van het systeem — WIP-limieten, geblokkeerde items, klassen van service, verouderd werk en workflowdefinities — zodat de werkelijke toestand van het systeem transparant en bruikbaar is voor het hele team.',
+        },
+        {
+          id: 'kanban-exam-q22',
+          question: 'According to Little\'s Law, which of the following actions will MOST directly reduce average lead time, assuming throughput remains constant?',
+          questionNL: 'Welke van de volgende acties zal de gemiddelde doorlooptijd het MEEST direct verminderen, ervan uitgaande dat de throughput constant blijft?',
+          options: [
+            'Adding more team members to increase capacity',
+            'Reducing the amount of work in process (WIP)',
+            'Holding a daily standup meeting',
+            'Switching from a physical board to a digital tool'
+          ],
+          optionsNL: [
+            'Meer teamleden toevoegen om capaciteit te vergroten',
+            'De hoeveelheid werk in uitvoering (WIP) verminderen',
+            'Een dagelijkse stand-up meeting houden',
+            'Overstappen van een fysiek bord naar een digitale tool'
+          ],
+          correctAnswer: 1,
+          explanation: 'Little\'s Law states Lead Time = WIP / Throughput. With throughput constant, lowering WIP directly and proportionally lowers lead time. This is the mathematical foundation for why WIP limits are the single most powerful lever in a Kanban system.',
+          explanationNL: 'De wet van Little stelt: Doorlooptijd = WIP / Throughput. Met constante throughput verlaagt het verlagen van WIP direct en evenredig de doorlooptijd. Dit is de wiskundige basis voor waarom WIP-limieten de krachtigste hefboom in een Kanbansysteem zijn.',
+        },
+      ],
     },
     {
       id: 'kb-l10',

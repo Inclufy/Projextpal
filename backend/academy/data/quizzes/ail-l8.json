@@ -1,0 +1,183 @@
+{
+  "id": "ail-l8",
+  "title": "Module 2 Quiz",
+  "titleNL": "Module 2 Quiz",
+  "courseId": "ai-literacy",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "ail-q2-1",
+      "text": "Een projectmanager vraagt AI om een risicoregister te genereren op basis van de projectscope. Wat is de meest nauwkeurige verwachting van het resultaat?",
+      "textNL": "Een projectmanager vraagt AI om een risicoregister te genereren op basis van de projectscope. Wat is de meest nauwkeurige verwachting van het resultaat?",
+      "question": "Een projectmanager vraagt AI om een risicoregister te genereren op basis van de projectscope. Wat is de meest nauwkeurige verwachting van het resultaat?",
+      "questionEN": "Een projectmanager vraagt AI om een risicoregister te genereren op basis van de projectscope. Wat is de meest nauwkeurige verwachting van het resultaat?",
+      "options": [
+        "Een compleet en definitief risicoregister dat direct in het project gebruikt kan worden",
+        "Een brainstorm-startpunt dat 2-3 domein-specifieke risico's mist die alleen een expert herkent",
+        "Een lijst met generieke risico's die inhoudelijk waardeloos zijn voor dit project",
+        "Een risicoregister dat alleen klopt als de PM de projectscope volledig beschreven heeft"
+      ],
+      "optionsEN": [
+        "Een compleet en definitief risicoregister dat direct in het project gebruikt kan worden",
+        "Een brainstorm-startpunt dat 2-3 domein-specifieke risico's mist die alleen een expert herkent",
+        "Een lijst met generieke risico's die inhoudelijk waardeloos zijn voor dit project",
+        "Een risicoregister dat alleen klopt als de PM de projectscope volledig beschreven heeft"
+      ],
+      "optionsNL": [
+        "Een compleet en definitief risicoregister dat direct in het project gebruikt kan worden",
+        "Een brainstorm-startpunt dat 2-3 domein-specifieke risico's mist die alleen een expert herkent",
+        "Een lijst met generieke risico's die inhoudelijk waardeloos zijn voor dit project",
+        "Een risicoregister dat alleen klopt als de PM de projectscope volledig beschreven heeft"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "AI levert een goede eerste versie die 70-80% dekt, maar mist doorgaans 2-3 risico's die domeinkennis vereisen. Het is een brainstorm-startpunt, niet een definitief register. De PM moet nog steeds de inhoud beoordelen en aanvullen.",
+      "explanationNL": "AI levert een goede eerste versie die 70-80% dekt, maar mist doorgaans 2-3 risico's die domeinkennis vereisen. Het is een brainstorm-startpunt, niet een definitief register. De PM moet nog steeds de inhoud beoordelen en aanvullen."
+    },
+    {
+      "id": "ail-q2-2",
+      "text": "Wat zijn de vier onderdelen van een effectieve prompt per het in de cursus behandelde recept?",
+      "textNL": "Wat zijn de vier onderdelen van een effectieve prompt per het in de cursus behandelde recept?",
+      "question": "Wat zijn de vier onderdelen van een effectieve prompt per het in de cursus behandelde recept?",
+      "questionEN": "Wat zijn de vier onderdelen van een effectieve prompt per het in de cursus behandelde recept?",
+      "options": [
+        "Vraag, Antwoord, Verificatie, Feedback",
+        "Rol, Context, Taak, Output-format",
+        "Systeem, Gebruiker, Assistent, Tool",
+        "Doel, Doelgroep, Data, Deadline"
+      ],
+      "optionsEN": [
+        "Vraag, Antwoord, Verificatie, Feedback",
+        "Rol, Context, Taak, Output-format",
+        "Systeem, Gebruiker, Assistent, Tool",
+        "Doel, Doelgroep, Data, Deadline"
+      ],
+      "optionsNL": [
+        "Vraag, Antwoord, Verificatie, Feedback",
+        "Rol, Context, Taak, Output-format",
+        "Systeem, Gebruiker, Assistent, Tool",
+        "Doel, Doelgroep, Data, Deadline"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Het 4-onderdelen recept: (1) Rol — wie is de AI? (2) Context — de achtergrond van de situatie. (3) Taak — wat wil je precies? (4) Output-format — hoe wil je het resultaat? Elke component maakt de output specifieker en bruikbaarder.",
+      "explanationNL": "Het 4-onderdelen recept: (1) Rol — wie is de AI? (2) Context — de achtergrond van de situatie. (3) Taak — wat wil je precies? (4) Output-format — hoe wil je het resultaat? Elke component maakt de output specifieker en bruikbaarder."
+    },
+    {
+      "id": "ail-q2-3",
+      "text": "Wat is het voordeel van \"few-shot examples\" in een prompt ten opzichte van het beschrijven van de gewenste stijl met adjectieven?",
+      "textNL": "Wat is het voordeel van \"few-shot examples\" in een prompt ten opzichte van het beschrijven van de gewenste stijl met adjectieven?",
+      "question": "Wat is het voordeel van \"few-shot examples\" in een prompt ten opzichte van het beschrijven van de gewenste stijl met adjectieven?",
+      "questionEN": "Wat is het voordeel van \"few-shot examples\" in een prompt ten opzichte van het beschrijven van de gewenste stijl met adjectieven?",
+      "options": [
+        "Few-shot examples kosten minder tokens en zijn daardoor goedkoper",
+        "Few-shot examples geven een concreet referentiepunt dat het model kan nabootsen, wat betrouwbaarder werkt dan abstracte beschrijvingen",
+        "Few-shot examples zijn alleen nuttig voor code-generatie, niet voor teksttaken",
+        "Few-shot examples dwingen het model om alleen informatie uit het voorbeeld te gebruiken"
+      ],
+      "optionsEN": [
+        "Few-shot examples kosten minder tokens en zijn daardoor goedkoper",
+        "Few-shot examples geven een concreet referentiepunt dat het model kan nabootsen, wat betrouwbaarder werkt dan abstracte beschrijvingen",
+        "Few-shot examples zijn alleen nuttig voor code-generatie, niet voor teksttaken",
+        "Few-shot examples dwingen het model om alleen informatie uit het voorbeeld te gebruiken"
+      ],
+      "optionsNL": [
+        "Few-shot examples kosten minder tokens en zijn daardoor goedkoper",
+        "Few-shot examples geven een concreet referentiepunt dat het model kan nabootsen, wat betrouwbaarder werkt dan abstracte beschrijvingen",
+        "Few-shot examples zijn alleen nuttig voor code-generatie, niet voor teksttaken",
+        "Few-shot examples dwingen het model om alleen informatie uit het voorbeeld te gebruiken"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Een voorbeeld van goede output geeft het model een concreet patroon om na te bootsen. Adjectieven als \"professioneel\" of \"helder\" zijn voor het model te vaag — ze zijn subjectief en contextonafhankelijk. Een werkelijk voorbeeld laat zien wat je bedoelt.",
+      "explanationNL": "Een voorbeeld van goede output geeft het model een concreet patroon om na te bootsen. Adjectieven als \"professioneel\" of \"helder\" zijn voor het model te vaag — ze zijn subjectief en contextonafhankelijk. Een werkelijk voorbeeld laat zien wat je bedoelt."
+    },
+    {
+      "id": "ail-q2-4",
+      "text": "Welk anti-patroon beschrijft de instructie \"Maak het beter\" in een AI-prompt?",
+      "textNL": "Welk anti-patroon beschrijft de instructie \"Maak het beter\" in een AI-prompt?",
+      "question": "Welk anti-patroon beschrijft de instructie \"Maak het beter\" in een AI-prompt?",
+      "questionEN": "Welk anti-patroon beschrijft de instructie \"Maak het beter\" in een AI-prompt?",
+      "options": [
+        "Chain-of-thought prompting — te complex voor de taak",
+        "Vage instructie zonder specificatie van wat \"beter\" betekent",
+        "Role prompting — de AI wordt gevraagd een rol aan te nemen die niet relevant is",
+        "Zero-shot prompting — er zijn geen voorbeelden gegeven"
+      ],
+      "optionsEN": [
+        "Chain-of-thought prompting — te complex voor de taak",
+        "Vage instructie zonder specificatie van wat \"beter\" betekent",
+        "Role prompting — de AI wordt gevraagd een rol aan te nemen die niet relevant is",
+        "Zero-shot prompting — er zijn geen voorbeelden gegeven"
+      ],
+      "optionsNL": [
+        "Chain-of-thought prompting — te complex voor de taak",
+        "Vage instructie zonder specificatie van wat \"beter\" betekent",
+        "Role prompting — de AI wordt gevraagd een rol aan te nemen die niet relevant is",
+        "Zero-shot prompting — er zijn geen voorbeelden gegeven"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "\"Beter\" is voor een LLM een betekenisloze instructie. Het model heeft geen maatstaf. Specificeer altijd: korter, formeler, meer voorbeelden, minder jargon, actievere zinsconstructies — dan weet het model precies wat je bedoelt.",
+      "explanationNL": "\"Beter\" is voor een LLM een betekenisloze instructie. Het model heeft geen maatstaf. Specificeer altijd: korter, formeler, meer voorbeelden, minder jargon, actievere zinsconstructies — dan weet het model precies wat je bedoelt."
+    },
+    {
+      "id": "ail-q2-5",
+      "text": "Welk percentage tijdsbesparing is realistisch bij AI-ondersteund projectwerk op basis van de cursus?",
+      "textNL": "Welk percentage tijdsbesparing is realistisch bij AI-ondersteund projectwerk op basis van de cursus?",
+      "question": "Welk percentage tijdsbesparing is realistisch bij AI-ondersteund projectwerk op basis van de cursus?",
+      "questionEN": "Welk percentage tijdsbesparing is realistisch bij AI-ondersteund projectwerk op basis van de cursus?",
+      "options": [
+        "20-30% — AI helpt maar is nog beperkt",
+        "60-80% — AI levert de eerste versie, de PM doet de review en eindversie",
+        "90-100% — AI kan de meeste projecttaken volledig automatiseren",
+        "100% voor routinetaken, 0% voor complexe beslissingen"
+      ],
+      "optionsEN": [
+        "20-30% — AI helpt maar is nog beperkt",
+        "60-80% — AI levert de eerste versie, de PM doet de review en eindversie",
+        "90-100% — AI kan de meeste projecttaken volledig automatiseren",
+        "100% voor routinetaken, 0% voor complexe beslissingen"
+      ],
+      "optionsNL": [
+        "20-30% — AI helpt maar is nog beperkt",
+        "60-80% — AI levert de eerste versie, de PM doet de review en eindversie",
+        "90-100% — AI kan de meeste projecttaken volledig automatiseren",
+        "100% voor routinetaken, 0% voor complexe beslissingen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De cursus stelt 60-80% tijdsbesparing als realistisch: AI levert de eerste versie, de projectmanager levert de definitieve versie. 100% automatisering is onrealistisch omdat domeinkennis, oordeel en verantwoordelijkheid bij de mens blijven.",
+      "explanationNL": "De cursus stelt 60-80% tijdsbesparing als realistisch: AI levert de eerste versie, de projectmanager levert de definitieve versie. 100% automatisering is onrealistisch omdat domeinkennis, oordeel en verantwoordelijkheid bij de mens blijven."
+    },
+    {
+      "id": "ail-q2-6",
+      "text": "Bij welke van de 10 use cases moet een projectmanager het meest alert zijn op het controleren van actie-eigenaren?",
+      "textNL": "Bij welke van de 10 use cases moet een projectmanager het meest alert zijn op het controleren van actie-eigenaren?",
+      "question": "Bij welke van de 10 use cases moet een projectmanager het meest alert zijn op het controleren van actie-eigenaren?",
+      "questionEN": "Bij welke van de 10 use cases moet een projectmanager het meest alert zijn op het controleren van actie-eigenaren?",
+      "options": [
+        "Status rapport samenvatten",
+        "Risico-register genereren",
+        "Vergadernotulen maken uit een transcript",
+        "Presentatie-outline opstellen"
+      ],
+      "optionsEN": [
+        "Status rapport samenvatten",
+        "Risico-register genereren",
+        "Vergadernotulen maken uit een transcript",
+        "Presentatie-outline opstellen"
+      ],
+      "optionsNL": [
+        "Status rapport samenvatten",
+        "Risico-register genereren",
+        "Vergadernotulen maken uit een transcript",
+        "Presentatie-outline opstellen"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "AI is goed in het extraheren van expliciete informatie uit transcripten, maar slecht in het begrijpen van impliciete afspraken. Wie eigenaar is van een actie is vaak impliciet in gesprekken — de PM moet dat zelf verifiëren.",
+      "explanationNL": "AI is goed in het extraheren van expliciete informatie uit transcripten, maar slecht in het begrijpen van impliciete afspraken. Wie eigenaar is van een actie is vaak impliciet in gesprekken — de PM moet dat zelf verifiëren."
+    }
+  ]
+}

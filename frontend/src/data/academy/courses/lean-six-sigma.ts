@@ -384,39 +384,163 @@ De Define fase:
       quiz: [
         {
           id: 'lss-q1',
-          question: 'Wat betekent DMAIC?',
+          question: 'What does DMAIC stand for?',
+          questionNL: 'Wat betekent DMAIC?',
           options: [
             'Design, Make, Analyze, Implement, Check',
             'Define, Measure, Analyze, Improve, Control',
             'Define, Monitor, Act, Improve, Close',
             'Develop, Measure, Assess, Integrate, Complete'
           ],
+          optionsNL: [
+            'Design, Make, Analyze, Implement, Check',
+            'Define, Measure, Analyze, Improve, Control',
+            'Define, Monitor, Act, Improve, Close',
+            'Develop, Measure, Assess, Integrate, Complete'
+          ],
           correctAnswer: 1,
-          explanation: 'DMAIC staat voor Define, Measure, Analyze, Improve, Control.',
+          explanation: 'DMAIC stands for Define, Measure, Analyze, Improve, Control — the five-phase structured problem-solving methodology at the core of Six Sigma.',
+          explanationNL: 'DMAIC staat voor Define, Measure, Analyze, Improve, Control — de vijffasige gestructureerde probleemoplossingsmethodologie die de kern vormt van Six Sigma.',
         },
         {
           id: 'lss-q2',
-          question: 'Wat hoort NIET in een goede problem statement?',
+          question: 'Which of the following does NOT belong in a good problem statement?',
+          questionNL: 'Wat hoort NIET in een goede problem statement?',
           options: [
+            'The current performance level',
+            'The business impact',
+            'The cause of the problem',
+            'A measurable description'
+          ],
+          optionsNL: [
             'De huidige performance',
             'De business impact',
             'De oorzaak van het probleem',
             'Een meetbare beschrijving'
           ],
           correctAnswer: 2,
-          explanation: 'Een problem statement bevat geen oorzaken of oplossingen - die vind je later in Analyze.',
+          explanation: 'A problem statement must not include causes or solutions — those are discovered later in the Analyze and Improve phases respectively. Including them biases the investigation.',
+          explanationNL: 'Een problem statement mag geen oorzaken of oplossingen bevatten — die worden later gevonden in respectievelijk de Analyze- en Improve-fase. Ze opnemen beïnvloedt het onderzoek.',
         },
         {
           id: 'lss-q3',
-          question: 'Wat is een CTQ?',
+          question: 'What is a CTQ?',
+          questionNL: 'Wat is een CTQ?',
           options: [
+            'Cost To Quality — the cost of quality',
+            'Critical To Quality — a measurable customer requirement',
+            'Control The Quality — a control method',
+            'Customer Total Quality — total customer quality'
+          ],
+          optionsNL: [
             'Cost To Quality - de kosten van kwaliteit',
             'Critical To Quality - een meetbare klantbehoefte',
             'Control The Quality - een controle methode',
             'Customer Total Quality - totale klantkwaliteit'
           ],
           correctAnswer: 1,
-          explanation: 'CTQ = Critical To Quality, een meetbare vertaling van klantbehoeften.',
+          explanation: 'CTQ = Critical To Quality, a measurable translation of customer needs derived from the Voice of the Customer (VOC).',
+          explanationNL: 'CTQ = Critical To Quality, een meetbare vertaling van klantbehoeften afgeleid van de Voice of the Customer (VOC).',
+        },
+        {
+          id: 'lss-q4',
+          question: 'Which of the following is NOT one of the 8 wastes in the DOWNTIME mnemonic?',
+          questionNL: 'Welk van de volgende is GEEN van de 8 verspillingen in het DOWNTIME-ezelsbruggetje?',
+          options: [
+            'Non-utilized talent',
+            'Transportation',
+            'Documentation',
+            'Overproduction'
+          ],
+          optionsNL: [
+            'Niet-benut talent',
+            'Transport',
+            'Documentatie',
+            'Overproductie'
+          ],
+          correctAnswer: 2,
+          explanation: 'DOWNTIME stands for Defects, Overproduction, Waiting, Non-utilized talent, Transportation, Inventory, Motion, Extra-processing. Documentation is not one of the 8 wastes.',
+          explanationNL: 'DOWNTIME staat voor Defects (Defecten), Overproduction (Overproductie), Waiting (Wachten), Non-utilized talent (Niet-benut talent), Transportation (Transport), Inventory (Voorraad), Motion (Beweging), Extra-processing (Extra bewerking). Documentatie hoort hier niet bij.',
+        },
+        {
+          id: 'lss-q5',
+          question: 'In SIPOC, what does the "S" stand for?',
+          questionNL: 'In SIPOC, waar staat de "S" voor?',
+          options: [
+            'Standards',
+            'Suppliers',
+            'Scope',
+            'Stakeholders'
+          ],
+          optionsNL: [
+            'Standaarden',
+            'Leveranciers',
+            'Scope',
+            'Stakeholders'
+          ],
+          correctAnswer: 1,
+          explanation: 'SIPOC stands for Suppliers, Inputs, Process, Outputs, Customers. It is a high-level process map used in the Define phase to establish scope.',
+          explanationNL: 'SIPOC staat voor Suppliers (Leveranciers), Inputs, Process (Proces), Outputs, Customers (Klanten). Het is een high-level proceskaart die in de Define fase wordt gebruikt om scope vast te stellen.',
+        },
+        {
+          id: 'lss-q6',
+          question: 'What is the primary purpose of a Project Charter in the Define phase?',
+          questionNL: 'Wat is het primaire doel van een Project Charter in de Define fase?',
+          options: [
+            'To document the root cause of the problem',
+            'To formally authorize the project and align stakeholders on scope, goal, and timeline',
+            'To list all possible solutions to the problem',
+            'To establish the control plan for sustaining improvements'
+          ],
+          optionsNL: [
+            'Om de grondoorzaak van het probleem te documenteren',
+            'Om het project formeel te autoriseren en stakeholders te aligneren op scope, doel en tijdlijn',
+            'Om alle mogelijke oplossingen voor het probleem op te sommen',
+            'Om het controleplan op te stellen voor het borgen van verbeteringen'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Project Charter formally authorizes the LSS project, aligns all stakeholders on the problem statement, goal (SMART), scope, team, and timeline. It is the primary deliverable of the Define phase.',
+          explanationNL: 'Het Project Charter autoriseert het LSS-project formeel en aligneert alle stakeholders op de probleemstelling, het doel (SMART), scope, team en tijdlijn. Het is de primaire deliverable van de Define fase.',
+        },
+        {
+          id: 'lss-q7',
+          question: 'Voice of the Customer (VOC) data is transformed into measurable CTQs through which sequence?',
+          questionNL: 'Via welke volgorde worden Voice of the Customer (VOC)-data omgezet in meetbare CTQs?',
+          options: [
+            'VOC → Solutions → CTQs',
+            'VOC → Needs → CTQs',
+            'VOC → SIPOC → CTQs',
+            'VOC → FMEA → CTQs'
+          ],
+          optionsNL: [
+            'VOC → Oplossingen → CTQs',
+            'VOC → Behoeften → CTQs',
+            'VOC → SIPOC → CTQs',
+            'VOC → FMEA → CTQs'
+          ],
+          correctAnswer: 1,
+          explanation: 'The VOC → Needs → CTQs sequence is the standard LSS approach: capture customer voice, translate it into underlying needs, then convert needs into measurable Critical-to-Quality requirements.',
+          explanationNL: 'De VOC → Behoeften → CTQs-volgorde is de standaard LSS-aanpak: klantgeluiden vastleggen, vertalen naar onderliggende behoeften en die behoeften omzetten in meetbare Critical-to-Quality-eisen.',
+        },
+        {
+          id: 'lss-q8',
+          question: 'At a Six Sigma performance level, approximately how many Defects Per Million Opportunities (DPMO) are expected?',
+          questionNL: 'Bij een Six Sigma prestatieniveau, hoeveel Defects Per Million Opportunities (DPMO) worden er ongeveer verwacht?',
+          options: [
+            '66,807 DPMO',
+            '6,210 DPMO',
+            '3.4 DPMO',
+            '233 DPMO'
+          ],
+          optionsNL: [
+            '66.807 DPMO',
+            '6.210 DPMO',
+            '3,4 DPMO',
+            '233 DPMO'
+          ],
+          correctAnswer: 2,
+          explanation: 'Six Sigma quality means only 3.4 DPMO, assuming a 1.5-sigma long-term shift. This corresponds to 99.99966% of outputs meeting specifications.',
+          explanationNL: 'Six Sigma kwaliteit betekent slechts 3,4 DPMO, uitgaande van een 1,5-sigma langetermijnverschuiving. Dit komt overeen met 99,99966% van de outputs die aan de specificaties voldoen.',
         },
       ],
     },
@@ -1338,6 +1462,508 @@ Lever per DMAIC-fase de gevraagde documenten in.`,
 **Tip:** Denk bij elke vraag: "Welke fase van DMAIC?"
 
 Succes!`,
+      quiz: [
+        {
+          id: 'lss-exam-q1',
+          question: 'Which DMAIC phase establishes the project scope, problem statement, and business case?',
+          questionNL: 'Welke DMAIC-fase stelt de projectscope, probleemstelling en businesscase vast?',
+          options: [
+            'Measure',
+            'Define',
+            'Analyze',
+            'Control'
+          ],
+          optionsNL: [
+            'Measure',
+            'Define',
+            'Analyze',
+            'Control'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Define phase kicks off a DMAIC project by documenting the problem statement, business case, scope, and team in the Project Charter. No root causes or solutions are included here.',
+          explanationNL: 'De Define fase start een DMAIC-project door de probleemstelling, businesscase, scope en het team vast te leggen in het Project Charter. Grondoorzaken of oplossingen horen hier nog niet in.',
+        },
+        {
+          id: 'lss-exam-q2',
+          question: 'A Green Belt maps customer requirements to measurable process outcomes. Which tool is used first to capture the raw customer voice?',
+          questionNL: 'Een Green Belt brengt klanteisen in kaart als meetbare procesresultaten. Welk hulpmiddel wordt het eerst gebruikt om de ruwe klantenstem vast te leggen?',
+          options: [
+            'Control chart',
+            'FMEA',
+            'Voice of the Customer (VOC)',
+            'Process capability study'
+          ],
+          optionsNL: [
+            'Regelkaart',
+            'FMEA',
+            'Voice of the Customer (VOC)',
+            'Procescapabiliteitsstudie'
+          ],
+          correctAnswer: 2,
+          explanation: 'VOC is the structured method for capturing what customers say they need. It is the raw input that is later translated through Needs into CTQs.',
+          explanationNL: 'VOC is de gestructureerde methode om vast te leggen wat klanten zeggen nodig te hebben. Het is de ruwe input die later via Behoeften wordt omgezet in CTQs.',
+        },
+        {
+          id: 'lss-exam-q3',
+          question: 'In the DOWNTIME model, the letter "N" represents which waste?',
+          questionNL: 'In het DOWNTIME-model vertegenwoordigt de letter "N" welke verspilling?',
+          options: [
+            'Noise in the process',
+            'Non-conformance costs',
+            'Non-utilized talent',
+            'Narrow bottlenecks'
+          ],
+          optionsNL: [
+            'Ruis in het proces',
+            'Niet-conformiteitskosten',
+            'Niet-benut talent',
+            'Nauwe knelpunten'
+          ],
+          correctAnswer: 2,
+          explanation: 'N in DOWNTIME = Non-utilized talent (also called Skills waste). It refers to failing to leverage the knowledge, skills, and experience of employees.',
+          explanationNL: 'N in DOWNTIME = Niet-benut talent (ook wel Vaardigheidsverspilling). Het verwijst naar het niet benutten van kennis, vaardigheden en ervaring van medewerkers.',
+        },
+        {
+          id: 'lss-exam-q4',
+          question: 'What does process capability index Cpk measure?',
+          questionNL: 'Wat meet de procescapabiliteitsindex Cpk?',
+          options: [
+            'The speed of the process relative to takt time',
+            'How well the process is centred within its specification limits',
+            'The number of defects per million opportunities',
+            'The ratio of value-added to non-value-added time'
+          ],
+          optionsNL: [
+            'De snelheid van het proces ten opzichte van de takttijd',
+            'Hoe goed het proces gecentreerd is binnen zijn specificatiegrenzen',
+            'Het aantal defecten per miljoen kansen',
+            'De verhouding tussen waarde-toevoegende en niet-waarde-toevoegende tijd'
+          ],
+          correctAnswer: 1,
+          explanation: 'Cpk accounts for both spread and centering: it measures whether the process mean is centred relative to its specification limits. A Cpk ≥ 1.33 is generally considered capable.',
+          explanationNL: 'Cpk houdt rekening met zowel spreiding als centrering: het meet of het procesgemiddelde gecentreerd is ten opzichte van de specificatiegrenzen. Een Cpk ≥ 1,33 wordt over het algemeen als capabel beschouwd.',
+        },
+        {
+          id: 'lss-exam-q5',
+          question: 'A fishbone (Ishikawa) diagram is used in which DMAIC phase?',
+          questionNL: 'In welke DMAIC-fase wordt een visgraatdiagram (Ishikawa) gebruikt?',
+          options: [
+            'Define',
+            'Measure',
+            'Analyze',
+            'Control'
+          ],
+          optionsNL: [
+            'Define',
+            'Measure',
+            'Analyze',
+            'Control'
+          ],
+          correctAnswer: 2,
+          explanation: 'The fishbone / Ishikawa diagram is a root cause analysis tool used in the Analyze phase to brainstorm and categorise potential causes of the problem.',
+          explanationNL: 'Het visgraatdiagram / Ishikawa is een root-cause-analysetools die in de Analyze fase wordt gebruikt om mogelijke oorzaken van het probleem te brainstormen en te categoriseren.',
+        },
+        {
+          id: 'lss-exam-q6',
+          question: 'Which statement best describes common cause variation?',
+          questionNL: 'Welke uitspraak beschrijft gemeenschappelijke oorzaakvariatie het best?',
+          options: [
+            'Variation caused by a specific, identifiable event',
+            'Variation that is inherent and predictable in a stable process',
+            'Variation that always requires immediate corrective action',
+            'Variation only found in the Improve phase'
+          ],
+          optionsNL: [
+            'Variatie veroorzaakt door een specifieke, identificeerbare gebeurtenis',
+            'Variatie die inherent en voorspelbaar is in een stabiel proces',
+            'Variatie die altijd onmiddellijke corrigerende actie vereist',
+            'Variatie die alleen in de Improve fase voorkomt'
+          ],
+          correctAnswer: 1,
+          explanation: 'Common cause variation (also called random or noise variation) is the natural, inherent variation in a stable process. It requires systemic process change — not firefighting — to reduce.',
+          explanationNL: 'Gemeenschappelijke oorzaakvariatie (ook wel willekeurige of ruisvariatie) is de natuurlijke, inherente variatie in een stabiel proces. Het vereist systeemwijzigingen — geen brandblussing — om te verminderen.',
+        },
+        {
+          id: 'lss-exam-q7',
+          question: 'In Statistical Process Control (SPC), a control chart signals a special cause when:',
+          questionNL: 'In Statistische Procesbeheersing (SPC) signaleert een regelkaart een bijzondere oorzaak wanneer:',
+          options: [
+            'All points fall randomly within the control limits',
+            'A point falls outside the upper or lower control limits',
+            'The process mean shifts by exactly 1 sigma',
+            'The sample size drops below 10'
+          ],
+          optionsNL: [
+            'Alle punten willekeurig binnen de regelgrenzen vallen',
+            'Een punt buiten de bovenste of onderste regelgrens valt',
+            'Het procesgemiddelde precies 1 sigma verschuift',
+            'De steekproefgrootte daalt onder 10'
+          ],
+          correctAnswer: 1,
+          explanation: 'A point outside the control limits (UCL/LCL) is the primary signal of special cause variation requiring investigation and corrective action. Additional run rules (e.g., 8 consecutive points on one side) also detect special causes.',
+          explanationNL: 'Een punt buiten de regelgrenzen (UCL/LCL) is het primaire signaal van bijzondere oorzaakvariatie dat onderzoek en corrigerende actie vereist. Aanvullende loopregels (bijv. 8 opeenvolgende punten aan één kant) detecteren ook bijzondere oorzaken.',
+        },
+        {
+          id: 'lss-exam-q8',
+          question: 'Takt time is defined as:',
+          questionNL: 'Takttijd wordt gedefinieerd als:',
+          options: [
+            'The time it takes to complete one cycle of a process',
+            'Available production time divided by customer demand rate',
+            'The time a product spends waiting in queue',
+            'The maximum time allowed for value-added work only'
+          ],
+          optionsNL: [
+            'De tijd die nodig is om één cyclus van een proces te voltooien',
+            'Beschikbare productietijd gedeeld door de klantenvraagsnelheid',
+            'De tijd die een product in de wachtrij doorbrengt',
+            'De maximale tijd toegestaan voor alleen waarde-toevoegende werkzaamheden'
+          ],
+          correctAnswer: 1,
+          explanation: 'Takt time = Available production time ÷ Customer demand rate. It sets the rhythm the process must match to meet customer demand without over- or under-producing.',
+          explanationNL: 'Takttijd = Beschikbare productietijd ÷ Klantenvraagsnelheid. Het stelt het ritme in waaraan het proces moet voldoen om aan de klantvraag te voldoen zonder over- of onderproductie.',
+        },
+        {
+          id: 'lss-exam-q9',
+          question: 'A Pareto chart is based on which principle?',
+          questionNL: 'Een Pareto-diagram is gebaseerd op welk principe?',
+          options: [
+            'All defect causes contribute equally to the total',
+            'Approximately 80% of effects come from 20% of causes',
+            'The first cause identified is always the most important',
+            'Defects follow a normal distribution around the mean'
+          ],
+          optionsNL: [
+            'Alle defectoorzaken dragen gelijkelijk bij aan het totaal',
+            'Ongeveer 80% van de effecten komt van 20% van de oorzaken',
+            'De eerste geïdentificeerde oorzaak is altijd de belangrijkste',
+            'Defecten volgen een normale verdeling rond het gemiddelde'
+          ],
+          correctAnswer: 1,
+          explanation: 'The Pareto Principle (80/20 rule) states that roughly 80% of problems stem from 20% of causes. A Pareto chart visually prioritises the "vital few" causes to focus improvement efforts.',
+          explanationNL: 'Het Pareto-principe (80/20-regel) stelt dat ongeveer 80% van de problemen voortkomt uit 20% van de oorzaken. Een Pareto-diagram visualiseert de "vitale weinigen" oorzaken om verbeterinspanningen te prioriteren.',
+        },
+        {
+          id: 'lss-exam-q10',
+          question: 'In FMEA, the Risk Priority Number (RPN) is calculated as:',
+          questionNL: 'In FMEA wordt het Risico Prioriteitsnummer (RPN) berekend als:',
+          options: [
+            'Severity + Occurrence + Detection',
+            'Severity × Occurrence × Detection',
+            'Severity × Occurrence ÷ Detection',
+            'Severity ÷ (Occurrence × Detection)'
+          ],
+          optionsNL: [
+            'Ernst + Optreden + Detectie',
+            'Ernst × Optreden × Detectie',
+            'Ernst × Optreden ÷ Detectie',
+            'Ernst ÷ (Optreden × Detectie)'
+          ],
+          correctAnswer: 1,
+          explanation: 'RPN = Severity × Occurrence × Detection. Each factor is rated 1–10. A higher RPN indicates a higher risk that should be prioritised for corrective action in the Improve phase.',
+          explanationNL: 'RPN = Ernst × Optreden × Detectie. Elk factor wordt beoordeeld op 1–10. Een hoger RPN duidt op een hoger risico dat geprioriteerd moet worden voor corrigerende actie in de Improve fase.',
+        },
+        {
+          id: 'lss-exam-q11',
+          question: 'Which tool is used in the Measure phase to assess whether a measurement system itself is reliable?',
+          questionNL: 'Welk hulpmiddel wordt in de Measure fase gebruikt om te beoordelen of een meetsysteem zelf betrouwbaar is?',
+          options: [
+            '5 Whys analysis',
+            'Gauge R&R (Measurement System Analysis)',
+            'Control chart',
+            'Value stream map'
+          ],
+          optionsNL: [
+            '5 Waarom-analyse',
+            'Gauge R&R (Meetsysteemanalyse)',
+            'Regelkaart',
+            'Waardestroom kaart'
+          ],
+          correctAnswer: 1,
+          explanation: 'Gauge Repeatability & Reproducibility (Gauge R&R) is the Measurement System Analysis (MSA) tool that quantifies variation introduced by the measurement system itself (equipment + operators), ensuring data quality before baseline analysis.',
+          explanationNL: 'Gauge Herhaalbaarheid & Reproduceerbaarheid (Gauge R&R) is het Meetsysteemanalyse (MSA)-hulpmiddel dat variatie kwantificeert die door het meetsysteem zelf wordt geïntroduceerd (apparatuur + operators), waardoor gegevenskwaliteit wordt gewaarborgd vóór baselineanalyse.',
+        },
+        {
+          id: 'lss-exam-q12',
+          question: 'The "5 Whys" technique is best described as:',
+          questionNL: 'De "5 Waarom"-techniek wordt het best beschreven als:',
+          options: [
+            'A brainstorming method to generate as many solutions as possible',
+            'An iterative questioning technique to drill down to the root cause of a problem',
+            'A statistical test to validate measurement system accuracy',
+            'A scheduling tool to plan improvement activities'
+          ],
+          optionsNL: [
+            'Een brainstormmethode om zoveel mogelijk oplossingen te genereren',
+            'Een iteratieve vraagtechniek om door te dringen tot de grondoorzaak van een probleem',
+            'Een statistische test om de nauwkeurigheid van meetsystemen te valideren',
+            'Een planningshulpmiddel voor verbeteractiviteiten'
+          ],
+          correctAnswer: 1,
+          explanation: 'The 5 Whys technique involves repeatedly asking "why?" (typically 5 times) until the true root cause is uncovered. It is simple, fast, and effective for straightforward cause chains in the Analyze phase.',
+          explanationNL: 'De 5 Waarom-techniek houdt in dat herhaaldelijk "waarom?" wordt gevraagd (doorgaans 5 keer) totdat de echte grondoorzaak is ontdekt. Het is eenvoudig, snel en effectief voor eenvoudige oorzaakketens in de Analyze fase.',
+        },
+        {
+          id: 'lss-exam-q13',
+          question: 'Which of the five Lean principles comes LAST in the sequence defined by Womack and Jones?',
+          questionNL: 'Welk van de vijf Lean-principes komt als LAATSTE in de volgorde zoals gedefinieerd door Womack en Jones?',
+          options: [
+            'Flow',
+            'Pull',
+            'Value',
+            'Perfection (Pursue Perfection)'
+          ],
+          optionsNL: [
+            'Flow',
+            'Pull',
+            'Waarde',
+            'Perfectie (Streven naar perfectie)'
+          ],
+          correctAnswer: 3,
+          explanation: 'The five Lean principles in sequence are: (1) Specify Value, (2) Map the Value Stream, (3) Create Flow, (4) Establish Pull, (5) Pursue Perfection. Perfection is the continuous, never-ending improvement goal.',
+          explanationNL: 'De vijf Lean-principes op volgorde zijn: (1) Waarde specificeren, (2) De waardestroom in kaart brengen, (3) Flow creëren, (4) Pull instellen, (5) Streven naar perfectie. Perfectie is het continue, nooit eindigende verbeterdoel.',
+        },
+        {
+          id: 'lss-exam-q14',
+          question: 'A process is running at 4 Sigma. What is the approximate DPMO?',
+          questionNL: 'Een proces draait op 4 Sigma. Wat is het geschatte DPMO?',
+          options: [
+            '3.4 DPMO',
+            '233 DPMO',
+            '6,210 DPMO',
+            '66,807 DPMO'
+          ],
+          optionsNL: [
+            '3,4 DPMO',
+            '233 DPMO',
+            '6.210 DPMO',
+            '66.807 DPMO'
+          ],
+          correctAnswer: 2,
+          explanation: 'Standard sigma-to-DPMO values (with 1.5σ shift): 6σ = 3.4, 5σ = 233, 4σ = 6,210, 3σ = 66,807. A 4-sigma process produces about 6,210 defects per million opportunities.',
+          explanationNL: 'Standaard sigma-naar-DPMO-waarden (met 1,5σ-verschuiving): 6σ = 3,4; 5σ = 233; 4σ = 6.210; 3σ = 66.807. Een 4-sigma proces produceert circa 6.210 defecten per miljoen kansen.',
+        },
+        {
+          id: 'lss-exam-q15',
+          question: 'What is the primary output of the Control phase in DMAIC?',
+          questionNL: 'Wat is de primaire output van de Control fase in DMAIC?',
+          options: [
+            'A list of root causes to investigate',
+            'A pilot test report of the proposed solution',
+            'A control plan that sustains improvements after the project closes',
+            'A SIPOC diagram for the improved process'
+          ],
+          optionsNL: [
+            'Een lijst van grondoorzaken om te onderzoeken',
+            'Een pilottestrapport van de voorgestelde oplossing',
+            'Een controleplan dat verbeteringen borgt nadat het project is afgesloten',
+            'Een SIPOC-diagram voor het verbeterde proces'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Control phase locks in gains by delivering a control plan that specifies KPIs, measurement frequency, owners, and response plans. Without a control plan, improvements tend to decay over time.',
+          explanationNL: 'De Control fase borgt de winsten door een controleplan te leveren dat KPIs, meetfrequentie, eigenaren en reactieplannen specificeert. Zonder een controleplan nemen verbeteringen de neiging om in de loop van de tijd te verslechteren.',
+        },
+        {
+          id: 'lss-exam-q16',
+          question: 'Kaizen events are best characterised as:',
+          questionNL: 'Kaizen-events worden het best gekarakteriseerd als:',
+          options: [
+            'Long-term strategic planning sessions for senior management',
+            'Short, focused improvement workshops (typically 3–5 days) targeting a specific process area',
+            'Annual audits of the quality management system',
+            'Statistical sampling procedures for incoming materials'
+          ],
+          optionsNL: [
+            'Langetermijn strategische planningssessies voor senior management',
+            'Korte, gerichte verbeterworkshops (doorgaans 3–5 dagen) gericht op een specifiek procesgebied',
+            'Jaarlijkse audits van het kwaliteitsbeheersysteem',
+            'Statistische steekproefprocedures voor inkomende materialen'
+          ],
+          correctAnswer: 1,
+          explanation: 'Kaizen (Japanese: "change for better") events are rapid improvement workshops, typically 3–5 days, where a cross-functional team focuses intensely on eliminating waste or solving a specific problem in a defined process area.',
+          explanationNL: 'Kaizen (Japans: "verandering voor beter")-events zijn snelle verbeterworkshops, doorgaans 3–5 dagen, waarbij een cross-functioneel team zich intensief richt op het elimineren van verspilling of het oplossen van een specifiek probleem in een gedefinieerd procesgebied.',
+        },
+        {
+          id: 'lss-exam-q17',
+          question: 'Cost of Poor Quality (COPQ) includes which category?',
+          questionNL: 'Kosten van slechte kwaliteit (COPQ) omvat welke categorie?',
+          options: [
+            'Prevention costs only',
+            'Appraisal costs only',
+            'Internal and external failure costs',
+            'Training and certification costs'
+          ],
+          optionsNL: [
+            'Alleen preventiekosten',
+            'Alleen keuringskosten',
+            'Interne en externe faalkosten',
+            'Trainings- en certificeringskosten'
+          ],
+          correctAnswer: 2,
+          explanation: 'COPQ covers internal failure costs (scrap, rework, re-inspection before delivery) and external failure costs (warranty claims, returns, lost customers). Prevention and appraisal costs are part of the broader Cost of Quality (COQ) model.',
+          explanationNL: 'COPQ omvat interne faalkosten (uitval, herbewerking, herkeuring voor levering) en externe faalkosten (garantieclaims, retouren, verloren klanten). Preventie- en keuringskosten maken deel uit van het bredere Kosten van Kwaliteit (COQ)-model.',
+        },
+        {
+          id: 'lss-exam-q18',
+          question: 'A Value Stream Map (VSM) is primarily used to:',
+          questionNL: 'Een Waardestroom Kaart (VSM) wordt voornamelijk gebruikt om:',
+          options: [
+            'Calculate process capability indices',
+            'Visualise the flow of material and information to identify waste and improvement opportunities',
+            'Assign roles and responsibilities to team members',
+            'Document the sequence of statistical tests to be performed'
+          ],
+          optionsNL: [
+            'Procescapabiliteitsindices berekenen',
+            'De stroom van materiaal en informatie te visualiseren om verspilling en verbetermogelijkheden te identificeren',
+            'Rollen en verantwoordelijkheden aan teamleden toe te wijzen',
+            'De volgorde van uit te voeren statistische tests te documenteren'
+          ],
+          correctAnswer: 1,
+          explanation: 'A Value Stream Map shows the end-to-end flow of a product or service — including all steps, wait times, and information flows — making waste (non-value-added activities) visible so it can be systematically eliminated.',
+          explanationNL: 'Een Waardestroom Kaart toont de end-to-end stroom van een product of dienst — inclusief alle stappen, wachttijden en informatiestromen — waardoor verspilling (niet-waarde-toevoegende activiteiten) zichtbaar wordt zodat het systematisch kan worden geëlimineerd.',
+        },
+        {
+          id: 'lss-exam-q19',
+          question: 'Which belt level is typically responsible for leading enterprise-wide Lean Six Sigma deployments and mentoring Black Belts?',
+          questionNL: 'Welk beltniveau is typisch verantwoordelijk voor het leiden van enterprise-brede Lean Six Sigma-implementaties en het mentoren van Black Belts?',
+          options: [
+            'Yellow Belt',
+            'Green Belt',
+            'Master Black Belt',
+            'Champion'
+          ],
+          optionsNL: [
+            'Yellow Belt',
+            'Green Belt',
+            'Master Black Belt',
+            'Champion'
+          ],
+          correctAnswer: 2,
+          explanation: 'Master Black Belts are the top technical experts who deploy LSS across the organisation, develop training curricula, and coach Black and Green Belts. Champions are executive sponsors who provide resources and remove barriers — a management role rather than a technical belt.',
+          explanationNL: 'Master Black Belts zijn de topexperts die LSS in de organisatie implementeren, trainingsleerprogrammas ontwikkelen en Black en Green Belts coachen. Champions zijn executive sponsors die middelen bieden en obstakels wegnemen — een managementrol in plaats van een technische belt.',
+        },
+        {
+          id: 'lss-exam-q20',
+          question: 'In the Improve phase, a pilot is conducted primarily to:',
+          questionNL: 'In de Improve fase wordt een pilot primair uitgevoerd om:',
+          options: [
+            'Collect baseline data on the current process',
+            'Test and validate the proposed solution on a small scale before full rollout',
+            'Calculate the process sigma level',
+            'Create the control plan for the improved process'
+          ],
+          optionsNL: [
+            'Basisgegevens over het huidige proces te verzamelen',
+            'De voorgestelde oplossing op kleine schaal te testen en valideren vóór volledige uitrol',
+            'Het sigma-niveau van het proces te berekenen',
+            'Het controleplan voor het verbeterde proces te maken'
+          ],
+          correctAnswer: 1,
+          explanation: 'A pilot test validates that the solution actually produces the expected improvement without unintended consequences, before investing in full-scale implementation. It reduces implementation risk.',
+          explanationNL: 'Een pilottest valideert dat de oplossing daadwerkelijk de verwachte verbetering oplevert zonder onbedoelde gevolgen, vóór investering in volledige implementatie. Het verlaagt het implementatierisico.',
+        },
+        {
+          id: 'lss-exam-q21',
+          question: 'Which DMAIC phase includes hypothesis testing to confirm whether identified potential root causes are statistically significant?',
+          questionNL: 'Welke DMAIC-fase omvat hypothesetoetsing om te bevestigen of geïdentificeerde mogelijke grondoorzaken statistisch significant zijn?',
+          options: [
+            'Define',
+            'Measure',
+            'Analyze',
+            'Control'
+          ],
+          optionsNL: [
+            'Define',
+            'Measure',
+            'Analyze',
+            'Control'
+          ],
+          correctAnswer: 2,
+          explanation: 'The Analyze phase uses statistical tools — including hypothesis tests (t-tests, ANOVA, chi-square), correlation analysis, and regression — to confirm which potential root causes identified in brainstorming are truly driving the problem.',
+          explanationNL: 'De Analyze fase gebruikt statistische hulpmiddelen — inclusief hypothesetests (t-tests, ANOVA, chi-kwadraat), correlatieanalyse en regressie — om te bevestigen welke mogelijke grondoorzaken die bij brainstormen zijn geïdentificeerd daadwerkelijk het probleem veroorzaken.',
+        },
+        {
+          id: 'lss-exam-q22',
+          question: 'A process has a Cp of 1.5 and a Cpk of 0.8. What does this indicate?',
+          questionNL: 'Een proces heeft een Cp van 1,5 en een Cpk van 0,8. Wat geeft dit aan?',
+          options: [
+            'The process is capable and well-centred within specifications',
+            'The process has sufficient spread but is not centred — it is shifted toward one specification limit',
+            'The process is incapable because Cp is too high',
+            'Both indices must equal 1.0 for the process to be acceptable'
+          ],
+          optionsNL: [
+            'Het proces is capabel en goed gecentreerd binnen specificaties',
+            'Het proces heeft voldoende spreiding maar is niet gecentreerd — het is verschoven naar één specificatiegrens',
+            'Het proces is niet capabel omdat Cp te hoog is',
+            'Beide indices moeten 1,0 zijn voor het proces om acceptabel te zijn'
+          ],
+          correctAnswer: 1,
+          explanation: 'Cp measures the potential capability (spread vs spec width) — 1.5 is good. Cpk adjusts for centering; 0.8 < 1.0 signals that the process mean is shifted too close to one spec limit, causing defects even though the variation spread is adequate.',
+          explanationNL: 'Cp meet de potentiële capabiliteit (spreiding vs specificatiebreedte) — 1,5 is goed. Cpk past aan voor centrering; 0,8 < 1,0 signaleert dat het procesgemiddelde te dicht bij één specificatiegrens is verschoven, waardoor defecten optreden ook al is de variatiespreiding voldoende.',
+        },
+        {
+          id: 'lss-exam-q23',
+          question: 'Overproduction is considered the most serious of the 8 Lean wastes because:',
+          questionNL: 'Overproductie wordt beschouwd als de ernstigste van de 8 Lean-verspillingen omdat:',
+          options: [
+            'It is the most difficult waste to measure',
+            'It generates and hides all the other wastes',
+            'It only occurs in manufacturing environments',
+            'It is always caused by machine breakdowns'
+          ],
+          optionsNL: [
+            'Het de moeilijkst te meten verspilling is',
+            'Het alle andere verspillingen genereert en verbergt',
+            'Het alleen voorkomt in productieomgevingen',
+            'Het altijd wordt veroorzaakt door machinestoringen'
+          ],
+          correctAnswer: 1,
+          explanation: 'Overproduction (producing more than the customer needs, sooner than needed) is often called the "mother of all wastes" because it generates and conceals the other wastes: excess inventory piles up, extra transportation is needed, defects are hidden in stock, etc.',
+          explanationNL: 'Overproductie (meer produceren dan de klant nodig heeft, eerder dan nodig) wordt vaak de "moeder van alle verspillingen" genoemd omdat het de andere verspillingen genereert en verbergt: overtollige voorraad stapelt op, extra transport is nodig, defecten worden verborgen in voorraad, enz.',
+        },
+        {
+          id: 'lss-exam-q24',
+          question: 'In the Control phase, a standardised work instruction is updated to reflect the improved process. This is an example of which LSS principle?',
+          questionNL: 'In de Control fase wordt een gestandaardiseerde werkinstructie bijgewerkt om het verbeterde proces te weerspiegelen. Dit is een voorbeeld van welk LSS-principe?',
+          options: [
+            'Voice of the Customer',
+            'Process capability analysis',
+            'Sustaining gains through standardisation',
+            'Design for Six Sigma (DFSS)'
+          ],
+          optionsNL: [
+            'Voice of the Customer',
+            'Procescapabiliteitsanalyse',
+            'Winsten borgen door standaardisatie',
+            'Design for Six Sigma (DFSS)'
+          ],
+          correctAnswer: 2,
+          explanation: 'Updating standardised work instructions is the classic way to sustain improvements — it documents the new "best way" so the process does not revert to old habits when the project team moves on.',
+          explanationNL: 'Het bijwerken van gestandaardiseerde werkinstructies is de klassieke manier om verbeteringen te borgen — het documenteert de nieuwe "beste manier" zodat het proces niet terugkeert naar oude gewoonten wanneer het projectteam verder gaat.',
+        },
+        {
+          id: 'lss-exam-q25',
+          question: 'Which of the following correctly describes a "pull" system in Lean?',
+          questionNL: 'Welke van de volgende beschrijft correct een "pull"-systeem in Lean?',
+          options: [
+            'Production is scheduled based on a monthly forecast pushed to each workstation',
+            'Each process step produces only what the next downstream step requests',
+            'Inventory buffers are maximised to prevent any line stoppages',
+            'All work orders are released simultaneously at the start of the shift'
+          ],
+          optionsNL: [
+            'Productie wordt gepland op basis van een maandelijkse prognose die naar elke werkplek wordt gestuurd',
+            'Elke processtap produceert alleen wat de volgende stroomafwaartse stap aanvraagt',
+            'Voorraadbuffers worden gemaximaliseerd om lijnstops te voorkomen',
+            'Alle werkorders worden tegelijkertijd vrijgegeven aan het begin van de dienst'
+          ],
+          correctAnswer: 1,
+          explanation: 'A pull system (e.g., Kanban) triggers production only when the downstream customer signals a need. This eliminates overproduction and excess inventory, ensuring work flows in response to actual demand rather than forecast.',
+          explanationNL: 'Een pull-systeem (bijv. Kanban) triggert productie alleen wanneer de stroomafwaartse klant een behoefte signaleert. Dit elimineert overproductie en overtollige voorraad en zorgt ervoor dat werk stroomt als reactie op werkelijke vraag in plaats van op prognose.',
+        },
+      ],
     },
     {
       id: 'lss-l10',

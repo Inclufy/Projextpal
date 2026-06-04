@@ -1,0 +1,299 @@
+{
+  "id": "lead-l5",
+  "title": "Quiz: Leadership Basics",
+  "titleNL": "Quiz: Leiderschap Basis",
+  "courseId": "leadership-pm",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "lead-q1",
+      "text": "What is the key difference between a manager and a leader?",
+      "textNL": "Wat is het belangrijkste verschil tussen een manager en een leider?",
+      "question": "Wat is het belangrijkste verschil tussen een manager en een leider?",
+      "questionEN": "What is the key difference between a manager and a leader?",
+      "options": [
+        "Managers have more authority",
+        "Managers do things right, leaders do the right things",
+        "Leaders are always more senior",
+        "Managers focus on people, leaders on tasks"
+      ],
+      "optionsEN": [
+        "Managers have more authority",
+        "Managers do things right, leaders do the right things",
+        "Leaders are always more senior",
+        "Managers focus on people, leaders on tasks"
+      ],
+      "optionsNL": [
+        "Managers hebben meer autoriteit",
+        "Managers doen dingen goed, leiders doen de goede dingen",
+        "Leiders zijn altijd meer senior",
+        "Managers focussen op mensen, leiders op taken"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The key distinction is that managers focus on efficiency (doing things right) while leaders focus on effectiveness (doing the right things). Both roles are essential.",
+      "explanationNL": "Het belangrijkste onderscheid is dat managers focussen op efficiëntie (dingen goed doen) terwijl leiders focussen op effectiviteit (de goede dingen doen). Beide rollen zijn essentieel."
+    },
+    {
+      "id": "lead-q2",
+      "text": "Which leadership style is most effective overall according to Goleman?",
+      "textNL": "Welke leiderschapsstijl is volgens Goleman het meest effectief overall?",
+      "question": "Welke leiderschapsstijl is volgens Goleman het meest effectief overall?",
+      "questionEN": "Which leadership style is most effective overall according to Goleman?",
+      "options": [
+        "Coercive (Commanding)",
+        "Authoritative (Visionary)",
+        "Democratic (Participative)",
+        "Pacesetting"
+      ],
+      "optionsEN": [
+        "Coercive (Commanding)",
+        "Authoritative (Visionary)",
+        "Democratic (Participative)",
+        "Pacesetting"
+      ],
+      "optionsNL": [
+        "Dwingend (Commanding)",
+        "Autoritatief (Visionair)",
+        "Democratisch (Participatief)",
+        "Pacesetting"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The Authoritative (Visionary) style is most effective overall because it provides clear direction while giving autonomy on execution, inspiring commitment to the vision.",
+      "explanationNL": "De Autoritatieve (Visionaire) stijl is het meest effectief overall omdat het duidelijke richting biedt terwijl het autonomie geeft over uitvoering, en commitment aan de visie inspireert."
+    },
+    {
+      "id": "lead-q3",
+      "text": "Which situation is BEST for using the Coercive leadership style?",
+      "textNL": "Welke situatie is het BESTE voor het gebruiken van de Dwingende leiderschapsstijl?",
+      "question": "Welke situatie is het BESTE voor het gebruiken van de Dwingende leiderschapsstijl?",
+      "questionEN": "Which situation is BEST for using the Coercive leadership style?",
+      "options": [
+        "Building team morale",
+        "Crisis situations requiring immediate action",
+        "Strategic planning sessions",
+        "Developing team members"
+      ],
+      "optionsEN": [
+        "Building team morale",
+        "Crisis situations requiring immediate action",
+        "Strategic planning sessions",
+        "Developing team members"
+      ],
+      "optionsNL": [
+        "Teammoraal opbouwen",
+        "Crisissituaties die onmiddellijke actie vereisen",
+        "Strategische planning sessies",
+        "Teamleden ontwikkelen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The Coercive style should only be used in crisis situations where immediate compliance is needed. It's effective short-term but damaging long-term.",
+      "explanationNL": "De Dwingende stijl moet alleen gebruikt worden in crisissituaties waar onmiddellijke naleving nodig is. Het is effectief op korte termijn maar schadelijk op lange termijn."
+    },
+    {
+      "id": "lead-q4",
+      "text": "What are the five components of Emotional Intelligence?",
+      "textNL": "Wat zijn de vijf componenten van Emotionele Intelligentie?",
+      "question": "Wat zijn de vijf componenten van Emotionele Intelligentie?",
+      "questionEN": "What are the five components of Emotional Intelligence?",
+      "options": [
+        "IQ, EQ, AQ, CQ, SQ",
+        "Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills",
+        "Planning, Organizing, Leading, Controlling, Evaluating",
+        "Vision, Mission, Values, Strategy, Execution"
+      ],
+      "optionsEN": [
+        "IQ, EQ, AQ, CQ, SQ",
+        "Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills",
+        "Planning, Organizing, Leading, Controlling, Evaluating",
+        "Vision, Mission, Values, Strategy, Execution"
+      ],
+      "optionsNL": [
+        "IQ, EQ, AQ, CQ, SQ",
+        "Zelfbewustzijn, Zelfregulatie, Motivatie, Empathie, Sociale Vaardigheden",
+        "Plannen, Organiseren, Leiden, Controleren, Evalueren",
+        "Visie, Missie, Waarden, Strategie, Uitvoering"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Goleman's five components of EQ are: Self-Awareness, Self-Regulation, Motivation, Empathy, and Social Skills. All can be developed with practice.",
+      "explanationNL": "Golemans vijf componenten van EQ zijn: Zelfbewustzijn, Zelfregulatie, Motivatie, Empathie en Sociale Vaardigheden. Allemaal kunnen worden ontwikkeld met oefening."
+    },
+    {
+      "id": "lead-q5",
+      "text": "Which EQ component is the foundation for all others?",
+      "textNL": "Welke EQ component is het fundament voor alle anderen?",
+      "question": "Welke EQ component is het fundament voor alle anderen?",
+      "questionEN": "Which EQ component is the foundation for all others?",
+      "options": [
+        "Empathy",
+        "Social Skills",
+        "Self-Awareness",
+        "Motivation"
+      ],
+      "optionsEN": [
+        "Empathy",
+        "Social Skills",
+        "Self-Awareness",
+        "Motivation"
+      ],
+      "optionsNL": [
+        "Empathie",
+        "Sociale Vaardigheden",
+        "Zelfbewustzijn",
+        "Motivatie"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Self-Awareness is the foundation. You can't regulate emotions you don't recognize, empathize with others if you don't understand yourself, or build genuine relationships without self-knowledge.",
+      "explanationNL": "Zelfbewustzijn is het fundament. Je kunt emoties niet reguleren die je niet herkent, empathie tonen met anderen als je jezelf niet begrijpt, of oprechte relaties opbouwen zonder zelfkennis."
+    },
+    {
+      "id": "lead-q6",
+      "text": "In the Johari Window, the \"Blind Spot\" quadrant represents:",
+      "textNL": "In het Johari Window vertegenwoordigt het \"Blinde Vlek\" kwadrant:",
+      "question": "In het Johari Window vertegenwoordigt het \"Blinde Vlek\" kwadrant:",
+      "questionEN": "In the Johari Window, the \"Blind Spot\" quadrant represents:",
+      "options": [
+        "What you know about yourself but hide from others",
+        "What others see in you but you don't recognize",
+        "What everyone knows about you",
+        "Hidden potential unknown to everyone"
+      ],
+      "optionsEN": [
+        "What you know about yourself but hide from others",
+        "What others see in you but you don't recognize",
+        "What everyone knows about you",
+        "Hidden potential unknown to everyone"
+      ],
+      "optionsNL": [
+        "Wat je over jezelf weet maar voor anderen verbergt",
+        "Wat anderen in je zien maar je zelf niet herkent",
+        "Wat iedereen over je weet",
+        "Verborgen potentieel onbekend voor iedereen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The Blind Spot is what others see in you but you don't recognize in yourself. Feedback is essential to reduce this blind spot and increase self-awareness.",
+      "explanationNL": "De Blinde Vlek is wat anderen in je zien maar je zelf niet herkent. Feedback is essentieel om deze blinde vlek te verkleinen en zelfbewustzijn te vergroten."
+    },
+    {
+      "id": "lead-q7",
+      "text": "Which daily practice MOST directly increases self-awareness?",
+      "textNL": "Welke dagelijkse praktijk verhoogt zelfbewustzijn het MEEST direct?",
+      "question": "Welke dagelijkse praktijk verhoogt zelfbewustzijn het MEEST direct?",
+      "questionEN": "Which daily practice MOST directly increases self-awareness?",
+      "options": [
+        "Checking email",
+        "Evening reflection on the day",
+        "Exercise",
+        "Reading news"
+      ],
+      "optionsEN": [
+        "Checking email",
+        "Evening reflection on the day",
+        "Exercise",
+        "Reading news"
+      ],
+      "optionsNL": [
+        "Email checken",
+        "Avond reflectie op de dag",
+        "Sporten",
+        "Nieuws lezen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Evening reflection directly builds self-awareness by reviewing your actions, emotions, and patterns. Ask: What went well? What could be better? What did I learn about myself?",
+      "explanationNL": "Avond reflectie bouwt direct zelfbewustzijn op door je acties, emoties en patronen te reviewen. Vraag: Wat ging goed? Wat had beter gekund? Wat heb ik over mezelf geleerd?"
+    },
+    {
+      "id": "lead-q8",
+      "text": "A project manager leading without formal authority should primarily rely on which leadership style?",
+      "textNL": "Een projectmanager die leidt zonder formele autoriteit moet voornamelijk vertrouwen op welke leiderschapsstijl?",
+      "question": "Een projectmanager die leidt zonder formele autoriteit moet voornamelijk vertrouwen op welke leiderschapsstijl?",
+      "questionEN": "A project manager leading without formal authority should primarily rely on which leadership style?",
+      "options": [
+        "Coercive - command and demand",
+        "Authoritative - vision and influence",
+        "Pacesetting - lead by example",
+        "Affiliative - focus on harmony"
+      ],
+      "optionsEN": [
+        "Coercive - command and demand",
+        "Authoritative - vision and influence",
+        "Pacesetting - lead by example",
+        "Affiliative - focus on harmony"
+      ],
+      "optionsNL": [
+        "Dwingend - commanderen en eisen",
+        "Autoritatief - visie en invloed",
+        "Pacesetting - leiden door voorbeeld",
+        "Affiliatief - focus op harmonie"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Without formal authority, PMs must rely on influence rather than command. The Authoritative style (providing vision and inspiring commitment) is most effective for leading without authority.",
+      "explanationNL": "Zonder formele autoriteit moeten PMs vertrouwen op invloed in plaats van commando. De Autoritatieve stijl (visie bieden en commitment inspireren) is het meest effectief voor leiden zonder autoriteit."
+    },
+    {
+      "id": "lead-q9",
+      "text": "What is the primary benefit of understanding your core leadership values?",
+      "textNL": "Wat is het primaire voordeel van het begrijpen van je kernleiderschapswaarden?",
+      "question": "Wat is het primaire voordeel van het begrijpen van je kernleiderschapswaarden?",
+      "questionEN": "What is the primary benefit of understanding your core leadership values?",
+      "options": [
+        "It helps you get promoted faster",
+        "It guides your decisions and defines your leadership brand",
+        "It makes you more popular with your team",
+        "It guarantees project success"
+      ],
+      "optionsEN": [
+        "It helps you get promoted faster",
+        "It guides your decisions and defines your leadership brand",
+        "It makes you more popular with your team",
+        "It guarantees project success"
+      ],
+      "optionsNL": [
+        "Het helpt je sneller gepromoveerd te worden",
+        "Het leidt je beslissingen en definieert je leiderschapsmerk",
+        "Het maakt je populairder bij je team",
+        "Het garandeert projectsucces"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Your core values serve as a compass for decision-making and define your unique leadership brand. They help you stay authentic and make choices aligned with what matters most to you.",
+      "explanationNL": "Je kernwaarden dienen als kompas voor besluitvorming en definiëren je unieke leiderschapsmerk. Ze helpen je authentiek te blijven en keuzes te maken die aansluiten bij wat het meest belangrijk voor je is."
+    },
+    {
+      "id": "lead-q10",
+      "text": "Which statement about Emotional Intelligence is TRUE?",
+      "textNL": "Welke stelling over Emotionele Intelligentie is WAAR?",
+      "question": "Welke stelling over Emotionele Intelligentie is WAAR?",
+      "questionEN": "Which statement about Emotional Intelligence is TRUE?",
+      "options": [
+        "EQ is fixed at birth and cannot be changed",
+        "EQ can be developed and improved with practice",
+        "EQ is only important for senior leaders",
+        "High IQ guarantees high EQ"
+      ],
+      "optionsEN": [
+        "EQ is fixed at birth and cannot be changed",
+        "EQ can be developed and improved with practice",
+        "EQ is only important for senior leaders",
+        "High IQ guarantees high EQ"
+      ],
+      "optionsNL": [
+        "EQ is vast bij geboorte en kan niet veranderen",
+        "EQ kan worden ontwikkeld en verbeterd met oefening",
+        "EQ is alleen belangrijk voor senior leiders",
+        "Hoge IQ garandeert hoge EQ"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Unlike IQ which is relatively stable, EQ can be learned and developed throughout your life. With intentional practice and feedback, anyone can improve their emotional intelligence.",
+      "explanationNL": "Anders dan IQ dat relatief stabiel is, kan EQ worden geleerd en ontwikkeld gedurende je leven. Met bewuste oefening en feedback kan iedereen hun emotionele intelligentie verbeteren."
+    }
+  ]
+}

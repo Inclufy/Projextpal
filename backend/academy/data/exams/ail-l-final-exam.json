@@ -1,0 +1,593 @@
+{
+  "id": "ail-l-final-exam",
+  "title": "Final Exam: AI Literacy for Project Professionals",
+  "titleNL": "Eindexamen: AI Literacy voor Projectprofessionals",
+  "courseId": "ai-literacy",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "ail-final-1",
+      "text": "Welke term beschrijft de overkoepelende discipline die alle vormen van computationele intelligentie omvat, inclusief ML, Deep Learning en LLMs?",
+      "textNL": "Welke term beschrijft de overkoepelende discipline die alle vormen van computationele intelligentie omvat, inclusief ML, Deep Learning en LLMs?",
+      "question": "Welke term beschrijft de overkoepelende discipline die alle vormen van computationele intelligentie omvat, inclusief ML, Deep Learning en LLMs?",
+      "questionEN": "Welke term beschrijft de overkoepelende discipline die alle vormen van computationele intelligentie omvat, inclusief ML, Deep Learning en LLMs?",
+      "options": [
+        "Machine Learning",
+        "Deep Learning",
+        "Artificial Intelligence",
+        "Natural Language Processing"
+      ],
+      "optionsEN": [
+        "Machine Learning",
+        "Deep Learning",
+        "Artificial Intelligence",
+        "Natural Language Processing"
+      ],
+      "optionsNL": [
+        "Machine Learning",
+        "Deep Learning",
+        "Artificial Intelligence",
+        "Natural Language Processing"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Artificial Intelligence (AI) is de paraplu-term. ML is een deelgebied van AI; Deep Learning is een deelgebied van ML; LLMs zijn een specifiek type Deep Learning. NLP is een toepassingsgebied, geen hiërarchische laag.",
+      "explanationNL": "Artificial Intelligence (AI) is de paraplu-term. ML is een deelgebied van AI; Deep Learning is een deelgebied van ML; LLMs zijn een specifiek type Deep Learning. NLP is een toepassingsgebied, geen hiërarchische laag."
+    },
+    {
+      "id": "ail-final-2",
+      "text": "Hoe verhoudt \"Deep Learning\" zich tot \"Machine Learning\"?",
+      "textNL": "Hoe verhoudt \"Deep Learning\" zich tot \"Machine Learning\"?",
+      "question": "Hoe verhoudt \"Deep Learning\" zich tot \"Machine Learning\"?",
+      "questionEN": "Hoe verhoudt \"Deep Learning\" zich tot \"Machine Learning\"?",
+      "options": [
+        "Deep Learning is een synoniem voor Machine Learning",
+        "Deep Learning is een deelgebied van Machine Learning dat gebruik maakt van neurale netwerken met meerdere lagen",
+        "Machine Learning is een deelgebied van Deep Learning",
+        "Deep Learning is de nieuwere naam voor traditionele Machine Learning"
+      ],
+      "optionsEN": [
+        "Deep Learning is een synoniem voor Machine Learning",
+        "Deep Learning is een deelgebied van Machine Learning dat gebruik maakt van neurale netwerken met meerdere lagen",
+        "Machine Learning is een deelgebied van Deep Learning",
+        "Deep Learning is de nieuwere naam voor traditionele Machine Learning"
+      ],
+      "optionsNL": [
+        "Deep Learning is een synoniem voor Machine Learning",
+        "Deep Learning is een deelgebied van Machine Learning dat gebruik maakt van neurale netwerken met meerdere lagen",
+        "Machine Learning is een deelgebied van Deep Learning",
+        "Deep Learning is de nieuwere naam voor traditionele Machine Learning"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Deep Learning is een subset van ML. Het onderscheidende kenmerk zijn neurale netwerken met meerdere (diepe) lagen. De doorbraak in 2012 (AlexNet) en 2017 (Transformer) maakte LLMs mogelijk.",
+      "explanationNL": "Deep Learning is een subset van ML. Het onderscheidende kenmerk zijn neurale netwerken met meerdere (diepe) lagen. De doorbraak in 2012 (AlexNet) en 2017 (Transformer) maakte LLMs mogelijk."
+    },
+    {
+      "id": "ail-final-3",
+      "text": "Welke uitspraak over LLM-tokens is correct?",
+      "textNL": "Welke uitspraak over LLM-tokens is correct?",
+      "question": "Welke uitspraak over LLM-tokens is correct?",
+      "questionEN": "Welke uitspraak over LLM-tokens is correct?",
+      "options": [
+        "Een token is gelijk aan één woord",
+        "Een token is gelijk aan één karakter",
+        "Een token is gemiddeld circa 4 karakters in het Engels",
+        "Het aantal tokens is gelijk aan het aantal zinnen"
+      ],
+      "optionsEN": [
+        "Een token is gelijk aan één woord",
+        "Een token is gelijk aan één karakter",
+        "Een token is gemiddeld circa 4 karakters in het Engels",
+        "Het aantal tokens is gelijk aan het aantal zinnen"
+      ],
+      "optionsNL": [
+        "Een token is gelijk aan één woord",
+        "Een token is gelijk aan één karakter",
+        "Een token is gemiddeld circa 4 karakters in het Engels",
+        "Het aantal tokens is gelijk aan het aantal zinnen"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Een token is gemiddeld circa 4 karakters in het Engels (vergelijkbaar in het Nederlands). \"Projectmanagement\" beslaat meerdere tokens. Tokens zijn de eenheid waarmee LLMs rekenen en waarvoor API-gebruik wordt gefactureerd.",
+      "explanationNL": "Een token is gemiddeld circa 4 karakters in het Engels (vergelijkbaar in het Nederlands). \"Projectmanagement\" beslaat meerdere tokens. Tokens zijn de eenheid waarmee LLMs rekenen en waarvoor API-gebruik wordt gefactureerd."
+    },
+    {
+      "id": "ail-final-4",
+      "text": "Wat is een hallucinatie in de context van LLMs?",
+      "textNL": "Wat is een hallucinatie in de context van LLMs?",
+      "question": "Wat is een hallucinatie in de context van LLMs?",
+      "questionEN": "Wat is een hallucinatie in de context van LLMs?",
+      "options": [
+        "Een creatieve, maar onbedoelde uitbreiding van de prompt-instructie",
+        "Het genereren van plausibel klinkende maar feitelijk onjuiste tekst als gevolg van token-predictie zonder aanwezige trainingsdata",
+        "Het weigeren van een antwoord vanwege veiligheidsbeleid",
+        "Het herhalen van tekst uit de context window"
+      ],
+      "optionsEN": [
+        "Een creatieve, maar onbedoelde uitbreiding van de prompt-instructie",
+        "Het genereren van plausibel klinkende maar feitelijk onjuiste tekst als gevolg van token-predictie zonder aanwezige trainingsdata",
+        "Het weigeren van een antwoord vanwege veiligheidsbeleid",
+        "Het herhalen van tekst uit de context window"
+      ],
+      "optionsNL": [
+        "Een creatieve, maar onbedoelde uitbreiding van de prompt-instructie",
+        "Het genereren van plausibel klinkende maar feitelijk onjuiste tekst als gevolg van token-predictie zonder aanwezige trainingsdata",
+        "Het weigeren van een antwoord vanwege veiligheidsbeleid",
+        "Het herhalen van tekst uit de context window"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Hallucinaties zijn statistisch-completion artefacten: het model vult de leegte met het meest-waarschijnlijke token wanneer relevante trainingsdata ontbreekt. Het zijn geen bewuste verzinsels of creatieve keuzes, maar een onvermijdelijk bijproduct van hoe token-predictie werkt.",
+      "explanationNL": "Hallucinaties zijn statistisch-completion artefacten: het model vult de leegte met het meest-waarschijnlijke token wanneer relevante trainingsdata ontbreekt. Het zijn geen bewuste verzinsels of creatieve keuzes, maar een onvermijdelijk bijproduct van hoe token-predictie werkt."
+    },
+    {
+      "id": "ail-final-5",
+      "text": "Wat is de definitie van een AI-agent?",
+      "textNL": "Wat is de definitie van een AI-agent?",
+      "question": "Wat is de definitie van een AI-agent?",
+      "questionEN": "Wat is de definitie van een AI-agent?",
+      "options": [
+        "Een LLM met een groter aantal parameters dan standaard modellen",
+        "Een LLM dat in een run-loop draait met toegang tot tools zoals web search en code-uitvoering",
+        "Een AI-systeem dat zelfbewustzijn heeft en autonome beslissingen neemt",
+        "Een speciaal getraind model voor geautomatiseerde workflows"
+      ],
+      "optionsEN": [
+        "Een LLM met een groter aantal parameters dan standaard modellen",
+        "Een LLM dat in een run-loop draait met toegang tot tools zoals web search en code-uitvoering",
+        "Een AI-systeem dat zelfbewustzijn heeft en autonome beslissingen neemt",
+        "Een speciaal getraind model voor geautomatiseerde workflows"
+      ],
+      "optionsNL": [
+        "Een LLM met een groter aantal parameters dan standaard modellen",
+        "Een LLM dat in een run-loop draait met toegang tot tools zoals web search en code-uitvoering",
+        "Een AI-systeem dat zelfbewustzijn heeft en autonome beslissingen neemt",
+        "Een speciaal getraind model voor geautomatiseerde workflows"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Agent = LLM + run-loop + tool access. De loop stelt het systeem in staat stappen te plannen, tools aan te roepen (web search, code, API), resultaten te verwerken en te beslissen of het klaar is of een volgende stap neemt. Geen bewustzijn, geen autonomie in de filosofische zin.",
+      "explanationNL": "Agent = LLM + run-loop + tool access. De loop stelt het systeem in staat stappen te plannen, tools aan te roepen (web search, code, API), resultaten te verwerken en te beslissen of het klaar is of een volgende stap neemt. Geen bewustzijn, geen autonomie in de filosofische zin."
+    },
+    {
+      "id": "ail-final-6",
+      "text": "Een PM wil AI inzetten om wekelijkse statusrapporten te genereren. Welke instructie in de prompt voorkomt het meest effectief dat de AI percentages of cijfers verzint die niet in de input stonden?",
+      "textNL": "Een PM wil AI inzetten om wekelijkse statusrapporten te genereren. Welke instructie in de prompt voorkomt het meest effectief dat de AI percentages of cijfers verzint die niet in de input stonden?",
+      "question": "Een PM wil AI inzetten om wekelijkse statusrapporten te genereren. Welke instructie in de prompt voorkomt het meest effectief dat de AI percentages of cijfers verzint die niet in de input stonden?",
+      "questionEN": "Een PM wil AI inzetten om wekelijkse statusrapporten te genereren. Welke instructie in de prompt voorkomt het meest effectief dat de AI percentages of cijfers verzint die niet in de input stonden?",
+      "options": [
+        "\"Schrijf een professioneel en nauwkeurig statusrapport\"",
+        "\"Gebruik alleen informatie uit de onderstaande notities. Verzin geen cijfers of percentages.\"",
+        "\"Controleer alle informatie voor je antwoordt\"",
+        "\"Wees precies en feitelijk in je taalgebruik\""
+      ],
+      "optionsEN": [
+        "\"Schrijf een professioneel en nauwkeurig statusrapport\"",
+        "\"Gebruik alleen informatie uit de onderstaande notities. Verzin geen cijfers of percentages.\"",
+        "\"Controleer alle informatie voor je antwoordt\"",
+        "\"Wees precies en feitelijk in je taalgebruik\""
+      ],
+      "optionsNL": [
+        "\"Schrijf een professioneel en nauwkeurig statusrapport\"",
+        "\"Gebruik alleen informatie uit de onderstaande notities. Verzin geen cijfers of percentages.\"",
+        "\"Controleer alle informatie voor je antwoordt\"",
+        "\"Wees precies en feitelijk in je taalgebruik\""
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Een expliciete restrictie-instructie (\"gebruik alleen...\") is de enige betrouwbare manier om AI te beperken tot de gegeven data. Vage kwaliteitsadjectieven (\"professioneel\", \"nauwkeurig\") geven het model geen operationele instructie om verzinnen te vermijden.",
+      "explanationNL": "Een expliciete restrictie-instructie (\"gebruik alleen...\") is de enige betrouwbare manier om AI te beperken tot de gegeven data. Vage kwaliteitsadjectieven (\"professioneel\", \"nauwkeurig\") geven het model geen operationele instructie om verzinnen te vermijden."
+    },
+    {
+      "id": "ail-final-7",
+      "text": "Welk component van het 4-delige prompt-recept beschrijft \"Je bent een senior projectmanager met 15 jaar ervaring in de financiële sector\"?",
+      "textNL": "Welk component van het 4-delige prompt-recept beschrijft \"Je bent een senior projectmanager met 15 jaar ervaring in de financiële sector\"?",
+      "question": "Welk component van het 4-delige prompt-recept beschrijft \"Je bent een senior projectmanager met 15 jaar ervaring in de financiële sector\"?",
+      "questionEN": "Welk component van het 4-delige prompt-recept beschrijft \"Je bent een senior projectmanager met 15 jaar ervaring in de financiële sector\"?",
+      "options": [
+        "Context",
+        "Taak",
+        "Rol",
+        "Output-format"
+      ],
+      "optionsEN": [
+        "Context",
+        "Taak",
+        "Rol",
+        "Output-format"
+      ],
+      "optionsNL": [
+        "Context",
+        "Taak",
+        "Rol",
+        "Output-format"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "\"Je bent een...\" beschrijft de rol die de AI moet aannemen. Dit stuurt het register, de expertise en de perspectieven in het antwoord. Rol staat los van Context (de achtergrond van de situatie), Taak (wat gevraagd wordt) en Output-format (hoe het resultaat eruitziet).",
+      "explanationNL": "\"Je bent een...\" beschrijft de rol die de AI moet aannemen. Dit stuurt het register, de expertise en de perspectieven in het antwoord. Rol staat los van Context (de achtergrond van de situatie), Taak (wat gevraagd wordt) en Output-format (hoe het resultaat eruitziet)."
+    },
+    {
+      "id": "ail-final-8",
+      "text": "Wat is \"chain-of-thought\" prompting en wanneer is het bijzonder nuttig?",
+      "textNL": "Wat is \"chain-of-thought\" prompting en wanneer is het bijzonder nuttig?",
+      "question": "Wat is \"chain-of-thought\" prompting en wanneer is het bijzonder nuttig?",
+      "questionEN": "Wat is \"chain-of-thought\" prompting en wanneer is het bijzonder nuttig?",
+      "options": [
+        "Het geven van meerdere voorbeelden van goede output; nuttig voor stijlnabootsing",
+        "Het vragen aan de AI om stap-voor-stap te redeneren; nuttig voor complexe analytische taken",
+        "Het koppelen van meerdere AI-aanroepen in een pipeline; nuttig voor automatisering",
+        "Het herhalen van de taakbeschrijving aan het einde van de prompt; nuttig voor lange prompts"
+      ],
+      "optionsEN": [
+        "Het geven van meerdere voorbeelden van goede output; nuttig voor stijlnabootsing",
+        "Het vragen aan de AI om stap-voor-stap te redeneren; nuttig voor complexe analytische taken",
+        "Het koppelen van meerdere AI-aanroepen in een pipeline; nuttig voor automatisering",
+        "Het herhalen van de taakbeschrijving aan het einde van de prompt; nuttig voor lange prompts"
+      ],
+      "optionsNL": [
+        "Het geven van meerdere voorbeelden van goede output; nuttig voor stijlnabootsing",
+        "Het vragen aan de AI om stap-voor-stap te redeneren; nuttig voor complexe analytische taken",
+        "Het koppelen van meerdere AI-aanroepen in een pipeline; nuttig voor automatisering",
+        "Het herhalen van de taakbeschrijving aan het einde van de prompt; nuttig voor lange prompts"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Chain-of-thought vraagt het model hardop te redeneren (\"denk stap voor stap\"). Dit maakt de redenering zichtbaar en controleerbaar, en verlaagt fouten bij complexe taken. Het is niet hetzelfde als few-shot examples (stijlnabootsing) of agent-pipelines (automatisering).",
+      "explanationNL": "Chain-of-thought vraagt het model hardop te redeneren (\"denk stap voor stap\"). Dit maakt de redenering zichtbaar en controleerbaar, en verlaagt fouten bij complexe taken. Het is niet hetzelfde als few-shot examples (stijlnabootsing) of agent-pipelines (automatisering)."
+    },
+    {
+      "id": "ail-final-9",
+      "text": "Welke AI use case vereist de meest kritische inhoudelijke check van een domeinexpert, omdat AI structureel tekortschiet bij het laatste 20%?",
+      "textNL": "Welke AI use case vereist de meest kritische inhoudelijke check van een domeinexpert, omdat AI structureel tekortschiet bij het laatste 20%?",
+      "question": "Welke AI use case vereist de meest kritische inhoudelijke check van een domeinexpert, omdat AI structureel tekortschiet bij het laatste 20%?",
+      "questionEN": "Welke AI use case vereist de meest kritische inhoudelijke check van een domeinexpert, omdat AI structureel tekortschiet bij het laatste 20%?",
+      "options": [
+        "Het omzetten van een agenda naar een bullet-point overzicht",
+        "Het genereren van een risico-register voor een nieuw IT-project in een specifieke branche",
+        "Het vertalen van een Engelse e-mail naar het Nederlands",
+        "Het samenvatten van een 40-pagina's rapport in 5 alinea's"
+      ],
+      "optionsEN": [
+        "Het omzetten van een agenda naar een bullet-point overzicht",
+        "Het genereren van een risico-register voor een nieuw IT-project in een specifieke branche",
+        "Het vertalen van een Engelse e-mail naar het Nederlands",
+        "Het samenvatten van een 40-pagina's rapport in 5 alinea's"
+      ],
+      "optionsNL": [
+        "Het omzetten van een agenda naar een bullet-point overzicht",
+        "Het genereren van een risico-register voor een nieuw IT-project in een specifieke branche",
+        "Het vertalen van een Engelse e-mail naar het Nederlands",
+        "Het samenvatten van een 40-pagina's rapport in 5 alinea's"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Een risico-register vereist branche-specifieke en project-specifieke domeinkennis voor de \"laatste 20%\". AI mist waarschijnlijk 2-3 kritieke risico's die alleen een expert met contextuele kennis herkent. Vertalen, samenvatten en agenda-formatting zijn taken waarbij AI de volle breedte zelfstandig dekt.",
+      "explanationNL": "Een risico-register vereist branche-specifieke en project-specifieke domeinkennis voor de \"laatste 20%\". AI mist waarschijnlijk 2-3 kritieke risico's die alleen een expert met contextuele kennis herkent. Vertalen, samenvatten en agenda-formatting zijn taken waarbij AI de volle breedte zelfstandig dekt."
+    },
+    {
+      "id": "ail-final-10",
+      "text": "Hoe beschrijft de cursus de aanbevolen aanpak na de eerste AI-output op een taak?",
+      "textNL": "Hoe beschrijft de cursus de aanbevolen aanpak na de eerste AI-output op een taak?",
+      "question": "Hoe beschrijft de cursus de aanbevolen aanpak na de eerste AI-output op een taak?",
+      "questionEN": "Hoe beschrijft de cursus de aanbevolen aanpak na de eerste AI-output op een taak?",
+      "options": [
+        "Meteen publiceren als de output professioneel overkomt",
+        "De output weggooien en opnieuw beginnen met een betere prompt",
+        "Iteratief verfijnen: evalueer wat niet klopt, voeg die constraint toe aan de prompt, herhaal",
+        "Meerdere AI-modellen de dezelfde vraag stellen en het beste antwoord kiezen"
+      ],
+      "optionsEN": [
+        "Meteen publiceren als de output professioneel overkomt",
+        "De output weggooien en opnieuw beginnen met een betere prompt",
+        "Iteratief verfijnen: evalueer wat niet klopt, voeg die constraint toe aan de prompt, herhaal",
+        "Meerdere AI-modellen de dezelfde vraag stellen en het beste antwoord kiezen"
+      ],
+      "optionsNL": [
+        "Meteen publiceren als de output professioneel overkomt",
+        "De output weggooien en opnieuw beginnen met een betere prompt",
+        "Iteratief verfijnen: evalueer wat niet klopt, voeg die constraint toe aan de prompt, herhaal",
+        "Meerdere AI-modellen de dezelfde vraag stellen en het beste antwoord kiezen"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "De cursus beschrijft iteratief prompten: probeer → identificeer wat niet klopt → voeg die constraint toe → herhaal. Na 2-3 iteraties heb je doorgaans een sjabloon dat herbruikbaar is. Direct publiceren zonder review of alles weggooien zijn beide antipatronen.",
+      "explanationNL": "De cursus beschrijft iteratief prompten: probeer → identificeer wat niet klopt → voeg die constraint toe → herhaal. Na 2-3 iteraties heb je doorgaans een sjabloon dat herbruikbaar is. Direct publiceren zonder review of alles weggooien zijn beide antipatronen."
+    },
+    {
+      "id": "ail-final-11",
+      "text": "Wat is de aanbevolen manier om bij vergadernotulen te controleren of de AI alle actie-eigenaren correct heeft vastgelegd?",
+      "textNL": "Wat is de aanbevolen manier om bij vergadernotulen te controleren of de AI alle actie-eigenaren correct heeft vastgelegd?",
+      "question": "Wat is de aanbevolen manier om bij vergadernotulen te controleren of de AI alle actie-eigenaren correct heeft vastgelegd?",
+      "questionEN": "Wat is de aanbevolen manier om bij vergadernotulen te controleren of de AI alle actie-eigenaren correct heeft vastgelegd?",
+      "options": [
+        "De AI vragen om de actiepunten te nummeren zodat je ze kunt tellen",
+        "Zelf het originele transcript lezen en vergelijken met de AI-output, want impliciete afspraken mist AI structureel",
+        "Een tweede AI-model de notulen laten valideren op volledigheid",
+        "De AI vragen om bij elk actiepunt het tijdstip in het transcript te vermelden"
+      ],
+      "optionsEN": [
+        "De AI vragen om de actiepunten te nummeren zodat je ze kunt tellen",
+        "Zelf het originele transcript lezen en vergelijken met de AI-output, want impliciete afspraken mist AI structureel",
+        "Een tweede AI-model de notulen laten valideren op volledigheid",
+        "De AI vragen om bij elk actiepunt het tijdstip in het transcript te vermelden"
+      ],
+      "optionsNL": [
+        "De AI vragen om de actiepunten te nummeren zodat je ze kunt tellen",
+        "Zelf het originele transcript lezen en vergelijken met de AI-output, want impliciete afspraken mist AI structureel",
+        "Een tweede AI-model de notulen laten valideren op volledigheid",
+        "De AI vragen om bij elk actiepunt het tijdstip in het transcript te vermelden"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "AI is goed in het extraheren van expliciet genoemde actie-eigenaren, maar mist impliciete afspraken (\"jij pakt dat op\" of non-verbale toewijzingen). Zelf teruglezen naar het origineel is de enige betrouwbare controle.",
+      "explanationNL": "AI is goed in het extraheren van expliciet genoemde actie-eigenaren, maar mist impliciete afspraken (\"jij pakt dat op\" of non-verbale toewijzingen). Zelf teruglezen naar het origineel is de enige betrouwbare controle."
+    },
+    {
+      "id": "ail-final-12",
+      "text": "Hoeveel risico-niveaus kent de EU AI Act en wat is de correcte volgorde van zwaarst naar lichtst?",
+      "textNL": "Hoeveel risico-niveaus kent de EU AI Act en wat is de correcte volgorde van zwaarst naar lichtst?",
+      "question": "Hoeveel risico-niveaus kent de EU AI Act en wat is de correcte volgorde van zwaarst naar lichtst?",
+      "questionEN": "Hoeveel risico-niveaus kent de EU AI Act en wat is de correcte volgorde van zwaarst naar lichtst?",
+      "options": [
+        "3 niveaus: Hoog, Middel, Laag",
+        "5 niveaus: Verboden, Hoog, Middel, Laag, Vrijwillig",
+        "4 niveaus: Onaanvaardbaar, Hoog, Beperkt, Minimaal",
+        "4 niveaus: Kritiek, Hoog, Medium, Laag"
+      ],
+      "optionsEN": [
+        "3 niveaus: Hoog, Middel, Laag",
+        "5 niveaus: Verboden, Hoog, Middel, Laag, Vrijwillig",
+        "4 niveaus: Onaanvaardbaar, Hoog, Beperkt, Minimaal",
+        "4 niveaus: Kritiek, Hoog, Medium, Laag"
+      ],
+      "optionsNL": [
+        "3 niveaus: Hoog, Middel, Laag",
+        "5 niveaus: Verboden, Hoog, Middel, Laag, Vrijwillig",
+        "4 niveaus: Onaanvaardbaar, Hoog, Beperkt, Minimaal",
+        "4 niveaus: Kritiek, Hoog, Medium, Laag"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "De EU AI Act kent vier risico-categorieën: Onaanvaardbaar (verboden), Hoog (strenge verplichtingen), Beperkt (transparantieplicht), en Minimaal (vrijwillige codes). De exacte terminologie is bindend voor compliance-gesprekken.",
+      "explanationNL": "De EU AI Act kent vier risico-categorieën: Onaanvaardbaar (verboden), Hoog (strenge verplichtingen), Beperkt (transparantieplicht), en Minimaal (vrijwillige codes). De exacte terminologie is bindend voor compliance-gesprekken."
+    },
+    {
+      "id": "ail-final-13",
+      "text": "Een deepfake-video van een CEO die een fictief statement geeft wordt online geplaatst zonder label. Welke EU AI Act verplichting is geschonden?",
+      "textNL": "Een deepfake-video van een CEO die een fictief statement geeft wordt online geplaatst zonder label. Welke EU AI Act verplichting is geschonden?",
+      "question": "Een deepfake-video van een CEO die een fictief statement geeft wordt online geplaatst zonder label. Welke EU AI Act verplichting is geschonden?",
+      "questionEN": "Een deepfake-video van een CEO die een fictief statement geeft wordt online geplaatst zonder label. Welke EU AI Act verplichting is geschonden?",
+      "options": [
+        "De verbodsbepaling op onaanvaardbaar risico",
+        "De hoog-risico governance-eis voor technische documentatie",
+        "De beperkt-risico transparantieplicht: synthetische content moet als zodanig worden aangeduid",
+        "De GPAI-verplichting voor foundation models"
+      ],
+      "optionsEN": [
+        "De verbodsbepaling op onaanvaardbaar risico",
+        "De hoog-risico governance-eis voor technische documentatie",
+        "De beperkt-risico transparantieplicht: synthetische content moet als zodanig worden aangeduid",
+        "De GPAI-verplichting voor foundation models"
+      ],
+      "optionsNL": [
+        "De verbodsbepaling op onaanvaardbaar risico",
+        "De hoog-risico governance-eis voor technische documentatie",
+        "De beperkt-risico transparantieplicht: synthetische content moet als zodanig worden aangeduid",
+        "De GPAI-verplichting voor foundation models"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Deepfakes zonder duidelijke markering vallen onder \"beperkt risico\" en schenden de transparantieplicht: AI-gegenereerde content die echte personen of situaties nabootst moet kenbaar worden gemaakt als synthetisch. Dit is geen verbod, maar een markeringsplicht.",
+      "explanationNL": "Deepfakes zonder duidelijke markering vallen onder \"beperkt risico\" en schenden de transparantieplicht: AI-gegenereerde content die echte personen of situaties nabootst moet kenbaar worden gemaakt als synthetisch. Dit is geen verbod, maar een markeringsplicht."
+    },
+    {
+      "id": "ail-final-14",
+      "text": "Wat beschrijft de \"regel van drie\" voor het beoordelen van wat je in een AI-prompt mag plaatsen?",
+      "textNL": "Wat beschrijft de \"regel van drie\" voor het beoordelen van wat je in een AI-prompt mag plaatsen?",
+      "question": "Wat beschrijft de \"regel van drie\" voor het beoordelen van wat je in een AI-prompt mag plaatsen?",
+      "questionEN": "Wat beschrijft de \"regel van drie\" voor het beoordelen van wat je in een AI-prompt mag plaatsen?",
+      "options": [
+        "Maximaal drie onderwerpen per prompt voor optimale kwaliteit",
+        "Krant-test, publiek forum-test, en toestemming van de data-eigenaar",
+        "Check op drie categorieën: persoonsgegevens, financiële data, en handelsgeheimen",
+        "Drie iteraties voordat je een prompt als definitief beschouwt"
+      ],
+      "optionsEN": [
+        "Maximaal drie onderwerpen per prompt voor optimale kwaliteit",
+        "Krant-test, publiek forum-test, en toestemming van de data-eigenaar",
+        "Check op drie categorieën: persoonsgegevens, financiële data, en handelsgeheimen",
+        "Drie iteraties voordat je een prompt als definitief beschouwt"
+      ],
+      "optionsNL": [
+        "Maximaal drie onderwerpen per prompt voor optimale kwaliteit",
+        "Krant-test, publiek forum-test, en toestemming van de data-eigenaar",
+        "Check op drie categorieën: persoonsgegevens, financiële data, en handelsgeheimen",
+        "Drie iteraties voordat je een prompt als definitief beschouwt"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "De regel van drie uit de cursus: (1) Als dit morgen in de krant staat, is dat een ramp? (2) Zou ik dit op een publiek forum posten? (3) Heb ik toestemming van de eigenaar? Als één antwoord \"nee\" is, hoort de informatie niet in de prompt.",
+      "explanationNL": "De regel van drie uit de cursus: (1) Als dit morgen in de krant staat, is dat een ramp? (2) Zou ik dit op een publiek forum posten? (3) Heb ik toestemming van de eigenaar? Als één antwoord \"nee\" is, hoort de informatie niet in de prompt."
+    },
+    {
+      "id": "ail-final-15",
+      "text": "Welke actie moet een projectmanager als eerste ondernemen als een nieuw project AI inzet voor een toepassing die mogelijk hoog risico is onder de EU AI Act?",
+      "textNL": "Welke actie moet een projectmanager als eerste ondernemen als een nieuw project AI inzet voor een toepassing die mogelijk hoog risico is onder de EU AI Act?",
+      "question": "Welke actie moet een projectmanager als eerste ondernemen als een nieuw project AI inzet voor een toepassing die mogelijk hoog risico is onder de EU AI Act?",
+      "questionEN": "Welke actie moet een projectmanager als eerste ondernemen als een nieuw project AI inzet voor een toepassing die mogelijk hoog risico is onder de EU AI Act?",
+      "options": [
+        "Direct een CE-markering aanvragen",
+        "Bepalen of het project \"deployer\" of \"provider\" is onder de Act, en de risicoklasse vaststellen",
+        "Een ethische AI-commissie oprichten binnen het project",
+        "Alle AI-output laten goedkeuren door een jurist voor publicatie"
+      ],
+      "optionsEN": [
+        "Direct een CE-markering aanvragen",
+        "Bepalen of het project \"deployer\" of \"provider\" is onder de Act, en de risicoklasse vaststellen",
+        "Een ethische AI-commissie oprichten binnen het project",
+        "Alle AI-output laten goedkeuren door een jurist voor publicatie"
+      ],
+      "optionsNL": [
+        "Direct een CE-markering aanvragen",
+        "Bepalen of het project \"deployer\" of \"provider\" is onder de Act, en de risicoklasse vaststellen",
+        "Een ethische AI-commissie oprichten binnen het project",
+        "Alle AI-output laten goedkeuren door een jurist voor publicatie"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "De eerste stap is het vaststellen van de rol (deployer of provider) en de risicoklasse, want die bepalen welke verplichtingen van toepassing zijn. CE-markering is een later stadium; een ethische commissie en juridische goedkeuring zijn mogelijke vervolgstappen maar niet de eerste.",
+      "explanationNL": "De eerste stap is het vaststellen van de rol (deployer of provider) en de risicoklasse, want die bepalen welke verplichtingen van toepassing zijn. CE-markering is een later stadium; een ethische commissie en juridische goedkeuring zijn mogelijke vervolgstappen maar niet de eerste."
+    },
+    {
+      "id": "ail-final-16",
+      "text": "Welke verplichting geldt specifiek voor General-Purpose AI (GPAI) modellen, zoals GPT-4 en Claude, onder de EU AI Act?",
+      "textNL": "Welke verplichting geldt specifiek voor General-Purpose AI (GPAI) modellen, zoals GPT-4 en Claude, onder de EU AI Act?",
+      "question": "Welke verplichting geldt specifiek voor General-Purpose AI (GPAI) modellen, zoals GPT-4 en Claude, onder de EU AI Act?",
+      "questionEN": "Welke verplichting geldt specifiek voor General-Purpose AI (GPAI) modellen, zoals GPT-4 en Claude, onder de EU AI Act?",
+      "options": [
+        "Ze mogen niet worden ingezet in hoog-risico toepassingen",
+        "Ze moeten een CE-markering dragen",
+        "Transparantie over trainingsdata, copyright-naleving en risicobeheer voor modellen met systemisch risico",
+        "Ze mogen alleen worden aangeboden via Enterprise tiers met zero-data-retention"
+      ],
+      "optionsEN": [
+        "Ze mogen niet worden ingezet in hoog-risico toepassingen",
+        "Ze moeten een CE-markering dragen",
+        "Transparantie over trainingsdata, copyright-naleving en risicobeheer voor modellen met systemisch risico",
+        "Ze mogen alleen worden aangeboden via Enterprise tiers met zero-data-retention"
+      ],
+      "optionsNL": [
+        "Ze mogen niet worden ingezet in hoog-risico toepassingen",
+        "Ze moeten een CE-markering dragen",
+        "Transparantie over trainingsdata, copyright-naleving en risicobeheer voor modellen met systemisch risico",
+        "Ze mogen alleen worden aangeboden via Enterprise tiers met zero-data-retention"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "De GPAI-regels (van kracht augustus 2025) vereisen: transparantie over trainingsdata, naleving van auteursrecht, en voor foundation models met systemisch risico extra verplichtingen voor risicobeheer. Het verbod op hoog-risico inzet geldt niet voor de modellen zelf maar voor deployers.",
+      "explanationNL": "De GPAI-regels (van kracht augustus 2025) vereisen: transparantie over trainingsdata, naleving van auteursrecht, en voor foundation models met systemisch risico extra verplichtingen voor risicobeheer. Het verbod op hoog-risico inzet geldt niet voor de modellen zelf maar voor deployers."
+    },
+    {
+      "id": "ail-final-17",
+      "text": "Welke AI-tool is volgens de cursus het sterkst voor het verwerken van documenten langer dan 100 pagina's?",
+      "textNL": "Welke AI-tool is volgens de cursus het sterkst voor het verwerken van documenten langer dan 100 pagina's?",
+      "question": "Welke AI-tool is volgens de cursus het sterkst voor het verwerken van documenten langer dan 100 pagina's?",
+      "questionEN": "Welke AI-tool is volgens de cursus het sterkst voor het verwerken van documenten langer dan 100 pagina's?",
+      "options": [
+        "GPT-4 Turbo — beste allround prestaties",
+        "Gemini Pro — goedkoop en snel",
+        "Claude — de grootste context window (200k-1M tokens)",
+        "Notebook LM — specifiek gebouwd voor lange documenten"
+      ],
+      "optionsEN": [
+        "GPT-4 Turbo — beste allround prestaties",
+        "Gemini Pro — goedkoop en snel",
+        "Claude — de grootste context window (200k-1M tokens)",
+        "Notebook LM — specifiek gebouwd voor lange documenten"
+      ],
+      "optionsNL": [
+        "GPT-4 Turbo — beste allround prestaties",
+        "Gemini Pro — goedkoop en snel",
+        "Claude — de grootste context window (200k-1M tokens)",
+        "Notebook LM — specifiek gebouwd voor lange documenten"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Claude wordt in de cursus aanbevolen voor het samenvatten van lange documenten vanwege de grootste context window (200k voor Sonnet, 1M voor Opus). Notebook LM is goed voor meerdere bronnen maar heeft een kleinere context dan Claude Opus.",
+      "explanationNL": "Claude wordt in de cursus aanbevolen voor het samenvatten van lange documenten vanwege de grootste context window (200k voor Sonnet, 1M voor Opus). Notebook LM is goed voor meerdere bronnen maar heeft een kleinere context dan Claude Opus."
+    },
+    {
+      "id": "ail-final-18",
+      "text": "Wat is het aanbevolen maximale aantal AI-tools dat een projectmanager diepgaand moet beheersen?",
+      "textNL": "Wat is het aanbevolen maximale aantal AI-tools dat een projectmanager diepgaand moet beheersen?",
+      "question": "Wat is het aanbevolen maximale aantal AI-tools dat een projectmanager diepgaand moet beheersen?",
+      "questionEN": "Wat is het aanbevolen maximale aantal AI-tools dat een projectmanager diepgaand moet beheersen?",
+      "options": [
+        "1 — focus op één tool voor maximale diepgang",
+        "2-3 — beheers een beperkte set goed in plaats van oppervlakkig veel",
+        "5-7 — dekking van alle taak-types vereist meer tools",
+        "Zo veel als nodig — de toolmarkt verandert te snel voor beperkingen"
+      ],
+      "optionsEN": [
+        "1 — focus op één tool voor maximale diepgang",
+        "2-3 — beheers een beperkte set goed in plaats van oppervlakkig veel",
+        "5-7 — dekking van alle taak-types vereist meer tools",
+        "Zo veel als nodig — de toolmarkt verandert te snel voor beperkingen"
+      ],
+      "optionsNL": [
+        "1 — focus op één tool voor maximale diepgang",
+        "2-3 — beheers een beperkte set goed in plaats van oppervlakkig veel",
+        "5-7 — dekking van alle taak-types vereist meer tools",
+        "Zo veel als nodig — de toolmarkt verandert te snel voor beperkingen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "De cursus raadt aan: kies 2-3 tools en beheers ze diepgaand. Alle tools kopen of continu wisselen leidt tot fragmentatie zonder profijt. Gereedschap zonder workflow is chaos — diepgang in een kleine set beats breedte zonder beheersing.",
+      "explanationNL": "De cursus raadt aan: kies 2-3 tools en beheers ze diepgaand. Alle tools kopen of continu wisselen leidt tot fragmentatie zonder profijt. Gereedschap zonder workflow is chaos — diepgang in een kleine set beats breedte zonder beheersing."
+    },
+    {
+      "id": "ail-final-19",
+      "text": "Wat is een prompt-sjabloon en waarom is het waardevol?",
+      "textNL": "Wat is een prompt-sjabloon en waarom is het waardevol?",
+      "question": "Wat is een prompt-sjabloon en waarom is het waardevol?",
+      "questionEN": "Wat is een prompt-sjabloon en waarom is het waardevol?",
+      "options": [
+        "Een door AI gegenereerde prompt die je opslaat voor hergebruik, zodat je zelf geen prompts meer hoeft te schrijven",
+        "Een herbruikbare prompt met placeholders die bij gelijke taakstructuren consistente kwaliteit levert",
+        "Een officieel door de tool-provider goedgekeurd prompt-format",
+        "Een prompt die chain-of-thought en few-shot examples combineert"
+      ],
+      "optionsEN": [
+        "Een door AI gegenereerde prompt die je opslaat voor hergebruik, zodat je zelf geen prompts meer hoeft te schrijven",
+        "Een herbruikbare prompt met placeholders die bij gelijke taakstructuren consistente kwaliteit levert",
+        "Een officieel door de tool-provider goedgekeurd prompt-format",
+        "Een prompt die chain-of-thought en few-shot examples combineert"
+      ],
+      "optionsNL": [
+        "Een door AI gegenereerde prompt die je opslaat voor hergebruik, zodat je zelf geen prompts meer hoeft te schrijven",
+        "Een herbruikbare prompt met placeholders die bij gelijke taakstructuren consistente kwaliteit levert",
+        "Een officieel door de tool-provider goedgekeurd prompt-format",
+        "Een prompt die chain-of-thought en few-shot examples combineert"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Een prompt-sjabloon is een herbruikbare prompt met variabele placeholders (bijv. [ROL], [CONTEXT], [ARTIFACT]). Na invullen per geval levert het consistente kwaliteit voor gelijke taakstructuren. Het verschil tussen productief en tijdverspillend AI-gebruik is vaak slechts de aanwezigheid van zo'n bibliotheek.",
+      "explanationNL": "Een prompt-sjabloon is een herbruikbare prompt met variabele placeholders (bijv. [ROL], [CONTEXT], [ARTIFACT]). Na invullen per geval levert het consistente kwaliteit voor gelijke taakstructuren. Het verschil tussen productief en tijdverspillend AI-gebruik is vaak slechts de aanwezigheid van zo'n bibliotheek."
+    },
+    {
+      "id": "ail-final-20",
+      "text": "Welk criterium moet een projectmanager hanteren bij de keuze voor een AI-tool als de taak gevoelige klant- of bedrijfsdata vereist?",
+      "textNL": "Welk criterium moet een projectmanager hanteren bij de keuze voor een AI-tool als de taak gevoelige klant- of bedrijfsdata vereist?",
+      "question": "Welk criterium moet een projectmanager hanteren bij de keuze voor een AI-tool als de taak gevoelige klant- of bedrijfsdata vereist?",
+      "questionEN": "Welk criterium moet een projectmanager hanteren bij de keuze voor een AI-tool als de taak gevoelige klant- of bedrijfsdata vereist?",
+      "options": [
+        "De tool met de hoogste benchmark-score op AI-tests kiezen",
+        "De tool kiezen die de goedkoopste Enterprise-tier heeft",
+        "Een Enterprise-tier met contractueel vastgelegde zero-data-retention kiezen",
+        "Een lokaal draaiend open-source model altijd prefereren boven cloud-tools"
+      ],
+      "optionsEN": [
+        "De tool met de hoogste benchmark-score op AI-tests kiezen",
+        "De tool kiezen die de goedkoopste Enterprise-tier heeft",
+        "Een Enterprise-tier met contractueel vastgelegde zero-data-retention kiezen",
+        "Een lokaal draaiend open-source model altijd prefereren boven cloud-tools"
+      ],
+      "optionsNL": [
+        "De tool met de hoogste benchmark-score op AI-tests kiezen",
+        "De tool kiezen die de goedkoopste Enterprise-tier heeft",
+        "Een Enterprise-tier met contractueel vastgelegde zero-data-retention kiezen",
+        "Een lokaal draaiend open-source model altijd prefereren boven cloud-tools"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Voor gevoelige data is de doorslaggevende eis een contractueel vastgelegde zero-data-retention (bijv. Claude API, Azure OpenAI, ChatGPT Enterprise). Benchmark-scores en prijs zijn secundair. Lokale modellen zijn ook een optie maar zijn niet altijd praktisch en vereisen eigen infrastructuur en beveiliging.",
+      "explanationNL": "Voor gevoelige data is de doorslaggevende eis een contractueel vastgelegde zero-data-retention (bijv. Claude API, Azure OpenAI, ChatGPT Enterprise). Benchmark-scores en prijs zijn secundair. Lokale modellen zijn ook een optie maar zijn niet altijd praktisch en vereisen eigen infrastructuur en beveiliging."
+    }
+  ],
+  "description": "Final exam — AI Literacy for Project Professionals",
+  "descriptionNL": "Eindexamen — AI Letterkundige Kennis voor Projectprofessionals",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

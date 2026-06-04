@@ -1,0 +1,245 @@
+{
+  "id": "ail-l13",
+  "title": "Module 3 Exam",
+  "titleNL": "Module 3 Examen",
+  "courseId": "ai-literacy",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "ail-q3-1",
+      "text": "Welke van de volgende situaties is een voorbeeld van een citaat-hallucinatie?",
+      "textNL": "Welke van de volgende situaties is een voorbeeld van een citaat-hallucinatie?",
+      "question": "Welke van de volgende situaties is een voorbeeld van een citaat-hallucinatie?",
+      "questionEN": "Welke van de volgende situaties is een voorbeeld van een citaat-hallucinatie?",
+      "options": [
+        "Een LLM noemt een bestaande wetenschapper maar schrijft hem een publicatie toe die hij nooit schreef",
+        "Een LLM geeft een verkeerd antwoord op een rekensom",
+        "Een LLM weigert een vraag te beantwoorden vanwege veiligheidsbeleid",
+        "Een LLM genereert code met een syntaxfout"
+      ],
+      "optionsEN": [
+        "Een LLM noemt een bestaande wetenschapper maar schrijft hem een publicatie toe die hij nooit schreef",
+        "Een LLM geeft een verkeerd antwoord op een rekensom",
+        "Een LLM weigert een vraag te beantwoorden vanwege veiligheidsbeleid",
+        "Een LLM genereert code met een syntaxfout"
+      ],
+      "optionsNL": [
+        "Een LLM noemt een bestaande wetenschapper maar schrijft hem een publicatie toe die hij nooit schreef",
+        "Een LLM geeft een verkeerd antwoord op een rekensom",
+        "Een LLM weigert een vraag te beantwoorden vanwege veiligheidsbeleid",
+        "Een LLM genereert code met een syntaxfout"
+      ],
+      "correct": 0,
+      "points": 5,
+      "explanation": "Een citaat-hallucinatie is het verzinnen van een bronnaam, publicatietitel of quote die niet bestaat. Een bestaand persoon koppelen aan een niet-bestaande publicatie is precies dit patroon. Rekenfouten en syntaxfouten zijn andere foutcategorieën.",
+      "explanationNL": "Een citaat-hallucinatie is het verzinnen van een bronnaam, publicatietitel of quote die niet bestaat. Een bestaand persoon koppelen aan een niet-bestaande publicatie is precies dit patroon. Rekenfouten en syntaxfouten zijn andere foutcategorieën."
+    },
+    {
+      "id": "ail-q3-2",
+      "text": "Retrieval-Augmented Generation (RAG) is een mitigatie voor hallucinaties. Wat is de kern van deze aanpak?",
+      "textNL": "Retrieval-Augmented Generation (RAG) is een mitigatie voor hallucinaties. Wat is de kern van deze aanpak?",
+      "question": "Retrieval-Augmented Generation (RAG) is een mitigatie voor hallucinaties. Wat is de kern van deze aanpak?",
+      "questionEN": "Retrieval-Augmented Generation (RAG) is een mitigatie voor hallucinaties. Wat is de kern van deze aanpak?",
+      "options": [
+        "Het model meerdere malen dezelfde vraag stellen en de antwoorden vergelijken",
+        "De AI altijd vragen om een bron te noemen bij elk feitelijk antwoord",
+        "Relevante brondocumenten expliciet in de prompt meegeven zodat het model op die tekst kan steunen",
+        "Het model fijn-tunen op organisatie-specifieke data zodat het minder hallucineert"
+      ],
+      "optionsEN": [
+        "Het model meerdere malen dezelfde vraag stellen en de antwoorden vergelijken",
+        "De AI altijd vragen om een bron te noemen bij elk feitelijk antwoord",
+        "Relevante brondocumenten expliciet in de prompt meegeven zodat het model op die tekst kan steunen",
+        "Het model fijn-tunen op organisatie-specifieke data zodat het minder hallucineert"
+      ],
+      "optionsNL": [
+        "Het model meerdere malen dezelfde vraag stellen en de antwoorden vergelijken",
+        "De AI altijd vragen om een bron te noemen bij elk feitelijk antwoord",
+        "Relevante brondocumenten expliciet in de prompt meegeven zodat het model op die tekst kan steunen",
+        "Het model fijn-tunen op organisatie-specifieke data zodat het minder hallucineert"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "RAG werkt door relevante documenten op te halen (retrieval) en als context mee te geven in de prompt. Het model steunt dan op die expliciete tekst in plaats van op statistisch waarschijnlijke tokens uit de training. Dit verkleint de kans op fabricatie aanzienlijk.",
+      "explanationNL": "RAG werkt door relevante documenten op te halen (retrieval) en als context mee te geven in de prompt. Het model steunt dan op die expliciete tekst in plaats van op statistisch waarschijnlijke tokens uit de training. Dit verkleint de kans op fabricatie aanzienlijk."
+    },
+    {
+      "id": "ail-q3-3",
+      "text": "Een PM gebruikt AI om persona's te genereren voor een product voor een diverse gebruikersgroep. Na review ziet hij dat alle manager-persona's mannelijk zijn en alle assistent-persona's vrouwelijk. Wat is de oorzaak?",
+      "textNL": "Een PM gebruikt AI om persona's te genereren voor een product voor een diverse gebruikersgroep. Na review ziet hij dat alle manager-persona's mannelijk zijn en alle assistent-persona's vrouwelijk. Wat is de oorzaak?",
+      "question": "Een PM gebruikt AI om persona's te genereren voor een product voor een diverse gebruikersgroep. Na review ziet hij dat alle manager-persona's mannelijk zijn en alle assistent-persona's vrouwelijk. Wat is de oorzaak?",
+      "questionEN": "Een PM gebruikt AI om persona's te genereren voor een product voor een diverse gebruikersgroep. Na review ziet hij dat alle manager-persona's mannelijk zijn en alle assistent-persona's vrouwelijk. Wat is de oorzaak?",
+      "options": [
+        "De PM heeft niet expliciet gevraagd om diverse persona's",
+        "AI kan geen vrouwelijke manager-persona's genereren door technische beperkingen",
+        "Trainingsdata-bias: historische data oververtegenwoordigt bepaalde patronen, die het model reproduceert",
+        "Het model past zich aan de cultuur van de gebruiker aan op basis van eerdere prompts"
+      ],
+      "optionsEN": [
+        "De PM heeft niet expliciet gevraagd om diverse persona's",
+        "AI kan geen vrouwelijke manager-persona's genereren door technische beperkingen",
+        "Trainingsdata-bias: historische data oververtegenwoordigt bepaalde patronen, die het model reproduceert",
+        "Het model past zich aan de cultuur van de gebruiker aan op basis van eerdere prompts"
+      ],
+      "optionsNL": [
+        "De PM heeft niet expliciet gevraagd om diverse persona's",
+        "AI kan geen vrouwelijke manager-persona's genereren door technische beperkingen",
+        "Trainingsdata-bias: historische data oververtegenwoordigt bepaalde patronen, die het model reproduceert",
+        "Het model past zich aan de cultuur van de gebruiker aan op basis van eerdere prompts"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Trainingsdata reflecteert historische en maatschappelijke ongelijkheden. Als meer teksten in de trainingsdata managers associëren met mannelijke namen, leert het model dat patroon en reproduceert het. Dit is bias-door-trainingsdata, de meest voorkomende oorzaak.",
+      "explanationNL": "Trainingsdata reflecteert historische en maatschappelijke ongelijkheden. Als meer teksten in de trainingsdata managers associëren met mannelijke namen, leert het model dat patroon en reproduceert het. Dit is bias-door-trainingsdata, de meest voorkomende oorzaak."
+    },
+    {
+      "id": "ail-q3-4",
+      "text": "Welke van de volgende handelingen vormt het grootste privacyrisico bij het gebruik van een publieke AI-tool (niet-Enterprise tier)?",
+      "textNL": "Welke van de volgende handelingen vormt het grootste privacyrisico bij het gebruik van een publieke AI-tool (niet-Enterprise tier)?",
+      "question": "Welke van de volgende handelingen vormt het grootste privacyrisico bij het gebruik van een publieke AI-tool (niet-Enterprise tier)?",
+      "questionEN": "Welke van de volgende handelingen vormt het grootste privacyrisico bij het gebruik van een publieke AI-tool (niet-Enterprise tier)?",
+      "options": [
+        "Een publiek beschikbaar projectmethodologie-document uploaden voor samenvatting",
+        "Klantnamen, contractbedragen en strategische plannen in een prompt plakken",
+        "AI vragen om een sjabloon voor een stakeholder-e-mail te schrijven zonder projectcontext",
+        "Een anonieme vraag stellen over PRINCE2 best practices"
+      ],
+      "optionsEN": [
+        "Een publiek beschikbaar projectmethodologie-document uploaden voor samenvatting",
+        "Klantnamen, contractbedragen en strategische plannen in een prompt plakken",
+        "AI vragen om een sjabloon voor een stakeholder-e-mail te schrijven zonder projectcontext",
+        "Een anonieme vraag stellen over PRINCE2 best practices"
+      ],
+      "optionsNL": [
+        "Een publiek beschikbaar projectmethodologie-document uploaden voor samenvatting",
+        "Klantnamen, contractbedragen en strategische plannen in een prompt plakken",
+        "AI vragen om een sjabloon voor een stakeholder-e-mail te schrijven zonder projectcontext",
+        "Een anonieme vraag stellen over PRINCE2 best practices"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Klantnamen, contractbedragen en strategische plannen zijn vertrouwelijke en mogelijk persoonsgebonden data. In een niet-Enterprise publieke AI kunnen deze gegevens in provider-logs terechtkomen of voor training gebruikt worden. Dit is het concrete privacyrisico dat de cursus beschrijft.",
+      "explanationNL": "Klantnamen, contractbedragen en strategische plannen zijn vertrouwelijke en mogelijk persoonsgebonden data. In een niet-Enterprise publieke AI kunnen deze gegevens in provider-logs terechtkomen of voor training gebruikt worden. Dit is het concrete privacyrisico dat de cursus beschrijft."
+    },
+    {
+      "id": "ail-q3-5",
+      "text": "In welke risico-categorie valt een AI-systeem dat wordt ingezet voor het automatisch beoordelen en selecteren van sollicitanten, volgens de EU AI Act?",
+      "textNL": "In welke risico-categorie valt een AI-systeem dat wordt ingezet voor het automatisch beoordelen en selecteren van sollicitanten, volgens de EU AI Act?",
+      "question": "In welke risico-categorie valt een AI-systeem dat wordt ingezet voor het automatisch beoordelen en selecteren van sollicitanten, volgens de EU AI Act?",
+      "questionEN": "In welke risico-categorie valt een AI-systeem dat wordt ingezet voor het automatisch beoordelen en selecteren van sollicitanten, volgens de EU AI Act?",
+      "options": [
+        "Minimaal risico — vrijwillige codes",
+        "Beperkt risico — transparantie-verplichtingen",
+        "Hoog risico — strenge governance-verplichtingen",
+        "Onaanvaardbaar risico — verboden per februari 2025"
+      ],
+      "optionsEN": [
+        "Minimaal risico — vrijwillige codes",
+        "Beperkt risico — transparantie-verplichtingen",
+        "Hoog risico — strenge governance-verplichtingen",
+        "Onaanvaardbaar risico — verboden per februari 2025"
+      ],
+      "optionsNL": [
+        "Minimaal risico — vrijwillige codes",
+        "Beperkt risico — transparantie-verplichtingen",
+        "Hoog risico — strenge governance-verplichtingen",
+        "Onaanvaardbaar risico — verboden per februari 2025"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "HR-systemen voor werving, promotie en evaluatie vallen expliciet onder de \"hoog risico\"-categorie van de EU AI Act. Ze vereisen een risico-managementsysteem, technische documentatie, menselijke oversight, en conformiteitsbeoordeling vóór ingebruikname.",
+      "explanationNL": "HR-systemen voor werving, promotie en evaluatie vallen expliciet onder de \"hoog risico\"-categorie van de EU AI Act. Ze vereisen een risico-managementsysteem, technische documentatie, menselijke oversight, en conformiteitsbeoordeling vóór ingebruikname."
+    },
+    {
+      "id": "ail-q3-6",
+      "text": "Welk AI-gebruik is volgens de EU AI Act verboden per februari 2025?",
+      "textNL": "Welk AI-gebruik is volgens de EU AI Act verboden per februari 2025?",
+      "question": "Welk AI-gebruik is volgens de EU AI Act verboden per februari 2025?",
+      "questionEN": "Welk AI-gebruik is volgens de EU AI Act verboden per februari 2025?",
+      "options": [
+        "Een chatbot die zich als AI identificeert aan gebruikers",
+        "Een HR-tool die CV's rangschikt op basis van vaardigheden",
+        "Social scoring door een overheid om burgergedrag te beoordelen",
+        "Een aanbevelingssysteem voor e-commerce producten"
+      ],
+      "optionsEN": [
+        "Een chatbot die zich als AI identificeert aan gebruikers",
+        "Een HR-tool die CV's rangschikt op basis van vaardigheden",
+        "Social scoring door een overheid om burgergedrag te beoordelen",
+        "Een aanbevelingssysteem voor e-commerce producten"
+      ],
+      "optionsNL": [
+        "Een chatbot die zich als AI identificeert aan gebruikers",
+        "Een HR-tool die CV's rangschikt op basis van vaardigheden",
+        "Social scoring door een overheid om burgergedrag te beoordelen",
+        "Een aanbevelingssysteem voor e-commerce producten"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Social scoring door overheden valt in de categorie \"onaanvaardbaar risico\" en is verboden per februari 2025. De andere voorbeelden zijn toegestaan: chatbots met identificatieplicht (beperkt risico), HR-tools met governance (hoog risico), of aanbevelingssystemen (minimaal risico).",
+      "explanationNL": "Social scoring door overheden valt in de categorie \"onaanvaardbaar risico\" en is verboden per februari 2025. De andere voorbeelden zijn toegestaan: chatbots met identificatieplicht (beperkt risico), HR-tools met governance (hoog risico), of aanbevelingssystemen (minimaal risico)."
+    },
+    {
+      "id": "ail-q3-7",
+      "text": "Wat is de maximale boete voor het inzetten van een verboden AI-systeem (onaanvaardbaar risico) onder de EU AI Act?",
+      "textNL": "Wat is de maximale boete voor het inzetten van een verboden AI-systeem (onaanvaardbaar risico) onder de EU AI Act?",
+      "question": "Wat is de maximale boete voor het inzetten van een verboden AI-systeem (onaanvaardbaar risico) onder de EU AI Act?",
+      "questionEN": "Wat is de maximale boete voor het inzetten van een verboden AI-systeem (onaanvaardbaar risico) onder de EU AI Act?",
+      "options": [
+        "€7,5 miljoen of 1% van de wereldwijde jaaromzet",
+        "€15 miljoen of 3% van de wereldwijde jaaromzet",
+        "€35 miljoen of 7% van de wereldwijde jaaromzet",
+        "€50 miljoen of 10% van de wereldwijde jaaromzet"
+      ],
+      "optionsEN": [
+        "€7,5 miljoen of 1% van de wereldwijde jaaromzet",
+        "€15 miljoen of 3% van de wereldwijde jaaromzet",
+        "€35 miljoen of 7% van de wereldwijde jaaromzet",
+        "€50 miljoen of 10% van de wereldwijde jaaromzet"
+      ],
+      "optionsNL": [
+        "€7,5 miljoen of 1% van de wereldwijde jaaromzet",
+        "€15 miljoen of 3% van de wereldwijde jaaromzet",
+        "€35 miljoen of 7% van de wereldwijde jaaromzet",
+        "€50 miljoen of 10% van de wereldwijde jaaromzet"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "De zwaarste boete onder de EU AI Act — tot €35 miljoen of 7% van de wereldwijde jaaromzet — geldt voor systemen in de categorie onaanvaardbaar risico. Dit is de hoogste boetecategorie; andere overtredingen kennen lagere maxima (€15M/3% en €7,5M/1%).",
+      "explanationNL": "De zwaarste boete onder de EU AI Act — tot €35 miljoen of 7% van de wereldwijde jaaromzet — geldt voor systemen in de categorie onaanvaardbaar risico. Dit is de hoogste boetecategorie; andere overtredingen kennen lagere maxima (€15M/3% en €7,5M/1%)."
+    },
+    {
+      "id": "ail-q3-8",
+      "text": "Welke van de volgende AI-toepassingen valt onder de \"beperkt risico\"-categorie van de EU AI Act en vereist uitsluitend transparantie?",
+      "textNL": "Welke van de volgende AI-toepassingen valt onder de \"beperkt risico\"-categorie van de EU AI Act en vereist uitsluitend transparantie?",
+      "question": "Welke van de volgende AI-toepassingen valt onder de \"beperkt risico\"-categorie van de EU AI Act en vereist uitsluitend transparantie?",
+      "questionEN": "Welke van de volgende AI-toepassingen valt onder de \"beperkt risico\"-categorie van de EU AI Act en vereist uitsluitend transparantie?",
+      "options": [
+        "Een AI die medische diagnoses stelt",
+        "Een chatbot op een klantenservicewebsite",
+        "Een AI-systeem voor wetshandhaving",
+        "Een AI die sollicitanten selecteert voor leidinggevende functies"
+      ],
+      "optionsEN": [
+        "Een AI die medische diagnoses stelt",
+        "Een chatbot op een klantenservicewebsite",
+        "Een AI-systeem voor wetshandhaving",
+        "Een AI die sollicitanten selecteert voor leidinggevende functies"
+      ],
+      "optionsNL": [
+        "Een AI die medische diagnoses stelt",
+        "Een chatbot op een klantenservicewebsite",
+        "Een AI-systeem voor wetshandhaving",
+        "Een AI die sollicitanten selecteert voor leidinggevende functies"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Chatbots vallen onder \"beperkt risico\": ze moeten zich aan gebruikers kenbaar maken als AI, maar vereisen geen uitgebreide governance zoals hoog-risico-systemen. Medische diagnose, wetshandhaving en HR-selectie zijn hoog-risico-toepassingen.",
+      "explanationNL": "Chatbots vallen onder \"beperkt risico\": ze moeten zich aan gebruikers kenbaar maken als AI, maar vereisen geen uitgebreide governance zoals hoog-risico-systemen. Medische diagnose, wetshandhaving en HR-selectie zijn hoog-risico-toepassingen."
+    }
+  ],
+  "description": "Final exam — AI Literacy for Project Professionals",
+  "descriptionNL": "Eindexamen — AI Letterkundige Kennis voor Projectprofessionals",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

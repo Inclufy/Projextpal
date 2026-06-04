@@ -1,0 +1,738 @@
+{
+  "id": "p2-l19",
+  "title": "Final Exam",
+  "titleNL": "Eindexamen",
+  "courseId": "prince2-foundation",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "p2-exam-q1",
+      "text": "Which PRINCE2 principle states that a project must have a justifiable reason to start and that this justification must remain valid throughout the project?",
+      "textNL": "Welk PRINCE2-principe stelt dat een project een gerechtvaardigde reden moet hebben om te starten en dat deze rechtvaardiging gedurende het hele project geldig moet blijven?",
+      "question": "Welk PRINCE2-principe stelt dat een project een gerechtvaardigde reden moet hebben om te starten en dat deze rechtvaardiging gedurende het hele project geldig moet blijven?",
+      "questionEN": "Which PRINCE2 principle states that a project must have a justifiable reason to start and that this justification must remain valid throughout the project?",
+      "options": [
+        "Learn from experience",
+        "Manage by exception",
+        "Continued business justification",
+        "Focus on products"
+      ],
+      "optionsEN": [
+        "Learn from experience",
+        "Manage by exception",
+        "Continued business justification",
+        "Focus on products"
+      ],
+      "optionsNL": [
+        "Leer van ervaringen",
+        "Stuur op uitzondering",
+        "Voortdurende zakelijke rechtvaardiging",
+        "Focus op producten"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Continued business justification is the principle that requires a project to have a valid justification at all times, documented in the Business Case. If the justification no longer exists, the project should be stopped.",
+      "explanationNL": "Voortdurende zakelijke rechtvaardiging is het principe dat vereist dat een project altijd een geldige rechtvaardiging heeft, gedocumenteerd in de Business Case. Als de rechtvaardiging niet langer bestaat, moet het project worden gestopt."
+    },
+    {
+      "id": "p2-exam-q2",
+      "text": "Which management product is created during the Starting Up a Project process and authorises the Initiating a Project process to begin?",
+      "textNL": "Welk managementproduct wordt aangemaakt tijdens het proces Opstarten van een Project en autoriseert het starten van het Initiëren van een Project-proces?",
+      "question": "Welk managementproduct wordt aangemaakt tijdens het proces Opstarten van een Project en autoriseert het starten van het Initiëren van een Project-proces?",
+      "questionEN": "Which management product is created during the Starting Up a Project process and authorises the Initiating a Project process to begin?",
+      "options": [
+        "Project Initiation Documentation (PID)",
+        "Project Brief",
+        "Outline Business Case",
+        "Project Product Description"
+      ],
+      "optionsEN": [
+        "Project Initiation Documentation (PID)",
+        "Project Brief",
+        "Outline Business Case",
+        "Project Product Description"
+      ],
+      "optionsNL": [
+        "Projectinitiatie-documentatie (PID)",
+        "Projectomschrijving",
+        "Globale Business Case",
+        "Projectproductbeschrijving"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Project Brief is the output of Starting Up a Project. It provides enough information for the Project Board to authorise the Initiating a Project process. The PID is produced during initiation, not before it.",
+      "explanationNL": "De Projectomschrijving is de output van Opstarten van een Project. Het geeft voldoende informatie voor de Projectraad om het Initiëren van een Project-proces te autoriseren. De PID wordt gemaakt tijdens initiatie, niet daarvoor."
+    },
+    {
+      "id": "p2-exam-q3",
+      "text": "In PRINCE2, who is accountable for ensuring the project delivers value for money and represents the business interests on the Project Board?",
+      "textNL": "Wie is in PRINCE2 verantwoordelijk voor het bewaken van de waarde voor geld en vertegenwoordigt de zakelijke belangen in de Projectraad?",
+      "question": "Wie is in PRINCE2 verantwoordelijk voor het bewaken van de waarde voor geld en vertegenwoordigt de zakelijke belangen in de Projectraad?",
+      "questionEN": "In PRINCE2, who is accountable for ensuring the project delivers value for money and represents the business interests on the Project Board?",
+      "options": [
+        "Senior User",
+        "Project Manager",
+        "Senior Supplier",
+        "Executive"
+      ],
+      "optionsEN": [
+        "Senior User",
+        "Project Manager",
+        "Senior Supplier",
+        "Executive"
+      ],
+      "optionsNL": [
+        "Senior Gebruiker",
+        "Projectmanager",
+        "Senior Leverancier",
+        "Opdrachtgever"
+      ],
+      "correct": 3,
+      "points": 5,
+      "explanation": "The Executive is the single accountable owner of the project and is responsible for ensuring value for money. The Senior User represents those who use the products; the Senior Supplier represents those who supply resources.",
+      "explanationNL": "De Opdrachtgever is de enige verantwoordelijke eigenaar van het project en is verantwoordelijk voor waarde voor geld. De Senior Gebruiker vertegenwoordigt degenen die de producten gebruiken; de Senior Leverancier vertegenwoordigt degenen die middelen leveren."
+    },
+    {
+      "id": "p2-exam-q4",
+      "text": "Which PRINCE2 theme is concerned with establishing mechanisms to judge whether the project is desirable, viable and achievable?",
+      "textNL": "Welk PRINCE2-thema houdt zich bezig met het vaststellen van mechanismen om te beoordelen of het project wenselijk, haalbaar en realiseerbaar is?",
+      "question": "Welk PRINCE2-thema houdt zich bezig met het vaststellen van mechanismen om te beoordelen of het project wenselijk, haalbaar en realiseerbaar is?",
+      "questionEN": "Which PRINCE2 theme is concerned with establishing mechanisms to judge whether the project is desirable, viable and achievable?",
+      "options": [
+        "Quality",
+        "Risk",
+        "Business Case",
+        "Progress"
+      ],
+      "optionsEN": [
+        "Quality",
+        "Risk",
+        "Business Case",
+        "Progress"
+      ],
+      "optionsNL": [
+        "Kwaliteit",
+        "Risico",
+        "Business Case",
+        "Voortgang"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Business Case theme establishes mechanisms to judge whether the project is and remains desirable, viable and achievable. It is owned by the Executive and updated at each stage boundary.",
+      "explanationNL": "Het Business Case-thema stelt mechanismen vast om te beoordelen of het project wenselijk, haalbaar en realiseerbaar is en blijft. Het is eigendom van de Opdrachtgever en wordt bijgewerkt bij elke faseovergang."
+    },
+    {
+      "id": "p2-exam-q5",
+      "text": "What are the six aspects of project performance that PRINCE2 tolerances are set against?",
+      "textNL": "Tegen welke zes aspecten van projectprestaties worden PRINCE2-toleranties vastgesteld?",
+      "question": "Tegen welke zes aspecten van projectprestaties worden PRINCE2-toleranties vastgesteld?",
+      "questionEN": "What are the six aspects of project performance that PRINCE2 tolerances are set against?",
+      "options": [
+        "Time, Cost, Quality, Scope, Risk, Benefits",
+        "Time, Cost, Quality, Scope, Risk, Change",
+        "Time, Cost, Quality, Scope, Benefits, Issues",
+        "Time, Cost, Scope, Risk, Change, Progress"
+      ],
+      "optionsEN": [
+        "Time, Cost, Quality, Scope, Risk, Benefits",
+        "Time, Cost, Quality, Scope, Risk, Change",
+        "Time, Cost, Quality, Scope, Benefits, Issues",
+        "Time, Cost, Scope, Risk, Change, Progress"
+      ],
+      "optionsNL": [
+        "Tijd, Kosten, Kwaliteit, Omvang, Risico, Baten",
+        "Tijd, Kosten, Kwaliteit, Omvang, Risico, Wijziging",
+        "Tijd, Kosten, Kwaliteit, Omvang, Baten, Issues",
+        "Tijd, Kosten, Omvang, Risico, Wijziging, Voortgang"
+      ],
+      "correct": 0,
+      "points": 5,
+      "explanation": "PRINCE2 defines six performance targets (and associated tolerances): time, cost, quality, scope, risk, and benefits. These apply at project level and stage level, supporting the Manage by Exception principle.",
+      "explanationNL": "PRINCE2 definieert zes prestatiedoelen (en bijbehorende toleranties): tijd, kosten, kwaliteit, omvang, risico en baten. Deze gelden op projectniveau en fasseniveau en ondersteunen het principe Sturen op uitzondering."
+    },
+    {
+      "id": "p2-exam-q6",
+      "text": "Which process is triggered when a Work Package is completed and the Team Manager needs to report back to the Project Manager?",
+      "textNL": "Welk proces wordt geactiveerd wanneer een Werkpakket is voltooid en de Teammanager moet rapporteren aan de Projectmanager?",
+      "question": "Welk proces wordt geactiveerd wanneer een Werkpakket is voltooid en de Teammanager moet rapporteren aan de Projectmanager?",
+      "questionEN": "Which process is triggered when a Work Package is completed and the Team Manager needs to report back to the Project Manager?",
+      "options": [
+        "Controlling a Stage",
+        "Managing a Stage Boundary",
+        "Managing Product Delivery",
+        "Directing a Project"
+      ],
+      "optionsEN": [
+        "Controlling a Stage",
+        "Managing a Stage Boundary",
+        "Managing Product Delivery",
+        "Directing a Project"
+      ],
+      "optionsNL": [
+        "Beheersen van een Fase",
+        "Beheren van een Faseovergang",
+        "Beheren van Productlevering",
+        "Sturen van een Project"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Managing Product Delivery controls the link between the Project Manager and Team Manager. It covers accepting, executing and delivering Work Packages. The Team Manager uses this process to receive and hand back Work Packages.",
+      "explanationNL": "Beheren van Productlevering regelt de koppeling tussen de Projectmanager en Teammanager. Het omvat het accepteren, uitvoeren en leveren van Werkpakketten. De Teammanager gebruikt dit proces om Werkpakketten te ontvangen en terug te leveren."
+    },
+    {
+      "id": "p2-exam-q7",
+      "text": "The PRINCE2 principle \"Manage by Stages\" requires that a project is planned, monitored and controlled on a stage-by-stage basis. What is the MINIMUM number of management stages a PRINCE2 project must have?",
+      "textNL": "Het PRINCE2-principe \"Stuur per fase\" vereist dat een project fase voor fase wordt gepland, bewaakt en beheerst. Wat is het MINIMUM aantal managementfasen dat een PRINCE2-project moet hebben?",
+      "question": "Het PRINCE2-principe \"Stuur per fase\" vereist dat een project fase voor fase wordt gepland, bewaakt en beheerst. Wat is het MINIMUM aantal managementfasen dat een PRINCE2-project moet hebben?",
+      "questionEN": "The PRINCE2 principle \"Manage by Stages\" requires that a project is planned, monitored and controlled on a stage-by-stage basis. What is the MINIMUM number of management stages a PRINCE2 project must have?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "optionsEN": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "optionsNL": [
+        "Één",
+        "Twee",
+        "Drie",
+        "Vier"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "A PRINCE2 project must have a minimum of two management stages: an initiation stage and at least one further delivery stage. This enforces the Manage by Stages principle with a formal go/no-go decision after initiation.",
+      "explanationNL": "Een PRINCE2-project moet minimaal twee managementfasen hebben: een initiatiefase en ten minste één verdere leveringsfase. Dit versterkt het principe Stuur per fase met een formele go/no-go-beslissing na initiatie."
+    },
+    {
+      "id": "p2-exam-q8",
+      "text": "Which document formally authorises a Team Manager to begin work on one or more products?",
+      "textNL": "Welk document autoriseert een Teammanager formeel om te beginnen met het werken aan één of meer producten?",
+      "question": "Welk document autoriseert een Teammanager formeel om te beginnen met het werken aan één of meer producten?",
+      "questionEN": "Which document formally authorises a Team Manager to begin work on one or more products?",
+      "options": [
+        "Stage Plan",
+        "Product Description",
+        "Work Package",
+        "Checkpoint Report"
+      ],
+      "optionsEN": [
+        "Stage Plan",
+        "Product Description",
+        "Work Package",
+        "Checkpoint Report"
+      ],
+      "optionsNL": [
+        "Faseplan",
+        "Productbeschrijving",
+        "Werkpakket",
+        "Voortgangsrapport"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "A Work Package is the set of information that the Project Manager gives to a Team Manager to authorise work. It defines the products to be produced, constraints, reporting requirements, and sign-off criteria.",
+      "explanationNL": "Een Werkpakket is de set informatie die de Projectmanager aan een Teammanager geeft om werk te autoriseren. Het definieert de te produceren producten, beperkingen, rapportagevereisten en goedkeuringscriteria."
+    },
+    {
+      "id": "p2-exam-q9",
+      "text": "An Exception Report is produced when a stage forecast shows tolerances will be exceeded. Who receives the Exception Report and decides the next action?",
+      "textNL": "Een Uitzonderingsrapport wordt opgesteld wanneer een faseprognose aangeeft dat toleranties zullen worden overschreden. Wie ontvangt het Uitzonderingsrapport en beslist over de volgende actie?",
+      "question": "Een Uitzonderingsrapport wordt opgesteld wanneer een faseprognose aangeeft dat toleranties zullen worden overschreden. Wie ontvangt het Uitzonderingsrapport en beslist over de volgende actie?",
+      "questionEN": "An Exception Report is produced when a stage forecast shows tolerances will be exceeded. Who receives the Exception Report and decides the next action?",
+      "options": [
+        "Project Manager",
+        "Project Board",
+        "Team Manager",
+        "Change Authority"
+      ],
+      "optionsEN": [
+        "Project Manager",
+        "Project Board",
+        "Team Manager",
+        "Change Authority"
+      ],
+      "optionsNL": [
+        "Projectmanager",
+        "Projectraad",
+        "Teammanager",
+        "Wijzigingsautoriteit"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Project Manager sends the Exception Report to the Project Board. The Project Board then decides: request an Exception Plan, premature close, or accept the deviation. This is the escalation route that supports Manage by Exception.",
+      "explanationNL": "De Projectmanager stuurt het Uitzonderingsrapport naar de Projectraad. De Projectraad beslist dan: verzoek om een Uitzonderingsplan, vroegtijdige afsluiting, of de afwijking accepteren. Dit is de escalatieroute die Sturen op uitzondering ondersteunt."
+    },
+    {
+      "id": "p2-exam-q10",
+      "text": "Product-based planning is a technique used in PRINCE2. Which of the following is the CORRECT order of steps in product-based planning?",
+      "textNL": "Productgebaseerde planning is een techniek die in PRINCE2 wordt gebruikt. Wat is de JUISTE volgorde van stappen in productgebaseerde planning?",
+      "question": "Productgebaseerde planning is een techniek die in PRINCE2 wordt gebruikt. Wat is de JUISTE volgorde van stappen in productgebaseerde planning?",
+      "questionEN": "Product-based planning is a technique used in PRINCE2. Which of the following is the CORRECT order of steps in product-based planning?",
+      "options": [
+        "Write Product Descriptions → Create Product Breakdown Structure → Create Product Flow Diagram → Identify activities",
+        "Create Product Breakdown Structure → Write Product Descriptions → Create Product Flow Diagram → Identify activities",
+        "Identify activities → Create Product Breakdown Structure → Write Product Descriptions → Create Product Flow Diagram",
+        "Create Product Flow Diagram → Create Product Breakdown Structure → Write Product Descriptions → Identify activities"
+      ],
+      "optionsEN": [
+        "Write Product Descriptions → Create Product Breakdown Structure → Create Product Flow Diagram → Identify activities",
+        "Create Product Breakdown Structure → Write Product Descriptions → Create Product Flow Diagram → Identify activities",
+        "Identify activities → Create Product Breakdown Structure → Write Product Descriptions → Create Product Flow Diagram",
+        "Create Product Flow Diagram → Create Product Breakdown Structure → Write Product Descriptions → Identify activities"
+      ],
+      "optionsNL": [
+        "Schrijf Productbeschrijvingen → Maak Productstructuur → Maak Productstroomdiagram → Identificeer activiteiten",
+        "Maak Productstructuur → Schrijf Productbeschrijvingen → Maak Productstroomdiagram → Identificeer activiteiten",
+        "Identificeer activiteiten → Maak Productstructuur → Schrijf Productbeschrijvingen → Maak Productstroomdiagram",
+        "Maak Productstroomdiagram → Maak Productstructuur → Schrijf Productbeschrijvingen → Identificeer activiteiten"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Per PRINCE2 6th edition the sequence is: (1) write the Project Product Description, (2) create the Product Breakdown Structure, (3) write Product Descriptions for each product, (4) create the Product Flow Diagram, (5) identify activities and dependencies. The PBS precedes individual Product Descriptions.",
+      "explanationNL": "Volgens PRINCE2 6e editie is de volgorde: (1) schrijf de Projectproductbeschrijving, (2) maak de Productstructuur, (3) schrijf Productbeschrijvingen voor elk product, (4) maak het Productstroomdiagram, (5) identificeer activiteiten en afhankelijkheden. De PBS gaat vooraf aan individuele Productbeschrijvingen."
+    },
+    {
+      "id": "p2-exam-q11",
+      "text": "Which PRINCE2 theme addresses the question: \"What are the risks to this project?\"",
+      "textNL": "Welk PRINCE2-thema behandelt de vraag: \"Wat zijn de risico's voor dit project?\"",
+      "question": "Welk PRINCE2-thema behandelt de vraag: \"Wat zijn de risico's voor dit project?\"",
+      "questionEN": "Which PRINCE2 theme addresses the question: \"What are the risks to this project?\"",
+      "options": [
+        "Change",
+        "Progress",
+        "Risk",
+        "Quality"
+      ],
+      "optionsEN": [
+        "Change",
+        "Progress",
+        "Risk",
+        "Quality"
+      ],
+      "optionsNL": [
+        "Wijziging",
+        "Voortgang",
+        "Risico",
+        "Kwaliteit"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Risk theme addresses the question \"What are the risks to this project?\" It identifies, assesses and controls uncertainty. Risks are captured in the Risk Register and responses include: avoid, reduce, fallback, transfer, accept, share.",
+      "explanationNL": "Het Risicothema behandelt de vraag \"Wat zijn de risico's voor dit project?\" Het identificeert, beoordeelt en beheerst onzekerheid. Risico's worden vastgelegd in het Risicoregister en reacties zijn: vermijden, verminderen, terugvaloptie, overdragen, accepteren, delen."
+    },
+    {
+      "id": "p2-exam-q12",
+      "text": "Which report does a Team Manager send to the Project Manager at agreed intervals to confirm progress against a Work Package?",
+      "textNL": "Welk rapport stuurt een Teammanager op afgesproken intervallen naar de Projectmanager om voortgang op een Werkpakket te bevestigen?",
+      "question": "Welk rapport stuurt een Teammanager op afgesproken intervallen naar de Projectmanager om voortgang op een Werkpakket te bevestigen?",
+      "questionEN": "Which report does a Team Manager send to the Project Manager at agreed intervals to confirm progress against a Work Package?",
+      "options": [
+        "Highlight Report",
+        "Checkpoint Report",
+        "End Stage Report",
+        "Exception Report"
+      ],
+      "optionsEN": [
+        "Highlight Report",
+        "Checkpoint Report",
+        "End Stage Report",
+        "Exception Report"
+      ],
+      "optionsNL": [
+        "Voortgangsrapport (Highlight)",
+        "Controlepuntrapport (Checkpoint)",
+        "Fasesluitingsrapport",
+        "Uitzonderingsrapport"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Checkpoint Reports are produced by the Team Manager and sent to the Project Manager at agreed intervals. They confirm progress against the Work Package. Highlight Reports flow from Project Manager to Project Board.",
+      "explanationNL": "Controlepuntrapporten worden opgesteld door de Teammanager en op afgesproken intervallen naar de Projectmanager gestuurd. Ze bevestigen de voortgang op het Werkpakket. Voortgangsrapporten vloeien van de Projectmanager naar de Projectraad."
+    },
+    {
+      "id": "p2-exam-q13",
+      "text": "Which process is used by the Project Board to exercise overall control of the project throughout its life?",
+      "textNL": "Welk proces wordt door de Projectraad gebruikt om de algehele controle over het project gedurende de hele looptijd uit te oefenen?",
+      "question": "Welk proces wordt door de Projectraad gebruikt om de algehele controle over het project gedurende de hele looptijd uit te oefenen?",
+      "questionEN": "Which process is used by the Project Board to exercise overall control of the project throughout its life?",
+      "options": [
+        "Controlling a Stage",
+        "Initiating a Project",
+        "Directing a Project",
+        "Managing a Stage Boundary"
+      ],
+      "optionsEN": [
+        "Controlling a Stage",
+        "Initiating a Project",
+        "Directing a Project",
+        "Managing a Stage Boundary"
+      ],
+      "optionsNL": [
+        "Beheersen van een Fase",
+        "Initiëren van een Project",
+        "Sturen van een Project",
+        "Beheren van een Faseovergang"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Directing a Project runs from initiation to project closure and is performed by the Project Board. It covers authorising initiation, each stage, Exception Plans, project closure, and giving ad-hoc direction throughout.",
+      "explanationNL": "Sturen van een Project loopt van initiatie tot projectafsluiting en wordt uitgevoerd door de Projectraad. Het omvat het autoriseren van initiatie, elke fase, Uitzonderingsplannen, projectafsluiting en het geven van ad-hocrichtlijnen gedurende het hele traject."
+    },
+    {
+      "id": "p2-exam-q14",
+      "text": "The \"Focus on Products\" principle underpins which planning technique in PRINCE2?",
+      "textNL": "Het principe \"Focus op producten\" ondersteunt welke planningstechniek in PRINCE2?",
+      "question": "Het principe \"Focus op producten\" ondersteunt welke planningstechniek in PRINCE2?",
+      "questionEN": "The \"Focus on Products\" principle underpins which planning technique in PRINCE2?",
+      "options": [
+        "Critical Path Analysis",
+        "Product-based planning",
+        "Earned Value Management",
+        "Rolling Wave planning"
+      ],
+      "optionsEN": [
+        "Critical Path Analysis",
+        "Product-based planning",
+        "Earned Value Management",
+        "Rolling Wave planning"
+      ],
+      "optionsNL": [
+        "Kritische-padanalyse",
+        "Productgebaseerde planning",
+        "Earned Value Management",
+        "Rolling Wave-planning"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Focus on Products principle underpins product-based planning. By defining products before activities, PRINCE2 ensures the project is driven by outputs, reducing gold-plating and scope creep.",
+      "explanationNL": "Het principe Focus op producten ondersteunt productgebaseerde planning. Door producten te definiëren vóór activiteiten zorgt PRINCE2 ervoor dat het project wordt aangestuurd door outputs, waardoor gold-plating en scopewijzigingen worden verminderd."
+    },
+    {
+      "id": "p2-exam-q15",
+      "text": "In PRINCE2, what is the PRIMARY purpose of the Quality Register?",
+      "textNL": "Wat is in PRINCE2 het PRIMAIRE doel van het Kwaliteitsregister?",
+      "question": "Wat is in PRINCE2 het PRIMAIRE doel van het Kwaliteitsregister?",
+      "questionEN": "In PRINCE2, what is the PRIMARY purpose of the Quality Register?",
+      "options": [
+        "To record all changes approved by the Change Authority",
+        "To summarise all quality management activities planned and carried out",
+        "To define the quality criteria for the project's products",
+        "To log defects found during product testing"
+      ],
+      "optionsEN": [
+        "To record all changes approved by the Change Authority",
+        "To summarise all quality management activities planned and carried out",
+        "To define the quality criteria for the project's products",
+        "To log defects found during product testing"
+      ],
+      "optionsNL": [
+        "Om alle wijzigingen vast te leggen die zijn goedgekeurd door de Wijzigingsautoriteit",
+        "Om alle geplande en uitgevoerde kwaliteitsmanagementactiviteiten samen te vatten",
+        "Om de kwaliteitscriteria voor de producten van het project te definiëren",
+        "Om defecten vast te leggen die tijdens het testen van producten zijn gevonden"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Quality Register is a diary of all quality events. It records every quality review planned and completed, with dates, resources and outcomes. Quality criteria for individual products are held in Product Descriptions, not the Register.",
+      "explanationNL": "Het Kwaliteitsregister is een dagboek van alle kwaliteitsgebeurtenissen. Het registreert elke geplande en voltooide kwaliteitsbeoordeling, met datums, middelen en uitkomsten. Kwaliteitscriteria voor individuele producten zijn opgeslagen in Productbeschrijvingen, niet in het Register."
+    },
+    {
+      "id": "p2-exam-q16",
+      "text": "A project is mid-stage when a significant new risk emerges that will cause the stage cost tolerance to be exceeded. What should the Project Manager do FIRST?",
+      "textNL": "Een project bevindt zich midden in een fase wanneer een significant nieuw risico ontstaat dat ervoor zorgt dat de kostentolerantie van de fase wordt overschreden. Wat moet de Projectmanager als EERSTE doen?",
+      "question": "Een project bevindt zich midden in een fase wanneer een significant nieuw risico ontstaat dat ervoor zorgt dat de kostentolerantie van de fase wordt overschreden. Wat moet de Projectmanager als EERSTE doen?",
+      "questionEN": "A project is mid-stage when a significant new risk emerges that will cause the stage cost tolerance to be exceeded. What should the Project Manager do FIRST?",
+      "options": [
+        "Immediately close the project",
+        "Raise an issue and escalate via an Exception Report to the Project Board",
+        "Amend the Stage Plan without approval",
+        "Request a project-level tolerance increase from corporate or programme management"
+      ],
+      "optionsEN": [
+        "Immediately close the project",
+        "Raise an issue and escalate via an Exception Report to the Project Board",
+        "Amend the Stage Plan without approval",
+        "Request a project-level tolerance increase from corporate or programme management"
+      ],
+      "optionsNL": [
+        "Het project onmiddellijk afsluiten",
+        "Een issue indienen en escaleren via een Uitzonderingsrapport aan de Projectraad",
+        "Het Faseplan wijzigen zonder goedkeuring",
+        "Een verhoging van projectniveau-tolerantie aanvragen bij corporate of programmamanagement"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "When a stage forecast shows tolerances will be breached, the Project Manager raises an issue, then produces an Exception Report for the Project Board. The Project Board (not the Project Manager) decides on the corrective action, which may include requesting an Exception Plan.",
+      "explanationNL": "Wanneer een faseprognose aangeeft dat toleranties worden overschreden, dient de Projectmanager een issue in en stelt vervolgens een Uitzonderingsrapport op voor de Projectraad. De Projectraad (niet de Projectmanager) beslist over de corrigerende actie, die het verzoeken om een Uitzonderingsplan kan omvatten."
+    },
+    {
+      "id": "p2-exam-q17",
+      "text": "Which PRINCE2 management product describes the customer's quality expectations and acceptance criteria for the final project output?",
+      "textNL": "Welk PRINCE2-managementproduct beschrijft de kwaliteitsverwachtingen van de klant en acceptatiecriteria voor de uiteindelijke projectoutput?",
+      "question": "Welk PRINCE2-managementproduct beschrijft de kwaliteitsverwachtingen van de klant en acceptatiecriteria voor de uiteindelijke projectoutput?",
+      "questionEN": "Which PRINCE2 management product describes the customer's quality expectations and acceptance criteria for the final project output?",
+      "options": [
+        "Quality Management Approach",
+        "Product Description",
+        "Project Product Description",
+        "Quality Register"
+      ],
+      "optionsEN": [
+        "Quality Management Approach",
+        "Product Description",
+        "Project Product Description",
+        "Quality Register"
+      ],
+      "optionsNL": [
+        "Kwaliteitsmanagementaanpak",
+        "Productbeschrijving",
+        "Projectproductbeschrijving",
+        "Kwaliteitsregister"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Project Product Description defines the overall project output and includes the customer's quality expectations, acceptance criteria, acceptance method and responsibilities. It is created during Starting Up a Project and refined in Initiating a Project.",
+      "explanationNL": "De Projectproductbeschrijving definieert de algehele projectoutput en omvat de kwaliteitsverwachtingen van de klant, acceptatiecriteria, acceptatiemethode en verantwoordelijkheden. Het wordt aangemaakt tijdens Opstarten van een Project en verfijnd in Initiëren van een Project."
+    },
+    {
+      "id": "p2-exam-q18",
+      "text": "What is the MAIN purpose of the Managing a Stage Boundary process?",
+      "textNL": "Wat is het HOOFDDOEL van het proces Beheren van een Faseovergang?",
+      "question": "Wat is het HOOFDDOEL van het proces Beheren van een Faseovergang?",
+      "questionEN": "What is the MAIN purpose of the Managing a Stage Boundary process?",
+      "options": [
+        "To authorise the Team Manager to begin a new Work Package",
+        "To enable the Project Board to decide whether to continue, change, or stop the project",
+        "To record lessons learned at the end of each Work Package",
+        "To produce the End Project Report"
+      ],
+      "optionsEN": [
+        "To authorise the Team Manager to begin a new Work Package",
+        "To enable the Project Board to decide whether to continue, change, or stop the project",
+        "To record lessons learned at the end of each Work Package",
+        "To produce the End Project Report"
+      ],
+      "optionsNL": [
+        "Om de Teammanager te autoriseren een nieuw Werkpakket te starten",
+        "Om de Projectraad in staat te stellen te beslissen of het project moet worden voortgezet, gewijzigd of gestopt",
+        "Om geleerde lessen vast te leggen aan het einde van elk Werkpakket",
+        "Om het Projectsluitingsrapport op te stellen"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "Managing a Stage Boundary provides the Project Board with sufficient information to authorise the next stage (or close the project). The process produces the End Stage Report, updated plans, updated Business Case and updated risk information for the Board's review.",
+      "explanationNL": "Beheren van een Faseovergang voorziet de Projectraad van voldoende informatie om de volgende fase te autoriseren (of het project te sluiten). Het proces produceert het Fasesluitingsrapport, bijgewerkte plannen, bijgewerkte Business Case en bijgewerkte risico-informatie voor de beoordeling van de Projectraad."
+    },
+    {
+      "id": "p2-exam-q19",
+      "text": "PRINCE2 recognises four levels of management in a project environment. Which option correctly lists these four levels from HIGHEST to LOWEST authority?",
+      "textNL": "PRINCE2 onderkent vier managementniveaus in een projectomgeving. Welke optie geeft deze vier niveaus correct weer van HOOGSTE naar LAAGSTE autoriteit?",
+      "question": "PRINCE2 onderkent vier managementniveaus in een projectomgeving. Welke optie geeft deze vier niveaus correct weer van HOOGSTE naar LAAGSTE autoriteit?",
+      "questionEN": "PRINCE2 recognises four levels of management in a project environment. Which option correctly lists these four levels from HIGHEST to LOWEST authority?",
+      "options": [
+        "Project Board → Project Manager → Team Manager → Corporate/Programme Management",
+        "Corporate/Programme Management → Project Board → Project Manager → Team Manager",
+        "Project Manager → Project Board → Corporate/Programme Management → Team Manager",
+        "Corporate/Programme Management → Project Manager → Project Board → Team Manager"
+      ],
+      "optionsEN": [
+        "Project Board → Project Manager → Team Manager → Corporate/Programme Management",
+        "Corporate/Programme Management → Project Board → Project Manager → Team Manager",
+        "Project Manager → Project Board → Corporate/Programme Management → Team Manager",
+        "Corporate/Programme Management → Project Manager → Project Board → Team Manager"
+      ],
+      "optionsNL": [
+        "Projectraad → Projectmanager → Teammanager → Corporate/Programmamanagement",
+        "Corporate/Programmamanagement → Projectraad → Projectmanager → Teammanager",
+        "Projectmanager → Projectraad → Corporate/Programmamanagement → Teammanager",
+        "Corporate/Programmamanagement → Projectmanager → Projectraad → Teammanager"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The four PRINCE2 management levels from highest to lowest are: Corporate/Programme Management (sets project-level tolerances), Project Board (directs the project), Project Manager (manages day-to-day), Team Manager (manages specialist work). Each level delegates authority to the level below via tolerances.",
+      "explanationNL": "De vier PRINCE2-managementniveaus van hoogste naar laagste zijn: Corporate/Programmamanagement (stelt projectniveau-toleranties vast), Projectraad (stuurt het project), Projectmanager (beheert de dagelijkse gang van zaken), Teammanager (beheert specialistisch werk). Elk niveau delegeert autoriteit aan het niveau eronder via toleranties."
+    },
+    {
+      "id": "p2-exam-q20",
+      "text": "Which document holds the definitive baseline for what the project will deliver, how it will be managed, and its total cost and timescale?",
+      "textNL": "Welk document bevat de definitieve baseline voor wat het project oplevert, hoe het wordt beheerd en de totale kosten en tijdsplanning?",
+      "question": "Welk document bevat de definitieve baseline voor wat het project oplevert, hoe het wordt beheerd en de totale kosten en tijdsplanning?",
+      "questionEN": "Which document holds the definitive baseline for what the project will deliver, how it will be managed, and its total cost and timescale?",
+      "options": [
+        "Project Brief",
+        "Project Initiation Documentation (PID)",
+        "Stage Plan",
+        "Benefits Management Approach"
+      ],
+      "optionsEN": [
+        "Project Brief",
+        "Project Initiation Documentation (PID)",
+        "Stage Plan",
+        "Benefits Management Approach"
+      ],
+      "optionsNL": [
+        "Projectomschrijving",
+        "Projectinitiatie-documentatie (PID)",
+        "Faseplan",
+        "Batenmanagementaanpak"
+      ],
+      "correct": 1,
+      "points": 5,
+      "explanation": "The Project Initiation Documentation (PID) is the master document that defines what the project will deliver, the approach, the project management team, tolerances, controls and total cost/time. It is baselined at the end of initiation and used to measure actual performance against.",
+      "explanationNL": "De Projectinitiatie-documentatie (PID) is het masterdocument dat definieert wat het project oplevert, de aanpak, het projectmanagementteam, toleranties, beheersmaatregelen en totale kosten/tijd. Het wordt aan het einde van initiatie als baseline vastgesteld en gebruikt om werkelijke prestaties tegen af te meten."
+    },
+    {
+      "id": "p2-exam-q21",
+      "text": "The PRINCE2 Change theme provides a systematic approach to handling issues and changes. Which type of issue is raised when the projected costs exceed the approved baseline?",
+      "textNL": "Het PRINCE2-wijzigingsthema biedt een systematische aanpak voor het afhandelen van issues en wijzigingen. Welk type issue wordt ingediend wanneer de verwachte kosten de goedgekeurde baseline overschrijden?",
+      "question": "Het PRINCE2-wijzigingsthema biedt een systematische aanpak voor het afhandelen van issues en wijzigingen. Welk type issue wordt ingediend wanneer de verwachte kosten de goedgekeurde baseline overschrijden?",
+      "questionEN": "The PRINCE2 Change theme provides a systematic approach to handling issues and changes. Which type of issue is raised when the projected costs exceed the approved baseline?",
+      "options": [
+        "Request for Change",
+        "Off-specification",
+        "Problem/Concern",
+        "Exception"
+      ],
+      "optionsEN": [
+        "Request for Change",
+        "Off-specification",
+        "Problem/Concern",
+        "Exception"
+      ],
+      "optionsNL": [
+        "Wijzigingsverzoek",
+        "Afwijking van specificatie",
+        "Probleem/Zorg",
+        "Uitzondering"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "A cost overrun that is forecast but does not relate to a product failing to meet its specification is classified as a Problem/Concern. A Request for Change proposes a beneficial modification; an Off-specification is a product failing to meet its description.",
+      "explanationNL": "Een verwachte kostenoverschrijding die geen verband houdt met een product dat niet aan zijn specificatie voldoet, wordt geclassificeerd als een Probleem/Zorg. Een Wijzigingsverzoek stelt een nuttige wijziging voor; een Afwijking van specificatie is een product dat niet aan zijn beschrijving voldoet."
+    },
+    {
+      "id": "p2-exam-q22",
+      "text": "Which PRINCE2 principle ensures that lessons are actively sought at the start of a project and recorded throughout, so future projects can benefit?",
+      "textNL": "Welk PRINCE2-principe zorgt ervoor dat lessen actief worden gezocht bij de start van een project en gedurende het hele traject worden vastgelegd, zodat toekomstige projecten ervan kunnen profiteren?",
+      "question": "Welk PRINCE2-principe zorgt ervoor dat lessen actief worden gezocht bij de start van een project en gedurende het hele traject worden vastgelegd, zodat toekomstige projecten ervan kunnen profiteren?",
+      "questionEN": "Which PRINCE2 principle ensures that lessons are actively sought at the start of a project and recorded throughout, so future projects can benefit?",
+      "options": [
+        "Continued business justification",
+        "Defined roles and responsibilities",
+        "Learn from experience",
+        "Tailor to suit the project"
+      ],
+      "optionsEN": [
+        "Continued business justification",
+        "Defined roles and responsibilities",
+        "Learn from experience",
+        "Tailor to suit the project"
+      ],
+      "optionsNL": [
+        "Voortdurende zakelijke rechtvaardiging",
+        "Gedefinieerde rollen en verantwoordelijkheden",
+        "Leer van ervaringen",
+        "Pas aan op het project"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "Learn from experience requires project teams to review lessons from previous projects at startup, log new lessons in the Lessons Log during the project, and produce a Lessons Report at closure. This continuous learning improves organisational capability.",
+      "explanationNL": "Leer van ervaringen vereist dat projectteams bij de start lessen uit eerdere projecten bekijken, nieuwe lessen vastleggen in het Lessenlogboek gedurende het project en een Lessenrapport opstellen bij afsluiting. Dit voortdurend leren verbetert de organisatorische capaciteit."
+    },
+    {
+      "id": "p2-exam-q23",
+      "text": "The Closing a Project process produces an End Project Report. Which THREE items does this report include? Select the BEST answer.",
+      "textNL": "Het proces Afsluiten van een Project produceert een Projectsluitingsrapport. Welke DRIE items bevat dit rapport? Selecteer het BESTE antwoord.",
+      "question": "Het proces Afsluiten van een Project produceert een Projectsluitingsrapport. Welke DRIE items bevat dit rapport? Selecteer het BESTE antwoord.",
+      "questionEN": "The Closing a Project process produces an End Project Report. Which THREE items does this report include? Select the BEST answer.",
+      "options": [
+        "Project performance against PID baselines, final Business Case review, and lessons learned summary",
+        "Next project's Stage Plan, final Risk Register, and outstanding Work Packages",
+        "Exception Plan, updated Product Descriptions, and Change Authority log",
+        "Post-project benefits review dates, team performance appraisals, and supplier invoices"
+      ],
+      "optionsEN": [
+        "Project performance against PID baselines, final Business Case review, and lessons learned summary",
+        "Next project's Stage Plan, final Risk Register, and outstanding Work Packages",
+        "Exception Plan, updated Product Descriptions, and Change Authority log",
+        "Post-project benefits review dates, team performance appraisals, and supplier invoices"
+      ],
+      "optionsNL": [
+        "Projectprestaties ten opzichte van PID-baselines, eindbeoordeling van de Business Case en samenvatting van geleerde lessen",
+        "Faseplan van het volgende project, definitief Risicoregister en openstaande Werkpakketten",
+        "Uitzonderingsplan, bijgewerkte Productbeschrijvingen en log van de Wijzigingsautoriteit",
+        "Data voor post-projectbatenbeoordeling, teamprestatiebeoordelingen en leveranciersfacturen"
+      ],
+      "correct": 0,
+      "points": 5,
+      "explanation": "The End Project Report compares actual outcomes against the PID baselines (time, cost, quality, scope, risk, benefits), provides a final Business Case review, and summarises the lessons learned. Post-project benefit reviews are scheduled but conducted after project closure.",
+      "explanationNL": "Het Projectsluitingsrapport vergelijkt werkelijke resultaten met de PID-baselines (tijd, kosten, kwaliteit, omvang, risico, baten), biedt een eindbeoordeling van de Business Case en geeft een samenvatting van geleerde lessen. Post-projectbatenbeoordeling wordt gepland maar uitgevoerd na projectafsluiting."
+    },
+    {
+      "id": "p2-exam-q24",
+      "text": "Which statement about tailoring PRINCE2 is CORRECT according to the 6th edition?",
+      "textNL": "Welke uitspraak over het aanpassen van PRINCE2 is JUIST volgens de 6e editie?",
+      "question": "Welke uitspraak over het aanpassen van PRINCE2 is JUIST volgens de 6e editie?",
+      "questionEN": "Which statement about tailoring PRINCE2 is CORRECT according to the 6th edition?",
+      "options": [
+        "All seven processes must always be applied in full regardless of project size",
+        "Tailoring means omitting any themes or principles that are inconvenient for the project",
+        "PRINCE2 should be tailored to suit the project environment, but all seven principles must always be applied",
+        "Tailoring is only permitted for projects classified as simple or small"
+      ],
+      "optionsEN": [
+        "All seven processes must always be applied in full regardless of project size",
+        "Tailoring means omitting any themes or principles that are inconvenient for the project",
+        "PRINCE2 should be tailored to suit the project environment, but all seven principles must always be applied",
+        "Tailoring is only permitted for projects classified as simple or small"
+      ],
+      "optionsNL": [
+        "Alle zeven processen moeten altijd volledig worden toegepast, ongeacht de projectomvang",
+        "Aanpassen betekent het weglaten van thema's of principes die inconvenient zijn voor het project",
+        "PRINCE2 moet worden aangepast aan de projectomgeving, maar alle zeven principes moeten altijd worden toegepast",
+        "Aanpassen is alleen toegestaan voor projecten die als eenvoudig of klein zijn geclassificeerd"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Tailor to Suit the Project principle requires adaptation of PRINCE2 to the project context, but the seven principles are non-negotiable — they must ALL be applied on every project. Processes and themes can be scaled and combined, but the principles cannot be omitted.",
+      "explanationNL": "Het principe Pas aan op het project vereist aanpassing van PRINCE2 aan de projectcontext, maar de zeven principes zijn niet onderhandelbaar — ze moeten ALLEMAAL worden toegepast op elk project. Processen en thema's kunnen worden geschaald en gecombineerd, maar de principes kunnen niet worden weggelaten."
+    },
+    {
+      "id": "p2-exam-q25",
+      "text": "During Initiating a Project, which approach document defines how configuration management and version control will be applied to the project's products?",
+      "textNL": "Tijdens het Initiëren van een Project definieert welk aanpakdocument hoe configuratiebeheer en versiebeheer worden toegepast op de producten van het project?",
+      "question": "Tijdens het Initiëren van een Project definieert welk aanpakdocument hoe configuratiebeheer en versiebeheer worden toegepast op de producten van het project?",
+      "questionEN": "During Initiating a Project, which approach document defines how configuration management and version control will be applied to the project's products?",
+      "options": [
+        "Quality Management Approach",
+        "Risk Management Approach",
+        "Change Control Approach",
+        "Communication Management Approach"
+      ],
+      "optionsEN": [
+        "Quality Management Approach",
+        "Risk Management Approach",
+        "Change Control Approach",
+        "Communication Management Approach"
+      ],
+      "optionsNL": [
+        "Kwaliteitsmanagementaanpak",
+        "Risicomanagementaanpak",
+        "Wijzigingsbeheeraanpak",
+        "Communicatiemanagementaanpak"
+      ],
+      "correct": 2,
+      "points": 5,
+      "explanation": "The Change Control Approach (previously called Configuration Management Strategy in earlier editions) defines how configuration management and change control will be applied, including how products will be identified, tracked and protected. It is one of four management approach documents produced in Initiating a Project.",
+      "explanationNL": "De Wijzigingsbeheeraanpak (voorheen Configuratiebeheersstrategie in eerdere edities) definieert hoe configuratiebeheer en wijzigingsbeheer worden toegepast, inclusief hoe producten worden geïdentificeerd, gevolgd en beschermd. Het is een van de vier managementaanpakdocumenten die worden geproduceerd in Initiëren van een Project."
+    }
+  ],
+  "description": "Final exam — PRINCE2 Foundation & Practitioner",
+  "descriptionNL": "Eindexamen — PRINCE2 Foundation & Practitioner",
+  "timeLimit": 45,
+  "maxAttempts": 3
+}

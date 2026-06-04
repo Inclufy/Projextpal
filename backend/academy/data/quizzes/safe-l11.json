@@ -1,0 +1,183 @@
+{
+  "id": "safe-l11",
+  "title": "Quiz: ART",
+  "titleNL": "Quiz: ART",
+  "courseId": "safe-scaling-agile",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "safe-q7",
+      "text": "What is the typical team size of an Agile Release Train (ART)?",
+      "textNL": "Wat is de typische omvang van een Agile Release Train (ART)?",
+      "question": "Wat is de typische omvang van een Agile Release Train (ART)?",
+      "questionEN": "What is the typical team size of an Agile Release Train (ART)?",
+      "options": [
+        "10–25 people",
+        "50–125 people",
+        "150–300 people",
+        "500+ people"
+      ],
+      "optionsEN": [
+        "10–25 people",
+        "50–125 people",
+        "150–300 people",
+        "500+ people"
+      ],
+      "optionsNL": [
+        "10–25 mensen",
+        "50–125 mensen",
+        "150–300 mensen",
+        "500+ mensen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "An ART consists of 5 to 12 Agile teams, totalling 50 to 125 people. Below 50, the coordination overhead of ART-level events is not justified; above 125, coordination cost outweighs the benefit. (SAFe 6.0, Agile Release Train)",
+      "explanationNL": "Een ART bestaat uit 5 tot 12 Agile teams, in totaal 50 tot 125 mensen. Onder de 50 is de coördinatieoverhead van ART-niveau-events niet gerechtvaardigd; boven de 125 wegen coördinatiekosten niet op tegen het voordeel. (SAFe 6.0, Agile Release Train)"
+    },
+    {
+      "id": "safe-q8",
+      "text": "Which ART role is described as the \"chief Scrum Master\" for the train?",
+      "textNL": "Welke ART-rol wordt omschreven als de \"chief Scrum Master\" voor de trein?",
+      "question": "Welke ART-rol wordt omschreven als de \"chief Scrum Master\" voor de trein?",
+      "questionEN": "Which ART role is described as the \"chief Scrum Master\" for the train?",
+      "options": [
+        "Product Management",
+        "System Architect",
+        "Release Train Engineer (RTE)",
+        "Business Owner"
+      ],
+      "optionsEN": [
+        "Product Management",
+        "System Architect",
+        "Release Train Engineer (RTE)",
+        "Business Owner"
+      ],
+      "optionsNL": [
+        "Product Management",
+        "Systeemarchitect",
+        "Release Train Engineer (RTE)",
+        "Business Owner"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The Release Train Engineer (RTE) is the chief Scrum Master for the ART. The RTE facilitates ART events, removes systemic impediments, and helps the train operate predictably. (SAFe 6.0, Release Train Engineer)",
+      "explanationNL": "De Release Train Engineer (RTE) is de chief Scrum Master voor de ART. De RTE faciliteert ART-events, verwijdert systemische impedimenten en helpt de trein voorspelbaar te functioneren. (SAFe 6.0, Release Train Engineer)"
+    },
+    {
+      "id": "safe-q9",
+      "text": "What does a typical Program Increment (PI) consist of in SAFe?",
+      "textNL": "Waaruit bestaat een typisch Program Increment (PI) in SAFe?",
+      "question": "Waaruit bestaat een typisch Program Increment (PI) in SAFe?",
+      "questionEN": "What does a typical Program Increment (PI) consist of in SAFe?",
+      "options": [
+        "3 development iterations only",
+        "4 development iterations plus 1 Innovation and Planning (IP) iteration",
+        "6 development iterations",
+        "5 development iterations and a separate release sprint"
+      ],
+      "optionsEN": [
+        "3 development iterations only",
+        "4 development iterations plus 1 Innovation and Planning (IP) iteration",
+        "6 development iterations",
+        "5 development iterations and a separate release sprint"
+      ],
+      "optionsNL": [
+        "3 ontwikkeliteraties alleen",
+        "4 ontwikkeliteraties plus 1 Innovatie en Planning (IP) iteratie",
+        "6 ontwikkeliteraties",
+        "5 ontwikkeliteraties en een aparte releasesprint"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "A standard PI has 4 development iterations of 2 weeks each plus 1 IP (Innovation and Planning) iteration, totalling approximately 10 weeks. The IP iteration hosts Inspect & Adapt and PI Planning for the next PI. (SAFe 6.0, Program Increment)",
+      "explanationNL": "Een standaard PI heeft 4 ontwikkeliteraties van elk 2 weken plus 1 IP (Innovatie en Planning) iteratie, in totaal ongeveer 10 weken. De IP-iteratie omvat Inspect & Adapt en PI Planning voor het volgende PI. (SAFe 6.0, Program Increment)"
+    },
+    {
+      "id": "safe-q10",
+      "text": "During PI Planning, what does a confidence vote below 3 (out of 5) indicate?",
+      "textNL": "Wat geeft een vertrouwensstemming onder de 3 (van de 5) aan tijdens PI Planning?",
+      "question": "Wat geeft een vertrouwensstemming onder de 3 (van de 5) aan tijdens PI Planning?",
+      "questionEN": "During PI Planning, what does a confidence vote below 3 (out of 5) indicate?",
+      "options": [
+        "The plan is acceptable and teams should proceed",
+        "Teams are overly confident and should stretch more",
+        "Serious problems exist and the plan should be reworked before proceeding",
+        "Only the RTE needs to take corrective action"
+      ],
+      "optionsEN": [
+        "The plan is acceptable and teams should proceed",
+        "Teams are overly confident and should stretch more",
+        "Serious problems exist and the plan should be reworked before proceeding",
+        "Only the RTE needs to take corrective action"
+      ],
+      "optionsNL": [
+        "Het plan is acceptabel en teams moeten doorgaan",
+        "Teams zijn te zelfverzekerd en zouden meer moeten doen",
+        "Er zijn ernstige problemen en het plan moet herzien worden voordat er wordt doorgegaan",
+        "Alleen de RTE hoeft corrigerende maatregelen te nemen"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "If a team's average confidence vote is below 3, SAFe prescribes replanning that team's commitments. If the ART-wide average is below 3, the entire PI plan must be reworked. Proceeding on a low confidence vote destroys predictability. (SAFe 6.0, PI Planning)",
+      "explanationNL": "Als het gemiddelde vertrouwen van een team onder de 3 is, schrijft SAFe voor het commitments van dat team opnieuw te plannen. Als het ART-brede gemiddelde onder de 3 is, moet het volledige PI-plan herzien worden. Doorgaan met een laag vertrouwen vernietigt voorspelbaarheid. (SAFe 6.0, PI Planning)"
+    },
+    {
+      "id": "safe-q11",
+      "text": "What is the primary purpose of the SAFe System Demo?",
+      "textNL": "Wat is het primaire doel van de SAFe System Demo?",
+      "question": "Wat is het primaire doel van de SAFe System Demo?",
+      "questionEN": "What is the primary purpose of the SAFe System Demo?",
+      "options": [
+        "To showcase individual team velocity to management",
+        "To present slide-deck status reports to executives",
+        "To demonstrate the integrated, working solution from all teams to stakeholders every iteration",
+        "To plan the backlog for the next iteration"
+      ],
+      "optionsEN": [
+        "To showcase individual team velocity to management",
+        "To present slide-deck status reports to executives",
+        "To demonstrate the integrated, working solution from all teams to stakeholders every iteration",
+        "To plan the backlog for the next iteration"
+      ],
+      "optionsNL": [
+        "Om de individuele teamsnelheid aan management te tonen",
+        "Om statusrapporten via slides aan leidinggevenden te presenteren",
+        "Om de geïntegreerde, werkende oplossing van alle teams elke iteratie aan stakeholders te demonstreren",
+        "Om de backlog voor de volgende iteratie te plannen"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The System Demo provides bi-weekly validation that teams' integrated work actually functions together. It must show running software in a real environment — not slides, mocks, or isolated team work. Business Owners attend to give course-correcting feedback. (SAFe 6.0, System Demo)",
+      "explanationNL": "De System Demo biedt tweewekelijkse validatie dat het geïntegreerde werk van teams daadwerkelijk samen werkt. Het moet werkende software tonen in een echte omgeving — geen slides, mockups of geïsoleerd teamwerk. Business Owners wonen bij om bij te sturen. (SAFe 6.0, System Demo)"
+    },
+    {
+      "id": "safe-q12",
+      "text": "In SAFe's Inspect & Adapt event, what happens to the improvement items generated in the Problem-Solving Workshop?",
+      "textNL": "Wat gebeurt er in SAFe's Inspect & Adapt-event met de verbeterpunten die worden gegenereerd in de Problem-Solving Workshop?",
+      "question": "Wat gebeurt er in SAFe's Inspect & Adapt-event met de verbeterpunten die worden gegenereerd in de Problem-Solving Workshop?",
+      "questionEN": "In SAFe's Inspect & Adapt event, what happens to the improvement items generated in the Problem-Solving Workshop?",
+      "options": [
+        "They are filed as documents for future reference",
+        "They are added to the Program Backlog and prioritized for the next PI",
+        "They are exclusively the responsibility of the RTE to implement",
+        "They are addressed only if budget allows"
+      ],
+      "optionsEN": [
+        "They are filed as documents for future reference",
+        "They are added to the Program Backlog and prioritized for the next PI",
+        "They are exclusively the responsibility of the RTE to implement",
+        "They are addressed only if budget allows"
+      ],
+      "optionsNL": [
+        "Ze worden als documenten gearchiveerd voor toekomstige referentie",
+        "Ze worden toegevoegd aan de Program Backlog en geprioriteerd voor het volgende PI",
+        "Ze zijn uitsluitend de verantwoordelijkheid van de RTE om te implementeren",
+        "Ze worden alleen aangepakt als het budget het toelaat"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Improvement items from the I&A Problem-Solving Workshop are placed directly into the Program Backlog and prioritized for the next PI alongside feature work. This mechanism ensures improvement is treated as real work, not a wish list. (SAFe 6.0, Inspect & Adapt)",
+      "explanationNL": "Verbeterpunten uit de I&A Problem-Solving Workshop worden direct in de Program Backlog geplaatst en geprioriteerd voor het volgende PI naast feature-werk. Dit mechanisme zorgt ervoor dat verbetering als echt werk wordt behandeld, niet als een wensenlijst. (SAFe 6.0, Inspect & Adapt)"
+    }
+  ]
+}

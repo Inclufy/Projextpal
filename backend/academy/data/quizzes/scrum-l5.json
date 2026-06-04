@@ -1,0 +1,154 @@
+{
+  "id": "scrum-l5",
+  "title": "Quiz: Scrum Fundamentals",
+  "titleNL": "Quiz: Scrum Fundamenten",
+  "courseId": "scrum-master",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "scrum-q1",
+      "text": "Wat zijn de drie pijlers van Scrum?",
+      "textNL": "Wat zijn de drie pijlers van Scrum?",
+      "question": "Wat zijn de drie pijlers van Scrum?",
+      "questionEN": "Wat zijn de drie pijlers van Scrum?",
+      "options": [
+        "Planning, Uitvoering, Controle",
+        "Transparantie, Inspectie, Adaptatie",
+        "Commitment, Focus, Respect",
+        "Sprint, Backlog, Increment"
+      ],
+      "optionsEN": [
+        "Planning, Uitvoering, Controle",
+        "Transparantie, Inspectie, Adaptatie",
+        "Commitment, Focus, Respect",
+        "Sprint, Backlog, Increment"
+      ],
+      "optionsNL": [
+        "Planning, Uitvoering, Controle",
+        "Transparantie, Inspectie, Adaptatie",
+        "Commitment, Focus, Respect",
+        "Sprint, Backlog, Increment"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De drie pijlers van empirisme in Scrum zijn: Transparantie, Inspectie en Adaptatie.",
+      "explanationNL": "De drie pijlers van empirisme in Scrum zijn: Transparantie, Inspectie en Adaptatie."
+    },
+    {
+      "id": "scrum-q2",
+      "text": "Wie is verantwoordelijk voor het maximaliseren van de waarde van het product?",
+      "textNL": "Wie is verantwoordelijk voor het maximaliseren van de waarde van het product?",
+      "question": "Wie is verantwoordelijk voor het maximaliseren van de waarde van het product?",
+      "questionEN": "Wie is verantwoordelijk voor het maximaliseren van de waarde van het product?",
+      "options": [
+        "Scrum Master",
+        "Product Owner",
+        "Developers",
+        "Stakeholders"
+      ],
+      "optionsEN": [
+        "Scrum Master",
+        "Product Owner",
+        "Developers",
+        "Stakeholders"
+      ],
+      "optionsNL": [
+        "Scrum Master",
+        "Product Owner",
+        "Developers",
+        "Stakeholders"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De Product Owner is verantwoordelijk voor het maximaliseren van de waarde van het product.",
+      "explanationNL": "De Product Owner is verantwoordelijk voor het maximaliseren van de waarde van het product."
+    },
+    {
+      "id": "scrum-q3",
+      "text": "Wat is de maximale lengte van een Sprint?",
+      "textNL": "Wat is de maximale lengte van een Sprint?",
+      "question": "Wat is de maximale lengte van een Sprint?",
+      "questionEN": "Wat is de maximale lengte van een Sprint?",
+      "options": [
+        "1 week",
+        "2 weken",
+        "4 weken",
+        "6 weken"
+      ],
+      "optionsEN": [
+        "1 week",
+        "2 weken",
+        "4 weken",
+        "6 weken"
+      ],
+      "optionsNL": [
+        "1 week",
+        "2 weken",
+        "4 weken",
+        "6 weken"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Een Sprint is maximaal één maand (4 weken). Kortere Sprints zijn ook mogelijk.",
+      "explanationNL": "Een Sprint is maximaal één maand (4 weken). Kortere Sprints zijn ook mogelijk."
+    },
+    {
+      "id": "scrum-q4",
+      "text": "Wat is het commitment van de Product Backlog?",
+      "textNL": "Wat is het commitment van de Product Backlog?",
+      "question": "Wat is het commitment van de Product Backlog?",
+      "questionEN": "Wat is het commitment van de Product Backlog?",
+      "options": [
+        "Sprint Goal",
+        "Definition of Done",
+        "Product Goal",
+        "Release Goal"
+      ],
+      "optionsEN": [
+        "Sprint Goal",
+        "Definition of Done",
+        "Product Goal",
+        "Release Goal"
+      ],
+      "optionsNL": [
+        "Sprint Goal",
+        "Definition of Done",
+        "Product Goal",
+        "Release Goal"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Het Product Goal is het commitment van de Product Backlog.",
+      "explanationNL": "Het Product Goal is het commitment van de Product Backlog."
+    },
+    {
+      "id": "scrum-q5",
+      "text": "Hoe lang duurt de Daily Scrum maximaal?",
+      "textNL": "Hoe lang duurt de Daily Scrum maximaal?",
+      "question": "Hoe lang duurt de Daily Scrum maximaal?",
+      "questionEN": "Hoe lang duurt de Daily Scrum maximaal?",
+      "options": [
+        "30 minuten",
+        "15 minuten",
+        "1 uur",
+        "Zo lang als nodig"
+      ],
+      "optionsEN": [
+        "30 minuten",
+        "15 minuten",
+        "1 uur",
+        "Zo lang als nodig"
+      ],
+      "optionsNL": [
+        "30 minuten",
+        "15 minuten",
+        "1 uur",
+        "Zo lang als nodig"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "De Daily Scrum is getimeboxed op maximaal 15 minuten.",
+      "explanationNL": "De Daily Scrum is getimeboxed op maximaal 15 minuten."
+    }
+  ]
+}

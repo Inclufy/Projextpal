@@ -1,0 +1,183 @@
+{
+  "id": "pgm-l5",
+  "title": "Quiz: Basics",
+  "titleNL": "Quiz: Basis",
+  "courseId": "program-management-pro",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "pm-q1",
+      "text": "According to MSP (Managing Successful Programmes), what is the primary distinction between a programme and a project?",
+      "textNL": "Wat is volgens MSP (Managing Successful Programmes) het belangrijkste onderscheid tussen een programma en een project?",
+      "question": "Wat is volgens MSP (Managing Successful Programmes) het belangrijkste onderscheid tussen een programma en een project?",
+      "questionEN": "According to MSP (Managing Successful Programmes), what is the primary distinction between a programme and a project?",
+      "options": [
+        "A programme always has a larger budget than a project",
+        "A programme delivers strategic benefits and organisational change; a project delivers a defined output",
+        "A programme is managed by a Portfolio Director, a project by a Programme Manager",
+        "A programme runs in parallel workstreams; a project runs sequentially"
+      ],
+      "optionsEN": [
+        "A programme always has a larger budget than a project",
+        "A programme delivers strategic benefits and organisational change; a project delivers a defined output",
+        "A programme is managed by a Portfolio Director, a project by a Programme Manager",
+        "A programme runs in parallel workstreams; a project runs sequentially"
+      ],
+      "optionsNL": [
+        "Een programma heeft altijd een groter budget dan een project",
+        "Een programma levert strategische baten en organisatieverandering; een project levert een vastgesteld resultaat",
+        "Een programma wordt geleid door een Portfolio Director, een project door een Programme Manager",
+        "Een programma loopt in parallelle workstreams; een project loopt sequentieel"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "MSP defines a programme as a temporary, flexible organisation created to coordinate, direct and oversee the implementation of a set of related projects and activities in order to deliver outcomes and benefits related to strategic objectives. The key differentiator is outcomes and benefits (change), not just outputs (deliverables).",
+      "explanationNL": "MSP definieert een programma als een tijdelijke, flexibele organisatie die is opgericht om een reeks gerelateerde projecten en activiteiten te coördineren, te sturen en te bewaken, met als doel het realiseren van resultaten en baten die verband houden met strategische doelstellingen. De kern is baten (verandering), niet alleen producten (deliverables)."
+    },
+    {
+      "id": "pm-q2",
+      "text": "In the MSP Transformational Flow, which activity directly follows \"Identifying a Programme\"?",
+      "textNL": "In de MSP Transformational Flow, welke activiteit volgt direct op \"Identifying a Programme\"?",
+      "question": "In de MSP Transformational Flow, welke activiteit volgt direct op \"Identifying a Programme\"?",
+      "questionEN": "In the MSP Transformational Flow, which activity directly follows \"Identifying a Programme\"?",
+      "options": [
+        "Managing Tranches",
+        "Delivering Capability",
+        "Defining a Programme",
+        "Closing a Programme"
+      ],
+      "optionsEN": [
+        "Managing Tranches",
+        "Delivering Capability",
+        "Defining a Programme",
+        "Closing a Programme"
+      ],
+      "optionsNL": [
+        "Managing Tranches",
+        "Delivering Capability",
+        "Defining a Programme",
+        "Closing a Programme"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The MSP Transformational Flow has six sequential activities: Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. \"Defining a Programme\" immediately follows identification, during which the Programme Brief is elaborated into the full Programme Definition Document.",
+      "explanationNL": "De MSP Transformational Flow heeft zes sequentiële activiteiten: Identifying → Defining → Managing Tranches → Delivering Capability → Realising Benefits → Closing a Programme. \"Defining a Programme\" volgt direct op de identificatiefase, waarin het Programme Brief wordt uitgewerkt tot het volledige Programme Definition Document."
+    },
+    {
+      "id": "pm-q3",
+      "text": "What is the purpose of the Blueprint in MSP?",
+      "textNL": "Wat is het doel van de Blueprint in MSP?",
+      "question": "Wat is het doel van de Blueprint in MSP?",
+      "questionEN": "What is the purpose of the Blueprint in MSP?",
+      "options": [
+        "It lists all individual project schedules within the programme",
+        "It describes the desired future state of the organisation that the programme will deliver",
+        "It records all risks and issues raised during the programme lifecycle",
+        "It defines the financial baseline and budget allocations per project"
+      ],
+      "optionsEN": [
+        "It lists all individual project schedules within the programme",
+        "It describes the desired future state of the organisation that the programme will deliver",
+        "It records all risks and issues raised during the programme lifecycle",
+        "It defines the financial baseline and budget allocations per project"
+      ],
+      "optionsNL": [
+        "Het geeft een overzicht van alle individuele projectplanningen binnen het programma",
+        "Het beschrijft de gewenste toekomstige staat van de organisatie die het programma zal opleveren",
+        "Het legt alle risico's en issues vast die tijdens de programmalevenscyclus zijn opgeworpen",
+        "Het definieert de financiële baseline en budgettoewijzingen per project"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The Blueprint is an MSP governance document that describes the target operating model — the future state of the organisation after the programme closes. It covers processes, information systems, organisational structures, technology, and capabilities. It is the primary design document that all component projects must deliver towards.",
+      "explanationNL": "De Blueprint is een MSP-beheersdocument dat het doelbedrijfsmodel beschrijft — de toekomstige staat van de organisatie nadat het programma is gesloten. Het omvat processen, informatiesystemen, organisatiestructuren, technologie en capaciteiten. Het is het primaire ontwerpdocument waaraan alle componentprojecten moeten bijdragen."
+    },
+    {
+      "id": "pm-q4",
+      "text": "Which role in MSP is accountable for ensuring that the programme delivers its expected benefits?",
+      "textNL": "Welke rol in MSP is verantwoordelijk voor het waarborgen dat het programma de verwachte baten oplevert?",
+      "question": "Welke rol in MSP is verantwoordelijk voor het waarborgen dat het programma de verwachte baten oplevert?",
+      "questionEN": "Which role in MSP is accountable for ensuring that the programme delivers its expected benefits?",
+      "options": [
+        "Programme Manager",
+        "Business Change Manager",
+        "Senior Responsible Owner (SRO)",
+        "Programme Office Manager"
+      ],
+      "optionsEN": [
+        "Programme Manager",
+        "Business Change Manager",
+        "Senior Responsible Owner (SRO)",
+        "Programme Office Manager"
+      ],
+      "optionsNL": [
+        "Programme Manager",
+        "Business Change Manager",
+        "Senior Responsible Owner (SRO)",
+        "Programme Office Manager"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "The Senior Responsible Owner (SRO) is the single individual accountable to the organisation for the programme achieving its objectives, delivering expected benefits, and carrying the authority to direct the programme. The Business Change Manager facilitates benefits realisation within their area, but ultimate accountability sits with the SRO.",
+      "explanationNL": "De Senior Responsible Owner (SRO) is de enige persoon die aan de organisatie verantwoording aflegt voor het halen van de programmadoelstellingen, het realiseren van de verwachte baten en heeft de bevoegdheid om het programma aan te sturen. De Business Change Manager faciliteert de batenrealisatie binnen zijn/haar gebied, maar de uiteindelijke verantwoordelijkheid ligt bij de SRO."
+    },
+    {
+      "id": "pm-q5",
+      "text": "What is a Tranche in MSP terminology?",
+      "textNL": "Wat is een Tranche in MSP-terminologie?",
+      "question": "Wat is een Tranche in MSP-terminologie?",
+      "questionEN": "What is a Tranche in MSP terminology?",
+      "options": [
+        "A financial instalment released to a component project upon milestone achievement",
+        "A grouping of related projects and activities that together deliver a step change in capability",
+        "A risk-ranked list of programme-level dependencies",
+        "A time-boxed sprint within an agile component project"
+      ],
+      "optionsEN": [
+        "A financial instalment released to a component project upon milestone achievement",
+        "A grouping of related projects and activities that together deliver a step change in capability",
+        "A risk-ranked list of programme-level dependencies",
+        "A time-boxed sprint within an agile component project"
+      ],
+      "optionsNL": [
+        "Een financiële termijn die wordt vrijgegeven aan een componentproject bij het bereiken van een mijlpaal",
+        "Een groepering van gerelateerde projecten en activiteiten die samen een stapsgewijze verbetering in capaciteit leveren",
+        "Een risicogerangschikte lijst van afhankelijkheden op programmaniveau",
+        "Een time-boxed sprint binnen een agile componentproject"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "In MSP, a Tranche is a group of projects and activities structured around a distinct step-change in capability that moves the organisation closer to the Blueprint. Each tranche ends with a tranche review / stage gate where governance assesses whether to proceed, redirect, or close the programme. Tranches are the primary rhythm of programme governance.",
+      "explanationNL": "In MSP is een Tranche een groep projecten en activiteiten gestructureerd rond een duidelijke stapsgewijze verbetering in capaciteit die de organisatie dichter bij de Blueprint brengt. Elke tranche eindigt met een tranche review / stage gate waar governance beoordeelt of het programma moet worden voortgezet, bijgestuurd of afgesloten. Tranches zijn het primaire ritme van programmabeheer."
+    },
+    {
+      "id": "pm-q6",
+      "text": "Which of the following BEST describes effective programme governance according to MSP?",
+      "textNL": "Welke van de volgende omschrijvingen beschrijft effectief programmabeheer het BESTE volgens MSP?",
+      "question": "Welke van de volgende omschrijvingen beschrijft effectief programmabeheer het BESTE volgens MSP?",
+      "questionEN": "Which of the following BEST describes effective programme governance according to MSP?",
+      "options": [
+        "A single Programme Board that makes all decisions and is chaired by the Programme Manager",
+        "An ad-hoc decision-making process driven by whichever stakeholder has the most urgent concern",
+        "A defined structure of sponsoring group, programme board, and project boards with clear decision rights and accountability",
+        "Governance is only relevant during the Identifying phase; execution is self-organising"
+      ],
+      "optionsEN": [
+        "A single Programme Board that makes all decisions and is chaired by the Programme Manager",
+        "An ad-hoc decision-making process driven by whichever stakeholder has the most urgent concern",
+        "A defined structure of sponsoring group, programme board, and project boards with clear decision rights and accountability",
+        "Governance is only relevant during the Identifying phase; execution is self-organising"
+      ],
+      "optionsNL": [
+        "Een enkel Programme Board dat alle beslissingen neemt en wordt voorgezeten door de Programme Manager",
+        "Een ad-hoc besluitvormingsproces aangestuurd door de meest urgente stakeholder",
+        "Een gedefinieerde structuur van sponsoring group, programme board en project boards met duidelijke beslissingsbevoegdheden en verantwoordelijkheden",
+        "Governance is alleen relevant tijdens de Identifying-fase; uitvoering is zelforganiserend"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "MSP requires a layered governance structure: the Sponsoring Group provides strategic direction and investment authority; the Programme Board manages the programme and holds the SRO; individual Project Boards govern component projects. Each level has defined decision rights. This separation of levels prevents strategic decisions being made in the wrong forum.",
+      "explanationNL": "MSP vereist een gelaagde governancestructuur: de Sponsoring Group biedt strategische richting en investeringsautoriteit; het Programme Board beheert het programma en houdt de SRO ter verantwoording; individuele Project Boards besturen componentprojecten. Elk niveau heeft vastgestelde beslissingsbevoegdheden. Deze scheiding van niveaus voorkomt dat strategische beslissingen in het verkeerde forum worden genomen."
+    }
+  ]
+}

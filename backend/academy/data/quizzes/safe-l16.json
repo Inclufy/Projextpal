@@ -1,0 +1,183 @@
+{
+  "id": "safe-l16",
+  "title": "Quiz: Final",
+  "titleNL": "Quiz: Eindexamen",
+  "courseId": "safe-scaling-agile",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "safe-q13",
+      "text": "Lean Portfolio Management (LPM) replaces traditional project-by-project funding with what mechanism?",
+      "textNL": "Lean Portfolio Management (LPM) vervangt traditionele project-voor-project financiering door welk mechanisme?",
+      "question": "Lean Portfolio Management (LPM) vervangt traditionele project-voor-project financiering door welk mechanisme?",
+      "questionEN": "Lean Portfolio Management (LPM) replaces traditional project-by-project funding with what mechanism?",
+      "options": [
+        "Annual capital budgets allocated to departments",
+        "Lean Budgets allocated to persistent value streams",
+        "Sprint-by-sprint funding approvals",
+        "Executive discretionary spending"
+      ],
+      "optionsEN": [
+        "Annual capital budgets allocated to departments",
+        "Lean Budgets allocated to persistent value streams",
+        "Sprint-by-sprint funding approvals",
+        "Executive discretionary spending"
+      ],
+      "optionsNL": [
+        "Jaarlijkse kapitaalbudgetten toegewezen aan afdelingen",
+        "Lean Budgets toegewezen aan persistente waardestromen",
+        "Sprint-voor-sprint financieringsgoedkeuringen",
+        "Discretionaire uitgaven van leidinggevenden"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "LPM funds value streams with persistent Lean Budgets rather than individual projects. This removes approval friction, supports long-term thinking, and lets the ART operate without constant reauthorization. Guardrails govern spending, not project gates. (SAFe 6.0, Lean Portfolio Management)",
+      "explanationNL": "LPM financiert waardestromen met persistente Lean Budgets in plaats van individuele projecten. Dit verwijdert goedkeuringswrijving, ondersteunt langetermijndenken en laat de ART werken zonder constante herbevestiging. Guardrails regelen de uitgaven, niet projectpoorten. (SAFe 6.0, Lean Portfolio Management)"
+    },
+    {
+      "id": "safe-q14",
+      "text": "What is the difference between an Operational Value Stream and a Development Value Stream in SAFe?",
+      "textNL": "Wat is het verschil tussen een Operationele Waardestroom en een Ontwikkelingswaardestroom in SAFe?",
+      "question": "Wat is het verschil tussen een Operationele Waardestroom en een Ontwikkelingswaardestroom in SAFe?",
+      "questionEN": "What is the difference between an Operational Value Stream and a Development Value Stream in SAFe?",
+      "options": [
+        "Operational value streams build software; development value streams deliver it to customers",
+        "Operational value streams deliver products or services to customers; development value streams build the systems that enable them",
+        "Both terms describe the same concept under different names",
+        "Operational value streams are for hardware; development value streams are for software"
+      ],
+      "optionsEN": [
+        "Operational value streams build software; development value streams deliver it to customers",
+        "Operational value streams deliver products or services to customers; development value streams build the systems that enable them",
+        "Both terms describe the same concept under different names",
+        "Operational value streams are for hardware; development value streams are for software"
+      ],
+      "optionsNL": [
+        "Operationele waardestromen bouwen software; ontwikkelingswaardestromen leveren het aan klanten",
+        "Operationele waardestromen leveren producten of diensten aan klanten; ontwikkelingswaardestromen bouwen de systemen die dat mogelijk maken",
+        "Beide termen beschrijven hetzelfde concept onder verschillende namen",
+        "Operationele waardestromen zijn voor hardware; ontwikkelingswaardestromen zijn voor software"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "An Operational Value Stream is the sequence of business activities delivering value to end customers (e.g. order-to-cash). A Development Value Stream is the sequence of activities teams use to build the systems supporting the operational stream. ARTs align to development value streams. (SAFe 6.0, Value Streams)",
+      "explanationNL": "Een Operationele Waardestroom is de reeks bedrijfsactiviteiten die waarde levert aan eindklanten (bijv. order-to-cash). Een Ontwikkelingswaardestroom is de reeks activiteiten die teams gebruiken om de systemen te bouwen die de operationele stroom ondersteunen. ARTs zijn afgestemd op ontwikkelingswaardestromen. (SAFe 6.0, Waardestromen)"
+    },
+    {
+      "id": "safe-q15",
+      "text": "WSJF (Weighted Shortest Job First) is used in SAFe to prioritize work based on what?",
+      "textNL": "WSJF (Weighted Shortest Job First) wordt in SAFe gebruikt om werk te prioriteren op basis van wat?",
+      "question": "WSJF (Weighted Shortest Job First) wordt in SAFe gebruikt om werk te prioriteren op basis van wat?",
+      "questionEN": "WSJF (Weighted Shortest Job First) is used in SAFe to prioritize work based on what?",
+      "options": [
+        "Team capacity alone",
+        "Stakeholder seniority",
+        "Cost of Delay divided by job duration (proxy for job size)",
+        "Number of story points"
+      ],
+      "optionsEN": [
+        "Team capacity alone",
+        "Stakeholder seniority",
+        "Cost of Delay divided by job duration (proxy for job size)",
+        "Number of story points"
+      ],
+      "optionsNL": [
+        "Teamcapaciteit alleen",
+        "Senioriteit van stakeholders",
+        "Cost of Delay gedeeld door jobduur (proxy voor jobgrootte)",
+        "Aantal story points"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "WSJF = Cost of Delay / Job Duration (or job size as proxy). It sequences work to maximize economic benefit: short, high-delay-cost items go first. It is SAFe's primary tool for epic and feature prioritization, derived from Don Reinertsen's Principles of Product Development Flow. (SAFe 6.0, WSJF)",
+      "explanationNL": "WSJF = Cost of Delay / Jobduur (of jobgrootte als proxy). Het rangschikt werk om het economisch voordeel te maximaliseren: korte items met hoge vertragingskosten gaan eerst. Het is SAFe's primaire tool voor epic- en feature-prioritering, afgeleid van Don Reinertsen's Principles of Product Development Flow. (SAFe 6.0, WSJF)"
+    },
+    {
+      "id": "safe-q16",
+      "text": "Which SAFe configuration adds the Solution Train for coordinating multiple ARTs working on the same large solution?",
+      "textNL": "Welke SAFe-configuratie voegt de Solution Train toe voor het coördineren van meerdere ARTs die aan dezelfde grote oplossing werken?",
+      "question": "Welke SAFe-configuratie voegt de Solution Train toe voor het coördineren van meerdere ARTs die aan dezelfde grote oplossing werken?",
+      "questionEN": "Which SAFe configuration adds the Solution Train for coordinating multiple ARTs working on the same large solution?",
+      "options": [
+        "Essential SAFe",
+        "Portfolio SAFe",
+        "Large Solution SAFe",
+        "Full SAFe"
+      ],
+      "optionsEN": [
+        "Essential SAFe",
+        "Portfolio SAFe",
+        "Large Solution SAFe",
+        "Full SAFe"
+      ],
+      "optionsNL": [
+        "Essential SAFe",
+        "Portfolio SAFe",
+        "Large Solution SAFe",
+        "Full SAFe"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Large Solution SAFe adds the Solution Train — a team-of-trains coordinating multiple ARTs on a single complex solution. It introduces Pre- and Post-PI Planning, the Solution Demo, and roles such as the Solution Train Engineer. (SAFe 6.0, Large Solution SAFe)",
+      "explanationNL": "Large Solution SAFe voegt de Solution Train toe — een team-van-treinen dat meerdere ARTs coördineert voor één complexe oplossing. Het introduceert Pre- en Post-PI Planning, de Solution Demo en rollen zoals de Solution Train Engineer. (SAFe 6.0, Large Solution SAFe)"
+    },
+    {
+      "id": "safe-q17",
+      "text": "What is the SAFe PI Predictability target range for a healthy ART?",
+      "textNL": "Wat is het SAFe PI Voorspelbaarheidsdoelbereik voor een gezonde ART?",
+      "question": "Wat is het SAFe PI Voorspelbaarheidsdoelbereik voor een gezonde ART?",
+      "questionEN": "What is the SAFe PI Predictability target range for a healthy ART?",
+      "options": [
+        "50–65%",
+        "65–79%",
+        "80–100%",
+        "Above 110% always"
+      ],
+      "optionsEN": [
+        "50–65%",
+        "65–79%",
+        "80–100%",
+        "Above 110% always"
+      ],
+      "optionsNL": [
+        "50–65%",
+        "65–79%",
+        "80–100%",
+        "Altijd boven 110%"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "A healthy ART targets 80–100% PI Predictability (actual business value delivered vs planned). Below 80% indicates over-commitment or systemic problems; consistently above 110% may indicate sandbagging. (SAFe 6.0, Inspect & Adapt, Metrics)",
+      "explanationNL": "Een gezonde ART streeft naar 80–100% PI-voorspelbaarheid (werkelijk geleverde bedrijfswaarde vs gepland). Onder de 80% wijst op overcommitment of systemische problemen; consistent boven de 110% kan wijzen op sandbagging. (SAFe 6.0, Inspect & Adapt, Metrics)"
+    },
+    {
+      "id": "safe-q18",
+      "text": "SAFe Principle #9 — \"Decentralize decision-making\" — recommends that which decisions should be made centrally?",
+      "textNL": "SAFe Principe #9 — \"Decentraliseer besluitvorming\" — beveelt aan dat welke beslissingen centraal genomen moeten worden?",
+      "question": "SAFe Principe #9 — \"Decentraliseer besluitvorming\" — beveelt aan dat welke beslissingen centraal genomen moeten worden?",
+      "questionEN": "SAFe Principle #9 — \"Decentralize decision-making\" — recommends that which decisions should be made centrally?",
+      "options": [
+        "Frequent, time-critical, locally-informed decisions",
+        "All decisions to maintain consistent governance",
+        "Infrequent, durable, and broad-impact decisions",
+        "Team-level technical decisions"
+      ],
+      "optionsEN": [
+        "Frequent, time-critical, locally-informed decisions",
+        "All decisions to maintain consistent governance",
+        "Infrequent, durable, and broad-impact decisions",
+        "Team-level technical decisions"
+      ],
+      "optionsNL": [
+        "Frequente, tijdkritische, lokaal geïnformeerde beslissingen",
+        "Alle beslissingen om consistente governance te behouden",
+        "Zeldzame, duurzame en breed-impactvolle beslissingen",
+        "Teamtechnische beslissingen"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "SAFe Principle #9 recommends decentralizing frequent, time-critical, and locally-informed decisions to the people closest to the work. Centralization is reserved for infrequent decisions with durable, broad impact — such as strategic investments or architectural standards. (SAFe 6.0, Principle #9)",
+      "explanationNL": "SAFe Principe #9 beveelt aan frequente, tijdkritische en lokaal geïnformeerde beslissingen te decentraliseren naar mensen die het dichtst bij het werk staan. Centralisatie is gereserveerd voor zeldzame beslissingen met duurzame, brede impact — zoals strategische investeringen of architectuurstandaarden. (SAFe 6.0, Principe #9)"
+    }
+  ]
+}

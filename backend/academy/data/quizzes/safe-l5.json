@@ -1,0 +1,183 @@
+{
+  "id": "safe-l5",
+  "title": "Quiz: SAFe Basics",
+  "titleNL": "Quiz: SAFe Basis",
+  "courseId": "safe-scaling-agile",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "safe-q1",
+      "text": "Which of the following is NOT one of the four SAFe Core Values?",
+      "textNL": "Welke van de volgende opties is GEEN van de vier SAFe Kernwaarden?",
+      "question": "Welke van de volgende opties is GEEN van de vier SAFe Kernwaarden?",
+      "questionEN": "Which of the following is NOT one of the four SAFe Core Values?",
+      "options": [
+        "Alignment",
+        "Continuous Improvement",
+        "Built-In Quality",
+        "Transparency"
+      ],
+      "optionsEN": [
+        "Alignment",
+        "Continuous Improvement",
+        "Built-In Quality",
+        "Transparency"
+      ],
+      "optionsNL": [
+        "Afstemming",
+        "Continue Verbetering",
+        "Ingebouwde Kwaliteit",
+        "Transparantie"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "The four SAFe Core Values are Alignment, Built-In Quality, Transparency, and Program Execution. Continuous Improvement is a principle of the House of Lean but not one of the four named Core Values. (SAFe 6.0, scaledagileframework.com/core-values)",
+      "explanationNL": "De vier SAFe Kernwaarden zijn Afstemming, Ingebouwde Kwaliteit, Transparantie en Programma-uitvoering. Continue Verbetering is een principe van het Lean-huis, maar niet een van de vier genoemde Kernwaarden. (SAFe 6.0)"
+    },
+    {
+      "id": "safe-q2",
+      "text": "SAFe Lean-Agile Principle #1 states that decisions should be guided by which concept?",
+      "textNL": "SAFe Lean-Agile Principe #1 stelt dat beslissingen geleid moeten worden door welk concept?",
+      "question": "SAFe Lean-Agile Principe #1 stelt dat beslissingen geleid moeten worden door welk concept?",
+      "questionEN": "SAFe Lean-Agile Principle #1 states that decisions should be guided by which concept?",
+      "options": [
+        "Team velocity",
+        "An economic view using Cost of Delay",
+        "Executive authority",
+        "Sprint backlog priority"
+      ],
+      "optionsEN": [
+        "Team velocity",
+        "An economic view using Cost of Delay",
+        "Executive authority",
+        "Sprint backlog priority"
+      ],
+      "optionsNL": [
+        "Teamsnelheid",
+        "Een economisch perspectief met gebruik van Cost of Delay",
+        "Leiderschapsautoriteit",
+        "Sprint backlog prioriteit"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "SAFe Principle #1 — \"Take an economic view\" — directs organizations to optimize for total economic outcome. Cost of Delay and WSJF are the primary tools for this. (SAFe 6.0, Principle #1)",
+      "explanationNL": "SAFe Principe #1 — \"Neem een economisch perspectief\" — stuurt organisaties om te optimaliseren voor het totale economische resultaat. Cost of Delay en WSJF zijn de primaire tools hiervoor. (SAFe 6.0, Principe #1)"
+    },
+    {
+      "id": "safe-q3",
+      "text": "What is the minimum viable SAFe configuration?",
+      "textNL": "Wat is de minimale haalbare SAFe-configuratie?",
+      "question": "Wat is de minimale haalbare SAFe-configuratie?",
+      "questionEN": "What is the minimum viable SAFe configuration?",
+      "options": [
+        "Full SAFe",
+        "Portfolio SAFe",
+        "Essential SAFe",
+        "Large Solution SAFe"
+      ],
+      "optionsEN": [
+        "Full SAFe",
+        "Portfolio SAFe",
+        "Essential SAFe",
+        "Large Solution SAFe"
+      ],
+      "optionsNL": [
+        "Full SAFe",
+        "Portfolio SAFe",
+        "Essential SAFe",
+        "Large Solution SAFe"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Essential SAFe — Team + ART levels — is the minimum configuration and the recommended starting point for any SAFe adoption. Organizations should master Essential before adding Portfolio or Large Solution layers. (SAFe 6.0, Essential SAFe)",
+      "explanationNL": "Essential SAFe — Team + ART niveaus — is de minimumconfiguratie en het aanbevolen startpunt voor elke SAFe-adoptie. Organisaties moeten Essential beheersen voordat ze Portfolio- of Large Solution-lagen toevoegen. (SAFe 6.0, Essential SAFe)"
+    },
+    {
+      "id": "safe-q4",
+      "text": "How many Lean-Agile Principles does SAFe 6.0 define?",
+      "textNL": "Hoeveel Lean-Agile Principes definieert SAFe 6.0?",
+      "question": "Hoeveel Lean-Agile Principes definieert SAFe 6.0?",
+      "questionEN": "How many Lean-Agile Principles does SAFe 6.0 define?",
+      "options": [
+        "Four",
+        "Seven",
+        "Ten",
+        "Twelve"
+      ],
+      "optionsEN": [
+        "Four",
+        "Seven",
+        "Ten",
+        "Twelve"
+      ],
+      "optionsNL": [
+        "Vier",
+        "Zeven",
+        "Tien",
+        "Twaalf"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "SAFe 6.0 defines ten Lean-Agile Principles, numbered #1 through #10, grounded in Lean thinking, Agile principles, and systems thinking. (SAFe 6.0, Lean-Agile Principles)",
+      "explanationNL": "SAFe 6.0 definieert tien Lean-Agile Principes, genummerd #1 t/m #10, gebaseerd op Lean-denken, Agile principes en systeemdenken. (SAFe 6.0, Lean-Agile Principes)"
+    },
+    {
+      "id": "safe-q5",
+      "text": "SAFe Principle #10 says organizations should structure themselves around what?",
+      "textNL": "SAFe Principe #10 zegt dat organisaties zichzelf moeten structureren rondom wat?",
+      "question": "SAFe Principe #10 zegt dat organisaties zichzelf moeten structureren rondom wat?",
+      "questionEN": "SAFe Principle #10 says organizations should structure themselves around what?",
+      "options": [
+        "Functions and departments",
+        "Geographic locations",
+        "Value",
+        "Technology platforms"
+      ],
+      "optionsEN": [
+        "Functions and departments",
+        "Geographic locations",
+        "Value",
+        "Technology platforms"
+      ],
+      "optionsNL": [
+        "Functies en afdelingen",
+        "Geografische locaties",
+        "Waarde",
+        "Technologieplatforms"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "SAFe Principle #10 — \"Organize around value\" — directs enterprises to organize teams and ARTs around value streams rather than traditional functional or component silos. (SAFe 6.0, Principle #10)",
+      "explanationNL": "SAFe Principe #10 — \"Organiseer rondom waarde\" — stuurt ondernemingen om teams en ARTs te organiseren rondom waardestromen in plaats van traditionele functionele of componentsilos. (SAFe 6.0, Principe #10)"
+    },
+    {
+      "id": "safe-q6",
+      "text": "In the SAFe House of Lean, what sits at the top as the ultimate goal?",
+      "textNL": "In het SAFe Lean-huis, wat staat bovenaan als het ultieme doel?",
+      "question": "In het SAFe Lean-huis, wat staat bovenaan als het ultieme doel?",
+      "questionEN": "In the SAFe House of Lean, what sits at the top as the ultimate goal?",
+      "options": [
+        "Leadership",
+        "Flow",
+        "Value",
+        "Quality"
+      ],
+      "optionsEN": [
+        "Leadership",
+        "Flow",
+        "Value",
+        "Quality"
+      ],
+      "optionsNL": [
+        "Leiderschap",
+        "Flow",
+        "Waarde",
+        "Kwaliteit"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "In the SAFe House of Lean, Value — delivering the maximum value to customers and society in the shortest sustainable lead time — sits at the roof as the goal. Leadership is the foundation. (SAFe 6.0, House of Lean)",
+      "explanationNL": "In het SAFe Lean-huis staat Waarde — maximale waarde leveren aan klanten en de samenleving in de kortst mogelijke duurzame doorlooptijd — bovenaan als het doel. Leiderschap is het fundament. (SAFe 6.0, Lean-huis)"
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "id": "p2-l18",
+  "title": "Quiz: Processes",
+  "titleNL": "Quiz: Processen",
+  "courseId": "prince2-foundation",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "p2-q6",
+      "text": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "textNL": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "question": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "questionEN": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "options": [
+        "IP - Initiating a Project",
+        "SU - Starting Up a Project",
+        "DP - Directing a Project",
+        "CS - Controlling a Stage"
+      ],
+      "optionsEN": [
+        "IP - Initiating a Project",
+        "SU - Starting Up a Project",
+        "DP - Directing a Project",
+        "CS - Controlling a Stage"
+      ],
+      "optionsNL": [
+        "IP - Initiating a Project",
+        "SU - Starting Up a Project",
+        "DP - Directing a Project",
+        "CS - Controlling a Stage"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "SU is een pre-project proces dat plaatsvindt voordat het project officieel begint.",
+      "explanationNL": "SU is een pre-project proces dat plaatsvindt voordat het project officieel begint."
+    },
+    {
+      "id": "p2-q7",
+      "text": "Wie produceert de Project Initiation Documentation (PID)?",
+      "textNL": "Wie produceert de Project Initiation Documentation (PID)?",
+      "question": "Wie produceert de Project Initiation Documentation (PID)?",
+      "questionEN": "Wie produceert de Project Initiation Documentation (PID)?",
+      "options": [
+        "Executive",
+        "Project Board",
+        "Project Manager",
+        "Team Manager"
+      ],
+      "optionsEN": [
+        "Executive",
+        "Project Board",
+        "Project Manager",
+        "Team Manager"
+      ],
+      "optionsNL": [
+        "Executive",
+        "Project Board",
+        "Project Manager",
+        "Team Manager"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "De Project Manager produceert de PID in het IP proces.",
+      "explanationNL": "De Project Manager produceert de PID in het IP proces."
+    },
+    {
+      "id": "p2-q8",
+      "text": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "textNL": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "question": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "questionEN": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "options": [
+        "Checkpoint Report",
+        "Highlight Report",
+        "End Stage Report",
+        "Exception Report"
+      ],
+      "optionsEN": [
+        "Checkpoint Report",
+        "Highlight Report",
+        "End Stage Report",
+        "Exception Report"
+      ],
+      "optionsNL": [
+        "Checkpoint Report",
+        "Highlight Report",
+        "End Stage Report",
+        "Exception Report"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Highlight Reports gaan regelmatig (typisch 2-wekelijks) naar de Board.",
+      "explanationNL": "Highlight Reports gaan regelmatig (typisch 2-wekelijks) naar de Board."
+    },
+    {
+      "id": "p2-q9",
+      "text": "Wanneer wordt een Exception Report gemaakt?",
+      "textNL": "Wanneer wordt een Exception Report gemaakt?",
+      "question": "Wanneer wordt een Exception Report gemaakt?",
+      "questionEN": "Wanneer wordt een Exception Report gemaakt?",
+      "options": [
+        "Aan het einde van elke stage",
+        "Wanneer toleranties dreigen te worden overschreden",
+        "Aan het einde van het project",
+        "Bij elke Checkpoint"
+      ],
+      "optionsEN": [
+        "Aan het einde van elke stage",
+        "Wanneer toleranties dreigen te worden overschreden",
+        "Aan het einde van het project",
+        "Bij elke Checkpoint"
+      ],
+      "optionsNL": [
+        "Aan het einde van elke stage",
+        "Wanneer toleranties dreigen te worden overschreden",
+        "Aan het einde van het project",
+        "Bij elke Checkpoint"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Exception Reports escaleren wanneer toleranties dreigen te worden overschreden.",
+      "explanationNL": "Exception Reports escaleren wanneer toleranties dreigen te worden overschreden."
+    },
+    {
+      "id": "p2-q10",
+      "text": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "textNL": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "question": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "questionEN": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "options": [
+        "SU - Starting Up",
+        "IP - Initiating",
+        "CS - Controlling a Stage",
+        "CP - Closing a Project"
+      ],
+      "optionsEN": [
+        "SU - Starting Up",
+        "IP - Initiating",
+        "CS - Controlling a Stage",
+        "CP - Closing a Project"
+      ],
+      "optionsNL": [
+        "SU - Starting Up",
+        "IP - Initiating",
+        "CS - Controlling a Stage",
+        "CP - Closing a Project"
+      ],
+      "correct": 3,
+      "points": 1,
+      "explanation": "CP moet altijd worden uitgevoerd, ook bij voortijdig stoppen, voor lessons learned en administratieve afsluiting.",
+      "explanationNL": "CP moet altijd worden uitgevoerd, ook bij voortijdig stoppen, voor lessons learned en administratieve afsluiting."
+    }
+  ]
+}

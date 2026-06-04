@@ -1,0 +1,241 @@
+{
+  "id": "msp-l17",
+  "title": "Quiz: Reporting & Collaboration",
+  "titleNL": "Quiz: Rapportage & Samenwerking",
+  "courseId": "ms-project-masterclass",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "msp-q-r1",
+      "text": "Which MS Project feature lets you add custom columns to any view for fields like \"Workstream\" or \"Risk Score\"?",
+      "textNL": "Welke MS Project functie laat je aangepaste kolommen toevoegen aan elke weergave voor velden zoals \"Workstream\" of \"Risicoscore\"?",
+      "question": "Welke MS Project functie laat je aangepaste kolommen toevoegen aan elke weergave voor velden zoals \"Workstream\" of \"Risicoscore\"?",
+      "questionEN": "Which MS Project feature lets you add custom columns to any view for fields like \"Workstream\" or \"Risk Score\"?",
+      "options": [
+        "Group By",
+        "Custom Fields",
+        "AutoFilter",
+        "Table Styles"
+      ],
+      "optionsEN": [
+        "Group By",
+        "Custom Fields",
+        "AutoFilter",
+        "Table Styles"
+      ],
+      "optionsNL": [
+        "Groeperen op",
+        "Aangepaste velden",
+        "AutoFilter",
+        "Tabelstijlen"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Custom Fields (Project tab → Custom Fields) give you up to 30 Text, 30 Number, 30 Cost, and 10 Outline Code fields per project. Lookup fields with predefined values prevent typos and enable clean grouping across views.",
+      "explanationNL": "Aangepaste velden (Project tab → Aangepaste velden) geven je tot 30 Tekst-, 30 Getal-, 30 Kosten- en 10 Overzichtscode-velden per project. Opzoekvelden met vooraf gedefinieerde waarden voorkomen typefouten en zorgen voor nette groepering."
+    },
+    {
+      "id": "msp-q-r2",
+      "text": "What is the correct sequence to export a Gantt chart as a PDF in MS Project?",
+      "textNL": "Wat is de juiste volgorde om een Gantt-diagram als PDF te exporteren in MS Project?",
+      "question": "Wat is de juiste volgorde om een Gantt-diagram als PDF te exporteren in MS Project?",
+      "questionEN": "What is the correct sequence to export a Gantt chart as a PDF in MS Project?",
+      "options": [
+        "View tab → Copy → Paste Special → PDF",
+        "File → Export → Save Project as File → PDF Format",
+        "Report tab → Print → Save as PDF",
+        "Format tab → Copy Picture → Save as PDF"
+      ],
+      "optionsEN": [
+        "View tab → Copy → Paste Special → PDF",
+        "File → Export → Save Project as File → PDF Format",
+        "Report tab → Print → Save as PDF",
+        "Format tab → Copy Picture → Save as PDF"
+      ],
+      "optionsNL": [
+        "Weergave tab → Kopiëren → Plakken speciaal → PDF",
+        "Bestand → Exporteren → Project opslaan als bestand → PDF-indeling",
+        "Rapport tab → Afdrukken → Opslaan als PDF",
+        "Opmaak tab → Afbeelding kopiëren → Opslaan als PDF"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "File → Export → Save Project as File → PDF Format is the correct path. This preserves timescale, filters, and page setup options and generates a clean, stakeholder-ready document.",
+      "explanationNL": "Bestand → Exporteren → Project opslaan als bestand → PDF-indeling is het juiste pad. Dit behoudt tijdschaal, filters en pagina-instellingen en genereert een nette, stakeholder-klaar document."
+    },
+    {
+      "id": "msp-q-r3",
+      "text": "Which view in MS Project is best for analysing resource workload across all tasks over time?",
+      "textNL": "Welke weergave in MS Project is het meest geschikt voor het analyseren van de resourcebelasting over alle taken in de tijd?",
+      "question": "Welke weergave in MS Project is het meest geschikt voor het analyseren van de resourcebelasting over alle taken in de tijd?",
+      "questionEN": "Which view in MS Project is best for analysing resource workload across all tasks over time?",
+      "options": [
+        "Gantt Chart",
+        "Network Diagram",
+        "Resource Usage",
+        "Task Sheet"
+      ],
+      "optionsEN": [
+        "Gantt Chart",
+        "Network Diagram",
+        "Resource Usage",
+        "Task Sheet"
+      ],
+      "optionsNL": [
+        "Gantt-diagram",
+        "Netwerkdiagram",
+        "Resourcegebruik",
+        "Takenblad"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "Resource Usage view shows each resource with its assigned tasks and the hours worked per time period. It is the primary view for spotting over-allocation peaks and comparing planned versus actual work per resource.",
+      "explanationNL": "De weergave Resourcegebruik toont elke resource met de toegewezen taken en de gewerkte uren per tijdsperiode. Het is de primaire weergave voor het herkennen van overbelastingspieken en het vergelijken van geplande versus werkelijke uren per resource."
+    },
+    {
+      "id": "msp-q-r4",
+      "text": "What does the \"Copy Picture\" command (Format tab) do differently from a regular Ctrl+C copy in MS Project?",
+      "textNL": "Wat doet het commando \"Afbeelding kopiëren\" (Opmaak tab) anders dan een gewone Ctrl+C-kopie in MS Project?",
+      "question": "Wat doet het commando \"Afbeelding kopiëren\" (Opmaak tab) anders dan een gewone Ctrl+C-kopie in MS Project?",
+      "questionEN": "What does the \"Copy Picture\" command (Format tab) do differently from a regular Ctrl+C copy in MS Project?",
+      "options": [
+        "It copies the entire project file to the clipboard",
+        "It captures a rendered image of the current view including the timescale, respecting filters and page range",
+        "It only copies selected tasks as text",
+        "It copies only the Gantt bars, not the entry table"
+      ],
+      "optionsEN": [
+        "It copies the entire project file to the clipboard",
+        "It captures a rendered image of the current view including the timescale, respecting filters and page range",
+        "It only copies selected tasks as text",
+        "It copies only the Gantt bars, not the entry table"
+      ],
+      "optionsNL": [
+        "Het kopieert het volledige projectbestand naar het klembord",
+        "Het legt een gerenderde afbeelding van de huidige weergave vast inclusief de tijdschaal, met respect voor filters en paginabereik",
+        "Het kopieert alleen geselecteerde taken als tekst",
+        "Het kopieert alleen de Gantt-balken, niet de invoertabel"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Copy Picture renders the current view — including the timescale, bar styles, and any active filters — as an image. This is the recommended method for pasting a Gantt into PowerPoint or Word because formatting is fully preserved.",
+      "explanationNL": "Afbeelding kopiëren rendert de huidige weergave — inclusief tijdschaal, balkstijlen en actieve filters — als afbeelding. Dit is de aanbevolen methode voor het plakken van een Gantt in PowerPoint of Word omdat de opmaak volledig behouden blijft."
+    },
+    {
+      "id": "msp-q-r5",
+      "text": "You want all your custom views, filters, and tables to be available in every new project you create. What is the correct action?",
+      "textNL": "Je wilt dat al je aangepaste weergaven, filters en tabellen beschikbaar zijn in elk nieuw project dat je aanmaakt. Wat is de juiste handeling?",
+      "question": "Je wilt dat al je aangepaste weergaven, filters en tabellen beschikbaar zijn in elk nieuw project dat je aanmaakt. Wat is de juiste handeling?",
+      "questionEN": "You want all your custom views, filters, and tables to be available in every new project you create. What is the correct action?",
+      "options": [
+        "Save the project as a template (.mpt)",
+        "Copy the customizations to Global.MPT via File → Info → Organizer",
+        "Use File → Options → Save to set a default view",
+        "Export the customizations as an XML file"
+      ],
+      "optionsEN": [
+        "Save the project as a template (.mpt)",
+        "Copy the customizations to Global.MPT via File → Info → Organizer",
+        "Use File → Options → Save to set a default view",
+        "Export the customizations as an XML file"
+      ],
+      "optionsNL": [
+        "Sla het project op als een sjabloon (.mpt)",
+        "Kopieer de aanpassingen naar Global.MPT via Bestand → Info → Organizer",
+        "Gebruik Bestand → Opties → Opslaan om een standaardweergave in te stellen",
+        "Exporteer de aanpassingen als een XML-bestand"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Global.MPT is the global template that loads for every new project. Copying items to it via the Organizer (File → Info → Organizer) is the only way to make custom views, tables, filters, and reports permanently available in all future projects.",
+      "explanationNL": "Global.MPT is het globale sjabloon dat voor elk nieuw project geladen wordt. Items ernaar kopiëren via de Organizer (Bestand → Info → Organizer) is de enige manier om aangepaste weergaven, tabellen, filters en rapporten permanent beschikbaar te maken in alle toekomstige projecten."
+    },
+    {
+      "id": "msp-q-r6",
+      "text": "A project manager wants to give the steering committee a live, interactive view of the project schedule. Which sharing method is most appropriate?",
+      "textNL": "Een projectmanager wil het stuurcomité een live, interactieve weergave van het projectschema geven. Welke deelmethode is het meest geschikt?",
+      "question": "Een projectmanager wil het stuurcomité een live, interactieve weergave van het projectschema geven. Welke deelmethode is het meest geschikt?",
+      "questionEN": "A project manager wants to give the steering committee a live, interactive view of the project schedule. Which sharing method is most appropriate?",
+      "options": [
+        "Export to PDF and email it weekly",
+        "Publish the schedule to Project Online / SharePoint for co-viewing",
+        "Copy Picture to a PNG and post it on the intranet",
+        "Export to Excel and share the workbook"
+      ],
+      "optionsEN": [
+        "Export to PDF and email it weekly",
+        "Publish the schedule to Project Online / SharePoint for co-viewing",
+        "Copy Picture to a PNG and post it on the intranet",
+        "Export to Excel and share the workbook"
+      ],
+      "optionsNL": [
+        "Exporteer naar PDF en stuur het wekelijks per e-mail",
+        "Publiceer het schema naar Project Online / SharePoint voor gezamenlijke weergave",
+        "Kopieer afbeelding naar een PNG en plaats het op het intranet",
+        "Exporteer naar Excel en deel de werkmap"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Publishing to Project Online or storing the .mpp on SharePoint provides live access with version history. Stakeholders can open or view the schedule without receiving stale email attachments, and the project manager retains control of the source of truth.",
+      "explanationNL": "Publiceren naar Project Online of het opslaan van het .mpp-bestand op SharePoint biedt live toegang met versiebeheer. Stakeholders kunnen het schema openen of bekijken zonder verouderde e-mailbijlagen te ontvangen, en de projectmanager behoudt de controle over de enige bron van waarheid."
+    },
+    {
+      "id": "msp-q-r7",
+      "text": "Which shortcut key recalculates the project schedule when MS Project is set to manual calculation?",
+      "textNL": "Welke sneltoets herberekent het projectschema wanneer MS Project is ingesteld op handmatige berekening?",
+      "question": "Welke sneltoets herberekent het projectschema wanneer MS Project is ingesteld op handmatige berekening?",
+      "questionEN": "Which shortcut key recalculates the project schedule when MS Project is set to manual calculation?",
+      "options": [
+        "F5",
+        "F7",
+        "F9",
+        "F11"
+      ],
+      "optionsEN": [
+        "F5",
+        "F7",
+        "F9",
+        "F11"
+      ],
+      "optionsNL": [
+        "F5",
+        "F7",
+        "F9",
+        "F11"
+      ],
+      "correct": 2,
+      "points": 1,
+      "explanation": "F9 recalculates the schedule when calculation is set to Manual (File → Options → Schedule → Calculation). In Manual mode MS Project waits for F9 before propagating changes, which speeds up editing on large plans.",
+      "explanationNL": "F9 herberekent het schema wanneer berekening is ingesteld op Handmatig (Bestand → Opties → Planning → Berekening). In handmatige modus wacht MS Project op F9 voordat wijzigingen worden doorgevoerd, wat het bewerken van grote plannen versnelt."
+    },
+    {
+      "id": "msp-q-r8",
+      "text": "When exporting project data to Excel using the Export Wizard, what is the advantage of selecting \"Use existing map\" instead of creating a new map each time?",
+      "textNL": "Bij het exporteren van projectgegevens naar Excel via de Exportwizard, wat is het voordeel van \"Bestaande toewijzing gebruiken\" in plaats van elke keer een nieuwe toewijzing te maken?",
+      "question": "Bij het exporteren van projectgegevens naar Excel via de Exportwizard, wat is het voordeel van \"Bestaande toewijzing gebruiken\" in plaats van elke keer een nieuwe toewijzing te maken?",
+      "questionEN": "When exporting project data to Excel using the Export Wizard, what is the advantage of selecting \"Use existing map\" instead of creating a new map each time?",
+      "options": [
+        "It allows you to export to older Excel formats",
+        "It keeps field selections consistent across multiple exports, preventing column drift between reports",
+        "It automatically formats the Excel workbook with corporate colours",
+        "It merges the exported data with the existing workbook"
+      ],
+      "optionsEN": [
+        "It allows you to export to older Excel formats",
+        "It keeps field selections consistent across multiple exports, preventing column drift between reports",
+        "It automatically formats the Excel workbook with corporate colours",
+        "It merges the exported data with the existing workbook"
+      ],
+      "optionsNL": [
+        "Hiermee kun je exporteren naar oudere Excel-formaten",
+        "Het houdt veldkeuzes consistent over meerdere exports, waardoor kolomdrift tussen rapporten wordt voorkomen",
+        "Het formatteert de Excel-werkmap automatisch met bedrijfskleuren",
+        "Het voegt de geëxporteerde gegevens samen met de bestaande werkmap"
+      ],
+      "correct": 1,
+      "points": 1,
+      "explanation": "Reusing an existing export map locks in the same fields, order, and header names every time. This is critical for recurring PMO reports where analysts rely on consistent column positions to feed Power BI or pivot tables.",
+      "explanationNL": "Het hergebruiken van een bestaande exporttoewijzing vergrendelt dezelfde velden, volgorde en kolomnamen elke keer. Dit is essentieel voor terugkerende PMO-rapporten waarbij analisten vertrouwen op consistente kolomposities voor Power BI of draaitabellen."
+    }
+  ]
+}

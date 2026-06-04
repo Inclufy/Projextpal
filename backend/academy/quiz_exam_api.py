@@ -70,6 +70,34 @@ def get_quiz(request, lesson_id):
     })
 
 
+def _score_fixture(answers, questions):
+    """Score submitted answers against fixture questions.
+
+    Supports two payload shapes:
+      - dict keyed by question id -> [selected_index, ...]   (QuizEngine / ExamEngine)
+      - positional list of selected indices                  (legacy fixtures)
+    Each fixture question carries a scalar `correct` = the correct option index.
+    Returns (correct_count, total).
+    """
+    total = len(questions)
+    correct = 0
+    for i, q in enumerate(questions):
+        expected = q.get('correct')
+        sel = None
+        if isinstance(answers, dict):
+            qid = q.get('id')
+            raw = answers.get(str(qid))
+            if raw is None and qid is not None:
+                raw = answers.get(qid)
+            sel = raw[0] if isinstance(raw, list) and raw else raw
+        elif isinstance(answers, list) and i < len(answers):
+            raw = answers[i]
+            sel = raw[0] if isinstance(raw, list) and raw else raw
+        if sel is not None and sel == expected:
+            correct += 1
+    return correct, total
+
+
 def _find_enrollment_for_lesson(user, lesson_id):
     """Resolve the user's enrollment for the course containing this lesson.
 
@@ -122,11 +150,7 @@ def submit_quiz(request, lesson_id):
             with open(quiz_file, 'r') as f:
                 quiz_data = json.load(f)
             passing_score = quiz_data.get('passingScore', passing_score)
-            total = len(quiz_data['questions'])
-            correct = sum(
-                1 for i, q in enumerate(quiz_data['questions'])
-                if i < len(answers) and answers[i] == q.get('correct')
-            )
+            correct, total = _score_fixture(answers, quiz_data['questions'])
             score = int((correct / total) * 100) if total else 0
         else:
             # DB-backed path
@@ -194,11 +218,7 @@ def submit_exam(request, exam_id):
 
     # Score against exam.questions (JSONField with {id, correct, ...} shape)
     questions = exam.questions or []
-    correct = 0
-    total = len(questions)
-    for i, q in enumerate(questions):
-        if i < len(answers) and answers[i] == q.get('correct'):
-            correct += 1
+    correct, total = _score_fixture(answers, questions)
     score = int((correct / total) * 100) if total else 0
     passed = total > 0 and score >= (exam.passing_score or 80)
 
@@ -223,6 +243,104 @@ def submit_exam(request, exam_id):
         'correct': correct,
         'total': total,
         'attempt_number': attempt_number,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_exam(request, lesson_id):
+    """Serve exam questions for an exam lesson.
+
+    Source order (mirrors get_quiz):
+      1. JSON fixture at /app/academy/data/exams/<lesson_id>.json
+         (keyed by the frontend lesson id, e.g. 'safe-l19').
+      2. DB Exam row when lesson_id is a numeric Exam.id.
+    Returns 404 only if neither source has content. Without this route the
+    ExamEngine fell back to hardcoded sample questions.
+    """
+    exam_file = f'/app/academy/data/exams/{lesson_id}.json'
+    if os.path.exists(exam_file):
+        try:
+            with open(exam_file, 'r') as f:
+                return Response(json.load(f))
+        except Exception:
+            pass
+    try:
+        eid = int(lesson_id)
+        exam = Exam.objects.filter(id=eid).first()
+    except (ValueError, TypeError):
+        exam = None
+    if exam is None:
+        return Response({'error': 'Exam not available'}, status=status.HTTP_404_NOT_FOUND)
+    return Response({
+        'id': exam.id,
+        'title': exam.title,
+        'titleNL': exam.title_nl,
+        'passingScore': exam.passing_score,
+        'timeLimit': exam.time_limit,
+        'maxAttempts': exam.max_attempts,
+        'questions': exam.questions or [],
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_exam_by_lesson(request, lesson_id):
+    """Submit an exam identified by the frontend lesson id (string).
+
+    Scores against the JSON fixture at /app/academy/data/exams/<lesson_id>.json
+    and, when a matching DB Exam can be resolved for the same course, persists
+    an ExamAttempt so the certificate-eligibility gate can see the pass.
+    Otherwise returns a display-only result (persisted=False).
+    """
+    answers = request.data.get('answers', [])
+    time_taken = request.data.get('time_taken', 0)
+    exam_file = f'/app/academy/data/exams/{lesson_id}.json'
+    if not os.path.exists(exam_file):
+        return Response({'error': 'Exam not found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        with open(exam_file, 'r') as f:
+            data = json.load(f)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    questions = data.get('questions', [])
+    passing_score = data.get('passingScore', 70)
+    correct, total = _score_fixture(answers, questions)
+    score = int((correct / total) * 100) if total else 0
+    passed = total > 0 and score >= passing_score
+
+    # Best-effort persistence so the cert gate can see a passed exam attempt.
+    persisted = False
+    course_id = data.get('courseId')
+    exam = None
+    if course_id:
+        try:
+            exam = (Exam.objects.filter(course__slug=course_id).first()
+                    or Exam.objects.filter(course__id=course_id).first())
+        except Exception:
+            exam = None
+    if exam is not None:
+        try:
+            attempt_number = ExamAttempt.objects.filter(
+                user=request.user, exam=exam
+            ).count() + 1
+            ExamAttempt.objects.create(
+                user=request.user, exam=exam, score=score, passed=passed,
+                answers={'submitted': answers}, time_taken=time_taken,
+                attempt_number=attempt_number, started_at=timezone.now(),
+            )
+            persisted = True
+        except Exception:
+            persisted = False
+
+    return Response({
+        'score': score,
+        'percentage': score,
+        'passed': passed,
+        'correct': correct,
+        'total': total,
+        'persisted': persisted,
     })
 
 
