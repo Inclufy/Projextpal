@@ -198,46 +198,117 @@ class WaterfallPhaseViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def start(self, request, pk=None, project_id=None):
-        """Start a phase"""
+        """Start a phase.
+
+        Waterfall is sequential with a stage gate between phases: a phase may
+        only start once its predecessor is *completed AND signed off* (when the
+        predecessor requires sign-off). Previously only `completed` was checked,
+        so a phase could start over an unsigned predecessor — the gate was
+        advisory. Now the sign-off is a hard precondition.
+        """
         phase = self.get_object()
-        
-        # Check previous phase is completed
+
         prev_phase = WaterfallPhase.objects.filter(
             project=self.get_project(),
             order__lt=phase.order
         ).order_by('-order').first()
-        
-        if prev_phase and prev_phase.status != 'completed':
-            return Response(
-                {'error': 'Previous phase must be completed first'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+
+        if prev_phase:
+            if prev_phase.status != 'completed':
+                return Response(
+                    {
+                        'detail': (
+                            f"Previous phase '{prev_phase.get_phase_type_display()}' "
+                            f"must be completed first."
+                        ),
+                        'code': 'prev_phase_incomplete',
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+            if prev_phase.sign_off_required and not prev_phase.signed_off_at:
+                return Response(
+                    {
+                        'detail': (
+                            f"Previous phase '{prev_phase.get_phase_type_display()}' "
+                            f"must be signed off before this phase can start."
+                        ),
+                        'code': 'prev_phase_unsigned',
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
         phase.status = 'in_progress'
         phase.actual_start_date = date.today()
         phase.save()
-        
+
         return Response(WaterfallPhaseSerializer(phase).data)
-    
+
+    def _testing_blockers(self, phase):
+        """For the Testing phase, return the test cases that are not yet passed.
+
+        A Testing phase cannot complete while any test case is failed / blocked /
+        pending — failed tests must not slip silently past the gate. Returns an
+        empty list for non-testing phases or when there are no test cases.
+        """
+        if phase.phase_type != 'testing':
+            return []
+        unpassed = WaterfallTestCase.objects.filter(
+            project=phase.project
+        ).exclude(status='passed')
+        return list(unpassed.values_list('test_id', flat=True))
+
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None, project_id=None):
-        """Complete a phase"""
+        """Complete a phase.
+
+        Exit-criteria gate: a Testing phase cannot be completed while any test
+        case is not passed (failed/blocked/pending). This stops un-tested or
+        failing work from progressing down the sequential pipeline.
+        """
         phase = self.get_object()
+
+        blockers = self._testing_blockers(phase)
+        if blockers:
+            return Response(
+                {
+                    'detail': (
+                        "Testing phase cannot complete — "
+                        f"{len(blockers)} test case(s) are not passed."
+                    ),
+                    'code': 'tests_not_passed',
+                    'unpassed_tests': blockers,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
         phase.status = 'completed'
         phase.progress = 100
         phase.actual_end_date = date.today()
         phase.save()
-        
+
         return Response(WaterfallPhaseSerializer(phase).data)
-    
+
     @action(detail=True, methods=['post'])
     def sign_off(self, request, pk=None, project_id=None):
-        """Sign off on a phase"""
+        """Sign off on a phase.
+
+        Sign-off is the stage gate *after* completion — a phase must be completed
+        before it can be signed off. Previously sign-off could stamp any phase,
+        making it a cosmetic post-hoc note decoupled from progression.
+        """
         phase = self.get_object()
+        if phase.status != 'completed':
+            return Response(
+                {
+                    'detail': "A phase must be completed before it can be signed off.",
+                    'code': 'phase_not_completed',
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
         phase.signed_off_by = request.user
         phase.signed_off_at = timezone.now()
         phase.save()
-        
+
         return Response(WaterfallPhaseSerializer(phase).data)
 
 

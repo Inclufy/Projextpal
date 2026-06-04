@@ -35,7 +35,15 @@ const WaterfallPhaseGate = () => {
 
   const handleSave = async () => { if (!form.name) { toast.error(pt("Name is required")); return; } setSubmitting(true); try { const body: any = { name: form.name, phase_type: form.phase_type, description: form.description }; if (form.order) body.order = parseInt(form.order); if (form.start_date) body.start_date = form.start_date; if (form.end_date) body.end_date = form.end_date; const url = editing ? `/api/v1/projects/${id}/waterfall/phases/${editing.id}/` : `/api/v1/projects/${id}/waterfall/phases/`; const method = editing ? "PATCH" : "POST"; const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) }); if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); } else toast.error(pt("Save failed")); } catch { toast.error(pt("Save failed")); } finally { setSubmitting(false); } };
   const handleDelete = async (pId: number) => { if (!confirm(pt("Are you sure you want to delete this?"))) return; try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); } } catch { toast.error(pt("Delete failed")); } };
-  const handleAction = async (pId: number, action: string) => { try { const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/${action}/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success(pt("Saved")); fetchData(); } else { const err = await r.json().catch(() => ({})); toast.error(err.detail || pt("Action failed")); } } catch { toast.error(pt("Action failed")); } };
+  const handleAction = async (pId: number, action: string) => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/waterfall/phases/${pId}/${action}/`, { method: "POST", headers: jsonHeaders });
+      if (r.ok) { toast.success(pt("Saved")); fetchData(); return; }
+      const err = await r.json().catch(() => ({}));
+      const blockers = Array.isArray(err.unpassed_tests) ? err.unpassed_tests : [];
+      toast.error(err.detail || pt("Action failed"), blockers.length ? { description: `${pt("Not passed")}: ${blockers.join(", ")}` } : undefined);
+    } catch { toast.error(pt("Action failed")); }
+  };
 
   const statusColors: Record<string, string> = { not_started: "bg-gray-100 text-gray-700", in_progress: "bg-blue-100 text-blue-700", completed: "bg-green-100 text-green-700", signed_off: "bg-purple-100 text-purple-700" };
 
