@@ -626,19 +626,32 @@ const Prince2Dashboard = () => {
           ))}
         </div>
 
-        {/* Recent Reports */}
-        {dashboard?.recent_highlight_reports?.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle>{pt("Highlight Reports")}</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => nav("highlight-report")}>
-                  {pt("View All")}
+        {/* Recent Reports — always visible (Progress theme: report viability) */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-purple-600" /> {pt("Highlight Reports")}
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={() => nav("highlight-report")}>
+                {(dashboard?.recent_highlight_reports?.length || 0) > 0 ? pt("View All") : pt("Open reports")}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(dashboard?.recent_highlight_reports?.length || 0) === 0 ? (
+              <div className="rounded-lg border border-dashed bg-muted/20 py-8 text-center">
+                <FileText className="mx-auto h-7 w-7 text-muted-foreground/40" />
+                <p className="mt-2 text-sm font-medium">{pt("No Highlight Reports yet")}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {pt("Highlight Reports keep the Project Board informed of stage progress (Manage by Exception).")}
+                </p>
+                <Button size="sm" className="mt-3 gap-1.5" onClick={() => nav("highlight-report")}>
+                  <Plus className="h-3.5 w-3.5" /> {pt("Create Highlight Report")}
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {dashboard.recent_highlight_reports.map((report: any) => (
+            ) : (
+              dashboard.recent_highlight_reports.map((report: any) => (
                 <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{report.title || `Report #${report.id}`}</p>
@@ -648,10 +661,10 @@ const Prince2Dashboard = () => {
                     {report.overall_status}
                   </Badge>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
