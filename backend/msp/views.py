@@ -1,11 +1,19 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from programs.models import Program
 
-from .models import MSPBenefit, BenefitRealization, MSPTranche
-from .serializers import MSPBenefitSerializer, BenefitRealizationSerializer, MSPTrancheSerializer
+from .models import (
+    MSPBenefit, BenefitRealization, MSPTranche, MSPBlueprint, MSPTransition,
+)
+from .serializers import (
+    MSPBenefitSerializer, BenefitRealizationSerializer, MSPTrancheSerializer,
+    MSPBlueprintSerializer, MSPTransitionSerializer,
+)
 
 
 def _get_company(user):
@@ -51,6 +59,51 @@ class MSPBenefitViewSet(viewsets.ModelViewSet):
             serializer.save()
 
 
+class MSPBlueprintViewSet(viewsets.ModelViewSet):
+    """The programme Blueprint (POTI + Vision). One per programme."""
+    serializer_class = MSPBlueprintSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['program']
+
+    def get_queryset(self):
+        company = _get_company(self.request.user)
+        if not company:
+            return MSPBlueprint.objects.none()
+        qs = MSPBlueprint.objects.select_related('program').filter(program__company=company)
+        program_id = self.kwargs.get('program_id')
+        if program_id:
+            qs = qs.filter(program_id=program_id)
+        return qs
+
+    def perform_create(self, serializer):
+        program_id = self.kwargs.get('program_id') or self.request.data.get('program')
+        _verify_program_access(self.request.user, program_id)
+        serializer.save(program_id=program_id)
+
+
+class MSPTransitionViewSet(viewsets.ModelViewSet):
+    serializer_class = MSPTransitionSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['program', 'tranche', 'status', 'bcm']
+
+    def get_queryset(self):
+        company = _get_company(self.request.user)
+        if not company:
+            return MSPTransition.objects.none()
+        qs = MSPTransition.objects.select_related('program', 'tranche', 'bcm').filter(program__company=company)
+        program_id = self.kwargs.get('program_id')
+        if program_id:
+            qs = qs.filter(program_id=program_id)
+        return qs
+
+    def perform_create(self, serializer):
+        program_id = self.kwargs.get('program_id') or self.request.data.get('program')
+        _verify_program_access(self.request.user, program_id)
+        serializer.save(program_id=program_id)
+
+
 class BenefitRealizationViewSet(viewsets.ModelViewSet):
     serializer_class = BenefitRealizationSerializer
     permission_classes = [IsAuthenticated]
@@ -85,7 +138,7 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
         company = _get_company(self.request.user)
         if not company:
             return MSPTranche.objects.none()
-        queryset = MSPTranche.objects.select_related('program').filter(program__company=company)
+        queryset = MSPTranche.objects.select_related('program').prefetch_related('transitions').filter(program__company=company)
         program_id = self.kwargs.get('program_id')
         if program_id:
             queryset = queryset.filter(program_id=program_id)
@@ -98,3 +151,42 @@ class MSPTrancheViewSet(viewsets.ModelViewSet):
             serializer.save(program_id=program_id)
         else:
             serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='close')
+    def close(self, request, *args, **kwargs):
+        """End-of-tranche review gate.
+
+        A tranche cannot close until (a) at least one benefit measurement has
+        been recorded for the programme (you can't assess realized benefits with
+        no measurements), and (b) the boundary review has been marked done.
+        Returns 409 with a machine-readable `code` + blockers BEFORE any state
+        change, so the UI can explain exactly what's missing.
+        """
+        tranche = self.get_object()
+
+        if tranche.status == 'closed':
+            return Response(
+                {'detail': 'Tranche is already closed.', 'code': 'already_closed'},
+                status=409,
+            )
+
+        blockers = []
+        has_measurements = BenefitRealization.objects.filter(
+            benefit__program_id=tranche.program_id
+        ).exists()
+        if not has_measurements:
+            blockers.append('No benefit measurements recorded for this programme.')
+        if not tranche.boundary_review_done:
+            blockers.append('Boundary review has not been completed.')
+
+        if blockers:
+            code = 'no_measurements' if not has_measurements else 'boundary_review_required'
+            return Response(
+                {'detail': 'Tranche cannot be closed yet.', 'code': code, 'blockers': blockers},
+                status=409,
+            )
+
+        tranche.status = 'closed'
+        tranche.closed_at = timezone.now()
+        tranche.save(update_fields=['status', 'closed_at', 'updated_at'])
+        return Response(MSPTrancheSerializer(tranche).data, status=200)

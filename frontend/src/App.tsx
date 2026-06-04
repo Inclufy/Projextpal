@@ -102,6 +102,7 @@ const CreateProgram = lazy(() => import("./pages/CreateProgram"));
 const ProgramDashboard = lazy(() => import("./pages/ProgramDashboard"));
 const ProgramBenefits = lazy(() => import("./pages/ProgramBenefits"));
 const ProgramSafe = lazy(() => import("./pages/ProgramSafe"));
+const ProgramMSP = lazy(() => import("./pages/ProgramMSP"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
@@ -667,30 +668,30 @@ const App = () => (
                 </FeatureGuard>
               } />
               
-              {/* MSP-specific routes */}
+              {/* MSP-specific routes — Blueprint (POTI+Vision), benefits variance, tranche-close gate (#35) */}
               <Route path="/programs/:id/blueprint" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramDashboard /></ProtectedPage>
+                  <ProtectedPage><ProgramMSP /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/benefits/profiles" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                  <ProtectedPage><ProgramMSP /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/benefits/realization" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramBenefits /></ProtectedPage>
+                  <ProtectedPage><ProgramMSP /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/tranches" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                  <ProtectedPage><ProgramMSP /></ProtectedPage>
                 </FeatureGuard>
               } />
               <Route path="/programs/:id/transitions" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
-                  <ProtectedPage><ProgramRoadmap /></ProtectedPage>
+                  <ProtectedPage><ProgramMSP /></ProtectedPage>
                 </FeatureGuard>
               } />
               
