@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "wf-q8",
-      "text": "Welke uitkomsten zijn mogelijk bij een Gate Review?",
+      "text": "Which outcomes are possible at a Gate Review?",
       "textNL": "Welke uitkomsten zijn mogelijk bij een Gate Review?",
       "question": "Welke uitkomsten zijn mogelijk bij een Gate Review?",
-      "questionEN": "Welke uitkomsten zijn mogelijk bij een Gate Review?",
+      "questionEN": "Which outcomes are possible at a Gate Review?",
       "options": [
-        "Alleen Go of No-Go",
-        "Go, No-Go of Conditional Go",
-        "Goedkeuren, Uitstellen of Escaleren",
-        "Doorsturen naar CCB of doorsturen naar sponsor"
+        "Go or No-Go only",
+        "Go, No-Go or Conditional Go",
+        "Approve, Defer or Escalate",
+        "Forward to CCB or forward to sponsor"
       ],
       "optionsEN": [
-        "Alleen Go of No-Go",
-        "Go, No-Go of Conditional Go",
-        "Goedkeuren, Uitstellen of Escaleren",
-        "Doorsturen naar CCB of doorsturen naar sponsor"
+        "Go or No-Go only",
+        "Go, No-Go or Conditional Go",
+        "Approve, Defer or Escalate",
+        "Forward to CCB or forward to sponsor"
       ],
       "optionsNL": [
         "Alleen Go of No-Go",
@@ -31,26 +31,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Een Gate Review heeft drie mogelijke uitkomsten: Go (doorgaan naar volgende fase), Conditional Go (doorgaan met voorwaarden) en No-Go (terug naar huidige fase).",
+      "explanation": "A Gate Review has three possible outcomes: Go (proceed to the next phase), Conditional Go (proceed with conditions) and No-Go (return to the current phase).",
       "explanationNL": "Een Gate Review heeft drie mogelijke uitkomsten: Go (doorgaan naar volgende fase), Conditional Go (doorgaan met voorwaarden) en No-Go (terug naar huidige fase)."
     },
     {
       "id": "wf-q9",
-      "text": "Wat controleert de \"Entrance Criteria Check\" aan het begin van een Gate Review?",
+      "text": "What does the \"Entrance Criteria Check\" verify at the start of a Gate Review?",
       "textNL": "Wat controleert de \"Entrance Criteria Check\" aan het begin van een Gate Review?",
       "question": "Wat controleert de \"Entrance Criteria Check\" aan het begin van een Gate Review?",
-      "questionEN": "Wat controleert de \"Entrance Criteria Check\" aan het begin van een Gate Review?",
+      "questionEN": "What does the \"Entrance Criteria Check\" verify at the start of a Gate Review?",
       "options": [
-        "Of het budget nog toereikend is voor de volgende fase",
-        "Of alle prerequisites zijn voldaan en de documentatie compleet is",
-        "Of de sponsor aanwezig is bij de review",
-        "Of de planning nog klopt met de originele baseline"
+        "Whether the budget is still sufficient for the next phase",
+        "Whether all prerequisites have been met and the documentation is complete",
+        "Whether the sponsor is present at the review",
+        "Whether the schedule still aligns with the original baseline"
       ],
       "optionsEN": [
-        "Of het budget nog toereikend is voor de volgende fase",
-        "Of alle prerequisites zijn voldaan en de documentatie compleet is",
-        "Of de sponsor aanwezig is bij de review",
-        "Of de planning nog klopt met de originele baseline"
+        "Whether the budget is still sufficient for the next phase",
+        "Whether all prerequisites have been met and the documentation is complete",
+        "Whether the sponsor is present at the review",
+        "Whether the schedule still aligns with the original baseline"
       ],
       "optionsNL": [
         "Of het budget nog toereikend is voor de volgende fase",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De Entrance Criteria Check verifieert of alle prerequisites voldaan zijn en of de documentatie compleet is voordat de eigenlijke review begint.",
+      "explanation": "The Entrance Criteria Check verifies that all prerequisites have been met and that the documentation is complete before the actual review begins.",
       "explanationNL": "De Entrance Criteria Check verifieert of alle prerequisites voldaan zijn en of de documentatie compleet is voordat de eigenlijke review begint."
     },
     {
       "id": "wf-q10",
-      "text": "Wat is het verschil tussen een Quality Gate en een Gate Review?",
+      "text": "What is the difference between a Quality Gate and a Gate Review?",
       "textNL": "Wat is het verschil tussen een Quality Gate en een Gate Review?",
       "question": "Wat is het verschil tussen een Quality Gate en een Gate Review?",
-      "questionEN": "Wat is het verschil tussen een Quality Gate en een Gate Review?",
+      "questionEN": "What is the difference between a Quality Gate and a Gate Review?",
       "options": [
-        "Quality Gates zijn verplicht; Gate Reviews zijn optioneel",
-        "Quality Gates focussen op technische metrics (code coverage, security scans); Gate Reviews omvatten ook business alignment en stakeholder approval",
-        "Quality Gates worden door het management gedaan; Gate Reviews door het team",
-        "Er is geen verschil; de termen zijn uitwisselbaar"
+        "Quality Gates are mandatory; Gate Reviews are optional",
+        "Quality Gates focus on technical metrics (code coverage, security scans); Gate Reviews also cover business alignment and stakeholder approval",
+        "Quality Gates are conducted by management; Gate Reviews by the team",
+        "There is no difference; the terms are interchangeable"
       ],
       "optionsEN": [
-        "Quality Gates zijn verplicht; Gate Reviews zijn optioneel",
-        "Quality Gates focussen op technische metrics (code coverage, security scans); Gate Reviews omvatten ook business alignment en stakeholder approval",
-        "Quality Gates worden door het management gedaan; Gate Reviews door het team",
-        "Er is geen verschil; de termen zijn uitwisselbaar"
+        "Quality Gates are mandatory; Gate Reviews are optional",
+        "Quality Gates focus on technical metrics (code coverage, security scans); Gate Reviews also cover business alignment and stakeholder approval",
+        "Quality Gates are conducted by management; Gate Reviews by the team",
+        "There is no difference; the terms are interchangeable"
       ],
       "optionsNL": [
         "Quality Gates zijn verplicht; Gate Reviews zijn optioneel",
@@ -89,26 +89,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Quality Gates zijn technisch gefocust (code quality, testdekking, performance benchmarks). Gate Reviews zijn breder: business alignment, resource availability, risk acceptance en stakeholder approval.",
+      "explanation": "Quality Gates are technically focused (code quality, test coverage, performance benchmarks). Gate Reviews are broader: business alignment, resource availability, risk acceptance and stakeholder approval.",
       "explanationNL": "Quality Gates zijn technisch gefocust (code quality, testdekking, performance benchmarks). Gate Reviews zijn breder: business alignment, resource availability, risk acceptance en stakeholder approval."
     },
     {
       "id": "wf-q11",
-      "text": "Na de requirements sign-off wil een stakeholder een wijziging doorvoeren. Wat is de eerste stap in het Waterfall change control proces?",
+      "text": "After the requirements sign-off, a stakeholder wants to introduce a change. What is the first step in the Waterfall change control process?",
       "textNL": "Na de requirements sign-off wil een stakeholder een wijziging doorvoeren. Wat is de eerste stap in het Waterfall change control proces?",
       "question": "Na de requirements sign-off wil een stakeholder een wijziging doorvoeren. Wat is de eerste stap in het Waterfall change control proces?",
-      "questionEN": "Na de requirements sign-off wil een stakeholder een wijziging doorvoeren. Wat is de eerste stap in het Waterfall change control proces?",
+      "questionEN": "After the requirements sign-off, a stakeholder wants to introduce a change. What is the first step in the Waterfall change control process?",
       "options": [
-        "Direct de baseline documenten aanpassen",
-        "Een Change Request indienen met beschrijving van de gewenste wijziging en de reden",
-        "Het team informeren en de planning aanpassen",
-        "De wijziging implementeren en achteraf goedkeuring vragen"
+        "Update the baseline documents directly",
+        "Submit a Change Request describing the desired change and the reason",
+        "Inform the team and adjust the schedule",
+        "Implement the change and seek approval afterwards"
       ],
       "optionsEN": [
-        "Direct de baseline documenten aanpassen",
-        "Een Change Request indienen met beschrijving van de gewenste wijziging en de reden",
-        "Het team informeren en de planning aanpassen",
-        "De wijziging implementeren en achteraf goedkeuring vragen"
+        "Update the baseline documents directly",
+        "Submit a Change Request describing the desired change and the reason",
+        "Inform the team and adjust the schedule",
+        "Implement the change and seek approval afterwards"
       ],
       "optionsNL": [
         "Direct de baseline documenten aanpassen",
@@ -118,26 +118,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De eerste stap is het indienen van een Change Request met de gewenste wijziging, de reden en de aanvrager. Daarna volgt pas de impact assessment en CCB review.",
+      "explanation": "The first step is submitting a Change Request with the desired change, the reason and the requestor. Only then follow the impact assessment and CCB review.",
       "explanationNL": "De eerste stap is het indienen van een Change Request met de gewenste wijziging, de reden en de aanvrager. Daarna volgt pas de impact assessment en CCB review."
     },
     {
       "id": "wf-q12",
-      "text": "Welke vier impactgebieden analyseert de PM bij een Impact Assessment voor een change request?",
+      "text": "Which four impact areas does the PM analyse during an Impact Assessment for a change request?",
       "textNL": "Welke vier impactgebieden analyseert de PM bij een Impact Assessment voor een change request?",
       "question": "Welke vier impactgebieden analyseert de PM bij een Impact Assessment voor een change request?",
-      "questionEN": "Welke vier impactgebieden analyseert de PM bij een Impact Assessment voor een change request?",
+      "questionEN": "Which four impact areas does the PM analyse during an Impact Assessment for a change request?",
       "options": [
-        "Scope, planning, budget en risico's",
-        "Mensen, middelen, methoden en materialen",
-        "Functionaliteit, performance, security en usability",
-        "Requirements, design, code en tests"
+        "Scope, schedule, budget and risks",
+        "People, resources, methods and materials",
+        "Functionality, performance, security and usability",
+        "Requirements, design, code and tests"
       ],
       "optionsEN": [
-        "Scope, planning, budget en risico's",
-        "Mensen, middelen, methoden en materialen",
-        "Functionaliteit, performance, security en usability",
-        "Requirements, design, code en tests"
+        "Scope, schedule, budget and risks",
+        "People, resources, methods and materials",
+        "Functionality, performance, security and usability",
+        "Requirements, design, code and tests"
       ],
       "optionsNL": [
         "Scope, planning, budget en risico's",
@@ -147,26 +147,26 @@
       ],
       "correct": 0,
       "points": 1,
-      "explanation": "De PM analyseert de impact op scope, planning, budget, risico's, kwaliteit en andere requirements. De kern zijn scope, planning, budget en risico's.",
+      "explanation": "The PM analyses the impact on scope, schedule, budget, risks, quality and other requirements. The core four are scope, schedule, budget and risks.",
       "explanationNL": "De PM analyseert de impact op scope, planning, budget, risico's, kwaliteit en andere requirements. De kern zijn scope, planning, budget en risico's."
     },
     {
       "id": "wf-q13",
-      "text": "Wat beschrijft het Water-Scrum-Fall patroon?",
+      "text": "What does the Water-Scrum-Fall pattern describe?",
       "textNL": "Wat beschrijft het Water-Scrum-Fall patroon?",
       "question": "Wat beschrijft het Water-Scrum-Fall patroon?",
-      "questionEN": "Wat beschrijft het Water-Scrum-Fall patroon?",
+      "questionEN": "What does the Water-Scrum-Fall pattern describe?",
       "options": [
-        "Waterfall voor requirements en design, Agile sprints voor development, Waterfall voor testing en deployment",
-        "Agile voor requirements, Waterfall voor development, Agile voor deployment",
-        "Scrum ceremonies gecombineerd met Waterfall documentatie door de hele lifecycle",
-        "Waterfall voor kleine projecten, Scrum voor grote projecten"
+        "Waterfall for requirements and design, Agile sprints for development, Waterfall for testing and deployment",
+        "Agile for requirements, Waterfall for development, Agile for deployment",
+        "Scrum ceremonies combined with Waterfall documentation throughout the entire lifecycle",
+        "Waterfall for small projects, Scrum for large projects"
       ],
       "optionsEN": [
-        "Waterfall voor requirements en design, Agile sprints voor development, Waterfall voor testing en deployment",
-        "Agile voor requirements, Waterfall voor development, Agile voor deployment",
-        "Scrum ceremonies gecombineerd met Waterfall documentatie door de hele lifecycle",
-        "Waterfall voor kleine projecten, Scrum voor grote projecten"
+        "Waterfall for requirements and design, Agile sprints for development, Waterfall for testing and deployment",
+        "Agile for requirements, Waterfall for development, Agile for deployment",
+        "Scrum ceremonies combined with Waterfall documentation throughout the entire lifecycle",
+        "Waterfall for small projects, Scrum for large projects"
       ],
       "optionsNL": [
         "Waterfall voor requirements en design, Agile sprints voor development, Waterfall voor testing en deployment",
@@ -176,26 +176,26 @@
       ],
       "correct": 0,
       "points": 1,
-      "explanation": "Water-Scrum-Fall gebruikt Waterfall voor de initiële fasen (requirements en design), Agile sprints voor development, en keert terug naar Waterfall voor testing en deployment.",
+      "explanation": "Water-Scrum-Fall uses Waterfall for the initial phases (requirements and design), Agile sprints for development, and returns to Waterfall for testing and deployment.",
       "explanationNL": "Water-Scrum-Fall gebruikt Waterfall voor de initiële fasen (requirements en design), Agile sprints voor development, en keert terug naar Waterfall voor testing en deployment."
     },
     {
       "id": "wf-q14",
-      "text": "Bij welke situatie kies je bewust voor een meer Waterfall-georiënteerde aanpak boven Agile?",
+      "text": "In which situation would you deliberately choose a more Waterfall-oriented approach over Agile?",
       "textNL": "Bij welke situatie kies je bewust voor een meer Waterfall-georiënteerde aanpak boven Agile?",
       "question": "Bij welke situatie kies je bewust voor een meer Waterfall-georiënteerde aanpak boven Agile?",
-      "questionEN": "Bij welke situatie kies je bewust voor een meer Waterfall-georiënteerde aanpak boven Agile?",
+      "questionEN": "In which situation would you deliberately choose a more Waterfall-oriented approach over Agile?",
       "options": [
-        "Co-located teams met veranderende requirements",
-        "Innovatieve producten waarbij de klant nog niet weet wat hij wil",
-        "Vaste scope en budget contracten met externe leveranciers en strikte compliance",
-        "Projecten waarbij frequente releases gewenst zijn"
+        "Co-located teams with changing requirements",
+        "Innovative products where the customer does not yet know what they want",
+        "Fixed scope and budget contracts with external suppliers and strict compliance requirements",
+        "Projects where frequent releases are desired"
       ],
       "optionsEN": [
-        "Co-located teams met veranderende requirements",
-        "Innovatieve producten waarbij de klant nog niet weet wat hij wil",
-        "Vaste scope en budget contracten met externe leveranciers en strikte compliance",
-        "Projecten waarbij frequente releases gewenst zijn"
+        "Co-located teams with changing requirements",
+        "Innovative products where the customer does not yet know what they want",
+        "Fixed scope and budget contracts with external suppliers and strict compliance requirements",
+        "Projects where frequent releases are desired"
       ],
       "optionsNL": [
         "Co-located teams met veranderende requirements",
@@ -205,7 +205,7 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Waterfall is het meest geschikt bij vaste scope en budget (vaste prijs contracten), externe leveranciers (specs als overdracht) en strikte compliance eisen die gedetailleerde documentatie en audittrails vereisen.",
+      "explanation": "Waterfall is most suitable with fixed scope and budget (fixed-price contracts), external suppliers (specs as handover documents) and strict compliance requirements that demand detailed documentation and audit trails.",
       "explanationNL": "Waterfall is het meest geschikt bij vaste scope en budget (vaste prijs contracten), externe leveranciers (specs als overdracht) en strikte compliance eisen die gedetailleerde documentatie en audittrails vereisen."
     }
   ]

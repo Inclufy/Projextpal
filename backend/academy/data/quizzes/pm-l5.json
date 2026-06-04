@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "q1",
-      "text": "Wat maakt een project GEEN project?",
+      "text": "What makes something NOT a project?",
       "textNL": "Wat maakt een project GEEN project?",
       "question": "Wat maakt een project GEEN project?",
-      "questionEN": "Wat maakt een project GEEN project?",
+      "questionEN": "What makes something NOT a project?",
       "options": [
-        "Het is tijdelijk",
-        "Het levert een uniek resultaat",
-        "Het is een doorlopende, repetitieve activiteit",
-        "Het heeft een duidelijk begin en einde"
+        "It is temporary",
+        "It delivers a unique result",
+        "It is an ongoing, repetitive activity",
+        "It has a clear beginning and end"
       ],
       "optionsEN": [
-        "Het is tijdelijk",
-        "Het levert een uniek resultaat",
-        "Het is een doorlopende, repetitieve activiteit",
-        "Het heeft een duidelijk begin en einde"
+        "It is temporary",
+        "It delivers a unique result",
+        "It is an ongoing, repetitive activity",
+        "It has a clear beginning and end"
       ],
       "optionsNL": [
         "Het is tijdelijk",
@@ -31,26 +31,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Een doorlopende, repetitieve activiteit is een operatie, geen project. Projecten zijn per definitie tijdelijk en leveren unieke resultaten.",
+      "explanation": "An ongoing, repetitive activity is an operation, not a project. Projects are by definition temporary and deliver unique results.",
       "explanationNL": "Een doorlopende, repetitieve activiteit is een operatie, geen project. Projecten zijn per definitie tijdelijk en leveren unieke resultaten."
     },
     {
       "id": "q2",
-      "text": "Welke drie factoren vormen de \"Triple Constraint\"?",
+      "text": "Which three factors make up the \"Triple Constraint\"?",
       "textNL": "Welke drie factoren vormen de \"Triple Constraint\"?",
       "question": "Welke drie factoren vormen de \"Triple Constraint\"?",
-      "questionEN": "Welke drie factoren vormen de \"Triple Constraint\"?",
+      "questionEN": "Which three factors make up the \"Triple Constraint\"?",
       "options": [
-        "Mensen, Processen, Technologie",
-        "Scope, Tijd, Budget",
-        "Kwaliteit, Risico, Communicatie",
-        "Planning, Uitvoering, Controle"
+        "People, Processes, Technology",
+        "Scope, Time, Budget",
+        "Quality, Risk, Communication",
+        "Planning, Execution, Control"
       ],
       "optionsEN": [
-        "Mensen, Processen, Technologie",
-        "Scope, Tijd, Budget",
-        "Kwaliteit, Risico, Communicatie",
-        "Planning, Uitvoering, Controle"
+        "People, Processes, Technology",
+        "Scope, Time, Budget",
+        "Quality, Risk, Communication",
+        "Planning, Execution, Control"
       ],
       "optionsNL": [
         "Mensen, Processen, Technologie",
@@ -60,15 +60,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De Triple Constraint bestaat uit Scope, Tijd en Budget. Deze drie factoren zijn onderling verbonden en beïnvloeden elkaar.",
+      "explanation": "The Triple Constraint consists of Scope, Time, and Budget. These three factors are interconnected and affect one another.",
       "explanationNL": "De Triple Constraint bestaat uit Scope, Tijd en Budget. Deze drie factoren zijn onderling verbonden en beïnvloeden elkaar."
     },
     {
       "id": "q3",
-      "text": "Welke methodologie is het meest geschikt voor een project met onzekere, veranderende requirements?",
+      "text": "Which methodology is most suitable for a project with uncertain, changing requirements?",
       "textNL": "Welke methodologie is het meest geschikt voor een project met onzekere, veranderende requirements?",
       "question": "Welke methodologie is het meest geschikt voor een project met onzekere, veranderende requirements?",
-      "questionEN": "Welke methodologie is het meest geschikt voor een project met onzekere, veranderende requirements?",
+      "questionEN": "Which methodology is most suitable for a project with uncertain, changing requirements?",
       "options": [
         "Waterfall",
         "PRINCE2",
@@ -89,26 +89,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Agile is ontworpen voor situaties met onzekerheid en verandering. Het werkt in korte iteraties en omarmt verandering.",
+      "explanation": "Agile is designed for situations with uncertainty and change. It works in short iterations and embraces change.",
       "explanationNL": "Agile is ontworpen voor situaties met onzekerheid en verandering. Het werkt in korte iteraties en omarmt verandering."
     },
     {
       "id": "q4",
-      "text": "In welke fase wordt het projectcharter opgesteld?",
+      "text": "In which phase is the project charter created?",
       "textNL": "In welke fase wordt het projectcharter opgesteld?",
       "question": "In welke fase wordt het projectcharter opgesteld?",
-      "questionEN": "In welke fase wordt het projectcharter opgesteld?",
+      "questionEN": "In which phase is the project charter created?",
       "options": [
         "Planning",
-        "Initiatie",
-        "Uitvoering",
-        "Afsluiting"
+        "Initiation",
+        "Execution",
+        "Closure"
       ],
       "optionsEN": [
         "Planning",
-        "Initiatie",
-        "Uitvoering",
-        "Afsluiting"
+        "Initiation",
+        "Execution",
+        "Closure"
       ],
       "optionsNL": [
         "Planning",
@@ -118,26 +118,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Het projectcharter wordt opgesteld in de Initiatiefase. Het is een van de eerste formele documenten van een project.",
+      "explanation": "The project charter is created in the Initiation phase. It is one of the first formal documents of a project.",
       "explanationNL": "Het projectcharter wordt opgesteld in de Initiatiefase. Het is een van de eerste formele documenten van een project."
     },
     {
       "id": "q5",
-      "text": "Wat staat in het MIDDEN van de Triple Constraint-driehoek (IJzeren Driehoek)?",
+      "text": "What sits at the CENTRE of the Triple Constraint triangle (Iron Triangle)?",
       "textNL": "Wat staat in het MIDDEN van de Triple Constraint-driehoek (IJzeren Driehoek)?",
       "question": "Wat staat in het MIDDEN van de Triple Constraint-driehoek (IJzeren Driehoek)?",
-      "questionEN": "Wat staat in het MIDDEN van de Triple Constraint-driehoek (IJzeren Driehoek)?",
+      "questionEN": "What sits at the CENTRE of the Triple Constraint triangle (Iron Triangle)?",
       "options": [
         "Scope",
-        "Risico",
-        "Kwaliteit",
-        "Communicatie"
+        "Risk",
+        "Quality",
+        "Communication"
       ],
       "optionsEN": [
         "Scope",
-        "Risico",
-        "Kwaliteit",
-        "Communicatie"
+        "Risk",
+        "Quality",
+        "Communication"
       ],
       "optionsNL": [
         "Scope",
@@ -147,26 +147,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "In het midden van de Triple Constraint-driehoek staat Kwaliteit. De drie zijden zijn Scope, Tijd en Budget. Als je aan één zijde trekt, beïnvloedt dat de andere zijden én de kwaliteit in het midden.",
+      "explanation": "Quality sits at the centre of the Triple Constraint triangle. The three sides are Scope, Time, and Budget. Pulling on one side affects the other sides and the quality at the centre.",
       "explanationNL": "In het midden van de Triple Constraint-driehoek staat Kwaliteit. De drie zijden zijn Scope, Tijd en Budget. Als je aan één zijde trekt, beïnvloedt dat de andere zijden én de kwaliteit in het midden."
     },
     {
       "id": "q6",
-      "text": "Welke fase wordt vaak verwaarloosd maar is cruciaal voor organisatorisch leren?",
+      "text": "Which phase is often neglected but is crucial for organizational learning?",
       "textNL": "Welke fase wordt vaak verwaarloosd maar is cruciaal voor organisatorisch leren?",
       "question": "Welke fase wordt vaak verwaarloosd maar is cruciaal voor organisatorisch leren?",
-      "questionEN": "Welke fase wordt vaak verwaarloosd maar is cruciaal voor organisatorisch leren?",
+      "questionEN": "Which phase is often neglected but is crucial for organizational learning?",
       "options": [
-        "Initiatie",
+        "Initiation",
         "Planning",
-        "Uitvoering",
-        "Afsluiting"
+        "Execution",
+        "Closure"
       ],
       "optionsEN": [
-        "Initiatie",
+        "Initiation",
         "Planning",
-        "Uitvoering",
-        "Afsluiting"
+        "Execution",
+        "Closure"
       ],
       "optionsNL": [
         "Initiatie",
@@ -176,26 +176,26 @@
       ],
       "correct": 3,
       "points": 1,
-      "explanation": "De Afsluitingsfase wordt vaak overgeslagen, maar is cruciaal voor het documenteren van lessons learned en het vrijgeven van resources.",
+      "explanation": "The Closure phase is often skipped, but is crucial for documenting lessons learned and releasing resources.",
       "explanationNL": "De Afsluitingsfase wordt vaak overgeslagen, maar is cruciaal voor het documenteren van lessons learned en het vrijgeven van resources."
     },
     {
       "id": "q7",
-      "text": "Welk kenmerk onderscheidt de Waterfall-methodologie het meest van Agile?",
+      "text": "Which characteristic most distinguishes the Waterfall methodology from Agile?",
       "textNL": "Welk kenmerk onderscheidt de Waterfall-methodologie het meest van Agile?",
       "question": "Welk kenmerk onderscheidt de Waterfall-methodologie het meest van Agile?",
-      "questionEN": "Welk kenmerk onderscheidt de Waterfall-methodologie het meest van Agile?",
+      "questionEN": "Which characteristic most distinguishes the Waterfall methodology from Agile?",
       "options": [
-        "Waterfall werkt uitsluitend voor softwareprojecten",
-        "Waterfall heeft geen planningsfase",
-        "Waterfall werkt in korte iteraties met continue feedback",
-        "Bij Waterfall moet elke fase volledig afgesloten zijn voordat de volgende begint"
+        "Waterfall is exclusively for software projects",
+        "Waterfall has no planning phase",
+        "Waterfall works in short iterations with continuous feedback",
+        "In Waterfall, each phase must be fully completed before the next one begins"
       ],
       "optionsEN": [
-        "Waterfall werkt uitsluitend voor softwareprojecten",
-        "Waterfall heeft geen planningsfase",
-        "Waterfall werkt in korte iteraties met continue feedback",
-        "Bij Waterfall moet elke fase volledig afgesloten zijn voordat de volgende begint"
+        "Waterfall is exclusively for software projects",
+        "Waterfall has no planning phase",
+        "Waterfall works in short iterations with continuous feedback",
+        "In Waterfall, each phase must be fully completed before the next one begins"
       ],
       "optionsNL": [
         "Waterfall werkt uitsluitend voor softwareprojecten",
@@ -205,26 +205,26 @@
       ],
       "correct": 3,
       "points": 1,
-      "explanation": "Waterfall is een sequentiële aanpak waarbij elke fase (zoals analyse, ontwerp, bouw, test) volledig afgerond moet zijn voordat de volgende fase start. Dit verschilt fundamenteel van Agile, dat iteratief werkt met korte cycli en continue feedback.",
+      "explanation": "Waterfall is a sequential approach in which each phase (such as analysis, design, build, test) must be fully completed before the next phase starts. This differs fundamentally from Agile, which works iteratively with short cycles and continuous feedback.",
       "explanationNL": "Waterfall is een sequentiële aanpak waarbij elke fase (zoals analyse, ontwerp, bouw, test) volledig afgerond moet zijn voordat de volgende fase start. Dit verschilt fundamenteel van Agile, dat iteratief werkt met korte cycli en continue feedback."
     },
     {
       "id": "q8",
-      "text": "Wat is \"scope creep\"?",
+      "text": "What is \"scope creep\"?",
       "textNL": "Wat is \"scope creep\"?",
       "question": "Wat is \"scope creep\"?",
-      "questionEN": "Wat is \"scope creep\"?",
+      "questionEN": "What is \"scope creep\"?",
       "options": [
-        "Het planmatig uitbreiden van de projectscope",
-        "Ongecontroleerde, niet-goedgekeurde uitbreiding van de scope",
-        "Het inkrimpen van de scope om budget te besparen",
-        "Een methode om scope te definiëren"
+        "The planned expansion of the project scope",
+        "Uncontrolled, unapproved expansion of the scope",
+        "Shrinking the scope to save budget",
+        "A method for defining scope"
       ],
       "optionsEN": [
-        "Het planmatig uitbreiden van de projectscope",
-        "Ongecontroleerde, niet-goedgekeurde uitbreiding van de scope",
-        "Het inkrimpen van de scope om budget te besparen",
-        "Een methode om scope te definiëren"
+        "The planned expansion of the project scope",
+        "Uncontrolled, unapproved expansion of the scope",
+        "Shrinking the scope to save budget",
+        "A method for defining scope"
       ],
       "optionsNL": [
         "Het planmatig uitbreiden van de projectscope",
@@ -234,26 +234,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Scope creep is de ongecontroleerde uitbreiding van de projectscope zonder aanpassing van tijd of budget. Het is een veelvoorkomend projectrisico.",
+      "explanation": "Scope creep is the uncontrolled expansion of the project scope without adjusting time or budget. It is a common project risk.",
       "explanationNL": "Scope creep is de ongecontroleerde uitbreiding van de projectscope zonder aanpassing van tijd of budget. Het is een veelvoorkomend projectrisico."
     },
     {
       "id": "q9",
-      "text": "Welke vaardigheid blijkt uit onderzoek vaak doorslaggevend voor PM-succes?",
+      "text": "Which skill does research often identify as decisive for PM success?",
       "textNL": "Welke vaardigheid blijkt uit onderzoek vaak doorslaggevend voor PM-succes?",
       "question": "Welke vaardigheid blijkt uit onderzoek vaak doorslaggevend voor PM-succes?",
-      "questionEN": "Welke vaardigheid blijkt uit onderzoek vaak doorslaggevend voor PM-succes?",
+      "questionEN": "Which skill does research often identify as decisive for PM success?",
       "options": [
-        "Technische expertise",
-        "Budgetteringsvaardigheid",
-        "Soft skills (communicatie, leiderschap)",
-        "Tool-kennis"
+        "Technical expertise",
+        "Budgeting skill",
+        "Soft skills (communication, leadership)",
+        "Tool knowledge"
       ],
       "optionsEN": [
-        "Technische expertise",
-        "Budgetteringsvaardigheid",
-        "Soft skills (communicatie, leiderschap)",
-        "Tool-kennis"
+        "Technical expertise",
+        "Budgeting skill",
+        "Soft skills (communication, leadership)",
+        "Tool knowledge"
       ],
       "optionsNL": [
         "Technische expertise",
@@ -263,26 +263,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Hoewel alle vaardigheden belangrijk zijn, blijken soft skills zoals communicatie en leiderschap vaak doorslaggevend voor projectsucces.",
+      "explanation": "Although all skills are important, soft skills such as communication and leadership are often found to be decisive for project success.",
       "explanationNL": "Hoewel alle vaardigheden belangrijk zijn, blijken soft skills zoals communicatie en leiderschap vaak doorslaggevend voor projectsucces."
     },
     {
       "id": "q10",
-      "text": "Wat is een \"gate review\"?",
+      "text": "What is a \"gate review\"?",
       "textNL": "Wat is een \"gate review\"?",
       "question": "Wat is een \"gate review\"?",
-      "questionEN": "Wat is een \"gate review\"?",
+      "questionEN": "What is a \"gate review\"?",
       "options": [
-        "Een review van de projectpoort",
-        "Een beslismoment tussen projectfasen",
-        "Een review van de projectbudget",
-        "Een dagelijkse teammeeting"
+        "A review of the project entrance",
+        "A decision point between project phases",
+        "A review of the project budget",
+        "A daily team meeting"
       ],
       "optionsEN": [
-        "Een review van de projectpoort",
-        "Een beslismoment tussen projectfasen",
-        "Een review van de projectbudget",
-        "Een dagelijkse teammeeting"
+        "A review of the project entrance",
+        "A decision point between project phases",
+        "A review of the project budget",
+        "A daily team meeting"
       ],
       "optionsNL": [
         "Een review van de projectpoort",
@@ -292,7 +292,7 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Een gate review is een formeel beslismoment tussen projectfasen waar wordt bepaald of het project door mag naar de volgende fase.",
+      "explanation": "A gate review is a formal decision point between project phases where it is determined whether the project may proceed to the next phase.",
       "explanationNL": "Een gate review is een formeel beslismoment tussen projectfasen waar wordt bepaald of het project door mag naar de volgende fase."
     }
   ]

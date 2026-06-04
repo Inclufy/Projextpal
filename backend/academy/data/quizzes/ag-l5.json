@@ -7,10 +7,10 @@
   "questions": [
     {
       "id": "ag-q1",
-      "text": "Hoeveel waarden heeft het Agile Manifesto?",
+      "text": "How many values does the Agile Manifesto have?",
       "textNL": "Hoeveel waarden heeft het Agile Manifesto?",
       "question": "Hoeveel waarden heeft het Agile Manifesto?",
-      "questionEN": "Hoeveel waarden heeft het Agile Manifesto?",
+      "questionEN": "How many values does the Agile Manifesto have?",
       "options": [
         "3",
         "4",
@@ -31,26 +31,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Het Agile Manifesto heeft 4 waarden en 12 principes.",
+      "explanation": "The Agile Manifesto has 4 values and 12 principles.",
       "explanationNL": "Het Agile Manifesto heeft 4 waarden en 12 principes."
     },
     {
       "id": "ag-q2",
-      "text": "Wat is de belangrijkste maatstaf voor voortgang volgens Agile?",
+      "text": "What is the primary measure of progress according to Agile?",
       "textNL": "Wat is de belangrijkste maatstaf voor voortgang volgens Agile?",
       "question": "Wat is de belangrijkste maatstaf voor voortgang volgens Agile?",
-      "questionEN": "Wat is de belangrijkste maatstaf voor voortgang volgens Agile?",
+      "questionEN": "What is the primary measure of progress according to Agile?",
       "options": [
-        "Aantal afgeronde taken",
-        "Uren besteed",
-        "Werkende software",
-        "Documentatie"
+        "Number of completed tasks",
+        "Hours spent",
+        "Working software",
+        "Documentation"
       ],
       "optionsEN": [
-        "Aantal afgeronde taken",
-        "Uren besteed",
-        "Werkende software",
-        "Documentatie"
+        "Number of completed tasks",
+        "Hours spent",
+        "Working software",
+        "Documentation"
       ],
       "optionsNL": [
         "Aantal afgeronde taken",
@@ -60,15 +60,15 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Werkende software is de belangrijkste maatstaf voor voortgang (principe 7).",
+      "explanation": "Working software is the primary measure of progress (Agile Principle 7).",
       "explanationNL": "Werkende software is de belangrijkste maatstaf voor voortgang (principe 7)."
     },
     {
       "id": "ag-q3",
-      "text": "Wat is de betekenis van YAGNI?",
+      "text": "What does YAGNI stand for?",
       "textNL": "Wat is de betekenis van YAGNI?",
       "question": "Wat is de betekenis van YAGNI?",
-      "questionEN": "Wat is de betekenis van YAGNI?",
+      "questionEN": "What does YAGNI stand for?",
       "options": [
         "You Always Get New Ideas",
         "You Ain't Gonna Need It",
@@ -89,15 +89,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "YAGNI = You Ain't Gonna Need It - bouw alleen wat nu nodig is.",
+      "explanation": "YAGNI = You Ain't Gonna Need It — build only what is needed now, avoiding premature or speculative features.",
       "explanationNL": "YAGNI = You Ain't Gonna Need It - bouw alleen wat nu nodig is."
     },
     {
       "id": "ag-q4",
-      "text": "Welk framework is het meest geschikt voor teams met sterk variabel werk?",
+      "text": "Which framework is best suited for teams with highly variable work?",
       "textNL": "Welk framework is het meest geschikt voor teams met sterk variabel werk?",
       "question": "Welk framework is het meest geschikt voor teams met sterk variabel werk?",
-      "questionEN": "Welk framework is het meest geschikt voor teams met sterk variabel werk?",
+      "questionEN": "Which framework is best suited for teams with highly variable work?",
       "options": [
         "Scrum",
         "Waterfall",
@@ -118,26 +118,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Kanban is ideaal voor teams met variabel werk door continue flow en WIP limieten.",
+      "explanation": "Kanban is ideal for teams with variable work due to its continuous flow and Work In Progress (WIP) limits.",
       "explanationNL": "Kanban is ideaal voor teams met variabel werk door continue flow en WIP limieten."
     },
     {
       "id": "ag-q5",
-      "text": "Wat is ShuHaRi?",
+      "text": "What is ShuHaRi?",
       "textNL": "Wat is ShuHaRi?",
       "question": "Wat is ShuHaRi?",
-      "questionEN": "Wat is ShuHaRi?",
+      "questionEN": "What is ShuHaRi?",
       "options": [
-        "Een Japans Agile framework",
-        "Een certificering",
-        "Een concept voor leren: volgen, breken, eigen regels maken",
-        "Een scaling framework"
+        "A Japanese Agile framework",
+        "A certification",
+        "A learning concept: follow the rules, break the rules, make your own rules",
+        "A scaling framework"
       ],
       "optionsEN": [
-        "Een Japans Agile framework",
-        "Een certificering",
-        "Een concept voor leren: volgen, breken, eigen regels maken",
-        "Een scaling framework"
+        "A Japanese Agile framework",
+        "A certification",
+        "A learning concept: follow the rules, break the rules, make your own rules",
+        "A scaling framework"
       ],
       "optionsNL": [
         "Een Japans Agile framework",
@@ -147,7 +147,7 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "ShuHaRi is een Japans concept: Shu (volg regels), Ha (breek regels bewust), Ri (maak eigen regels).",
+      "explanation": "ShuHaRi is a Japanese concept for learning mastery: Shu (follow the rules exactly), Ha (consciously break the rules), Ri (transcend and create your own rules).",
       "explanationNL": "ShuHaRi is een Japans concept: Shu (volg regels), Ha (breek regels bewust), Ri (maak eigen regels)."
     }
   ]

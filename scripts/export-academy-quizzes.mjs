@@ -69,15 +69,45 @@ async function loadCourses() {
   return mod;
 }
 
-/** Remap one TS quiz question into the fixture superset shape. */
+/** Remap one TS quiz question into the fixture superset shape.
+ *
+ * Two source conventions coexist in the course files:
+ *   EN-first (leadership + newer content): `question/options/explanation` are
+ *     English, `questionNL/optionsNL/explanationNL` hold the Dutch companion.
+ *   NL-first (older content): `question/options/explanation` are Dutch,
+ *     `questionEN/optionsEN/explanationEN` hold the English companion.
+ * Detect which companion is present and map both languages correctly so the
+ * fixture always carries real EN *and* NL text (no Dutch leaking into the EN
+ * field or vice-versa).
+ */
 function remapQuestion(q, idx) {
-  const hasNL = q.questionNL != null || q.optionsNL != null;
-  const enQuestion = q.question ?? '';
-  const nlQuestion = hasNL ? (q.questionNL ?? q.question ?? '') : enQuestion;
-  const enOptions = Array.isArray(q.options) ? q.options : [];
-  const nlOptions = hasNL && Array.isArray(q.optionsNL) ? q.optionsNL : enOptions;
-  const enExpl = q.explanation ?? '';
-  const nlExpl = hasNL ? (q.explanationNL ?? q.explanation ?? '') : enExpl;
+  const hasNL = q.questionNL != null || q.optionsNL != null; // EN-first + NL companion
+  const hasEN = q.questionEN != null || q.optionsEN != null; // NL-first + EN companion
+  const baseOptions = Array.isArray(q.options) ? q.options : [];
+
+  let enQuestion, nlQuestion, enOptions, nlOptions, enExpl, nlExpl;
+  if (hasEN && !hasNL) {
+    // primary = NL, companion = EN
+    nlQuestion = q.question ?? '';
+    enQuestion = q.questionEN ?? q.question ?? '';
+    nlOptions = baseOptions;
+    enOptions = Array.isArray(q.optionsEN) ? q.optionsEN : baseOptions;
+    nlExpl = q.explanation ?? '';
+    enExpl = q.explanationEN ?? q.explanation ?? '';
+  } else if (hasNL) {
+    // primary = EN, companion = NL
+    enQuestion = q.question ?? '';
+    nlQuestion = q.questionNL ?? q.question ?? '';
+    enOptions = baseOptions;
+    nlOptions = Array.isArray(q.optionsNL) ? q.optionsNL : baseOptions;
+    enExpl = q.explanation ?? '';
+    nlExpl = q.explanationNL ?? q.explanation ?? '';
+  } else {
+    // monolingual fallback — treat the single language as both
+    enQuestion = nlQuestion = q.question ?? '';
+    enOptions = nlOptions = baseOptions;
+    enExpl = nlExpl = q.explanation ?? '';
+  }
 
   const out = {
     id: q.id || `q${idx + 1}`,

@@ -714,19 +714,34 @@ Flow metrics:
         {
           id: 'kb-q1',
           question: 'Wat betekent Kanban letterlijk?',
+          questionEN: 'What does Kanban literally mean?',
           options: [
             'Agile methode',
             'Visueel signaal',
             'Workflow management',
             'Continue verbetering'
           ],
+          optionsEN: [
+            'Agile method',
+            'Visual signal',
+            'Workflow management',
+            'Continuous improvement'
+          ],
           correctAnswer: 1,
           explanation: 'Kanban (看板) is Japans voor "visueel signaal" of "kaart".',
+          explanationEN: 'Kanban (看板) is Japanese for "visual signal" or "card".',
         },
         {
           id: 'kb-q2',
           question: 'Wat is Little\'s Law?',
+          questionEN: 'What is Little\'s Law?',
           options: [
+            'WIP = Lead Time × Throughput',
+            'Lead Time = WIP / Throughput',
+            'Throughput = Lead Time × WIP',
+            'WIP = Throughput / Lead Time'
+          ],
+          optionsEN: [
             'WIP = Lead Time × Throughput',
             'Lead Time = WIP / Throughput',
             'Throughput = Lead Time × WIP',
@@ -734,37 +749,57 @@ Flow metrics:
           ],
           correctAnswer: 1,
           explanation: 'Little\'s Law stelt dat Lead Time = WIP / Throughput.',
+          explanationEN: 'Little\'s Law states that Lead Time = WIP / Throughput. Reducing Work In Progress (WIP) directly reduces lead time when throughput is held constant.',
         },
         {
           id: 'kb-q3',
           question: 'Waarom zijn WIP limieten pijnlijk?',
+          questionEN: 'Why are WIP limits painful?',
           options: [
             'Omdat ze te hoog zijn',
             'Omdat ze problemen onthullen die je moet oplossen',
             'Omdat niemand ze begrijpt',
             'Omdat ze de throughput verlagen'
           ],
+          optionsEN: [
+            'Because they are set too high',
+            'Because they expose problems that need to be solved',
+            'Because nobody understands them',
+            'Because they reduce throughput'
+          ],
           correctAnswer: 1,
           explanation: 'WIP limieten zijn bedoeld om pijnlijk te zijn - ze onthullen bottlenecks en problemen.',
+          explanationEN: 'Work In Progress (WIP) limits are intentionally painful — the discomfort reveals bottlenecks, dependencies, and imbalances in capacity that must be addressed to improve flow.',
         },
         {
           id: 'kb-q4',
           question: 'Wat visualiseert een Cumulative Flow Diagram (CFD)?',
+          questionEN: 'What does a Cumulative Flow Diagram (CFD) visualize?',
           options: [
             'Alleen throughput',
             'WIP, lead time, throughput en bottlenecks',
             'Alleen blokkades',
             'Team velocity'
           ],
+          optionsEN: [
+            'Throughput only',
+            'WIP, lead time, throughput, and bottlenecks',
+            'Blockers only',
+            'Team velocity'
+          ],
           correctAnswer: 1,
           explanation: 'De CFD toont WIP, lead time, throughput en bottlenecks in één visualisatie.',
+          explanationEN: 'The cumulative flow diagram shows WIP, lead time, throughput, and bottlenecks all in one visualization.',
         },
         {
           id: 'kb-q5',
           question: 'Wat is typisch de flow efficiency in kenniswerk?',
+          questionEN: 'What is the typical flow efficiency in knowledge work?',
           options: ['50-60%', '30-40%', '5-15%', '80-90%'],
+          optionsEN: ['50-60%', '30-40%', '5-15%', '80-90%'],
           correctAnswer: 2,
           explanation: 'Flow efficiency in kenniswerk is typisch 5-15%, wat betekent dat 85-95% wachttijd is.',
+          explanationEN: 'Flow efficiency in knowledge work is typically 5-15%, meaning 85-95% of lead time is waiting time rather than active work.',
         },
       ],
     },

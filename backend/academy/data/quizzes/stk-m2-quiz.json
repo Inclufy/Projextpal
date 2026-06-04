@@ -7,10 +7,10 @@
   "questions": [
     {
       "id": "stk-q2-1",
-      "text": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "text": "Which standard defines the five engagement levels (monitor, inform, consult, collaborate, empower) for stakeholder engagement?",
       "textNL": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
       "question": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
-      "questionEN": "Welke norm definieert de vijf betrokkenheidsniveaus (monitor, informeer, consulteer, samenwerk, empoweer) voor stakeholderbetrokkenheid?",
+      "questionEN": "Which standard defines the five engagement levels (monitor, inform, consult, collaborate, empower) for stakeholder engagement?",
       "options": [
         "PMBOK 7th Edition — Stakeholder Performance Domain",
         "AA1000SES Stakeholder Engagement Standard (AccountAbility, 2015)",
@@ -31,26 +31,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De AA1000SES (AccountAbility Stakeholder Engagement Standard, 2015) is de internationale norm die vijf betrokkenheidsniveaus definieert: monitor, informeer, consulteer, samenwerk en empoweer. Ze vormen een oplopende schaal van éénrichtingscommunicatie naar gedeelde besluitvorming.",
+      "explanation": "The AA1000SES (AccountAbility Stakeholder Engagement Standard, 2015) is the international standard that defines five engagement levels: monitor, inform, consult, collaborate, and empower. They form an ascending scale from one-way communication to shared decision-making.",
       "explanationNL": "De AA1000SES (AccountAbility Stakeholder Engagement Standard, 2015) is de internationale norm die vijf betrokkenheidsniveaus definieert: monitor, informeer, consulteer, samenwerk en empoweer. Ze vormen een oplopende schaal van éénrichtingscommunicatie naar gedeelde besluitvorming."
     },
     {
       "id": "stk-q2-2",
-      "text": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "text": "A project manager asks employees for feedback on a new working method via a survey, but retains the decision-making authority. Which AA1000SES engagement level is this?",
       "textNL": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
       "question": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
-      "questionEN": "Een projectmanager vraagt medewerkers om feedback op een nieuwe werkmethode via een enquête, maar behoudt zelf de beslissingsbevoegdheid. Welk AA1000SES-betrokkenheidsniveau is dit?",
+      "questionEN": "A project manager asks employees for feedback on a new working method via a survey, but retains the decision-making authority. Which AA1000SES engagement level is this?",
       "options": [
-        "Informeer",
-        "Consulteer",
-        "Samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult",
+        "Collaborate",
+        "Empower"
       ],
       "optionsEN": [
-        "Informeer",
-        "Consulteer",
-        "Samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult",
+        "Collaborate",
+        "Empower"
       ],
       "optionsNL": [
         "Informeer",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Consulteer (niveau 3) houdt in dat je input en feedback vraagt maar de beslissingsbevoegdheid bij de organisatie houdt. Enquêtes, interviews en focusgroepen zijn typische consultatietechnieken. Bij samenwerken (niveau 4) wordt de beslissing gezamenlijk genomen; bij empoweren (niveau 5) wordt ze gedelegeerd.",
+      "explanation": "Consult (level 3) means that you request input and feedback but retain decision-making authority within the organisation. Surveys, interviews, and focus groups are typical consultation techniques. At collaborate (level 4) the decision is made jointly; at empower (level 5) it is delegated to the stakeholder.",
       "explanationNL": "Consulteer (niveau 3) houdt in dat je input en feedback vraagt maar de beslissingsbevoegdheid bij de organisatie houdt. Enquêtes, interviews en focusgroepen zijn typische consultatietechnieken. Bij samenwerken (niveau 4) wordt de beslissing gezamenlijk genomen; bij empoweren (niveau 5) wordt ze gedelegeerd."
     },
     {
       "id": "stk-q2-3",
-      "text": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "text": "Which principle of the Harvard Negotiation Project states that you should focus on the underlying interests of a stakeholder, not their stated position?",
       "textNL": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
       "question": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
-      "questionEN": "Welk principe van het Harvard Negotiation Project stelt dat je je moet richten op de onderliggende interesses van een stakeholder, niet op hun uitgesproken standpunt?",
+      "questionEN": "Which principle of the Harvard Negotiation Project states that you should focus on the underlying interests of a stakeholder, not their stated position?",
       "options": [
-        "Splits mensen van het probleem",
-        "Gebruik objectieve criteria",
-        "Focus op belangen, niet posities",
-        "Creëer meerdere opties"
+        "Separate people from the problem",
+        "Use objective criteria",
+        "Focus on interests, not positions",
+        "Invent options for mutual gain"
       ],
       "optionsEN": [
-        "Splits mensen van het probleem",
-        "Gebruik objectieve criteria",
-        "Focus op belangen, niet posities",
-        "Creëer meerdere opties"
+        "Separate people from the problem",
+        "Use objective criteria",
+        "Focus on interests, not positions",
+        "Invent options for mutual gain"
       ],
       "optionsNL": [
         "Splits mensen van het probleem",
@@ -89,26 +89,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Het derde principe van Fisher & Ury: focus op belangen, niet posities. Een positie is wat een stakeholder zegt te willen; een belang is waarom ze dat willen. Belangen zijn vaak gemakkelijker te adresseren dan posities, en er zijn vaak meerdere manieren om hetzelfde belang te bevredigen.",
+      "explanation": "The third principle of Fisher & Ury: focus on interests, not positions. A position is what a stakeholder says they want; an interest is why they want it. Interests are often easier to address than positions, and there are usually multiple ways to satisfy the same underlying interest.",
       "explanationNL": "Het derde principe van Fisher & Ury: focus op belangen, niet posities. Een positie is wat een stakeholder zegt te willen; een belang is waarom ze dat willen. Belangen zijn vaak gemakkelijker te adresseren dan posities, en er zijn vaak meerdere manieren om hetzelfde belang te bevredigen."
     },
     {
       "id": "stk-q2-4",
-      "text": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "text": "Which of the following communication plan components defines responsibility for sending a specific communication stream?",
       "textNL": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
       "question": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
-      "questionEN": "Welke van de volgende communicatieplancomponenten bepaalt de verantwoordelijkheid voor het versturen van een specifieke communicatiestroom?",
+      "questionEN": "Which of the following communication plan components defines responsibility for sending a specific communication stream?",
       "options": [
-        "Kanaal",
-        "Frequentie",
-        "Eigenaar",
-        "Doel"
+        "Channel",
+        "Frequency",
+        "Owner",
+        "Purpose"
       ],
       "optionsEN": [
-        "Kanaal",
-        "Frequentie",
-        "Eigenaar",
-        "Doel"
+        "Channel",
+        "Frequency",
+        "Owner",
+        "Purpose"
       ],
       "optionsNL": [
         "Kanaal",
@@ -118,26 +118,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "De eigenaar-component van het communicatieplan definieert wie verantwoordelijk is voor het daadwerkelijk verzenden van de communicatie. Zonder expliciete eigenaar per stroom vallen communicatielijnen weg zodra de projectmanager overbelast raakt of het team wisselt.",
+      "explanation": "The owner component of the communication plan defines who is responsible for actually sending the communication. Without an explicit owner per stream, communication lines drop as soon as the project manager is overloaded or the team changes.",
       "explanationNL": "De eigenaar-component van het communicatieplan definieert wie verantwoordelijk is voor het daadwerkelijk verzenden van de communicatie. Zonder expliciete eigenaar per stroom vallen communicatielijnen weg zodra de projectmanager overbelast raakt of het team wisselt."
     },
     {
       "id": "stk-q2-5",
-      "text": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "text": "What is the WIIFM principle and how does it apply to tailored stakeholder communication?",
       "textNL": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
       "question": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
-      "questionEN": "Wat is het WIIFM-principe en hoe past het in gerichte stakeholdercommunicatie?",
+      "questionEN": "What is the WIIFM principle and how does it apply to tailored stakeholder communication?",
       "options": [
-        "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
-        "Een herinnering om altijd vanuit het perspectief van de ontvanger te communiceren: What's In It For Me?",
-        "Een techniek om een communicatieboodschap op drie niveaus te testen: waarschijnlijk, ideaal, feitelijk",
-        "Een raamwerk voor het meten van communicatie-effectiviteit op kwartaalbasis"
+        "An acronym for four communication plan elements: Who, Information, Impact, Feedback, Measure",
+        "A reminder to always communicate from the receiver's perspective: What's In It For Me?",
+        "A technique for testing a communication message at three levels: likely, ideal, factual",
+        "A framework for measuring communication effectiveness on a quarterly basis"
       ],
       "optionsEN": [
-        "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
-        "Een herinnering om altijd vanuit het perspectief van de ontvanger te communiceren: What's In It For Me?",
-        "Een techniek om een communicatieboodschap op drie niveaus te testen: waarschijnlijk, ideaal, feitelijk",
-        "Een raamwerk voor het meten van communicatie-effectiviteit op kwartaalbasis"
+        "An acronym for four communication plan elements: Who, Information, Impact, Feedback, Measure",
+        "A reminder to always communicate from the receiver's perspective: What's In It For Me?",
+        "A technique for testing a communication message at three levels: likely, ideal, factual",
+        "A framework for measuring communication effectiveness on a quarterly basis"
       ],
       "optionsNL": [
         "Een acroniem voor de vier elementen van een communicatieplan: Who, Information, Impact, Feedback, Measure",
@@ -147,7 +147,7 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "WIIFM staat voor \"What's In It For Me?\" — de onbewuste vraag die elke stakeholder stelt bij het ontvangen van een projectboodschap. Gerichte communicatie beantwoordt deze vraag expliciet per doelgroep: wat levert het hen op, welke angsten worden weggenomen, welke succescriteria worden bereikt?",
+      "explanation": "WIIFM stands for \"What's In It For Me?\" — the unconscious question every stakeholder asks when receiving a project message. Tailored communication answers this question explicitly per audience segment: what do they gain, which concerns are addressed, which success criteria are met?",
       "explanationNL": "WIIFM staat voor \"What's In It For Me?\" — de onbewuste vraag die elke stakeholder stelt bij het ontvangen van een projectboodschap. Gerichte communicatie beantwoordt deze vraag expliciet per doelgroep: wat levert het hen op, welke angsten worden weggenomen, welke succescriteria worden bereikt?"
     }
   ]

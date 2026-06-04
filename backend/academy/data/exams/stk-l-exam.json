@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "stk-exam-1",
-      "text": "Wat is de definitie van een stakeholder volgens de AA1000SES Stakeholder Engagement Standard (2015)?",
+      "text": "What is the definition of a stakeholder according to the AA1000SES Stakeholder Engagement Standard (2015)?",
       "textNL": "Wat is de definitie van een stakeholder volgens de AA1000SES Stakeholder Engagement Standard (2015)?",
       "question": "Wat is de definitie van een stakeholder volgens de AA1000SES Stakeholder Engagement Standard (2015)?",
-      "questionEN": "Wat is de definitie van een stakeholder volgens de AA1000SES Stakeholder Engagement Standard (2015)?",
+      "questionEN": "What is the definition of a stakeholder according to the AA1000SES Stakeholder Engagement Standard (2015)?",
       "options": [
-        "Personen die een financieel belang hebben in het project",
-        "Individuen, groepen of organisaties die worden beïnvloed door of zelf invloed uitoefenen op het project",
-        "Alle medewerkers van de projectorganisatie die bij het project zijn betrokken",
-        "Externe partijen die contractueel zijn gekoppeld aan het project"
+        "Persons who have a financial interest in the project",
+        "Individuals, groups or organisations that are affected by or that affect the project",
+        "All employees of the project organisation involved in the project",
+        "External parties contractually linked to the project"
       ],
       "optionsEN": [
-        "Personen die een financieel belang hebben in het project",
-        "Individuen, groepen of organisaties die worden beïnvloed door of zelf invloed uitoefenen op het project",
-        "Alle medewerkers van de projectorganisatie die bij het project zijn betrokken",
-        "Externe partijen die contractueel zijn gekoppeld aan het project"
+        "Persons who have a financial interest in the project",
+        "Individuals, groups or organisations that are affected by or that affect the project",
+        "All employees of the project organisation involved in the project",
+        "External parties contractually linked to the project"
       ],
       "optionsNL": [
         "Personen die een financieel belang hebben in het project",
@@ -31,26 +31,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "De AA1000SES-definitie is breed: stakeholders zijn alle individuen, groepen of organisaties die invloed uitoefenen op of beïnvloed worden door het project. Dit omvat zowel directe als indirecte partijen, zowel intern als extern, zowel met als zonder contractuele relatie.",
+      "explanation": "The AA1000SES definition is broad: stakeholders are all individuals, groups or organisations that affect or are affected by the project. This includes both direct and indirect parties, both internal and external, with or without a contractual relationship.",
       "explanationNL": "De AA1000SES-definitie is breed: stakeholders zijn alle individuen, groepen of organisaties die invloed uitoefenen op of beïnvloed worden door het project. Dit omvat zowel directe als indirecte partijen, zowel intern als extern, zowel met als zonder contractuele relatie."
     },
     {
       "id": "stk-exam-2",
-      "text": "In welk kwadrant van Mendelow's Macht-Interesse Grid plaatst je een toezichthouder die bevoegd is het project stil te leggen, maar nauwelijks actieve interesse toont?",
+      "text": "In which quadrant of Mendelow's Power-Interest Grid do you place a regulator who is authorised to halt the project but shows almost no active interest?",
       "textNL": "In welk kwadrant van Mendelow's Macht-Interesse Grid plaatst je een toezichthouder die bevoegd is het project stil te leggen, maar nauwelijks actieve interesse toont?",
       "question": "In welk kwadrant van Mendelow's Macht-Interesse Grid plaatst je een toezichthouder die bevoegd is het project stil te leggen, maar nauwelijks actieve interesse toont?",
-      "questionEN": "In welk kwadrant van Mendelow's Macht-Interesse Grid plaatst je een toezichthouder die bevoegd is het project stil te leggen, maar nauwelijks actieve interesse toont?",
+      "questionEN": "In which quadrant of Mendelow's Power-Interest Grid do you place a regulator who is authorised to halt the project but shows almost no active interest?",
       "options": [
-        "Manage closely — hoge macht, hoge interesse",
-        "Keep satisfied — hoge macht, lage interesse",
-        "Keep informed — lage macht, hoge interesse",
-        "Monitor — lage macht, lage interesse"
+        "Manage closely — high power, high interest",
+        "Keep satisfied — high power, low interest",
+        "Keep informed — low power, high interest",
+        "Monitor — low power, low interest"
       ],
       "optionsEN": [
-        "Manage closely — hoge macht, hoge interesse",
-        "Keep satisfied — hoge macht, lage interesse",
-        "Keep informed — lage macht, hoge interesse",
-        "Monitor — lage macht, lage interesse"
+        "Manage closely — high power, high interest",
+        "Keep satisfied — high power, low interest",
+        "Keep informed — low power, high interest",
+        "Monitor — low power, low interest"
       ],
       "optionsNL": [
         "Manage closely — hoge macht, hoge interesse",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Hoge macht (bevoegdheid om het project stil te leggen) gecombineerd met lage interesse (nauwelijks actieve betrokkenheid) plaatst de toezichthouder in \"Keep satisfied\". De strategie is proactief informeren om te voorkomen dat hun belangen onverwacht worden geraakt en ze actief ingrijpen.",
+      "explanation": "High power (authority to halt the project) combined with low interest (barely active involvement) places the regulator in \"Keep satisfied\". The strategy is to proactively inform them to prevent their interests from being unexpectedly affected, which could trigger active intervention.",
       "explanationNL": "Hoge macht (bevoegdheid om het project stil te leggen) gecombineerd met lage interesse (nauwelijks actieve betrokkenheid) plaatst de toezichthouder in \"Keep satisfied\". De strategie is proactief informeren om te voorkomen dat hun belangen onverwacht worden geraakt en ze actief ingrijpen."
     },
     {
       "id": "stk-exam-3",
-      "text": "Welke drie attributen meet het Salience Model van Mitchell, Agle en Wood (1997)?",
+      "text": "Which three attributes does the Salience Model of Mitchell, Agle and Wood (1997) measure?",
       "textNL": "Welke drie attributen meet het Salience Model van Mitchell, Agle en Wood (1997)?",
       "question": "Welke drie attributen meet het Salience Model van Mitchell, Agle en Wood (1997)?",
-      "questionEN": "Welke drie attributen meet het Salience Model van Mitchell, Agle en Wood (1997)?",
+      "questionEN": "Which three attributes does the Salience Model of Mitchell, Agle and Wood (1997) measure?",
       "options": [
-        "Macht, interesse en urgentie",
-        "Macht, legitimiteit en urgentie",
-        "Invloed, impact en belang",
-        "Betrokkenheid, prioriteit en budget"
+        "Power, interest and urgency",
+        "Power, legitimacy and urgency",
+        "Influence, impact and interest",
+        "Engagement, priority and budget"
       ],
       "optionsEN": [
-        "Macht, interesse en urgentie",
-        "Macht, legitimiteit en urgentie",
-        "Invloed, impact en belang",
-        "Betrokkenheid, prioriteit en budget"
+        "Power, interest and urgency",
+        "Power, legitimacy and urgency",
+        "Influence, impact and interest",
+        "Engagement, priority and budget"
       ],
       "optionsNL": [
         "Macht, interesse en urgentie",
@@ -89,26 +89,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Het Salience Model (Mitchell et al., 1997, Academy of Management Review) meet drie attributen: macht (vermogen om te beïnvloeden), legitimiteit (erkende rechtvaardigheid van de claim), en urgentie (tijdsgevoeligheid en kritikaliteit). Combinaties leiden tot zeven stakeholdertypen.",
+      "explanation": "The Salience Model (Mitchell et al., 1997, Academy of Management Review) measures three attributes: power (ability to influence), legitimacy (recognised validity of the claim), and urgency (time-sensitivity and criticality). Combinations yield seven stakeholder types.",
       "explanationNL": "Het Salience Model (Mitchell et al., 1997, Academy of Management Review) meet drie attributen: macht (vermogen om te beïnvloeden), legitimiteit (erkende rechtvaardigheid van de claim), en urgentie (tijdsgevoeligheid en kritikaliteit). Combinaties leiden tot zeven stakeholdertypen."
     },
     {
       "id": "stk-exam-4",
-      "text": "Een stakeholder heeft alle drie de Salience-attributen (macht, legitimiteit, urgentie). Welk type is dit en welke prioriteit krijgt hij?",
+      "text": "A stakeholder possesses all three Salience attributes (power, legitimacy, urgency). What type is this and what priority do they receive?",
       "textNL": "Een stakeholder heeft alle drie de Salience-attributen (macht, legitimiteit, urgentie). Welk type is dit en welke prioriteit krijgt hij?",
       "question": "Een stakeholder heeft alle drie de Salience-attributen (macht, legitimiteit, urgentie). Welk type is dit en welke prioriteit krijgt hij?",
-      "questionEN": "Een stakeholder heeft alle drie de Salience-attributen (macht, legitimiteit, urgentie). Welk type is dit en welke prioriteit krijgt hij?",
+      "questionEN": "A stakeholder possesses all three Salience attributes (power, legitimacy, urgency). What type is this and what priority do they receive?",
       "options": [
-        "Gevaarlijke stakeholder — hoge prioriteit vanwege onvoorspelbaarheid",
-        "Definitieve stakeholder — hoogste prioriteit",
-        "Dominante stakeholder — hoge prioriteit vanwege macht en legitimiteit",
-        "Eisende stakeholder — lage prioriteit ondanks urgentie"
+        "Dangerous stakeholder — high priority due to unpredictability",
+        "Definitive stakeholder — highest priority",
+        "Dominant stakeholder — high priority due to power and legitimacy",
+        "Demanding stakeholder — low priority despite urgency"
       ],
       "optionsEN": [
-        "Gevaarlijke stakeholder — hoge prioriteit vanwege onvoorspelbaarheid",
-        "Definitieve stakeholder — hoogste prioriteit",
-        "Dominante stakeholder — hoge prioriteit vanwege macht en legitimiteit",
-        "Eisende stakeholder — lage prioriteit ondanks urgentie"
+        "Dangerous stakeholder — high priority due to unpredictability",
+        "Definitive stakeholder — highest priority",
+        "Dominant stakeholder — high priority due to power and legitimacy",
+        "Demanding stakeholder — low priority despite urgency"
       ],
       "optionsNL": [
         "Gevaarlijke stakeholder — hoge prioriteit vanwege onvoorspelbaarheid",
@@ -118,15 +118,15 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Een stakeholder met alle drie de attributen heet een \"definitieve stakeholder\" in het Salience Model. Ze krijgen de hoogste managementprioriteit omdat ze zowel de macht, de erkende rechtvaardigheid als de urgentie hebben om actief te handelen als hun belangen worden genegeerd.",
+      "explanation": "A stakeholder with all three attributes is called a \"definitive stakeholder\" in the Salience Model. They receive the highest management priority because they have the power, the recognised validity, and the urgency to act if their interests are ignored.",
       "explanationNL": "Een stakeholder met alle drie de attributen heet een \"definitieve stakeholder\" in het Salience Model. Ze krijgen de hoogste managementprioriteit omdat ze zowel de macht, de erkende rechtvaardigheid als de urgentie hebben om actief te handelen als hun belangen worden genegeerd."
     },
     {
       "id": "stk-exam-5",
-      "text": "Welke RACI-rol heeft per taak altijd precies één persoon?",
+      "text": "Which RACI role always has exactly one person per task?",
       "textNL": "Welke RACI-rol heeft per taak altijd precies één persoon?",
       "question": "Welke RACI-rol heeft per taak altijd precies één persoon?",
-      "questionEN": "Welke RACI-rol heeft per taak altijd precies één persoon?",
+      "questionEN": "Which RACI role always has exactly one person per task?",
       "options": [
         "Responsible (R)",
         "Accountable (A)",
@@ -147,26 +147,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Accountable (A) heeft per taak precies één persoon — de eindverantwoordelijke. Meerdere A's per taak zijn een anti-patroon: er is dan geen echte eindverantwoordelijke en bij problemen schuift iedereen de verantwoordelijkheid door. Responsible (R) kan meerdere personen hebben.",
+      "explanation": "Accountable (A) has exactly one person per task — the single owner. Multiple A's per task is an anti-pattern: there is then no real single owner and when issues arise everyone passes accountability to someone else. Responsible (R) may have multiple people.",
       "explanationNL": "Accountable (A) heeft per taak precies één persoon — de eindverantwoordelijke. Meerdere A's per taak zijn een anti-patroon: er is dan geen echte eindverantwoordelijke en bij problemen schuift iedereen de verantwoordelijkheid door. Responsible (R) kan meerdere personen hebben."
     },
     {
       "id": "stk-exam-6",
-      "text": "Welk AA1000SES-betrokkenheidsniveau is van toepassing wanneer een werkgroep van projectteam EN stakeholders gezamenlijk een oplossing ontwerpt?",
+      "text": "Which AA1000SES engagement level applies when a working group of both the project team AND stakeholders jointly designs a solution?",
       "textNL": "Welk AA1000SES-betrokkenheidsniveau is van toepassing wanneer een werkgroep van projectteam EN stakeholders gezamenlijk een oplossing ontwerpt?",
       "question": "Welk AA1000SES-betrokkenheidsniveau is van toepassing wanneer een werkgroep van projectteam EN stakeholders gezamenlijk een oplossing ontwerpt?",
-      "questionEN": "Welk AA1000SES-betrokkenheidsniveau is van toepassing wanneer een werkgroep van projectteam EN stakeholders gezamenlijk een oplossing ontwerpt?",
+      "questionEN": "Which AA1000SES engagement level applies when a working group of both the project team AND stakeholders jointly designs a solution?",
       "options": [
-        "Informeer",
-        "Consulteer",
-        "Samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult",
+        "Collaborate",
+        "Empower"
       ],
       "optionsEN": [
-        "Informeer",
-        "Consulteer",
-        "Samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult",
+        "Collaborate",
+        "Empower"
       ],
       "optionsNL": [
         "Informeer",
@@ -176,26 +176,26 @@
       ],
       "correct": 2,
       "points": 5,
-      "explanation": "Samenwerken (niveau 4) houdt in dat projectteam en stakeholders gezamenlijk aan oplossingen werken — via werkgroepen, co-design of gezamenlijke analyse. Het onderscheid met consulteer (niveau 3): bij consulteer vraag je input maar beslist de organisatie; bij samenwerken wordt de beslissing mede door de stakeholder gevormd.",
+      "explanation": "Collaborate (level 4) means that the project team and stakeholders work together on solutions — through working groups, co-design or joint analysis. The distinction from consult (level 3): when consulting, you ask for input but the organisation decides; when collaborating, the decision is co-shaped by the stakeholder.",
       "explanationNL": "Samenwerken (niveau 4) houdt in dat projectteam en stakeholders gezamenlijk aan oplossingen werken — via werkgroepen, co-design of gezamenlijke analyse. Het onderscheid met consulteer (niveau 3): bij consulteer vraag je input maar beslist de organisatie; bij samenwerken wordt de beslissing mede door de stakeholder gevormd."
     },
     {
       "id": "stk-exam-7",
-      "text": "Welke zes elementen bevat een volledig communicatieplan?",
+      "text": "Which six elements does a complete communication plan contain?",
       "textNL": "Welke zes elementen bevat een volledig communicatieplan?",
       "question": "Welke zes elementen bevat een volledig communicatieplan?",
-      "questionEN": "Welke zes elementen bevat een volledig communicatieplan?",
+      "questionEN": "Which six elements does a complete communication plan contain?",
       "options": [
-        "Doelgroep, boodschap, doel, kanaal, frequentie, eigenaar",
-        "Stakeholder, bericht, medium, timing, verantwoordelijke, budget",
-        "Ontvanger, informatie, actie, feedback, archief, goedkeuring",
-        "Wie, wat, waarom, wanneer, waar, hoe"
+        "Audience, message, purpose, channel, frequency, owner",
+        "Stakeholder, message, medium, timing, responsible, budget",
+        "Recipient, information, action, feedback, archive, approval",
+        "Who, what, why, when, where, how"
       ],
       "optionsEN": [
-        "Doelgroep, boodschap, doel, kanaal, frequentie, eigenaar",
-        "Stakeholder, bericht, medium, timing, verantwoordelijke, budget",
-        "Ontvanger, informatie, actie, feedback, archief, goedkeuring",
-        "Wie, wat, waarom, wanneer, waar, hoe"
+        "Audience, message, purpose, channel, frequency, owner",
+        "Stakeholder, message, medium, timing, responsible, budget",
+        "Recipient, information, action, feedback, archive, approval",
+        "Who, what, why, when, where, how"
       ],
       "optionsNL": [
         "Doelgroep, boodschap, doel, kanaal, frequentie, eigenaar",
@@ -205,26 +205,26 @@
       ],
       "correct": 0,
       "points": 5,
-      "explanation": "Een volledig communicatieplan bevat: (1) Doelgroep, (2) Boodschap, (3) Doel (informeren/beslissen/draagvlak), (4) Kanaal, (5) Frequentie, en (6) Eigenaar. Elk element is noodzakelijk: zonder eigenaar vallen stromen weg; zonder frequentie ontbreekt ritme; zonder doel is communicatie zinloos.",
+      "explanation": "A complete communication plan contains: (1) Audience, (2) Message, (3) Purpose (inform/decide/build buy-in), (4) Channel, (5) Frequency, and (6) Owner. Each element is necessary: without an owner, streams are dropped; without frequency, rhythm is absent; without purpose, communication is pointless.",
       "explanationNL": "Een volledig communicatieplan bevat: (1) Doelgroep, (2) Boodschap, (3) Doel (informeren/beslissen/draagvlak), (4) Kanaal, (5) Frequentie, en (6) Eigenaar. Elk element is noodzakelijk: zonder eigenaar vallen stromen weg; zonder frequentie ontbreekt ritme; zonder doel is communicatie zinloos."
     },
     {
       "id": "stk-exam-8",
-      "text": "Wat onderscheidt een \"positie\" van een \"belang\" bij een stakeholderonderhandeling (Fisher & Ury)?",
+      "text": "What distinguishes a \"position\" from an \"interest\" in a stakeholder negotiation (Fisher & Ury)?",
       "textNL": "Wat onderscheidt een \"positie\" van een \"belang\" bij een stakeholderonderhandeling (Fisher & Ury)?",
       "question": "Wat onderscheidt een \"positie\" van een \"belang\" bij een stakeholderonderhandeling (Fisher & Ury)?",
-      "questionEN": "Wat onderscheidt een \"positie\" van een \"belang\" bij een stakeholderonderhandeling (Fisher & Ury)?",
+      "questionEN": "What distinguishes a \"position\" from an \"interest\" in a stakeholder negotiation (Fisher & Ury)?",
       "options": [
-        "Een positie is formeel vastgelegd in een contract; een belang is informeel",
-        "Een positie is wat de stakeholder zegt te willen; een belang is waarom ze dat willen",
-        "Een positie is tijdelijk; een belang is permanent",
-        "Er is geen relevant onderscheid — beide termen zijn synoniemen"
+        "A position is formally recorded in a contract; an interest is informal",
+        "A position is what the stakeholder says they want; an interest is why they want it",
+        "A position is temporary; an interest is permanent",
+        "There is no relevant distinction — both terms are synonyms"
       ],
       "optionsEN": [
-        "Een positie is formeel vastgelegd in een contract; een belang is informeel",
-        "Een positie is wat de stakeholder zegt te willen; een belang is waarom ze dat willen",
-        "Een positie is tijdelijk; een belang is permanent",
-        "Er is geen relevant onderscheid — beide termen zijn synoniemen"
+        "A position is formally recorded in a contract; an interest is informal",
+        "A position is what the stakeholder says they want; an interest is why they want it",
+        "A position is temporary; an interest is permanent",
+        "There is no relevant distinction — both terms are synonyms"
       ],
       "optionsNL": [
         "Een positie is formeel vastgelegd in een contract; een belang is informeel",
@@ -234,26 +234,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Fisher & Ury (Getting to Yes, Harvard Negotiation Project): een positie is het uitgesproken standpunt (\"ik wil meer budget\"). Een belang is de onderliggende behoefte of zorg (\"ik wil niet voor verrassingen staan\"). Door te focussen op belangen in plaats van posities zijn er doorgaans meer creatieve oplossingen mogelijk.",
+      "explanation": "Fisher & Ury (Getting to Yes, Harvard Negotiation Project): a position is the stated standpoint (\"I want more budget\"). An interest is the underlying need or concern (\"I don't want to be caught off-guard\"). By focusing on interests rather than positions, more creative solutions are usually possible.",
       "explanationNL": "Fisher & Ury (Getting to Yes, Harvard Negotiation Project): een positie is het uitgesproken standpunt (\"ik wil meer budget\"). Een belang is de onderliggende behoefte of zorg (\"ik wil niet voor verrassingen staan\"). Door te focussen op belangen in plaats van posities zijn er doorgaans meer creatieve oplossingen mogelijk."
     },
     {
       "id": "stk-exam-9",
-      "text": "Wat is de vertrouwensvergelijking van Maister, Green en Galford?",
+      "text": "What is the trust equation of Maister, Green and Galford?",
       "textNL": "Wat is de vertrouwensvergelijking van Maister, Green en Galford?",
       "question": "Wat is de vertrouwensvergelijking van Maister, Green en Galford?",
-      "questionEN": "Wat is de vertrouwensvergelijking van Maister, Green en Galford?",
+      "questionEN": "What is the trust equation of Maister, Green and Galford?",
       "options": [
-        "Vertrouwen = Geloofwaardigheid × Betrouwbaarheid × Intimiteit",
-        "Vertrouwen = (Geloofwaardigheid + Betrouwbaarheid + Intimiteit) ÷ Zelfgerichtheid",
-        "Vertrouwen = Betrouwbaarheid + Intimiteit − Zelfgerichtheid",
-        "Vertrouwen = Geloofwaardigheid ÷ (Zelfgerichtheid + Risico)"
+        "Trust = Credibility × Reliability × Intimacy",
+        "Trust = (Credibility + Reliability + Intimacy) ÷ Self-orientation",
+        "Trust = Reliability + Intimacy − Self-orientation",
+        "Trust = Credibility ÷ (Self-orientation + Risk)"
       ],
       "optionsEN": [
-        "Vertrouwen = Geloofwaardigheid × Betrouwbaarheid × Intimiteit",
-        "Vertrouwen = (Geloofwaardigheid + Betrouwbaarheid + Intimiteit) ÷ Zelfgerichtheid",
-        "Vertrouwen = Betrouwbaarheid + Intimiteit − Zelfgerichtheid",
-        "Vertrouwen = Geloofwaardigheid ÷ (Zelfgerichtheid + Risico)"
+        "Trust = Credibility × Reliability × Intimacy",
+        "Trust = (Credibility + Reliability + Intimacy) ÷ Self-orientation",
+        "Trust = Reliability + Intimacy − Self-orientation",
+        "Trust = Credibility ÷ (Self-orientation + Risk)"
       ],
       "optionsNL": [
         "Vertrouwen = Geloofwaardigheid × Betrouwbaarheid × Intimiteit",
@@ -263,15 +263,15 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "De vergelijking van Maister, Green en Galford is: Vertrouwen = (C + R + I) ÷ S, waarbij C = Credibility (geloofwaardigheid), R = Reliability (betrouwbaarheid), I = Intimacy (intimiteit/veiligheid), en S = Self-orientation (zelfgerichtheid). De S staat in de noemer — hogere zelfgerichtheid verlaagt het vertrouwen.",
+      "explanation": "The equation of Maister, Green and Galford is: Trust = (C + R + I) ÷ S, where C = Credibility, R = Reliability, I = Intimacy, and S = Self-orientation. S is in the denominator — higher self-orientation lowers trust.",
       "explanationNL": "De vergelijking van Maister, Green en Galford is: Vertrouwen = (C + R + I) ÷ S, waarbij C = Credibility (geloofwaardigheid), R = Reliability (betrouwbaarheid), I = Intimacy (intimiteit/veiligheid), en S = Self-orientation (zelfgerichtheid). De S staat in de noemer — hogere zelfgerichtheid verlaagt het vertrouwen."
     },
     {
       "id": "stk-exam-10",
-      "text": "Welke Thomas-Kilmann conflictstijl combineert hoge assertiviteit met hoge samenwerking en is meest geschikt voor complexe conflicten?",
+      "text": "Which Thomas-Kilmann conflict style combines high assertiveness with high cooperativeness and is most suitable for complex conflicts?",
       "textNL": "Welke Thomas-Kilmann conflictstijl combineert hoge assertiviteit met hoge samenwerking en is meest geschikt voor complexe conflicten?",
       "question": "Welke Thomas-Kilmann conflictstijl combineert hoge assertiviteit met hoge samenwerking en is meest geschikt voor complexe conflicten?",
-      "questionEN": "Welke Thomas-Kilmann conflictstijl combineert hoge assertiviteit met hoge samenwerking en is meest geschikt voor complexe conflicten?",
+      "questionEN": "Which Thomas-Kilmann conflict style combines high assertiveness with high cooperativeness and is most suitable for complex conflicts?",
       "options": [
         "Competing",
         "Compromising",
@@ -292,26 +292,26 @@
       ],
       "correct": 2,
       "points": 5,
-      "explanation": "Collaborating combineert hoge assertiviteit (de eigen belangen worden volledig ingebracht) met hoge samenwerking (het belang van de andere partij wordt volledig meegenomen). Het leidt tot win-win-oplossingen maar vereist tijd en vertrouwen. Het is het meest geschikt voor complexe, meervoudige conflicten.",
+      "explanation": "Collaborating combines high assertiveness (own interests are fully asserted) with high cooperativeness (the other party's interests are fully considered). It leads to win-win solutions but requires time and trust. It is most suitable for complex, multi-faceted conflicts.",
       "explanationNL": "Collaborating combineert hoge assertiviteit (de eigen belangen worden volledig ingebracht) met hoge samenwerking (het belang van de andere partij wordt volledig meegenomen). Het leidt tot win-win-oplossingen maar vereist tijd en vertrouwen. Het is het meest geschikt voor complexe, meervoudige conflicten."
     },
     {
       "id": "stk-exam-11",
-      "text": "Wat is de primaire reden dat het Mendelow Macht-Interesse Grid bij elke projectfase-overgang opnieuw moet worden beoordeeld?",
+      "text": "What is the primary reason the Mendelow Power-Interest Grid must be re-assessed at every project phase transition?",
       "textNL": "Wat is de primaire reden dat het Mendelow Macht-Interesse Grid bij elke projectfase-overgang opnieuw moet worden beoordeeld?",
       "question": "Wat is de primaire reden dat het Mendelow Macht-Interesse Grid bij elke projectfase-overgang opnieuw moet worden beoordeeld?",
-      "questionEN": "Wat is de primaire reden dat het Mendelow Macht-Interesse Grid bij elke projectfase-overgang opnieuw moet worden beoordeeld?",
+      "questionEN": "What is the primary reason the Mendelow Power-Interest Grid must be re-assessed at every project phase transition?",
       "options": [
-        "Omdat de regelgeving vereist dat het grid maandelijks wordt bijgewerkt",
-        "Omdat stakeholderposities dynamisch zijn en kunnen veranderen door projectgebeurtenissen",
-        "Omdat het grid anders niet voldoet aan PRINCE2-vereisten",
-        "Omdat nieuwe stakeholders altijd worden toegevoegd bij fase-overgangen"
+        "Because regulations require the grid to be updated monthly",
+        "Because stakeholder positions are dynamic and can shift due to project events",
+        "Because the grid would otherwise not comply with PRINCE2 requirements",
+        "Because new stakeholders are always added at phase transitions"
       ],
       "optionsEN": [
-        "Omdat de regelgeving vereist dat het grid maandelijks wordt bijgewerkt",
-        "Omdat stakeholderposities dynamisch zijn en kunnen veranderen door projectgebeurtenissen",
-        "Omdat het grid anders niet voldoet aan PRINCE2-vereisten",
-        "Omdat nieuwe stakeholders altijd worden toegevoegd bij fase-overgangen"
+        "Because regulations require the grid to be updated monthly",
+        "Because stakeholder positions are dynamic and can shift due to project events",
+        "Because the grid would otherwise not comply with PRINCE2 requirements",
+        "Because new stakeholders are always added at phase transitions"
       ],
       "optionsNL": [
         "Omdat de regelgeving vereist dat het grid maandelijks wordt bijgewerkt",
@@ -321,26 +321,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Het grid is niet statisch. Een leverancier met weinig macht en interesse kan bij een kritiek leveringsrisico plotseling naar het \"Manage closely\"-kwadrant schuiven. Projectgebeurtenissen, reorganisaties, en veranderende prioriteiten kunnen de machts- en interessepositie van elke stakeholder wijzigen.",
+      "explanation": "The grid is not static. A supplier with little power and interest can suddenly shift to the \"Manage closely\" quadrant when a critical delivery risk arises. Project events, reorganisations, and changing priorities can alter the power and interest position of any stakeholder.",
       "explanationNL": "Het grid is niet statisch. Een leverancier met weinig macht en interesse kan bij een kritiek leveringsrisico plotseling naar het \"Manage closely\"-kwadrant schuiven. Projectgebeurtenissen, reorganisaties, en veranderende prioriteiten kunnen de machts- en interessepositie van elke stakeholder wijzigen."
     },
     {
       "id": "stk-exam-12",
-      "text": "Wat is de definitie van BATNA in de context van stakeholderonderhandelingen?",
+      "text": "What is the definition of BATNA in the context of stakeholder negotiations?",
       "textNL": "Wat is de definitie van BATNA in de context van stakeholderonderhandelingen?",
       "question": "Wat is de definitie van BATNA in de context van stakeholderonderhandelingen?",
-      "questionEN": "Wat is de definitie van BATNA in de context van stakeholderonderhandelingen?",
+      "questionEN": "What is the definition of BATNA in the context of stakeholder negotiations?",
       "options": [
-        "De meest agressieve onderhandelingspositie die je kunt innemen zonder de relatie te beschadigen",
-        "Het budget dat de organisatie maximaal kan toewijzen aan stakeholderbetrokkenheid",
-        "De beste alternatieve uitkomst als geen overeenstemming wordt bereikt met de stakeholder",
-        "Een techniek om de belangen van drie of meer stakeholders te balanceren"
+        "The most assertive negotiating position you can take without damaging the relationship",
+        "The maximum budget the organisation can allocate to stakeholder engagement",
+        "The best alternative outcome if no agreement is reached with the stakeholder",
+        "A technique for balancing the interests of three or more stakeholders"
       ],
       "optionsEN": [
-        "De meest agressieve onderhandelingspositie die je kunt innemen zonder de relatie te beschadigen",
-        "Het budget dat de organisatie maximaal kan toewijzen aan stakeholderbetrokkenheid",
-        "De beste alternatieve uitkomst als geen overeenstemming wordt bereikt met de stakeholder",
-        "Een techniek om de belangen van drie of meer stakeholders te balanceren"
+        "The most assertive negotiating position you can take without damaging the relationship",
+        "The maximum budget the organisation can allocate to stakeholder engagement",
+        "The best alternative outcome if no agreement is reached with the stakeholder",
+        "A technique for balancing the interests of three or more stakeholders"
       ],
       "optionsNL": [
         "De meest agressieve onderhandelingspositie die je kunt innemen zonder de relatie te beschadigen",
@@ -350,26 +350,26 @@
       ],
       "correct": 2,
       "points": 5,
-      "explanation": "BATNA (Best Alternative to a Negotiated Agreement) is de beste uitkomst die jij of de stakeholder kan bereiken als de onderhandeling mislukt. Het kennen van jouw BATNA en die van de stakeholder geeft inzicht in de onderhandelingsmacht van beide partijen en helpt bepalen wanneer een akkoord de voorkeur verdient boven breken.",
+      "explanation": "BATNA (Best Alternative to a Negotiated Agreement) is the best outcome you or the stakeholder can achieve if the negotiation fails. Knowing your BATNA and that of the stakeholder provides insight into the negotiating power of both parties and helps determine when reaching an agreement is preferable to walking away.",
       "explanationNL": "BATNA (Best Alternative to a Negotiated Agreement) is de beste uitkomst die jij of de stakeholder kan bereiken als de onderhandeling mislukt. Het kennen van jouw BATNA en die van de stakeholder geeft inzicht in de onderhandelingsmacht van beide partijen en helpt bepalen wanneer een akkoord de voorkeur verdient boven breken."
     },
     {
       "id": "stk-exam-13",
-      "text": "Welk betrokkenheidsniveau van de AA1000SES is het meest passend voor een Manage-closely-stakeholder met hoge macht én hoge interesse?",
+      "text": "Which AA1000SES engagement level is most appropriate for a Manage-closely stakeholder with high power and high interest?",
       "textNL": "Welk betrokkenheidsniveau van de AA1000SES is het meest passend voor een Manage-closely-stakeholder met hoge macht én hoge interesse?",
       "question": "Welk betrokkenheidsniveau van de AA1000SES is het meest passend voor een Manage-closely-stakeholder met hoge macht én hoge interesse?",
-      "questionEN": "Welk betrokkenheidsniveau van de AA1000SES is het meest passend voor een Manage-closely-stakeholder met hoge macht én hoge interesse?",
+      "questionEN": "Which AA1000SES engagement level is most appropriate for a Manage-closely stakeholder with high power and high interest?",
       "options": [
         "Monitor",
-        "Informeer",
-        "Consulteer of samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult or collaborate",
+        "Empower"
       ],
       "optionsEN": [
         "Monitor",
-        "Informeer",
-        "Consulteer of samenwerk",
-        "Empoweer"
+        "Inform",
+        "Consult or collaborate",
+        "Empower"
       ],
       "optionsNL": [
         "Monitor",
@@ -379,26 +379,26 @@
       ],
       "correct": 2,
       "points": 5,
-      "explanation": "Manage-closely-stakeholders (hoge macht, hoge interesse) vereisen een hoog betrokkenheidsniveau: consulteer (niveau 3) of samenwerk (niveau 4). Ze moeten worden geconsulteerd bij beslissingen en betrokken bij oplossingen. Informeren (niveau 2) is onvoldoende — ze verwachten en verdienen een actieve stem.",
+      "explanation": "Manage-closely stakeholders (high power, high interest) require a high engagement level: consult (level 3) or collaborate (level 4). They must be consulted on decisions and involved in solutions. Inform (level 2) is insufficient — they expect and deserve an active voice.",
       "explanationNL": "Manage-closely-stakeholders (hoge macht, hoge interesse) vereisen een hoog betrokkenheidsniveau: consulteer (niveau 3) of samenwerk (niveau 4). Ze moeten worden geconsulteerd bij beslissingen en betrokken bij oplossingen. Informeren (niveau 2) is onvoldoende — ze verwachten en verdienen een actieve stem."
     },
     {
       "id": "stk-exam-14",
-      "text": "Waarom is stakeholderritme belangrijk bij langlopende projecten?",
+      "text": "Why is stakeholder rhythm important in long-running projects?",
       "textNL": "Waarom is stakeholderritme belangrijk bij langlopende projecten?",
       "question": "Waarom is stakeholderritme belangrijk bij langlopende projecten?",
-      "questionEN": "Waarom is stakeholderritme belangrijk bij langlopende projecten?",
+      "questionEN": "Why is stakeholder rhythm important in long-running projects?",
       "options": [
-        "Omdat regelgeving een minimale communicatiefrequentie voorschrijft voor projecten langer dan 6 maanden",
-        "Omdat het voorspelbaarheid biedt aan stakeholders en draagvlak onderhoudt ook wanneer het project minder zichtbaar is",
-        "Omdat een vast ritme ervoor zorgt dat het communicatieplan niet hoeft te worden aangepast",
-        "Omdat informele contactmomenten in een ritme wettelijk verplicht zijn bij OR-betrokkenheid"
+        "Because regulations prescribe a minimum communication frequency for projects longer than 6 months",
+        "Because it provides predictability to stakeholders and sustains buy-in even when the project is less visible",
+        "Because a fixed rhythm ensures the communication plan does not need to be updated",
+        "Because informal contact moments in a rhythm are legally required when a works council is involved"
       ],
       "optionsEN": [
-        "Omdat regelgeving een minimale communicatiefrequentie voorschrijft voor projecten langer dan 6 maanden",
-        "Omdat het voorspelbaarheid biedt aan stakeholders en draagvlak onderhoudt ook wanneer het project minder zichtbaar is",
-        "Omdat een vast ritme ervoor zorgt dat het communicatieplan niet hoeft te worden aangepast",
-        "Omdat informele contactmomenten in een ritme wettelijk verplicht zijn bij OR-betrokkenheid"
+        "Because regulations prescribe a minimum communication frequency for projects longer than 6 months",
+        "Because it provides predictability to stakeholders and sustains buy-in even when the project is less visible",
+        "Because a fixed rhythm ensures the communication plan does not need to be updated",
+        "Because informal contact moments in a rhythm are legally required when a works council is involved"
       ],
       "optionsNL": [
         "Omdat regelgeving een minimale communicatiefrequentie voorschrijft voor projecten langer dan 6 maanden",
@@ -408,26 +408,26 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "Stakeholderritme geeft voorspelbaarheid — stakeholders weten wanneer ze informatie ontvangen en wanneer input van hen wordt gevraagd. Dit bouwt vertrouwen op. Projecten die halverwege stil vallen in communicatie verliezen draagvlak precies wanneer ze het meest nodig hebben: bij moeilijke beslissingen en veranderingen.",
+      "explanation": "Stakeholder rhythm provides predictability — stakeholders know when they will receive information and when their input is sought. This builds trust. Projects that go silent mid-way lose buy-in precisely when they need it most: at difficult decisions and changes.",
       "explanationNL": "Stakeholderritme geeft voorspelbaarheid — stakeholders weten wanneer ze informatie ontvangen en wanneer input van hen wordt gevraagd. Dit bouwt vertrouwen op. Projecten die halverwege stil vallen in communicatie verliezen draagvlak precies wanneer ze het meest nodig hebben: bij moeilijke beslissingen en veranderingen."
     },
     {
       "id": "stk-exam-15",
-      "text": "Hoe onderscheidt de \"Consulted\"-rol (C) zich van de \"Informed\"-rol (I) in de RACI-matrix?",
+      "text": "How does the \"Consulted\" role (C) differ from the \"Informed\" role (I) in the RACI matrix?",
       "textNL": "Hoe onderscheidt de \"Consulted\"-rol (C) zich van de \"Informed\"-rol (I) in de RACI-matrix?",
       "question": "Hoe onderscheidt de \"Consulted\"-rol (C) zich van de \"Informed\"-rol (I) in de RACI-matrix?",
-      "questionEN": "Hoe onderscheidt de \"Consulted\"-rol (C) zich van de \"Informed\"-rol (I) in de RACI-matrix?",
+      "questionEN": "How does the \"Consulted\" role (C) differ from the \"Informed\" role (I) in the RACI matrix?",
       "options": [
-        "C ontvangt meer informatie dan I",
-        "C heeft tweerichtingscommunicatie en input vóór de beslissing; I ontvangt eénrichtingscommunicatie ná de beslissing",
-        "C is interne betrokkenheid; I is externe communicatie",
-        "C en I zijn functioneel identiek maar worden gebruikt voor respectievelijk senior en junior stakeholders"
+        "C receives more information than I",
+        "C involves two-way communication and input before the decision; I receives one-way communication after the decision",
+        "C is internal involvement; I is external communication",
+        "C and I are functionally identical but used for senior and junior stakeholders respectively"
       ],
       "optionsEN": [
-        "C ontvangt meer informatie dan I",
-        "C heeft tweerichtingscommunicatie en input vóór de beslissing; I ontvangt eénrichtingscommunicatie ná de beslissing",
-        "C is interne betrokkenheid; I is externe communicatie",
-        "C en I zijn functioneel identiek maar worden gebruikt voor respectievelijk senior en junior stakeholders"
+        "C receives more information than I",
+        "C involves two-way communication and input before the decision; I receives one-way communication after the decision",
+        "C is internal involvement; I is external communication",
+        "C and I are functionally identical but used for senior and junior stakeholders respectively"
       ],
       "optionsNL": [
         "C ontvangt meer informatie dan I",
@@ -437,7 +437,7 @@
       ],
       "correct": 1,
       "points": 5,
-      "explanation": "C (Consulted) betekent dat de input van deze persoon wordt gevraagd vóór de beslissing — het is tweerichtingsverkeer. I (Informed) betekent dat de persoon ná de beslissing op de hoogte wordt gesteld — het is eénrichtingsverkeer. Dit onderscheid is cruciaal: een Consulted die in werkelijkheid Informed is, zal zich buitengesloten voelen.",
+      "explanation": "C (Consulted) means that this person's input is sought before the decision — it is two-way communication. I (Informed) means the person is notified after the decision — it is one-way communication. This distinction is critical: a Consulted person who is treated as Informed will feel excluded.",
       "explanationNL": "C (Consulted) betekent dat de input van deze persoon wordt gevraagd vóór de beslissing — het is tweerichtingsverkeer. I (Informed) betekent dat de persoon ná de beslissing op de hoogte wordt gesteld — het is eénrichtingsverkeer. Dit onderscheid is cruciaal: een Consulted die in werkelijkheid Informed is, zal zich buitengesloten voelen."
     }
   ],

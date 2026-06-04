@@ -732,6 +732,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 1,
           explanation: 'Royce beschreef het sequentiële model maar waarschuwde ook voor de risico\'s ervan. Dat deel van zijn paper werd door velen genegeerd.',
+          questionEN: 'Winston Royce described the Waterfall model in 1970. What was ironic about his paper?',
+          optionsEN: [
+            'He actually advocated for Agile working',
+            'He himself also warned about the risks of the model',
+            'He claimed that requirements never change',
+            'He prohibited the use of gates between phases'
+          ],
+          explanationEN: 'Royce described the sequential model but also warned about its risks. That part of his paper was ignored by many.',
         },
         {
           id: 'wf-q2',
@@ -744,6 +752,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 1,
           explanation: 'De canonieke volgorde is: Requirements → Design → Development → Testing → Deployment → Maintenance. Elke fase levert output die input is voor de volgende.',
+          questionEN: 'What is the correct sequence of the six Waterfall phases?',
+          optionsEN: [
+            'Design → Requirements → Development → Testing → Deployment → Maintenance',
+            'Requirements → Design → Development → Testing → Deployment → Maintenance',
+            'Requirements → Development → Design → Testing → Deployment → Maintenance',
+            'Design → Development → Requirements → Deployment → Testing → Maintenance'
+          ],
+          explanationEN: 'The canonical sequence is: Requirements → Design → Development → Testing → Deployment → Maintenance. Each phase produces output that serves as input for the next.',
         },
         {
           id: 'wf-q3',
@@ -756,6 +772,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 2,
           explanation: 'Een requirements fout die pas in productie wordt ontdekt kost tot 100x meer om te fixen dan wanneer hij in de requirements fase was gecorrigeerd.',
+          questionEN: 'Statistics from the Requirements lesson show that fixing a requirements error in production is how many times more expensive than fixing it in the requirements phase?',
+          optionsEN: [
+            '10x more expensive',
+            '25x more expensive',
+            '100x more expensive',
+            '50x more expensive'
+          ],
+          explanationEN: 'A requirements error that is only discovered in production can cost up to 100x more to fix than if it had been corrected during the requirements phase.',
         },
         {
           id: 'wf-q4',
@@ -768,6 +792,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 1,
           explanation: 'Het SMART principe wordt in de Requirements les gebruikt om goede requirements te schrijven: Specific, Measurable, Achievable, Relevant en Traceable.',
+          questionEN: 'Which principle describes good requirements as Specific, Measurable, Achievable, Relevant and Traceable?',
+          optionsEN: [
+            'MoSCoW prioritisation',
+            'SMART principle',
+            'IEEE 830 standard',
+            'INVEST criteria'
+          ],
+          explanationEN: 'The SMART principle is used in the Requirements lesson to write good requirements: Specific, Measurable, Achievable, Relevant and Traceable.',
         },
         {
           id: 'wf-q5',
@@ -780,6 +812,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 2,
           explanation: 'Een Traceability Matrix houdt bij waar elke requirement vandaan komt en waar hij naartoe gaat: Business Need → Requirement → Design → Code → Test Case. Dit helpt bij impact analysis en verificatie.',
+          questionEN: 'What exactly does a Traceability Matrix document?',
+          optionsEN: [
+            'The communication structure between stakeholders',
+            'The dependencies on the critical path',
+            'The link from each requirement to design, code and test cases',
+            'The risks per project phase'
+          ],
+          explanationEN: 'A Traceability Matrix tracks where each requirement comes from and where it leads: Business Need → Requirement → Design → Code → Test Case. This aids impact analysis and verification.',
         },
         {
           id: 'wf-q6',
@@ -792,6 +832,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 1,
           explanation: 'High-Level Design (System Design) geeft het "big picture": architectuur, hoofdcomponenten en technologiekeuzes. Low-Level Design (Detailed Design) geeft het detail voor developers: database schema\'s, API specs en algoritmes.',
+          questionEN: 'In the Design phase you distinguish between High-Level Design and Low-Level Design. What is the difference?',
+          optionsEN: [
+            'High-level is for developers, low-level is for managers',
+            'High-level describes system architecture and technology choices; low-level describes components, database schemas and API specifications',
+            'High-level is only produced after development; low-level is the upfront blueprint',
+            'There is no functional difference; the terms are synonymous'
+          ],
+          explanationEN: 'High-Level Design (System Design) provides the "big picture": architecture, main components and technology choices. Low-Level Design (Detailed Design) provides the detail for developers: database schemas, API specs and algorithms.',
         },
         {
           id: 'wf-q7',
@@ -804,6 +852,14 @@ De uitvoerende fasen:
           ],
           correctAnswer: 3,
           explanation: 'UAT (User Acceptance Testing) wordt uitgevoerd door eindgebruikers en is de formele go/no-go validatie voordat het systeem naar productie gaat.',
+          questionEN: 'Which type of testing is performed by end users to validate that the system meets the business requirements?',
+          optionsEN: [
+            'Integration Testing',
+            'System Testing',
+            'Regression Testing',
+            'User Acceptance Testing (UAT)'
+          ],
+          explanationEN: 'UAT (User Acceptance Testing) is performed by end users and is the formal go/no-go validation before the system goes to production.',
         },
       ],
     },
@@ -1221,6 +1277,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 1,
           explanation: 'Een Gate Review heeft drie mogelijke uitkomsten: Go (doorgaan naar volgende fase), Conditional Go (doorgaan met voorwaarden) en No-Go (terug naar huidige fase).',
+          questionEN: 'Which outcomes are possible at a Gate Review?',
+          optionsEN: [
+            'Go or No-Go only',
+            'Go, No-Go or Conditional Go',
+            'Approve, Defer or Escalate',
+            'Forward to CCB or forward to sponsor'
+          ],
+          explanationEN: 'A Gate Review has three possible outcomes: Go (proceed to the next phase), Conditional Go (proceed with conditions) and No-Go (return to the current phase).',
         },
         {
           id: 'wf-q9',
@@ -1233,6 +1297,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 1,
           explanation: 'De Entrance Criteria Check verifieert of alle prerequisites voldaan zijn en of de documentatie compleet is voordat de eigenlijke review begint.',
+          questionEN: 'What does the "Entrance Criteria Check" verify at the start of a Gate Review?',
+          optionsEN: [
+            'Whether the budget is still sufficient for the next phase',
+            'Whether all prerequisites have been met and the documentation is complete',
+            'Whether the sponsor is present at the review',
+            'Whether the schedule still aligns with the original baseline'
+          ],
+          explanationEN: 'The Entrance Criteria Check verifies that all prerequisites have been met and that the documentation is complete before the actual review begins.',
         },
         {
           id: 'wf-q10',
@@ -1245,6 +1317,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 1,
           explanation: 'Quality Gates zijn technisch gefocust (code quality, testdekking, performance benchmarks). Gate Reviews zijn breder: business alignment, resource availability, risk acceptance en stakeholder approval.',
+          questionEN: 'What is the difference between a Quality Gate and a Gate Review?',
+          optionsEN: [
+            'Quality Gates are mandatory; Gate Reviews are optional',
+            'Quality Gates focus on technical metrics (code coverage, security scans); Gate Reviews also cover business alignment and stakeholder approval',
+            'Quality Gates are conducted by management; Gate Reviews by the team',
+            'There is no difference; the terms are interchangeable'
+          ],
+          explanationEN: 'Quality Gates are technically focused (code quality, test coverage, performance benchmarks). Gate Reviews are broader: business alignment, resource availability, risk acceptance and stakeholder approval.',
         },
         {
           id: 'wf-q11',
@@ -1257,6 +1337,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 1,
           explanation: 'De eerste stap is het indienen van een Change Request met de gewenste wijziging, de reden en de aanvrager. Daarna volgt pas de impact assessment en CCB review.',
+          questionEN: 'After the requirements sign-off, a stakeholder wants to introduce a change. What is the first step in the Waterfall change control process?',
+          optionsEN: [
+            'Update the baseline documents directly',
+            'Submit a Change Request describing the desired change and the reason',
+            'Inform the team and adjust the schedule',
+            'Implement the change and seek approval afterwards'
+          ],
+          explanationEN: 'The first step is submitting a Change Request with the desired change, the reason and the requestor. Only then follow the impact assessment and CCB review.',
         },
         {
           id: 'wf-q12',
@@ -1269,6 +1357,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 0,
           explanation: 'De PM analyseert de impact op scope, planning, budget, risico\'s, kwaliteit en andere requirements. De kern zijn scope, planning, budget en risico\'s.',
+          questionEN: 'Which four impact areas does the PM analyse during an Impact Assessment for a change request?',
+          optionsEN: [
+            'Scope, schedule, budget and risks',
+            'People, resources, methods and materials',
+            'Functionality, performance, security and usability',
+            'Requirements, design, code and tests'
+          ],
+          explanationEN: 'The PM analyses the impact on scope, schedule, budget, risks, quality and other requirements. The core four are scope, schedule, budget and risks.',
         },
         {
           id: 'wf-q13',
@@ -1281,6 +1377,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 0,
           explanation: 'Water-Scrum-Fall gebruikt Waterfall voor de initiële fasen (requirements en design), Agile sprints voor development, en keert terug naar Waterfall voor testing en deployment.',
+          questionEN: 'What does the Water-Scrum-Fall pattern describe?',
+          optionsEN: [
+            'Waterfall for requirements and design, Agile sprints for development, Waterfall for testing and deployment',
+            'Agile for requirements, Waterfall for development, Agile for deployment',
+            'Scrum ceremonies combined with Waterfall documentation throughout the entire lifecycle',
+            'Waterfall for small projects, Scrum for large projects'
+          ],
+          explanationEN: 'Water-Scrum-Fall uses Waterfall for the initial phases (requirements and design), Agile sprints for development, and returns to Waterfall for testing and deployment.',
         },
         {
           id: 'wf-q14',
@@ -1293,6 +1397,14 @@ Hybride aanpakken:
           ],
           correctAnswer: 2,
           explanation: 'Waterfall is het meest geschikt bij vaste scope en budget (vaste prijs contracten), externe leveranciers (specs als overdracht) en strikte compliance eisen die gedetailleerde documentatie en audittrails vereisen.',
+          questionEN: 'In which situation would you deliberately choose a more Waterfall-oriented approach over Agile?',
+          optionsEN: [
+            'Co-located teams with changing requirements',
+            'Innovative products where the customer does not yet know what they want',
+            'Fixed scope and budget contracts with external suppliers and strict compliance requirements',
+            'Projects where frequent releases are desired'
+          ],
+          explanationEN: 'Waterfall is most suitable with fixed scope and budget (fixed-price contracts), external suppliers (specs as handover documents) and strict compliance requirements that demand detailed documentation and audit trails.',
         },
       ],
     },

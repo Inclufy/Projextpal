@@ -715,6 +715,14 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
           ],
           correctAnswer: 1,
           explanation: 'De drie pijlers van empirisme in Scrum zijn: Transparantie, Inspectie en Adaptatie.',
+          questionEN: 'What are the three pillars of Scrum?',
+          optionsEN: [
+            'Planning, Execution, Control',
+            'Transparency, Inspection, Adaptation',
+            'Commitment, Focus, Respect',
+            'Sprint, Backlog, Increment'
+          ],
+          explanationEN: 'The three pillars of empiricism in Scrum are: Transparency, Inspection, and Adaptation.',
         },
         {
           id: 'scrum-q2',
@@ -722,6 +730,9 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
           options: ['Scrum Master', 'Product Owner', 'Developers', 'Stakeholders'],
           correctAnswer: 1,
           explanation: 'De Product Owner is verantwoordelijk voor het maximaliseren van de waarde van het product.',
+          questionEN: 'Who is accountable for maximizing the value of the product?',
+          optionsEN: ['Scrum Master', 'Product Owner', 'Developers', 'Stakeholders'],
+          explanationEN: 'The Product Owner is accountable for maximizing the value of the product.',
         },
         {
           id: 'scrum-q3',
@@ -729,6 +740,9 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
           options: ['1 week', '2 weken', '4 weken', '6 weken'],
           correctAnswer: 2,
           explanation: 'Een Sprint is maximaal één maand (4 weken). Kortere Sprints zijn ook mogelijk.',
+          questionEN: 'What is the maximum length of a Sprint?',
+          optionsEN: ['1 week', '2 weeks', '4 weeks', '6 weeks'],
+          explanationEN: 'A Sprint is at most one month (4 weeks). Shorter Sprints are also possible.',
         },
         {
           id: 'scrum-q4',
@@ -736,6 +750,9 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
           options: ['Sprint Goal', 'Definition of Done', 'Product Goal', 'Release Goal'],
           correctAnswer: 2,
           explanation: 'Het Product Goal is het commitment van de Product Backlog.',
+          questionEN: 'What is the commitment of the Product Backlog?',
+          optionsEN: ['Sprint Goal', 'Definition of Done', 'Product Goal', 'Release Goal'],
+          explanationEN: 'The Product Goal is the commitment of the Product Backlog.',
         },
         {
           id: 'scrum-q5',
@@ -743,6 +760,9 @@ Transparantie is key - als artefacten niet transparant zijn, falen inspectie en 
           options: ['30 minuten', '15 minuten', '1 uur', 'Zo lang als nodig'],
           correctAnswer: 1,
           explanation: 'De Daily Scrum is getimeboxed op maximaal 15 minuten.',
+          questionEN: 'What is the maximum duration of the Daily Scrum?',
+          optionsEN: ['30 minutes', '15 minutes', '1 hour', 'As long as needed'],
+          explanationEN: 'The Daily Scrum is timeboxed to a maximum of 15 minutes.',
         },
       ],
     },
@@ -1418,6 +1438,14 @@ Bij uitdagingen:
           ],
           correctAnswer: 2,
           explanation: 'De Scrum Master is een servant-leader die het team helpt effectief te werken.',
+          questionEN: 'What is the primary responsibility of the Scrum Master?',
+          optionsEN: [
+            'Managing the team',
+            'Managing the Product Backlog',
+            'Helping the team work effectively',
+            'Leading the Sprint Planning'
+          ],
+          explanationEN: 'The Scrum Master is a servant-leader who helps the team work effectively.',
         },
         {
           id: 'scrum-q7',
@@ -1430,6 +1458,14 @@ Bij uitdagingen:
           ],
           correctAnswer: 1,
           explanation: 'Velocity is de hoeveelheid werk (in story points) die het team gemiddeld per Sprint afrondt.',
+          questionEN: 'What is velocity?',
+          optionsEN: [
+            'The speed at which the team works',
+            'The amount of work the team completes on average per Sprint',
+            'The number of hours the team works per Sprint',
+            'The productivity of individual team members'
+          ],
+          explanationEN: 'Velocity is the amount of work (in story points) the team completes on average per Sprint.',
         },
         {
           id: 'scrum-q8',
@@ -1437,6 +1473,9 @@ Bij uitdagingen:
           options: ['Product Owner', 'Management', 'Scrum Master', 'Senior Developer'],
           correctAnswer: 2,
           explanation: 'De Scrum Master faciliteert de Sprint Retrospective.',
+          questionEN: 'Who facilitates the Sprint Retrospective?',
+          optionsEN: ['Product Owner', 'Management', 'Scrum Master', 'Senior Developer'],
+          explanationEN: 'The Scrum Master facilitates the Sprint Retrospective.',
         },
         {
           id: 'scrum-q9',
@@ -1449,6 +1488,14 @@ Bij uitdagingen:
           ],
           correctAnswer: 2,
           explanation: 'Velocity moet niet worden gebruikt om teams met elkaar te vergelijken.',
+          questionEN: 'What should you NOT do with velocity?',
+          optionsEN: [
+            'Forecasting for future Sprints',
+            'Monitoring trends over time',
+            'Comparing teams with each other',
+            'Measuring stability'
+          ],
+          explanationEN: 'Velocity should not be used to compare teams with each other.',
         },
         {
           id: 'scrum-q10',
@@ -1461,6 +1508,14 @@ Bij uitdagingen:
           ],
           correctAnswer: 1,
           explanation: 'Een impediment is een obstakel dat het team hindert in het leveren van waarde.',
+          questionEN: 'What is an impediment?',
+          optionsEN: [
+            'A task that needs to be done',
+            'An obstacle that hinders the team',
+            'A bug in the software',
+            'A meeting that runs too long'
+          ],
+          explanationEN: 'An impediment is an obstacle that hinders the team in delivering value.',
         },
       ],
     },

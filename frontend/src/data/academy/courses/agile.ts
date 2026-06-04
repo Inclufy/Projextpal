@@ -775,26 +775,44 @@ Agile frameworks:
         {
           id: 'ag-q1',
           question: 'Hoeveel waarden heeft het Agile Manifesto?',
+          questionEN: 'How many values does the Agile Manifesto have?',
           options: ['3', '4', '5', '12'],
+          optionsEN: ['3', '4', '5', '12'],
           correctAnswer: 1,
           explanation: 'Het Agile Manifesto heeft 4 waarden en 12 principes.',
+          explanationEN: 'The Agile Manifesto has 4 values and 12 principles.',
         },
         {
           id: 'ag-q2',
           question: 'Wat is de belangrijkste maatstaf voor voortgang volgens Agile?',
+          questionEN: 'What is the primary measure of progress according to Agile?',
           options: [
             'Aantal afgeronde taken',
             'Uren besteed',
             'Werkende software',
             'Documentatie'
           ],
+          optionsEN: [
+            'Number of completed tasks',
+            'Hours spent',
+            'Working software',
+            'Documentation'
+          ],
           correctAnswer: 2,
           explanation: 'Werkende software is de belangrijkste maatstaf voor voortgang (principe 7).',
+          explanationEN: 'Working software is the primary measure of progress (Agile Principle 7).',
         },
         {
           id: 'ag-q3',
           question: 'Wat is de betekenis van YAGNI?',
+          questionEN: 'What does YAGNI stand for?',
           options: [
+            'You Always Get New Ideas',
+            'You Ain\'t Gonna Need It',
+            'Your Agile Growth Needs Investment',
+            'Yet Another Generic Naming Issue'
+          ],
+          optionsEN: [
             'You Always Get New Ideas',
             'You Ain\'t Gonna Need It',
             'Your Agile Growth Needs Investment',
@@ -802,25 +820,37 @@ Agile frameworks:
           ],
           correctAnswer: 1,
           explanation: 'YAGNI = You Ain\'t Gonna Need It - bouw alleen wat nu nodig is.',
+          explanationEN: 'YAGNI = You Ain\'t Gonna Need It — build only what is needed now, avoiding premature or speculative features.',
         },
         {
           id: 'ag-q4',
           question: 'Welk framework is het meest geschikt voor teams met sterk variabel werk?',
+          questionEN: 'Which framework is best suited for teams with highly variable work?',
           options: ['Scrum', 'Waterfall', 'Kanban', 'XP'],
+          optionsEN: ['Scrum', 'Waterfall', 'Kanban', 'XP'],
           correctAnswer: 2,
           explanation: 'Kanban is ideaal voor teams met variabel werk door continue flow en WIP limieten.',
+          explanationEN: 'Kanban is ideal for teams with variable work due to its continuous flow and Work In Progress (WIP) limits.',
         },
         {
           id: 'ag-q5',
           question: 'Wat is ShuHaRi?',
+          questionEN: 'What is ShuHaRi?',
           options: [
             'Een Japans Agile framework',
             'Een certificering',
             'Een concept voor leren: volgen, breken, eigen regels maken',
             'Een scaling framework'
           ],
+          optionsEN: [
+            'A Japanese Agile framework',
+            'A certification',
+            'A learning concept: follow the rules, break the rules, make your own rules',
+            'A scaling framework'
+          ],
           correctAnswer: 2,
           explanation: 'ShuHaRi is een Japans concept: Shu (volg regels), Ha (breek regels bewust), Ri (maak eigen regels).',
+          explanationEN: 'ShuHaRi is a Japanese concept for learning mastery: Shu (follow the rules exactly), Ha (consciously break the rules), Ri (transcend and create your own rules).',
         },
       ],
     },

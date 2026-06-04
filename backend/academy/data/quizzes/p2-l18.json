@@ -7,10 +7,10 @@
   "questions": [
     {
       "id": "p2-q6",
-      "text": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "text": "Which process takes place BEFORE the project officially starts?",
       "textNL": "Welk proces vindt plaats VÓÓR het project officieel start?",
       "question": "Welk proces vindt plaats VÓÓR het project officieel start?",
-      "questionEN": "Welk proces vindt plaats VÓÓR het project officieel start?",
+      "questionEN": "Which process takes place BEFORE the project officially starts?",
       "options": [
         "IP - Initiating a Project",
         "SU - Starting Up a Project",
@@ -31,15 +31,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "SU is een pre-project proces dat plaatsvindt voordat het project officieel begint.",
+      "explanation": "Starting Up a Project (SU) is a pre-project process that takes place before the project officially begins.",
       "explanationNL": "SU is een pre-project proces dat plaatsvindt voordat het project officieel begint."
     },
     {
       "id": "p2-q7",
-      "text": "Wie produceert de Project Initiation Documentation (PID)?",
+      "text": "Who produces the Project Initiation Documentation (PID)?",
       "textNL": "Wie produceert de Project Initiation Documentation (PID)?",
       "question": "Wie produceert de Project Initiation Documentation (PID)?",
-      "questionEN": "Wie produceert de Project Initiation Documentation (PID)?",
+      "questionEN": "Who produces the Project Initiation Documentation (PID)?",
       "options": [
         "Executive",
         "Project Board",
@@ -60,15 +60,15 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "De Project Manager produceert de PID in het IP proces.",
+      "explanation": "The Project Manager produces the PID during the Initiating a Project (IP) process.",
       "explanationNL": "De Project Manager produceert de PID in het IP proces."
     },
     {
       "id": "p2-q8",
-      "text": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "text": "Which report does the Project Manager send regularly to the Project Board?",
       "textNL": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
       "question": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
-      "questionEN": "Welk rapport stuurt de PM regelmatig naar de Project Board?",
+      "questionEN": "Which report does the Project Manager send regularly to the Project Board?",
       "options": [
         "Checkpoint Report",
         "Highlight Report",
@@ -89,26 +89,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Highlight Reports gaan regelmatig (typisch 2-wekelijks) naar de Board.",
+      "explanation": "Highlight Reports are sent regularly (typically every two weeks) to the Project Board.",
       "explanationNL": "Highlight Reports gaan regelmatig (typisch 2-wekelijks) naar de Board."
     },
     {
       "id": "p2-q9",
-      "text": "Wanneer wordt een Exception Report gemaakt?",
+      "text": "When is an Exception Report produced?",
       "textNL": "Wanneer wordt een Exception Report gemaakt?",
       "question": "Wanneer wordt een Exception Report gemaakt?",
-      "questionEN": "Wanneer wordt een Exception Report gemaakt?",
+      "questionEN": "When is an Exception Report produced?",
       "options": [
-        "Aan het einde van elke stage",
-        "Wanneer toleranties dreigen te worden overschreden",
-        "Aan het einde van het project",
-        "Bij elke Checkpoint"
+        "At the end of each stage",
+        "When tolerances are forecast to be exceeded",
+        "At the end of the project",
+        "At every Checkpoint"
       ],
       "optionsEN": [
-        "Aan het einde van elke stage",
-        "Wanneer toleranties dreigen te worden overschreden",
-        "Aan het einde van het project",
-        "Bij elke Checkpoint"
+        "At the end of each stage",
+        "When tolerances are forecast to be exceeded",
+        "At the end of the project",
+        "At every Checkpoint"
       ],
       "optionsNL": [
         "Aan het einde van elke stage",
@@ -118,24 +118,24 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Exception Reports escaleren wanneer toleranties dreigen te worden overschreden.",
+      "explanation": "Exception Reports are used to escalate when tolerances are forecast to be exceeded.",
       "explanationNL": "Exception Reports escaleren wanneer toleranties dreigen te worden overschreden."
     },
     {
       "id": "p2-q10",
-      "text": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "text": "Which process must NEVER be skipped, even when the project is stopped prematurely?",
       "textNL": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
       "question": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
-      "questionEN": "Welk proces mag NOOIT worden overgeslagen, zelfs niet bij voortijdig stoppen?",
+      "questionEN": "Which process must NEVER be skipped, even when the project is stopped prematurely?",
       "options": [
-        "SU - Starting Up",
-        "IP - Initiating",
+        "SU - Starting Up a Project",
+        "IP - Initiating a Project",
         "CS - Controlling a Stage",
         "CP - Closing a Project"
       ],
       "optionsEN": [
-        "SU - Starting Up",
-        "IP - Initiating",
+        "SU - Starting Up a Project",
+        "IP - Initiating a Project",
         "CS - Controlling a Stage",
         "CP - Closing a Project"
       ],
@@ -147,7 +147,7 @@
       ],
       "correct": 3,
       "points": 1,
-      "explanation": "CP moet altijd worden uitgevoerd, ook bij voortijdig stoppen, voor lessons learned en administratieve afsluiting.",
+      "explanation": "Closing a Project (CP) must always be performed, even when stopping prematurely, to capture lessons learned and complete the administrative closure.",
       "explanationNL": "CP moet altijd worden uitgevoerd, ook bij voortijdig stoppen, voor lessons learned en administratieve afsluiting."
     }
   ]

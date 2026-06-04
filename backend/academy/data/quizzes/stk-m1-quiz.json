@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "stk-q1-1",
-      "text": "Welke twee assen gebruikt het Macht-Interesse Grid van Mendelow (1991) voor stakeholderclassificatie?",
+      "text": "Which two axes does Mendelow's Power-Interest Grid (1991) use to classify stakeholders?",
       "textNL": "Welke twee assen gebruikt het Macht-Interesse Grid van Mendelow (1991) voor stakeholderclassificatie?",
       "question": "Welke twee assen gebruikt het Macht-Interesse Grid van Mendelow (1991) voor stakeholderclassificatie?",
-      "questionEN": "Welke twee assen gebruikt het Macht-Interesse Grid van Mendelow (1991) voor stakeholderclassificatie?",
+      "questionEN": "Which two axes does Mendelow's Power-Interest Grid (1991) use to classify stakeholders?",
       "options": [
-        "Urgentie en legitimiteit",
-        "Macht en interesse",
-        "Invloed en impact",
-        "Betrokkenheid en budget"
+        "Urgency and legitimacy",
+        "Power and interest",
+        "Influence and impact",
+        "Engagement and budget"
       ],
       "optionsEN": [
-        "Urgentie en legitimiteit",
-        "Macht en interesse",
-        "Invloed en impact",
-        "Betrokkenheid en budget"
+        "Urgency and legitimacy",
+        "Power and interest",
+        "Influence and impact",
+        "Engagement and budget"
       ],
       "optionsNL": [
         "Urgentie en legitimiteit",
@@ -31,26 +31,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Mendelow's Power-Interest Grid (1991) deelt stakeholders in op basis van twee assen: macht (de mogelijkheid om het project te beïnvloeden) en interesse (de mate van betrokkenheid die de stakeholder heeft of wil). Dit resulteert in vier kwadranten met bijbehorende managementstrategieën.",
+      "explanation": "Mendelow's Power-Interest Grid (1991) classifies stakeholders on two axes: power (the ability to influence the project) and interest (the degree of involvement the stakeholder has or wants). This results in four quadrants with corresponding management strategies.",
       "explanationNL": "Mendelow's Power-Interest Grid (1991) deelt stakeholders in op basis van twee assen: macht (de mogelijkheid om het project te beïnvloeden) en interesse (de mate van betrokkenheid die de stakeholder heeft of wil). Dit resulteert in vier kwadranten met bijbehorende managementstrategieën."
     },
     {
       "id": "stk-q1-2",
-      "text": "Welke managementstrategie geldt voor stakeholders met hoge macht en lage interesse (kwadrant 2 van Mendelow)?",
+      "text": "Which management strategy applies to stakeholders with high power and low interest (quadrant 2 of Mendelow)?",
       "textNL": "Welke managementstrategie geldt voor stakeholders met hoge macht en lage interesse (kwadrant 2 van Mendelow)?",
       "question": "Welke managementstrategie geldt voor stakeholders met hoge macht en lage interesse (kwadrant 2 van Mendelow)?",
-      "questionEN": "Welke managementstrategie geldt voor stakeholders met hoge macht en lage interesse (kwadrant 2 van Mendelow)?",
+      "questionEN": "Which management strategy applies to stakeholders with high power and low interest (quadrant 2 of Mendelow)?",
       "options": [
-        "Manage closely — wekelijks direct contact onderhouden",
-        "Keep satisfied — proactief informeren over mijlpalen",
-        "Keep informed — nieuwsbrieven en statusupdates sturen",
-        "Monitor — minimale aandacht; positie kan veranderen"
+        "Manage closely — maintain weekly direct contact",
+        "Keep satisfied — proactively inform about milestones",
+        "Keep informed — send newsletters and status updates",
+        "Monitor — minimal attention; position may change"
       ],
       "optionsEN": [
-        "Manage closely — wekelijks direct contact onderhouden",
-        "Keep satisfied — proactief informeren over mijlpalen",
-        "Keep informed — nieuwsbrieven en statusupdates sturen",
-        "Monitor — minimale aandacht; positie kan veranderen"
+        "Manage closely — maintain weekly direct contact",
+        "Keep satisfied — proactively inform about milestones",
+        "Keep informed — send newsletters and status updates",
+        "Monitor — minimal attention; position may change"
       ],
       "optionsNL": [
         "Manage closely — wekelijks direct contact onderhouden",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Stakeholders met hoge macht en lage interesse vallen in de \"Keep satisfied\"-categorie. Ze tonen nu weinig actieve interesse, maar kunnen snel ingrijpen als hun belangen worden geraakt. Proactieve communicatie over mijlpalen en risico's voorkomt negatieve verrassingen.",
+      "explanation": "Stakeholders with high power and low interest fall into the \"Keep satisfied\" category. They show little active interest now, but can quickly intervene if their interests are affected. Proactive communication about milestones and risks prevents negative surprises.",
       "explanationNL": "Stakeholders met hoge macht en lage interesse vallen in de \"Keep satisfied\"-categorie. Ze tonen nu weinig actieve interesse, maar kunnen snel ingrijpen als hun belangen worden geraakt. Proactieve communicatie over mijlpalen en risico's voorkomt negatieve verrassingen."
     },
     {
       "id": "stk-q1-3",
-      "text": "Welk derde attribuut voegt het Salience Model van Mitchell, Agle en Wood (1997) toe aan macht en legitimiteit?",
+      "text": "Which third attribute does the Salience Model of Mitchell, Agle and Wood (1997) add to power and legitimacy?",
       "textNL": "Welk derde attribuut voegt het Salience Model van Mitchell, Agle en Wood (1997) toe aan macht en legitimiteit?",
       "question": "Welk derde attribuut voegt het Salience Model van Mitchell, Agle en Wood (1997) toe aan macht en legitimiteit?",
-      "questionEN": "Welk derde attribuut voegt het Salience Model van Mitchell, Agle en Wood (1997) toe aan macht en legitimiteit?",
+      "questionEN": "Which third attribute does the Salience Model of Mitchell, Agle and Wood (1997) add to power and legitimacy?",
       "options": [
-        "Interesse",
+        "Interest",
         "Budget",
-        "Urgentie",
-        "Invloed"
+        "Urgency",
+        "Influence"
       ],
       "optionsEN": [
-        "Interesse",
+        "Interest",
         "Budget",
-        "Urgentie",
-        "Invloed"
+        "Urgency",
+        "Influence"
       ],
       "optionsNL": [
         "Interesse",
@@ -89,26 +89,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Het Salience Model (Mitchell et al., 1997) voegt urgentie toe aan macht en legitimiteit. Urgentie meet de tijdsgevoeligheid en kritikaliteit van de claim van de stakeholder. Samen geven deze drie attributen zeven stakeholdertypen, waarbij definitieve stakeholders alle drie attributen hebben.",
+      "explanation": "The Salience Model (Mitchell et al., 1997) adds urgency to power and legitimacy. Urgency measures the time-sensitivity and criticality of the stakeholder's claim. Together, these three attributes yield seven stakeholder types, with definitive stakeholders possessing all three attributes.",
       "explanationNL": "Het Salience Model (Mitchell et al., 1997) voegt urgentie toe aan macht en legitimiteit. Urgentie meet de tijdsgevoeligheid en kritikaliteit van de claim van de stakeholder. Samen geven deze drie attributen zeven stakeholdertypen, waarbij definitieve stakeholders alle drie attributen hebben."
     },
     {
       "id": "stk-q1-4",
-      "text": "Hoeveel personen mogen de rol \"Accountable\" (A) hebben in een RACI-matrix voor één specifieke taak?",
+      "text": "How many people may hold the \"Accountable\" (A) role in a RACI matrix for one specific task?",
       "textNL": "Hoeveel personen mogen de rol \"Accountable\" (A) hebben in een RACI-matrix voor één specifieke taak?",
       "question": "Hoeveel personen mogen de rol \"Accountable\" (A) hebben in een RACI-matrix voor één specifieke taak?",
-      "questionEN": "Hoeveel personen mogen de rol \"Accountable\" (A) hebben in een RACI-matrix voor één specifieke taak?",
+      "questionEN": "How many people may hold the \"Accountable\" (A) role in a RACI matrix for one specific task?",
       "options": [
-        "Zo veel als nodig — meer A's verdeelt de verantwoordelijkheid",
-        "Minimaal twee — voor vierogenprincipe",
-        "Precies één — één eindverantwoordelijke per taak",
-        "Geen — Accountable is optioneel voor kleine taken"
+        "As many as needed — more A's distributes responsibility",
+        "At least two — for the four-eyes principle",
+        "Exactly one — one single accountable person per task",
+        "None — Accountable is optional for small tasks"
       ],
       "optionsEN": [
-        "Zo veel als nodig — meer A's verdeelt de verantwoordelijkheid",
-        "Minimaal twee — voor vierogenprincipe",
-        "Precies één — één eindverantwoordelijke per taak",
-        "Geen — Accountable is optioneel voor kleine taken"
+        "As many as needed — more A's distributes responsibility",
+        "At least two — for the four-eyes principle",
+        "Exactly one — one single accountable person per task",
+        "None — Accountable is optional for small tasks"
       ],
       "optionsNL": [
         "Zo veel als nodig — meer A's verdeelt de verantwoordelijkheid",
@@ -118,26 +118,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Een kernregel van RACI: elke taak heeft precies één Accountable. Als meerdere personen de A-rol hebben, is er in de praktijk geen echte eindverantwoordelijke meer. Bij conflicten of fouten schuift iedereen de verantwoordelijkheid door naar de ander.",
+      "explanation": "A core rule of RACI: every task has exactly one Accountable person. If multiple people hold the A role, there is in practice no real single accountable owner. When conflicts or errors arise, everyone shifts responsibility to someone else.",
       "explanationNL": "Een kernregel van RACI: elke taak heeft precies één Accountable. Als meerdere personen de A-rol hebben, is er in de praktijk geen echte eindverantwoordelijke meer. Bij conflicten of fouten schuift iedereen de verantwoordelijkheid door naar de ander."
     },
     {
       "id": "stk-q1-5",
-      "text": "Welk type stakeholder beschrijft het Salience Model als iemand die macht én urgentie heeft, maar geen legitimiteit?",
+      "text": "Which type of stakeholder does the Salience Model describe as someone who has power and urgency but no legitimacy?",
       "textNL": "Welk type stakeholder beschrijft het Salience Model als iemand die macht én urgentie heeft, maar geen legitimiteit?",
       "question": "Welk type stakeholder beschrijft het Salience Model als iemand die macht én urgentie heeft, maar geen legitimiteit?",
-      "questionEN": "Welk type stakeholder beschrijft het Salience Model als iemand die macht én urgentie heeft, maar geen legitimiteit?",
+      "questionEN": "Which type of stakeholder does the Salience Model describe as someone who has power and urgency but no legitimacy?",
       "options": [
-        "Definitieve stakeholder — hoogste prioriteit",
-        "Gevaarlijke stakeholder — kan onverwacht handelend optreden",
-        "Eisende stakeholder — veel lawaai, weinig macht",
-        "Dominante stakeholder — macht plus legitimiteit"
+        "Definitive stakeholder — highest priority",
+        "Dangerous stakeholder — may act unexpectedly",
+        "Demanding stakeholder — lots of noise, little power",
+        "Dominant stakeholder — power plus legitimacy"
       ],
       "optionsEN": [
-        "Definitieve stakeholder — hoogste prioriteit",
-        "Gevaarlijke stakeholder — kan onverwacht handelend optreden",
-        "Eisende stakeholder — veel lawaai, weinig macht",
-        "Dominante stakeholder — macht plus legitimiteit"
+        "Definitive stakeholder — highest priority",
+        "Dangerous stakeholder — may act unexpectedly",
+        "Demanding stakeholder — lots of noise, little power",
+        "Dominant stakeholder — power plus legitimacy"
       ],
       "optionsNL": [
         "Definitieve stakeholder — hoogste prioriteit",
@@ -147,7 +147,7 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "In het Salience Model zijn stakeholders met macht én urgentie maar zonder legitimiteit \"gevaarlijke stakeholders\". Ze kunnen buiten formele kanalen om handelen (acties, media, juridische stappen) juist omdat ze geen erkende legitieme claim hebben. Dit maakt hen onvoorspelbaar en vereist bewuste monitoring.",
+      "explanation": "In the Salience Model, stakeholders with power and urgency but without legitimacy are \"dangerous stakeholders\". They can act outside formal channels (protests, media, legal action) precisely because they lack a recognised legitimate claim. This makes them unpredictable and requires deliberate monitoring.",
       "explanationNL": "In het Salience Model zijn stakeholders met macht én urgentie maar zonder legitimiteit \"gevaarlijke stakeholders\". Ze kunnen buiten formele kanalen om handelen (acties, media, juridische stappen) juist omdat ze geen erkende legitieme claim hebben. Dit maakt hen onvoorspelbaar en vereist bewuste monitoring."
     }
   ]

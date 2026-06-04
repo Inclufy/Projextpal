@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "kb-q1",
-      "text": "Wat betekent Kanban letterlijk?",
+      "text": "What does Kanban literally mean?",
       "textNL": "Wat betekent Kanban letterlijk?",
       "question": "Wat betekent Kanban letterlijk?",
-      "questionEN": "Wat betekent Kanban letterlijk?",
+      "questionEN": "What does Kanban literally mean?",
       "options": [
-        "Agile methode",
-        "Visueel signaal",
+        "Agile method",
+        "Visual signal",
         "Workflow management",
-        "Continue verbetering"
+        "Continuous improvement"
       ],
       "optionsEN": [
-        "Agile methode",
-        "Visueel signaal",
+        "Agile method",
+        "Visual signal",
         "Workflow management",
-        "Continue verbetering"
+        "Continuous improvement"
       ],
       "optionsNL": [
         "Agile methode",
@@ -31,15 +31,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Kanban (看板) is Japans voor \"visueel signaal\" of \"kaart\".",
+      "explanation": "Kanban (看板) is Japanese for \"visual signal\" or \"card\".",
       "explanationNL": "Kanban (看板) is Japans voor \"visueel signaal\" of \"kaart\"."
     },
     {
       "id": "kb-q2",
-      "text": "Wat is Little's Law?",
+      "text": "What is Little's Law?",
       "textNL": "Wat is Little's Law?",
       "question": "Wat is Little's Law?",
-      "questionEN": "Wat is Little's Law?",
+      "questionEN": "What is Little's Law?",
       "options": [
         "WIP = Lead Time × Throughput",
         "Lead Time = WIP / Throughput",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Little's Law stelt dat Lead Time = WIP / Throughput.",
+      "explanation": "Little's Law states that Lead Time = WIP / Throughput. Reducing Work In Progress (WIP) directly reduces lead time when throughput is held constant.",
       "explanationNL": "Little's Law stelt dat Lead Time = WIP / Throughput."
     },
     {
       "id": "kb-q3",
-      "text": "Waarom zijn WIP limieten pijnlijk?",
+      "text": "Why are WIP limits painful?",
       "textNL": "Waarom zijn WIP limieten pijnlijk?",
       "question": "Waarom zijn WIP limieten pijnlijk?",
-      "questionEN": "Waarom zijn WIP limieten pijnlijk?",
+      "questionEN": "Why are WIP limits painful?",
       "options": [
-        "Omdat ze te hoog zijn",
-        "Omdat ze problemen onthullen die je moet oplossen",
-        "Omdat niemand ze begrijpt",
-        "Omdat ze de throughput verlagen"
+        "Because they are set too high",
+        "Because they expose problems that need to be solved",
+        "Because nobody understands them",
+        "Because they reduce throughput"
       ],
       "optionsEN": [
-        "Omdat ze te hoog zijn",
-        "Omdat ze problemen onthullen die je moet oplossen",
-        "Omdat niemand ze begrijpt",
-        "Omdat ze de throughput verlagen"
+        "Because they are set too high",
+        "Because they expose problems that need to be solved",
+        "Because nobody understands them",
+        "Because they reduce throughput"
       ],
       "optionsNL": [
         "Omdat ze te hoog zijn",
@@ -89,25 +89,25 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "WIP limieten zijn bedoeld om pijnlijk te zijn - ze onthullen bottlenecks en problemen.",
+      "explanation": "Work In Progress (WIP) limits are intentionally painful — the discomfort reveals bottlenecks, dependencies, and imbalances in capacity that must be addressed to improve flow.",
       "explanationNL": "WIP limieten zijn bedoeld om pijnlijk te zijn - ze onthullen bottlenecks en problemen."
     },
     {
       "id": "kb-q4",
-      "text": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "text": "What does a Cumulative Flow Diagram (CFD) visualize?",
       "textNL": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
       "question": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
-      "questionEN": "Wat visualiseert een Cumulative Flow Diagram (CFD)?",
+      "questionEN": "What does a Cumulative Flow Diagram (CFD) visualize?",
       "options": [
-        "Alleen throughput",
-        "WIP, lead time, throughput en bottlenecks",
-        "Alleen blokkades",
+        "Throughput only",
+        "WIP, lead time, throughput, and bottlenecks",
+        "Blockers only",
         "Team velocity"
       ],
       "optionsEN": [
-        "Alleen throughput",
-        "WIP, lead time, throughput en bottlenecks",
-        "Alleen blokkades",
+        "Throughput only",
+        "WIP, lead time, throughput, and bottlenecks",
+        "Blockers only",
         "Team velocity"
       ],
       "optionsNL": [
@@ -118,15 +118,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De CFD toont WIP, lead time, throughput en bottlenecks in één visualisatie.",
+      "explanation": "The cumulative flow diagram shows WIP, lead time, throughput, and bottlenecks all in one visualization.",
       "explanationNL": "De CFD toont WIP, lead time, throughput en bottlenecks in één visualisatie."
     },
     {
       "id": "kb-q5",
-      "text": "Wat is typisch de flow efficiency in kenniswerk?",
+      "text": "What is the typical flow efficiency in knowledge work?",
       "textNL": "Wat is typisch de flow efficiency in kenniswerk?",
       "question": "Wat is typisch de flow efficiency in kenniswerk?",
-      "questionEN": "Wat is typisch de flow efficiency in kenniswerk?",
+      "questionEN": "What is the typical flow efficiency in knowledge work?",
       "options": [
         "50-60%",
         "30-40%",
@@ -147,7 +147,7 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Flow efficiency in kenniswerk is typisch 5-15%, wat betekent dat 85-95% wachttijd is.",
+      "explanation": "Flow efficiency in knowledge work is typically 5-15%, meaning 85-95% of lead time is waiting time rather than active work.",
       "explanationNL": "Flow efficiency in kenniswerk is typisch 5-15%, wat betekent dat 85-95% wachttijd is."
     }
   ]

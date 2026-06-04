@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "wf-q1",
-      "text": "Winston Royce beschreef het Waterfall model in 1970. Wat was ironisch aan zijn paper?",
+      "text": "Winston Royce described the Waterfall model in 1970. What was ironic about his paper?",
       "textNL": "Winston Royce beschreef het Waterfall model in 1970. Wat was ironisch aan zijn paper?",
       "question": "Winston Royce beschreef het Waterfall model in 1970. Wat was ironisch aan zijn paper?",
-      "questionEN": "Winston Royce beschreef het Waterfall model in 1970. Wat was ironisch aan zijn paper?",
+      "questionEN": "Winston Royce described the Waterfall model in 1970. What was ironic about his paper?",
       "options": [
-        "Hij pleitte juist voor Agile werken",
-        "Hij waarschuwde zelf ook voor de risico's van het model",
-        "Hij beweerde dat requirements nooit veranderen",
-        "Hij verbood het gebruik van gates tussen fasen"
+        "He actually advocated for Agile working",
+        "He himself also warned about the risks of the model",
+        "He claimed that requirements never change",
+        "He prohibited the use of gates between phases"
       ],
       "optionsEN": [
-        "Hij pleitte juist voor Agile werken",
-        "Hij waarschuwde zelf ook voor de risico's van het model",
-        "Hij beweerde dat requirements nooit veranderen",
-        "Hij verbood het gebruik van gates tussen fasen"
+        "He actually advocated for Agile working",
+        "He himself also warned about the risks of the model",
+        "He claimed that requirements never change",
+        "He prohibited the use of gates between phases"
       ],
       "optionsNL": [
         "Hij pleitte juist voor Agile werken",
@@ -31,15 +31,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Royce beschreef het sequentiële model maar waarschuwde ook voor de risico's ervan. Dat deel van zijn paper werd door velen genegeerd.",
+      "explanation": "Royce described the sequential model but also warned about its risks. That part of his paper was ignored by many.",
       "explanationNL": "Royce beschreef het sequentiële model maar waarschuwde ook voor de risico's ervan. Dat deel van zijn paper werd door velen genegeerd."
     },
     {
       "id": "wf-q2",
-      "text": "Wat is de juiste volgorde van de zes Waterfall fasen?",
+      "text": "What is the correct sequence of the six Waterfall phases?",
       "textNL": "Wat is de juiste volgorde van de zes Waterfall fasen?",
       "question": "Wat is de juiste volgorde van de zes Waterfall fasen?",
-      "questionEN": "Wat is de juiste volgorde van de zes Waterfall fasen?",
+      "questionEN": "What is the correct sequence of the six Waterfall phases?",
       "options": [
         "Design → Requirements → Development → Testing → Deployment → Maintenance",
         "Requirements → Design → Development → Testing → Deployment → Maintenance",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "De canonieke volgorde is: Requirements → Design → Development → Testing → Deployment → Maintenance. Elke fase levert output die input is voor de volgende.",
+      "explanation": "The canonical sequence is: Requirements → Design → Development → Testing → Deployment → Maintenance. Each phase produces output that serves as input for the next.",
       "explanationNL": "De canonieke volgorde is: Requirements → Design → Development → Testing → Deployment → Maintenance. Elke fase levert output die input is voor de volgende."
     },
     {
       "id": "wf-q3",
-      "text": "Statistieken uit de Requirements les tonen dat het fixen van een requirements fout in productie hoeveel keer duurder is dan in de requirements fase?",
+      "text": "Statistics from the Requirements lesson show that fixing a requirements error in production is how many times more expensive than fixing it in the requirements phase?",
       "textNL": "Statistieken uit de Requirements les tonen dat het fixen van een requirements fout in productie hoeveel keer duurder is dan in de requirements fase?",
       "question": "Statistieken uit de Requirements les tonen dat het fixen van een requirements fout in productie hoeveel keer duurder is dan in de requirements fase?",
-      "questionEN": "Statistieken uit de Requirements les tonen dat het fixen van een requirements fout in productie hoeveel keer duurder is dan in de requirements fase?",
+      "questionEN": "Statistics from the Requirements lesson show that fixing a requirements error in production is how many times more expensive than fixing it in the requirements phase?",
       "options": [
-        "10x duurder",
-        "25x duurder",
-        "100x duurder",
-        "50x duurder"
+        "10x more expensive",
+        "25x more expensive",
+        "100x more expensive",
+        "50x more expensive"
       ],
       "optionsEN": [
-        "10x duurder",
-        "25x duurder",
-        "100x duurder",
-        "50x duurder"
+        "10x more expensive",
+        "25x more expensive",
+        "100x more expensive",
+        "50x more expensive"
       ],
       "optionsNL": [
         "10x duurder",
@@ -89,25 +89,25 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Een requirements fout die pas in productie wordt ontdekt kost tot 100x meer om te fixen dan wanneer hij in de requirements fase was gecorrigeerd.",
+      "explanation": "A requirements error that is only discovered in production can cost up to 100x more to fix than if it had been corrected during the requirements phase.",
       "explanationNL": "Een requirements fout die pas in productie wordt ontdekt kost tot 100x meer om te fixen dan wanneer hij in de requirements fase was gecorrigeerd."
     },
     {
       "id": "wf-q4",
-      "text": "Welk principe beschrijft goede requirements als Specific, Measurable, Achievable, Relevant en Traceable?",
+      "text": "Which principle describes good requirements as Specific, Measurable, Achievable, Relevant and Traceable?",
       "textNL": "Welk principe beschrijft goede requirements als Specific, Measurable, Achievable, Relevant en Traceable?",
       "question": "Welk principe beschrijft goede requirements als Specific, Measurable, Achievable, Relevant en Traceable?",
-      "questionEN": "Welk principe beschrijft goede requirements als Specific, Measurable, Achievable, Relevant en Traceable?",
+      "questionEN": "Which principle describes good requirements as Specific, Measurable, Achievable, Relevant and Traceable?",
       "options": [
-        "MoSCoW prioritering",
-        "SMART principe",
-        "IEEE 830 standaard",
+        "MoSCoW prioritisation",
+        "SMART principle",
+        "IEEE 830 standard",
         "INVEST criteria"
       ],
       "optionsEN": [
-        "MoSCoW prioritering",
-        "SMART principe",
-        "IEEE 830 standaard",
+        "MoSCoW prioritisation",
+        "SMART principle",
+        "IEEE 830 standard",
         "INVEST criteria"
       ],
       "optionsNL": [
@@ -118,26 +118,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Het SMART principe wordt in de Requirements les gebruikt om goede requirements te schrijven: Specific, Measurable, Achievable, Relevant en Traceable.",
+      "explanation": "The SMART principle is used in the Requirements lesson to write good requirements: Specific, Measurable, Achievable, Relevant and Traceable.",
       "explanationNL": "Het SMART principe wordt in de Requirements les gebruikt om goede requirements te schrijven: Specific, Measurable, Achievable, Relevant en Traceable."
     },
     {
       "id": "wf-q5",
-      "text": "Wat documenteert een Traceability Matrix precies?",
+      "text": "What exactly does a Traceability Matrix document?",
       "textNL": "Wat documenteert een Traceability Matrix precies?",
       "question": "Wat documenteert een Traceability Matrix precies?",
-      "questionEN": "Wat documenteert een Traceability Matrix precies?",
+      "questionEN": "What exactly does a Traceability Matrix document?",
       "options": [
-        "De communicatiestructuur tussen stakeholders",
-        "De afhankelijkheden op het kritieke pad",
-        "De koppeling van elke requirement naar design, code en testcases",
-        "De risico's per projectfase"
+        "The communication structure between stakeholders",
+        "The dependencies on the critical path",
+        "The link from each requirement to design, code and test cases",
+        "The risks per project phase"
       ],
       "optionsEN": [
-        "De communicatiestructuur tussen stakeholders",
-        "De afhankelijkheden op het kritieke pad",
-        "De koppeling van elke requirement naar design, code en testcases",
-        "De risico's per projectfase"
+        "The communication structure between stakeholders",
+        "The dependencies on the critical path",
+        "The link from each requirement to design, code and test cases",
+        "The risks per project phase"
       ],
       "optionsNL": [
         "De communicatiestructuur tussen stakeholders",
@@ -147,26 +147,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Een Traceability Matrix houdt bij waar elke requirement vandaan komt en waar hij naartoe gaat: Business Need → Requirement → Design → Code → Test Case. Dit helpt bij impact analysis en verificatie.",
+      "explanation": "A Traceability Matrix tracks where each requirement comes from and where it leads: Business Need → Requirement → Design → Code → Test Case. This aids impact analysis and verification.",
       "explanationNL": "Een Traceability Matrix houdt bij waar elke requirement vandaan komt en waar hij naartoe gaat: Business Need → Requirement → Design → Code → Test Case. Dit helpt bij impact analysis en verificatie."
     },
     {
       "id": "wf-q6",
-      "text": "In de Design fase spreek je over High-Level Design en Low-Level Design. Wat is het verschil?",
+      "text": "In the Design phase you distinguish between High-Level Design and Low-Level Design. What is the difference?",
       "textNL": "In de Design fase spreek je over High-Level Design en Low-Level Design. Wat is het verschil?",
       "question": "In de Design fase spreek je over High-Level Design en Low-Level Design. Wat is het verschil?",
-      "questionEN": "In de Design fase spreek je over High-Level Design en Low-Level Design. Wat is het verschil?",
+      "questionEN": "In the Design phase you distinguish between High-Level Design and Low-Level Design. What is the difference?",
       "options": [
-        "High-level is voor developers, low-level voor managers",
-        "High-level beschrijft systeemarchitectuur en technologiekeuzes; low-level beschrijft componenten, database schema's en API specificaties",
-        "High-level wordt pas na development gemaakt; low-level is de blauwdruk vooraf",
-        "Er is geen functioneel verschil; het zijn synoniemen"
+        "High-level is for developers, low-level is for managers",
+        "High-level describes system architecture and technology choices; low-level describes components, database schemas and API specifications",
+        "High-level is only produced after development; low-level is the upfront blueprint",
+        "There is no functional difference; the terms are synonymous"
       ],
       "optionsEN": [
-        "High-level is voor developers, low-level voor managers",
-        "High-level beschrijft systeemarchitectuur en technologiekeuzes; low-level beschrijft componenten, database schema's en API specificaties",
-        "High-level wordt pas na development gemaakt; low-level is de blauwdruk vooraf",
-        "Er is geen functioneel verschil; het zijn synoniemen"
+        "High-level is for developers, low-level is for managers",
+        "High-level describes system architecture and technology choices; low-level describes components, database schemas and API specifications",
+        "High-level is only produced after development; low-level is the upfront blueprint",
+        "There is no functional difference; the terms are synonymous"
       ],
       "optionsNL": [
         "High-level is voor developers, low-level voor managers",
@@ -176,15 +176,15 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "High-Level Design (System Design) geeft het \"big picture\": architectuur, hoofdcomponenten en technologiekeuzes. Low-Level Design (Detailed Design) geeft het detail voor developers: database schema's, API specs en algoritmes.",
+      "explanation": "High-Level Design (System Design) provides the \"big picture\": architecture, main components and technology choices. Low-Level Design (Detailed Design) provides the detail for developers: database schemas, API specs and algorithms.",
       "explanationNL": "High-Level Design (System Design) geeft het \"big picture\": architectuur, hoofdcomponenten en technologiekeuzes. Low-Level Design (Detailed Design) geeft het detail voor developers: database schema's, API specs en algoritmes."
     },
     {
       "id": "wf-q7",
-      "text": "Welk type testing wordt uitgevoerd door eindgebruikers om te valideren dat het systeem voldoet aan de business requirements?",
+      "text": "Which type of testing is performed by end users to validate that the system meets the business requirements?",
       "textNL": "Welk type testing wordt uitgevoerd door eindgebruikers om te valideren dat het systeem voldoet aan de business requirements?",
       "question": "Welk type testing wordt uitgevoerd door eindgebruikers om te valideren dat het systeem voldoet aan de business requirements?",
-      "questionEN": "Welk type testing wordt uitgevoerd door eindgebruikers om te valideren dat het systeem voldoet aan de business requirements?",
+      "questionEN": "Which type of testing is performed by end users to validate that the system meets the business requirements?",
       "options": [
         "Integration Testing",
         "System Testing",
@@ -205,7 +205,7 @@
       ],
       "correct": 3,
       "points": 1,
-      "explanation": "UAT (User Acceptance Testing) wordt uitgevoerd door eindgebruikers en is de formele go/no-go validatie voordat het systeem naar productie gaat.",
+      "explanation": "UAT (User Acceptance Testing) is performed by end users and is the formal go/no-go validation before the system goes to production.",
       "explanationNL": "UAT (User Acceptance Testing) wordt uitgevoerd door eindgebruikers en is de formele go/no-go validatie voordat het systeem naar productie gaat."
     }
   ]

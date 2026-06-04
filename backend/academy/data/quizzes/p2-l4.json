@@ -7,10 +7,10 @@
   "questions": [
     {
       "id": "p2-q1",
-      "text": "Hoeveel principes heeft PRINCE2?",
+      "text": "How many principles does PRINCE2 have?",
       "textNL": "Hoeveel principes heeft PRINCE2?",
       "question": "Hoeveel principes heeft PRINCE2?",
-      "questionEN": "Hoeveel principes heeft PRINCE2?",
+      "questionEN": "How many principles does PRINCE2 have?",
       "options": [
         "5",
         "6",
@@ -31,15 +31,15 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "PRINCE2 heeft 7 principes, 7 thema's en 7 processen.",
+      "explanation": "PRINCE2 has 7 principles, 7 themes and 7 processes.",
       "explanationNL": "PRINCE2 heeft 7 principes, 7 thema's en 7 processen."
     },
     {
       "id": "p2-q2",
-      "text": "Welk principe stelt dat een project gedurende de hele looptijd zakelijk gerechtvaardigd moet zijn?",
+      "text": "Which principle states that a project must remain justified from a business perspective throughout its entire lifetime?",
       "textNL": "Welk principe stelt dat een project gedurende de hele looptijd zakelijk gerechtvaardigd moet zijn?",
       "question": "Welk principe stelt dat een project gedurende de hele looptijd zakelijk gerechtvaardigd moet zijn?",
-      "questionEN": "Welk principe stelt dat een project gedurende de hele looptijd zakelijk gerechtvaardigd moet zijn?",
+      "questionEN": "Which principle states that a project must remain justified from a business perspective throughout its entire lifetime?",
       "options": [
         "Learn from Experience",
         "Continued Business Justification",
@@ -60,26 +60,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Continued Business Justification zorgt dat het project altijd waarde blijft leveren.",
+      "explanation": "Continued Business Justification ensures that the project always continues to deliver value.",
       "explanationNL": "Continued Business Justification zorgt dat het project altijd waarde blijft leveren."
     },
     {
       "id": "p2-q3",
-      "text": "Wat kun je NIET tailoren in PRINCE2?",
+      "text": "What can you NOT tailor in PRINCE2?",
       "textNL": "Wat kun je NIET tailoren in PRINCE2?",
       "question": "Wat kun je NIET tailoren in PRINCE2?",
-      "questionEN": "Wat kun je NIET tailoren in PRINCE2?",
+      "questionEN": "What can you NOT tailor in PRINCE2?",
       "options": [
-        "Processen",
-        "Thema's",
-        "Rollen",
-        "De 7 principes"
+        "Processes",
+        "Themes",
+        "Roles",
+        "The 7 principles"
       ],
       "optionsEN": [
-        "Processen",
-        "Thema's",
-        "Rollen",
-        "De 7 principes"
+        "Processes",
+        "Themes",
+        "Roles",
+        "The 7 principles"
       ],
       "optionsNL": [
         "Processen",
@@ -89,15 +89,15 @@
       ],
       "correct": 3,
       "points": 1,
-      "explanation": "De 7 principes zijn niet onderhandelbaar. Anders doe je geen PRINCE2.",
+      "explanation": "The 7 principles are non-negotiable. If you do not follow them, you are not doing PRINCE2.",
       "explanationNL": "De 7 principes zijn niet onderhandelbaar. Anders doe je geen PRINCE2."
     },
     {
       "id": "p2-q4",
-      "text": "Welk thema beantwoordt de vraag \"Wie?\"",
+      "text": "Which theme answers the question \"Who?\"",
       "textNL": "Welk thema beantwoordt de vraag \"Wie?\"",
       "question": "Welk thema beantwoordt de vraag \"Wie?\"",
-      "questionEN": "Welk thema beantwoordt de vraag \"Wie?\"",
+      "questionEN": "Which theme answers the question \"Who?\"",
       "options": [
         "Business Case",
         "Organization",
@@ -118,26 +118,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Het Organization thema definieert rollen en verantwoordelijkheden.",
+      "explanation": "The Organization theme defines roles and responsibilities.",
       "explanationNL": "Het Organization thema definieert rollen en verantwoordelijkheden."
     },
     {
       "id": "p2-q5",
-      "text": "Wat betekent \"Manage by Exception\"?",
+      "text": "What does \"Manage by Exception\" mean?",
       "textNL": "Wat betekent \"Manage by Exception\"?",
       "question": "Wat betekent \"Manage by Exception\"?",
-      "questionEN": "Wat betekent \"Manage by Exception\"?",
+      "questionEN": "What does \"Manage by Exception\" mean?",
       "options": [
-        "Alleen uitzonderlijke projecten managen",
-        "De Board grijpt alleen in als toleranties worden overschreden",
-        "Excepties worden niet toegestaan",
-        "Elke beslissing gaat naar de Board"
+        "Only managing exceptional projects",
+        "The Project Board only intervenes when tolerances are exceeded",
+        "Exceptions are not permitted",
+        "Every decision goes to the Project Board"
       ],
       "optionsEN": [
-        "Alleen uitzonderlijke projecten managen",
-        "De Board grijpt alleen in als toleranties worden overschreden",
-        "Excepties worden niet toegestaan",
-        "Elke beslissing gaat naar de Board"
+        "Only managing exceptional projects",
+        "The Project Board only intervenes when tolerances are exceeded",
+        "Exceptions are not permitted",
+        "Every decision goes to the Project Board"
       ],
       "optionsNL": [
         "Alleen uitzonderlijke projecten managen",
@@ -147,7 +147,7 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Manage by Exception geeft de PM ruimte binnen toleranties en bespaart Board-tijd.",
+      "explanation": "Manage by Exception gives the PM freedom to operate within tolerances and saves Project Board time.",
       "explanationNL": "Manage by Exception geeft de PM ruimte binnen toleranties en bespaart Board-tijd."
     }
   ]

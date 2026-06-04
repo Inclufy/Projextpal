@@ -7,21 +7,21 @@
   "questions": [
     {
       "id": "stk-q3-1",
-      "text": "Welke conflictstijl uit het Thomas-Kilmann model is het meest geschikt wanneer een project een acuut veiligheidsincident heeft dat directe actie vereist?",
+      "text": "Which conflict style from the Thomas-Kilmann model is most appropriate when a project faces an acute safety incident requiring immediate action?",
       "textNL": "Welke conflictstijl uit het Thomas-Kilmann model is het meest geschikt wanneer een project een acuut veiligheidsincident heeft dat directe actie vereist?",
       "question": "Welke conflictstijl uit het Thomas-Kilmann model is het meest geschikt wanneer een project een acuut veiligheidsincident heeft dat directe actie vereist?",
-      "questionEN": "Welke conflictstijl uit het Thomas-Kilmann model is het meest geschikt wanneer een project een acuut veiligheidsincident heeft dat directe actie vereist?",
+      "questionEN": "Which conflict style from the Thomas-Kilmann model is most appropriate when a project faces an acute safety incident requiring immediate action?",
       "options": [
-        "Collaborating — beide belangen zijn even belangrijk",
-        "Compromising — snelle oplossing via inleveren van beide kanten",
-        "Competing — hoog assertief, directe actie heeft prioriteit",
-        "Avoiding — de timing is nu niet goed"
+        "Collaborating — both interests are equally important",
+        "Compromising — quick solution through concessions from both sides",
+        "Competing — highly assertive, immediate action takes priority",
+        "Avoiding — the timing is not right now"
       ],
       "optionsEN": [
-        "Collaborating — beide belangen zijn even belangrijk",
-        "Compromising — snelle oplossing via inleveren van beide kanten",
-        "Competing — hoog assertief, directe actie heeft prioriteit",
-        "Avoiding — de timing is nu niet goed"
+        "Collaborating — both interests are equally important",
+        "Compromising — quick solution through concessions from both sides",
+        "Competing — highly assertive, immediate action takes priority",
+        "Avoiding — the timing is not right now"
       ],
       "optionsNL": [
         "Collaborating — beide belangen zijn even belangrijk",
@@ -31,26 +31,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Competing (hoog assertief, laag samenwerkend) is geschikt voor crises die directe, ondubbelzinnige actie vereisen. In een acute veiligheidssituatie is er geen tijd voor collaboratief overleg — de projectmanager moet een duidelijke instructie geven en executie afdwingen. Collaborating is beter voor complexe conflicten zonder tijdsdruk.",
+      "explanation": "Competing (high assertiveness, low cooperativeness) is appropriate for crises that require direct, unambiguous action. In an acute safety situation there is no time for collaborative deliberation — the project manager must issue a clear instruction and enforce execution. Collaborating is better for complex conflicts without time pressure.",
       "explanationNL": "Competing (hoog assertief, laag samenwerkend) is geschikt voor crises die directe, ondubbelzinnige actie vereisen. In een acute veiligheidssituatie is er geen tijd voor collaboratief overleg — de projectmanager moet een duidelijke instructie geven en executie afdwingen. Collaborating is beter voor complexe conflicten zonder tijdsdruk."
     },
     {
       "id": "stk-q3-2",
-      "text": "Wat is de noemer van de vertrouwensvergelijking van Maister, Green en Galford, en waarom is die cruciaal?",
+      "text": "What is the denominator of the trust equation by Maister, Green and Galford, and why is it crucial?",
       "textNL": "Wat is de noemer van de vertrouwensvergelijking van Maister, Green en Galford, en waarom is die cruciaal?",
       "question": "Wat is de noemer van de vertrouwensvergelijking van Maister, Green en Galford, en waarom is die cruciaal?",
-      "questionEN": "Wat is de noemer van de vertrouwensvergelijking van Maister, Green en Galford, en waarom is die cruciaal?",
+      "questionEN": "What is the denominator of the trust equation by Maister, Green and Galford, and why is it crucial?",
       "options": [
-        "Geloofwaardigheid — omdat kennis de basis is van vertrouwen",
-        "Betrouwbaarheid — afspraken nakomen is het fundament",
-        "Zelfgerichtheid — hoe hoger de focus op eigen belang, hoe lager het vertrouwen",
-        "Intimiteit — vertrouwelijkheid bepaalt de veiligheid van de relatie"
+        "Credibility — because knowledge is the foundation of trust",
+        "Reliability — honouring commitments is the bedrock",
+        "Self-orientation — the higher the focus on self-interest, the lower the trust",
+        "Intimacy — confidentiality determines the safety of the relationship"
       ],
       "optionsEN": [
-        "Geloofwaardigheid — omdat kennis de basis is van vertrouwen",
-        "Betrouwbaarheid — afspraken nakomen is het fundament",
-        "Zelfgerichtheid — hoe hoger de focus op eigen belang, hoe lager het vertrouwen",
-        "Intimiteit — vertrouwelijkheid bepaalt de veiligheid van de relatie"
+        "Credibility — because knowledge is the foundation of trust",
+        "Reliability — honouring commitments is the bedrock",
+        "Self-orientation — the higher the focus on self-interest, the lower the trust",
+        "Intimacy — confidentiality determines the safety of the relationship"
       ],
       "optionsNL": [
         "Geloofwaardigheid — omdat kennis de basis is van vertrouwen",
@@ -60,26 +60,26 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Zelfgerichtheid staat in de noemer van de vergelijking (Vertrouwen = (C+R+I) ÷ S). Een hogere zelfgerichtheid verlaagt het vertrouwen, zelfs als geloofwaardigheid, betrouwbaarheid en intimiteit hoog zijn. Projectmanagers die puur focussen op projectsucces voor zichzelf — zonder aandacht voor het belang van de stakeholder — bouwen geen vertrouwen op.",
+      "explanation": "Self-orientation is in the denominator of the equation (Trust = (C+R+I) ÷ S). Higher self-orientation lowers trust, even when credibility, reliability and intimacy are high. Project managers who focus purely on their own project success — without regard for the stakeholder's interest — do not build trust.",
       "explanationNL": "Zelfgerichtheid staat in de noemer van de vergelijking (Vertrouwen = (C+R+I) ÷ S). Een hogere zelfgerichtheid verlaagt het vertrouwen, zelfs als geloofwaardigheid, betrouwbaarheid en intimiteit hoog zijn. Projectmanagers die puur focussen op projectsucces voor zichzelf — zonder aandacht voor het belang van de stakeholder — bouwen geen vertrouwen op."
     },
     {
       "id": "stk-q3-3",
-      "text": "Welke van de volgende acties bouwt het meest effectief vertrouwen op bij een sleutelstakeholder die sceptisch is over het project?",
+      "text": "Which of the following actions most effectively builds trust with a key stakeholder who is sceptical about the project?",
       "textNL": "Welke van de volgende acties bouwt het meest effectief vertrouwen op bij een sleutelstakeholder die sceptisch is over het project?",
       "question": "Welke van de volgende acties bouwt het meest effectief vertrouwen op bij een sleutelstakeholder die sceptisch is over het project?",
-      "questionEN": "Welke van de volgende acties bouwt het meest effectief vertrouwen op bij een sleutelstakeholder die sceptisch is over het project?",
+      "questionEN": "Which of the following actions most effectively builds trust with a key stakeholder who is sceptical about the project?",
       "options": [
-        "Een uitgebreide presentatie geven over het projectplan en de methodologie",
-        "Slecht nieuws vroeg en transparant communiceren, voordat de stakeholder het zelf ontdekt",
-        "Elke week een gedetailleerd statusrapport sturen",
-        "De stakeholder uitnodigen voor alle interne projectvergaderingen"
+        "Delivering a comprehensive presentation about the project plan and methodology",
+        "Communicating bad news early and transparently, before the stakeholder discovers it themselves",
+        "Sending a detailed status report every week",
+        "Inviting the stakeholder to all internal project meetings"
       ],
       "optionsEN": [
-        "Een uitgebreide presentatie geven over het projectplan en de methodologie",
-        "Slecht nieuws vroeg en transparant communiceren, voordat de stakeholder het zelf ontdekt",
-        "Elke week een gedetailleerd statusrapport sturen",
-        "De stakeholder uitnodigen voor alle interne projectvergaderingen"
+        "Delivering a comprehensive presentation about the project plan and methodology",
+        "Communicating bad news early and transparently, before the stakeholder discovers it themselves",
+        "Sending a detailed status report every week",
+        "Inviting the stakeholder to all internal project meetings"
       ],
       "optionsNL": [
         "Een uitgebreide presentatie geven over het projectplan en de methodologie",
@@ -89,26 +89,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Vertrouwen wordt opgebouwd door consistent gedrag — en slecht nieuws vroeg en transparant brengen is daar een van de krachtigste vormen van. Stakeholders vergeven slechte uitkomsten als je ze vroeg informeert; ze vergeven zelden dat je het verborgen hield. Rapporten en vergaderingen dragen bij maar zijn secundair aan dit gedrag.",
+      "explanation": "Trust is built through consistent behaviour — and sharing bad news early and transparently is one of the most powerful forms of it. Stakeholders forgive poor outcomes when informed early; they rarely forgive being kept in the dark. Reports and meetings contribute, but are secondary to this behaviour.",
       "explanationNL": "Vertrouwen wordt opgebouwd door consistent gedrag — en slecht nieuws vroeg en transparant brengen is daar een van de krachtigste vormen van. Stakeholders vergeven slechte uitkomsten als je ze vroeg informeert; ze vergeven zelden dat je het verborgen hield. Rapporten en vergaderingen dragen bij maar zijn secundair aan dit gedrag."
     },
     {
       "id": "stk-q3-4",
-      "text": "Wat beschrijft \"stakeholderritme\" in de context van projectmanagement?",
+      "text": "What does \"stakeholder rhythm\" describe in the context of project management?",
       "textNL": "Wat beschrijft \"stakeholderritme\" in de context van projectmanagement?",
       "question": "Wat beschrijft \"stakeholderritme\" in de context van projectmanagement?",
-      "questionEN": "Wat beschrijft \"stakeholderritme\" in de context van projectmanagement?",
+      "questionEN": "What does \"stakeholder rhythm\" describe in the context of project management?",
       "options": [
-        "De mate van betrokkenheid die een stakeholder heeft bij het project, gemeten per sprint",
-        "Een vaste cadans van contactmomenten op meerdere frequentieniveaus die gedurende het project worden onderhouden",
-        "De cyclus van identificatie, analyse, betrokkenheid en evaluatie van stakeholders",
-        "Het aantal vergaderingen per week dat noodzakelijk is voor effectief stakeholdermanagement"
+        "The degree of stakeholder engagement in the project, measured per sprint",
+        "A fixed cadence of contact moments at multiple frequency levels maintained throughout the project",
+        "The cycle of identification, analysis, engagement and evaluation of stakeholders",
+        "The number of meetings per week required for effective stakeholder management"
       ],
       "optionsEN": [
-        "De mate van betrokkenheid die een stakeholder heeft bij het project, gemeten per sprint",
-        "Een vaste cadans van contactmomenten op meerdere frequentieniveaus die gedurende het project worden onderhouden",
-        "De cyclus van identificatie, analyse, betrokkenheid en evaluatie van stakeholders",
-        "Het aantal vergaderingen per week dat noodzakelijk is voor effectief stakeholdermanagement"
+        "The degree of stakeholder engagement in the project, measured per sprint",
+        "A fixed cadence of contact moments at multiple frequency levels maintained throughout the project",
+        "The cycle of identification, analysis, engagement and evaluation of stakeholders",
+        "The number of meetings per week required for effective stakeholder management"
       ],
       "optionsNL": [
         "De mate van betrokkenheid die een stakeholder heeft bij het project, gemeten per sprint",
@@ -118,26 +118,26 @@
       ],
       "correct": 1,
       "points": 1,
-      "explanation": "Stakeholderritme is de bewust ontworpen cadans van contactmomenten — dagelijks, wekelijks, maandelijks, per mijlpaal — die gedurende het hele project wordt onderhouden. Het geeft stakeholders voorspelbaarheid, wat vertrouwen opbouwt. Het is geen maatstaf voor betrokkenheidsintensiteit, maar een structuur voor continuïteit.",
+      "explanation": "Stakeholder rhythm is the deliberately designed cadence of contact moments — daily, weekly, monthly, per milestone — maintained throughout the entire project. It provides stakeholders with predictability, which builds trust. It is not a measure of engagement intensity, but a structure for continuity.",
       "explanationNL": "Stakeholderritme is de bewust ontworpen cadans van contactmomenten — dagelijks, wekelijks, maandelijks, per mijlpaal — die gedurende het hele project wordt onderhouden. Het geeft stakeholders voorspelbaarheid, wat vertrouwen opbouwt. Het is geen maatstaf voor betrokkenheidsintensiteit, maar een structuur voor continuïteit."
     },
     {
       "id": "stk-q3-5",
-      "text": "Waarom zijn informele contactmomenten (zoals een koffiegesprek) waardevoller dan alleen formele rapportages bij sleutelstakeholders?",
+      "text": "Why are informal contact moments (such as a coffee conversation) more valuable than formal reports alone for key stakeholders?",
       "textNL": "Waarom zijn informele contactmomenten (zoals een koffiegesprek) waardevoller dan alleen formele rapportages bij sleutelstakeholders?",
       "question": "Waarom zijn informele contactmomenten (zoals een koffiegesprek) waardevoller dan alleen formele rapportages bij sleutelstakeholders?",
-      "questionEN": "Waarom zijn informele contactmomenten (zoals een koffiegesprek) waardevoller dan alleen formele rapportages bij sleutelstakeholders?",
+      "questionEN": "Why are informal contact moments (such as a coffee conversation) more valuable than formal reports alone for key stakeholders?",
       "options": [
-        "Ze zijn goedkoper en sneller dan het schrijven van statusrapporten",
-        "Ze voldoen aan de AA1000SES-verplichting voor face-to-face communicatie",
-        "Ze bieden informatie over politieke spanningen, onuitgesproken zorgen en veranderende prioriteiten die rapporten niet bevatten",
-        "Ze vervangen de noodzaak voor een formeel communicatieplan"
+        "They are cheaper and faster than writing status reports",
+        "They satisfy the AA1000SES requirement for face-to-face communication",
+        "They provide information about political tensions, unspoken concerns, and shifting priorities that reports do not contain",
+        "They replace the need for a formal communication plan"
       ],
       "optionsEN": [
-        "Ze zijn goedkoper en sneller dan het schrijven van statusrapporten",
-        "Ze voldoen aan de AA1000SES-verplichting voor face-to-face communicatie",
-        "Ze bieden informatie over politieke spanningen, onuitgesproken zorgen en veranderende prioriteiten die rapporten niet bevatten",
-        "Ze vervangen de noodzaak voor een formeel communicatieplan"
+        "They are cheaper and faster than writing status reports",
+        "They satisfy the AA1000SES requirement for face-to-face communication",
+        "They provide information about political tensions, unspoken concerns, and shifting priorities that reports do not contain",
+        "They replace the need for a formal communication plan"
       ],
       "optionsNL": [
         "Ze zijn goedkoper en sneller dan het schrijven van statusrapporten",
@@ -147,7 +147,7 @@
       ],
       "correct": 2,
       "points": 1,
-      "explanation": "Informele contactmomenten geven toegang tot de informele sfeer: politieke verschuivingen binnen de organisatie van de stakeholder, onuitgesproken zorgen, veranderende prioriteiten. Deze informatie bereikt de projectmanager zelden via formele kanalen. Informele contacten zijn een aanvulling op, niet een vervanging van, formele rapportages.",
+      "explanation": "Informal contact moments provide access to the informal sphere: political shifts within the stakeholder's organisation, unspoken concerns, changing priorities. This information rarely reaches the project manager through formal channels. Informal contacts supplement, rather than replace, formal reporting.",
       "explanationNL": "Informele contactmomenten geven toegang tot de informele sfeer: politieke verschuivingen binnen de organisatie van de stakeholder, onuitgesproken zorgen, veranderende prioriteiten. Deze informatie bereikt de projectmanager zelden via formele kanalen. Informele contacten zijn een aanvulling op, niet een vervanging van, formele rapportages."
     }
   ]
