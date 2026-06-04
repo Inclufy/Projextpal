@@ -36,6 +36,9 @@ class TaskSerializer(serializers.ModelSerializer):
         many=True, queryset=User.objects.all(), source="raci_informed", required=False
     )
     project_id = serializers.ReadOnlyField(source="milestone.project_id")
+    work_package_title = serializers.ReadOnlyField(source="work_package.title")
+    product_title = serializers.ReadOnlyField(source="product.title")
+    milestone_name = serializers.ReadOnlyField(source="milestone.name")
 
     subtasks = serializers.SerializerMethodField()
 
@@ -44,6 +47,11 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "milestone",
+            "milestone_name",
+            "work_package",
+            "work_package_title",
+            "product",
+            "product_title",
             "title",
             "description",
             "category",

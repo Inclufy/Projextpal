@@ -127,6 +127,7 @@ class WorkPackageSerializer(serializers.ModelSerializer):
     stage_name = serializers.CharField(source='stage.name', read_only=True)
     team_manager_name = serializers.CharField(source='team_manager.get_full_name', read_only=True)
     depends_on_titles = serializers.SerializerMethodField()
+    task_count = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkPackage
@@ -135,6 +136,9 @@ class WorkPackageSerializer(serializers.ModelSerializer):
 
     def get_depends_on_titles(self, obj):
         return [{'id': wp.id, 'title': wp.title or wp.reference} for wp in obj.depends_on.all()]
+
+    def get_task_count(self, obj):
+        return obj.tasks.count()
 
 
 class Prince2RiskSerializer(serializers.ModelSerializer):

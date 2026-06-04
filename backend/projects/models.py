@@ -219,6 +219,24 @@ class Task(models.Model):
     milestone = models.ForeignKey(
         Milestone, on_delete=models.CASCADE, related_name="tasks"
     )
+    # PRINCE2 roll-up links (optional). A task can belong to a Work Package and
+    # deliver a specific Product so the WP that authorises the work owns its
+    # tasks, and a deliverable's progress can be derived from its tasks.
+    # String app-refs avoid a circular import (prince2 already FKs projects).
+    work_package = models.ForeignKey(
+        "prince2.WorkPackage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+    )
+    product = models.ForeignKey(
+        "prince2.Product",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     # Yanmar Action Tracker (PRJ LEGO) uses a free-text Category column to group

@@ -1217,6 +1217,8 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         "milestone__project",
         "milestone__project__company",
         "assigned_to",
+        "work_package",
+        "product",
     )
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -1236,6 +1238,12 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         milestone_id = self.request.query_params.get("milestone")
         if milestone_id:
             qs = qs.filter(milestone_id=milestone_id)
+        work_package_id = self.request.query_params.get("work_package")
+        if work_package_id:
+            qs = qs.filter(work_package_id=work_package_id)
+        product_id = self.request.query_params.get("product")
+        if product_id:
+            qs = qs.filter(product_id=product_id)
         category = self.request.query_params.get("category")
         if category:
             qs = qs.filter(category=category)
