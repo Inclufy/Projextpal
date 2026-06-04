@@ -446,7 +446,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Tasks", url: `/projects/${projectId}/${lssBase}/tasks`, icon: ListChecks },
             { title: "Timeline", url: `/projects/${projectId}/${lssBase}/timeline`, icon: Calendar },
             ...(isBlackBelt ? [
-              { title: "Hypothesis Tests", url: `/projects/${projectId}/lss-black/hypothesis-tests`, icon: FileBarChart },
               { title: "DOE", url: `/projects/${projectId}/lss-black/doe`, icon: FlaskConical },
               { title: "Control Plans", url: `/projects/${projectId}/lss-black/control-plans`, icon: Shield },
               { title: "SPC Charts", url: `/projects/${projectId}/lss-black/spc-charts`, icon: BarChart3 },
