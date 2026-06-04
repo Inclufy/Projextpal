@@ -392,10 +392,13 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Stage Management",
           icon: Layers,
           items: [
+            { title: "Planning", url: `/projects/${projectId}/prince2/planning`, icon: CalendarDays },
             { title: "Stage Plan", url: `/projects/${projectId}/prince2/stage-plan`, icon: Calendar },
             { title: "Work Packages", url: `/projects/${projectId}/prince2/work-packages`, icon: ListChecks },
             { title: "Stage Gates", url: `/projects/${projectId}/prince2/stage-gates`, icon: Shield },
             { title: "Tolerances", url: `/projects/${projectId}/prince2/tolerances`, icon: Gauge },
+            { title: "Quality Register", url: `/projects/${projectId}/prince2/quality-register`, icon: CheckCircle },
+            { title: "Product Status", url: `/projects/${projectId}/prince2/product-status`, icon: Package },
           ],
         },
         {
@@ -408,6 +411,9 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Risk Register", url: `/projects/${projectId}/prince2/risks`, icon: AlertCircle },
             { title: "Issue Register", url: `/projects/${projectId}/prince2/issues`, icon: ClipboardList },
             { title: "Exception Reports", url: `/projects/${projectId}/prince2/exception-reports`, icon: AlertOctagon },
+            { title: "Exception Plans", url: `/projects/${projectId}/prince2/exception-plan`, icon: FileBarChart },
+            { title: "Management Approaches", url: `/projects/${projectId}/prince2/management-approaches`, icon: Gavel },
+            { title: "Daily Log", url: `/projects/${projectId}/prince2/daily-log`, icon: BookOpen },
             { title: "PID / Governance", url: `/projects/${projectId}/prince2/governance`, icon: BarChart3 },
             { title: "Change Control", url: `/projects/${projectId}/execution/governance`, icon: GitBranch },
           ],

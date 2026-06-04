@@ -6,6 +6,7 @@ from .models import (
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
     Prince2Risk, Prince2Issue, Prince2ExceptionReport,
+    ManagementApproach, QualityRegisterEntry, DailyLog, ExceptionPlan,
 )
 
 
@@ -164,6 +165,62 @@ class Prince2ExceptionReportSerializer(serializers.ModelSerializer):
         model = Prince2ExceptionReport
         fields = '__all__'
         read_only_fields = ['project', 'auto_generated', 'created_at', 'updated_at']
+
+
+class ManagementApproachSerializer(serializers.ModelSerializer):
+    approach_type_display = serializers.CharField(source='get_approach_type_display', read_only=True)
+
+    class Meta:
+        model = ManagementApproach
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        # Clean 400 on the (project, approach_type) unique constraint at create.
+        if self.instance is None:
+            project = self.context.get('project')
+            approach_type = attrs.get('approach_type')
+            if project is not None and approach_type and ManagementApproach.objects.filter(
+                project=project, approach_type=approach_type
+            ).exists():
+                raise serializers.ValidationError({
+                    'approach_type': (
+                        f"A '{approach_type}' approach already exists for this "
+                        f"project. Edit the existing one instead."
+                    )
+                })
+        return attrs
+
+
+class QualityRegisterEntrySerializer(serializers.ModelSerializer):
+    product_title = serializers.CharField(source='product.title', read_only=True, allow_null=True)
+    work_package_title = serializers.CharField(source='work_package.title', read_only=True, allow_null=True)
+    reviewer_name = serializers.CharField(source='reviewer.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = QualityRegisterEntry
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class DailyLogSerializer(serializers.ModelSerializer):
+    responsible_name = serializers.CharField(source='responsible.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = DailyLog
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class ExceptionPlanSerializer(serializers.ModelSerializer):
+    stage_name = serializers.CharField(source='stage.name', read_only=True, allow_null=True)
+    exception_report_title = serializers.CharField(source='exception_report.title', read_only=True, allow_null=True)
+    approved_by_name = serializers.CharField(source='approved_by.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = ExceptionPlan
+        fields = '__all__'
+        read_only_fields = ['project', 'approved_by', 'created_at', 'updated_at']
 
 
 class ProjectBoardMemberSerializer(serializers.ModelSerializer):

@@ -10,9 +10,16 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Loader2, RefreshCw, FileText, Briefcase, Shield,
   ChevronRight, AlertTriangle, CheckCircle2, Clock, Layers,
-  Plus, TrendingUp
+  Plus, TrendingUp, ShieldAlert, GitBranch, Workflow,
+  Euro, Wallet, Gavel, Check, X, Inbox
 } from "lucide-react";
 import { toast } from "sonner";
+import Prince2ProcessFlow from "./Prince2ProcessFlow";
+
+const riskBadge: Record<string, string> = { high: "bg-red-100 text-red-700", medium: "bg-amber-100 text-amber-700", low: "bg-blue-100 text-blue-700" };
+
+const approvalIcon: Record<string, any> = { stage_gate: Gavel, stage_plan: FileText, exception_plan: AlertTriangle };
+const approvalTint: Record<string, string> = { stage_gate: "text-purple-600", stage_plan: "text-blue-600", exception_plan: "text-rose-600" };
 
 const Prince2Dashboard = () => {
   const { pt } = usePageTranslations();
@@ -65,6 +72,74 @@ const Prince2Dashboard = () => {
   };
 
   const nav = (path: string) => navigate(`/projects/${id}/prince2/${path}`);
+
+  const [acting, setActing] = useState<string | null>(null);
+
+  const bg = dashboard?.budget_governance;
+  const fmtMoney = (v: number | null | undefined) => {
+    if (v === null || v === undefined) return "—";
+    try {
+      return new Intl.NumberFormat("nl-NL", {
+        style: "currency", currency: bg?.currency || "EUR", maximumFractionDigits: 0,
+      }).format(v);
+    } catch { return `€${Math.round(v).toLocaleString("nl-NL")}`; }
+  };
+
+  // Approve / reject items in the Board-approvals inbox.
+  const ENDPOINT: Record<string, string> = {
+    stage_gate: "stage-gates", stage_plan: "stage-plans", exception_plan: "exception-plans",
+  };
+  const actOnApproval = async (item: any, action: "approve" | "reject") => {
+    const base = ENDPOINT[item.kind];
+    if (!base) return;
+    // stage_plan + exception_plan only expose approve; reject a gate only.
+    const key = `${item.kind}-${item.id}-${action}`;
+    setActing(key);
+    try {
+      const res = await fetch(
+        `/api/v1/projects/${id}/prince2/${base}/${item.id}/${action}/`,
+        { method: "POST", headers: jsonHeaders, body: JSON.stringify({}) },
+      );
+      if (res.ok) {
+        toast.success(action === "approve" ? pt("Approved") : pt("Rejected"));
+        fetchDashboard();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || err.detail || pt("Action failed"));
+      }
+    } catch {
+      toast.error(pt("Action failed"));
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const checkCostTolerance = async () => {
+    setActing("cost-check");
+    try {
+      const res = await fetch(
+        `/api/v1/projects/${id}/prince2/tolerances/check-cost-tolerance/`,
+        { method: "POST", headers: jsonHeaders, body: JSON.stringify({}) },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (data.breach && data.exception_raised) {
+          toast.warning(pt("Cost tolerance exceeded — Exception Report raised"));
+        } else if (data.breach) {
+          toast.warning(pt("Cost tolerance exceeded"));
+        } else {
+          toast.success(pt("Within cost tolerance"));
+        }
+        fetchDashboard();
+      } else {
+        toast.error(data.error || data.detail || pt("Action failed"));
+      }
+    } catch {
+      toast.error(pt("Action failed"));
+    } finally {
+      setActing(null);
+    }
+  };
 
   const getStatusBadge = (status: string | null) => {
     if (!status) return <Badge variant="outline" className="text-xs">Not created</Badge>;
@@ -139,7 +214,7 @@ const Prince2Dashboard = () => {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -174,17 +249,242 @@ const Prince2Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={bg?.over_budget ? "border-rose-200" : ""}>
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-purple-600" />
+              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${bg?.over_budget ? "bg-rose-100" : "bg-emerald-100"}`}>
+                <Euro className={`h-5 w-5 ${bg?.over_budget ? "text-rose-600" : "text-emerald-600"}`} />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{pt("Reports")}</p>
-                <p className="text-2xl font-bold">{dashboard?.recent_highlight_reports?.length || 0}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-muted-foreground">{pt("Budget remaining")}</p>
+                <p className={`text-2xl font-bold truncate ${bg?.over_budget ? "text-rose-600" : ""}`}>
+                  {bg?.has_budget_data ? fmtMoney(bg?.total_remaining) : "—"}
+                </p>
+                {bg?.has_budget_data && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {fmtMoney(bg?.total_actual)} / {fmtMoney(bg?.total_planned)}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* PRINCE2 Process Flow */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Workflow className="h-5 w-5 text-purple-600" /> {pt("PRINCE2 Process Flow")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Prince2ProcessFlow current={dashboard?.current_process} progress={dashboard?.process_progress} onNavigate={nav} />
+          </CardContent>
+        </Card>
+
+        {/* Board approvals inbox + Budget governance */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Board approvals inbox — Manage by Exception */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Inbox className="h-5 w-5 text-purple-600" /> {pt("Awaiting Board approval")}
+                <Badge variant="outline" className="ml-1">{dashboard?.approvals_count || 0}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(dashboard?.approvals_inbox?.length || 0) === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
+                  <p className="text-sm text-muted-foreground">{pt("Nothing awaiting approval — the board is up to date.")}</p>
+                </div>
+              ) : (
+                dashboard.approvals_inbox.map((item: any) => {
+                  const Icon = approvalIcon[item.kind] || Gavel;
+                  const canReject = item.kind === "stage_gate";
+                  return (
+                    <div key={`${item.kind}-${item.id}`} className="flex items-center justify-between gap-3 p-3 border rounded-lg">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Icon className={`h-5 w-5 shrink-0 ${approvalTint[item.kind] || ""}`} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{item.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{pt(item.subtitle)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          size="sm" variant="default" className="gap-1 h-8"
+                          disabled={!!acting}
+                          onClick={() => actOnApproval(item, "approve")}
+                        >
+                          {acting === `${item.kind}-${item.id}-approve`
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Check className="h-3.5 w-3.5" />}
+                          {pt("Approve")}
+                        </Button>
+                        {canReject && (
+                          <Button
+                            size="sm" variant="outline" className="gap-1 h-8"
+                            disabled={!!acting}
+                            onClick={() => actOnApproval(item, "reject")}
+                          >
+                            {acting === `${item.kind}-${item.id}-reject`
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <X className="h-3.5 w-3.5" />}
+                            {pt("Reject")}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Budget governance — planned vs actual vs remaining per stage */}
+          <Card className={bg?.over_budget ? "border-rose-200" : ""}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Wallet className="h-5 w-5 text-emerald-600" /> {pt("Budget governance")}
+                </CardTitle>
+                <Button
+                  variant="outline" size="sm" className="gap-1"
+                  disabled={acting === "cost-check"}
+                  onClick={checkCostTolerance}
+                >
+                  {acting === "cost-check" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Gavel className="h-3.5 w-3.5" />}
+                  {pt("Check cost tolerance")}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {!bg?.has_budget_data ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <Wallet className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">{pt("No budget set yet. Add stage budgets in the Stage Plans.")}</p>
+                  <Button variant="link" size="sm" className="mt-1" onClick={() => nav("stage-plan")}>{pt("Stage Plans")}</Button>
+                </div>
+              ) : (
+                <>
+                  {/* Totals row */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-md border p-2">
+                      <p className="text-xs text-muted-foreground">{pt("Planned")}</p>
+                      <p className="text-sm font-semibold">{fmtMoney(bg.total_planned)}</p>
+                    </div>
+                    <div className="rounded-md border p-2">
+                      <p className="text-xs text-muted-foreground">{pt("Actual")}</p>
+                      <p className="text-sm font-semibold">{fmtMoney(bg.total_actual)}</p>
+                    </div>
+                    <div className={`rounded-md border p-2 ${bg.over_budget ? "bg-rose-50 border-rose-200" : "bg-emerald-50 border-emerald-200"}`}>
+                      <p className="text-xs text-muted-foreground">{pt("Remaining")}</p>
+                      <p className={`text-sm font-semibold ${bg.over_budget ? "text-rose-600" : "text-emerald-700"}`}>{fmtMoney(bg.total_remaining)}</p>
+                    </div>
+                  </div>
+                  {/* Spend bar */}
+                  {bg.total_planned > 0 && (
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${bg.over_budget ? "bg-rose-500" : "bg-emerald-500"}`}
+                        style={{ width: `${Math.min(100, Math.round((bg.total_actual / bg.total_planned) * 100))}%` }}
+                      />
+                    </div>
+                  )}
+                  {bg.active_cost_breach && (
+                    <div className="flex items-center gap-2 text-xs text-rose-600 bg-rose-50 rounded-md px-2 py-1.5">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      {pt("Active stage over budget")}: {bg.active_cost_breach.stage_name} — {fmtMoney(bg.active_cost_breach.actual)} / {fmtMoney(bg.active_cost_breach.planned)}
+                    </div>
+                  )}
+                  {/* Per-stage breakdown */}
+                  <div className="space-y-1.5">
+                    {bg.stages.filter((s: any) => s.planned > 0 || s.actual > 0).map((s: any) => (
+                      <div key={s.stage_id} className="flex items-center justify-between gap-2 text-sm">
+                        <span className="truncate flex-1 min-w-0">{s.stage_name}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">{fmtMoney(s.actual)} / {fmtMoney(s.planned)}</span>
+                        <span className={`text-xs font-medium w-16 text-right shrink-0 ${s.over_budget ? "text-rose-600" : "text-emerald-700"}`}>
+                          {fmtMoney(s.remaining)}
+                        </span>
+                      </div>
+                    ))}
+                    {bg.stages.filter((s: any) => s.planned > 0 || s.actual > 0).length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">{pt("No per-stage budgets recorded.")}</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Risk + Exception/Issue widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Risk widget */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ShieldAlert className="h-5 w-5 text-amber-500" /> {pt("Risks")}
+                  <Badge variant="outline" className="ml-1">{dashboard?.open_risks_total || 0} {pt("open")}</Badge>
+                </CardTitle>
+                <Button variant="outline" size="sm" onClick={() => nav("risks")} className="gap-1">
+                  {pt("Risk Register")} <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Badge className={riskBadge.high}>{pt("High")}: {dashboard?.risk_counts?.high || 0}</Badge>
+                <Badge className={riskBadge.medium}>{pt("Medium")}: {dashboard?.risk_counts?.medium || 0}</Badge>
+                <Badge className={riskBadge.low}>{pt("Low")}: {dashboard?.risk_counts?.low || 0}</Badge>
+              </div>
+              {dashboard?.top_risks?.length > 0 ? (
+                <div className="space-y-1.5">
+                  {dashboard.top_risks.map((r: any) => (
+                    <div key={r.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/40 cursor-pointer" onClick={() => nav("risks")}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{r.title}</p>
+                        {r.mitigation && <p className="text-xs text-muted-foreground truncate">{pt("Response")}: {r.mitigation}</p>}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        <Badge className={`text-[10px] ${riskBadge[r.impact] || ""}`}>{pt("I")}:{r.impact}</Badge>
+                        <Badge className={`text-[10px] ${riskBadge[r.probability] || ""}`}>{pt("P")}:{r.probability}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic py-2">{pt("No open risks recorded.")}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Exceptions + Issues counters */}
+          <div className="space-y-4">
+            <Card className="cursor-pointer hover:bg-muted/50" onClick={() => nav("exception-reports")}>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-rose-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{pt("Open Exceptions")}</p>
+                  <p className="text-2xl font-bold">{dashboard?.open_exceptions || 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:bg-muted/50" onClick={() => nav("issues")}>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <GitBranch className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{pt("Open Issues")}</p>
+                  <p className="text-2xl font-bold">{dashboard?.open_issues_total || 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Documents */}

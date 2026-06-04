@@ -13,6 +13,7 @@ from .models import (
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
     Prince2Risk, Prince2Issue, Prince2ExceptionReport,
+    ManagementApproach, QualityRegisterEntry, DailyLog, ExceptionPlan,
 )
 from .serializers import (
     ProductSerializer,
@@ -23,6 +24,8 @@ from .serializers import (
     CheckpointReportSerializer,
     EndProjectReportSerializer, LessonsLogSerializer, ProjectToleranceSerializer,
     Prince2RiskSerializer, Prince2IssueSerializer, Prince2ExceptionReportSerializer,
+    ManagementApproachSerializer, QualityRegisterEntrySerializer,
+    DailyLogSerializer, ExceptionPlanSerializer,
 )
 
 
@@ -436,6 +439,141 @@ class Prince2ExceptionReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(project=self.get_project(), raised_by=self.request.user)
 
+    @action(detail=True, methods=['post'])
+    def request_exception_plan(self, request, project_id=None, pk=None):
+        """Project Board direction: request an Exception Plan in response to this
+        Exception Report. Records the board decision and spins up a draft
+        Exception Plan — closing the Manage-by-Exception loop."""
+        report = self.get_object()
+        report.status = 'board_decision'
+        report.board_decision = request.data.get(
+            'board_decision',
+            'Project Board requests an Exception Plan for the remainder of the stage.',
+        )
+        report.save()
+        plan = ExceptionPlan.objects.create(
+            project=report.project,
+            exception_report=report,
+            stage=report.stage,
+            title=f"Exception Plan — {report.title}",
+            rationale=report.cause,
+            status='draft',
+        )
+        return Response(
+            {
+                'exception_report': Prince2ExceptionReportSerializer(report).data,
+                'exception_plan': ExceptionPlanSerializer(plan).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ManagementApproachViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = ManagementApproachSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(ManagementApproach)
+        approach_type = self.request.query_params.get('approach_type')
+        if approach_type:
+            queryset = queryset.filter(approach_type=approach_type)
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.kwargs.get('project_id') and self.request is not None:
+            try:
+                context['project'] = self.get_project()
+            except Exception:
+                pass
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
+    @action(detail=False, methods=['post'])
+    def initialize(self, request, project_id=None):
+        """Create the 4 standard management approaches as drafts."""
+        project = self.get_project()
+        approaches = []
+        for atype, _ in ManagementApproach.APPROACH_CHOICES:
+            obj, _created = ManagementApproach.objects.get_or_create(
+                project=project, approach_type=atype,
+            )
+            approaches.append(obj)
+        return Response(ManagementApproachSerializer(approaches, many=True).data)
+
+
+class QualityRegisterViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = QualityRegisterEntrySerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(QualityRegisterEntry)
+        result = self.request.query_params.get('result')
+        product = self.request.query_params.get('product')
+        if result:
+            queryset = queryset.filter(result=result)
+        if product:
+            queryset = queryset.filter(product_id=product)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
+
+class DailyLogViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = DailyLogSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(DailyLog)
+        entry_type = self.request.query_params.get('entry_type')
+        status_filter = self.request.query_params.get('status')
+        if entry_type:
+            queryset = queryset.filter(entry_type=entry_type)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
+
+class ExceptionPlanViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = ExceptionPlanSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(ExceptionPlan)
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, project_id=None, pk=None):
+        """Board approves the Exception Plan -> it becomes the new baseline and
+        the originating Exception Report is closed."""
+        plan = self.get_object()
+        plan.status = 'approved'
+        plan.approved_by = request.user
+        plan.save()
+        if plan.exception_report_id:
+            report = plan.exception_report
+            report.status = 'closed'
+            report.date_closed = timezone.now().date()
+            report.save()
+        # Re-baseline the stage forecast where provided.
+        if plan.stage_id and plan.revised_end_date:
+            stage = plan.stage
+            stage.planned_end_date = plan.revised_end_date
+            stage.save()
+        return Response(ExceptionPlanSerializer(plan).data)
+
 
 # =============================================================================
 # PROJECT BOARD
@@ -656,6 +794,78 @@ class ProjectToleranceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             tolerances.append(tolerance)
         return Response(ProjectToleranceSerializer(tolerances, many=True).data)
 
+    @action(detail=False, methods=['post'], url_path='check-cost-tolerance')
+    def check_cost_tolerance(self, request, project_id=None):
+        """Auto-detect a cost-tolerance breach on the active stage.
+
+        Compares approved expense actuals (by date window) against the active
+        stage's planned budget. When actuals exceed planned budget + margin,
+        flips the project's cost ProjectTolerance to is_exceeded=True, which
+        fires the tolerance-breach signal and raises a Prince2ExceptionReport —
+        closing the *Manage by Exception* loop automatically.
+        """
+        from projects.models import BudgetItem
+        from datetime import date as _date
+
+        project = self.get_project()
+        active = Stage.objects.filter(project=project, status='active').order_by('order').first()
+        if not active:
+            return Response(
+                {'breach': False, 'detail': 'No active stage to evaluate.'},
+                status=status.HTTP_200_OK,
+            )
+
+        sp = StagePlan.objects.filter(stage=active).order_by('-created_at').first()
+        planned = float(sp.budget) if (sp and sp.budget is not None) else 0.0
+
+        start = active.actual_start_date or active.planned_start_date
+        end = active.actual_end_date or active.planned_end_date or _date.max
+        actuals = BudgetItem.objects.filter(
+            project=project, status='approved', type='expense',
+        )
+        if start:
+            actuals = actuals.filter(date__gte=start, date__lte=end)
+        actual = float(sum((bi.amount or 0) for bi in actuals))
+
+        # Margin from the cost tolerance's plus_tolerance (e.g. "+10%"); default 10%.
+        cost_tol = ProjectTolerance.objects.filter(project=project, tolerance_type='cost').first()
+        margin_pct = 10.0
+        if cost_tol and cost_tol.plus_tolerance:
+            import re
+            m = re.search(r'(\d+(?:\.\d+)?)', cost_tol.plus_tolerance)
+            if m:
+                margin_pct = float(m.group(1))
+        threshold = planned * (1 + margin_pct / 100.0) if planned else 0.0
+        breach = planned > 0 and actual > threshold
+
+        result = {
+            'breach': breach,
+            'stage_id': active.id,
+            'stage_name': active.name,
+            'planned': round(planned, 2),
+            'actual': round(actual, 2),
+            'margin_pct': margin_pct,
+            'threshold': round(threshold, 2),
+        }
+
+        if breach:
+            if not cost_tol:
+                cost_tol = ProjectTolerance.objects.create(
+                    project=project, tolerance_type='cost',
+                    plus_tolerance=f'+{margin_pct:g}%', minus_tolerance=f'-{margin_pct:g}%',
+                )
+            cost_tol.current_status = (
+                f'Actuals {result["actual"]} exceed planned budget {result["planned"]} '
+                f'+{margin_pct:g}% on stage "{active.name}"'
+            )
+            already = cost_tol.is_exceeded
+            cost_tol.is_exceeded = True
+            cost_tol.save()  # signal raises the Exception Report on the False->True edge
+            result['tolerance_id'] = cost_tol.id
+            result['exception_raised'] = not already
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 # =============================================================================
 # DASHBOARD
@@ -692,10 +902,230 @@ class Prince2DashboardView(APIView):
         
         # Get tolerances
         tolerances_exceeded = ProjectTolerance.objects.filter(project=project, is_exceeded=True).count()
-        
+
         # Get recent reports
         recent_reports = HighlightReport.objects.filter(project=project).order_by('-report_date')[:5]
-        
+
+        # Risk widget — open risks, severity counts, top 5 by impact
+        risks_qs = Prince2Risk.objects.filter(project=project).exclude(status='closed')
+        risk_rank = {'high': 0, 'medium': 1, 'low': 2}
+        top_risks = sorted(
+            risks_qs,
+            key=lambda r: (risk_rank.get(r.impact, 3), risk_rank.get(r.probability, 3)),
+        )[:5]
+        risk_counts = {
+            'high': risks_qs.filter(impact='high').count(),
+            'medium': risks_qs.filter(impact='medium').count(),
+            'low': risks_qs.filter(impact='low').count(),
+        }
+
+        # Issue widget — open issues
+        open_issues = Prince2Issue.objects.filter(project=project).exclude(status='closed')
+
+        # Exception widget — open exception reports
+        open_exceptions = Prince2ExceptionReport.objects.filter(
+            project=project,
+        ).exclude(status='closed').count()
+
+        # Determine the "current PRINCE2 process" for the flow diagram.
+        if not (brief and brief.status == 'approved'):
+            current_process = 'SU'   # Starting up a Project
+        elif not (pid and pid.status == 'baselined'):
+            current_process = 'IP'   # Initiating a Project
+        elif completed_stages >= total_stages and total_stages > 0:
+            current_process = 'CP'   # Closing a Project
+        else:
+            current_process = 'CS'   # Controlling a Stage
+
+        # ------------------------------------------------------------------
+        # Per-process progress for the interactive Process Flow component.
+        # Each process exposes a checklist of concrete activities; pct is the
+        # share of those activities satisfied by real project data.
+        # ------------------------------------------------------------------
+        approaches_count = ManagementApproach.objects.filter(project=project).count()
+        wp_qs = WorkPackage.objects.filter(project=project)
+        wp_count = wp_qs.count()
+        wp_authorized = wp_qs.exclude(status='draft').count()
+        wp_done = wp_qs.filter(status__in=['completed', 'accepted']).count()
+        highlight_count = HighlightReport.objects.filter(project=project).count()
+        checkpoint_count = CheckpointReport.objects.filter(project=project).count()
+        quality_qs = QualityRegisterEntry.objects.filter(project=project)
+        quality_done = quality_qs.exclude(result='pending').count()
+        lessons_count = LessonsLog.objects.filter(project=project).count()
+        end_report = EndProjectReport.objects.filter(project=project).first()
+        exception_plans_count = ExceptionPlan.objects.filter(project=project).count()
+        stage_gates_done = StageGate.objects.filter(stage__project=project, outcome='approved').count()
+        stage_plans_count = StagePlan.objects.filter(stage__project=project).count()
+        board = ProjectBoard.objects.filter(project=project).first()
+        board_member_count = ProjectBoardMember.objects.filter(board=board).count() if board else 0
+        risks_total = risks_qs.count()
+        issues_total = open_issues.count()
+
+        def _pp(activities):
+            done = sum(1 for a in activities if a['done'])
+            total = len(activities)
+            return {
+                'pct': round(done / total * 100) if total else 0,
+                'done': done, 'total': total, 'activities': activities,
+            }
+
+        process_progress = {
+            'SU': _pp([
+                {'label': 'Project Brief created', 'done': brief is not None},
+                {'label': 'Project Brief approved', 'done': bool(brief and brief.status == 'approved')},
+                {'label': 'Outline Business Case created', 'done': bc is not None},
+                {'label': 'Initiation stage planned', 'done': total_stages > 0},
+            ]),
+            'DP': _pp([
+                {'label': 'Project Board appointed', 'done': board_member_count > 0},
+                {'label': 'Initiation authorised (Brief approved)', 'done': bool(brief and brief.status == 'approved')},
+                {'label': 'Project authorised (PID baselined)', 'done': bool(pid and pid.status == 'baselined')},
+                {'label': 'No open exceptions', 'done': open_exceptions == 0},
+            ]),
+            'IP': _pp([
+                {'label': 'Detailed Business Case', 'done': bool(bc and bc.status in ('approved', 'baselined'))},
+                {'label': 'Four Management Approaches defined', 'done': approaches_count >= 4},
+                {'label': 'Project Plan / stages defined', 'done': total_stages > 0},
+                {'label': 'PID baselined', 'done': bool(pid and pid.status == 'baselined')},
+            ]),
+            'CS': _pp([
+                {'label': 'Work Packages created', 'done': wp_count > 0},
+                {'label': 'Work Packages authorised', 'done': wp_authorized > 0},
+                {'label': 'Highlight Reports issued', 'done': highlight_count > 0},
+                {'label': 'Risks & Issues being managed', 'done': (risks_total + issues_total) > 0},
+            ]),
+            'MP': _pp([
+                {'label': 'Work Packages authorised', 'done': wp_authorized > 0},
+                {'label': 'Checkpoint Reports produced', 'done': checkpoint_count > 0},
+                {'label': 'Quality checks performed', 'done': quality_done > 0},
+                {'label': 'Work Packages delivered', 'done': wp_done > 0},
+            ]),
+            'SB': _pp([
+                {'label': 'Stage Gate reviews approved', 'done': stage_gates_done > 0},
+                {'label': 'A stage completed', 'done': completed_stages > 0},
+                {'label': 'Stage Plans prepared', 'done': stage_plans_count > 0},
+                {'label': 'Exception Plans where needed', 'done': open_exceptions == 0 or exception_plans_count > 0},
+            ]),
+            'CP': _pp([
+                {'label': 'All stages completed', 'done': total_stages > 0 and completed_stages >= total_stages},
+                {'label': 'End Project Report', 'done': end_report is not None},
+                {'label': 'Lessons captured', 'done': lessons_count > 0},
+                {'label': 'Products accepted', 'done': wp_done > 0},
+            ]),
+        }
+
+        # ------------------------------------------------------------------
+        # Budget governance — planned vs actual vs remaining, per stage + total.
+        # Read-only aggregation (no schema change). "Actual" = approved expense
+        # BudgetItems; per-stage allocation is by the item date falling inside
+        # the stage's (actual|planned) date window. PRINCE2 "Manage by Stages"
+        # means each stage carries its own cost tolerance.
+        # ------------------------------------------------------------------
+        from projects.models import BudgetItem, ProjectBudget
+        from datetime import date as _date
+
+        pb = ProjectBudget.objects.filter(project=project).first()
+        currency = (pb.currency if pb else None) or 'EUR'
+
+        approved_expenses = list(
+            BudgetItem.objects.filter(project=project, status='approved', type='expense')
+            .values('amount', 'date')
+        )
+        total_actual = float(sum((bi['amount'] or 0) for bi in approved_expenses))
+
+        # Planned total: ProjectBudget.total_budget → project.budget → Σ StagePlan.budget.
+        stage_plans = StagePlan.objects.filter(stage__project=project).select_related('stage')
+        stage_plan_budget = {sp.stage_id: float(sp.budget or 0) for sp in stage_plans}
+        sum_stage_budgets = float(sum(stage_plan_budget.values()))
+        if pb and pb.total_budget:
+            total_planned = float(pb.total_budget)
+        elif getattr(project, 'budget', None):
+            total_planned = float(project.budget)
+        else:
+            total_planned = sum_stage_budgets
+
+        def _stage_window(s):
+            start = s.actual_start_date or s.planned_start_date
+            end = s.actual_end_date or s.planned_end_date or _date.max
+            return start, end
+
+        stage_budgets = []
+        active_cost_breach = None
+        for s in stages:
+            planned = stage_plan_budget.get(s.id, 0.0)
+            start, end = _stage_window(s)
+            if start:
+                actual = float(sum(
+                    (bi['amount'] or 0) for bi in approved_expenses
+                    if bi['date'] and start <= bi['date'] <= end
+                ))
+            else:
+                actual = 0.0
+            remaining = planned - actual
+            over = planned > 0 and actual > planned
+            row = {
+                'stage_id': s.id, 'stage_name': s.name, 'status': s.status,
+                'planned': round(planned, 2), 'actual': round(actual, 2),
+                'remaining': round(remaining, 2),
+                'variance_pct': round((remaining / planned * 100), 1) if planned else None,
+                'over_budget': over,
+            }
+            stage_budgets.append(row)
+            if s.status == 'active' and over:
+                active_cost_breach = row
+
+        total_remaining = total_planned - total_actual
+        budget_governance = {
+            'currency': currency,
+            'total_planned': round(total_planned, 2),
+            'total_actual': round(total_actual, 2),
+            'total_remaining': round(total_remaining, 2),
+            'variance': round(total_remaining, 2),
+            'variance_pct': round((total_remaining / total_planned * 100), 1) if total_planned else None,
+            'over_budget': total_planned > 0 and total_actual > total_planned,
+            'has_budget_data': bool(total_planned or total_actual),
+            'stages': stage_budgets,
+            'active_cost_breach': active_cost_breach,
+        }
+
+        # ------------------------------------------------------------------
+        # Board approvals inbox — items awaiting Project Board sign-off.
+        # Surfaces the "Manage by Exception" governance flow on the dashboard.
+        # ------------------------------------------------------------------
+        pending_gates = StageGate.objects.filter(
+            stage__project=project, outcome='pending'
+        ).select_related('stage').order_by('stage__order')
+        pending_stage_plans = StagePlan.objects.filter(
+            stage__project=project, status='draft'
+        ).select_related('stage').order_by('stage__order')
+        pending_exception_plans = ExceptionPlan.objects.filter(
+            project=project
+        ).exclude(status__in=['approved', 'baselined', 'rejected']).order_by('-created_at')
+
+        approvals_inbox = []
+        for g in pending_gates:
+            approvals_inbox.append({
+                'kind': 'stage_gate', 'id': g.id, 'stage_id': g.stage_id,
+                'title': f"Stage Gate — {g.stage.name}",
+                'subtitle': 'Awaiting Project Board decision to authorise the next stage',
+                'review_date': g.review_date.isoformat() if g.review_date else None,
+            })
+        for sp in pending_stage_plans:
+            approvals_inbox.append({
+                'kind': 'stage_plan', 'id': sp.id, 'stage_id': sp.stage_id,
+                'title': f"Stage Plan — {sp.stage.name}",
+                'subtitle': 'Draft Stage Plan awaiting approval',
+                'budget': float(sp.budget) if sp.budget is not None else None,
+            })
+        for ep in pending_exception_plans:
+            approvals_inbox.append({
+                'kind': 'exception_plan', 'id': ep.id,
+                'stage_id': getattr(ep, 'stage_id', None),
+                'title': f"Exception Plan — {getattr(ep, 'title', '') or ep.id}",
+                'subtitle': 'Exception Plan awaiting Project Board approval',
+                'revised_budget': float(ep.revised_budget) if getattr(ep, 'revised_budget', None) is not None else None,
+            })
+
         dashboard_data = {
             'project_id': project.id,
             'project_name': project.name,
@@ -709,10 +1139,20 @@ class Prince2DashboardView(APIView):
             'has_pid': pid is not None,
             'pid_status': pid.status if pid else None,
             'tolerances_exceeded': tolerances_exceeded,
+            'current_process': current_process,
+            'process_progress': process_progress,
+            'budget_governance': budget_governance,
+            'approvals_inbox': approvals_inbox,
+            'approvals_count': len(approvals_inbox),
+            'open_exceptions': open_exceptions,
+            'risk_counts': risk_counts,
+            'open_risks_total': risks_qs.count(),
+            'top_risks': Prince2RiskSerializer(top_risks, many=True).data,
+            'open_issues_total': open_issues.count(),
             'stages': StageSerializer(stages, many=True).data,
             'recent_highlight_reports': HighlightReportSerializer(recent_reports, many=True).data,
         }
-        
+
         return Response(dashboard_data)
 
 
@@ -812,6 +1252,51 @@ class ProjectClosureComputedView(APIView):
             'follow_on_actions': follow_on_actions,
             'has_end_project_report': end_report is not None,
             'end_project_report_status': end_report.status if end_report else None,
+        })
+
+
+class ProductStatusAccountView(APIView):
+    """PRINCE2 Product Status Account (6th Ed §A.18).
+
+    A read-only report giving the status of every product across the project
+    (or a stage), derived from the Product register + linked Quality checks.
+    Used by the Project Manager when planning, reporting and at stage boundaries.
+    """
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get(self, request, project_id):
+        from projects.models import Project
+        project = get_object_or_404(Project, id=project_id, company=request.user.company)
+
+        stage_id = request.query_params.get('stage')
+        products = Product.objects.filter(project=project)
+        if stage_id:
+            products = products.filter(work_package__stage_id=stage_id)
+
+        rows = []
+        status_tally = {}
+        for p in products.select_related('work_package', 'owner'):
+            checks = QualityRegisterEntry.objects.filter(product=p)
+            rows.append({
+                'id': p.id,
+                'title': p.title,
+                'product_type': p.product_type,
+                'status': p.status,
+                'work_package': p.work_package.title if p.work_package_id else None,
+                'owner': p.owner.get_full_name() if p.owner_id else None,
+                'quality_checks_total': checks.count(),
+                'quality_checks_passed': checks.filter(result='pass').count(),
+                'quality_checks_failed': checks.filter(result='fail').count(),
+                'quality_checks_pending': checks.filter(result='pending').count(),
+            })
+            status_tally[p.status] = status_tally.get(p.status, 0) + 1
+
+        return Response({
+            'project_id': project.id,
+            'project_name': project.name,
+            'total_products': products.count(),
+            'status_summary': status_tally,
+            'products': rows,
         })
 
 

@@ -148,6 +148,12 @@ const Prince2BenefitsReview = lazy(() => import("./pages/prince2/Prince2Benefits
 const Prince2Risks = lazy(() => import("./pages/prince2/Prince2Risks"));
 const Prince2Issues = lazy(() => import("./pages/prince2/Prince2Issues"));
 const Prince2ExceptionReports = lazy(() => import("./pages/prince2/Prince2ExceptionReports"));
+const Prince2ExceptionPlan = lazy(() => import("./pages/prince2/Prince2ExceptionPlan"));
+const Prince2QualityRegister = lazy(() => import("./pages/prince2/Prince2QualityRegister"));
+const Prince2DailyLog = lazy(() => import("./pages/prince2/Prince2DailyLog"));
+const Prince2ManagementApproaches = lazy(() => import("./pages/prince2/Prince2ManagementApproaches"));
+const Prince2ProductStatus = lazy(() => import("./pages/prince2/Prince2ProductStatus"));
+const Prince2Planning = lazy(() => import("./pages/prince2/Prince2Planning"));
 
 // Scrum Pages
 const ScrumOverview = lazy(() => import('./pages/scrum/ScrumOverview'));
@@ -825,6 +831,12 @@ const App = () => (
               <Route path="/projects/:id/prince2/risks" element={<ProtectedPage><Prince2Risks /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/issues" element={<ProtectedPage><Prince2Issues /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/exception-reports" element={<ProtectedPage><Prince2ExceptionReports /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/exception-plan" element={<ProtectedPage><Prince2ExceptionPlan /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/quality-register" element={<ProtectedPage><Prince2QualityRegister /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/daily-log" element={<ProtectedPage><Prince2DailyLog /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/management-approaches" element={<ProtectedPage><Prince2ManagementApproaches /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/product-status" element={<ProtectedPage><Prince2ProductStatus /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/planning" element={<ProtectedPage><Prince2Planning /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/tolerances" element={<ProtectedPage><Prince2Tolerances /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/project-board" element={<ProtectedPage><Prince2ProjectBoard /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/governance" element={<ProtectedPage><Prince2Governance /></ProtectedPage>} />

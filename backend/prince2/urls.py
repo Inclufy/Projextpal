@@ -11,6 +11,8 @@ from .views import (
     CheckpointReportViewSet,
     EndProjectReportViewSet, LessonsLogViewSet, ProjectToleranceViewSet,
     Prince2RiskViewSet, Prince2IssueViewSet, Prince2ExceptionReportViewSet,
+    ManagementApproachViewSet, QualityRegisterViewSet, DailyLogViewSet,
+    ExceptionPlanViewSet, ProductStatusAccountView,
     Prince2DashboardView,
     ProjectBriefComputedView, ProjectClosureComputedView,
     Prince2SeedDemoView, Prince2ClearDemoView,
@@ -258,6 +260,86 @@ urlpatterns = [
         Prince2ExceptionReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='prince2-exception-report-detail'
     ),
+    path(
+        'projects/<int:project_id>/prince2/exception-reports/<int:pk>/request_exception_plan/',
+        Prince2ExceptionReportViewSet.as_view({'post': 'request_exception_plan'}),
+        name='prince2-exception-report-request-plan'
+    ),
+
+    # =========================================================================
+    # EXCEPTION PLANS (Manage by Exception — Board response)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/exception-plans/',
+        ExceptionPlanViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-exception-plan-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/exception-plans/<int:pk>/',
+        ExceptionPlanViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-exception-plan-detail'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/exception-plans/<int:pk>/approve/',
+        ExceptionPlanViewSet.as_view({'post': 'approve'}),
+        name='prince2-exception-plan-approve'
+    ),
+
+    # =========================================================================
+    # MANAGEMENT APPROACHES (Risk / Quality / Communication / Change Control)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/approaches/',
+        ManagementApproachViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-approaches-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/approaches/initialize/',
+        ManagementApproachViewSet.as_view({'post': 'initialize'}),
+        name='prince2-approaches-initialize'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/approaches/<int:pk>/',
+        ManagementApproachViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-approaches-detail'
+    ),
+
+    # =========================================================================
+    # QUALITY REGISTER
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/quality-register/',
+        QualityRegisterViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-quality-register-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/quality-register/<int:pk>/',
+        QualityRegisterViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-quality-register-detail'
+    ),
+
+    # =========================================================================
+    # DAILY LOG
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/daily-log/',
+        DailyLogViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-daily-log-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/daily-log/<int:pk>/',
+        DailyLogViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-daily-log-detail'
+    ),
+
+    # =========================================================================
+    # PRODUCT STATUS ACCOUNT (computed, read-only)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/product-status/',
+        ProductStatusAccountView.as_view(),
+        name='prince2-product-status'
+    ),
 
     # =========================================================================
     # PROJECT BOARD
@@ -385,6 +467,11 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/tolerances/initialize/',
         ProjectToleranceViewSet.as_view({'post': 'initialize'}),
         name='prince2-tolerances-initialize'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/tolerances/check-cost-tolerance/',
+        ProjectToleranceViewSet.as_view({'post': 'check_cost_tolerance'}),
+        name='prince2-tolerances-check-cost'
     ),
 
 

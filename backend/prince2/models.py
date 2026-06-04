@@ -727,6 +727,167 @@ class Prince2Issue(models.Model):
         return f"{self.title} ({self.project.name})"
 
 
+class ExceptionPlan(models.Model):
+    """PRINCE2 Exception Plan (6th Ed §A.16).
+
+    Produced at the Project Board's request in response to an approved
+    Exception Report. It replaces the Stage Plan (or Project Plan) for the
+    remainder of the affected period and re-baselines the forecast with
+    revised tolerances. This closes the *Manage by Exception* loop:
+    breach -> Exception Report -> Board decision -> Exception Plan -> new baseline.
+    """
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_exception_plans')
+    exception_report = models.ForeignKey('Prince2ExceptionReport', on_delete=models.SET_NULL, null=True, blank=True, related_name='exception_plans')
+    stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True, related_name='exception_plans')
+    title = models.CharField(max_length=200, blank=True, default='')
+    rationale = models.TextField(blank=True, default='', help_text='Why this plan is needed (links to the exception)')
+    plan_description = models.TextField(blank=True, default='', help_text='The revised plan of action')
+    revised_budget = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    revised_end_date = models.DateField(blank=True, null=True)
+    revised_tolerances = models.TextField(blank=True, default='', help_text='New time/cost/scope tolerances agreed by the Board')
+    impact_on_business_case = models.TextField(blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    version = models.CharField(max_length=10, default='1.0')
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_approved_exception_plans')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Exception Plan: {self.title or self.id} ({self.project.name})"
+
+
+class ManagementApproach(models.Model):
+    """PRINCE2 management approach / strategy (6th Ed §A.6/A.22/A.24/A.2).
+
+    The four approaches that the PID references and that govern *how* the
+    project will manage Risk, Quality, Communication and Change Control.
+    One row per (project, approach_type). Stored separately from the PID so
+    each approach can be authored, versioned and reviewed independently while
+    still feeding the PID.
+    """
+    APPROACH_CHOICES = [
+        ('risk', 'Risk Management Approach'),
+        ('quality', 'Quality Management Approach'),
+        ('communication', 'Communication Management Approach'),
+        ('change_control', 'Change Control Approach'),
+    ]
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('approved', 'Approved'),
+        ('baselined', 'Baselined'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_approaches')
+    approach_type = models.CharField(max_length=20, choices=APPROACH_CHOICES)
+    introduction = models.TextField(blank=True, default='', help_text='Purpose, objectives, scope of this approach')
+    procedure = models.TextField(blank=True, default='', help_text='The procedure / process steps to be followed')
+    roles_responsibilities = models.TextField(blank=True, default='')
+    tools_techniques = models.TextField(blank=True, default='')
+    reporting = models.TextField(blank=True, default='', help_text='Records, reports and their timing')
+    scales_definitions = models.TextField(blank=True, default='', help_text='e.g. risk probability/impact scales, priority scales')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    version = models.CharField(max_length=10, default='1.0')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['approach_type']
+        unique_together = ['project', 'approach_type']
+
+    def __str__(self):
+        return f"{self.get_approach_type_display()} ({self.project.name})"
+
+
+class QualityRegisterEntry(models.Model):
+    """PRINCE2 Quality Register (6th Ed §A.23).
+
+    A diary of every planned and executed quality activity (review, test,
+    inspection) for the project's products. Makes the Quality theme /
+    *Focus on Products* behavioural: each product has auditable quality checks
+    with a result, not just a quality_criteria string.
+    """
+    METHOD_CHOICES = [
+        ('review', 'Quality Review'),
+        ('test', 'Test'),
+        ('inspection', 'Inspection'),
+        ('audit', 'Audit'),
+        ('approval', 'Approval'),
+    ]
+    RESULT_CHOICES = [
+        ('pending', 'Pending'),
+        ('pass', 'Pass'),
+        ('fail', 'Fail'),
+        ('conditional', 'Conditional'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_quality_register')
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, related_name='quality_checks')
+    work_package = models.ForeignKey('WorkPackage', on_delete=models.SET_NULL, null=True, blank=True, related_name='quality_checks')
+    product_name = models.CharField(max_length=255, blank=True, default='', help_text='Free-text product name if no linked Product')
+    quality_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='review')
+    quality_criteria = models.TextField(blank=True, default='')
+    planned_date = models.DateField(blank=True, null=True)
+    actual_date = models.DateField(blank=True, null=True)
+    result = models.CharField(max_length=20, choices=RESULT_CHOICES, default='pending')
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_quality_reviews')
+    comments = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-planned_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.product_name or (self.product and self.product.title) or 'Quality check'} — {self.get_result_display()}"
+
+
+class DailyLog(models.Model):
+    """PRINCE2 Daily Log (6th Ed §A.7).
+
+    The Project Manager's informal diary of actions, events, observations and
+    informal issues that don't warrant the formal Issue Register. The first
+    management product created in Starting up a Project.
+    """
+    ENTRY_TYPE_CHOICES = [
+        ('action', 'Action'),
+        ('event', 'Event'),
+        ('observation', 'Observation'),
+        ('informal_issue', 'Informal Issue'),
+        ('decision', 'Decision'),
+    ]
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_daily_log')
+    entry_date = models.DateField(blank=True, null=True)
+    entry_type = models.CharField(max_length=20, choices=ENTRY_TYPE_CHOICES, default='action')
+    description = models.TextField(blank=True, default='')
+    responsible = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_daily_log_entries')
+    due_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-entry_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.get_entry_type_display()} — {self.description[:40]}"
+
+
 class Prince2ExceptionReport(models.Model):
     """PRINCE2 Exception Report (6th Ed §A.10) — the heart of *Manage by Exception*.
 
