@@ -294,7 +294,7 @@ const Prince2Dashboard = () => {
         </Card>
 
         {/* PRINCE2 methodology at a glance — 7 principles + 7 themes, linked to Academy */}
-        <Prince2MethodologyOverview projectId={id} defaultOpen={false} />
+        <Prince2MethodologyOverview projectId={id} defaultOpen={true} />
 
         {/* Board approvals inbox + Budget governance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
