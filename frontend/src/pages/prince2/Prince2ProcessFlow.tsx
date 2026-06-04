@@ -148,8 +148,8 @@ const Prince2ProcessFlow = ({ current, progress = {}, onNavigate }: Props) => {
         type="button"
         onClick={() => setSelected(def.code)}
         className={[
-          "group relative flex flex-col rounded-xl border bg-card text-left transition-all",
-          sub ? "w-[200px] px-3 py-2.5" : "w-[176px] px-3 py-3",
+          "group relative flex w-full flex-col rounded-xl border bg-card text-left transition-all",
+          sub ? "px-3 py-2.5" : "px-3 py-3",
           isSel
             ? "border-purple-500 ring-2 ring-purple-300/60 shadow-md"
             : st === "active"
@@ -222,22 +222,26 @@ const Prince2ProcessFlow = ({ current, progress = {}, onNavigate }: Props) => {
         <Badge variant="outline" className="shrink-0 border-indigo-300 text-indigo-700 dark:text-indigo-300">{pp("DP").pct}%</Badge>
       </button>
 
-      {/* Stage pipeline SU → CP, with MP sub-lane under CS */}
+      {/* Stage pipeline SU → CP, with MP sub-lane under CS.
+          Each stage column flex-grows to fill the card width (no dead space
+          on the right); on narrow screens the row scrolls horizontally. */}
       <div className="overflow-x-auto pb-2">
-        <div className="flex items-start gap-1">
+        <div className="flex min-w-[760px] items-start gap-1">
           {FLOW.map((f, i) => (
-            <div key={f.code} className="flex shrink-0 flex-col items-center gap-1">
-              <div className="flex items-start gap-1">
+            <div key={f.code} className="flex flex-1 items-start gap-1">
+              <div className="flex flex-1 flex-col items-stretch gap-1">
                 <Node def={f} />
-                {i < FLOW.length - 1 && <Connector />}
+                {/* MP hangs under CS */}
+                {f.code === "CS" && (
+                  <div className="flex flex-col items-center pt-1">
+                    <div className="h-3 w-px bg-purple-300" />
+                    <div className="w-full">
+                      <Node def={MP} sub />
+                    </div>
+                  </div>
+                )}
               </div>
-              {/* MP hangs under CS */}
-              {f.code === "CS" && (
-                <div className="flex w-full flex-col items-center pt-1">
-                  <div className="h-3 w-px bg-purple-300" />
-                  <Node def={MP} sub />
-                </div>
-              )}
+              {i < FLOW.length - 1 && <Connector />}
             </div>
           ))}
         </div>
