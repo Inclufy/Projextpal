@@ -202,6 +202,16 @@ class CourseLesson(models.Model):
     simulation_id = models.CharField(max_length=255, null=True, blank=True)
     practice_set_id = models.CharField(max_length=255, null=True, blank=True)
 
+    # Stable identifier from the hardcoded frontend course definitions
+    # (e.g. 'safe-l5', 'p2-l4'). The QuizEngine/ExamEngine submit answers keyed
+    # by this string id, so it is the bridge that lets submit_quiz resolve the
+    # DB CourseLesson row and persist a QuizAttempt for the certificate gate.
+    external_id = models.CharField(
+        max_length=64, blank=True, db_index=True,
+        help_text="Frontend lesson id (e.g. 'safe-l5'); maps static-course "
+                  "submissions to this DB row for cert-eligibility tracking.",
+    )
+
     class Meta:
         ordering = ['order']
 

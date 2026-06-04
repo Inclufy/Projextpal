@@ -264,6 +264,10 @@ class Command(BaseCommand):
                                 'video_url': fl.get('videoUrl', ''),
                                 'content': body,
                                 'content_nl': body,  # NL fallback = same; translate later
+                                # Preserve the frontend lesson id (e.g. 'safe-l5')
+                                # so quiz/exam submissions keyed by it can resolve
+                                # this row and persist attempts for the cert gate.
+                                'external_id': fl.get('id') or '',
                             },
                         )
                         if lc: lessons_created += 1

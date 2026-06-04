@@ -98,28 +98,37 @@ def _score_fixture(answers, questions):
     return correct, total
 
 
-def _find_enrollment_for_lesson(user, lesson_id):
-    """Resolve the user's enrollment for the course containing this lesson.
-
-    Accepts both numeric CourseLesson.id (DB-backed) and string IDs from
-    the hardcoded frontend courses (e.g. 'p2-l5'); falls back to None
-    when no matching enrollment exists (caller decides what to do).
-    """
-    # Try numeric (DB-backed lesson)
+def _resolve_lesson(lesson_id):
+    """Resolve a CourseLesson from either a numeric DB id or the frontend
+    string id (e.g. 'p2-l5') stored in CourseLesson.external_id."""
+    # Numeric DB id
     try:
         lid = int(lesson_id)
         lesson = CourseLesson.objects.filter(id=lid).first()
         if lesson:
-            return Enrollment.objects.filter(
-                user=user, course=lesson.module.course
-            ).first(), lesson
+            return lesson
     except (ValueError, TypeError):
         pass
+    # Frontend string id, mapped via external_id (populated on import).
+    return CourseLesson.objects.filter(external_id=str(lesson_id)).first()
 
-    # Fallback: the lesson_id is a hardcoded frontend ID like 'p2-l5'.
-    # The frontend should pass its course_id too for this path, but the
-    # existing endpoint signature doesn't carry that. So we return
-    # (None, None) and let the caller record a "display-only" result.
+
+def _find_enrollment_for_lesson(user, lesson_id):
+    """Resolve the user's enrollment for the course containing this lesson.
+
+    Accepts both numeric CourseLesson.id (DB-backed) and string IDs from
+    the hardcoded frontend courses (e.g. 'p2-l5'). The string IDs resolve via
+    CourseLesson.external_id, which the importer populates from the frontend
+    lesson id — this is what lets quiz attempts on static courses persist and
+    count toward Enrollment.certificate_eligibility(). Returns (None, None)
+    when no matching lesson/enrollment exists (caller records display-only).
+    """
+    lesson = _resolve_lesson(lesson_id)
+    if lesson:
+        enrollment = Enrollment.objects.filter(
+            user=user, course=lesson.module.course
+        ).first()
+        return enrollment, lesson
     return None, None
 
 
@@ -353,21 +362,17 @@ def mark_lesson_complete(request, lesson_id):
     Creates/updates a LessonProgress row AND appends the lesson to
     Enrollment.completed_lessons so progress % and eligibility update.
 
-    Resolves lesson_id as integer (DB-backed) first; for hardcoded-course
-    string IDs we can't persist (no Lesson row) so we return 202 Accepted
-    with a hint so the frontend can still track locally.
+    Resolves lesson_id as a numeric DB id first, then via CourseLesson.external_id
+    for hardcoded-course string IDs (e.g. 'p2-l5'). Only when neither resolves
+    (course not imported) do we return 202 Accepted with a local-tracking hint.
     """
-    try:
-        lid = int(lesson_id)
-        lesson = CourseLesson.objects.filter(id=lid).first()
-    except (ValueError, TypeError):
-        lesson = None
+    lesson = _resolve_lesson(lesson_id)
 
     if lesson is None:
         return Response({
             'persisted': False,
             'reason': 'lesson_not_in_db',
-            'message': 'Lesson is from a hardcoded course; progress tracked locally only.',
+            'message': 'Lesson is from a course not yet imported; progress tracked locally only.',
         }, status=status.HTTP_202_ACCEPTED)
 
     # Find the user's enrollment for this course
