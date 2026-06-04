@@ -5,7 +5,7 @@ import {
   ArrowRight, GraduationCap, Trophy, Sparkles, Heart, Share2, 
   Target, Zap, Play, PlayCircle, Lock, ChevronDown, ChevronUp,
   Download, Check, ArrowLeft, Brain, Crown, Gift, FileText,
-  HelpCircle, ClipboardCheck, MessageSquare, AlertCircle, X
+  HelpCircle, ClipboardCheck, MessageSquare, AlertCircle, AlertTriangle, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -839,6 +839,12 @@ const CourseDetail = () => {
                       {isNL ? 'Uitgelicht' : 'Featured'}
                     </Badge>
                   )}
+                  {safeCourse.conceptsOnly && (
+                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {isNL ? 'Alleen concepten' : 'Concepts only'}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
@@ -848,6 +854,13 @@ const CourseDetail = () => {
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
                 {isNL && safeCourse.descriptionNL ? safeCourse.descriptionNL : (safeCourse.subtitle || safeCourse.description)}
               </p>
+
+              {safeCourse.conceptsOnly && (safeCourse.conceptsNote || safeCourse.conceptsNoteNL) && (
+                <div className="flex items-start gap-2 mb-4 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/20 text-sm text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{isNL && safeCourse.conceptsNoteNL ? safeCourse.conceptsNoteNL : safeCourse.conceptsNote}</span>
+                </div>
+              )}
 
               {/* Rating & Stats */}
               <div className="flex flex-wrap items-center gap-4 text-sm">

@@ -123,6 +123,12 @@ export interface Course {
   new?: boolean;
   freeForCustomers?: boolean;
   certificate?: boolean;
+  // Concepts-only: the course teaches the methodology, but the matching in-app
+  // tooling is still in development (e.g. SAFe — no working PI board yet). The
+  // UI surfaces a "Concepts only" badge so learners don't expect a live engine.
+  conceptsOnly?: boolean;
+  conceptsNote?: string;
+  conceptsNoteNL?: string;
   
   // Learning outcomes
   whatYouLearn?: string[];

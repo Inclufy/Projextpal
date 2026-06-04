@@ -25,7 +25,7 @@ export const learningPaths: LearningPath[] = [
     descriptionNL: 'Beheers alle Agile frameworks van Scrum tot SAFe.',
     icon: Zap,
     gradient: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.emerald})`,
-    courses: ['agile-fundamentals', 'scrum-master', 'kanban-practitioner', 'safe-fundamentals'],
+    courses: ['agile-fundamentals', 'scrum-master', 'kanban-practitioner', 'safe-scaling-agile'],
     duration: 46,
   },
   {

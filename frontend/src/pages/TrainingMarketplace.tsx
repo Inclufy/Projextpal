@@ -42,6 +42,7 @@ import {
   RefreshCw,
   Trello,
   Compass,
+  Construction,
   LucideIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -320,6 +321,7 @@ const TrainingMarketplace = () => {
       certificate: isNL ? 'Certificaat inbegrepen' : 'Certificate included',
       new: isNL ? 'Nieuw' : 'New',
       bestseller: isNL ? 'Bestseller' : 'Bestseller',
+      conceptsOnly: isNL ? 'Alleen concepten' : 'Concepts only',
       free: isNL ? 'Gratis' : 'Free',
       freeForCustomers: isNL ? 'Gratis voor klanten' : 'Free for customers',
       courses: isNL ? 'cursussen' : 'courses',
@@ -475,6 +477,12 @@ const TrainingMarketplace = () => {
               {content.labels.freeForCustomers}
             </Badge>
           )}
+          {course.conceptsOnly && (
+            <Badge className="text-white border-0 shadow-lg" style={{ backgroundColor: BRAND.amber }}>
+              <Construction className="h-3 w-3 mr-1" />
+              {content.labels.conceptsOnly}
+            </Badge>
+          )}
         </div>
 
         <CardContent className="p-6 pt-12">
@@ -584,6 +592,12 @@ const TrainingMarketplace = () => {
             <Badge className="text-white border-0 shadow-lg" style={{ backgroundColor: BRAND.purple }}>
               <Award className="h-3 w-3 mr-1" />
               {content.labels.freeForCustomers}
+            </Badge>
+          )}
+          {course.conceptsOnly && (
+            <Badge className="text-white border-0 shadow-lg" style={{ backgroundColor: BRAND.amber }}>
+              <Construction className="h-3 w-3 mr-1" />
+              {content.labels.conceptsOnly}
             </Badge>
           )}
         </div>

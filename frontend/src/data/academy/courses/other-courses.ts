@@ -1,7 +1,7 @@
 // ============================================
 // OTHER COURSES (Without full modules yet)
 // ============================================
-import { Users, Shield, Building2, GitBranch, FolderKanban, Award, Compass } from 'lucide-react';
+import { Users, Shield, GitBranch, FolderKanban, Award, Compass } from 'lucide-react';
 import { Course } from '../types';
 import { BRAND } from '../brand';
 import { instructors } from '../instructors';
@@ -59,32 +59,10 @@ export const riskManagementCourse: Course = {
   certificate: true,
 };
 
-// ============================================
-// SAFe FUNDAMENTALS
-// ============================================
-export const safeFundamentalsCourse: Course = {
-  id: 'safe-fundamentals',
-  title: 'SAFe Fundamentals',
-  titleNL: 'SAFe Fundamentals',
-  description: 'Scale Agile across your enterprise with the Scaled Agile Framework.',
-  descriptionNL: 'Schaal Agile in je organisatie met het Scaled Agile Framework.',
-  icon: Building2,
-  color: BRAND.blue,
-  gradient: `linear-gradient(135deg, ${BRAND.blue}, #1D4ED8)`,
-  category: 'agile',
-  methodology: 'safe',
-  levels: 4,
-  modules: 24,
-  duration: 16,
-  rating: 4.5,
-  students: 2345,
-  tags: ['SAFe', 'Scaling', 'Enterprise', 'PI Planning', 'ART'],
-  tagsNL: ['SAFe', 'Schalen', 'Enterprise', 'PI Planning', 'ART'],
-  instructor: instructors.martijn,
-  new: true,
-  freeForCustomers: true,
-  certificate: true,
-};
+// NOTE: the former `safeFundamentalsCourse` stub (id 'safe-fundamentals') was
+// removed in backlog #22 (P0-3) to de-duplicate the SAFe catalog entry. The
+// single canonical SAFe course is `safeCourse` (id 'safe-scaling-agile') in
+// courses/safe.ts, which carries real modules and the concepts-only badge.
 
 // ============================================
 // HYBRID PM
@@ -197,7 +175,6 @@ export const pmLeadershipCourse: Course = {
 export const otherCourses = [
   stakeholderManagementCourse,
   riskManagementCourse,
-  safeFundamentalsCourse,
   hybridPmCourse,
   mspFoundationCourse,
   pmpCertificationCourse,

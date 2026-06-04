@@ -554,7 +554,7 @@ const getMethodologyHelp = (lang: Lang): Record<string, MethodologyHelpConfig> =
       t('Measure business value, not just velocity', 'Meet business value, niet alleen velocity', lang),
     ],
     resources: [
-      { title: 'SAFe Fundamentals', type: 'course', duration: t('4 hours', '4 uur', lang), link: '/academy/course/safe-fundamentals' },
+      { title: 'SAFe & Scaling Agile', type: 'course', duration: t('16 hours', '16 uur', lang), link: '/academy/course/safe-scaling-agile' },
       { title: 'PI Planning Guide', type: 'video', duration: t('1 hour', '1 uur', lang), link: '/academy/course/pi-planning' },
       { title: 'ART Launch Checklist', type: 'article', link: '/academy/articles/art-launch' },
     ],
