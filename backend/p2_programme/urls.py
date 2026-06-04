@@ -1,16 +1,20 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import P2BlueprintViewSet, P2ProgrammeProjectViewSet
+from .views import (
+    P2BlueprintViewSet, P2ProgrammeProjectViewSet, P2ProgrammeBoardDecisionViewSet,
+)
 
 app_name = 'p2'
 
 router = DefaultRouter()
 router.register(r'blueprints', P2BlueprintViewSet, basename='blueprint')
 router.register(r'projects', P2ProgrammeProjectViewSet, basename='project')
+router.register(r'board-decisions', P2ProgrammeBoardDecisionViewSet, basename='board-decision')
 
 programme_router = DefaultRouter()
 programme_router.register(r'blueprints', P2BlueprintViewSet, basename='programme-blueprint')
 programme_router.register(r'projects', P2ProgrammeProjectViewSet, basename='programme-project')
+programme_router.register(r'board-decisions', P2ProgrammeBoardDecisionViewSet, basename='programme-board-decision')
 
 urlpatterns = [
     path('', include(router.urls)),

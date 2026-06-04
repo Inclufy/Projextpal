@@ -7,7 +7,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -200,7 +200,8 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           items: [
             { title: "Dashboard", url: `/programs/${programId}/dashboard`, icon: LayoutDashboard },
             { title: "Business Case", url: `/programs/${programId}/business-case`, icon: FileCheck },
-            { title: "Projects", url: `/programs/${programId}/projects`, icon: FolderKanban },
+            { title: "Blueprint", url: `/programs/${programId}/operating-model`, icon: Compass },
+            { title: "Projects", url: `/programs/${programId}/programme-projects`, icon: FolderKanban },
           ],
         },
         {
@@ -218,7 +219,7 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           title: "Governance",
           icon: Shield,
           items: [
-            { title: "Programme Board", url: `/programs/${programId}/governance`, icon: Crown },
+            { title: "Programme Board", url: `/programs/${programId}/programme-projects`, icon: Crown },
             { title: "Exception Reports", url: `/programs/${programId}/exceptions`, icon: BarChart3 },
             { title: "Highlight Reports", url: `/programs/${programId}/highlights`, icon: Activity },
           ],

@@ -104,6 +104,7 @@ const ProgramBenefits = lazy(() => import("./pages/ProgramBenefits"));
 const ProgramSafe = lazy(() => import("./pages/ProgramSafe"));
 const ProgramMSP = lazy(() => import("./pages/ProgramMSP"));
 const ProgramPMI = lazy(() => import("./pages/ProgramPMI"));
+const ProgramP2 = lazy(() => import("./pages/ProgramP2"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
@@ -733,6 +734,18 @@ const App = () => (
                 </FeatureGuard>
               } />
               
+              {/* PRINCE2 Programme-specific routes */}
+              <Route path="/programs/:id/operating-model" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramP2 /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/programme-projects" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramP2 /></ProtectedPage>
+                </FeatureGuard>
+              } />
+
               {/* PRINCE2-specific routes */}
               <Route path="/programs/:id/business-case" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
