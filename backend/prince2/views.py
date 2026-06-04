@@ -12,6 +12,7 @@ from .models import (
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
+    Prince2Risk, Prince2Issue,
 )
 from .serializers import (
     ProductSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     ProjectBoardSerializer, ProjectBoardMemberSerializer, HighlightReportSerializer,
     CheckpointReportSerializer,
     EndProjectReportSerializer, LessonsLogSerializer, ProjectToleranceSerializer,
+    Prince2RiskSerializer, Prince2IssueSerializer,
 )
 
 
@@ -339,6 +341,46 @@ class WorkPackageViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         wp.progress_percentage = min(100, max(0, int(progress)))
         wp.save()
         return Response(WorkPackageSerializer(wp).data)
+
+
+# =============================================================================
+# RISK & ISSUE REGISTERS
+# =============================================================================
+
+class Prince2RiskViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = Prince2RiskSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(Prince2Risk)
+        status_filter = self.request.query_params.get('status')
+        work_package = self.request.query_params.get('work_package')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if work_package:
+            queryset = queryset.filter(work_package_id=work_package)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
+
+
+class Prince2IssueViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = Prince2IssueSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(Prince2Issue)
+        status_filter = self.request.query_params.get('status')
+        issue_type = self.request.query_params.get('issue_type')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if issue_type:
+            queryset = queryset.filter(issue_type=issue_type)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project())
 
 
 # =============================================================================

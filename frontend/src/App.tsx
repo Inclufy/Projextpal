@@ -145,6 +145,8 @@ const Prince2ProjectClosure = lazy(() => import("./pages/prince2/Prince2ProjectC
 const Prince2ClosureChecklist = lazy(() => import("./pages/prince2/Prince2ClosureChecklist"));
 const Prince2LessonsLog = lazy(() => import("./pages/prince2/Prince2LessonsLog"));
 const Prince2BenefitsReview = lazy(() => import("./pages/prince2/Prince2BenefitsReview"));
+const Prince2Risks = lazy(() => import("./pages/prince2/Prince2Risks"));
+const Prince2Issues = lazy(() => import("./pages/prince2/Prince2Issues"));
 
 // Scrum Pages
 const ScrumOverview = lazy(() => import('./pages/scrum/ScrumOverview'));
@@ -819,6 +821,8 @@ const App = () => (
               <Route path="/projects/:id/prince2/stage-gate" element={<ProtectedPage><Prince2StageGate /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/stage-gates" element={<ProtectedPage><Prince2StageGate /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/work-packages" element={<ProtectedPage><Prince2WorkPackages /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/risks" element={<ProtectedPage><Prince2Risks /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/issues" element={<ProtectedPage><Prince2Issues /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/tolerances" element={<ProtectedPage><Prince2Tolerances /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/project-board" element={<ProtectedPage><Prince2ProjectBoard /></ProtectedPage>} />
               <Route path="/projects/:id/prince2/governance" element={<ProtectedPage><Prince2Governance /></ProtectedPage>} />

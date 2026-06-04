@@ -5,6 +5,7 @@ from .models import (
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
+    Prince2Risk, Prince2Issue,
 )
 
 
@@ -123,9 +124,33 @@ class StageGateSerializer(serializers.ModelSerializer):
 class WorkPackageSerializer(serializers.ModelSerializer):
     stage_name = serializers.CharField(source='stage.name', read_only=True)
     team_manager_name = serializers.CharField(source='team_manager.get_full_name', read_only=True)
-    
+    depends_on_titles = serializers.SerializerMethodField()
+
     class Meta:
         model = WorkPackage
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+    def get_depends_on_titles(self, obj):
+        return [{'id': wp.id, 'title': wp.title or wp.reference} for wp in obj.depends_on.all()]
+
+
+class Prince2RiskSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True, allow_null=True)
+    work_package_title = serializers.CharField(source='work_package.title', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Prince2Risk
+        fields = '__all__'
+        read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class Prince2IssueSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True, allow_null=True)
+    related_risk_title = serializers.CharField(source='related_risk.title', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Prince2Issue
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']
 

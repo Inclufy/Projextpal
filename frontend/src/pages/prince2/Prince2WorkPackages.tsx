@@ -29,7 +29,7 @@ const Prince2WorkPackages = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", stage: "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "" });
+  const [form, setForm] = useState({ title: "", description: "", stage: "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "", depends_on: [] as number[] });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -101,7 +101,7 @@ const Prince2WorkPackages = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", description: "", stage: stages[0]?.id?.toString() || "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "" });
+    setForm({ title: "", description: "", stage: stages[0]?.id?.toString() || "", priority: "medium", team_manager: "", planned_start_date: "", planned_end_date: "", depends_on: [] });
     setDialogOpen(true);
   };
 
@@ -115,9 +115,13 @@ const Prince2WorkPackages = () => {
       team_manager: wp.team_manager != null ? String(wp.team_manager) : "",
       planned_start_date: wp.planned_start_date?.split("T")[0] || "",
       planned_end_date: wp.planned_end_date?.split("T")[0] || "",
+      depends_on: Array.isArray(wp.depends_on) ? wp.depends_on : (wp.depends_on_titles || []).map((d: any) => d.id),
     });
     setDialogOpen(true);
   };
+
+  const toggleDependency = (wpId: number) =>
+    setForm((prev) => ({ ...prev, depends_on: prev.depends_on.includes(wpId) ? prev.depends_on.filter((x) => x !== wpId) : [...prev.depends_on, wpId] }));
 
   const handleSave = async () => {
     if (!form.title) { toast.error(pt("Title is required")); return; }
@@ -128,6 +132,7 @@ const Prince2WorkPackages = () => {
       body.team_manager = form.team_manager ? parseInt(form.team_manager) : null;
       body.planned_start_date = form.planned_start_date || null;
       body.planned_end_date = form.planned_end_date || null;
+      body.depends_on = form.depends_on;
       const url = editing ? `/api/v1/projects/${id}/prince2/work-packages/${editing.id}/` : `/api/v1/projects/${id}/prince2/work-packages/`;
       const method = editing ? "PATCH" : "POST";
       const response = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
@@ -274,6 +279,14 @@ const Prince2WorkPackages = () => {
                         )}
                       </div>
                     )}
+                    {wp.depends_on_titles && wp.depends_on_titles.length > 0 && (
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className="text-xs text-muted-foreground">{pt("Depends on")}:</span>
+                        {wp.depends_on_titles.map((d: any) => (
+                          <Badge key={d.id} variant="outline" className="text-xs">{d.title}</Badge>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-2">
                       <Progress value={wp.progress_percentage || 0} className="h-1.5 w-32" />
                       <span className="text-xs text-muted-foreground">{wp.progress_percentage || 0}%</span>
@@ -353,6 +366,23 @@ const Prince2WorkPackages = () => {
                 <Input type="date" value={form.planned_end_date} onChange={(e) => setForm({ ...form, planned_end_date: e.target.value })} />
               </div>
             </div>
+            {workPackages.filter((wp) => !editing || wp.id !== editing.id).length > 0 && (
+              <div className="space-y-2">
+                <Label>{pt("Depends on")}</Label>
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 border rounded-md">
+                  {workPackages.filter((wp) => !editing || wp.id !== editing.id).map((wp) => (
+                    <Badge
+                      key={wp.id}
+                      variant={form.depends_on.includes(wp.id) ? "default" : "outline"}
+                      className="text-xs cursor-pointer"
+                      onClick={() => toggleDependency(wp.id)}
+                    >
+                      {wp.reference ? `${wp.reference} · ` : ""}{wp.title}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting}>

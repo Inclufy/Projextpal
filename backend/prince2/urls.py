@@ -10,6 +10,7 @@ from .views import (
     ProjectBoardViewSet, ProjectBoardMemberViewSet, HighlightReportViewSet,
     CheckpointReportViewSet,
     EndProjectReportViewSet, LessonsLogViewSet, ProjectToleranceViewSet,
+    Prince2RiskViewSet, Prince2IssueViewSet,
     Prince2DashboardView,
     ProjectBriefComputedView, ProjectClosureComputedView,
     Prince2SeedDemoView, Prince2ClearDemoView,
@@ -211,6 +212,32 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/work-packages/<int:pk>/complete/',
         WorkPackageViewSet.as_view({'post': 'complete'}),
         name='prince2-wp-complete'
+    ),
+    # =========================================================================
+    # RISK REGISTER
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/risks/',
+        Prince2RiskViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-risk-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/risks/<int:pk>/',
+        Prince2RiskViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-risk-detail'
+    ),
+    # =========================================================================
+    # ISSUE REGISTER
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/issues/',
+        Prince2IssueViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-issue-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/issues/<int:pk>/',
+        Prince2IssueViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-issue-detail'
     ),
     path(
         'projects/<int:project_id>/prince2/work-packages/<int:pk>/update_progress/',

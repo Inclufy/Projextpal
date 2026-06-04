@@ -248,6 +248,7 @@ class WorkPackage(models.Model):
     constraints = models.TextField(blank=True, null=True)
     reporting_requirements = models.TextField(blank=True, null=True)
     team_manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    depends_on = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='dependents')
     planned_start_date = models.DateField(blank=True, null=True)
     planned_end_date = models.DateField(blank=True, null=True)
     actual_start_date = models.DateField(blank=True, null=True)
@@ -616,6 +617,111 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"
+
+
+class Prince2Risk(models.Model):
+    """PRINCE2 Risk Register entry (Risk theme).
+
+    A threat or opportunity, with an owner accountable for managing it and a
+    response (mitigation). Distinct from Business Case risks (which are
+    high-level justification risks) — this is the operational register the
+    Project Manager maintains throughout the project.
+    """
+    CATEGORY_CHOICES = [
+        ('technical', 'Technical'),
+        ('business', 'Business'),
+        ('resource', 'Resource'),
+        ('external', 'External'),
+        ('schedule', 'Schedule'),
+    ]
+    LEVEL_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    RESPONSE_CHOICES = [
+        ('avoid', 'Avoid'),
+        ('reduce', 'Reduce'),
+        ('transfer', 'Transfer'),
+        ('accept', 'Accept'),
+        ('share', 'Share'),
+        ('exploit', 'Exploit'),
+    ]
+    STATUS_CHOICES = [
+        ('identified', 'Identified'),
+        ('assessing', 'Assessing'),
+        ('managing', 'Managing'),
+        ('closed', 'Closed'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_risks')
+    work_package = models.ForeignKey('WorkPackage', on_delete=models.SET_NULL, null=True, blank=True, related_name='risks')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='technical')
+    probability = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='medium')
+    impact = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='medium')
+    response_type = models.CharField(max_length=20, choices=RESPONSE_CHOICES, default='reduce')
+    mitigation = models.TextField(blank=True, default='')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_owned_risks')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='identified')
+    date_identified = models.DateField(blank=True, null=True)
+    date_closed = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"
+
+
+class Prince2Issue(models.Model):
+    """PRINCE2 Issue Register entry (Change theme).
+
+    Captures the three PRINCE2 issue types: Request for Change,
+    Off-Specification, and Problem/Concern. Each is owned, prioritised and
+    resolved; may link to a Risk that has materialised.
+    """
+    TYPE_CHOICES = [
+        ('request_for_change', 'Request for Change'),
+        ('off_specification', 'Off-Specification'),
+        ('problem_concern', 'Problem / Concern'),
+    ]
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('assessing', 'Assessing'),
+        ('in_progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_issues')
+    related_risk = models.ForeignKey('Prince2Risk', on_delete=models.SET_NULL, null=True, blank=True, related_name='issues')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    issue_type = models.CharField(max_length=30, choices=TYPE_CHOICES, default='problem_concern')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_owned_issues')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    resolution = models.TextField(blank=True, default='')
+    date_raised = models.DateField(blank=True, null=True)
+    date_resolved = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.title} ({self.project.name})"

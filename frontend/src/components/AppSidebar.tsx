@@ -405,7 +405,9 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Project Board", url: `/projects/${projectId}/prince2/project-board`, icon: Users },
             { title: "Highlight Reports", url: `/projects/${projectId}/prince2/highlight-report`, icon: Activity },
-            { title: "Issues & Risks", url: `/projects/${projectId}/prince2/governance`, icon: BarChart3 },
+            { title: "Risk Register", url: `/projects/${projectId}/prince2/risks`, icon: AlertCircle },
+            { title: "Issue Register", url: `/projects/${projectId}/prince2/issues`, icon: ClipboardList },
+            { title: "PID / Governance", url: `/projects/${projectId}/prince2/governance`, icon: BarChart3 },
             { title: "Change Control", url: `/projects/${projectId}/execution/governance`, icon: GitBranch },
           ],
         },
