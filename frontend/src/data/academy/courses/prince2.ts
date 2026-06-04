@@ -100,9 +100,10 @@ Er zijn twee niveaus:
 - 60 vragen, 55% om te slagen
 
 **Practitioner**:
-- Toepassing van de methode
+- Toepassing van de methode in scenario's
 - Scenario-based examen
-- 68 vragen, 55% om te slagen
+- 68 vragen, 55% om te slagen (38 van 68 correct)
+- Open boek (officieel PRINCE2-manual toegestaan), 150 minuten
 - Vereist Foundation eerst
 
 **In deze cursus...**
@@ -201,7 +202,7 @@ De rollen:
 
 We gaan hier in een aparte les dieper op in.
 
-**Principe 4: Manage by Stages**
+**Principe 4: Manage by Stages (Stuur per fase)**
 
 Een PRINCE2 project wordt gepland en beheerst per management stage.
 
@@ -220,7 +221,7 @@ Bij een stage boundary:
 - Planning van volgende stage
 - Go/no-go beslissing door Project Board
 
-**Principe 5: Manage by Exception**
+**Principe 5: Manage by Exception (Stuur op uitzondering)**
 
 De Project Board hoeft alleen in te grijpen als toleranties worden overschreden.
 
@@ -274,13 +275,13 @@ Wat kun je NIET tailoren?
 
 **Samenvatting: De 7 Principes**
 
-1. Continued Business Justification - Blijvende zakelijke rechtvaardiging
-2. Learn from Experience - Leren van ervaring
-3. Defined Roles and Responsibilities - Gedefinieerde rollen
-4. Manage by Stages - Beheren per fase
-5. Manage by Exception - Sturen op uitzonderingen
+1. Continued Business Justification - Voortdurende zakelijke rechtvaardiging
+2. Learn from Experience - Leer van ervaringen
+3. Defined Roles and Responsibilities - Gedefinieerde rollen en verantwoordelijkheden
+4. Manage by Stages - Stuur per fase
+5. Manage by Exception - Stuur op uitzondering
 6. Focus on Products - Focus op producten
-7. Tailor to Suit the Project Environment - Aanpassen aan de context`,
+7. Tailor to Suit the Project Environment - Pas aan op het project`,
       keyTakeaways: [
         'The 7 principles are mandatory - otherwise it is not PRINCE2',
         'Business justification must remain valid throughout the entire project',
@@ -415,16 +416,16 @@ De Risk Management procedure:
 5. Communicate: Informeer stakeholders
 
 Risk responses:
-- Threats: Avoid, Reduce, Transfer, Accept, Share
+- Threats: Avoid, Reduce, Fallback, Transfer, Accept, Share
 - Opportunities: Exploit, Enhance, Share, Accept, Reject
 
 **Thema 6: Change**
 
 Het Change thema beheerst wijzigingen en issues.
 
-Drie soorten issues:
+Drie soorten issues (6e editie, let op exacte namen voor het examen):
 1. **Request for Change**: Wijzigingsverzoek op baseline
-2. **Off-specification**: Afwijking van specificatie
+2. **Off-specification**: Afwijking van specificatie (kleine letter 's')
 3. **Problem/Concern**: Overig issue
 
 Het Change Control proces:
@@ -1116,6 +1117,7 @@ Kan positief (opportunity) of negatief (threat) zijn.
 **Risk Responses voor Threats:**
 - **Avoid**: Elimineer de oorzaak
 - **Reduce**: Verklein kans of impact
+- **Fallback**: Plan B als de response mislukt
 - **Transfer**: Verzekering, contract
 - **Accept**: Neem het risico
 - **Share**: Deel met andere partij
@@ -1140,7 +1142,7 @@ Het Change thema beheerst wijzigingen en issues.
 
 **Issue Types:**
 1. **Request for Change**: Wijziging op baseline
-2. **Off-Specification**: Product voldoet niet aan spec
+2. **Off-specification**: Product voldoet niet aan spec
 3. **Problem/Concern**: Overige issues
 
 **Issue & Change Control Procedure:**
@@ -1200,21 +1202,130 @@ De drie thema\'s werken samen:
 Alle drie gebruiken registers en rapportages om de Board geïnformeerd te houden.`,
       keyTakeaways: [
         'Risk management: Identify → Assess → Plan → Implement → Communicate',
-        'Three issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Three issue types: Request for Change, Off-specification, Problem/Concern',
         'Progress works with tolerances and management by exception',
         'Checkpoint, Highlight, and Exception Reports inform different levels',
       ],
       keyTakeawaysNL: [
         'Risk management: Identify → Assess → Plan → Implement → Communicate',
-        'Drie issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Drie issue types: Request for Change, Off-specification, Problem/Concern',
         'Progress werkt met toleranties en management by exception',
         'Checkpoint, Highlight en Exception Reports informeren verschillende niveaus',
       ],
       keyTakeawaysEN: [
         'Risk management: Identify → Assess → Plan → Implement → Communicate',
-        'Three issue types: Request for Change, Off-Spec, Problem/Concern',
+        'Three issue types: Request for Change, Off-specification, Problem/Concern',
         'Progress works with tolerances and management by exception',
         'Checkpoint, Highlight, and Exception Reports inform different levels',
+      ],
+    },
+    {
+      id: 'p2-l9b',
+      title: 'Quiz: The 7 Themes',
+      titleNL: 'Quiz: De 7 Thema\'s',
+      duration: '15:00',
+      type: 'quiz',
+      quiz: [
+        {
+          id: 'p2-q-t1',
+          question: 'Wie is verantwoordelijk voor de realisatie van benefits na het project?',
+          options: [
+            'Executive',
+            'Project Manager',
+            'Senior User',
+            'Senior Supplier',
+          ],
+          correctAnswer: 2,
+          explanation: 'De Senior User is verantwoordelijk voor het specificeren van benefits en het realiseren ervan na afloop van het project. De Executive is eigenaar van de Business Case maar delegeert de benefits-realisatie aan de Senior User.',
+          questionEN: 'Who is accountable for the realisation of benefits after the project ends?',
+          optionsEN: [
+            'Executive',
+            'Project Manager',
+            'Senior User',
+            'Senior Supplier',
+          ],
+          explanationEN: 'The Senior User is accountable for specifying benefits and for realising them after the project ends. The Executive owns the Business Case but delegates benefits realisation responsibility to the Senior User.',
+        },
+        {
+          id: 'p2-q-t2',
+          question: 'Welk veld in een Product Description legt de meetbare eisen vast waaraan een product moet voldoen?',
+          options: [
+            'Purpose (Doel)',
+            'Composition (Samenstelling)',
+            'Quality Criteria (Kwaliteitscriteria)',
+            'Derivation (Herkomst)',
+          ],
+          correctAnswer: 2,
+          explanation: 'Quality Criteria zijn de meetbare eigenschappen waaraan een product moet voldoen om te worden geaccepteerd. Ze worden vooraf gedefinieerd zodat kwaliteitscontroles objectief kunnen worden uitgevoerd.',
+          questionEN: 'Which field in a Product Description records the measurable requirements that a product must meet?',
+          optionsEN: [
+            'Purpose',
+            'Composition',
+            'Quality Criteria',
+            'Derivation',
+          ],
+          explanationEN: 'Quality Criteria are the measurable characteristics that a product must meet to be accepted. They are defined upfront so that quality checks can be carried out objectively.',
+        },
+        {
+          id: 'p2-q-t3',
+          question: 'Welke rollen zijn betrokken bij de Quality Review Technique in PRINCE2 6e editie?',
+          options: [
+            'Chair, Presenter, Reviewer, Administrator',
+            'Executive, Project Manager, Team Manager, Project Support',
+            'Producer, Reviewer, Approver, Quality Assurance',
+            'Project Board, Change Authority, Risk Owner, Project Manager',
+          ],
+          correctAnswer: 0,
+          explanation: 'De Quality Review Technique kent vier rollen: Chair (leidt de sessie), Presenter (presenteert het product), Reviewer (toetst het product aan criteria) en Administrator (notuleert en beheert acties). Dit zijn de officiële PRINCE2 6e editie rollen.',
+          questionEN: 'Which roles are involved in the Quality Review Technique in PRINCE2 6th edition?',
+          optionsEN: [
+            'Chair, Presenter, Reviewer, Administrator',
+            'Executive, Project Manager, Team Manager, Project Support',
+            'Producer, Reviewer, Approver, Quality Assurance',
+            'Project Board, Change Authority, Risk Owner, Project Manager',
+          ],
+          explanationEN: 'The Quality Review Technique has four roles: Chair (chairs the review meeting), Presenter (presents the product), Reviewer (reviews the product against criteria) and Administrator (records actions and issues). These are the official PRINCE2 6th edition roles.',
+        },
+        {
+          id: 'p2-q-t4',
+          question: 'Welke drie typen issues erkent het PRINCE2 Change thema?',
+          options: [
+            'Bug, Enhancement, Risk',
+            'Request for Change, Off-specification, Problem/Concern',
+            'Request for Change, Exception, Defect',
+            'Problem/Concern, Exception Report, Change Request',
+          ],
+          correctAnswer: 1,
+          explanation: 'Het PRINCE2 Change thema erkent drie issue-typen: (1) Request for Change — voorstel voor een voordelige wijziging op de baseline; (2) Off-specification — een product dat niet voldoet aan zijn Product Description; (3) Problem/Concern — overig issue dat aandacht vereist. Let op de schrijfwijze "Off-specification" (kleine \'s\').',
+          questionEN: 'Which three types of issue does the PRINCE2 Change theme recognise?',
+          optionsEN: [
+            'Bug, Enhancement, Risk',
+            'Request for Change, Off-specification, Problem/Concern',
+            'Request for Change, Exception, Defect',
+            'Problem/Concern, Exception Report, Change Request',
+          ],
+          explanationEN: 'The PRINCE2 Change theme recognises three issue types: (1) Request for Change — a proposal for a beneficial change to the baseline; (2) Off-specification — a product that does not meet its Product Description; (3) Problem/Concern — any other issue requiring attention. Note the correct capitalisation: "Off-specification" with a lower-case \'s\'.',
+        },
+        {
+          id: 'p2-q-t5',
+          question: 'Op welk niveau is het Project Plan van toepassing en wie gebruikt het primair?',
+          options: [
+            'Werkpakket-niveau, gebruikt door Team Manager',
+            'Stage-niveau, gebruikt door Project Manager',
+            'Projectniveau (hoog niveau, hele project), gebruikt door de Project Board',
+            'Programmaniveau, gebruikt door Corporate Management',
+          ],
+          correctAnswer: 2,
+          explanation: 'Het Project Plan beslaat het hele project op hoog niveau en is het primaire planningsdocument voor de Project Board. Het wordt gemaakt in IP en bijgewerkt bij elke stage boundary. Het Stage Plan is gedetailleerder en wordt gebruikt door de Project Manager voor dagelijks beheer.',
+          questionEN: 'At which level does the Project Plan operate and who uses it primarily?',
+          optionsEN: [
+            'Work Package level, used by the Team Manager',
+            'Stage level, used by the Project Manager',
+            'Project level (high-level, whole project), used by the Project Board',
+            'Programme level, used by Corporate Management',
+          ],
+          explanationEN: 'The Project Plan covers the whole project at a high level and is the primary planning document for the Project Board. It is created during IP and updated at each stage boundary. The Stage Plan is more detailed and is used by the Project Manager for day-to-day management.',
+        },
       ],
     },
   ],
@@ -1391,27 +1502,38 @@ Kenmerken:
 
 **Activiteiten in IP**
 
-**1. Prepare the Risk Management Strategy**
-- Hoe gaan we met risico\'s om?
+**1. Agree the tailoring requirements**
+- Hoe wordt PRINCE2 aangepast voor dit project?
+- Welke processen en thema's worden vereenvoudigd?
+- Leg dit vast zodat de Board weet wat te verwachten.
+
+**2. Prepare the Risk Management Approach**
+- Hoe gaan we met risico's om? (dit heet in de 6e editie "Risk Management Approach", niet "Strategy")
 - Wie is verantwoordelijk?
 - Welke tools gebruiken we?
 
-**2. Prepare the Configuration Management Strategy**
-- Hoe beheren we producten en versies?
-- Hoe handelen we wijzigingen af?
+**3. Prepare the Change Control Approach**
+- Hoe beheren we producten, versies én wijzigingen? (6e editie combineert configuratiebeheer en wijzigingsbeheer in de "Change Control Approach")
+- Hoe handelen we Issues, Requests for Change en Off-specifications af?
 - Welke systemen gebruiken we?
 
-**3. Prepare the Quality Management Strategy**
-- Wat zijn de kwaliteitsstandaarden?
+**4. Prepare the Quality Management Approach**
+- Wat zijn de kwaliteitsstandaarden? (6e editie: "Quality Management Approach")
 - Hoe controleren we kwaliteit?
 - Wie is verantwoordelijk?
 
-**4. Prepare the Communication Management Strategy**
-- Wie moet wat weten?
+**5. Prepare the Communication Management Approach**
+- Wie moet wat weten? (6e editie: "Communication Management Approach")
 - Hoe communiceren we?
 - Wanneer en hoe vaak?
 
-**5. Set Up the Project Controls**
+**6. Prepare the Benefits Management Approach**
+- Welke benefits worden verwacht?
+- Wanneer en hoe worden benefits gemeten na het project?
+- Wie is verantwoordelijk (doorgaans de Senior User)?
+- Dit document vervangt het "Benefits Review Plan" uit de 5e editie.
+
+**7. Set Up the Project Controls**
 - Welke toleranties?
 - Welke rapporten?
 - Welke beslismomenten?
@@ -1440,10 +1562,11 @@ Baseline elementen:
 - Business Case
 - Project Management Team structure
 - Role descriptions
-- Quality Management Strategy
-- Configuration Management Strategy
-- Risk Management Strategy
-- Communication Management Strategy
+- Quality Management Approach
+- Change Control Approach
+- Risk Management Approach
+- Communication Management Approach
+- Benefits Management Approach
 - Project Plan
 - Project Controls
 
@@ -1455,7 +1578,7 @@ De PID wordt gebruikt om:
 **Tailoring de PID**
 
 Voor kleine projecten kan de PID worden vereenvoudigd:
-- Strategieën kunnen sectie in één document zijn
+- Management-aanpakken (Approaches) kunnen als sectie in één document worden opgenomen
 - Minder formele templates
 - Korter en bondiger
 
@@ -1479,19 +1602,22 @@ Initiating a Project:
       keyTakeaways: [
         'IP creates the Project Initiation Documentation (PID)',
         'The PID is the baseline for the project',
-        'Four strategies are prepared: Risk, Quality, Config, Comms',
+        'Five management approaches are prepared: Risk, Quality, Change Control, Communication, Benefits',
+        'The Benefits Management Approach replaces the 5th-edition Benefits Review Plan',
         'The Business Case is refined with better cost estimates',
       ],
       keyTakeawaysNL: [
         'IP creëert de Project Initiation Documentation (PID)',
         'De PID is de baseline voor het project',
-        'Vier strategieën worden opgesteld: Risk, Quality, Config, Comms',
+        'Vijf management-aanpakdocumenten worden opgesteld: Risk, Quality, Change Control, Communication, Benefits',
+        'De Benefits Management Approach vervangt het "Benefits Review Plan" uit de 5e editie',
         'De Business Case wordt verfijnd met betere kostenschattingen',
       ],
       keyTakeawaysEN: [
         'IP creates the Project Initiation Documentation (PID)',
         'The PID is the baseline for the project',
-        'Four strategies are established: Risk, Quality, Config, Comms',
+        'Five management approaches are established: Risk, Quality, Change Control, Communication, Benefits',
+        'The Benefits Management Approach replaces the 5th-edition Benefits Review Plan',
         'The Business Case is refined with better cost estimates',
       ],
     },
@@ -2019,17 +2145,20 @@ Inhoud:
 - Lessons learned summary
 - Follow-on action recommendations
 
-**Benefits Review Plan**
+**Benefits Management Approach (bij projectafsluiting)**
 
-Veel benefits worden pas NA het project gerealiseerd.
+Veel benefits worden pas NA het project gerealiseerd. In de PRINCE2 6e editie is er geen
+product genaamd "Benefits Review Plan" meer — dit heet nu de **Benefits Management Approach**
+en wordt aangemaakt tijdens IP (Initiating a Project).
 
-Het plan beschrijft:
-- Welke benefits meten
-- Wanneer meten
-- Wie verantwoordelijk (meestal Senior User)
-- Hoe rapporteren
+Bij CP (Closing a Project) werkt de Project Manager de Benefits Management Approach bij om
+de post-project benefits-reviews in te plannen:
+- Welke benefits worden gemeten
+- Wanneer meten (na oplevering)
+- Wie verantwoordelijk (doorgaans de Senior User)
+- Hoe rapporteren aan Corporate/Programme Management
 
-Dit is input voor de post-project review.
+Dit is input voor de post-project review die plaatsvindt nádat het project is afgesloten.
 
 **Lessons Report**
 
@@ -2061,25 +2190,134 @@ Closing a Project:
 - Bevestigt oplevering en acceptatie
 - Evalueert projectprestaties
 - Documenteert lessons learned
-- Stelt benefits review plan op
+- Werkt de Benefits Management Approach bij voor post-project reviews
 - Vraagt Board om formele sluiting`,
       keyTakeaways: [
         'CP is mandatory, even when stopping prematurely',
         'End Project Report evaluates the entire project',
-        'Benefits Review Plan ensures post-project benefits measurement',
+        'The Benefits Management Approach (created in IP) is updated at CP to schedule post-project benefit reviews — there is no separate "Benefits Review Plan" in 6th edition',
         'Lessons Report documents lessons learned',
       ],
       keyTakeawaysNL: [
         'CP is verplicht, ook bij voortijdig stoppen',
         'End Project Report evalueert het hele project',
-        'Benefits Review Plan zorgt voor post-project benefits meting',
+        'De Benefits Management Approach (aangemaakt in IP) wordt bijgewerkt bij CP voor post-project benefits-reviews — er is geen apart "Benefits Review Plan" in de 6e editie',
         'Lessons Report documenteert geleerde lessen',
       ],
       keyTakeawaysEN: [
         'CP is mandatory, even when the project is stopped prematurely',
         'The End Project Report evaluates the entire project',
-        'The Benefits Review Plan ensures post-project benefits measurement',
+        'The Benefits Management Approach (created in IP) is updated at CP to schedule post-project benefit reviews — there is no separate "Benefits Review Plan" in the 6th edition',
         'The Lessons Report documents lessons learned',
+      ],
+    },
+    {
+      id: 'p2-l16b',
+      title: 'Quiz: The 7 Processes',
+      titleNL: 'Quiz: De 7 Processen',
+      duration: '15:00',
+      type: 'quiz',
+      quiz: [
+        {
+          id: 'p2-q-p1',
+          question: 'Wie triggert het Starting Up a Project (SU) proces en wie benoemt de Executive?',
+          options: [
+            'De Project Manager triggert SU; de Executive benoemt zichzelf',
+            'Corporate/Programme Management triggert SU via een project mandate; zij benoemen ook de Executive',
+            'De Project Board triggert SU; de Senior Supplier benoemt de Executive',
+            'De Project Manager triggert SU; de Project Board benoemt de Executive',
+          ],
+          correctAnswer: 1,
+          explanation: 'SU wordt getriggerd door Corporate/Programme Management via een project mandate. Zij benoemen ook de Executive als eerste stap. De Executive benoemt vervolgens de Project Manager. SU is een pre-project proces — de Project Board bestaat nog niet volledig aan het begin.',
+          questionEN: 'Who triggers the Starting Up a Project (SU) process and who appoints the Executive?',
+          optionsEN: [
+            'The Project Manager triggers SU; the Executive appoints themselves',
+            'Corporate/Programme Management triggers SU via a project mandate; they also appoint the Executive',
+            'The Project Board triggers SU; the Senior Supplier appoints the Executive',
+            'The Project Manager triggers SU; the Project Board appoints the Executive',
+          ],
+          explanationEN: 'SU is triggered by Corporate/Programme Management via a project mandate. They also appoint the Executive as the first step. The Executive then appoints the Project Manager. SU is a pre-project process — the Project Board does not yet exist in full at the outset.',
+        },
+        {
+          id: 'p2-q-p2',
+          question: 'Welke vijf autorisatiebeslissingen neemt de Project Board in het Directing a Project (DP) proces?',
+          options: [
+            'Initiëren, Project starten, Stage of Exception Plan autoriseren, Ad-hoc richting geven, Project afsluiten',
+            'Project Brief beoordelen, PID goedkeuren, Work Packages autoriseren, Highlight Reports ontvangen, Lessons Log bijwerken',
+            'SU starten, IP starten, CS starten, MP starten, CP starten',
+            'Risk beoordelen, Change goedkeuren, Quality controleren, Planning updaten, Benefits meten',
+          ],
+          correctAnswer: 0,
+          explanation: 'De vijf DP-activiteiten zijn: (1) Authorise Initiation, (2) Authorise the Project, (3) Authorise a Stage or Exception Plan, (4) Give Ad Hoc Direction, (5) Authorise Project Closure. DP loopt door het hele project en is het besturingsproces van de Project Board.',
+          questionEN: 'Which five authorisation decisions does the Project Board take in the Directing a Project (DP) process?',
+          optionsEN: [
+            'Authorise Initiation, Authorise the Project, Authorise a Stage or Exception Plan, Give Ad Hoc Direction, Authorise Project Closure',
+            'Review Project Brief, Approve PID, Authorise Work Packages, Receive Highlight Reports, Update Lessons Log',
+            'Start SU, Start IP, Start CS, Start MP, Start CP',
+            'Assess Risk, Approve Change, Control Quality, Update Plan, Measure Benefits',
+          ],
+          explanationEN: 'The five DP activities are: (1) Authorise Initiation, (2) Authorise the Project, (3) Authorise a Stage or Exception Plan, (4) Give Ad Hoc Direction, (5) Authorise Project Closure. DP runs throughout the entire project and is the Project Board\'s governance process.',
+        },
+        {
+          id: 'p2-q-p3',
+          question: 'Wat is de juiste volgorde van de exception-flow als stage-toleranties worden overschreden?',
+          options: [
+            'Exception Plan → Exception Report → Project Board goedkeuring',
+            'Exception Report → Exception Plan → Project Board goedkeuring',
+            'Highlight Report → Exception Report → Exception Plan',
+            'End Stage Report → Exception Plan → Project Board goedkeuring',
+          ],
+          correctAnswer: 1,
+          explanation: 'De juiste volgorde is: (1) PM maakt een Exception Report wanneer toleranties dreigen te worden overschreden (in CS); (2) Project Board vraagt om een Exception Plan (in DP); (3) PM maakt het Exception Plan (in SB); (4) Project Board beoordeelt en keurt het Exception Plan goed (in DP). Het Exception Report komt altijd vóór het Exception Plan.',
+          questionEN: 'What is the correct sequence of the exception flow when stage tolerances are forecast to be exceeded?',
+          optionsEN: [
+            'Exception Plan → Exception Report → Project Board approval',
+            'Exception Report → Exception Plan → Project Board approval',
+            'Highlight Report → Exception Report → Exception Plan',
+            'End Stage Report → Exception Plan → Project Board approval',
+          ],
+          explanationEN: 'The correct sequence is: (1) PM raises an Exception Report when tolerances are forecast to be exceeded (in CS); (2) Project Board requests an Exception Plan (in DP); (3) PM produces the Exception Plan (in SB); (4) Project Board reviews and approves the Exception Plan (in DP). The Exception Report always precedes the Exception Plan.',
+        },
+        {
+          id: 'p2-q-p4',
+          question: 'Welke twee belangrijkste producten levert het Managing a Stage Boundary (SB) proces op voor de Project Board?',
+          options: [
+            'Project Brief en Outline Business Case',
+            'Work Package en Checkpoint Report',
+            'End Stage Report en het Stage Plan voor de volgende stage',
+            'Exception Report en Exception Plan',
+          ],
+          correctAnswer: 2,
+          explanation: 'SB produceert primair het End Stage Report (samenvatting van prestaties in de huidige stage) en het Stage Plan voor de volgende stage. Samen geven deze de Project Board alle informatie voor hun go/no-go beslissing. De Business Case en het Project Plan worden ook bijgewerkt in SB.',
+          questionEN: 'Which two primary products does the Managing a Stage Boundary (SB) process produce for the Project Board?',
+          optionsEN: [
+            'Project Brief and Outline Business Case',
+            'Work Package and Checkpoint Report',
+            'End Stage Report and the Stage Plan for the next stage',
+            'Exception Report and Exception Plan',
+          ],
+          explanationEN: 'SB primarily produces the End Stage Report (summarising performance in the current stage) and the Stage Plan for the next stage. Together these give the Project Board all the information needed for their go/no-go decision. The Business Case and Project Plan are also updated during SB.',
+        },
+        {
+          id: 'p2-q-p5',
+          question: 'In het Managing Product Delivery (MP) proces: wat zijn de drie activiteiten van de Team Manager?',
+          options: [
+            'Plan, Execute, Report',
+            'Authorise, Review, Receive',
+            'Accept a Work Package, Execute a Work Package, Deliver a Work Package',
+            'Identify, Assess, Implement',
+          ],
+          correctAnswer: 2,
+          explanation: 'De drie MP-activiteiten van de Team Manager zijn: (1) Accept a Work Package — begrijp, controleer haalbaarheid en accepteer het werk van de PM; (2) Execute a Work Package — plan, wijs toe en monitor het werk; (3) Deliver a Work Package — controleer kwaliteit en lever formeel op aan de PM. Deze drie activiteiten vormen de interface tussen PM (CS) en Team Manager (MP).',
+          questionEN: 'In the Managing Product Delivery (MP) process: what are the three activities of the Team Manager?',
+          optionsEN: [
+            'Plan, Execute, Report',
+            'Authorise, Review, Receive',
+            'Accept a Work Package, Execute a Work Package, Deliver a Work Package',
+            'Identify, Assess, Implement',
+          ],
+          explanationEN: 'The three MP activities for the Team Manager are: (1) Accept a Work Package — understand, verify feasibility and accept the work from the PM; (2) Execute a Work Package — plan, assign and monitor the work; (3) Deliver a Work Package — verify quality and formally hand back to the PM. These three activities form the interface between the PM (in CS) and the Team Manager (in MP).',
+        },
       ],
     },
   ],
