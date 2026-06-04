@@ -10,6 +10,7 @@ from .views import (
     SprintPlanningViewSet,
     IncrementViewSet,
     DoDChecklistCompletionViewSet,
+    DoDChecklistEntryViewSet,
     ScrumSeedDemoView,
     ScrumClearDemoView,
 )
@@ -258,6 +259,30 @@ urlpatterns = [
         'projects/<int:project_id>/scrum/dod-completion/<int:pk>/',
         DoDChecklistCompletionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
         name='scrum-dod-completion-detail'
+    ),
+
+    # =========================================================================
+    # DOD CHECKLIST ENTRIES — per-sprint DoD ticking that gates 'Done'
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/scrum/dod-entries/',
+        DoDChecklistEntryViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='scrum-dod-entries-list'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/dod-entries/sync/',
+        DoDChecklistEntryViewSet.as_view({'post': 'sync'}),
+        name='scrum-dod-entries-sync'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/dod-entries/<int:pk>/',
+        DoDChecklistEntryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='scrum-dod-entries-detail'
+    ),
+    path(
+        'projects/<int:project_id>/scrum/dod-entries/<int:pk>/toggle/',
+        DoDChecklistEntryViewSet.as_view({'post': 'toggle'}),
+        name='scrum-dod-entries-toggle'
     ),
 
     # =========================================================================

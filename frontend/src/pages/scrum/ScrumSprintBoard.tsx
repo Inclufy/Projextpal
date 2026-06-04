@@ -65,7 +65,18 @@ const ScrumSprintBoard = () => {
   const updateItemStatus = async (itemId: number, status: string) => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/scrum/items/${itemId}/update_status/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ status }) });
-      if (r.ok) fetchData();
+      if (r.ok) { fetchData(); return; }
+      const err = await r.json().catch(() => ({}));
+      if (err.code === "dod_not_met") {
+        const unmet = Array.isArray(err.unmet_criteria) ? err.unmet_criteria : [];
+        toast.error(pt("Definition of Done not met"), {
+          description: unmet.length
+            ? `${pt("Complete first")}: ${unmet.join(", ")}`
+            : err.detail,
+        });
+        return;
+      }
+      toast.error(err.detail || pt("Action failed"));
     } catch { toast.error(pt("Action failed")); }
   };
 

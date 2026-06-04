@@ -13,7 +13,8 @@ from .models import (
     ProductBacklog, BacklogItem, Sprint, SprintBurndown,
     DailyStandup, StandupUpdate, SprintReview, SprintRetrospective,
     Velocity, DefinitionOfDone, ScrumTeam,
-    SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion
+    SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion,
+    DoDChecklistEntry,
 )
 from .serializers import (
     ProductBacklogSerializer, BacklogItemSerializer, SprintSerializer,
@@ -21,7 +22,7 @@ from .serializers import (
     StandupUpdateSerializer, SprintReviewSerializer, SprintRetrospectiveSerializer,
     VelocitySerializer, DefinitionOfDoneSerializer, ScrumTeamSerializer,
     SprintGoalSerializer, SprintPlanningSerializer, IncrementSerializer,
-    DoDChecklistCompletionSerializer
+    DoDChecklistCompletionSerializer, DoDChecklistEntrySerializer,
 )
 
 
@@ -184,13 +185,54 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, project_id=None, pk=None):
-        """Update item status"""
+        """Update item status.
+
+        Marking an item ``done`` is gated on the sprint's Definition of Done:
+        every active project-level DoD criterion must be ticked off for the
+        item's sprint (Scrum Guide 2020 — "Developers are required to conform
+        to the Definition of Done"). Un-Done work cannot be flipped to Done from
+        a dropdown. Projects with no active DoD are unaffected.
+        """
         item = self.get_object()
         new_status = request.data.get('status')
-        if new_status in dict(BacklogItem.STATUS_CHOICES):
-            item.status = new_status
-            item.save()
+        if new_status not in dict(BacklogItem.STATUS_CHOICES):
+            return Response(
+                {'detail': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_status == 'done' and item.status != 'done' and item.sprint_id:
+            all_met, unmet = item.sprint.dod_status()
+            if not all_met:
+                return Response(
+                    {
+                        'detail': (
+                            "Definition of Done not met for this sprint — "
+                            "complete the DoD checklist before marking work Done."
+                        ),
+                        'code': 'dod_not_met',
+                        'unmet_criteria': unmet,
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+        item.status = new_status
+        item.save()
+
+        # Increment quality flag: an increment "meets DoD" only when the sprint
+        # DoD is satisfied AND every item in the sprint is Done.
+        if new_status == 'done' and item.sprint_id:
+            self._refresh_increment_dod(item.sprint)
+
         return Response(BacklogItemSerializer(item).data)
+
+    @staticmethod
+    def _refresh_increment_dod(sprint):
+        all_met, _ = sprint.dod_status()
+        items = sprint.items.all()
+        all_items_done = items.exists() and not items.exclude(status='done').exists()
+        Increment.objects.filter(sprint=sprint).update(
+            meets_dod=bool(all_met and all_items_done)
+        )
 
     @action(detail=False, methods=['post'])
     def reorder(self, request, project_id=None):
@@ -705,6 +747,78 @@ class DoDChecklistCompletionViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             definition_of_done__project_id=project_id,
             definition_of_done__project__company=self.request.user.company
         )
+
+
+class DoDChecklistEntryViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    """Per-sprint Definition-of-Done checklist ticking.
+
+    Surfaces the previously-orphaned ``DoDChecklistEntry`` so the team can check
+    off each active DoD criterion during the Sprint Review. These entries are
+    what ``BacklogItemViewSet.update_status`` reads to gate 'Done'.
+    """
+    serializer_class = DoDChecklistEntrySerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        from django.db.models import Q
+        from projects.models import Project
+        project_id = self.kwargs.get('project_id')
+        user = self.request.user
+        qs = DoDChecklistEntry.objects.filter(sprint__project_id=project_id)
+        if not (getattr(user, 'role', None) == 'superadmin'
+                or getattr(user, 'is_superuser', False)):
+            qs = qs.filter(
+                sprint__project__in=Project.objects.filter(
+                    Q(team_members__user=user, team_members__is_active=True)
+                    | Q(created_by=user)
+                ).distinct()
+            )
+        sprint = self.request.query_params.get('sprint')
+        if sprint:
+            qs = qs.filter(sprint_id=sprint)
+        return qs.select_related('dod_item', 'sprint', 'completed_by')
+
+    @action(detail=False, methods=['post'])
+    def sync(self, request, project_id=None):
+        """Ensure an entry row exists for every active DoD criterion of a sprint.
+
+        Idempotent — call before rendering the DoD checklist for a sprint so a
+        row exists for each criterion to tick.
+        """
+        sprint_id = request.data.get('sprint')
+        sprint = get_object_or_404(Sprint, id=sprint_id, project_id=project_id)
+        active = DefinitionOfDone.objects.filter(
+            project_id=project_id, is_active=True
+        )
+        created = 0
+        for dod in active:
+            _, was_created = DoDChecklistEntry.objects.get_or_create(
+                dod_item=dod, sprint=sprint
+            )
+            if was_created:
+                created += 1
+        entries = DoDChecklistEntry.objects.filter(
+            sprint=sprint, dod_item__in=active
+        ).select_related('dod_item', 'completed_by')
+        return Response({
+            'created': created,
+            'entries': DoDChecklistEntrySerializer(entries, many=True).data,
+        })
+
+    @action(detail=True, methods=['post'])
+    def toggle(self, request, project_id=None, pk=None):
+        """Toggle a single DoD criterion's completion for its sprint."""
+        entry = self.get_object()
+        entry.completed = not entry.completed
+        if entry.completed:
+            entry.completed_by = request.user
+            entry.completed_at = timezone.now()
+        else:
+            entry.completed_by = None
+            entry.completed_at = None
+        entry.save()
+        return Response(DoDChecklistEntrySerializer(entry).data)
+
 
 # =============================================================================
 # DASHBOARD

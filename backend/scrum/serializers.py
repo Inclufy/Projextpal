@@ -4,7 +4,8 @@ from .models import (
     ProductBacklog, BacklogItem, Sprint, SprintBurndown,
     DailyStandup, StandupUpdate, SprintReview, SprintRetrospective,
     Velocity, DefinitionOfDone, ScrumTeam,
-    SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion
+    SprintGoal, SprintPlanning, Increment, DoDChecklistCompletion,
+    DoDChecklistEntry,
 )
 
 
@@ -203,8 +204,20 @@ class IncrementSerializer(serializers.ModelSerializer):
 class DoDChecklistCompletionSerializer(serializers.ModelSerializer):
     dod_name = serializers.CharField(source='definition_of_done.name', read_only=True)
     completed_by_name = serializers.CharField(source='completed_by.get_full_name', read_only=True)
-    
+
     class Meta:
         model = DoDChecklistCompletion
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at', 'completed_by']
+
+
+class DoDChecklistEntrySerializer(serializers.ModelSerializer):
+    """Per-sprint, per-DoD-criterion tick used to gate 'Done'."""
+    dod_item_text = serializers.CharField(source='dod_item.item', read_only=True)
+    dod_item_order = serializers.IntegerField(source='dod_item.order', read_only=True)
+    completed_by_name = serializers.CharField(source='completed_by.get_full_name', read_only=True)
+
+    class Meta:
+        model = DoDChecklistEntry
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at', 'completed_by', 'completed_at']

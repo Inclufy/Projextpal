@@ -110,7 +110,29 @@ class Sprint(models.Model):
     @property
     def completed_story_points(self):
         return self.items.filter(status='done').aggregate(total=models.Sum('story_points'))['total'] or 0
-    
+
+    def dod_status(self):
+        """Definition-of-Done conformance for this sprint.
+
+        Returns ``(all_met: bool, unmet: list[str])``. The DoD is the set of
+        active project-level criteria (``DefinitionOfDone.is_active``); a
+        criterion counts as met when a ``DoDChecklistEntry(completed=True)``
+        exists for it on this sprint. With no active DoD criteria the gate is a
+        no-op (returns met) so existing projects without a DoD are unaffected.
+        """
+        active = DefinitionOfDone.objects.filter(
+            project=self.project, is_active=True
+        )
+        if not active.exists():
+            return True, []
+        completed_ids = set(
+            DoDChecklistEntry.objects.filter(
+                sprint=self, completed=True, dod_item__in=active
+            ).values_list('dod_item_id', flat=True)
+        )
+        unmet = [d.item for d in active if d.id not in completed_ids]
+        return (len(unmet) == 0), unmet
+
     def save(self, *args, **kwargs):
         # Auto-generate name if not provided
         if not self.name or self.name == 'New Sprint':
