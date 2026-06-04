@@ -2,7 +2,7 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
-from projects.models import Project
+from programs.models import Program
 
 from .models import MSPBenefit, BenefitRealization, MSPTranche
 from .serializers import MSPBenefitSerializer, BenefitRealizationSerializer, MSPTrancheSerializer
@@ -13,9 +13,15 @@ def _get_company(user):
 
 
 def _verify_program_access(user, program_id):
-    """Verify the user's company owns the target program."""
+    """Verify the user's company owns the target MSP *program*.
+
+    Previously queried projects.Project by id — but MSPBenefit/MSPTranche.program
+    is a FK to programs.Program. The mismatch denied every legitimate nested
+    create (the program_id never matched a Project row) and, if a Project of
+    another tenant happened to share the id, risked a cross-tenant false-allow.
+    """
     company = _get_company(user)
-    if not company or not Project.objects.filter(id=program_id, company=company).exists():
+    if not company or not Program.objects.filter(id=program_id, company=company).exists():
         raise PermissionDenied("You do not have access to this program.")
 
 

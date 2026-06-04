@@ -16,7 +16,10 @@ class MSPBenefitSerializer(serializers.ModelSerializer):
     class Meta:
         model = MSPBenefit
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `program` is injected server-side from the nested URL in perform_create
+        # (mirrors the lss_green/project pattern). Keeping it read-only lets the
+        # nested create validate without the client re-supplying the program id.
+        read_only_fields = ['id', 'program', 'created_at', 'updated_at']
 
     def get_total_realized(self, obj):
         from django.db.models import Sum
@@ -28,4 +31,5 @@ class MSPTrancheSerializer(serializers.ModelSerializer):
     class Meta:
         model = MSPTranche
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `program` injected server-side in perform_create (see MSPBenefitSerializer).
+        read_only_fields = ['id', 'program', 'created_at', 'updated_at']
