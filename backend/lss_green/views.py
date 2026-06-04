@@ -1,4 +1,5 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
@@ -75,6 +76,31 @@ class DMAICPhaseViewSet(viewsets.ModelViewSet):
         if project_id:
             queryset = queryset.filter(project_id=project_id)
         return queryset
+
+    def update(self, request, *args, **kwargs):
+        """Enforce the shared tollgate gate (LSS Black audit #1): a DMAIC phase
+        may only move to 'completed' when its sixsigma.TollgateReview for the
+        same phase has passed. Reused by both Green and Black (shared viewset)."""
+        instance = self.get_object()
+        new_status = request.data.get('status', instance.status)
+        if new_status == 'completed' and instance.status != 'completed':
+            from sixsigma.models import TollgateReview
+            tg = TollgateReview.objects.filter(
+                project=instance.project, phase=instance.phase
+            ).first()
+            if tg is None or not (tg.approved or tg.status == 'passed'):
+                return Response(
+                    {
+                        'detail': (
+                            f"The {instance.get_phase_display()} tollgate must be "
+                            "approved before this phase can be completed."
+                        ),
+                        'code': 'tollgate_not_passed',
+                        'phase': instance.phase,
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+        return super().update(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         project_id = self.kwargs.get('project_id')

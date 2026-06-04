@@ -80,7 +80,13 @@ const LSSBlackPhases = () => {
   const markComplete = async (p: any) => {
     try {
       const r = await fetch(`/api/v1/lss-black/projects/${id}/dmaic-phases/${p.id}/`, { method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString() }) });
-      if (r.ok) { toast.success(pt("Phase completed")); refresh(); }
+      if (r.ok) { toast.success(pt("Phase completed")); refresh(); return; }
+      const err = await r.json().catch(() => ({}));
+      if (err.code === "tollgate_not_passed") {
+        toast.error(err.detail || pt("Tollgate not passed"), { description: pt("Pass the phase tollgate before completing this phase.") });
+        return;
+      }
+      toast.error(err.detail || pt("Update failed"));
     } catch { toast.error(pt("Update failed")); }
   };
 
