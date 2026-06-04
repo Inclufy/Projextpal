@@ -1,17 +1,18 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status as drf_status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
-    Decision, Meeting,
+    Decision, Meeting, DecisionAuditLog,
 )
 from .serializers import (
     PortfolioSerializer, GovernanceBoardSerializer,
     BoardMemberSerializer, GovernanceStakeholderSerializer,
-    DecisionSerializer, MeetingSerializer,
+    DecisionSerializer, MeetingSerializer, DecisionAuditLogSerializer,
 )
 
 
@@ -343,6 +344,118 @@ class DecisionViewSet(viewsets.ModelViewSet):
             serializer.save(decided_by=self.request.user)
         else:
             serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        """A Decision becomes append-only once its outcome has been applied —
+        a governance audit invariant (P0-1). Block any edit after applied_at."""
+        instance = self.get_object()
+        if instance.applied_at is not None:
+            return Response(
+                {
+                    'detail': 'This decision has been applied and is now append-only; it cannot be edited.',
+                    'code': 'decision_applied',
+                },
+                status=drf_status.HTTP_409_CONFLICT,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def _target_in_company(self, target, user):
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return True
+        company_id = getattr(user, 'company_id', None)
+        return company_id is not None and getattr(target, 'company_id', None) == company_id
+
+    @action(detail=True, methods=['post'])
+    def apply(self, request, pk=None):
+        """Approve the decision and enact its outcome on the linked component.
+
+        authorize/continue → component active; hold → on_hold; stop → terminate.
+        Writes an immutable audit row, stamps applied_at (making the decision
+        append-only), and rejects re-application + cross-tenant targets.
+        """
+        decision = self.get_object()
+
+        if decision.applied_at is not None:
+            return Response(
+                {'detail': 'This decision has already been applied.', 'code': 'already_applied'},
+                status=drf_status.HTTP_409_CONFLICT,
+            )
+
+        # Allow the caller to set outcome at apply-time if not already on the record.
+        outcome = request.data.get('outcome') or decision.outcome
+        if outcome not in dict(Decision.OUTCOME_CHOICES):
+            return Response(
+                {'detail': 'A valid outcome (authorize/continue/hold/stop) is required to apply this decision.',
+                 'code': 'outcome_required'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        kind, target = decision.get_target()
+        if target is None:
+            return Response(
+                {'detail': 'This decision has no linked component to authorize.',
+                 'code': 'target_required'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not self._target_in_company(target, request.user):
+            return Response(
+                {'detail': 'You do not have access to the target component.',
+                 'code': 'cross_tenant_denied'},
+                status=drf_status.HTTP_403_FORBIDDEN,
+            )
+
+        new_status = decision.target_status_for_outcome(kind)
+        if new_status is None:
+            return Response(
+                {'detail': f"Outcome '{outcome}' cannot be applied to a {kind}.",
+                 'code': 'invalid_outcome_for_target'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        previous_status = getattr(target, 'status', '')
+
+        from django.db import transaction
+        with transaction.atomic():
+            # Mutate the component.
+            target.status = new_status
+            target.save(update_fields=['status', 'updated_at'] if _has_field(target, 'updated_at') else ['status'])
+
+            # Stamp + approve the decision (now append-only).
+            decision.outcome = outcome
+            decision.status = 'approved'
+            decision.applied_at = timezone.now()
+            if not decision.decided_at:
+                decision.decided_at = decision.applied_at
+            if not decision.decided_by_id:
+                decision.decided_by = request.user
+            decision.save(update_fields=['outcome', 'status', 'applied_at', 'decided_at', 'decided_by', 'updated_at'])
+
+            # Immutable audit row.
+            DecisionAuditLog.objects.create(
+                decision=decision,
+                decision_title=decision.title,
+                outcome=outcome,
+                target_kind=kind,
+                target_id=str(target.id),
+                previous_status=previous_status or '',
+                new_status=new_status,
+                applied_by=request.user,
+                note=request.data.get('note', ''),
+            )
+
+        return Response(DecisionSerializer(decision).data, status=drf_status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'])
+    def audit(self, request, pk=None):
+        """Return the immutable audit trail for this decision."""
+        decision = self.get_object()
+        logs = decision.audit_logs.all()
+        return Response(DecisionAuditLogSerializer(logs, many=True).data)
+
+
+def _has_field(instance, field_name):
+    return any(f.name == field_name for f in instance._meta.fields)
 
 
 class MeetingViewSet(viewsets.ModelViewSet):

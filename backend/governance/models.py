@@ -169,6 +169,16 @@ class Decision(models.Model):
         ('rejected', 'Rejected'),
     ]
 
+    # Outcome drives what the decision *does* to its target component when
+    # applied (P0-1). authorize/continue → make the component active;
+    # hold → on_hold; stop → terminate.
+    OUTCOME_CHOICES = [
+        ('authorize', 'Authorize'),
+        ('continue', 'Continue'),
+        ('hold', 'Hold'),
+        ('stop', 'Stop'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     program = models.ForeignKey(
         'programs.Program', on_delete=models.CASCADE,
@@ -204,6 +214,28 @@ class Decision(models.Model):
     decided_at = models.DateTimeField(null=True, blank=True)
     impact = models.CharField(max_length=10, choices=IMPACT_CHOICES, default='medium')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    outcome = models.CharField(
+        max_length=12, choices=OUTCOME_CHOICES, blank=True,
+        help_text='What this decision does to its target component when applied.',
+    )
+    # Exactly one of these target FKs should be set when an outcome is to be
+    # applied. Nullable explicit FKs (not generic content_type) keep the
+    # cross-tenant scoping queries straightforward.
+    authorized_project = models.ForeignKey(
+        'projects.Project', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='authorizing_decisions',
+    )
+    authorized_program = models.ForeignKey(
+        'programs.Program', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='authorizing_decisions',
+    )
+    authorized_portfolio = models.ForeignKey(
+        'governance.Portfolio', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='authorizing_decisions',
+    )
+    # Set once the outcome has been applied to the target. Non-null makes the
+    # decision append-only (no further edits) — a governance audit invariant.
+    applied_at = models.DateTimeField(null=True, blank=True)
     evidence = models.TextField(
         blank=True,
         help_text='Links / references to supporting artefacts (board minutes, business case, etc.)',
@@ -218,6 +250,64 @@ class Decision(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+
+    # outcome → target status, per target kind (each model has its own vocab).
+    _OUTCOME_STATUS = {
+        'project': {'authorize': 'in_progress', 'continue': 'in_progress', 'hold': 'on_hold', 'stop': 'cancelled'},
+        'program': {'authorize': 'active', 'continue': 'active', 'hold': 'on_hold', 'stop': 'cancelled'},
+        'portfolio': {'authorize': 'active', 'continue': 'active', 'hold': 'on_hold', 'stop': 'closed'},
+    }
+
+    def get_target(self):
+        """Return (kind, instance) for the single linked component, or (None, None)."""
+        if self.authorized_project_id:
+            return 'project', self.authorized_project
+        if self.authorized_program_id:
+            return 'program', self.authorized_program
+        if self.authorized_portfolio_id:
+            return 'portfolio', self.authorized_portfolio
+        return None, None
+
+    def target_status_for_outcome(self, kind):
+        return self._OUTCOME_STATUS.get(kind, {}).get(self.outcome)
+
+
+class DecisionAuditLog(models.Model):
+    """Append-only audit row written each time a Decision outcome is applied
+    to a component (P0-1). Immutable: rows cannot be edited once created."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # SET_NULL + denormalised title so the trail survives a decision deletion.
+    decision = models.ForeignKey(
+        'governance.Decision', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='audit_logs',
+    )
+    decision_title = models.CharField(max_length=255, blank=True)
+    outcome = models.CharField(max_length=12, blank=True)
+    target_kind = models.CharField(max_length=16)
+    target_id = models.CharField(max_length=64)
+    previous_status = models.CharField(max_length=32, blank=True)
+    new_status = models.CharField(max_length=32, blank=True)
+    applied_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='applied_decision_audits',
+    )
+    applied_at = models.DateTimeField(auto_now_add=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'Decision Audit Log'
+        verbose_name_plural = 'Decision Audit Logs'
+        ordering = ['-applied_at']
+
+    def __str__(self):
+        return f"{self.decision_title}: {self.target_kind} → {self.new_status}"
+
+    def save(self, *args, **kwargs):
+        # Immutable: only the initial insert is allowed.
+        if self.pk is not None and DecisionAuditLog.objects.filter(pk=self.pk).exists():
+            raise ValueError("DecisionAuditLog rows are append-only and cannot be modified.")
+        super().save(*args, **kwargs)
 
 
 class Meeting(models.Model):

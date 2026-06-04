@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Gavel, Plus, Pencil, Trash2, Shield, CalendarDays, Layers, X, Loader2,
-  AlertTriangle,
+  AlertTriangle, CheckCircle2, PlayCircle, Target,
 } from "lucide-react";
 
 // Module-scope form type so the dialog state has a stable identity (same
@@ -33,6 +33,8 @@ type DecisionForm = {
   board: string;
   meeting: string;
   risk: string;
+  outcome: string;
+  authorized_program: string;
 };
 
 interface Decision {
@@ -49,6 +51,9 @@ interface Decision {
   risk: number | null;
   decided_by: number | null;
   decided_by_name: string | null;
+  outcome: string;
+  applied_at: string | null;
+  target: { kind: string; id: string; name: string; status: string | null } | null;
 }
 
 interface ProgramRef { id: number; name: string }
@@ -113,6 +118,8 @@ const Decisions: React.FC = () => {
     board: "",
     meeting: "",
     risk: "",
+    outcome: "",
+    authorized_program: "",
   });
 
   const token = localStorage.getItem("access_token");
@@ -203,6 +210,8 @@ const Decisions: React.FC = () => {
       board: boardFilter || "",
       meeting: meetingFilter || "",
       risk: riskFilter || "",
+      outcome: "",
+      authorized_program: programFilter || "",
     });
     setDialogOpen(true);
   };
@@ -221,6 +230,8 @@ const Decisions: React.FC = () => {
       board: d.board || "",
       meeting: d.meeting || "",
       risk: d.risk != null ? String(d.risk) : "",
+      outcome: d.outcome || "",
+      authorized_program: d.target && d.target.kind === "program" ? d.target.id : "",
     });
     setDialogOpen(true);
   };
@@ -254,6 +265,14 @@ const Decisions: React.FC = () => {
       if (form.risk !== "") body.risk = parseInt(form.risk);
       else if (editing) body.risk = null;
 
+      // Authorization fields: outcome drives what `apply` does; authorized_program
+      // is the component whose status it flips. Empty = unset (cleared on edit).
+      if (form.outcome !== "") body.outcome = form.outcome;
+      else if (editing) body.outcome = "";
+
+      if (form.authorized_program !== "") body.authorized_program = parseInt(form.authorized_program);
+      else if (editing) body.authorized_program = null;
+
       const url = editing
         ? `/api/v1/governance/decisions/${editing.id}/`
         : `/api/v1/governance/decisions/`;
@@ -286,6 +305,40 @@ const Decisions: React.FC = () => {
       }
     } catch {
       toast({ title: pt("Error"), description: pt("Delete failed"), variant: "destructive" });
+    }
+  };
+
+  // Apply the decision outcome: flips the linked component's status, writes an
+  // immutable audit row, and makes the decision append-only. The backend
+  // returns a machine-readable `code` on every rejection (400/403/409) — read
+  // it so the toast explains exactly why, instead of a generic failure.
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  const handleApply = async (d: Decision) => {
+    const targetLabel = d.target ? `${d.target.kind} "${d.target.name}"` : pt("the linked component");
+    if (!confirm(pt("Apply this decision? This will update {target} and cannot be undone.").replace("{target}", targetLabel))) return;
+    setApplyingId(d.id);
+    try {
+      const r = await fetch(`/api/v1/governance/decisions/${d.id}/apply/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      if (r.ok) {
+        toast({ title: pt("Applied"), description: pt("Decision applied — {target} updated.").replace("{target}", targetLabel) });
+        fetchAll();
+      } else {
+        const err = await r.json().catch(() => ({}));
+        const codeMsg: Record<string, string> = {
+          outcome_required: pt("Set an outcome (authorize / continue / hold / stop) before applying."),
+          target_required: pt("Link a project, programme or portfolio before applying."),
+          invalid_outcome_for_target: pt("This outcome can't be applied to the linked component."),
+          cross_tenant_denied: pt("You can't apply a decision to another tenant's component."),
+          already_applied: pt("This decision has already been applied."),
+        };
+        const msg = (err?.code && codeMsg[err.code]) || err?.detail || pt("Apply failed");
+        toast({ title: pt("Cannot apply"), description: msg, variant: "destructive" });
+        if (err?.code === "already_applied") fetchAll();
+      }
+    } catch {
+      toast({ title: pt("Error"), description: pt("Apply failed"), variant: "destructive" });
+    } finally {
+      setApplyingId(null);
     }
   };
 
@@ -475,6 +528,25 @@ const Decisions: React.FC = () => {
                       {d.description && (
                         <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{d.description}</p>
                       )}
+                      {d.target && (
+                        <div className="flex items-center gap-2 mt-2 text-xs">
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Target className="h-3 w-3" />
+                            {pt("Authorizes")}:
+                          </span>
+                          <span className="font-medium capitalize">{d.target.kind} · {d.target.name}</span>
+                          {d.target.status && (
+                            <Badge variant="secondary" className="text-[10px] capitalize">
+                              {String(d.target.status).replace(/_/g, " ")}
+                            </Badge>
+                          )}
+                          {d.outcome && (
+                            <Badge variant="outline" className="text-[10px] capitalize">
+                              {pt("outcome")}: {d.outcome}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                         {d.decided_at && (
                           <span className="flex items-center gap-1">
@@ -487,7 +559,28 @@ const Decisions: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(d)} title={pt("Edit")}>
+                      {d.applied_at ? (
+                        <Badge variant="outline" className="text-xs gap-1 border-green-300 text-green-700">
+                          <CheckCircle2 className="h-3 w-3" /> {pt("Applied")}
+                        </Badge>
+                      ) : (
+                        d.outcome && d.target && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            disabled={applyingId === d.id}
+                            onClick={() => handleApply(d)}
+                            title={pt("Apply this decision to the linked component")}
+                          >
+                            {applyingId === d.id
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <PlayCircle className="h-3.5 w-3.5" />}
+                            {pt("Apply")}
+                          </Button>
+                        )
+                      )}
+                      <Button variant="ghost" size="sm" disabled={!!d.applied_at} onClick={() => openEdit(d)} title={d.applied_at ? pt("Applied decisions are read-only") : pt("Edit")}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)} title={pt("Delete")}>
@@ -628,6 +721,47 @@ const Decisions: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            {/* Authorization: when an outcome + target are set, the decision can be
+                Applied — flipping the linked component's status and writing an audit row. */}
+            <div className="rounded-md border border-dashed p-3 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Target className="h-4 w-4" /> {pt("Authorization")}
+                <span className="text-xs font-normal text-muted-foreground">{pt("(optional — enables Apply)")}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>{pt("Outcome")}</Label>
+                  <Select
+                    value={form.outcome || NONE}
+                    onValueChange={(v) => setForm({ ...form, outcome: v === NONE ? "" : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder={pt("None")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE}>{pt("None")}</SelectItem>
+                      <SelectItem value="authorize">{pt("Authorize (start)")}</SelectItem>
+                      <SelectItem value="continue">{pt("Continue")}</SelectItem>
+                      <SelectItem value="hold">{pt("Hold")}</SelectItem>
+                      <SelectItem value="stop">{pt("Stop")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{pt("Authorized Programme")}</Label>
+                  <Select
+                    value={form.authorized_program || NONE}
+                    onValueChange={(v) => setForm({ ...form, authorized_program: v === NONE ? "" : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder={pt("None")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE}>{pt("None")}</SelectItem>
+                      {programs.map(p => (
+                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div className="space-y-2">

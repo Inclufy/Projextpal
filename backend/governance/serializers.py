@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
-    Decision, Meeting,
+    Decision, Meeting, DecisionAuditLog,
 )
 
 
@@ -107,15 +107,42 @@ class GovernanceStakeholderSerializer(serializers.ModelSerializer):
 class DecisionSerializer(serializers.ModelSerializer):
     decided_by_name = serializers.SerializerMethodField()
     decided_by_email = serializers.EmailField(source='decided_by.email', read_only=True)
+    target = serializers.SerializerMethodField()
 
     class Meta:
         model = Decision
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # applied_at is stamped server-side by the `apply` action only.
+        read_only_fields = ['id', 'created_at', 'updated_at', 'applied_at']
 
     def get_decided_by_name(self, obj):
         if obj.decided_by:
             return obj.decided_by.get_full_name() or obj.decided_by.email
+        return None
+
+    def get_target(self, obj):
+        kind, instance = obj.get_target()
+        if instance is None:
+            return None
+        return {
+            'kind': kind,
+            'id': str(instance.id),
+            'name': getattr(instance, 'name', str(instance)),
+            'status': getattr(instance, 'status', None),
+        }
+
+
+class DecisionAuditLogSerializer(serializers.ModelSerializer):
+    applied_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DecisionAuditLog
+        fields = '__all__'
+        read_only_fields = [f.name for f in DecisionAuditLog._meta.fields]
+
+    def get_applied_by_name(self, obj):
+        if obj.applied_by:
+            return obj.applied_by.get_full_name() or obj.applied_by.email
         return None
 
 
