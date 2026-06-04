@@ -2063,6 +2063,32 @@
       "last_test_status": "pass",
       "last_test_response_status": 409,
       "notes": "2026-06-05: Covered by backend/hybrid/tests_phase_strategy.py (9 tests; full hybrid app 14 green). gate_status read_only on PATCH; PATCH progress=100 -> 400; predictive complete w/o signoff -> 409 signoff_required, signoff then complete -> 100/complete; signoff on non-predictive -> 409 signoff_not_applicable; adaptive complete with open DoD/tasks -> 409 dod_incomplete (+blockers), all done -> success; flow complete with WIP -> 409 work_in_progress then drained -> success; re-complete -> 409 already_complete. strategy map mirrors constants.py canonical 7. Live endpoint needs auth (defer like other authed entries)."
+    },
+    {
+      "id": "FEAT-039",
+      "title": "Hybrid-Programme: config drives constituent authorization — governance_mode selects the gate (predictive=stage-gate, adaptive=cadence checkpoint, blend=both) enforced before status change (409 + code)",
+      "severity": "P2",
+      "area": "hybrid_programme",
+      "endpoint": "POST /api/v1/hybrid-programme/constituents/{id}/authorize/",
+      "method": "POST",
+      "expected_status": 409,
+      "previous_status": 404,
+      "request_body": {},
+      "expected_response_contains": [
+        "code"
+      ],
+      "previous_error_contains": [
+        "Not Found"
+      ],
+      "root_cause": "Before #39 the hybrid_programme app stored a HybridGovernanceConfig + free-text HybridAdaptation but neither drove anything: there was no constituent model, no authorization, the config blend was inert, and the sidebar hardcoded programMethodology=hybrid (AppSidebar.tsx) so every programme rendered the hybrid menu regardless of its real framework.",
+      "fix_location": "backend/hybrid_programme/{models,serializers,views,urls}.py (ConstituentAuthorization + stage_gate/checkpoint/authorize/rollup actions, status read_only, config-driven gate; HybridAdaptation.apply mutates active config control_level) migration 0003 + backend/hybrid_programme/tests_constituent_auth.py + frontend/src/pages/ProgramHybridGovernance.tsx wired to App.tsx (/constituents,/governance-config,/adaptations) + AppSidebar hybrid_programme case + useProgram hook replacing hardcoded methodology",
+      "found": "2026-06-05",
+      "found_by": "methodology audit BACKLOG-2026-06-04 (#39)",
+      "status": "fixed_verified",
+      "last_tested": "2026-06-05",
+      "last_test_status": "pass",
+      "last_test_response_status": 409,
+      "notes": "2026-06-05: Covered by backend/hybrid_programme/tests_constituent_auth.py (12 tests green). status read_only on PATCH; predictive authorize w/o stage gate -> 409 stage_gate_required; stage_gate then authorize -> authorized; adaptive authorize w/o checkpoint OR with stale checkpoint -> 409 cadence_checkpoint_required; checkpoint then authorize -> authorized; stage_gate on adaptive -> 409 stage_gate_not_applicable; checkpoint on predictive -> 409 checkpoint_not_applicable; blend requires both (409 governance_gates_unmet then cadence_checkpoint_required); contrasting modes diverge at runtime; rollup aggregates by_status/by_governance_mode; adaptation apply mutates config control_level (50->30 increase_agility) + history; cross-tenant isolation. Live endpoint needs auth (defer like other authed entries)."
     }
   ]
 }

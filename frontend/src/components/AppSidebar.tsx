@@ -32,7 +32,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 
-import { useProject } from "@/hooks/useApi";
+import { useProject, useProgram } from "@/hooks/useApi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -231,6 +231,40 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           items: [
             { title: "Resources", url: `/programs/${programId}/resources`, icon: Users },
             { title: "Benefits", url: `/programs/${programId}/benefits`, icon: Target },
+            { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
+          ],
+        },
+      ];
+
+    case 'hybrid_programme':
+      return [
+        {
+          id: "overview",
+          title: "Programme Overview",
+          icon: Layers,
+          items: [
+            { title: "Dashboard", url: `/programs/${programId}/dashboard`, icon: LayoutDashboard },
+            { title: "Constituents", url: `/programs/${programId}/constituents`, icon: FolderKanban },
+            { title: "Roadmap", url: `/programs/${programId}/roadmap`, icon: Calendar },
+          ],
+        },
+        {
+          id: "governance",
+          title: "Mixed Governance",
+          icon: Shield,
+          items: [
+            { title: "Governance Config", url: `/programs/${programId}/governance-config`, icon: Settings },
+            { title: "Authorization Board", url: `/programs/${programId}/constituents`, icon: Gavel },
+            { title: "Adaptations", url: `/programs/${programId}/adaptations`, icon: Repeat },
+          ],
+        },
+        {
+          id: "management",
+          title: "Management",
+          icon: Users,
+          items: [
+            { title: "Benefits", url: `/programs/${programId}/benefits`, icon: Target },
+            { title: "Stakeholders", url: `/programs/${programId}/stakeholders`, icon: Users },
             { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
           ],
         },
@@ -962,8 +996,11 @@ export function AppSidebar() {
   const { data: project } = useProject(projectId);
   const methodology = project?.methodology || null;
   const methodologyBadge = getMethodologyBadge(methodology);
-  
-  const programMethodology = isProgramContext ? 'hybrid' : null;
+
+  // Read the program's REAL methodology (was hardcoded 'hybrid', so every
+  // programme rendered the hybrid menu regardless of its actual framework).
+  const { data: program } = useProgram(programId);
+  const programMethodology = isProgramContext ? (program?.methodology || 'hybrid') : null;
   const programMethodologyBadge = isProgramContext ? getMethodologyBadge(programMethodology) : null;
   
   const projectPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];

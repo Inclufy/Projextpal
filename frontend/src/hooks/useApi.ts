@@ -1,5 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectsApi, timeEntriesApi, teamApi } from '@/lib/api';
+import { projectsApi, timeEntriesApi, teamApi, programsApi } from '@/lib/api';
+
+// Programs Hooks
+export const useProgram = (id: string | number | undefined) => {
+  return useQuery({
+    queryKey: ['program', id],
+    queryFn: () => programsApi.getById(id!),
+    enabled: !!id,
+  });
+};
 
 // Projects Hooks
 export const useProjects = (params?: Record<string, string | number | boolean>) => {

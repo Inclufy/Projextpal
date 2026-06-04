@@ -105,6 +105,7 @@ const ProgramSafe = lazy(() => import("./pages/ProgramSafe"));
 const ProgramMSP = lazy(() => import("./pages/ProgramMSP"));
 const ProgramPMI = lazy(() => import("./pages/ProgramPMI"));
 const ProgramP2 = lazy(() => import("./pages/ProgramP2"));
+const ProgramHybridGovernance = lazy(() => import("./pages/ProgramHybridGovernance"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
@@ -743,6 +744,23 @@ const App = () => (
               <Route path="/programs/:id/programme-projects" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
                   <ProtectedPage><ProgramP2 /></ProtectedPage>
+                </FeatureGuard>
+              } />
+
+              {/* Hybrid Programme-specific routes (config-driven authorization) */}
+              <Route path="/programs/:id/constituents" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramHybridGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/governance-config" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramHybridGovernance /></ProtectedPage>
+                </FeatureGuard>
+              } />
+              <Route path="/programs/:id/adaptations" element={
+                <FeatureGuard feature="program_management" requiredTier="Professional">
+                  <ProtectedPage><ProgramHybridGovernance /></ProtectedPage>
                 </FeatureGuard>
               } />
 
