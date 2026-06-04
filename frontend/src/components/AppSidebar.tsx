@@ -7,7 +7,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -407,6 +407,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Highlight Reports", url: `/projects/${projectId}/prince2/highlight-report`, icon: Activity },
             { title: "Risk Register", url: `/projects/${projectId}/prince2/risks`, icon: AlertCircle },
             { title: "Issue Register", url: `/projects/${projectId}/prince2/issues`, icon: ClipboardList },
+            { title: "Exception Reports", url: `/projects/${projectId}/prince2/exception-reports`, icon: AlertOctagon },
             { title: "PID / Governance", url: `/projects/${projectId}/prince2/governance`, icon: BarChart3 },
             { title: "Change Control", url: `/projects/${projectId}/execution/governance`, icon: GitBranch },
           ],

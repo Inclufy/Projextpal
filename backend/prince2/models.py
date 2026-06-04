@@ -725,3 +725,43 @@ class Prince2Issue(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.project.name})"
+
+
+class Prince2ExceptionReport(models.Model):
+    """PRINCE2 Exception Report (6th Ed §A.10) — the heart of *Manage by Exception*.
+
+    Produced when a stage or project is forecast to breach an agreed tolerance.
+    The Project Manager escalates it to the Project Board (Directing a Project),
+    presenting the cause, impact, options and a recommendation; the Board records
+    a decision (often authorising an Exception Plan). May be auto-raised by a
+    signal when a ProjectTolerance flips to is_exceeded.
+    """
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('under_review', 'Under Review'),
+        ('board_decision', 'Board Decision'),
+        ('closed', 'Closed'),
+    ]
+
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='prince2_exception_reports')
+    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True, related_name='exception_reports')
+    breaching_tolerance = models.ForeignKey('ProjectTolerance', on_delete=models.SET_NULL, null=True, blank=True, related_name='exception_reports')
+    title = models.CharField(max_length=200)
+    cause = models.TextField(blank=True, default='', help_text='What caused the deviation / forecast breach')
+    consequences = models.TextField(blank=True, default='', help_text='Impact on the stage, project and Business Case')
+    options = models.TextField(blank=True, default='', help_text='Available response options')
+    recommendation = models.TextField(blank=True, default='', help_text="Project Manager's recommended option")
+    board_decision = models.TextField(blank=True, default='', help_text='Project Board decision / direction')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    auto_generated = models.BooleanField(default=False)
+    raised_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='prince2_raised_exceptions')
+    date_raised = models.DateField(blank=True, null=True)
+    date_closed = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.project.name})"

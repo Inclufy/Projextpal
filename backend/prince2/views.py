@@ -12,7 +12,7 @@ from .models import (
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
-    Prince2Risk, Prince2Issue,
+    Prince2Risk, Prince2Issue, Prince2ExceptionReport,
 )
 from .serializers import (
     ProductSerializer,
@@ -22,7 +22,7 @@ from .serializers import (
     ProjectBoardSerializer, ProjectBoardMemberSerializer, HighlightReportSerializer,
     CheckpointReportSerializer,
     EndProjectReportSerializer, LessonsLogSerializer, ProjectToleranceSerializer,
-    Prince2RiskSerializer, Prince2IssueSerializer,
+    Prince2RiskSerializer, Prince2IssueSerializer, Prince2ExceptionReportSerializer,
 )
 
 
@@ -165,6 +165,21 @@ class ProjectInitiationDocumentViewSet(ProjectFilterMixin, viewsets.ModelViewSet
     @action(detail=True, methods=['post'])
     def baseline(self, request, project_id=None, pk=None):
         pid = self.get_object()
+        # PRINCE2 principle: Ensure continued business justification.
+        # A PID cannot be baselined without an approved Business Case (and Brief
+        # from the Starting-up process). This gate makes the principle behavioural
+        # rather than a documented intention.
+        project = pid.project
+        if not BusinessCase.objects.filter(project=project, status='approved').exists():
+            return Response(
+                {'error': 'Cannot baseline the PID without an approved Business Case (PRINCE2: ensure continued business justification).'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not ProjectBrief.objects.filter(project=project, status='approved').exists():
+            return Response(
+                {'error': 'Cannot baseline the PID without an approved Project Brief.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         pid.status = 'baselined'
         pid.baseline_date = timezone.now().date()
         pid.save()
@@ -189,6 +204,27 @@ class StageViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def start(self, request, project_id=None, pk=None):
         stage = self.get_object()
+        # PRINCE2 principle: Manage by stages. A management stage may only start
+        # once the preceding stage is completed AND its stage-boundary gate has
+        # been approved by the Project Board (the SB -> DP authorisation). The
+        # first stage (lowest order) has no predecessor and is always allowed.
+        prev = (
+            Stage.objects.filter(project=stage.project, order__lt=stage.order)
+            .order_by('-order')
+            .first()
+        )
+        if prev is not None:
+            if prev.status != 'completed':
+                return Response(
+                    {'error': f"Cannot start '{stage.name}': previous stage '{prev.name}' must be completed first (PRINCE2: manage by stages)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            latest_gate = prev.gates.order_by('-review_date', '-created_at').first()
+            if latest_gate is None or latest_gate.outcome not in ('approved', 'conditional'):
+                return Response(
+                    {'error': f"Cannot start '{stage.name}': the stage gate for '{prev.name}' must be approved by the Project Board first."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         stage.status = 'active'
         stage.actual_start_date = timezone.now().date()
         stage.save()
@@ -381,6 +417,24 @@ class Prince2IssueViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(project=self.get_project())
+
+
+class Prince2ExceptionReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
+    serializer_class = Prince2ExceptionReportSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        queryset = self.get_project_queryset(Prince2ExceptionReport)
+        status_filter = self.request.query_params.get('status')
+        stage = self.request.query_params.get('stage')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if stage:
+            queryset = queryset.filter(stage_id=stage)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(project=self.get_project(), raised_by=self.request.user)
 
 
 # =============================================================================

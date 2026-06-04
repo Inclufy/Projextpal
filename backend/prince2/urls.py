@@ -10,7 +10,7 @@ from .views import (
     ProjectBoardViewSet, ProjectBoardMemberViewSet, HighlightReportViewSet,
     CheckpointReportViewSet,
     EndProjectReportViewSet, LessonsLogViewSet, ProjectToleranceViewSet,
-    Prince2RiskViewSet, Prince2IssueViewSet,
+    Prince2RiskViewSet, Prince2IssueViewSet, Prince2ExceptionReportViewSet,
     Prince2DashboardView,
     ProjectBriefComputedView, ProjectClosureComputedView,
     Prince2SeedDemoView, Prince2ClearDemoView,
@@ -243,6 +243,20 @@ urlpatterns = [
         'projects/<int:project_id>/prince2/work-packages/<int:pk>/update_progress/',
         WorkPackageViewSet.as_view({'post': 'update_progress'}),
         name='prince2-wp-progress'
+    ),
+
+    # =========================================================================
+    # EXCEPTION REPORTS (Manage by Exception)
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/prince2/exception-reports/',
+        Prince2ExceptionReportViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='prince2-exception-report-list'
+    ),
+    path(
+        'projects/<int:project_id>/prince2/exception-reports/<int:pk>/',
+        Prince2ExceptionReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='prince2-exception-report-detail'
     ),
 
     # =========================================================================

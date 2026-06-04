@@ -5,7 +5,7 @@ from .models import (
     ProjectInitiationDocument, Stage, StagePlan, StageGate, WorkPackage,
     ProjectBoard, ProjectBoardMember, HighlightReport, CheckpointReport,
     EndProjectReport, LessonsLog, ProjectTolerance,
-    Prince2Risk, Prince2Issue,
+    Prince2Risk, Prince2Issue, Prince2ExceptionReport,
 )
 
 
@@ -153,6 +153,17 @@ class Prince2IssueSerializer(serializers.ModelSerializer):
         model = Prince2Issue
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']
+
+
+class Prince2ExceptionReportSerializer(serializers.ModelSerializer):
+    stage_name = serializers.CharField(source='stage.name', read_only=True, allow_null=True)
+    tolerance_type = serializers.CharField(source='breaching_tolerance.tolerance_type', read_only=True, allow_null=True)
+    raised_by_name = serializers.CharField(source='raised_by.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Prince2ExceptionReport
+        fields = '__all__'
+        read_only_fields = ['project', 'auto_generated', 'created_at', 'updated_at']
 
 
 class ProjectBoardMemberSerializer(serializers.ModelSerializer):
