@@ -232,19 +232,75 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         )
         serializer.save(board=board, reporter=self.request.user)
 
+    @staticmethod
+    def _is_expedite_lane(swimlane):
+        """An expedite/class-of-service lane bypasses WIP limits.
+
+        No dedicated class_of_service field exists yet, so the convention is a
+        non-default swimlane whose name contains 'expedite' (matches the demo
+        seeder and the 'Expedite lane' work policy).
+        """
+        if swimlane is None:
+            return False
+        return (not swimlane.is_default) and 'expedite' in (swimlane.name or '').lower()
+
     @action(detail=True, methods=['post'])
     def move(self, request, project_id=None, pk=None):
-        """Move card to different column/swimlane"""
+        """Move card to different column/swimlane.
+
+        Enforces the column WIP limit as a *pull* policy: if the destination
+        column is already at (or over) its wip_limit, the move is rejected with
+        409 BEFORE any state changes — the card stays put. An expedite swimlane
+        bypasses the limit (production-incident class of service).
+        """
         card = self.get_object()
         old_column = card.column
-        
+
         new_column_id = request.data.get('column_id')
         new_swimlane_id = request.data.get('swimlane_id')
         new_order = request.data.get('order')
-        
+
         if new_column_id:
             new_column = get_object_or_404(KanbanColumn, id=new_column_id)
-            
+            is_column_change = new_column.id != old_column.id
+
+            # WIP-at-pull enforcement — only when actually changing column.
+            if is_column_change and new_column.wip_limit:
+                # Resolve the swimlane the card will land in (incoming override
+                # else its current lane) to evaluate the expedite bypass.
+                target_swimlane = card.swimlane
+                if new_swimlane_id:
+                    target_swimlane = KanbanSwimlane.objects.filter(
+                        id=new_swimlane_id
+                    ).first()
+
+                if not self._is_expedite_lane(target_swimlane):
+                    # Occupancy excluding this card (it isn't in new_column yet,
+                    # but exclude defensively against same-column edge cases).
+                    occupancy = new_column.cards.exclude(pk=card.pk).count()
+                    if occupancy >= new_column.wip_limit:
+                        # Audit the rejected pull so the board can surface it.
+                        WipLimitViolation.objects.create(
+                            column=new_column,
+                            card_count=occupancy + 1,
+                            wip_limit=new_column.wip_limit,
+                        )
+                        return Response(
+                            {
+                                'detail': (
+                                    f"WIP limit reached: '{new_column.name}' "
+                                    f"allows {new_column.wip_limit} card(s). "
+                                    f"Finish or pull work out before adding more, "
+                                    f"or use the expedite lane for incidents."
+                                ),
+                                'code': 'wip_limit_reached',
+                                'column': new_column.name,
+                                'wip_limit': new_column.wip_limit,
+                                'current_count': occupancy,
+                            },
+                            status=status.HTTP_409_CONFLICT,
+                        )
+
             # Record history
             time_in_column = timezone.now() - card.entered_column_at
             CardHistory.objects.create(
@@ -254,28 +310,20 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                 moved_by=request.user,
                 time_in_column=time_in_column
             )
-            
+
             card.column = new_column
             card.entered_column_at = timezone.now()
-            
+
             # Check if moved to done column
             if new_column.is_done_column and not card.completed_date:
                 card.completed_date = timezone.now().date()
-            
-            # Check WIP limit violation
-            if new_column.wip_limit and new_column.cards.count() >= new_column.wip_limit:
-                WipLimitViolation.objects.create(
-                    column=new_column,
-                    card_count=new_column.cards.count() + 1,
-                    wip_limit=new_column.wip_limit
-                )
-        
+
         if new_swimlane_id:
             card.swimlane_id = new_swimlane_id
-        
+
         if new_order is not None:
             card.order = new_order
-        
+
         card.save()
         return Response(KanbanCardSerializer(card).data)
 

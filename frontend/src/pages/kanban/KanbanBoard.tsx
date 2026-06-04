@@ -48,6 +48,9 @@ const KanbanBoard = () => {
                     {colCards.map(card => {
                       const prevCol = ci > 0 ? columns[ci - 1] : null;
                       const nextCol = ci < columns.length - 1 ? columns[ci + 1] : null;
+                      const isExpedite = (card.swimlane_name || "").toLowerCase().includes("expedite");
+                      const nextColCount = nextCol ? cards.filter(c => c.column === nextCol.id).length : 0;
+                      const nextColFull = !!nextCol && !!nextCol.wip_limit && nextColCount >= nextCol.wip_limit && !isExpedite;
                       return (
                         <div key={card.id} className={`bg-background rounded-lg border-l-4 ${card.is_blocked ? "border-l-red-500 bg-red-50" : priorityColors[card.priority] || "border-l-gray-300"} p-3 shadow-sm`}>
                           <div className="flex items-center gap-1 mb-1 flex-wrap">
@@ -59,7 +62,7 @@ const KanbanBoard = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex gap-1">
                               {prevCol && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveCard(card.id, prevCol.id)}><ChevronLeft className="h-3.5 w-3.5" /></Button>}
-                              {nextCol && <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => moveCard(card.id, nextCol.id)}><ChevronRight className="h-3.5 w-3.5" /></Button>}
+                              {nextCol && <Button variant="ghost" size="sm" disabled={nextColFull} title={nextColFull ? pt(`WIP limit reached: ${nextCol.name} allows ${nextCol.wip_limit}`) : undefined} className="h-6 w-6 p-0" onClick={() => moveCard(card.id, nextCol.id)}><ChevronRight className="h-3.5 w-3.5" /></Button>}
                             </div>
                             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => toggleBlocked(card.id)}>{card.is_blocked ? "Unblock" : "Block"}</Button>
                           </div>
