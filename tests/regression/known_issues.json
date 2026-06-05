@@ -2223,6 +2223,30 @@
    "last_test_status": "pass",
    "last_test_response_status": 409,
    "notes": "2026-06-05: Covered by backend/governance/tests_flow.py (12 tests green; existing tests_decision_apply 7 green — the quorum gate does not regress the unconstrained apply path). A board decision with quorum=2 -> apply 409 quorum_not_met (blockers present, tally.approve 0, program untouched at planning); after 2 approve votes -> apply 200 program on_hold; two rejects outnumbering one approve at quorum=1 -> 409; a vote is update_or_create (reject then approve leaves one row, approve tally 1); after apply, POST votes -> 409 decision_applied; an invalid vote string -> 400 invalid_vote; quorum=0 board applies freely. ComponentFunding: 80k approved then approving a 30k against a 100k budget -> 409 over_budget (stays requested); total_funded counts only approved (0 until approve, then 40k with remaining 60k); re-approve -> 409 already_approved; an unbudgeted portfolio approves any amount (remaining None). engagement_gap neutral->leading = 2, leading vs supportive = 0. Live endpoints need auth (defer like other authed entries). DEFERRED per spec (none data-loss this ticket; all additive). NB any production apply of governance/0010 carries the data-guardian backup gate (CLAUDE.md §9, live customer in volume)."
+  },
+  {
+   "id": "FEAT-045",
+   "title": "Academy: author the Lean Six Sigma Black Belt course (T-2) — the Academy previously stopped at Green Belt, so there was no advanced LSS path for the cohort the product tooling already supports (the #43 capability/SPC engine: Cp/Cpk/Pp/Ppk, 1.5 sigma shift, DPMO, Nelson rules). A new self-contained course lean-six-sigma-black-belt.ts adds the Black-Belt-level material BEYOND Green Belt DMAIC: M1 the Black Belt role + Measurement System Analysis (Gage R&R, %GRR, ndc, attribute agreement/Kappa); M2 advanced statistics (hypothesis testing in depth with Type I/II + power, ANOVA vs multiple t-tests, correlation vs causation, linear/multiple regression + R-squared); M3 Design of Experiments (OFAT pitfalls, full factorial 2^k + interactions, fractional factorials 2^(k-p) + confounding/resolution, RSM, sequential screen->characterize->optimize); M4 advanced capability (Cp/Cpk/Pp/Ppk, within vs overall, the 1.5 sigma shift -> 3.4 DPMO) + advanced SPC (common vs special cause, Nelson rules 1-4, choosing the right control chart) tied to the in-app #43 engine; M5 leadership (mentoring Green Belts, Kotter change leadership, RACI), financial validation (hard vs soft savings, controller + Champion sign-off feeding the portfolio benefits gate), a capstone reading + a 10-question final exam + certificate. 5 modules / 17 lessons, Dutch-primary transcripts with EN+NL companion quiz fields, instructor Dr. Mark Jansen (Master Black Belt), freeForCustomers + certificate, new.",
+   "severity": "P2",
+   "area": "academy",
+   "endpoint": "frontend/src/data/academy/courses/lean-six-sigma-black-belt.ts",
+   "method": null,
+   "expected_status": null,
+   "previous_status": null,
+   "request_body": {},
+   "expected_response_contains": [
+    "lean-six-sigma-black-belt"
+   ],
+   "previous_error_contains": [],
+   "root_cause": "The Academy LSS track stopped at Green Belt (lean-six-sigma.ts). There was no Black Belt course covering MSA/Gage R&R, advanced statistics (ANOVA/regression), Design of Experiments, advanced capability & SPC, or improvement leadership/financial validation — even though the in-app capability/SPC engine built in #43 already provides the demo tooling for that material and the backlog (BACKLOG-2026-06-04 T-2) flagged it Ready now.",
+   "fix_location": "frontend/src/data/academy/courses/lean-six-sigma-black-belt.ts (new course: leanSixSigmaBlackBeltModules + leanSixSigmaBlackBeltCourse, id lean-six-sigma-black-belt, icon Sigma, color BRAND.blue, category advanced, methodology lean_six_sigma, instructor instructors.mark) + frontend/src/data/academy/courses/index.ts (import + re-export + coursesWithContent entry + courseModulesMap entry keyed lean-six-sigma-black-belt)",
+   "found": "2026-06-05",
+   "found_by": "methodology audit BACKLOG-2026-06-04 (T-2, #45)",
+   "status": "fixed_verified",
+   "last_tested": "2026-06-05",
+   "last_test_status": "pass",
+   "last_test_response_status": null,
+   "notes": "2026-06-05: Content-authoring ticket — no backend gate, no behavioural endpoint, no migration, so no production data-guardian gate (frontend-only addition). Verified with npx tsc --noEmit (clean) — all lessons use interface-valid Lesson types (video/quiz/exam/reading/certificate) and QuizQuestion shape (question/options/correctAnswer index/explanation + NL companions). The new course registers in all four index.ts touchpoints (import, re-export, coursesWithContent, courseModulesMap) so getCourseById/getModulesByCourseId/getCourseStats pick it up. 5 modules, 17 lessons (4 quizzes + 1 10-question final exam). No regression to the 13 existing courses. Final ticket of the BACKLOG-2026-06-04 P0/P1/P2/T sweep."
   }
  ]
 }

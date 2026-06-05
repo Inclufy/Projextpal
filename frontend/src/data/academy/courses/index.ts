@@ -18,6 +18,7 @@ import { waterfallCourse, waterfallModules } from './waterfall';
 import { kanbanCourse, kanbanModules } from './kanban';
 import { agileFundamentalsCourse, agileModules } from './agile';
 import { leanSixSigmaCourse, leanSixSigmaModules } from './lean-six-sigma';
+import { leanSixSigmaBlackBeltCourse, leanSixSigmaBlackBeltModules } from './lean-six-sigma-black-belt';
 import { leadershipCourse, leadershipModules } from './leadership';
 import { programManagementCourse, programManagementModules } from './program-management';
 import { safeCourse, safeModules } from './safe';
@@ -50,6 +51,9 @@ export {
   // Lean Six Sigma
   leanSixSigmaCourse,
   leanSixSigmaModules,
+  // Lean Six Sigma Black Belt
+  leanSixSigmaBlackBeltCourse,
+  leanSixSigmaBlackBeltModules,
   // Leadership PM
   leadershipCourse,
   leadershipModules,
@@ -84,6 +88,7 @@ export const coursesWithContent: Course[] = [
   kanbanCourse,              // 2 modules, 10 lessons, ~6h
   agileFundamentalsCourse,   // 2 modules, 10 lessons, ~8h
   leanSixSigmaCourse,        // 5 modules, 10 lessons, ~24h
+  leanSixSigmaBlackBeltCourse, // 5 modules, 17 lessons, ~40h — NEW
   leadershipCourse,          // 3 modules, 16 lessons, ~12h
   programManagementCourse,   // 3 modules, 16 lessons, ~14h
   safeCourse,                // 3 modules, 17 lessons, ~16h
@@ -109,6 +114,7 @@ const courseModulesMap: Record<string, Module[]> = {
   'kanban-practitioner': kanbanModules,
   'agile-fundamentals': agileModules,
   'lean-six-sigma': leanSixSigmaModules,
+  'lean-six-sigma-black-belt': leanSixSigmaBlackBeltModules,
   'leadership-pm': leadershipModules,
   'program-management-pro': programManagementModules,
   'safe-scaling-agile': safeModules,
