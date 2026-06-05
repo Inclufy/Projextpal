@@ -942,11 +942,11 @@ def walk_lss_black(c: Client, r: Report, sf: SaveFailures, pid: int) -> None:
 
 def walk_hybrid(c: Client, r: Report, sf: SaveFailures, pid: int) -> None:
     area = "hybrid"
-    base = f"/api/v1/hybrid/projects/{pid}"
+    base = f"/api/v1/projects/{pid}/hybrid"
 
     # Configuration — `project` is read-only on the serializer
     s, resp = c.post(
-        f"{base}/configs/",
+        f"{base}/configurations/",
         body={
             "primary_methodology": "agile",
             "secondary_methodologies": ["waterfall"],
