@@ -384,6 +384,15 @@ class HighlightReport(models.Model):
     rag_budget = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green')
     rag_planning = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green')
     rag_resources = models.CharField(max_length=10, choices=STATUS_CHOICES, default='green')
+    # Yanmar Highlight Report cover/header (HR-01).
+    sponsor = models.CharField(max_length=200, blank=True, default="")
+    project_manager = models.CharField(max_length=200, blank=True, default="")
+    senior_supplier = models.CharField(max_length=200, blank=True, default="")
+    objectives = models.TextField(blank=True, default="")
+    # Yanmar monthly phase timeline (HR-02): list of
+    # {"phase": "Prepare"|"Renovations"|"Run", "start": "YYYY-MM-DD",
+    #  "end": "YYYY-MM-DD", "status": "done"|"active"|"todo"}.
+    phase_timeline = models.JSONField(default=list, blank=True)
     status_summary = models.TextField(blank=True, null=True)
     work_completed = models.TextField(blank=True, null=True)
     work_planned_next_period = models.TextField(blank=True, null=True)

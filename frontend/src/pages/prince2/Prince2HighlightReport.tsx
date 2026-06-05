@@ -20,7 +20,13 @@ const Prince2HighlightReport = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", report_date: "", period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+  const [form, setForm] = useState({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", sponsor: "", project_manager: "", senior_supplier: "", objectives: "", report_date: "", period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+  const defaultPhases = () => [
+    { phase: "Prepare", start: "", end: "", status: "todo" },
+    { phase: "Renovations", start: "", end: "", status: "todo" },
+    { phase: "Run", start: "", end: "", status: "todo" },
+  ];
+  const [phases, setPhases] = useState<any[]>(defaultPhases());
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,13 +47,15 @@ const Prince2HighlightReport = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", report_date: new Date().toISOString().split("T")[0], period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+    setForm({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", sponsor: "", project_manager: "", senior_supplier: "", objectives: "", report_date: new Date().toISOString().split("T")[0], period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+    setPhases(defaultPhases());
     setDialogOpen(true);
   };
 
   const openEdit = (r: any) => {
     setEditing(r);
-    setForm({ status_summary: r.status_summary || "", overall_status: r.overall_status || "green", rag_budget: r.rag_budget || "green", rag_planning: r.rag_planning || "green", rag_resources: r.rag_resources || "green", report_date: r.report_date?.split("T")[0] || "", period_start: r.period_start?.split("T")[0] || "", period_end: r.period_end?.split("T")[0] || "", work_completed: r.work_completed || "", highlights: r.highlights || "", lowlights: r.lowlights || "", issues_summary: r.issues_summary || "", risks_summary: r.risks_summary || "", work_planned_next_period: r.work_planned_next_period || "" });
+    setForm({ status_summary: r.status_summary || "", overall_status: r.overall_status || "green", rag_budget: r.rag_budget || "green", rag_planning: r.rag_planning || "green", rag_resources: r.rag_resources || "green", sponsor: r.sponsor || "", project_manager: r.project_manager || "", senior_supplier: r.senior_supplier || "", objectives: r.objectives || "", report_date: r.report_date?.split("T")[0] || "", period_start: r.period_start?.split("T")[0] || "", period_end: r.period_end?.split("T")[0] || "", work_completed: r.work_completed || "", highlights: r.highlights || "", lowlights: r.lowlights || "", issues_summary: r.issues_summary || "", risks_summary: r.risks_summary || "", work_planned_next_period: r.work_planned_next_period || "" });
+    setPhases(Array.isArray(r.phase_timeline) && r.phase_timeline.length ? r.phase_timeline : defaultPhases());
     setDialogOpen(true);
   };
 
@@ -59,6 +67,11 @@ const Prince2HighlightReport = () => {
         rag_budget: form.rag_budget,
         rag_planning: form.rag_planning,
         rag_resources: form.rag_resources,
+        sponsor: form.sponsor,
+        project_manager: form.project_manager,
+        senior_supplier: form.senior_supplier,
+        objectives: form.objectives,
+        phase_timeline: phases,
         status_summary: form.status_summary,
         work_completed: form.work_completed,
         highlights: form.highlights,
@@ -120,12 +133,28 @@ const Prince2HighlightReport = () => {
               <Card key={r.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge className={`text-xs ${statusColor(r.overall_status)}`}>{r.overall_status}</Badge>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      {(["overall_status", "rag_budget", "rag_planning", "rag_resources"] as const).map((k) => (
+                        <Badge key={k} className={`text-xs ${statusColor(r[k])}`}>{({ overall_status: "Overall", rag_budget: "Budget", rag_planning: "Planning", rag_resources: "Resources" }[k])}</Badge>
+                      ))}
                       <span className="text-sm text-muted-foreground">{r.report_date}</span>
                     </div>
+                    {(r.sponsor || r.project_manager || r.senior_supplier) && (
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {[r.sponsor && `${pt("Sponsor")}: ${r.sponsor}`, r.project_manager && `${pt("PM")}: ${r.project_manager}`, r.senior_supplier && `${pt("Senior Supplier")}: ${r.senior_supplier}`].filter(Boolean).join("  ·  ")}
+                      </p>
+                    )}
                     <p className="font-medium">{r.status_summary ? r.status_summary.slice(0, 80) : pt("Highlight Report")}</p>
-                    {r.work_completed && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.work_completed}</p>}
+                    {r.objectives && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.objectives}</p>}
+                    {Array.isArray(r.phase_timeline) && r.phase_timeline.some((p: any) => p.start || p.end) && (
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        {r.phase_timeline.map((p: any, i: number) => (
+                          <Badge key={i} variant="outline" className={`text-xs ${p.status === "done" ? "border-green-400 text-green-700" : p.status === "active" ? "border-blue-400 text-blue-700" : ""}`}>
+                            {p.phase}{p.start ? ` ${p.start.slice(5)}` : ""}{p.end ? `→${p.end.slice(5)}` : ""}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-1 ml-4">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
@@ -142,6 +171,13 @@ const Prince2HighlightReport = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? pt("Edit") : pt("New Report")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
+            {/* Cover/header — Yanmar HR-01 */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2"><Label>{pt("Sponsor")}</Label><Input value={form.sponsor} onChange={(e) => setForm({ ...form, sponsor: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Project Manager")}</Label><Input value={form.project_manager} onChange={(e) => setForm({ ...form, project_manager: e.target.value })} /></div>
+              <div className="space-y-2"><Label>{pt("Senior Supplier")}</Label><Input value={form.senior_supplier} onChange={(e) => setForm({ ...form, senior_supplier: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2"><Label>{pt("Objectives")}</Label><textarea className="w-full min-h-[50px] px-3 py-2 border rounded-md bg-background" value={form.objectives} onChange={(e) => setForm({ ...form, objectives: e.target.value })} /></div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2"><Label>{pt("Date")}</Label><Input type="date" value={form.report_date} onChange={(e) => setForm({ ...form, report_date: e.target.value })} /></div>
               <div className="space-y-2"><Label>{pt("Period Start")}</Label><Input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} /></div>
@@ -166,6 +202,27 @@ const Prince2HighlightReport = () => {
                   </Select>
                 </div>
               ))}
+            </div>
+            {/* Monthly phase timeline — Yanmar HR-02 */}
+            <div className="space-y-2">
+              <Label>{pt("Phase Timeline")}</Label>
+              <div className="space-y-2">
+                {phases.map((p, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
+                    <span className="text-sm font-medium">{p.phase}</span>
+                    <Input type="date" value={p.start || ""} onChange={(e) => setPhases(phases.map((x, j) => j === i ? { ...x, start: e.target.value } : x))} />
+                    <Input type="date" value={p.end || ""} onChange={(e) => setPhases(phases.map((x, j) => j === i ? { ...x, end: e.target.value } : x))} />
+                    <Select value={p.status || "todo"} onValueChange={(v) => setPhases(phases.map((x, j) => j === i ? { ...x, status: v } : x))}>
+                      <SelectTrigger className="w-[110px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todo">{pt("To do")}</SelectItem>
+                        <SelectItem value="active">{pt("Active")}</SelectItem>
+                        <SelectItem value="done">{pt("Done")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="space-y-2"><Label>{pt("Status Summary")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.status_summary} onChange={(e) => setForm({ ...form, status_summary: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Work Completed")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.work_completed} onChange={(e) => setForm({ ...form, work_completed: e.target.value })} /></div>
