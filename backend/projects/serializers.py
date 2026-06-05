@@ -1023,6 +1023,16 @@ class TimeEntrySerializer(serializers.ModelSerializer):
                 validated_data["hourly_rate_snapshot"] = 0
         return super().create(validated_data)
 
+    def to_representation(self, instance):
+        # Yanmar SC-05 — hide rates/costs from non-finance roles.
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs
+        request = self.context.get("request")
+        if not can_view_costs(getattr(request, "user", None)):
+            data.pop("hourly_rate_snapshot", None)
+            data.pop("labor_cost", None)
+        return data
+
 
 class TimeEntrySummarySerializer(serializers.Serializer):
     """Serializer for time entry summary/aggregations"""
@@ -1077,6 +1087,15 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
                 return full_name
             return obj.added_by.email
         return None
+
+    def to_representation(self, instance):
+        # Yanmar SC-05 — hide hourly rate from non-finance roles.
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs
+        request = self.context.get("request")
+        if not can_view_costs(getattr(request, "user", None)):
+            data.pop("hourly_rate", None)
+        return data
 # ========================================
 # ADD THESE TO projects/serializers.py
 # ========================================

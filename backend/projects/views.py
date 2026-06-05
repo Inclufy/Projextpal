@@ -299,6 +299,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         from decimal import Decimal
         from django.db.models import F, Sum, Value, DecimalField
         from django.db.models.functions import Coalesce
+        from .permissions import can_view_costs
+
+        # Yanmar SC-05 — cost/rate roll-up is finance-roles only.
+        if not can_view_costs(request.user):
+            return Response(
+                {"detail": "You do not have permission to view project costs."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         project = self.get_object()
         currency = getattr(project, "currency", "EUR") or "EUR"
@@ -2344,13 +2352,20 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def summary(self, request):
         """Get summary of time entries for a project"""
+        from .permissions import can_view_costs
         project_id = request.query_params.get("project")
         if not project_id:
             return Response(
                 {"detail": "Project ID is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+        # Yanmar SC-05 — labour-cost summary is finance-roles only.
+        if not can_view_costs(request.user):
+            return Response(
+                {"detail": "You do not have permission to view labour costs."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         qs = self.get_queryset().filter(project_id=project_id)
         
         # Apply date filters

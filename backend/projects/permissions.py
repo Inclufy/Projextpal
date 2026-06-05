@@ -14,6 +14,21 @@ from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
 
 
+# ── Yanmar SC-05: role-based cost/rate visibility ────────────────────────
+# Only management/finance roles may see hourly rates and labour costs.
+# Contributors / reviewers / guests get these fields stripped.
+COST_VIEWER_ROLES = {"superadmin", "admin", "pm", "program_manager"}
+
+
+def can_view_costs(user) -> bool:
+    """True if the user may see rates/costs (Yanmar SC-05)."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    return getattr(user, "role", None) in COST_VIEWER_ROLES
+
+
 # URL methodology slugs that participate in isolation enforcement.
 # Anything not in this set is treated as a non-methodology URL and skipped.
 _METHODOLOGY_SLUGS = {
