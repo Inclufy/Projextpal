@@ -14,6 +14,7 @@ class Project(models.Model):
     ]
 
     METHODOLOGY_CHOICES = [
+        ("inclufy", "Inclufy Best Practice"),
         ("prince2", "PRINCE2"),
         ("agile", "Agile"),
         ("scrum", "Scrum"),

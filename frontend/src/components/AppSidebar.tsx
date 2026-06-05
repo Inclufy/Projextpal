@@ -317,6 +317,85 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
   }
 };
 
+// Curated best-of-breed Foundation navigation. Shared by the generic fallback
+// and the branded "Inclufy Best Practice" methodology (only the section title
+// differs) so the Best Practice method is a first-class value, not the unknown
+// fallback.
+const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
+  {
+    id: "foundation",
+    title: foundationTitle,
+    icon: FolderKanban,
+    items: [
+      { title: "Overview", url: `/projects/${projectId}/foundation/overview`, icon: FolderKanban },
+      { title: "Workflow", url: `/projects/${projectId}/foundation/workflow`, icon: GitBranch },
+      { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: FileCheck },
+      { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
+      { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+    ],
+  },
+  {
+    id: "planning",
+    title: "Planning & Design",
+    icon: Calendar,
+    items: [
+      {
+        title: "Planning",
+        icon: Calendar,
+        subItems: [
+          { title: "Timeline", url: `/projects/${projectId}/planning/timeline`, icon: Calendar },
+          { title: "Milestones", url: `/projects/${projectId}/planning/milestones`, icon: CheckSquare },
+          { title: "Tasks", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+          { title: "RACI", url: `/projects/${projectId}/planning/raci`, icon: Network },
+          { title: "Dependencies", url: `/projects/${projectId}/planning/dependencies`, icon: GitBranch },
+          { title: "Calendar", url: `/projects/${projectId}/planning/calendar`, icon: CalendarDays },
+        ],
+      },
+      { title: "Workflow Diagram", url: `/projects/${projectId}/planning/workflow-diagram`, icon: GitBranch },
+      { title: "System Integration", url: `/projects/${projectId}/planning/system-integration`, icon: Layers },
+      { title: "Risks", url: `/projects/${projectId}/planning/risks`, icon: Shield },
+    ],
+  },
+  {
+    id: "execution",
+    title: "Execution & Governance",
+    icon: Rocket,
+    items: [
+      { title: "Stakeholders", url: `/projects/${projectId}/execution/stakeholders`, icon: UserCheck },
+      {
+        title: "Communication",
+        icon: MessagesSquare,
+        subItems: [
+          { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
+          { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
+          { title: "Meeting", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
+          { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+        ],
+      },
+      { title: "Governance", url: `/projects/${projectId}/execution/governance`, icon: Shield },
+      { title: "Deployment Strategy", url: `/projects/${projectId}/execution/deployment`, icon: Rocket },
+    ],
+  },
+  {
+    id: "monitoring",
+    title: "Monitoring & Closure",
+    icon: Activity,
+    items: [
+      {
+        title: "Document Library",
+        icon: FileText,
+        subItems: [
+          { title: "All Documents", url: `/projects/${projectId}/monitoring/documents/all`, icon: File },
+          { title: "Stages", url: `/projects/${projectId}/monitoring/documents/stages`, icon: Layers },
+          { title: "Milestones", url: `/projects/${projectId}/monitoring/documents/milestones`, icon: CheckSquare },
+          { title: "Training", url: `/projects/${projectId}/monitoring/documents/training`, icon: GraduationCap },
+        ],
+      },
+      { title: "Lessons Learned & Surveys", url: `/projects/${projectId}/monitoring/lessons-surveys`, icon: Lightbulb },
+    ],
+  },
+];
+
 // Methodology-specific sidebar configurations for projects
 const getMethodologyPhases = (projectId: string, methodology: string | null) => {
   switch (methodology?.toLowerCase()) {
@@ -697,86 +776,17 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
         },
       ];
 
+    case 'inclufy':
+      return buildFoundationPhases(projectId, "Inclufy Best Practice");
+
     default:
-      return [
-        {
-          id: "foundation",
-          title: "Project Foundation",
-          icon: FolderKanban,
-          items: [
-            { title: "Overview", url: `/projects/${projectId}/foundation/overview`, icon: FolderKanban },
-            { title: "Workflow", url: `/projects/${projectId}/foundation/workflow`, icon: GitBranch },
-            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: FileCheck },
-            { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
-            { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
-          ],
-        },
-        {
-          id: "planning",
-          title: "Planning & Design",
-          icon: Calendar,
-          items: [
-            {
-              title: "Planning",
-              icon: Calendar,
-              subItems: [
-                { title: "Timeline", url: `/projects/${projectId}/planning/timeline`, icon: Calendar },
-                { title: "Milestones", url: `/projects/${projectId}/planning/milestones`, icon: CheckSquare },
-                { title: "Tasks", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
-                { title: "RACI", url: `/projects/${projectId}/planning/raci`, icon: Network },
-                { title: "Dependencies", url: `/projects/${projectId}/planning/dependencies`, icon: GitBranch },
-                { title: "Calendar", url: `/projects/${projectId}/planning/calendar`, icon: CalendarDays },
-              ],
-            },
-            { title: "Workflow Diagram", url: `/projects/${projectId}/planning/workflow-diagram`, icon: GitBranch },
-            { title: "System Integration", url: `/projects/${projectId}/planning/system-integration`, icon: Layers },
-            { title: "Risks", url: `/projects/${projectId}/planning/risks`, icon: Shield },
-          ],
-        },
-        {
-          id: "execution",
-          title: "Execution & Governance",
-          icon: Rocket,
-          items: [
-            { title: "Stakeholders", url: `/projects/${projectId}/execution/stakeholders`, icon: UserCheck },
-            {
-              title: "Communication",
-              icon: MessagesSquare,
-              subItems: [
-                { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
-                { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
-                { title: "Meeting", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
-                { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
-              ],
-            },
-            { title: "Governance", url: `/projects/${projectId}/execution/governance`, icon: Shield },
-            { title: "Deployment Strategy", url: `/projects/${projectId}/execution/deployment`, icon: Rocket },
-          ],
-        },
-        {
-          id: "monitoring",
-          title: "Monitoring & Closure",
-          icon: Activity,
-          items: [
-            {
-              title: "Document Library",
-              icon: FileText,
-              subItems: [
-                { title: "All Documents", url: `/projects/${projectId}/monitoring/documents/all`, icon: File },
-                { title: "Stages", url: `/projects/${projectId}/monitoring/documents/stages`, icon: Layers },
-                { title: "Milestones", url: `/projects/${projectId}/monitoring/documents/milestones`, icon: CheckSquare },
-                { title: "Training", url: `/projects/${projectId}/monitoring/documents/training`, icon: GraduationCap },
-              ],
-            },
-            { title: "Lessons Learned & Surveys", url: `/projects/${projectId}/monitoring/lessons-surveys`, icon: Lightbulb },
-          ],
-        },
-      ];
+      return buildFoundationPhases(projectId, "Project Foundation");
   }
 };
 
 const getMethodologyBadge = (methodology: string | null) => {
   const badges: Record<string, { label: string; color: string }> = {
+    'inclufy': { label: 'Best Practice', color: 'bg-indigo-500' },
     'scrum': { label: 'Scrum', color: 'bg-amber-500' },
     'kanban': { label: 'Kanban', color: 'bg-blue-500' },
     'prince2': { label: 'PRINCE2', color: 'bg-purple-500' },

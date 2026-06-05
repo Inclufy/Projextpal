@@ -35,6 +35,13 @@ const AgileIterationBoard = () => {
   const [dodOpen, setDodOpen] = useState(false);
   const [dodItem, setDodItem] = useState<any>(null);
   const [dodChecklist, setDodChecklist] = useState<any[]>([]);
+  // Releases + ship-to-release (AG-1)
+  const [releases, setReleases] = useState<any[]>([]);
+  const [shipOpen, setShipOpen] = useState(false);
+  const [shippedIteration, setShippedIteration] = useState<any>(null);
+  const [shipReleaseId, setShipReleaseId] = useState<string>("");
+  // Pull-into-iteration (AG-5)
+  const [pullOpen, setPullOpen] = useState(false);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -42,18 +49,20 @@ const AgileIterationBoard = () => {
 
   const fetchData = async () => {
     try {
-      const [itRes, iRes, tRes, mRes, fRes] = await Promise.all([
+      const [itRes, iRes, tRes, mRes, fRes, rRes] = await Promise.all([
         fetch(`/api/v1/projects/${id}/agile/iterations/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/backlog/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/team/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/flow-metrics/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/flow-config/`, { headers }),
+        fetch(`/api/v1/projects/${id}/agile/releases/`, { headers }),
       ]);
       if (itRes.ok) { const d = await itRes.json(); setIterations(Array.isArray(d) ? d : d.results || []); }
       if (iRes.ok) { const d = await iRes.json(); setItems(Array.isArray(d) ? d : d.results || []); }
       if (tRes.ok) { const d = await tRes.json(); setTeam(Array.isArray(d) ? d : d.results || []); }
       if (mRes.ok) setMetrics(await mRes.json());
       if (fRes.ok) { const d = await fRes.json(); setFlowConfig(d); setWipForm({ wip_limit: d.wip_limit || 0, target_cycle_time_days: d.target_cycle_time_days || 0 }); }
+      if (rRes.ok) { const d = await rRes.json(); setReleases(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -67,10 +76,16 @@ const AgileIterationBoard = () => {
     in_progress: iterItems.filter(i => i.status === "in_progress" || i.status === "review"),
     done: iterItems.filter(i => i.status === "done"),
   };
+  // Backlog items not yet committed to any iteration — candidates to pull in (AG-5).
+  const pullableItems = items.filter(i => !i.iteration && (i.status === "backlog" || i.status === "ready"));
 
   const createIteration = async () => { if (!form.name) { toast.error("Naam verplicht"); return; } if (!form.start_date || !form.end_date) { toast.error("Start- en einddatum verplicht"); return; } setSubmitting(true); try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify(form) }); if (r.ok) { toast.success("Iteratie aangemaakt"); setDialogOpen(false); fetchData(); } else toast.error("Aanmaken mislukt"); } catch { toast.error("Aanmaken mislukt"); } finally { setSubmitting(false); } };
   const startIteration = async (itId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/${itId}/start/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Gestart"); fetchData(); } } catch { toast.error("Starten mislukt"); } };
-  const completeIteration = async (itId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/${itId}/complete/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Voltooid"); fetchData(); } } catch { toast.error("Voltooien mislukt"); } };
+  const completeIteration = async (itId: number) => { try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/${itId}/complete/`, { method: "POST", headers: jsonHeaders }); if (r.ok) { toast.success("Voltooid"); const completed = iterations.find(i => i.id === itId) || { id: itId }; await fetchData(); setShippedIteration(completed); setShipReleaseId(""); setShipOpen(true); } } catch { toast.error("Voltooien mislukt"); } };
+  // AG-1: attach the just-completed iteration to a release so done work ships.
+  const attachToRelease = async () => { if (!shipReleaseId || !shippedIteration) { setShipOpen(false); return; } try { const r = await fetch(`/api/v1/projects/${id}/agile/releases/${shipReleaseId}/add_iteration/`, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ iteration_id: shippedIteration.id }) }); if (r.ok) { toast.success(pt("Attached to release")); setShipOpen(false); fetchData(); } else toast.error(pt("Failed")); } catch { toast.error(pt("Failed")); } };
+  // AG-5: pull a backlog item into the active iteration without leaving the board.
+  const pullIntoIteration = async (item: any) => { if (!activeIteration) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/backlog/${item.id}/`, { method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ iteration: activeIteration.id }) }); if (r.ok) { toast.success(pt("Pulled into iteration")); fetchData(); } else toast.error(pt("Pull failed")); } catch { toast.error(pt("Pull failed")); } };
   const deleteIteration = async (itId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/iterations/${itId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
   // --- Flow transition with DoD / WIP gate handling ---
@@ -130,6 +145,7 @@ const AgileIterationBoard = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><LayoutDashboard className="h-6 w-6 text-emerald-500" /><h1 className="text-2xl font-bold">{pt("Iteration Board")}</h1>{activeIteration && <Badge>{activeIteration.name}</Badge>}</div>
           <div className="flex gap-2">
+            {activeIteration && <Button variant="outline" onClick={() => setPullOpen(true)} className="gap-2"><ListChecks className="h-4 w-4" /> {pt("Pull from backlog")}</Button>}
             <Button variant="outline" onClick={() => setWipOpen(true)} className="gap-2"><Settings2 className="h-4 w-4" /> {pt("Flow settings")}</Button>
             <Button onClick={() => { setForm({ name: `Iteration ${iterations.length + 1}`, goal: "", start_date: new Date().toISOString().split("T")[0], end_date: "" }); setDialogOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Iteration")}</Button>
           </div>
@@ -218,6 +234,36 @@ const AgileIterationBoard = () => {
             </label>
           ))}
           <div className="flex justify-end pt-2"><Button variant="outline" onClick={() => setDodOpen(false)}>{pt("Close")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
+
+      {/* Ship completed iteration to a release (AG-1) */}
+      <Dialog open={shipOpen} onOpenChange={setShipOpen}><DialogContent><DialogHeader><DialogTitle>{pt("Ship to release")}</DialogTitle><DialogDescription>{pt("Attach the completed iteration's done work to a release.")}</DialogDescription></DialogHeader>
+        <div className="space-y-4">
+          {releases.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{pt("No releases yet. Create one in Release Planning to ship this iteration.")}</p>
+          ) : (
+            <div className="space-y-2"><Label>{pt("Release")}</Label>
+              <Select value={shipReleaseId} onValueChange={setShipReleaseId}>
+                <SelectTrigger><SelectValue placeholder={pt("Select a release")} /></SelectTrigger>
+                <SelectContent>{releases.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.name}{r.version ? ` (${r.version})` : ""}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setShipOpen(false)}>{pt("Skip")}</Button><Button onClick={attachToRelease} disabled={!shipReleaseId}>{pt("Attach")}</Button></div>
+        </div>
+      </DialogContent></Dialog>
+
+      {/* Pull backlog items into the active iteration (AG-5) */}
+      <Dialog open={pullOpen} onOpenChange={setPullOpen}><DialogContent><DialogHeader><DialogTitle>{pt("Pull from backlog")}</DialogTitle><DialogDescription>{activeIteration?.name}</DialogDescription></DialogHeader>
+        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          {pullableItems.length === 0 ? <p className="text-sm text-muted-foreground">{pt("No unassigned backlog items to pull.")}</p> : pullableItems.map(item => (
+            <div key={item.id} className="flex items-center justify-between gap-2 p-2 border rounded-md">
+              <div className="flex items-center gap-2 min-w-0"><Badge className={`text-xs ${typeColors[item.item_type] || ""}`}>{item.item_type}</Badge>{item.story_points && <Badge variant="outline" className="text-xs">{item.story_points}p</Badge>}<span className="text-sm truncate">{item.title}</span></div>
+              <Button size="sm" variant="ghost" className="h-7 px-2 shrink-0" onClick={() => pullIntoIteration(item)}><Plus className="h-3.5 w-3.5 mr-1" /> {pt("Pull")}</Button>
+            </div>
+          ))}
+          <div className="flex justify-end pt-2"><Button variant="outline" onClick={() => setPullOpen(false)}>{pt("Close")}</Button></div>
         </div>
       </DialogContent></Dialog>
     </div>

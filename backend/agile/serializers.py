@@ -1,6 +1,7 @@
 from .models import DefinitionOfDone
 
 from rest_framework import serializers
+from django.db import models
 from django.contrib.auth import get_user_model
 from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
@@ -170,17 +171,40 @@ class AgileIterationDetailSerializer(AgileIterationSerializer):
 class AgileReleaseSerializer(serializers.ModelSerializer):
     progress = serializers.IntegerField(read_only=True)
     iteration_count = serializers.SerializerMethodField()
-    
+    iterations = serializers.SerializerMethodField()
+    shipped_items = serializers.SerializerMethodField()
+    shipped_points = serializers.SerializerMethodField()
+
     class Meta:
         model = AgileRelease
         fields = [
             'id', 'name', 'version', 'description', 'target_date', 'status',
-            'features', 'progress', 'iteration_count', 'created_at'
+            'features', 'progress', 'iteration_count', 'iterations',
+            'shipped_items', 'shipped_points', 'created_at'
         ]
         read_only_fields = ['created_at']
-    
+
     def get_iteration_count(self, obj):
         return obj.iterations.count()
+
+    def get_iterations(self, obj):
+        return [{'id': it.id, 'name': it.name, 'status': it.status}
+                for it in obj.iterations.all()]
+
+    def _shipped_qs(self, obj):
+        # Done work delivered by this release = done items in its iterations.
+        return AgileBacklogItem.objects.filter(
+            iteration__in=obj.iterations.all(), status='done'
+        )
+
+    def get_shipped_items(self, obj):
+        return [{'id': i.id, 'title': i.title, 'story_points': i.story_points,
+                 'iteration_name': i.iteration.name if i.iteration else None}
+                for i in self._shipped_qs(obj).select_related('iteration')]
+
+    def get_shipped_points(self, obj):
+        return self._shipped_qs(obj).aggregate(
+            total=models.Sum('story_points'))['total'] or 0
 
 
 class AgileDailyUpdateSerializer(serializers.ModelSerializer):

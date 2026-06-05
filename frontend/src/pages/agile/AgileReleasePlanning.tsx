@@ -8,7 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Rocket, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Rocket, Pencil, Trash2, Package, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 const AgileReleasePlanning = () => {
@@ -41,9 +41,27 @@ const AgileReleasePlanning = () => {
         <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Rocket className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Release Planning")}</h1><Badge variant="outline">{releases.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Release")}</Button></div>
         {releases.length === 0 ? <Card className="p-8 text-center"><Rocket className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No releases planned yet")}</h3></Card> : (
           <div className="space-y-3">{releases.map(r => (
-            <Card key={r.id}><CardContent className="p-4 flex items-center justify-between">
-              <div><div className="flex items-center gap-2 mb-1"><p className="font-semibold">{r.name}</p>{r.version && <Badge variant="outline">{r.version}</Badge>}<Badge variant={r.status === "completed" ? "default" : "secondary"}>{r.status}</Badge></div>{r.description && <p className="text-sm text-muted-foreground">{r.description}</p>}{r.target_date && <p className="text-xs text-muted-foreground mt-1">Target: {r.target_date}</p>}</div>
-              <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>
+            <Card key={r.id}><CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div><div className="flex items-center gap-2 mb-1"><p className="font-semibold">{r.name}</p>{r.version && <Badge variant="outline">{r.version}</Badge>}<Badge variant={r.status === "completed" ? "default" : "secondary"}>{r.status}</Badge></div>{r.description && <p className="text-sm text-muted-foreground">{r.description}</p>}{r.target_date && <p className="text-xs text-muted-foreground mt-1">Target: {r.target_date}</p>}</div>
+                <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>
+              </div>
+              {/* Shipped work delivered by this release (AG-1) */}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <Badge variant="outline" className="gap-1"><Package className="h-3 w-3" /> {r.iteration_count ?? (r.iterations?.length || 0)} {pt("iterations")}</Badge>
+                <Badge variant="outline">{r.shipped_points ?? 0} {pt("points shipped")}</Badge>
+                {(r.iterations || []).map((it: any) => <Badge key={it.id} variant="secondary" className="text-xs">{it.name}</Badge>)}
+              </div>
+              {(r.shipped_items?.length > 0) && (
+                <div className="mt-2 border-t pt-2 space-y-1">
+                  {r.shipped_items.map((s: any) => (
+                    <div key={s.id} className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-1 min-w-0"><CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" /><span className="truncate">{s.title}</span></span>
+                      <span className="text-xs text-muted-foreground shrink-0 ml-2">{s.story_points ? `${s.story_points}p` : ""}{s.iteration_name ? ` · ${s.iteration_name}` : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent></Card>
           ))}</div>
         )}

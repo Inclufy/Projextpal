@@ -140,6 +140,19 @@ class AgileFlowTests(TestCase):
         b.refresh_from_db()
         self.assertEqual(b.status, "ready")  # unchanged
 
+    def test_wip_counts_review_items(self):
+        # AG-2: an item in 'review' is still WIP. With limit 1 and one review
+        # item, pulling a backlog item into in_progress must be blocked so the
+        # gate agrees with the current_wip the metrics endpoint reports.
+        AgileFlowConfig.objects.create(project=self.project, wip_limit=1)
+        self._item(status="review")  # occupies the single WIP slot
+        b = self._item(status="ready")
+        resp = self.client.post(f"{self._base()}backlog/{b.id}/transition/", {"status": "in_progress"}, format="json")
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.json()["code"], "wip_limit_exceeded")
+        b.refresh_from_db()
+        self.assertEqual(b.status, "ready")  # unchanged
+
     def test_in_progress_stamps_started_at(self):
         item = self._item(status="ready")
         resp = self.client.post(f"{self._base()}backlog/{item.id}/transition/", {"status": "in_progress"}, format="json")

@@ -363,8 +363,11 @@ class AgileBacklogItemViewSet(AgileProjectMixin, viewsets.ModelViewSet):
             cfg = AgileFlowConfig.objects.filter(project=project).first()
             wip_limit = cfg.wip_limit if cfg else 0
             if wip_limit and wip_limit > 0:
+                # WIP = actively-worked items. Must match the flow-metrics
+                # definition (in_progress + review) so the gate and the
+                # current_wip the user sees never disagree (AG-2).
                 current_wip = AgileBacklogItem.objects.filter(
-                    project=project, status='in_progress'
+                    project=project, status__in=['in_progress', 'review']
                 ).exclude(id=item.id).count()
                 if current_wip >= wip_limit:
                     return Response(
