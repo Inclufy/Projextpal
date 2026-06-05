@@ -22,8 +22,13 @@ interface Props {
   className?: string;
 }
 
-const DEFAULT_FETCHER = (url: string) =>
-  fetch(url, { credentials: "include" });
+const DEFAULT_FETCHER = (url: string) => {
+  const token = localStorage.getItem("access_token");
+  return fetch(url, {
+    credentials: "include",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+};
 
 function fmt(n: number, currency: string): string {
   try {

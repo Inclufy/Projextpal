@@ -28,8 +28,17 @@ interface Props {
   className?: string;
 }
 
-const DEFAULT_FETCHER: Props["fetcher"] = (url, init) =>
-  fetch(url, { credentials: "include", ...(init ?? {}) });
+const DEFAULT_FETCHER: Props["fetcher"] = (url, init) => {
+  const token = localStorage.getItem("access_token");
+  return fetch(url, {
+    credentials: "include",
+    ...(init ?? {}),
+    headers: {
+      ...((init?.headers as Record<string, string>) ?? {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+};
 
 /**
  * Project Owner queue of pending due-date push-back requests.
