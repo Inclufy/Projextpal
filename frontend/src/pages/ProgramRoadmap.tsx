@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -177,7 +178,7 @@ const ProgramRoadmap = () => {
                     <div key={proj.id} className="flex items-center h-12">
                       <div 
                         className="w-48 shrink-0 pr-4 cursor-pointer hover:text-indigo-600"
-                        onClick={() => navigate(`/projects/${proj.id}/foundation/overview`)}
+                        onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                       >
                         <p className="font-medium text-sm truncate">{proj.name}</p>
                       </div>
@@ -197,7 +198,7 @@ const ProgramRoadmap = () => {
                             width: `${((proj.endMonth - proj.startMonth + 1) / 12) * 100}%`,
                             minWidth: '40px',
                           }}
-                          onClick={() => navigate(`/projects/${proj.id}/foundation/overview`)}
+                          onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                         >
                           <span className="truncate">{proj.progress || 0}%</span>
                         </div>

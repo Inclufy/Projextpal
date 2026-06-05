@@ -32,7 +32,7 @@ const AgileDailyProgress = () => {
         fetch(`/api/v1/projects/${id}/agile/iterations/active/`, { headers }),
       ]);
       if (uRes.ok) { const d = await uRes.json(); setUpdates(Array.isArray(d) ? d : d.results || []); }
-      if (itRes.ok) { const d = await itRes.json(); if (d && d.id) setActiveIteration(d); }
+      if (itRes.ok) { const t = await itRes.text(); if (t) { const d = JSON.parse(t); if (d && d.id) setActiveIteration(d); } }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };

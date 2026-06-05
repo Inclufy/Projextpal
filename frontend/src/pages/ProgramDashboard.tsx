@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -460,7 +461,7 @@ const ProgramDashboard = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigate(`/projects/${proj.id}/foundation/overview`)}
+                          onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                         >
                           <ArrowRight className="h-4 w-4" />
                         </Button>

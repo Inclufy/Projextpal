@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { methodologyOverviewPath } from "@/lib/methodologyRoutes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -506,7 +507,7 @@ const ProgramDetail = () => {
                 <Card 
                   key={project.id} 
                   className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/projects/${project.id}/foundation/overview`)}
+                  onClick={() => navigate(methodologyOverviewPath(project.id, project.methodology))}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
@@ -520,7 +521,7 @@ const ProgramDetail = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/projects/${project.id}/foundation/overview`);
+                            navigate(methodologyOverviewPath(project.id, project.methodology));
                           }}>
                             <Eye className="h-4 w-4 mr-2" />
                             View

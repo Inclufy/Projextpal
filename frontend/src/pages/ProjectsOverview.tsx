@@ -78,6 +78,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudget, getCurrencyFromLanguage } from '@/lib/currencies';
+import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // API functions
@@ -141,6 +142,7 @@ const callAI = async (prompt: string): Promise<string> => {
 
 // Methodology configurations
 const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: string; borderColor: string; label: string; description: string }> = {
+  inclufy: { icon: Sparkles, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', label: 'Inclufy Best Practice', description: 'Curated best-of-breed default — recommended' },
   prince2: { icon: Crown, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', label: 'PRINCE2', description: 'Structured governance for complex projects' },
   agile: { icon: Zap, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Agile', description: 'Iterative, flexible approach' },
   scrum: { icon: Repeat, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200', label: 'Scrum', description: 'Sprint-based development' },
@@ -283,7 +285,7 @@ const ProjectsOverview = () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(t.common.projectCreated);
       setAiGenerateOpen(false);
-      navigate(`/projects/${data.id}/foundation/overview`);
+      navigate(methodologyOverviewPath(data.id, data.methodology));
     },
     onError: () => {
       toast.error(t.common.createFailed);
@@ -1083,7 +1085,7 @@ Respond in this EXACT JSON format only, no other text:
             <Card 
               key={project.id} 
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => navigate(`/projects/${project.id}/foundation/overview`)}
+              onClick={() => navigate(methodologyOverviewPath(project.id, project.methodology))}
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -1107,7 +1109,7 @@ Respond in this EXACT JSON format only, no other text:
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/projects/${project.id}/foundation/overview`);
+                        navigate(methodologyOverviewPath(project.id, project.methodology));
                       }}>
                         <Eye className="h-4 w-4 mr-2" />
                         {tp.view}
