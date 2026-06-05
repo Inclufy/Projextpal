@@ -54,7 +54,7 @@ class HybridPhaseStrategyTests(TestCase):
 
     def _url(self, phase, suffix=""):
         return (
-            f"/api/v1/hybrid/projects/{self.project.id}/"
+            f"/api/v1/projects/{self.project.id}/hybrid/"
             f"phase-methodologies/{phase.id}/{suffix}"
         )
 

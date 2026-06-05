@@ -58,7 +58,7 @@ urlpatterns = [
     # New methodology modules
     path("api/v1/lss-green/", include("lss_green.urls")),
     path("api/v1/lss-black/", include("lss_black.urls")),
-    path("api/v1/hybrid/", include("hybrid.urls")),
+    path("api/v1/", include("hybrid.urls")),
     path("api/v1/safe/", include("safe.urls")),
     path("api/v1/msp/", include("msp.urls")),
     path("api/v1/pmi/", include("pmi.urls")),

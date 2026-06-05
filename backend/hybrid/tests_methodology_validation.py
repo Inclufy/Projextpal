@@ -37,10 +37,10 @@ class HybridMethodologyValidationTests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def _phase_url(self):
-        return f"/api/v1/hybrid/projects/{self.project.id}/phase-methodologies/"
+        return f"/api/v1/projects/{self.project.id}/hybrid/phase-methodologies/"
 
     def _config_url(self):
-        return f"/api/v1/hybrid/projects/{self.project.id}/configs/"
+        return f"/api/v1/projects/{self.project.id}/hybrid/configurations/"
 
     # ---- #1 valid methodology accepted ----------------------------------
     def test_valid_phase_methodology_accepted(self):

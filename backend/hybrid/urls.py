@@ -20,27 +20,22 @@ router.register(r'tasks', HybridTaskViewSet, basename='task')
 
 project_router = DefaultRouter()
 project_router.register(r'artifacts', HybridArtifactViewSet, basename='project-artifact')
-project_router.register(r'configs', HybridConfigurationViewSet, basename='project-config')
+project_router.register(r'configurations', HybridConfigurationViewSet, basename='project-config')
 project_router.register(r'phase-methodologies', PhaseMethodologyViewSet, basename='project-phase-methodology')
 project_router.register(r'tasks', HybridTaskViewSet, basename='project-task')
 
+# Mounted at /api/v1/ (see core/urls.py) so project-scoped resources follow the
+# project-first convention shared with agile/scrum/kanban:
+#   /api/v1/projects/<id>/hybrid/<resource>/
 urlpatterns = [
-    path('', include(router.urls)),
-    # Matches /api/v1/hybrid/projects/<id>/dashboard/ when mounted under api/v1/hybrid/.
-    # Also exposed below as /projects/<id>/hybrid/dashboard/ for frontend compatibility.
-    path(
-        'projects/<int:project_id>/dashboard/',
-        HybridDashboardView.as_view(),
-        name='hybrid-dashboard',
-    ),
-    path(
-        'projects/<int:project_id>/hybrid/dashboard/',
-        HybridDashboardView.as_view(),
-        name='hybrid-dashboard-alias',
-    ),
-    path('projects/<int:project_id>/', include(project_router.urls)),
+    # Non-project-scoped collection endpoints, kept at /api/v1/hybrid/<resource>/.
+    path('hybrid/', include(router.urls)),
+    # Specific project-scoped paths first, before the router include.
+    path('projects/<int:project_id>/hybrid/dashboard/',
+         HybridDashboardView.as_view(), name='hybrid-dashboard'),
     path('projects/<int:project_id>/hybrid/seed-demo/',
          HybridSeedDemoView.as_view({'post': 'create'}), name='hybrid-seed-demo'),
     path('projects/<int:project_id>/hybrid/clear-demo/',
          HybridClearDemoView.as_view({'post': 'create'}), name='hybrid-clear-demo'),
+    path('projects/<int:project_id>/hybrid/', include(project_router.urls)),
 ]
