@@ -13,25 +13,103 @@ class Portfolio(models.Model):
         ('closed', 'Closed')
     ]
     
+    PRIORITY_CHOICES = [
+        ('critical', 'Critical'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     company = models.ForeignKey('accounts.Company', on_delete=models.CASCADE, related_name='portfolios', null=True, blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='owned_portfolios')
-    
+
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='active')
     strategic_objectives = models.TextField(blank=True, help_text="High-level strategic objectives")
     budget_allocated = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    
+    # Portfolio prioritisation: rank orders the funded components, priority is
+    # the qualitative band. Funding decisions are made against this ordering.
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    rank = models.PositiveIntegerField(default=0, help_text="Lower = higher priority in the funded queue")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = 'Portfolios'
-        ordering = ['-created_at']
+        ordering = ['rank', '-created_at']
 
     def __str__(self):
         return self.name
+
+    @property
+    def total_funded(self):
+        """Sum of approved funding allocations against this portfolio."""
+        from decimal import Decimal
+        agg = self.funding_allocations.filter(status='approved').aggregate(
+            total=models.Sum('amount')
+        )
+        return agg['total'] or Decimal('0')
+
+    @property
+    def remaining_budget(self):
+        """Allocated budget minus already-approved funding. None if no budget set."""
+        if self.budget_allocated is None:
+            return None
+        return self.budget_allocated - self.total_funded
+
+
+class ComponentFunding(models.Model):
+    """A funding allocation from a Portfolio to one of its components (a program
+    or a project) for a fiscal period. Turns the portfolio's budget from a
+    single number into an auditable ledger: the sum of approved allocations
+    cannot exceed the portfolio's allocated budget."""
+
+    STATUS_CHOICES = [
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    portfolio = models.ForeignKey(
+        Portfolio, on_delete=models.CASCADE, related_name='funding_allocations'
+    )
+    program = models.ForeignKey(
+        'programs.Program', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='portfolio_funding'
+    )
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='portfolio_funding'
+    )
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    currency = models.CharField(max_length=8, default='EUR')
+    fiscal_period = models.CharField(max_length=32, blank=True, help_text="e.g. FY2026 or Q1-2026")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='requested')
+    rationale = models.TextField(blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='approved_fundings'
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_fundings'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Component Funding'
+        verbose_name_plural = 'Component Fundings'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.amount} {self.currency})"
 
 
 class GovernanceBoard(models.Model):
@@ -57,7 +135,13 @@ class GovernanceBoard(models.Model):
     
     meeting_frequency = models.CharField(max_length=100, blank=True)
     chair = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='chaired_boards')
-    
+    # Quorum: the minimum number of APPROVE votes a board-level decision needs
+    # before it can be applied. 0 = no formal vote required (default, backward
+    # compatible). >0 makes board decisions binding only with enough support.
+    quorum = models.PositiveIntegerField(
+        default=0, help_text="Minimum approve votes required to pass a board decision (0 = no vote required)"
+    )
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -130,6 +214,18 @@ class GovernanceStakeholder(models.Model):
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, null=True, blank=True, related_name='governance_stakeholders')
     
     communication_plan = models.TextField(blank=True, help_text="How to engage this stakeholder")
+    # Stakeholder engagement assessment (PMBOK/MSP): current vs desired
+    # engagement on the unaware→leading scale. The gap drives the engagement
+    # actions in the communication plan.
+    ENGAGEMENT_LEVELS = [
+        ('unaware', 'Unaware'),
+        ('resistant', 'Resistant'),
+        ('neutral', 'Neutral'),
+        ('supportive', 'Supportive'),
+        ('leading', 'Leading'),
+    ]
+    current_engagement = models.CharField(max_length=20, choices=ENGAGEMENT_LEVELS, default='neutral')
+    desired_engagement = models.CharField(max_length=20, choices=ENGAGEMENT_LEVELS, default='supportive')
     notes = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -141,6 +237,19 @@ class GovernanceStakeholder(models.Model):
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.email} - {self.get_role_display()}"
     
+    _ENGAGEMENT_ORDER = ['unaware', 'resistant', 'neutral', 'supportive', 'leading']
+
+    @property
+    def engagement_gap(self):
+        """Steps the stakeholder must move from current to desired engagement.
+        Positive = needs more engagement; 0 = at/above target."""
+        try:
+            cur = self._ENGAGEMENT_ORDER.index(self.current_engagement)
+            des = self._ENGAGEMENT_ORDER.index(self.desired_engagement)
+        except ValueError:
+            return 0
+        return max(0, des - cur)
+
     @property
     def stakeholder_quadrant(self):
         """Power/Interest Matrix quadrant for stakeholder management"""
@@ -270,6 +379,69 @@ class Decision(models.Model):
 
     def target_status_for_outcome(self, kind):
         return self._OUTCOME_STATUS.get(kind, {}).get(self.outcome)
+
+    def vote_tally(self):
+        """Return {approve, reject, abstain, total} for this decision's votes."""
+        tally = {'approve': 0, 'reject': 0, 'abstain': 0, 'total': 0}
+        for v in self.votes.all():
+            if v.vote in tally:
+                tally[v.vote] += 1
+            tally['total'] += 1
+        return tally
+
+    def quorum_check(self):
+        """Enforce the board's quorum on a board-level decision.
+
+        Returns (ok, blockers). A board decision needs at least `board.quorum`
+        APPROVE votes AND a strict majority of cast (non-abstain) votes. Boards
+        with quorum 0 (or no board) are unconstrained → (True, [])."""
+        board = self.board
+        if board is None or not board.quorum:
+            return True, []
+        tally = self.vote_tally()
+        blockers = []
+        if tally['approve'] < board.quorum:
+            blockers.append(
+                f"Needs {board.quorum} approve vote(s); has {tally['approve']}."
+            )
+        decisive = tally['approve'] + tally['reject']
+        if decisive and tally['approve'] <= tally['reject']:
+            blockers.append(
+                f"Approve votes ({tally['approve']}) must outnumber reject votes ({tally['reject']})."
+            )
+        return (len(blockers) == 0), blockers
+
+
+class DecisionVote(models.Model):
+    """A board member's recorded vote on a governance Decision. Makes a
+    board-level decision binding: it can only be applied once the board's
+    quorum of approve votes is reached (see Decision.quorum_check)."""
+
+    VOTE_CHOICES = [
+        ('approve', 'Approve'),
+        ('reject', 'Reject'),
+        ('abstain', 'Abstain'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    decision = models.ForeignKey(
+        Decision, on_delete=models.CASCADE, related_name='votes'
+    )
+    voter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='decision_votes'
+    )
+    vote = models.CharField(max_length=10, choices=VOTE_CHOICES)
+    rationale = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['decision', 'voter']
+        verbose_name = 'Decision Vote'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.voter} → {self.vote} on {self.decision.title}"
 
 
 class DecisionAuditLog(models.Model):

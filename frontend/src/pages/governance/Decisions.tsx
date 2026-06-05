@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Gavel, Plus, Pencil, Trash2, Shield, CalendarDays, Layers, X, Loader2,
-  AlertTriangle, CheckCircle2, PlayCircle, Target,
+  AlertTriangle, CheckCircle2, PlayCircle, Target, ThumbsUp, ThumbsDown, MinusCircle,
 } from "lucide-react";
 
 // Module-scope form type so the dialog state has a stable identity (same
@@ -330,8 +330,13 @@ const Decisions: React.FC = () => {
           invalid_outcome_for_target: pt("This outcome can't be applied to the linked component."),
           cross_tenant_denied: pt("You can't apply a decision to another tenant's component."),
           already_applied: pt("This decision has already been applied."),
+          quorum_not_met: pt("The board's quorum of approve votes hasn't been reached yet."),
         };
-        const msg = (err?.code && codeMsg[err.code]) || err?.detail || pt("Apply failed");
+        // quorum_not_met carries a human-readable blocker list — show it verbatim.
+        const blockerMsg = Array.isArray(err?.blockers) && err.blockers.length
+          ? ` ${err.blockers.join(" ")}`
+          : "";
+        const msg = ((err?.code && codeMsg[err.code]) || err?.detail || pt("Apply failed")) + blockerMsg;
         toast({ title: pt("Cannot apply"), description: msg, variant: "destructive" });
         if (err?.code === "already_applied") fetchAll();
       }
@@ -339,6 +344,39 @@ const Decisions: React.FC = () => {
       toast({ title: pt("Error"), description: pt("Apply failed"), variant: "destructive" });
     } finally {
       setApplyingId(null);
+    }
+  };
+
+  // Cast / update the requester's vote on a board decision. The tally + quorum
+  // status come back in the response so we can confirm whether the decision is
+  // now applyable (P2-Governance #44 binding vote).
+  const [votingId, setVotingId] = useState<string | null>(null);
+  const handleVote = async (d: Decision, vote: "approve" | "reject" | "abstain") => {
+    setVotingId(d.id);
+    try {
+      const r = await fetch(`/api/v1/governance/decisions/${d.id}/votes/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify({ vote }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) {
+        const t = data.tally || {};
+        const met = data.quorum_met
+          ? pt("Quorum met — ready to apply.")
+          : pt("Quorum not yet met.");
+        toast({
+          title: pt("Vote recorded"),
+          description: `${pt("Approve")} ${t.approve ?? 0} · ${pt("Reject")} ${t.reject ?? 0} · ${pt("Abstain")} ${t.abstain ?? 0}. ${met}`,
+        });
+      } else {
+        const msg = data?.code === "decision_applied"
+          ? pt("This decision has already been applied; voting is closed.")
+          : data?.detail || pt("Vote failed");
+        toast({ title: pt("Cannot vote"), description: msg, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: pt("Error"), description: pt("Vote failed"), variant: "destructive" });
+    } finally {
+      setVotingId(null);
     }
   };
 
@@ -594,6 +632,36 @@ const Decisions: React.FC = () => {
                     <p className="text-xs text-muted-foreground">
                       <span className="font-medium">{pt("Evidence")}:</span> {d.evidence}
                     </p>
+                  </CardContent>
+                )}
+                {/* Binding vote bar: a board decision must reach the board's
+                    quorum of approve votes before it can be Applied (#44). */}
+                {linkedBoard && !d.applied_at && (
+                  <CardContent className="pt-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-muted-foreground">{pt("Board vote")}:</span>
+                      <Button
+                        variant="outline" size="sm" className="h-7 gap-1"
+                        disabled={votingId === d.id}
+                        onClick={() => handleVote(d, "approve")}
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" /> {pt("Approve")}
+                      </Button>
+                      <Button
+                        variant="outline" size="sm" className="h-7 gap-1"
+                        disabled={votingId === d.id}
+                        onClick={() => handleVote(d, "reject")}
+                      >
+                        <ThumbsDown className="h-3.5 w-3.5" /> {pt("Reject")}
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm" className="h-7 gap-1"
+                        disabled={votingId === d.id}
+                        onClick={() => handleVote(d, "abstain")}
+                      >
+                        <MinusCircle className="h-3.5 w-3.5" /> {pt("Abstain")}
+                      </Button>
+                    </div>
                   </CardContent>
                 )}
               </Card>

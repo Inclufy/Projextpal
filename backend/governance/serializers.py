@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
     Decision, Meeting, DecisionAuditLog, MeetingAction,
+    DecisionVote, ComponentFunding,
 )
 
 
@@ -10,7 +11,9 @@ class PortfolioSerializer(serializers.ModelSerializer):
     owner_email = serializers.EmailField(source='owner.email', read_only=True)
     owner_name = serializers.SerializerMethodField()
     total_boards = serializers.SerializerMethodField()
-    
+    total_funded = serializers.ReadOnlyField()
+    remaining_budget = serializers.ReadOnlyField()
+
     class Meta:
         model = Portfolio
         fields = '__all__'
@@ -62,6 +65,7 @@ class GovernanceStakeholderSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
     user_name = serializers.SerializerMethodField()
     quadrant = serializers.CharField(source='stakeholder_quadrant', read_only=True)
+    engagement_gap = serializers.ReadOnlyField()
     email = serializers.EmailField(write_only=True, required=False)
     name = serializers.CharField(write_only=True, required=False)
     organization = serializers.CharField(write_only=True, required=False)
@@ -201,3 +205,36 @@ class MeetingActionSerializer(serializers.ModelSerializer):
         if company_id is None or company_id not in owner_company_ids:
             raise serializers.ValidationError("Meeting is not in your tenant.")
         return meeting
+
+
+class DecisionVoteSerializer(serializers.ModelSerializer):
+    voter_name = serializers.SerializerMethodField()
+    voter_email = serializers.EmailField(source='voter.email', read_only=True)
+
+    class Meta:
+        model = DecisionVote
+        fields = '__all__'
+        read_only_fields = ['id', 'voter', 'created_at', 'updated_at']
+
+    def get_voter_name(self, obj):
+        return obj.voter.get_full_name() or obj.voter.email
+
+
+class ComponentFundingSerializer(serializers.ModelSerializer):
+    portfolio_name = serializers.CharField(source='portfolio.name', read_only=True)
+    program_name = serializers.CharField(source='program.name', read_only=True)
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    approved_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ComponentFunding
+        fields = '__all__'
+        read_only_fields = [
+            'id', 'status', 'approved_by', 'approved_at',
+            'created_by', 'created_at', 'updated_at',
+        ]
+
+    def get_approved_by_name(self, obj):
+        if obj.approved_by:
+            return obj.approved_by.get_full_name() or obj.approved_by.email
+        return None

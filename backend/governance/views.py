@@ -8,12 +8,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Portfolio, GovernanceBoard, BoardMember, GovernanceStakeholder,
     Decision, Meeting, DecisionAuditLog, MeetingAction,
+    DecisionVote, ComponentFunding,
 )
 from .serializers import (
     PortfolioSerializer, GovernanceBoardSerializer,
     BoardMemberSerializer, GovernanceStakeholderSerializer,
     DecisionSerializer, MeetingSerializer, DecisionAuditLogSerializer,
-    MeetingActionSerializer,
+    MeetingActionSerializer, DecisionVoteSerializer, ComponentFundingSerializer,
 )
 
 
@@ -414,6 +415,18 @@ class DecisionViewSet(viewsets.ModelViewSet):
                 status=drf_status.HTTP_400_BAD_REQUEST,
             )
 
+        # Binding-vote gate: a board-level decision can only be applied once the
+        # board's quorum of approve votes is reached (P2-Governance #44).
+        quorum_ok, quorum_blockers = decision.quorum_check()
+        if not quorum_ok:
+            return Response(
+                {'detail': 'This board decision has not met its quorum and cannot be applied.',
+                 'code': 'quorum_not_met',
+                 'blockers': quorum_blockers,
+                 'tally': decision.vote_tally()},
+                status=drf_status.HTTP_409_CONFLICT,
+            )
+
         previous_status = getattr(target, 'status', '')
 
         from django.db import transaction
@@ -453,6 +466,41 @@ class DecisionViewSet(viewsets.ModelViewSet):
         decision = self.get_object()
         logs = decision.audit_logs.all()
         return Response(DecisionAuditLogSerializer(logs, many=True).data)
+
+    @action(detail=True, methods=['get', 'post'])
+    def votes(self, request, pk=None):
+        """GET the votes + tally; POST to cast/update the requester's vote.
+
+        POST body: {vote: approve|reject|abstain, rationale?}. Votes can't be
+        cast on an already-applied (append-only) decision."""
+        decision = self.get_object()
+        if request.method == 'POST':
+            if decision.applied_at is not None:
+                return Response(
+                    {'detail': 'This decision has been applied and is append-only; votes are closed.',
+                     'code': 'decision_applied'},
+                    status=drf_status.HTTP_409_CONFLICT,
+                )
+            vote = request.data.get('vote')
+            if vote not in dict(DecisionVote.VOTE_CHOICES):
+                return Response(
+                    {'detail': 'A valid vote (approve/reject/abstain) is required.',
+                     'code': 'invalid_vote'},
+                    status=drf_status.HTTP_400_BAD_REQUEST,
+                )
+            DecisionVote.objects.update_or_create(
+                decision=decision, voter=request.user,
+                defaults={'vote': vote, 'rationale': request.data.get('rationale', '')},
+            )
+        votes = decision.votes.select_related('voter').all()
+        quorum_ok, blockers = decision.quorum_check()
+        return Response({
+            'votes': DecisionVoteSerializer(votes, many=True).data,
+            'tally': decision.vote_tally(),
+            'quorum': decision.board.quorum if decision.board else 0,
+            'quorum_met': quorum_ok,
+            'blockers': blockers,
+        })
 
 
 def _has_field(instance, field_name):
@@ -556,3 +604,68 @@ class MeetingActionViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         self._sync_closed_at(serializer)
+
+
+class ComponentFundingViewSet(viewsets.ModelViewSet):
+    """Portfolio funding allocations to components (program/project), with an
+    over-budget gate: the sum of APPROVED allocations can never exceed the
+    portfolio's allocated budget (P2-Governance #44)."""
+    serializer_class = ComponentFundingSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['portfolio', 'program', 'project', 'status', 'fiscal_period']
+    search_fields = ['title', 'rationale']
+    ordering_fields = ['created_at', 'amount']
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return ComponentFunding.objects.none()
+        all_tenants = self.request.query_params.get('all_tenants') in ('1', 'true', 'yes')
+        company = getattr(user, 'company', None)
+        is_superadmin = getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False)
+        if is_superadmin and (all_tenants or not company):
+            return ComponentFunding.objects.all()
+        if not company:
+            return ComponentFunding.objects.none()
+        return ComponentFunding.objects.filter(portfolio__company=company)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """Approve a funding allocation. GATE: refuses if approving it would
+        push the portfolio's total approved funding past its allocated budget."""
+        funding = self.get_object()
+        if funding.status == 'approved':
+            return Response(
+                {'detail': 'This funding allocation is already approved.', 'code': 'already_approved'},
+                status=drf_status.HTTP_409_CONFLICT,
+            )
+        portfolio = funding.portfolio
+        budget = portfolio.budget_allocated
+        if budget is not None:
+            projected = portfolio.total_funded + funding.amount
+            if projected > budget:
+                return Response(
+                    {'detail': 'Approving this allocation would exceed the portfolio budget.',
+                     'code': 'over_budget',
+                     'budget_allocated': str(budget),
+                     'already_approved': str(portfolio.total_funded),
+                     'requested': str(funding.amount),
+                     'would_total': str(projected)},
+                    status=drf_status.HTTP_409_CONFLICT,
+                )
+        funding.status = 'approved'
+        funding.approved_by = request.user
+        funding.approved_at = timezone.now()
+        funding.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+        return Response(self.get_serializer(funding).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        funding = self.get_object()
+        funding.status = 'rejected'
+        funding.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(funding).data)
