@@ -19,6 +19,13 @@ export default defineConfig(({ mode }) => ({
         // via React.lazy() in src/App.tsx — only vendor splitting is removed.
         manualChunks(id) {
           if (id.includes("node_modules")) return "vendor";
+          // Academy course catalog (data/academy/courses/index.ts + the
+          // per-course content modules) is large, static, and only loaded by
+          // the lazy Academy routes. Give it an explicit name so Rollup does
+          // not name it `index-*` (it derives chunk names from the source
+          // `index.ts`), which would otherwise sweep this lazy chunk into the
+          // eager-entry `index-*.js` bundle-size guard in ci.yml.
+          if (id.includes("/data/academy/courses/")) return "academy-courses";
           return undefined;
         },
       },
