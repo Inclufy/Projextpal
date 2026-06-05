@@ -63,8 +63,11 @@ def _date(d) -> str:
     return d.isoformat() if d else ""
 
 
-def render_project_plan_docx(project) -> bytes:
-    """Render a Yanmar Project Plan DOCX from a projects.Project instance."""
+def render_project_plan_docx(project, show_costs: bool = True) -> bytes:
+    """Render a Yanmar Project Plan DOCX from a projects.Project instance.
+
+    show_costs=False omits the budget/cost lines (Yanmar SC-05 — non-finance roles).
+    """
     doc = Document()
 
     _h1(doc, "Project Plan")
@@ -182,11 +185,12 @@ def render_project_plan_docx(project) -> bytes:
     except Exception:
         team_count = "—"
     p.add_run(f"{team_count} team members\n")
-    p.add_run("Cost overview (budget): ").bold = True
-    budget = getattr(project, "budget", "") or "—"
-    p.add_run(f"{budget} {getattr(project, 'currency', 'EUR')}\n")
-    p.add_run("Materials (equipment, software, etc.): ").bold = True
-    p.add_run("—\n")
+    if show_costs:
+        p.add_run("Cost overview (budget): ").bold = True
+        budget = getattr(project, "budget", "") or "—"
+        p.add_run(f"{budget} {getattr(project, 'currency', 'EUR')}\n")
+        p.add_run("Materials (equipment, software, etc.): ").bold = True
+        p.add_run("—\n")
 
     # Time frame
     doc.add_paragraph(" ")

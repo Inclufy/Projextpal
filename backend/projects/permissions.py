@@ -29,6 +29,15 @@ def can_view_costs(user) -> bool:
     return getattr(user, "role", None) in COST_VIEWER_ROLES
 
 
+class CanViewCosts(BasePermission):
+    """DRF permission — only finance/management roles may access cost-bearing
+    endpoints (budget categories/items/overview). Yanmar SC-05."""
+    message = "You do not have permission to view project costs."
+
+    def has_permission(self, request, view):
+        return can_view_costs(request.user)
+
+
 # URL methodology slugs that participate in isolation enforcement.
 # Anything not in this set is treated as a non-methodology URL and skipped.
 _METHODOLOGY_SLUGS = {

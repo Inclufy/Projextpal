@@ -168,7 +168,7 @@ class CompanyScopedQuerysetMixin:
         return base_qs
 
 
-IsAdminOrPM = HasRole("admin", "pm", "superadmin")
+IsAdminOrPM = HasRole("admin", "pm", "program_manager", "superadmin")
 
 
 IsAdminOrPMOrContributor = HasRole("admin", "pm", "superadmin", "contributor")
@@ -207,7 +207,8 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
         template_name = request.query_params.get("template", "")
         renderer = pick_template(project.company, template_name, kind="project_plan_docx")
-        docx_bytes = renderer(project)
+        from .permissions import can_view_costs
+        docx_bytes = renderer(project, show_costs=can_view_costs(request.user))
         filename = f"{slugify(project.name) or 'project'}-project-plan.docx"
         response = HttpResponse(
             docx_bytes,
@@ -754,6 +755,11 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 "is_overdue": is_overdue,
             },
         }
+        # Yanmar SC-05 — hide budget figures from non-finance roles.
+        from .permissions import can_view_costs
+        if not can_view_costs(request.user):
+            for k in ("budget_total", "spent", "percent_used"):
+                data.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="timeline")
@@ -2594,7 +2600,7 @@ from .serializers import (
 class BudgetCategoryViewSet(viewsets.ModelViewSet):
     """ViewSet for budget categories"""
     serializer_class = BudgetCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrPM]  # Yanmar SC-05
 
     def get_queryset(self):
         return BudgetCategory.objects.filter(company=self.request.user.company)
@@ -2603,7 +2609,7 @@ class BudgetCategoryViewSet(viewsets.ModelViewSet):
 class BudgetItemViewSet(viewsets.ModelViewSet):
     """ViewSet for budget items (P1 fix — membership-scoped)."""
     serializer_class = BudgetItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrPM]  # Yanmar SC-05
 
     def get_queryset(self):
         user = self.request.user
@@ -2654,7 +2660,7 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
 
 class BudgetOverviewViewSet(viewsets.ViewSet):
     """Budget overview for company"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrPM]  # Yanmar SC-05
 
     def list(self, request):
         """GET /budget/overview/"""

@@ -296,6 +296,17 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_team_members_count(self, obj):
         return obj.team_members.filter(is_active=True).count()
 
+    def to_representation(self, instance):
+        # Yanmar SC-05 — hide budget/expenses from non-finance roles (ROI %
+        # stays — it's part of the visible business case, PP-03).
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs
+        request = self.context.get("request")
+        if not can_view_costs(getattr(request, "user", None)):
+            for k in ("budget", "expenses_total", "expenses"):
+                data.pop(k, None)
+        return data
+
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for project lists - optimized for performance"""
@@ -336,6 +347,16 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_expenses_total(self, obj):
         total = obj.expenses.aggregate(total=Sum("amount")).get("total")
         return total or 0
+
+    def to_representation(self, instance):
+        # Yanmar SC-05 — hide budget/expenses from non-finance roles.
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs
+        request = self.context.get("request")
+        if not can_view_costs(getattr(request, "user", None)):
+            data.pop("budget", None)
+            data.pop("expenses_total", None)
+        return data
 
 
 class ExpenseSerializer(serializers.ModelSerializer):

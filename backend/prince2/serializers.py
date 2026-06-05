@@ -259,6 +259,16 @@ class HighlightReportSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['project', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        # Yanmar SC-05 — hide money figures from non-finance roles.
+        data = super().to_representation(instance)
+        from projects.permissions import can_view_costs
+        request = self.context.get("request")
+        if not can_view_costs(getattr(request, "user", None)):
+            data.pop("budget_spent", None)
+            data.pop("budget_forecast", None)
+        return data
+
 
 class CheckpointReportSerializer(serializers.ModelSerializer):
     work_package_title = serializers.CharField(
