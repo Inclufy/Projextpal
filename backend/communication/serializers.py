@@ -116,6 +116,9 @@ class ReportingItemSerializer(serializers.ModelSerializer):
 # Meeting Serializer
 class MeetingSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
+    # Yanmar Meeting Minutes — nested read (MM-01 attendees, MM-02 action items).
+    attendees = serializers.SerializerMethodField(read_only=True)
+    action_items = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Meeting
@@ -126,8 +129,16 @@ class MeetingSerializer(serializers.ModelSerializer):
             # Yanmar Meeting Minutes template — MM-04 / MM-05
             'customer_supplier', 'yanmar_meeting_room',
             'discussion_notes', 'conclusions',
+            # MM-01 / MM-02 nested
+            'attendees', 'action_items', 'previous_meeting',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_attendees(self, obj):
+        return MeetingAttendeeSerializer(obj.attendees.all(), many=True).data
+
+    def get_action_items(self, obj):
+        return MeetingActionItemSerializer(obj.action_items.all(), many=True).data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -148,3 +159,44 @@ class MeetingOccurrenceSerializer(serializers.Serializer):
     participants = serializers.ListField(child=serializers.CharField())
     status = serializers.CharField()
 
+
+
+# ── Yanmar Meeting Minutes sub-resources (MM-01 / MM-02) ─────────────────
+from .models import MeetingAttendee, MeetingActionItem
+
+
+class MeetingAttendeeSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = MeetingAttendee
+        fields = [
+            "id", "meeting", "user", "user_name", "name_text",
+            "position", "contact_info", "presence", "created_at",
+        ]
+        read_only_fields = ["created_at"]
+
+    def get_user_name(self, obj):
+        if obj.user:
+            full = obj.user.get_full_name() if hasattr(obj.user, "get_full_name") else ""
+            return full or getattr(obj.user, "username", "") or getattr(obj.user, "email", "")
+        return obj.name_text
+
+
+class MeetingActionItemSerializer(serializers.ModelSerializer):
+    pic_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = MeetingActionItem
+        fields = [
+            "id", "meeting", "source_meeting", "no", "subject",
+            "pic_user", "pic_name", "pic_text", "action_due",
+            "status", "notes", "created_at", "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+
+    def get_pic_name(self, obj):
+        if obj.pic_user:
+            full = obj.pic_user.get_full_name() if hasattr(obj.pic_user, "get_full_name") else ""
+            return full or getattr(obj.pic_user, "username", "") or getattr(obj.pic_user, "email", "")
+        return obj.pic_text

@@ -328,6 +328,23 @@ class MeetingViewSet(viewsets.ModelViewSet):
             qs = qs.filter(project_id=project_id)
         return qs
 
+    @action(detail=True, methods=["post"], url_path="carry-forward")
+    def carry_forward(self, request, pk=None):
+        """MM-03 — clone OPEN action items from this meeting's previous_meeting
+        into this meeting (skips subjects already present)."""
+        meeting = self.get_object()
+        prev = meeting.previous_meeting
+        if not prev:
+            return Response({"detail": "No previous meeting set."}, status=400)
+        existing = set(meeting.action_items.values_list("subject", flat=True))
+        created = 0
+        for item in prev.action_items.filter(status="open"):
+            if item.subject in existing:
+                continue
+            item.carry_forward_to(meeting)
+            created += 1
+        return Response({"carried_forward": created}, status=200)
+
     def list(self, request, *args, **kwargs):
         """
         GET /communication/meetings/?project=<id>
@@ -398,3 +415,46 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
         data = MeetingOccurrenceSerializer(occurrences, many=True).data
         return Response(data)
+
+# ── Yanmar Meeting Minutes sub-resources (MM-01 / MM-02 / MM-03) ─────────
+from rest_framework.decorators import action
+from .models import MeetingAttendee, MeetingActionItem
+from .serializers import MeetingAttendeeSerializer, MeetingActionItemSerializer
+
+
+def _meeting_scoped(qs, user):
+    """Scope meeting sub-resources via meeting.project.company."""
+    if not user.is_authenticated:
+        return qs.none()
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return qs
+    company_id = getattr(user, "company_id", None)
+    if not company_id:
+        return qs.none()
+    return qs.filter(meeting__project__company_id=company_id)
+
+
+class MeetingAttendeeViewSet(viewsets.ModelViewSet):
+    queryset = MeetingAttendee.objects.all()
+    serializer_class = MeetingAttendeeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = _meeting_scoped(MeetingAttendee.objects.all(), self.request.user)
+        meeting_id = self.request.query_params.get("meeting")
+        if meeting_id:
+            qs = qs.filter(meeting_id=meeting_id)
+        return qs
+
+
+class MeetingActionItemViewSet(viewsets.ModelViewSet):
+    queryset = MeetingActionItem.objects.all()
+    serializer_class = MeetingActionItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = _meeting_scoped(MeetingActionItem.objects.all(), self.request.user)
+        meeting_id = self.request.query_params.get("meeting")
+        if meeting_id:
+            qs = qs.filter(meeting_id=meeting_id)
+        return qs
