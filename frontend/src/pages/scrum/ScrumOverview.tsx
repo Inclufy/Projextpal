@@ -7,10 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
 
 const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
+
+// Sprint workflow pipeline (To Do → In Progress → Done) built from the
+// active sprint's items. Progress per column = share of sprint items in it.
+const buildSprintSteps = (items: any[]): FlowStep[] => {
+  const total = items.length || 1;
+  const inCol = (preds: string[]) => items.filter((i) => preds.includes(i.status)).length;
+  const cols: { code: string; label: string; status: FlowStep["status"]; preds: string[]; links: { label: string; slug: string }[] }[] = [
+    { code: "TODO", label: "To Do", status: "todo", preds: ["new", "ready"], links: [{ label: "Backlog", slug: "backlog" }, { label: "Sprint Board", slug: "sprint-board" }] },
+    { code: "WIP", label: "In Progress", status: "active", preds: ["in_progress"], links: [{ label: "Sprint Board", slug: "sprint-board" }, { label: "Daily Standup", slug: "daily-standup" }] },
+    { code: "DONE", label: "Done", status: "done", preds: ["done"], links: [{ label: "Sprint Review", slug: "sprint-review" }, { label: "Definition of Done", slug: "definition-of-done" }] },
+  ];
+  return cols.map((c) => {
+    const n = inCol(c.preds);
+    return { code: c.code, label: c.label, purpose: `Sprint items currently in "${c.label}".`, progress: Math.round((n / total) * 100), status: c.status, meta: `${n} ${n === 1 ? "item" : "items"}`, links: c.links, academyHref: "/academy/course/scrum-master" };
+  });
+};
 
 const ScrumOverview = () => {
   const { pt } = usePageTranslations();
@@ -100,6 +117,18 @@ const ScrumOverview = () => {
           <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Backlog Items")}</p><p className="text-2xl font-bold">{d.backlog_count || 0}</p></CardContent></Card>
           <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Velocity")}</p><p className="text-2xl font-bold">{d.average_velocity || 0}</p><p className="text-xs text-muted-foreground">pts/sprint</p></CardContent></Card>
         </div>
+
+        {/* Sprint Flow */}
+        {d.active_sprint?.items?.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3 flex-row items-center justify-between space-y-0"><CardTitle className="flex items-center gap-2 text-base"><Workflow className="h-5 w-5 text-blue-600" /> {pt("Sprint Flow")}</CardTitle>
+              <button type="button" onClick={() => navigate("/academy/course/scrum-master")} className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300" title={pt("Open the Scrum course in the Academy")}><GraduationCap className="h-3.5 w-3.5" /> {pt("Scrum course")}</button>
+            </CardHeader>
+            <CardContent>
+              <MethodologyFlow steps={buildSprintSteps(d.active_sprint.items)} accent="blue" onNavigate={nav} minWidth={480} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Active Sprint Items */}
         {d.active_sprint?.items?.length > 0 && (

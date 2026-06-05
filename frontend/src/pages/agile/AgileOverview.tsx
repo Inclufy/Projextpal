@@ -7,10 +7,42 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, Eye, RotateCcw, Rocket, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, Eye, RotateCcw, Rocket, Plus, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
 
 const AGILE_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
+
+// Continuous-flow board pipeline (Backlog → Ready → In Progress → Review →
+// Done) built from the live flow-metrics column_counts. The WIP columns
+// (in_progress + review) surface the configured WIP limit.
+const buildAgileSteps = (flow: any): FlowStep[] => {
+  const cc = flow?.column_counts || {};
+  const total = (["backlog", "ready", "in_progress", "review", "done"].reduce((s, k) => s + (cc[k] || 0), 0)) || 1;
+  const wipLimit = flow?.wip_limit || 0;
+  const currentWip = flow?.current_wip || 0;
+  const cols: { code: string; label: string; key: string; status: FlowStep["status"] }[] = [
+    { code: "BKLG", label: "Backlog", key: "backlog", status: "todo" },
+    { code: "RDY", label: "Ready", key: "ready", status: "todo" },
+    { code: "WIP", label: "In Progress", key: "in_progress", status: "active" },
+    { code: "REV", label: "Review", key: "review", status: "active" },
+    { code: "DONE", label: "Done", key: "done", status: "done" },
+  ];
+  return cols.map((c) => {
+    const n = cc[c.key] || 0;
+    const isWip = c.key === "in_progress" || c.key === "review";
+    return {
+      code: c.code,
+      label: c.label,
+      purpose: isWip && wipLimit ? `Work in progress — board WIP limit is ${wipLimit} (now ${currentWip}).` : `Items currently in "${c.label}".`,
+      progress: Math.round((n / total) * 100),
+      status: c.status,
+      meta: isWip && wipLimit ? `${n} · WIP ${currentWip}/${wipLimit}` : `${n} ${n === 1 ? "item" : "items"}`,
+      links: [{ label: "Iteration Board", slug: "iteration-board" }, { label: "Backlog", slug: "backlog" }],
+      academyHref: "/academy/course/agile-fundamentals",
+    };
+  });
+};
 
 const AgileOverview = () => {
   const { pt } = usePageTranslations();
@@ -19,6 +51,7 @@ const AgileOverview = () => {
   const { user } = useAuth();
   const canManageDemo = !!user && AGILE_ADMIN_ROLES.includes(user.role);
   const [dashboard, setDashboard] = useState<any>(null);
+  const [flow, setFlow] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("access_token");
@@ -27,8 +60,12 @@ const AgileOverview = () => {
 
   const fetchDashboard = async () => {
     try {
-      const r = await fetch(`/api/v1/projects/${id}/agile/dashboard/`, { headers });
-      if (r.ok) setDashboard(await r.json());
+      const [dr, fr] = await Promise.all([
+        fetch(`/api/v1/projects/${id}/agile/dashboard/`, { headers }),
+        fetch(`/api/v1/projects/${id}/agile/flow-metrics/`, { headers }),
+      ]);
+      if (dr.ok) setDashboard(await dr.json());
+      if (fr.ok) setFlow(await fr.json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -110,6 +147,17 @@ const AgileOverview = () => {
           <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Team Members")}</p><p className="text-2xl font-bold">{d.team_size || 0}</p></CardContent></Card>
           <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{pt("Story Points")}</p><p className="text-2xl font-bold">{d.total_story_points || 0}</p></CardContent></Card>
         </div>
+
+        {flow?.column_counts && (
+          <Card>
+            <CardHeader className="pb-3 flex-row items-center justify-between space-y-0"><CardTitle className="flex items-center gap-2 text-base"><Workflow className="h-5 w-5 text-emerald-600" /> {pt("Flow Board")}</CardTitle>
+              <button type="button" onClick={() => navigate("/academy/course/agile-fundamentals")} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300" title={pt("Open the Agile course in the Academy")}><GraduationCap className="h-3.5 w-3.5" /> {pt("Agile course")}</button>
+            </CardHeader>
+            <CardContent>
+              <MethodologyFlow steps={buildAgileSteps(flow)} accent="emerald" onNavigate={nav} />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[

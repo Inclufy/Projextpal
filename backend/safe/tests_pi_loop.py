@@ -9,6 +9,8 @@ Scenario (the acceptance criterion): an RTE can
 
 Also asserts WSJF ordering of the Program Kanban and cross-tenant isolation.
 """
+from datetime import date
+
 from rest_framework.test import APIClient
 from django.test import TestCase
 
@@ -52,6 +54,9 @@ class PILoopTests(TestCase):
         )
         self.assertEqual(resp.status_code, 201, resp.content)
         pi_id = resp.json()["id"]
+        # PI Planning occurs: objectives + features can only be committed once the
+        # PI Planning event is on the calendar (creation-order gate).
+        ProgramIncrement.objects.filter(id=pi_id).update(pi_planning_date=date.today())
 
         # Objectives (drives the BV roll-up)
         PIObjective.objects.create(
@@ -111,6 +116,12 @@ class PILoopTests(TestCase):
         self.assertEqual(dep.status_code, 201, dep.content)
         self.assertEqual(dep.json()["roam"], "owned")
         self.assertEqual(dep.json()["roam_display"], "Owned")
+
+        # Commit the PI: with a committed objective carrying business value and
+        # the dependency ROAM-triaged, planning → active succeeds.
+        commit = self.client.post("/api/v1/safe/pis/%s/commit/" % pi_id, {}, format="json")
+        self.assertEqual(commit.status_code, 200, commit.content)
+        self.assertEqual(commit.json()["status"], "active")
 
         # 4. Run a System Demo
         demo = self.client.post(

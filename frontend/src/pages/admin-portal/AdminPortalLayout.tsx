@@ -11,6 +11,7 @@ import {
   Users,
   Building2,
   Puzzle,
+  Zap,
   Settings,
   Shield,
   Bell,
@@ -116,6 +117,12 @@ const navigation: NavSection[] = [
         titleNL: 'Integraties',
         href: '/admin/integrations',
         icon: Puzzle,
+      },
+      {
+        title: 'Automation Rules',
+        titleNL: 'Automatiseringsregels',
+        href: '/admin/automation-rules',
+        icon: Zap,
       },
       {
         title: 'Plans & Pricing',

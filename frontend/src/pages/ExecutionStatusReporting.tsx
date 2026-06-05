@@ -1,11 +1,18 @@
 import { Card } from "@/components/ui/card";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, FileBarChart } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useProject } from "@/hooks/useApi";
+import { doctrineReportPath } from "@/lib/methodologyRoutes";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const ExecutionStatusReporting = () => {
   const { pt } = usePageTranslations();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: project } = useProject(id);
+  const doctrinePath = id ? doctrineReportPath(id, project?.methodology) : null;
   const reports = [
     { id: 3, status: "In Progress", progress: 10, lastUpdated: "2025-12-12" },
     { id: 2, status: "In Progress", progress: 50, lastUpdated: "2025-10-10" },
@@ -15,7 +22,13 @@ const ExecutionStatusReporting = () => {
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6">
-        <div className="flex items-center justify-end mb-6">
+        <div className="flex items-center justify-end gap-2 mb-6">
+          {doctrinePath && (
+            <Button variant="outline" onClick={() => navigate(doctrinePath)} className="gap-2" title={pt("Open the methodology-specific doctrine report for this project")}>
+              <FileBarChart className="h-4 w-4" />
+              {pt("Methodology report")}
+            </Button>
+          )}
           <Button className="bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
             {pt("Add Report")}

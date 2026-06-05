@@ -20,6 +20,7 @@ from .views import (
     DefinitionOfDoneViewSet,
     AgileFlowConfigViewSet,
     AgileFlowMetricsViewSet,
+    StakeholderFeedbackViewSet,
     AgileSeedDemoView,
     AgileClearDemoView,
 )
@@ -206,6 +207,11 @@ urlpatterns = [
     
     # Retrospectives
     path(
+        'projects/<int:project_id>/agile/retrospectives/action-items/',
+        AgileRetrospectiveViewSet.as_view({'get': 'action_items'}),
+        name='agile-retrospectives-action-items'
+    ),
+    path(
         'projects/<int:project_id>/agile/retrospectives/',
         AgileRetrospectiveViewSet.as_view({'get': 'list', 'post': 'create'}),
         name='agile-retrospectives-list'
@@ -261,6 +267,19 @@ urlpatterns = [
         "projects/<int:project_id>/agile/definition-of-done/<int:pk>/",
         DefinitionOfDoneViewSet.as_view({"get": "retrieve", "put": "update", "patch": "partial_update", "delete": "destroy"}),
         name="agile-definition-of-done-detail"
+    ),
+    # =========================================================================
+    # STAKEHOLDER FEEDBACK (per-iteration review of shipped work) — AG-3
+    # =========================================================================
+    path(
+        'projects/<int:project_id>/agile/stakeholder-feedback/',
+        StakeholderFeedbackViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='agile-stakeholder-feedback-list'
+    ),
+    path(
+        'projects/<int:project_id>/agile/stakeholder-feedback/<int:pk>/',
+        StakeholderFeedbackViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='agile-stakeholder-feedback-detail'
     ),
     # =========================================================================
     # FLOW (continuous-flow cadence config + outcome metrics)

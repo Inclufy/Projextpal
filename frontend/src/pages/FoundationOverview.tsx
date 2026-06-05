@@ -2,12 +2,82 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useProject } from "@/hooks/useApi";
 import { MethodologyDashboard } from "@/components/dashboards";
-import { Loader2, LayoutDashboard, List } from "lucide-react";
+import {
+  Loader2, LayoutDashboard, List, FileCheck, GitBranch, TrendingUp,
+  Lightbulb, ArrowRight, Sparkles,
+} from "lucide-react";
 import { useState } from "react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+
+// The curated best-of-breed widgets that make "Inclufy Best Practice" an
+// opinionated method rather than a blank fallback: a light business case
+// (PRINCE2), a flow board with WIP (Kanban/Agile), milestone + EVM health
+// (Waterfall), and a real closure + lessons gate (PRINCE2).
+const BestPracticePanel = ({ projectId, pt }: { projectId: string; pt: (s: string) => string }) => {
+  const navigate = useNavigate();
+  const widgets = [
+    {
+      icon: FileCheck,
+      title: pt("Light Business Case & Charter"),
+      desc: pt("Justify the project up front — vision, objectives, and a one-page charter. Borrowed from PRINCE2, kept lightweight."),
+      to: `/projects/${projectId}/foundation/charter`,
+    },
+    {
+      icon: GitBranch,
+      title: pt("Flow Board with WIP"),
+      desc: pt("A pull-based workflow that limits work in progress, so the team finishes before it starts. Borrowed from Kanban & Agile."),
+      to: `/projects/${projectId}/foundation/workflow`,
+    },
+    {
+      icon: TrendingUp,
+      title: pt("Milestone & Budget Health"),
+      desc: pt("Track milestones and budget burn with simple EVM-style health, so slippage surfaces early. Borrowed from Waterfall."),
+      to: `/projects/${projectId}/planning/milestones`,
+    },
+    {
+      icon: Lightbulb,
+      title: pt("Closure & Lessons Gate"),
+      desc: pt("Close the project deliberately: confirm deliverables and capture lessons before sign-off. Borrowed from PRINCE2."),
+      to: `/projects/${projectId}/monitoring/lessons-surveys`,
+    },
+  ];
+  return (
+    <Card className="p-6 mb-6 border-indigo-200 bg-indigo-50/40">
+      <div className="flex items-start gap-3 mb-4">
+        <div className="p-2 rounded-lg bg-indigo-100">
+          <Sparkles className="h-5 w-5 text-indigo-600" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">{pt("Inclufy Best Practice")}</h3>
+          <p className="text-sm text-muted-foreground">
+            {pt("A curated, governed default — the best of every method, so you don't have to pick a framework to get started.")}
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {widgets.map((w) => (
+          <button
+            key={w.title}
+            onClick={() => navigate(w.to)}
+            className="text-left p-4 rounded-lg border border-border bg-background hover:border-indigo-300 hover:shadow-sm transition group"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <w.icon className="h-4 w-4 text-indigo-600" />
+                <span className="font-medium text-foreground">{w.title}</span>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-indigo-600 transition" />
+            </div>
+            <p className="text-sm text-muted-foreground">{w.desc}</p>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+};
 
 const FoundationOverview = () => {
   const { pt } = usePageTranslations();
@@ -109,7 +179,12 @@ const FoundationOverview = () => {
 
         {/* Methodology Dashboard */}
         {viewMode === 'methodology' && project?.methodology ? (
-          <MethodologyDashboard project={project} />
+          <>
+            {project.methodology.toLowerCase() === 'inclufy' && id && (
+              <BestPracticePanel projectId={id} pt={pt} />
+            )}
+            <MethodologyDashboard project={project} />
+          </>
         ) : (
           /* Classic View */
           <Card className="p-6">

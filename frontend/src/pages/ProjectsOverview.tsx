@@ -306,9 +306,11 @@ const ProjectsOverview = () => {
 
 Project Idea: "${projectIdea}"
 
+Default to "inclufy" (Inclufy Best Practice — a curated best-of-breed method with a light business case, a flow board with WIP, a simple cadence + retro, milestone/EVM health, and a real closure + lessons gate) UNLESS the idea clearly calls for a specific framework (e.g. heavy regulatory/stage-gate → waterfall or prince2; pure flow/support queue → kanban; defect/variation reduction → lean_six_sigma_*). When the team is unsure or the project is general-purpose, recommend "inclufy".
+
 Respond in this EXACT JSON format only, no other text:
 {
-  "methodology": "agile|scrum|kanban|waterfall|prince2|lean_six_sigma_green|lean_six_sigma_black|hybrid",
+  "methodology": "inclufy|agile|scrum|kanban|waterfall|prince2|lean_six_sigma_green|lean_six_sigma_black|hybrid",
   "reasoning": "2-3 sentences explaining why this methodology is the best fit for this specific project",
   "confidence": 85,
   "suggestedName": "A clear, professional project name",
@@ -326,17 +328,17 @@ Respond in this EXACT JSON format only, no other text:
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         setAiRecommendation({
-          methodology: parsed.methodology || 'agile',
-          reasoning: parsed.reasoning || 'This methodology fits your project needs.',
+          methodology: parsed.methodology || 'inclufy',
+          reasoning: parsed.reasoning || 'Inclufy Best Practice gives you a sensible, governed default without picking a framework first.',
           confidence: parsed.confidence || 80,
         });
-        
+
         // Pre-fill form with AI suggestions
         setFormData(prev => ({
           ...prev,
           name: parsed.suggestedName || '',
           description: parsed.suggestedDescription || projectIdea,
-          methodology: parsed.methodology || 'agile',
+          methodology: parsed.methodology || 'inclufy',
           objectives: parsed.suggestedObjectives || '',
           duration: parsed.suggestedDuration?.toString().replace(/[^0-9]/g, '') || '3',
           budget: parsed.suggestedBudget?.toString() || '',

@@ -1151,6 +1151,104 @@ Change Control:
       ],
     },
     {
+      id: 'wf-l7b',
+      title: 'Baselines & Earned Value Management (EVM)',
+      titleNL: 'Baselines & Earned Value Management (EVM)',
+      duration: '18:00',
+      type: 'video',
+      videoUrl: '',
+      transcript: `In een predictief Waterfall-project meet je voortgang niet op gevoel,
+maar tegen een vastgelegde baseline. Earned Value Management (EVM) is de techniek
+die scope, planning en kosten in één samenhangend beeld brengt.
+
+**De Baseline als Meetlat**
+
+Na sign-off leg je drie baselines vast:
+- **Scope baseline** — de WBS + deliverables die zijn goedgekeurd
+- **Schedule baseline** — de goedgekeurde planning (start/eind per fase)
+- **Cost baseline** — het tijdgefaseerde budget (de geplande uitgaven over de tijd)
+
+Een baseline is bewust **immutable**: hij verandert alleen via formele Change Control
+(zie de vorige les). Zonder een vaste baseline is "voor of achter op schema"
+betekenisloos — je hebt geen referentie om tegen te meten.
+
+**De Drie Kern-Metingen**
+
+EVM rust op drie waarden, allemaal in dezelfde eenheid (geld of uren):
+
+- **PV (Planned Value)** — de waarde van het werk dat je op dit moment *gepland* had af te ronden (ook wel BCWS).
+- **EV (Earned Value)** — de waarde van het werk dat je *werkelijk* hebt afgerond, gewaardeerd tegen het budget (BCWP). EV = % voltooid × totaal budget.
+- **AC (Actual Cost)** — wat je werkelijk hebt *uitgegeven* om dat werk te realiseren (ACWP).
+
+**Variances: Voor of Achter, Onder of Over**
+
+- **SV (Schedule Variance)** = EV − PV. Positief = voor op schema; negatief = achter.
+- **CV (Cost Variance)** = EV − AC. Positief = onder budget; negatief = over budget.
+
+**Performance Indices: de Kerngetallen**
+
+Indices normaliseren variances naar een ratio rond 1,0:
+
+- **SPI (Schedule Performance Index)** = EV / PV
+- **CPI (Cost Performance Index)** = EV / AC
+
+Interpretatie:
+- **= 1,0** → exact op plan
+- **> 1,0** → beter dan plan (voor op schema / onder budget)
+- **< 1,0** → slechter dan plan (achter / over budget)
+
+Voorbeeld: CPI = 0,80 betekent dat je voor elke bestede euro maar €0,80 aan
+gewaardeerd werk terugkrijgt — 20% kostenoverschrijding.
+
+**Vooruitkijken: Forecasting**
+
+EVM laat je ook *vooruit* rekenen:
+- **EAC (Estimate at Completion)** = BAC / CPI — wat het project naar verwachting in totaal gaat kosten (BAC = Budget at Completion).
+- **ETC (Estimate to Complete)** = EAC − AC — wat je nog moet uitgeven.
+- **VAC (Variance at Completion)** = BAC − EAC — verwachte afwijking bij oplevering.
+
+Een dalende CPI vroeg in het project is een vroegtijdig waarschuwingssignaal:
+de eindkosten lopen uit voordat de overschrijding zichtbaar wordt in de kasstroom.
+
+**EVM in ProjeXtPal**
+
+Op het Waterfall-dashboard in ProjeXtPal worden **CPI en SPI automatisch berekend**
+uit de werkelijke kosten en de voltooiingsstatus van je fasen en taken — je hoeft de
+indices niet met de hand bij te houden. Zo zie je per stage direct of je binnen
+toleranties blijft, en koppelt EVM terug aan Gate Reviews (een rode CPI/SPI is input
+voor de go/no-go-beslissing) en aan Change Control (een goedgekeurde wijziging
+her-baselinet de cost- en schedule-baseline).
+
+**Samenvatting**
+
+EVM zet voortgang om in objectieve, vergelijkbare getallen:
+- Meet altijd tegen een vastgelegde, change-controlled baseline
+- EV is de spil: werkelijk gerealiseerde waarde tegen budget
+- SPI < 1 = achter op schema; CPI < 1 = over budget
+- EAC/ETC/VAC vertalen de huidige prestatie naar een eindprognose`,
+      keyTakeaways: [
+        'Progress is measured against an immutable, change-controlled baseline',
+        'EV (Earned Value) is the pivot: realised work valued at budget',
+        'SPI = EV/PV and CPI = EV/AC; below 1.0 means behind / over budget',
+        'EAC, ETC and VAC forecast the final cost from current performance',
+        'ProjeXtPal computes CPI/SPI automatically and feeds them to gate reviews',
+      ],
+      keyTakeawaysNL: [
+        'Voortgang wordt gemeten tegen een immutable, change-controlled baseline',
+        'EV (Earned Value) is de spil: gerealiseerd werk gewaardeerd tegen budget',
+        'SPI = EV/PV en CPI = EV/AC; onder 1,0 betekent achter / over budget',
+        'EAC, ETC en VAC voorspellen de eindkosten vanuit de huidige prestatie',
+        'ProjeXtPal berekent CPI/SPI automatisch en voedt daarmee de gate reviews',
+      ],
+      keyTakeawaysEN: [
+        'Progress is measured against an immutable, change-controlled baseline',
+        'EV (Earned Value) is the pivot: realised work valued at budget',
+        'SPI = EV/PV and CPI = EV/AC; below 1.0 means behind / over budget',
+        'EAC, ETC and VAC forecast the final cost from current performance',
+        'ProjeXtPal computes CPI/SPI automatically and feeds them to gate reviews',
+      ],
+    },
+    {
       id: 'wf-l8',
       title: 'Combining Waterfall and Agile',
       titleNL: 'Waterfall en Agile Combineren',
@@ -1961,8 +2059,8 @@ export const waterfallCourse: Course = {
   duration: 10,
   rating: 4.6,
   students: 4521,
-  tags: ['Waterfall', 'Sequential', 'Requirements', 'Testing', 'Gate Reviews', 'Change Control'],
-  tagsNL: ['Waterfall', 'Sequentieel', 'Requirements', 'Testing', 'Gate Reviews', 'Change Control'],
+  tags: ['Waterfall', 'Sequential', 'Requirements', 'Testing', 'Gate Reviews', 'Change Control', 'EVM'],
+  tagsNL: ['Waterfall', 'Sequentieel', 'Requirements', 'Testing', 'Gate Reviews', 'Change Control', 'EVM'],
   instructor: instructors.peter,
   featured: false,
   bestseller: false,
@@ -1976,6 +2074,7 @@ export const waterfallCourse: Course = {
     'Testing levels from unit to UAT',
     'Gate Reviews and Quality Gates',
     'Change Control in sequential projects',
+    'Baselines and Earned Value Management (CPI/SPI/EAC)',
     'Hybrid approaches combining Waterfall and Agile',
   ],
   whatYouLearnNL: [
@@ -1985,6 +2084,7 @@ export const waterfallCourse: Course = {
     'Testing niveaus van unit tot UAT',
     'Gate Reviews en Quality Gates',
     'Change Control in sequentiële projecten',
+    'Baselines en Earned Value Management (CPI/SPI/EAC)',
     'Hybride aanpakken die Waterfall en Agile combineren',
   ],
   requirements: [

@@ -7,7 +7,8 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies";
-import { Loader2, Target, Users, ListChecks, Activity, Euro, Calendar, GitMerge, FileText, Settings as SettingsIcon } from "lucide-react";
+import { Loader2, Target, Users, ListChecks, Euro, Calendar, GitMerge, FileText, Settings as SettingsIcon, Workflow } from "lucide-react";
+import MethodologyFlow, { FlowStep, FlowStatus } from "@/components/MethodologyFlow";
 
 const fetchJson = async (url: string) => {
   const token = localStorage.getItem("access_token");
@@ -16,6 +17,21 @@ const fetchJson = async (url: string) => {
   return r.json();
 };
 const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
+
+const hybridStatus = (p: any): FlowStatus =>
+  p.gate_status === "complete" || (p.progress ?? 0) >= 100 ? "done" : (p.progress ?? 0) > 0 ? "active" : "todo";
+
+const buildHybridSteps = (phases: any[]): FlowStep[] =>
+  phases.map((p) => ({
+    code: (p.phase || "?").trim().slice(0, 3).toUpperCase(),
+    label: p.phase || "—",
+    purpose: p.methodology ? `Run under the ${p.methodology} methodology.` : "",
+    progress: p.progress || 0,
+    status: hybridStatus(p),
+    meta: p.methodology || undefined,
+    links: [{ label: "Phases", slug: "phases" }, { label: "Tasks", slug: "tasks" }],
+    academyHref: "/academy/course/hybrid-pm",
+  }));
 
 const HybridOverview = () => {
   const { pt } = usePageTranslations();
@@ -70,19 +86,12 @@ const HybridOverview = () => {
           <Card><CardContent className="p-4"><div className="flex items-center gap-2 mb-1"><Calendar className="h-4 w-4 text-muted-foreground" /><p className="text-sm text-muted-foreground">{pt("Target End")}</p></div><p className="text-base font-semibold">{targetEnd || "—"}</p></CardContent></Card>
         </div>
 
-        <Card><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2"><Activity className="h-4 w-4" /> {pt("Phase Progress")}</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2"><Workflow className="h-4 w-4 text-pink-500" /> {pt("Phase Flow")}</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center justify-between mb-2"><span className="text-sm text-muted-foreground">{pt("Overall completion")}</span><span className="text-sm font-semibold">{overallProgress}%</span></div>
             <Progress value={overallProgress} className="h-3 mb-4" />
             {phases.length > 0 && (
-              <div className="space-y-2">{phases.slice(0, 5).map((p: any) => (
-                <div key={p.id} className="flex items-center gap-3">
-                  <span className="w-32 text-sm font-medium truncate">{p.phase}</span>
-                  <Badge variant="outline" className="text-xs">{p.methodology}</Badge>
-                  <Progress value={p.progress || 0} className="h-2 flex-1" />
-                  <span className="text-xs font-medium w-10 text-right">{p.progress || 0}%</span>
-                </div>
-              ))}</div>
+              <MethodologyFlow steps={buildHybridSteps(phases)} accent="pink" onNavigate={nav} />
             )}
           </CardContent>
         </Card>

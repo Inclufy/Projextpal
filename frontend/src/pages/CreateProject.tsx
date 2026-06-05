@@ -52,7 +52,7 @@ import { MethodologyOnboardingWizard } from '@/components/MethodologyOnboardingW
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 // Types
-type ProjectMethodology = 'prince2' | 'agile' | 'scrum' | 'kanban' | 'waterfall' | 'lean_six_sigma_green' | 'lean_six_sigma_black' | 'hybrid';
+type ProjectMethodology = 'inclufy' | 'prince2' | 'agile' | 'scrum' | 'kanban' | 'waterfall' | 'lean_six_sigma_green' | 'lean_six_sigma_black' | 'hybrid';
 
 interface MethodologyOption {
   id: ProjectMethodology;
@@ -62,6 +62,7 @@ interface MethodologyOption {
   icon: React.ReactNode;
   color: string;
   bgColor: string;
+  recommended?: boolean;
 }
 
 // AI Helper function
@@ -89,6 +90,16 @@ const CreateProject = () => {
   const { pt } = usePageTranslations();
 
   const METHODOLOGIES: MethodologyOption[] = [
+    {
+      id: 'inclufy',
+      name: 'Inclufy Best Practices',
+      shortName: 'Inclufy Best Practices',
+      description: pt('Our curated, opinionated default — the proven best-of-all-methodologies blend, recommended for most teams.'),
+      icon: <Sparkles className="h-6 w-6" />,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-500',
+      recommended: true,
+    },
     {
       id: 'prince2',
       name: 'PRINCE2',
@@ -479,7 +490,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
   return (
     <div className="min-h-full bg-background">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto p-6 lg:px-10">
         {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate('/projects')} className="mb-4">
@@ -691,38 +702,45 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   </Dialog>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {METHODOLOGIES.map((methodology) => (
                     <Card
                       key={methodology.id}
                       className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
+                        "cursor-pointer transition-all hover:shadow-md flex flex-col h-full",
                         formData.methodology === methodology.id
                           ? "ring-2 ring-primary border-primary"
                           : "hover:border-primary/50"
                       )}
                       onClick={() => handleMethodologySelect(methodology.id)}
                     >
-                      <CardHeader className="pb-2 pt-4 px-4">
+                      <CardHeader className="pb-2 pt-5 px-5">
                         <div className="flex items-start justify-between">
                           <div className={cn(
-                            "p-2 rounded-lg",
+                            "p-2.5 rounded-lg",
                             methodology.bgColor + "/10"
                           )}>
                             <div className={methodology.color}>
                               {methodology.icon}
                             </div>
                           </div>
-                          {formData.methodology === methodology.id && (
-                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                              <Check className="h-3 w-3 text-primary-foreground" />
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {methodology.recommended && (
+                              <Badge className="bg-indigo-500 text-white text-[10px] px-1.5 py-0.5">
+                                {pt("Recommended")}
+                              </Badge>
+                            )}
+                            {formData.methodology === methodology.id && (
+                              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                                <Check className="h-3 w-3 text-primary-foreground" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <CardTitle className="text-base mt-2">{methodology.shortName}</CardTitle>
+                        <CardTitle className="text-lg mt-3">{methodology.shortName}</CardTitle>
                       </CardHeader>
-                      <CardContent className="px-4 pb-4">
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                      <CardContent className="px-5 pb-5 flex-1">
+                        <p className="text-sm text-muted-foreground line-clamp-3">
                           {methodology.description}
                         </p>
                       </CardContent>

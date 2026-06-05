@@ -7,10 +7,34 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, FileText, Users, Euro, TrendingUp, Zap, Sparkles, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, FileText, Users, Euro, TrendingUp, Zap, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
 
 const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
+
+// Board pipeline built from real columns. Progress per column = WIP
+// utilisation (card_count / wip_limit) where a limit is set, else the
+// column's share of all cards on the board.
+const buildKanbanSteps = (columns: any[], totalCards: number): FlowStep[] =>
+  [...columns].sort((a, b) => (a.order || 0) - (b.order || 0)).map((c) => {
+    const count = c.card_count || 0;
+    const status: FlowStep["status"] =
+      c.is_done_column || c.column_type === "done" ? "done"
+      : c.column_type === "in_progress" || c.column_type === "review" ? "active" : "todo";
+    const progress = c.wip_limit ? Math.min(100, Math.round((count / c.wip_limit) * 100))
+      : totalCards > 0 ? Math.round((count / totalCards) * 100) : 0;
+    return {
+      code: (c.name || "?").trim().slice(0, 4).toUpperCase(),
+      label: c.name || "—",
+      purpose: c.wip_limit ? `Cards in this column, limited to a WIP of ${c.wip_limit}.` : "Cards currently in this column.",
+      progress,
+      status,
+      meta: c.wip_limit ? `${count} / WIP ${c.wip_limit}` : `${count} ${count === 1 ? "card" : "cards"}`,
+      links: [{ label: "Board", slug: "board" }, { label: "WIP Limits", slug: "wip-limits" }],
+      academyHref: "/academy/course/kanban-practitioner",
+    };
+  });
 
 const KanbanOverview = () => {
   const { pt } = usePageTranslations();
@@ -81,10 +105,10 @@ const KanbanOverview = () => {
         </div>
 
         {d.columns?.length > 0 && (
-          <Card><CardHeader className="pb-3"><CardTitle>Column Distribution</CardTitle></CardHeader><CardContent className="space-y-3">
-            {d.columns.map((c: any) => (
-              <div key={c.id || c.name} className="flex items-center gap-4"><span className="w-32 text-sm font-medium truncate">{c.name}</span><div className="flex-1"><Progress value={d.total_cards > 0 ? (c.card_count / d.total_cards) * 100 : 0} className="h-3" /></div><span className="text-sm w-8 text-right">{c.card_count || 0}</span>{c.wip_limit && <Badge variant="outline" className="text-xs">WIP: {c.wip_limit}</Badge>}</div>
-            ))}
+          <Card><CardHeader className="pb-3 flex-row items-center justify-between space-y-0"><CardTitle className="flex items-center gap-2 text-base"><Workflow className="h-5 w-5 text-violet-600" /> {pt("Board Flow")}</CardTitle>
+            <button type="button" onClick={() => navigate("/academy/course/kanban-practitioner")} className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-300" title={pt("Open the Kanban course in the Academy")}><GraduationCap className="h-3.5 w-3.5" /> {pt("Kanban course")}</button>
+          </CardHeader><CardContent>
+            <MethodologyFlow steps={buildKanbanSteps(d.columns, d.total_cards || 0)} accent="violet" onNavigate={nav} />
           </CardContent></Card>
         )}
 

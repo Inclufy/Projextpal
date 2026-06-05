@@ -7,7 +7,8 @@ from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
-    AgileBudget, AgileBudgetItem, AgileFlowConfig, AgileDodEntry
+    AgileBudget, AgileBudgetItem, AgileFlowConfig, AgileDodEntry,
+    StakeholderFeedback
 )
 
 User = get_user_model()
@@ -232,6 +233,28 @@ class AgileRetroItemSerializer(serializers.ModelSerializer):
             'assignee', 'assignee_name', 'status', 'created_by', 'created_by_name'
         ]
         read_only_fields = ['created_by']
+
+
+class StakeholderFeedbackSerializer(serializers.ModelSerializer):
+    iteration_name = serializers.CharField(source='iteration.name', read_only=True)
+    backlog_item_title = serializers.CharField(source='backlog_item.title', read_only=True, allow_null=True)
+    sentiment_display = serializers.CharField(source='get_sentiment_display', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = StakeholderFeedback
+        fields = [
+            'id', 'iteration', 'iteration_name', 'backlog_item', 'backlog_item_title',
+            'stakeholder_name', 'stakeholder_role', 'sentiment', 'sentiment_display',
+            'rating', 'feedback', 'follow_up_action', 'follow_up_done',
+            'created_by', 'created_by_name', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_by', 'created_at', 'updated_at']
+
+    def validate_rating(self, value):
+        if value is not None and not (1 <= value <= 5):
+            raise serializers.ValidationError('Rating must be between 1 and 5.')
+        return value
 
 
 class AgileRetrospectiveSerializer(serializers.ModelSerializer):

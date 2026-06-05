@@ -104,6 +104,73 @@ class ProgramIncrementViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
+    @action(detail=True, methods=['post'], url_path='commit')
+    def commit(self, request, *args, **kwargs):
+        """Advance the PI through its state machine, enforcing the SAFe gates.
+
+        planning → active   requires PI Planning to have produced a real
+            commitment: at least one committed objective carrying business value,
+            and every cross-team dependency triaged with a ROAM disposition.
+        active → completed   requires the PI to have actually closed out: a
+            System Demo held and an Inspect & Adapt predictability snapshot taken.
+
+        Returns 409 {code: pi_commit_blocked, blockers:[...]} when a gate fails,
+        so the state never advances on an empty PI.
+        """
+        pi = self.get_object()
+        blockers = []
+
+        if pi.status == 'planning':
+            if not pi.objectives.filter(committed=True, business_value__gt=0).exists():
+                blockers.append(
+                    "PI Planning has not produced a commitment: add at least one "
+                    "committed objective with business value > 0."
+                )
+            untriaged = pi.dependencies.filter(roam='').count()
+            if untriaged:
+                blockers.append(
+                    f"{untriaged} dependency(ies) are untriaged — assign a ROAM "
+                    "disposition (Resolved/Owned/Accepted/Mitigated) before committing."
+                )
+            if blockers:
+                return Response(
+                    {'code': 'pi_commit_blocked',
+                     'detail': 'PI cannot be committed.', 'blockers': blockers},
+                    status=409,
+                )
+            pi.status = 'active'
+            pi.save(update_fields=['status', 'updated_at'])
+            return Response(self.get_serializer(pi).data, status=200)
+
+        if pi.status == 'active':
+            if not pi.system_demos.exists():
+                blockers.append(
+                    "No System Demo has been held — hold the System Demo before closing the PI."
+                )
+            try:
+                ia = pi.inspect_adapt
+            except InspectAdapt.DoesNotExist:
+                ia = None
+            if ia is None or ia.predictability is None:
+                blockers.append(
+                    "Inspect & Adapt predictability has not been snapshotted — "
+                    "run the I&A snapshot before closing the PI."
+                )
+            if blockers:
+                return Response(
+                    {'code': 'pi_commit_blocked',
+                     'detail': 'PI cannot be completed.', 'blockers': blockers},
+                    status=409,
+                )
+            pi.status = 'completed'
+            pi.save(update_fields=['status', 'updated_at'])
+            return Response(self.get_serializer(pi).data, status=200)
+
+        return Response(
+            {'code': 'pi_already_completed', 'detail': 'This PI is already completed.'},
+            status=409,
+        )
+
 
 class PIObjectiveViewSet(viewsets.ModelViewSet):
     serializer_class = PIObjectiveSerializer
@@ -120,6 +187,23 @@ class PIObjectiveViewSet(viewsets.ModelViewSet):
         if pi_id:
             queryset = queryset.filter(pi_id=pi_id)
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        # PI Objectives come out of PI Planning — block creation until the PI
+        # Planning event is on the calendar (pi_planning_date set).
+        pi_id = self.kwargs.get('pi_id') or request.data.get('pi')
+        if pi_id:
+            pi = ProgramIncrement.objects.filter(
+                id=pi_id, program__company=_get_company(request.user)
+            ).first()
+            if pi and not pi.pi_planning_date:
+                return Response(
+                    {'code': 'pi_planning_required',
+                     'detail': 'PI Objectives are committed during PI Planning — '
+                               'set the PI Planning date before adding objectives.'},
+                    status=409,
+                )
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         pi_id = self.kwargs.get('pi_id')
@@ -164,6 +248,24 @@ class FeatureViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(features, many=True)
         return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        # Features may sit in the funnel with no PI (pi=null). But the moment a
+        # feature is planned INTO a PI, that planning must have happened — gate
+        # on pi_planning_date. Funnel features (no pi) are unrestricted.
+        pi_id = self.kwargs.get('pi_id') or request.data.get('pi')
+        if pi_id:
+            pi = ProgramIncrement.objects.filter(
+                id=pi_id, program__company=_get_company(request.user)
+            ).first()
+            if pi and not pi.pi_planning_date:
+                return Response(
+                    {'code': 'pi_planning_required',
+                     'detail': 'Features are pulled into a PI during PI Planning — '
+                               'set the PI Planning date before planning features in.'},
+                    status=409,
+                )
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         pi_id = self.kwargs.get('pi_id')
@@ -285,6 +387,13 @@ class InspectAdaptViewSet(viewsets.ModelViewSet):
         pi = ProgramIncrement.objects.filter(id=pi_id, program__company=company).first()
         if not pi:
             return Response({'detail': 'PI not found.', 'code': 'pi_not_found'}, status=404)
+        if pi.status == 'planning':
+            return Response(
+                {'code': 'pi_not_started',
+                 'detail': 'Inspect & Adapt runs at PI close — the PI must be '
+                           'active before predictability can be snapshotted.'},
+                status=409,
+            )
         planned = sum(o.business_value for o in pi.objectives.all())
         actual = sum(o.actual_value for o in pi.objectives.all())
         predictability = round(actual / planned * 100) if planned > 0 else None
@@ -292,6 +401,23 @@ class InspectAdaptViewSet(viewsets.ModelViewSet):
         ia.predictability = predictability
         ia.save(update_fields=['predictability', 'updated_at'])
         return Response(InspectAdaptSerializer(ia).data, status=200)
+
+    def create(self, request, *args, **kwargs):
+        # Inspect & Adapt is the PI-close event — a PI still in planning has
+        # nothing to inspect. Gate creation on the PI having actually started.
+        pi_id = self.kwargs.get('pi_id') or request.data.get('pi')
+        if pi_id:
+            pi = ProgramIncrement.objects.filter(
+                id=pi_id, program__company=_get_company(request.user)
+            ).first()
+            if pi and pi.status == 'planning':
+                return Response(
+                    {'code': 'pi_not_started',
+                     'detail': 'Inspect & Adapt runs at PI close — the PI must be '
+                               'active before it can be inspected.'},
+                    status=409,
+                )
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         pi_id = self.kwargs.get('pi_id')

@@ -12,6 +12,7 @@ from .views import (
     ApprovalStageViewSet,
     UploadViewSet,
     RiskViewSet,
+    RiskForecastViewSet,
     ManualMitigationViewSet,
     ProjectEventViewSet,
     TimeEntryViewSet,
@@ -39,6 +40,7 @@ router.register(r"project-financials", ProjectFinancialsViewSet, basename="proje
 router.register(r"approval-stages", ApprovalStageViewSet, basename="approval-stage")
 router.register(r"uploads", UploadViewSet, basename="upload")
 router.register(r"risks", RiskViewSet, basename="risk")
+router.register(r"risk-forecasts", RiskForecastViewSet, basename="risk-forecast")
 router.register(r"manual-mitigations", ManualMitigationViewSet, basename="manual-mitigation")
 router.register(r"events", ProjectEventViewSet, basename="event")
 router.register(r"time-entries", TimeEntryViewSet, basename="time-entry")

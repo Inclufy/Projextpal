@@ -1148,29 +1148,127 @@ Agile transformatie:
       ],
     },
     {
+      id: 'ag-l8b',
+      title: 'Agile as a Flow System: Product Goal, Iterations & WIP',
+      titleNL: 'Agile als Flow-systeem: Product Goal, Iteraties & WIP',
+      duration: '20:00',
+      type: 'video',
+      videoUrl: '',
+      transcript: `Scrum is één framework binnen Agile — het is niet hetzelfde als Agile.
+Generieke Agile is breder en kun je het best begrijpen als een **flow-systeem**: werk
+stroomt continu van idee naar geleverde waarde, gestuurd door een doel en begrensd door
+capaciteit. In deze les zetten we Agile neer als flow, niet als een verzameling Scrum-
+ceremonies — precies zoals ProjeXtPal's Agile-module is opgebouwd.
+
+**Eén Richtpunt: het Product Goal**
+
+Een Agile-team convergeert niet op losse sprints maar op één **Product Goal**: het
+volgende betekenisvolle doel waar al het werk naartoe werkt. Het Product Goal geeft de
+backlog richting — elk item verdient zijn plek door bij te dragen aan dat doel. Pas als
+een Product Goal is bereikt, kies je het volgende.
+
+**Discovery: Vision & Personas**
+
+Voordat je bouwt, maak je expliciet vóór wie en waarom:
+- **Product Vision** — de lange-termijn waarom, in één paragraaf
+- **Personas** — de gebruikers wiens behoeften de waarde bepalen
+
+Discovery is geen eenmalige fase; je keert terug naarmate je leert.
+
+**Iteraties als Cadans, niet als Mini-watervallen**
+
+Een iteratie is een vaste cadans (bijv. 2 weken) waarin het team een coherent stuk
+waarde levert. Het verschil met Scrum-sprints: de iteratie is hier een **timebox om
+flow te meten**, niet een rituele container met een vaste set ceremonies. Je trekt werk
+de iteratie in wanneer er capaciteit is — je duwt het er niet vooraf volledig in.
+
+**WIP-limieten: het Hart van Flow**
+
+Het bepalende mechanisme is **Work In Progress (WIP)-limieten**: een expliciete cap op
+hoeveel items tegelijk "in uitvoering" mogen zijn. WIP-limieten:
+- Leggen knelpunten bloot (waar stapelt werk zich op?)
+- Verminderen context-switching
+- Creëren een **pull-systeem**: nieuw werk start alleen als er capaciteit vrijkomt
+
+In ProjeXtPal blokkeert het Iteration Board het binnentrekken van een nieuw item zodra
+de WIP-limiet is bereikt — de limiet is een echte rem, geen suggestie.
+
+**Definition of Done als Flow-poort**
+
+Werk verlaat de "uitvoering"-kolom pas als het voldoet aan de **Definition of Done
+(DoD)**. De DoD is geen checklist achteraf maar een **poort in de flow**: een item dat
+niet aan de DoD voldoet, telt niet als klaar en blijft WIP innemen. Zo voorkom je
+"99% klaar"-werk dat nooit echt oplevert.
+
+**De Verbeterloop: Retrospective → Herprioritering**
+
+Aan het eind van een iteratie kijkt het team terug (retrospective) en — cruciaal —
+**voedt de uitkomst terug in de backlog**: nieuwe inzichten herprioriteren wat
+vervolgens wordt opgepakt. De loop sluit: leveren → leren → herprioriteren → leveren.
+Dit is "responding to change" in de praktijk, niet als slogan.
+
+**Flow-metrics**
+
+Omdat werk stroomt, meet je flow:
+- **Cycle time** — hoe lang een item van start tot done doet
+- **Throughput** — hoeveel items per iteratie opleveren
+- **WIP** — hoeveel items tegelijk onderhanden zijn (Little's Law: cycle time ≈ WIP / throughput)
+
+**Samenvatting**
+
+Generieke Agile als flow-systeem:
+- Convergeert op een **Product Goal**, geïnformeerd door Vision + Personas
+- Gebruikt iteraties als cadans en **WIP-limieten** als pull-mechanisme
+- Behandelt de **DoD als een poort**, niet als nacontrole
+- Sluit de loop met retrospective → backlog-herprioritering
+- Meet **cycle time, throughput en WIP** in plaats van alleen velocity`,
+      keyTakeaways: [
+        'Scrum is one framework; generic Agile is best understood as a flow system',
+        'The team converges on a single Product Goal, informed by Vision + Personas',
+        'WIP limits create a pull system and are enforced, not advisory',
+        'The Definition of Done is a flow gate, not an after-the-fact checklist',
+        'The improvement loop closes: retrospective feeds backlog reprioritisation',
+      ],
+      keyTakeawaysNL: [
+        'Scrum is één framework; generieke Agile begrijp je het best als flow-systeem',
+        'Het team convergeert op één Product Goal, geïnformeerd door Vision + Personas',
+        'WIP-limieten creëren een pull-systeem en worden afgedwongen, niet gesuggereerd',
+        'De Definition of Done is een flow-poort, geen nacontrole achteraf',
+        'De verbeterloop sluit: retrospective voedt backlog-herprioritering',
+      ],
+      keyTakeawaysEN: [
+        'Scrum is one framework; generic Agile is best understood as a flow system',
+        'The team converges on a single Product Goal, informed by Vision + Personas',
+        'WIP limits create a pull system and are enforced, not advisory',
+        'The Definition of Done is a flow gate, not an after-the-fact checklist',
+        'The improvement loop closes: retrospective feeds backlog reprioritisation',
+      ],
+    },
+    {
       id: 'ag-l-assignment',
-      title: 'Praktijkopdracht: Sprint Planning & Daily Standup',
-      titleNL: 'Praktijkopdracht: Sprint Planning & Daily Standup',
+      title: 'Praktijkopdracht: Ontwerp een Agile Flow met Product Goal & WIP',
+      titleNL: 'Praktijkopdracht: Ontwerp een Agile Flow met Product Goal & WIP',
       duration: '60:00',
       type: 'assignment',
       requires_admin_approval: true,
       assignment: {
-        title: 'Faciliteer Sprint Planning en ontwerp een Daily Standup voor een 5-koppig team',
-        description: `Je bent Scrum Master van een nieuw Agile-team van 5 personen dat voor het eerst sprint planning gaat uitvoeren. Het product is een intern klantportaal; de Product Owner heeft een eerste Product Backlog opgesteld met 20 items.
+        title: 'Ontwerp een flow-gebaseerde Agile-werkwijze voor een 5-koppig team',
+        description: `Je bent Agile-coach van een nieuw team van 5 personen dat een intern klantportaal bouwt. In plaats van Scrum-ceremonies te kopiëren, zet je het werk op als een flow-systeem — precies zoals de Agile-module in ProjeXtPal: Discovery → Product Goal → een WIP-gelimiteerd Iteration Board → Definition of Done als poort → retrospective die de backlog herprioriteert.
 
-Gebruik de kennis uit de cursus om de volgende sprint-artefacten op te stellen.`,
+Gebruik de kennis uit de cursus (in het bijzonder "Agile als Flow-systeem") om de volgende artefacten op te stellen.`,
         deliverables: [
-          'Sprint Goal: één heldere zin die het doel van de sprint beschrijft (SMART, max. 40 woorden)',
-          'Sprint Backlog: 5-8 user stories met acceptatiecriteria (INVEST-format), geprioriteerd op businesswaarde',
-          'Definition of Done: 3-5 criteria die gelden voor alle stories in deze sprint',
-          'Daily Standup-script: template met de 3 vragen, timebox, en anti-patroon-waarschuwingen',
+          'Product Goal: één helder doel (max. 40 woorden) plus een korte Product Vision en 2 personas die het doel onderbouwen',
+          'Iteration Board-ontwerp: de kolommen/workflowstadia met een expliciete WIP-limiet per stadium, en de pull-regel die beschrijft wanneer een item de volgende kolom in mag',
+          'Definition of Done: 3-5 controleerbare criteria, geformuleerd als poort (een item dat niet voldoet, blijft WIP innemen)',
+          'Verbeterloop: hoe de retrospective-uitkomsten concreet de backlog herprioriteren (geef een voorbeeld van één inzicht → één herprioritering)',
+          'Flow-metrics: welke metrics (cycle time, throughput, WIP) je bijhoudt en welke beslissing elk metric stuurt',
         ],
         rubric: [
-          { criterion: 'Sprint Goal concreet, meetbaar en team-gedragen', points: 20 },
-          { criterion: 'User stories voldoen aan INVEST-criteria', points: 25 },
-          { criterion: 'DoD realistisch en controleerbaar (geen vage criteria)', points: 20 },
-          { criterion: 'Daily Standup-script bruikbaar en tijdsbewust', points: 20 },
-          { criterion: 'Consistente Agile-terminologie en taal', points: 15 },
+          { criterion: 'Product Goal concreet en gedragen, met Vision + personas die het onderbouwen', points: 20 },
+          { criterion: 'WIP-limieten expliciet per stadium met een werkende pull-regel', points: 25 },
+          { criterion: 'DoD als echte poort geformuleerd (geen vage nacontrole)', points: 20 },
+          { criterion: 'Verbeterloop sluit: retrospective → backlog-herprioritering aangetoond', points: 20 },
+          { criterion: 'Juiste flow-terminologie en metrics (cycle time/throughput/WIP)', points: 15 },
         ],
         submission_format: 'markdown',
       },
@@ -1196,6 +1294,7 @@ Gebruik de kennis uit de cursus om de volgende sprint-artefacten op te stellen.`
 - Agile Frameworks (Scrum, Kanban, XP, SAFe)
 - User Stories en INVEST
 - Agile schatten (Story Points, Planning Poker)
+- Agile als flow-systeem: Product Goal, iteraties, WIP-limieten, DoD als poort
 - Agile Transformatie
 
 Succes!`,
@@ -1676,8 +1775,8 @@ export const agileFundamentalsCourse: Course = {
   id: 'agile-fundamentals',
   title: 'Agile Fundamentals',
   titleNL: 'Agile Fundamentals',
-  description: 'The mindset and principles behind Agile. Understand the Manifesto, 12 principles, and choose the right framework for your context.',
-  descriptionNL: 'De mindset en principes achter Agile. Begrijp het Manifesto, de 12 principes en kies het juiste framework voor jouw context.',
+  description: 'The mindset and principles behind Agile. Understand the Manifesto, 12 principles, run Agile as a flow system (Product Goal, iterations, WIP limits), and choose the right framework for your context.',
+  descriptionNL: 'De mindset en principes achter Agile. Begrijp het Manifesto, de 12 principes, draai Agile als flow-systeem (Product Goal, iteraties, WIP-limieten) en kies het juiste framework voor jouw context.',
   icon: Zap,
   color: BRAND.orange,
   gradient: `linear-gradient(135deg, ${BRAND.orange}, #EA580C)`,
@@ -1688,8 +1787,8 @@ export const agileFundamentalsCourse: Course = {
   duration: 8,
   rating: 4.8,
   students: 6234,
-  tags: ['Agile', 'Manifesto', 'Principles', 'Mindset', 'User Stories', 'Transformation'],
-  tagsNL: ['Agile', 'Manifesto', 'Principes', 'Mindset', 'User Stories', 'Transformatie'],
+  tags: ['Agile', 'Manifesto', 'Principles', 'Mindset', 'User Stories', 'Flow', 'WIP', 'Product Goal', 'Transformation'],
+  tagsNL: ['Agile', 'Manifesto', 'Principes', 'Mindset', 'User Stories', 'Flow', 'WIP', 'Product Goal', 'Transformatie'],
   instructor: instructors.martijn,
   featured: true,
   bestseller: false,
@@ -1702,6 +1801,7 @@ export const agileFundamentalsCourse: Course = {
     'Overview of Agile frameworks: Scrum, Kanban, XP, SAFe',
     'How to write effective User Stories (INVEST)',
     'Agile estimation with Story Points and Planning Poker',
+    'Running Agile as a flow system: Product Goal, iterations, WIP limits, DoD as a gate',
     'How to successfully transform to Agile',
   ],
   whatYouLearnNL: [
@@ -1710,6 +1810,7 @@ export const agileFundamentalsCourse: Course = {
     'Overzicht van Agile frameworks: Scrum, Kanban, XP, SAFe',
     'Hoe effectieve User Stories te schrijven (INVEST)',
     'Agile schatten met Story Points en Planning Poker',
+    'Agile draaien als flow-systeem: Product Goal, iteraties, WIP-limieten, DoD als poort',
     'Hoe succesvol te transformeren naar Agile',
   ],
   requirements: [

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -154,6 +155,20 @@ const reportTemplateKeys = [
     aiPowered: true,
   },
 
+  // Methodology doctrine reports — generated per-project from live data
+  // (Sprint Report, Service Delivery Review, Tollgate, Phase Gate, Highlight…).
+  // This gallery is org-wide, so the card routes into the project list where
+  // each project exposes its own doctrine report surface.
+  {
+    id: "methodology-reports",
+    titleKey: "Methodology Reports",
+    descKey: "Doctrine status reports (Sprint, Tollgate, Phase Gate, Highlight…) generated inside each project from its live methodology data",
+    icon: FileText,
+    category: "project",
+    roles: ["pm", "program_manager", "admin", "superadmin"],
+    aiPowered: true,
+  },
+
   // Scheduled Reports
   {
     id: "weekly-summary",
@@ -168,6 +183,7 @@ const reportTemplateKeys = [
 
 const ReportsPage: React.FC = () => {
   const { pt } = usePageTranslations();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -340,7 +356,7 @@ const ReportsPage: React.FC = () => {
                       <CardContent>
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => handleGenerateReport(report.id)}
+                            onClick={() => report.id === "methodology-reports" ? navigate("/projects") : handleGenerateReport(report.id)}
                             disabled={isGenerating}
                             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl"
                           >
@@ -352,7 +368,7 @@ const ReportsPage: React.FC = () => {
                             ) : (
                               <>
                                 <FileText className="h-4 w-4 mr-2" />
-                                {pt("Generate")}
+                                {report.id === "methodology-reports" ? pt("Open in project") : pt("Generate")}
                               </>
                             )}
                           </Button>

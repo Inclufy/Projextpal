@@ -2,12 +2,12 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare, 
   GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText, 
   Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers, 
-  GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, 
+  GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, Sparkles,
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -64,8 +64,8 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           title: "Program Increments",
           icon: Repeat,
           items: [
-            { title: "Current PI", url: `/programs/${programId}/pi/current`, icon: Target },
             { title: "PI Planning", url: `/programs/${programId}/pi/planning`, icon: Calendar },
+            { title: "Current PI", url: `/programs/${programId}/pi/current`, icon: Target },
             { title: "PI Objectives", url: `/programs/${programId}/pi/objectives`, icon: CheckSquare },
             { title: "Features", url: `/programs/${programId}/features`, icon: ListChecks },
           ],
@@ -354,6 +354,7 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
       { title: "Workflow Diagram", url: `/projects/${projectId}/planning/workflow-diagram`, icon: GitBranch },
       { title: "System Integration", url: `/projects/${projectId}/planning/system-integration`, icon: Layers },
       { title: "Risks", url: `/projects/${projectId}/planning/risks`, icon: Shield },
+      { title: "AI Risk Forecast", url: `/projects/${projectId}/risk-forecast`, icon: Brain },
     ],
   },
   {
@@ -368,6 +369,7 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
         subItems: [
           { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
           { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
+          { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
           { title: "Meeting", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
           { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
         ],
@@ -395,6 +397,33 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
     ],
   },
 ];
+
+// Central, methodology-agnostic status-reporting group. The dedicated
+// methodology sidebars (prince2/scrum/…) only carry their own DOCTRINE report
+// (Highlight Report, Sprint Report, …); this group surfaces the shared central
+// status-reporting layer so "where is the status report?" has one consistent
+// answer across every methodology. The Foundation/Inclufy nav already includes
+// this under Execution & Governance, so it is appended only for the dedicated
+// methodologies below.
+const centralReportingGroup = (projectId: string) => ({
+  id: "central-reporting",
+  title: "Status Reporting",
+  icon: Activity,
+  items: [
+    { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
+    { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
+    { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
+    { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
+    { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+  ],
+});
+
+// Slugs that get a dedicated methodology sidebar (not the Foundation fallback,
+// which already carries the central reporting group).
+const DEDICATED_METHODOLOGIES = new Set([
+  "scrum", "kanban", "prince2", "lean_six_sigma_green", "lean_six_sigma_black",
+  "agile", "waterfall", "hybrid",
+]);
 
 // Methodology-specific sidebar configurations for projects
 const getMethodologyPhases = (projectId: string, methodology: string | null) => {
@@ -429,6 +458,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
             { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
+            { title: "Sprint Reports", url: `/projects/${projectId}/scrum/reports`, icon: FileBarChart },
           ],
         },
         {
@@ -477,6 +507,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Metrics Dashboard", url: `/projects/${projectId}/kanban/metrics`, icon: Gauge },
             { title: "Cumulative Flow", url: `/projects/${projectId}/kanban/cfd`, icon: BarChart3 },
+            { title: "Service Delivery Review", url: `/projects/${projectId}/kanban/reports`, icon: FileBarChart },
           ],
         },
         {
@@ -629,6 +660,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "SPC Charts", url: `/projects/${projectId}/control/spc`, icon: BarChart3 },
             { title: "Monitoring", url: `/projects/${projectId}/control/monitoring`, icon: Activity },
             { title: "Tollgate Review", url: `/projects/${projectId}/control/tollgate`, icon: CheckSquare },
+            { title: "Tollgate Reports", url: `/projects/${projectId}/${lssBase}/reports`, icon: FileBarChart },
             { title: "Closure", url: `/projects/${projectId}/control/closure`, icon: Award },
           ],
         },
@@ -681,7 +713,9 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Velocity", url: `/projects/${projectId}/agile/velocity`, icon: TrendingUp },
             { title: "Retrospective", url: `/projects/${projectId}/agile/retrospective`, icon: Lightbulb },
+            { title: "Stakeholder Feedback", url: `/projects/${projectId}/agile/stakeholder-feedback`, icon: MessagesSquare },
             { title: "Definition of Done", url: `/projects/${projectId}/agile/definition-of-done`, icon: CheckSquare },
+            { title: "Iteration Reports", url: `/projects/${projectId}/agile/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -731,6 +765,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Risks", url: `/projects/${projectId}/waterfall/risks`, icon: Shield },
             { title: "Issues", url: `/projects/${projectId}/waterfall/issues`, icon: AlertCircle },
             { title: "Deliverables", url: `/projects/${projectId}/waterfall/deliverables`, icon: Package },
+            { title: "Phase Gate Reports", url: `/projects/${projectId}/waterfall/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -747,6 +782,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Tasks", url: `/projects/${projectId}/hybrid/tasks`, icon: ListChecks },
             { title: "Timeline", url: `/projects/${projectId}/hybrid/timeline`, icon: Calendar },
             { title: "Artifacts", url: `/projects/${projectId}/hybrid/artifacts`, icon: FileText },
+            { title: "Phase Reports", url: `/projects/${projectId}/hybrid/reports`, icon: FileBarChart },
             { title: "Configuration", url: `/projects/${projectId}/hybrid/configuration`, icon: Settings },
           ],
         },
@@ -1015,7 +1051,14 @@ export function AppSidebar() {
   const programMethodology = isProgramContext ? (program?.methodology || 'hybrid') : null;
   const programMethodologyBadge = isProgramContext ? getMethodologyBadge(programMethodology) : null;
   
-  const projectPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];
+  const projectPhases = projectId
+    ? [
+        ...getMethodologyPhases(projectId, methodology),
+        ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
+          ? [centralReportingGroup(projectId)]
+          : []),
+      ]
+    : [];
   const programPhases = programId ? getProgramPhases(programId, programMethodology) : [];
 
   // Color mapping for menu icons

@@ -74,6 +74,8 @@ const ExecutionNewsletters = lazy(() => import("./pages/ExecutionNewsletters"));
 const ExecutionStatusReporting = lazy(() => import("./pages/ExecutionStatusReporting"));
 const ExecutionMeeting = lazy(() => import("./pages/ExecutionMeeting"));
 const ExecutionReporting = lazy(() => import("./pages/ExecutionReporting"));
+const AIStatusReport = lazy(() => import("./pages/AIStatusReport"));
+const AIRiskForecast = lazy(() => import("./pages/AIRiskForecast"));
 const ExecutionGovernance = lazy(() => import("./pages/ExecutionGovernance"));
 const ExecutionDeployment = lazy(() => import("./pages/ExecutionDeployment"));
 const MonitoringAllDocuments = lazy(() => import("./pages/MonitoringAllDocuments"));
@@ -175,6 +177,7 @@ const ScrumSprintReview = lazy(() => import('@/pages/scrum/ScrumSprintReview'));
 const ScrumIncrements = lazy(() => import('@/pages/scrum/ScrumIncrements'));
 const ScrumProductGoals = lazy(() => import('@/pages/scrum/ScrumProductGoals'));
 const ScrumRetroActions = lazy(() => import('@/pages/scrum/ScrumRetroActions'));
+const ScrumSprintReport = lazy(() => import('@/pages/scrum/ScrumSprintReport'));
 
 // Kanban Pages
 const KanbanOverview = lazy(() => import('./pages/kanban/KanbanOverview'));
@@ -189,6 +192,7 @@ const KanbanContinuousImprovement = lazy(() => import('./pages/kanban/KanbanCont
 const KanbanWorkItems = lazy(() => import('./pages/kanban/KanbanWorkItems'));
 const KanbanBlockedItems = lazy(() => import('./pages/kanban/KanbanBlockedItems'));
 const KanbanWorkPolicies = lazy(() => import('./pages/kanban/KanbanWorkPolicies'));
+const KanbanServiceReview = lazy(() => import('./pages/kanban/KanbanServiceReview'));
 
 // Agile imports
 const AgileOverview = lazy(() => import('./pages/agile/AgileOverview'));
@@ -202,8 +206,10 @@ const AgileIterationBoard = lazy(() => import('./pages/agile/AgileIterationBoard
 const AgileReleasePlanning = lazy(() => import('./pages/agile/AgileReleasePlanning'));
 const AgileDailyProgress = lazy(() => import('./pages/agile/AgileDailyProgress'));
 const AgileRetrospective = lazy(() => import('./pages/agile/AgileRetrospective'));
+const AgileStakeholderFeedback = lazy(() => import('./pages/agile/AgileStakeholderFeedback'));
 const AgileVelocity = lazy(() => import('./pages/agile/AgileVelocity'));
 const AgileDefinitionOfDone = lazy(() => import('./pages/agile/AgileDefinitionOfDone'));
+const AgileIterationReport = lazy(() => import('./pages/agile/AgileIterationReport'));
 
 // LSS Green imports
 const LSSGreenOverview = lazy(() => import('./pages/lss-green/LSSGreenOverview'));
@@ -212,6 +218,7 @@ const LSSGreenTasks = lazy(() => import('./pages/lss-green/LSSGreenTasks'));
 const LSSGreenTimeline = lazy(() => import('./pages/lss-green/LSSGreenTimeline'));
 const LSSGreenMetrics = lazy(() => import('./pages/lss-green/LSSGreenMetrics'));
 const LSSGreenMeasurements = lazy(() => import('./pages/lss-green/LSSGreenMeasurements'));
+const LSSGreenTollgateReport = lazy(() => import('./pages/lss-green/LSSGreenTollgateReport'));
 
 // LSS Black imports
 const LSSBlackOverview = lazy(() => import('./pages/lss-black/LSSBlackOverview'));
@@ -222,6 +229,7 @@ const LSSBlackHypothesisTests = lazy(() => import('./pages/lss-black/LSSBlackHyp
 const LSSBlackDOE = lazy(() => import('./pages/lss-black/LSSBlackDOE'));
 const LSSBlackControlPlans = lazy(() => import('./pages/lss-black/LSSBlackControlPlans'));
 const LSSBlackSPCCharts = lazy(() => import('./pages/lss-black/LSSBlackSPCCharts'));
+const LSSBlackTollgateReport = lazy(() => import('./pages/lss-black/LSSBlackTollgateReport'));
 
 // Hybrid imports
 const HybridOverview = lazy(() => import('./pages/hybrid/HybridOverview'));
@@ -230,6 +238,7 @@ const HybridTasks = lazy(() => import('./pages/hybrid/HybridTasks'));
 const HybridTimeline = lazy(() => import('./pages/hybrid/HybridTimeline'));
 const HybridArtifacts = lazy(() => import('./pages/hybrid/HybridArtifacts'));
 const HybridConfiguration = lazy(() => import('./pages/hybrid/HybridConfiguration'));
+const HybridPhaseReport = lazy(() => import('./pages/hybrid/HybridPhaseReport'));
 
 // Waterfall imports
 const WaterfallOverview = lazy(() => import('./pages/waterfall/WaterfallOverview'));
@@ -249,6 +258,7 @@ const WaterfallRisks = lazy(() => import('./pages/waterfall/WaterfallRisks'));
 const WaterfallIssues = lazy(() => import('./pages/waterfall/WaterfallIssues'));
 const WaterfallDeliverables = lazy(() => import('./pages/waterfall/WaterfallDeliverables'));
 const WaterfallBaselines = lazy(() => import('./pages/waterfall/WaterfallBaselines'));
+const WaterfallPhaseGateReport = lazy(() => import('./pages/waterfall/WaterfallPhaseGateReport'));
 
 // ============================================
 // Admin Portal Imports
@@ -260,6 +270,7 @@ const TenantManagement = lazy(() => import('./pages/admin-portal/OrganizationMan
 const TenantProvisioning = lazy(() => import('./pages/admin-portal/TenantProvisioning'));
 const TenantEdit = lazy(() => import('./pages/admin-portal/TenantEdit'));
 const IntegrationManagement = lazy(() => import('./pages/admin-portal/IntegrationManagement'));
+const AutomationRules = lazy(() => import('./pages/admin-portal/AutomationRules'));
 const AuditLogs = lazy(() => import('./pages/admin-portal/AuditLogs'));
 const SystemSettings = lazy(() => import('./pages/admin-portal/SystemSettings'));
 const PlanManagement = lazy(() => import('@/pages/admin/PlanManagement'));
@@ -505,6 +516,7 @@ const App = () => (
                 <Route path="tenants/new" element={<TenantProvisioning />} />
                 <Route path="tenants/:id/edit" element={<TenantEdit />} />
                 <Route path="integrations" element={<IntegrationManagement />} />
+                <Route path="automation-rules" element={<AutomationRules />} />
                 <Route path="plans" element={<PlanManagement />} /> 
                 <Route path="settings" element={<SystemSettings />} />
                 <Route path="logs" element={<AuditLogs />} />
@@ -819,6 +831,7 @@ const App = () => (
               <Route path="/projects/:id/planning/workflow-diagram" element={<ProtectedPage><PlanningWorkflowDiagram /></ProtectedPage>} />
               <Route path="/projects/:id/planning/system-integration" element={<ProtectedPage><PlanningSystemIntegration /></ProtectedPage>} />
               <Route path="/projects/:id/planning/risks" element={<ProtectedPage><PlanningRisks /></ProtectedPage>} />
+              <Route path="/projects/:id/risk-forecast" element={<ProtectedPage><AIRiskForecast /></ProtectedPage>} />
               
               {/* Execution & Governance Routes */}
               <Route path="/projects/:id/execution/stakeholders" element={<ProtectedPage><ExecutionStakeholders /></ProtectedPage>} />
@@ -826,6 +839,7 @@ const App = () => (
               <Route path="/projects/:id/execution/communication/status-reporting" element={<ProtectedPage><ExecutionStatusReporting /></ProtectedPage>} />
               <Route path="/projects/:id/execution/communication/meeting" element={<ProtectedPage><ExecutionMeeting /></ProtectedPage>} />
               <Route path="/projects/:id/execution/communication/reporting" element={<ProtectedPage><ExecutionReporting /></ProtectedPage>} />
+              <Route path="/projects/:id/execution/communication/ai-status-report" element={<ProtectedPage><AIStatusReport /></ProtectedPage>} />
               <Route path="/projects/:id/execution/governance" element={<ProtectedPage><ExecutionGovernance /></ProtectedPage>} />
               <Route path="/projects/:id/execution/deployment" element={<ProtectedPage><ExecutionDeployment /></ProtectedPage>} />
               
@@ -912,6 +926,7 @@ const App = () => (
               <Route path="/projects/:id/scrum/velocity" element={<ProtectedPage><ScrumVelocity /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><ScrumDailyStandup /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><ScrumRetrospective /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/reports" element={<ProtectedPage><ScrumSprintReport /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><ScrumDefinitionOfDone /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
               <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
@@ -934,6 +949,7 @@ const App = () => (
               <Route path="/projects/:id/kanban/work-items" element={<ProtectedPage><KanbanWorkItems /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/blocked" element={<ProtectedPage><KanbanBlockedItems /></ProtectedPage>} />
               <Route path="/projects/:id/kanban/work-policies" element={<ProtectedPage><KanbanWorkPolicies /></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/reports" element={<ProtectedPage><KanbanServiceReview /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Agile Routes                                 */}
@@ -949,8 +965,10 @@ const App = () => (
               <Route path="/projects/:id/agile/release-planning" element={<ProtectedPage><AgileReleasePlanning /></ProtectedPage>} />
               <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />
               <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><AgileRetrospective /></ProtectedPage>} />
+              <Route path="/projects/:id/agile/stakeholder-feedback" element={<ProtectedPage><AgileStakeholderFeedback /></ProtectedPage>} />
               <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><AgileVelocity /></ProtectedPage>} />
               <Route path="/projects/:id/agile/definition-of-done" element={<ProtectedPage><AgileDefinitionOfDone /></ProtectedPage>} />
+              <Route path="/projects/:id/agile/reports" element={<ProtectedPage><AgileIterationReport /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Waterfall Routes                             */}
@@ -972,6 +990,7 @@ const App = () => (
               <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><WaterfallIssues /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><WaterfallDeliverables /></ProtectedPage>} />
               <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><WaterfallBaselines /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/reports" element={<ProtectedPage><WaterfallPhaseGateReport /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* LSS Green Routes                             */}
@@ -982,6 +1001,7 @@ const App = () => (
               <Route path="/projects/:id/lss-green/timeline" element={<ProtectedPage><LSSGreenTimeline /></ProtectedPage>} />
               <Route path="/projects/:id/lss-green/metrics" element={<ProtectedPage><LSSGreenMetrics /></ProtectedPage>} />
               <Route path="/projects/:id/lss-green/measurements" element={<ProtectedPage><LSSGreenMeasurements /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/reports" element={<ProtectedPage><LSSGreenTollgateReport /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* LSS Black Routes                             */}
@@ -994,6 +1014,7 @@ const App = () => (
               <Route path="/projects/:id/lss-black/doe" element={<ProtectedPage><LSSBlackDOE /></ProtectedPage>} />
               <Route path="/projects/:id/lss-black/control-plans" element={<ProtectedPage><LSSBlackControlPlans /></ProtectedPage>} />
               <Route path="/projects/:id/lss-black/spc-charts" element={<ProtectedPage><LSSBlackSPCCharts /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/reports" element={<ProtectedPage><LSSBlackTollgateReport /></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Hybrid Routes                                */}
@@ -1004,6 +1025,7 @@ const App = () => (
               <Route path="/projects/:id/hybrid/timeline" element={<ProtectedPage><HybridTimeline /></ProtectedPage>} />
               <Route path="/projects/:id/hybrid/artifacts" element={<ProtectedPage><HybridArtifacts /></ProtectedPage>} />
               <Route path="/projects/:id/hybrid/configuration" element={<ProtectedPage><HybridConfiguration /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/reports" element={<ProtectedPage><HybridPhaseReport /></ProtectedPage>} />
 
                             {/* Academy Routes */}
               <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />

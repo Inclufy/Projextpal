@@ -8,6 +8,8 @@ router.register(r'status-reports', views.StatusReportViewSet, basename='status-r
 router.register(r'training-materials', views.TrainingMaterialViewSet, basename='training-materials')
 router.register(r'reporting-items', views.ReportingItemViewSet, basename='reporting-items')
 router.register(r'meetings', views.MeetingViewSet, basename='meetings')
+router.register(r'generated-status-reports', views.GeneratedStatusReportViewSet, basename='generated-status-reports')
+router.register(r'methodology-reports', views.MethodologyReportViewSet, basename='methodology-reports')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -739,6 +739,72 @@ class ManualMitigation(models.Model):
         return f"Manual Mitigation for {self.risk.name}"
 
 
+class RiskForecast(models.Model):
+    """Predictive risk snapshot for a project (IL-1, AI Risk Copilot).
+
+    Unlike a static Risk register, this is a model-driven *forecast*: the engine
+    reads the live RAID picture (open vs closed risks, weighted exposure, the
+    rate risks are opening vs closing — "risk velocity") plus schedule-slip
+    signals, then projects exposure forward, classifies the trend, and produces
+    a confidence-graded outlook. The narrative + recommendations are synthesised
+    by Claude when configured, otherwise by a deterministic engine — both paths
+    use the same computed signals, so the prediction is reproducible. The signal
+    snapshot is persisted for audit.
+    """
+
+    TREND_CHOICES = [
+        ("rising", "Rising"),
+        ("stable", "Stable"),
+        ("falling", "Falling"),
+    ]
+    OUTLOOK_CHOICES = [
+        ("green", "Green"),
+        ("amber", "Amber"),
+        ("red", "Red"),
+    ]
+    CONFIDENCE_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
+
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="risk_forecasts",
+    )
+    as_of = models.DateField()
+    # Snapshot of the signals the forecast was computed from (auditable).
+    signals = models.JSONField(default=dict, blank=True)
+    current_exposure = models.IntegerField(default=0)
+    forecast_exposure = models.IntegerField(default=0)
+    exposure_trend = models.CharField(max_length=8, choices=TREND_CHOICES, default="stable")
+    # Net new open risks per week (positive = register growing).
+    risk_velocity = models.FloatField(default=0.0)
+    predicted_high_risks = models.IntegerField(default=0)
+    outlook = models.CharField(max_length=5, choices=OUTLOOK_CHOICES, default="green")
+    confidence = models.CharField(max_length=6, choices=CONFIDENCE_CHOICES, default="medium")
+    drivers = models.JSONField(default=list, blank=True)
+    recommendations = models.JSONField(default=list, blank=True)
+    narrative = models.TextField(blank=True, default="")
+    model_used = models.CharField(max_length=64, default="deterministic")
+    original_ai_response = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="risk_forecasts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "risk_forecasts"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Risk forecast {self.project} ({self.outlook}/{self.exposure_trend}) @ {self.as_of}"
+
+
 class ProjectTeam(models.Model):
     """Model to manage dedicated team members for each project"""
 

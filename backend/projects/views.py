@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime
+from django.shortcuts import get_object_or_404
 from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
@@ -30,6 +31,7 @@ from .models import (
     Document,
     TrainingMaterial,
     TimeEntry,
+    RiskForecast,
 )
 from .forecasting import forecast_for_active_projects, forecast_project_budget
 from .serializers import (
@@ -55,6 +57,7 @@ from .serializers import (
     TimeEntrySerializer,
     TimeEntrySummarySerializer,
     ProjectTeamWithRateSerializer,
+    RiskForecastSerializer,
 )
 
 # Operationele rollen die per definitie de hele eigen company beheren.
@@ -2010,6 +2013,66 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 {"error": f"Failed to regenerate AI mitigation: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class RiskForecastViewSet(viewsets.ReadOnlyModelViewSet):
+    """AI Risk Copilot — predictive risk forecasts (IL-1).
+
+    Read-only history + a `generate` action that runs the forecast engine for a
+    project (model-driven exposure trend + risk velocity + schedule slip) and
+    persists a snapshot. Company-scoped like the other project surfaces.
+    """
+
+    serializer_class = RiskForecastSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrPM]
+
+    def _accessible_projects(self):
+        user = self.request.user
+        qs = Project.objects.all()
+        if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+            return qs
+        return qs.filter(id__in=accessible_project_ids(user))
+
+    def get_queryset(self):
+        qs = RiskForecast.objects.select_related("project", "created_by").filter(
+            project__in=self._accessible_projects()
+        )
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    @action(detail=False, methods=["post"])
+    def generate(self, request):
+        """Body: {project: <id>}. Computes the forecast and stores a snapshot."""
+        from .risk_forecast import forecast as run_forecast
+
+        project_id = request.data.get("project")
+        if not project_id:
+            return Response({"detail": "project is required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        project = get_object_or_404(self._accessible_projects(), pk=project_id)
+        result = run_forecast(project)
+        snapshot = RiskForecast.objects.create(
+            project=project,
+            as_of=result["as_of"],
+            signals=result["signals"],
+            current_exposure=result["current_exposure"],
+            forecast_exposure=result["forecast_exposure"],
+            exposure_trend=result["exposure_trend"],
+            risk_velocity=result["risk_velocity"],
+            predicted_high_risks=result["predicted_high_risks"],
+            outlook=result["outlook"],
+            confidence=result["confidence"],
+            drivers=result["drivers"],
+            recommendations=result["recommendations"],
+            narrative=result["narrative"],
+            model_used=result["model_used"],
+            original_ai_response=result["original_ai_response"],
+            created_by=request.user,
+        )
+        return Response(self.get_serializer(snapshot).data,
+                        status=status.HTTP_201_CREATED)
 
 
 class ManualMitigationViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):

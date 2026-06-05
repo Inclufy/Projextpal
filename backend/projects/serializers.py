@@ -18,9 +18,26 @@ from .models import (
     Document,
     TrainingMaterial,
     TimeEntry,
+    RiskForecast,
 )
 
 User = get_user_model()
+
+
+class RiskForecastSerializer(serializers.ModelSerializer):
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    created_by_name = serializers.CharField(source="created_by.username", read_only=True)
+
+    class Meta:
+        model = RiskForecast
+        fields = [
+            "id", "project", "project_name", "as_of", "signals",
+            "current_exposure", "forecast_exposure", "exposure_trend",
+            "risk_velocity", "predicted_high_risks", "outlook", "confidence",
+            "drivers", "recommendations", "narrative", "model_used",
+            "original_ai_response", "created_by", "created_by_name", "created_at",
+        ]
+        read_only_fields = fields
 
 
 class TaskSerializer(serializers.ModelSerializer):

@@ -16,6 +16,7 @@ const AgileRetrospective = () => {
   const { id } = useParams<{ id: string }>();
   const [retros, setRetros] = useState<any[]>([]);
   const [iterations, setIterations] = useState<any[]>([]);
+  const [openActions, setOpenActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -28,12 +29,14 @@ const AgileRetrospective = () => {
 
   const fetchData = async () => {
     try {
-      const [rRes, itRes] = await Promise.all([
+      const [rRes, itRes, aRes] = await Promise.all([
         fetch(`/api/v1/projects/${id}/agile/retrospectives/`, { headers }),
         fetch(`/api/v1/projects/${id}/agile/iterations/`, { headers }),
+        fetch(`/api/v1/projects/${id}/agile/retrospectives/action-items/`, { headers }),
       ]);
       if (rRes.ok) { const d = await rRes.json(); setRetros(Array.isArray(d) ? d : d.results || []); }
       if (itRes.ok) { const d = await itRes.json(); setIterations(Array.isArray(d) ? d : d.results || []); }
+      if (aRes.ok) { const d = await aRes.json(); setOpenActions(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -66,6 +69,19 @@ const AgileRetrospective = () => {
 
   const handleDelete = async (rId: number) => { if (!confirm("Verwijderen?")) return; try { const r = await fetch(`/api/v1/projects/${id}/agile/retrospectives/${rId}/`, { method: "DELETE", headers }); if (r.ok || r.status === 204) { toast.success("Verwijderd"); fetchData(); } } catch { toast.error("Verwijderen mislukt"); } };
 
+  const markActionDone = async (itemId: number) => {
+    try {
+      const r = await fetch(`/api/v1/agile/retro-items/${itemId}/`, {
+        method: "PATCH", headers: jsonHeaders,
+        body: JSON.stringify({ status: "done" })
+      });
+      if (r.ok) { toast.success("Actie afgerond"); fetchData(); }
+      else toast.error("Bijwerken mislukt");
+    } catch { toast.error("Bijwerken mislukt"); }
+  };
+
+  const actionStatusColors: Record<string, string> = { open: "bg-amber-50 border-amber-200 text-amber-700", in_progress: "bg-blue-50 border-blue-200 text-blue-700" };
+
   const categoryColors: Record<string, string> = { went_well: "bg-green-50 border-green-200 text-green-700", to_improve: "bg-red-50 border-red-200 text-red-700", action_item: "bg-blue-50 border-blue-200 text-blue-700" };
   const categoryLabels: Record<string, string> = { went_well: "What Went Well", to_improve: "To Improve", action_item: "Action Item" };
   const categoryIcons: Record<string, string> = { went_well: "✅", to_improve: "❌", action_item: "📋" };
@@ -86,6 +102,27 @@ const AgileRetrospective = () => {
             </Select>
           )}
         </div>
+        {openActions.length > 0 && (
+          <Card className="p-4 border-amber-200 bg-amber-50/40">
+            <div className="flex items-center gap-2 mb-3">
+              <ThumbsUp className="h-4 w-4 text-amber-600" />
+              <h3 className="font-semibold text-foreground">{pt("Open Action Items")}</h3>
+              <Badge variant="outline">{openActions.length}</Badge>
+              <span className="text-xs text-muted-foreground">{pt("carried forward from earlier iterations")}</span>
+            </div>
+            <div className="space-y-2">
+              {openActions.map((a) => (
+                <div key={a.id} className={`flex items-center justify-between gap-3 p-2 rounded border ${actionStatusColors[a.status] || "bg-muted/30"}`}>
+                  <div className="min-w-0">
+                    <p className="text-sm truncate">{a.content}</p>
+                    <p className="text-xs text-muted-foreground">{a.iteration_name} · <span className="capitalize">{(a.status || "").replace("_", " ")}</span></p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => markActionDone(a.id)}>{pt("Mark done")}</Button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
         {retros.length === 0 ? <Card className="p-8 text-center"><RotateCcw className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No retrospectives yet")}</h3><p className="text-muted-foreground">{pt("Complete an iteration to create a retrospective")}</p></Card> : (
           <div className="space-y-4">{retros.map(r => (
             <Card key={r.id}><CardContent className="p-4">

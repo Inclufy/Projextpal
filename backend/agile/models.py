@@ -443,3 +443,54 @@ class AgileDodEntry(models.Model):
 
     def __str__(self):
         return f"{self.item.title[:30]} · {self.criterion.description[:30]} · {'met' if self.is_met else 'unmet'}"
+
+
+class StakeholderFeedback(models.Model):
+    """Per-iteration stakeholder feedback on shipped work (AG-3).
+
+    Agile asks business people and developers to work together throughout the
+    project and to inspect a working increment regularly. This artifact captures
+    that conversation: at the end (or review) of an iteration a stakeholder gives
+    structured feedback on what was delivered, optionally tied to the specific
+    backlog item, with a sentiment and an optional follow-up action that can be
+    triaged back into the backlog. It closes the empirical loop the daily update
+    and retro don't — feedback from *outside* the delivery team."""
+
+    SENTIMENT_CHOICES = [
+        ('positive', 'Positive'),
+        ('neutral', 'Neutral'),
+        ('negative', 'Negative'),
+    ]
+
+    iteration = models.ForeignKey(
+        AgileIteration, on_delete=models.CASCADE, related_name='stakeholder_feedback'
+    )
+    backlog_item = models.ForeignKey(
+        AgileBacklogItem, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='stakeholder_feedback',
+        help_text='The shipped item this feedback is about (optional).',
+    )
+    stakeholder_name = models.CharField(max_length=150)
+    stakeholder_role = models.CharField(max_length=100, blank=True)
+    sentiment = models.CharField(max_length=10, choices=SENTIMENT_CHOICES, default='neutral')
+    rating = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text='Optional 1-5 satisfaction score.'
+    )
+    feedback = models.TextField()
+    follow_up_action = models.TextField(
+        blank=True, help_text='Optional action to feed back into the backlog.'
+    )
+    follow_up_done = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='agile_stakeholder_feedback',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'agile_stakeholder_feedback'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.stakeholder_name} · {self.get_sentiment_display()} · {self.iteration.name}"

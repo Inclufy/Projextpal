@@ -613,6 +613,288 @@ const buildPrince2Guide = (projectId: string): RawGuide => ({
   ],
 });
 
+const buildScrumGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Scrum", en: "Scrum", fr: "Scrum" },
+  pageDescription: {
+    nl: "Lever in korte sprints: een geordende Product Backlog, een Sprint Goal, dagelijkse inspectie en een Definition of Done als kwaliteitsgrens. Klik op een functie om er direct heen te gaan.",
+    en: "Deliver in short sprints: an ordered Product Backlog, a Sprint Goal, daily inspection, and a Definition of Done as the quality gate. Click a feature to jump straight to it.",
+    fr: "Livrez en sprints courts : un Product Backlog ordonné, un Sprint Goal, une inspection quotidienne et une Definition of Done comme barrière qualité. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "Sprintvoortgang, velocity en de sprintflow in één beeld", en: "Sprint progress, velocity and the sprint flow in one view", fr: "Progression du sprint, vélocité et flux du sprint en une vue" }, path: `/projects/${projectId}/scrum/overview` },
+    { icon: ListChecks, title: { nl: "Product Backlog", en: "Product Backlog", fr: "Product Backlog" }, description: { nl: "Items ordenen, verfijnen en story points toekennen", en: "Order, refine and point backlog items", fr: "Ordonner, affiner et estimer les items du backlog" }, path: `/projects/${projectId}/scrum/backlog` },
+    { icon: Target, title: { nl: "Sprint Board", en: "Sprint Board", fr: "Tableau de sprint" }, description: { nl: "Werk verslepen door To Do → In Progress → Done", en: "Drag work through To Do → In Progress → Done", fr: "Déplacez le travail de To Do → In Progress → Done" }, path: `/projects/${projectId}/scrum/sprint-board` },
+    { icon: Calendar, title: { nl: "Sprint Planning", en: "Sprint Planning", fr: "Planification de sprint" }, description: { nl: "Sprint Goal bepalen en items in de sprint trekken", en: "Set the Sprint Goal and pull items into the sprint", fr: "Définir le Sprint Goal et tirer les items dans le sprint" }, path: `/projects/${projectId}/scrum/sprint-planning` },
+    { icon: Users, title: { nl: "Daily Standup", en: "Daily Standup", fr: "Mêlée quotidienne" }, description: { nl: "Dagelijkse inspectie van voortgang naar het Sprint Goal", en: "Daily inspection of progress toward the Sprint Goal", fr: "Inspection quotidienne de la progression vers le Sprint Goal" }, path: `/projects/${projectId}/scrum/daily-standup` },
+    { icon: CheckCircle2, title: { nl: "Sprint Review", en: "Sprint Review", fr: "Revue de sprint" }, description: { nl: "Het Increment laten zien en feedback ophalen", en: "Demonstrate the Increment and gather feedback", fr: "Présenter l'Increment et recueillir les retours" }, path: `/projects/${projectId}/scrum/sprint-review` },
+    { icon: TrendingUp, title: { nl: "Velocity", en: "Velocity", fr: "Vélocité" }, description: { nl: "Doorlopende velocity per sprint voor planning", en: "Rolling velocity per sprint for planning", fr: "Vélocité glissante par sprint pour la planification" }, path: `/projects/${projectId}/scrum/velocity` },
+    { icon: Shield, title: { nl: "Definition of Done", en: "Definition of Done", fr: "Definition of Done" }, description: { nl: "De kwaliteitsgrens die 'Done' bewaakt", en: "The quality gate that guards 'Done'", fr: "La barrière qualité qui protège le « Done »" }, path: `/projects/${projectId}/scrum/definition-of-done` },
+  ],
+  howTos: [
+    { title: { nl: "Een sprint plannen", en: "Plan a sprint", fr: "Planifier un sprint" }, steps: [
+      { nl: "Open Sprint Planning en formuleer een Sprint Goal", en: "Open Sprint Planning and write a Sprint Goal", fr: "Ouvrez la Planification et rédigez un Sprint Goal" },
+      { nl: "Trek geordende backlogitems in de sprint tot de velocity", en: "Pull ordered backlog items into the sprint up to velocity", fr: "Tirez les items ordonnés dans le sprint jusqu'à la vélocité" },
+      { nl: "Controleer dat elk item een Definition of Done heeft", en: "Check each item has a Definition of Done", fr: "Vérifiez que chaque item a une Definition of Done" },
+    ] },
+    { title: { nl: "Een item naar Done brengen", en: "Move an item to Done", fr: "Passer un item en Done" }, steps: [
+      { nl: "Sleep het item op het Sprint Board naar In Progress", en: "Drag the item on the Sprint Board to In Progress", fr: "Déplacez l'item du tableau vers In Progress" },
+      { nl: "Voldoe aan alle Definition of Done-criteria", en: "Satisfy every Definition of Done criterion", fr: "Satisfaites chaque critère de la Definition of Done" },
+      { nl: "Verplaats naar Done — anders blokkeert de poort", en: "Move to Done — otherwise the gate blocks it", fr: "Passez en Done — sinon la barrière le bloque" },
+    ] },
+  ],
+  tips: [
+    { nl: "Alleen de Product Owner ordent de backlog; volgorde stuurt de planning.", en: "Only the Product Owner orders the backlog; order drives planning.", fr: "Seul le Product Owner ordonne le backlog ; l'ordre guide la planification." },
+    { nl: "Het Sprint Goal geeft samenhang — laat het de sprint sturen, niet andersom.", en: "The Sprint Goal gives coherence — let it steer the sprint, not the other way around.", fr: "Le Sprint Goal donne de la cohérence — laissez-le guider le sprint." },
+    { nl: "Een item is pas klaar als het de Definition of Done haalt.", en: "An item is only done when it meets the Definition of Done.", fr: "Un item n'est terminé que s'il atteint la Definition of Done." },
+  ],
+  tourSteps: [
+    { title: { nl: "Sprintflow", en: "Sprint flow", fr: "Flux de sprint" }, description: { nl: "Bovenaan ziet u de sprintflow To Do → In Progress → Done met live aantallen. Gebruik de functies hieronder om de sprint te runnen.", en: "At the top you see the sprint flow To Do → In Progress → Done with live counts. Use the features below to run the sprint.", fr: "En haut, le flux To Do → In Progress → Done avec des compteurs en direct. Utilisez les fonctions ci-dessous pour mener le sprint." } },
+  ],
+});
+
+const buildKanbanGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Kanban", en: "Kanban", fr: "Kanban" },
+  pageDescription: {
+    nl: "Visualiseer het werk, beperk onderhanden werk (WIP) en beheer de flow. Maak werkbeleid expliciet en stuur op doorlooptijd en doorstroom. Klik op een functie om er direct heen te gaan.",
+    en: "Visualise the work, limit work-in-progress (WIP) and manage flow. Make work policies explicit and steer on lead time and throughput. Click a feature to jump straight to it.",
+    fr: "Visualisez le travail, limitez l'en-cours (WIP) et gérez le flux. Rendez les politiques explicites et pilotez le délai et le débit. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "Kaarten, geblokkeerd werk en doorlooptijd in één beeld", en: "Cards, blocked work and lead time in one view", fr: "Cartes, travail bloqué et délai en une vue" }, path: `/projects/${projectId}/kanban/overview` },
+    { icon: Kanban, title: { nl: "Board", en: "Board", fr: "Tableau" }, description: { nl: "Kaarten door de kolommen trekken binnen de WIP-limieten", en: "Pull cards through columns within WIP limits", fr: "Tirez les cartes entre colonnes dans les limites de WIP" }, path: `/projects/${projectId}/kanban/board` },
+    { icon: ListChecks, title: { nl: "Werkitems", en: "Work Items", fr: "Éléments de travail" }, description: { nl: "Alle kaarten beheren, type en class of service toekennen", en: "Manage all cards, set type and class of service", fr: "Gérer toutes les cartes, type et classe de service" }, path: `/projects/${projectId}/kanban/work-items` },
+    { icon: Settings, title: { nl: "WIP-limieten", en: "WIP Limits", fr: "Limites de WIP" }, description: { nl: "Limieten per kolom instellen — trekken blokkeert bij overschrijding", en: "Set per-column limits — a pull blocks when exceeded", fr: "Limites par colonne — le tirage bloque en cas de dépassement" }, path: `/projects/${projectId}/kanban/wip-limits` },
+    { icon: AlertTriangle, title: { nl: "Geblokkeerde items", en: "Blocked Items", fr: "Éléments bloqués" }, description: { nl: "Blokkades zichtbaar maken en zo snel mogelijk opheffen", en: "Surface blockers and clear them as fast as possible", fr: "Faire ressortir les blocages et les lever au plus vite" }, path: `/projects/${projectId}/kanban/blocked` },
+    { icon: BarChart3, title: { nl: "Flow Metrics", en: "Flow Metrics", fr: "Métriques de flux" }, description: { nl: "Doorlooptijd, doorstroom en WIP-trends meten", en: "Measure lead time, throughput and WIP trends", fr: "Mesurer délai, débit et tendances de WIP" }, path: `/projects/${projectId}/kanban/metrics` },
+    { icon: TrendingUp, title: { nl: "CFD", en: "CFD", fr: "CFD" }, description: { nl: "Cumulative Flow Diagram voor stabiliteit en knelpunten", en: "Cumulative Flow Diagram for stability and bottlenecks", fr: "Diagramme de flux cumulé pour stabilité et goulets" }, path: `/projects/${projectId}/kanban/cfd` },
+    { icon: FileText, title: { nl: "Werkbeleid", en: "Work Policies", fr: "Politiques de travail" }, description: { nl: "Expliciete regels per kolom — wanneer mag een kaart door", en: "Explicit per-column rules — when may a card advance", fr: "Règles explicites par colonne — quand une carte avance" }, path: `/projects/${projectId}/kanban/work-policies` },
+  ],
+  howTos: [
+    { title: { nl: "Een kaart door het board trekken", en: "Pull a card through the board", fr: "Tirer une carte sur le tableau" }, steps: [
+      { nl: "Open het Board en kies een kaart in de vorige kolom", en: "Open the Board and pick a card in the previous column", fr: "Ouvrez le Tableau et choisissez une carte en amont" },
+      { nl: "Controleer dat de doelkolom onder zijn WIP-limiet zit", en: "Check the target column is below its WIP limit", fr: "Vérifiez que la colonne cible est sous sa limite de WIP" },
+      { nl: "Trek de kaart; bij overschrijding blokkeert de poort", en: "Pull the card; the gate blocks if the limit is exceeded", fr: "Tirez la carte ; la barrière bloque si la limite est dépassée" },
+    ] },
+    { title: { nl: "De flow verbeteren", en: "Improve the flow", fr: "Améliorer le flux" }, steps: [
+      { nl: "Open Flow Metrics en zoek de kolom met de langste wachttijd", en: "Open Flow Metrics and find the longest-waiting column", fr: "Ouvrez les Métriques et trouvez la colonne la plus lente" },
+      { nl: "Verlaag de WIP-limiet daar of hef blokkades op", en: "Lower the WIP limit there or clear blockers", fr: "Baissez la limite de WIP ou levez les blocages" },
+      { nl: "Volg het effect op het CFD over enkele dagen", en: "Track the effect on the CFD over a few days", fr: "Suivez l'effet sur le CFD sur quelques jours" },
+    ] },
+  ],
+  tips: [
+    { nl: "WIP-limieten zijn echt: een trek die de limiet overschrijdt wordt geweigerd.", en: "WIP limits are real: a pull that exceeds the limit is rejected.", fr: "Les limites de WIP sont réelles : un tirage qui dépasse est refusé." },
+    { nl: "Maak werkbeleid expliciet — onuitgesproken regels veroorzaken wachttijd.", en: "Make work policies explicit — unspoken rules cause waiting.", fr: "Rendez les politiques explicites — les règles tacites créent de l'attente." },
+    { nl: "Stuur op doorlooptijd, niet op bezetting; een vol board stroomt niet.", en: "Steer on lead time, not utilisation; a full board doesn't flow.", fr: "Pilotez le délai, pas l'occupation ; un tableau plein ne s'écoule pas." },
+  ],
+  tourSteps: [
+    { title: { nl: "Board flow", en: "Board flow", fr: "Flux du tableau" }, description: { nl: "Bovenaan ziet u de kolommen met live aantallen en WIP-bezetting. Gebruik de functies hieronder om de flow te beheren.", en: "At the top you see the columns with live counts and WIP usage. Use the features below to manage the flow.", fr: "En haut, les colonnes avec compteurs en direct et occupation du WIP. Utilisez les fonctions ci-dessous pour gérer le flux." } },
+  ],
+});
+
+const buildAgileGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Agile", en: "Agile", fr: "Agile" },
+  pageDescription: {
+    nl: "Lever waarde in iteraties vanuit een heldere productvisie: persona's, een geordende backlog, een continu-flow-board en regelmatige reflectie. Klik op een functie om er direct heen te gaan.",
+    en: "Deliver value in iterations from a clear product vision: personas, an ordered backlog, a continuous-flow board and regular reflection. Click a feature to jump straight to it.",
+    fr: "Livrez de la valeur en itérations à partir d'une vision produit claire : personas, backlog ordonné, tableau à flux continu et réflexion régulière. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "Iteratie, backlog en de flow-board in één beeld", en: "Iteration, backlog and the flow board in one view", fr: "Itération, backlog et tableau de flux en une vue" }, path: `/projects/${projectId}/agile/overview` },
+    { icon: Compass, title: { nl: "Productvisie", en: "Product Vision", fr: "Vision produit" }, description: { nl: "De richting die alle prioritering onderbouwt", en: "The direction that underpins all prioritisation", fr: "La direction qui sous-tend toute priorisation" }, path: `/projects/${projectId}/agile/vision` },
+    { icon: Users, title: { nl: "Persona's", en: "User Personas", fr: "Personas" }, description: { nl: "Voor wie u bouwt — koppel backlogitems aan behoeften", en: "Who you build for — link backlog items to needs", fr: "Pour qui vous construisez — reliez les items aux besoins" }, path: `/projects/${projectId}/agile/personas` },
+    { icon: ListChecks, title: { nl: "Backlog", en: "Backlog", fr: "Backlog" }, description: { nl: "Items ordenen op waarde en in iteraties trekken", en: "Order items by value and pull into iterations", fr: "Ordonner par valeur et tirer dans les itérations" }, path: `/projects/${projectId}/agile/backlog` },
+    { icon: Target, title: { nl: "Iteration Board", en: "Iteration Board", fr: "Tableau d'itération" }, description: { nl: "Werk door het continu-flow-board met WIP-grens", en: "Move work through the continuous-flow board with a WIP cap", fr: "Faites avancer le travail sur le tableau à flux continu avec un plafond WIP" }, path: `/projects/${projectId}/agile/iteration-board` },
+    { icon: BarChart3, title: { nl: "Dagelijkse voortgang", en: "Daily Progress", fr: "Progression quotidienne" }, description: { nl: "Korte dagelijkse inspectie van de iteratie", en: "Short daily inspection of the iteration", fr: "Inspection quotidienne brève de l'itération" }, path: `/projects/${projectId}/agile/daily-progress` },
+    { icon: Calendar, title: { nl: "Release Planning", en: "Release Planning", fr: "Planification des versions" }, description: { nl: "Iteraties bundelen tot een geplande release", en: "Bundle iterations into a planned release", fr: "Regrouper les itérations en une version planifiée" }, path: `/projects/${projectId}/agile/release-planning` },
+    { icon: CheckCircle2, title: { nl: "Definition of Done", en: "Definition of Done", fr: "Definition of Done" }, description: { nl: "De gedeelde kwaliteitsgrens voor elk item", en: "The shared quality gate for every item", fr: "La barrière qualité partagée pour chaque item" }, path: `/projects/${projectId}/agile/definition-of-done` },
+  ],
+  howTos: [
+    { title: { nl: "Een iteratie starten", en: "Start an iteration", fr: "Démarrer une itération" }, steps: [
+      { nl: "Controleer dat de Productvisie en persona's actueel zijn", en: "Check the Product Vision and personas are current", fr: "Vérifiez que la vision et les personas sont à jour" },
+      { nl: "Order de backlog op waarde", en: "Order the backlog by value", fr: "Ordonnez le backlog par valeur" },
+      { nl: "Trek items op het Iteration Board tot de WIP-grens", en: "Pull items on the Iteration Board up to the WIP cap", fr: "Tirez les items sur le tableau jusqu'au plafond WIP" },
+    ] },
+    { title: { nl: "Reflecteren en verbeteren", en: "Reflect and improve", fr: "Réfléchir et améliorer" }, steps: [
+      { nl: "Houd na de iteratie een retrospective", en: "Hold a retrospective after the iteration", fr: "Tenez une rétrospective après l'itération" },
+      { nl: "Leg verbeteracties vast en draag ze over", en: "Capture improvement actions and carry them forward", fr: "Consignez les actions d'amélioration et reportez-les" },
+      { nl: "Volg de openstaande acties in de volgende iteratie", en: "Track open actions in the next iteration", fr: "Suivez les actions ouvertes à l'itération suivante" },
+    ] },
+  ],
+  tips: [
+    { nl: "Agile hier is een flow-systeem: één continu-flow-board met een WIP-grens, geen vaste sprints.", en: "Agile here is a flow system: one continuous-flow board with a WIP cap, not fixed sprints.", fr: "Ici, Agile est un système de flux : un tableau à flux continu avec plafond WIP, sans sprints fixes." },
+    { nl: "Laat de productvisie en persona's elke prioriteringskeuze onderbouwen.", en: "Let the product vision and personas underpin every prioritisation choice.", fr: "Laissez la vision et les personas justifier chaque choix de priorisation." },
+    { nl: "Sluit retro-acties echt af — open acties verschijnen in de volgende iteratie.", en: "Actually close retro actions — open ones reappear in the next iteration.", fr: "Clôturez vraiment les actions de rétro — les ouvertes réapparaissent." },
+  ],
+  tourSteps: [
+    { title: { nl: "Flow board", en: "Flow board", fr: "Tableau de flux" }, description: { nl: "Bovenaan ziet u de continu-flow-board met live aantallen en de WIP-grens. Gebruik de functies hieronder om de iteratie te runnen.", en: "At the top you see the continuous-flow board with live counts and the WIP cap. Use the features below to run the iteration.", fr: "En haut, le tableau à flux continu avec compteurs en direct et plafond WIP. Utilisez les fonctions ci-dessous pour mener l'itération." } },
+  ],
+});
+
+const buildWaterfallGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Waterfall", en: "Waterfall", fr: "Cascade" },
+  pageDescription: {
+    nl: "Lever via opeenvolgende fasen met fasepoorten: eisen → ontwerp → bouw → test → uitrol. Elke poort moet passeren voordat de volgende fase begint. Klik op een functie om er direct heen te gaan.",
+    en: "Deliver through sequential phases with phase gates: requirements → design → build → test → deployment. Each gate must pass before the next phase starts. Click a feature to jump straight to it.",
+    fr: "Livrez par phases séquentielles avec des jalons : exigences → conception → réalisation → test → déploiement. Chaque jalon doit passer avant la phase suivante. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "Huidige fase, voortgang en de fasenflow in één beeld", en: "Current phase, progress and the phase flow in one view", fr: "Phase actuelle, progression et flux de phases en une vue" }, path: `/projects/${projectId}/waterfall/overview` },
+    { icon: FileText, title: { nl: "Eisen", en: "Requirements", fr: "Exigences" }, description: { nl: "Vastleggen en baselinen wat het systeem moet doen", en: "Capture and baseline what the system must do", fr: "Capturer et figer ce que le système doit faire" }, path: `/projects/${projectId}/waterfall/requirements` },
+    { icon: Workflow, title: { nl: "Ontwerp", en: "Design", fr: "Conception" }, description: { nl: "Eisen vertalen naar een technisch ontwerp", en: "Translate requirements into a technical design", fr: "Traduire les exigences en conception technique" }, path: `/projects/${projectId}/waterfall/design` },
+    { icon: BarChart3, title: { nl: "Bouw", en: "Development", fr: "Réalisation" }, description: { nl: "Bouwen volgens het goedgekeurde ontwerp", en: "Build to the approved design", fr: "Réaliser selon la conception approuvée" }, path: `/projects/${projectId}/waterfall/development` },
+    { icon: CheckCircle2, title: { nl: "Test", en: "Testing", fr: "Test" }, description: { nl: "Verifiëren tegen de eisen — falende tests passeren niet", en: "Verify against requirements — failing tests don't pass", fr: "Vérifier selon les exigences — un test échoué ne passe pas" }, path: `/projects/${projectId}/waterfall/testing` },
+    { icon: Shield, title: { nl: "Fasepoort", en: "Phase Gate", fr: "Jalon de phase" }, description: { nl: "Go/no-go-besluit dat de volgende fase ontgrendelt", en: "Go/no-go decision that unlocks the next phase", fr: "Décision go/no-go qui débloque la phase suivante" }, path: `/projects/${projectId}/waterfall/phase-gate` },
+    { icon: Calendar, title: { nl: "Mijlpalen", en: "Milestones", fr: "Jalons" }, description: { nl: "Vaste data bewaken tegen het plan", en: "Track fixed dates against the plan", fr: "Suivre les dates fixes par rapport au plan" }, path: `/projects/${projectId}/waterfall/milestones` },
+    { icon: BarChart3, title: { nl: "Gantt", en: "Gantt", fr: "Gantt" }, description: { nl: "Tijdlijn en afhankelijkheden van alle fasen", en: "Timeline and dependencies of all phases", fr: "Calendrier et dépendances de toutes les phases" }, path: `/projects/${projectId}/waterfall/gantt` },
+  ],
+  howTos: [
+    { title: { nl: "Een fase afronden", en: "Complete a phase", fr: "Achever une phase" }, steps: [
+      { nl: "Lever alle producten van de fase op", en: "Deliver all of the phase's products", fr: "Livrez tous les produits de la phase" },
+      { nl: "Open de Fasepoort en controleer de exit-criteria", en: "Open the Phase Gate and check the exit criteria", fr: "Ouvrez le Jalon et vérifiez les critères de sortie" },
+      { nl: "Vraag een go/no-go — alleen 'go' ontgrendelt de volgende fase", en: "Request a go/no-go — only 'go' unlocks the next phase", fr: "Demandez un go/no-go — seul « go » débloque la phase suivante" },
+    ] },
+    { title: { nl: "Een baseline beheren", en: "Manage a baseline", fr: "Gérer une référence" }, steps: [
+      { nl: "Baseline de eisen voordat het ontwerp begint", en: "Baseline the requirements before design starts", fr: "Figez les exigences avant la conception" },
+      { nl: "Voer wijzigingen alleen via Change Requests door", en: "Make changes only via Change Requests", fr: "N'apportez de changements que via des demandes de changement" },
+      { nl: "Volg afwijkingen op tijd en kosten via EVM op het dashboard", en: "Track time/cost variance via EVM on the dashboard", fr: "Suivez les écarts délai/coût via l'EVM sur le tableau de bord" },
+    ] },
+  ],
+  tips: [
+    { nl: "De fasepoort is echt: zonder go-besluit start de volgende fase niet.", en: "The phase gate is real: without a go decision the next phase won't start.", fr: "Le jalon est réel : sans décision « go », la phase suivante ne démarre pas." },
+    { nl: "Baseline eisen vroeg en beheer wijzigingen — scope creep doodt het plan.", en: "Baseline requirements early and control change — scope creep kills the plan.", fr: "Figez les exigences tôt et maîtrisez le changement — la dérive tue le plan." },
+    { nl: "Gebruik EVM (CPI/SPI) om vroeg te zien of u voor- of achterloopt.", en: "Use EVM (CPI/SPI) to see early whether you're ahead or behind.", fr: "Utilisez l'EVM (CPI/SPI) pour voir tôt si vous êtes en avance ou en retard." },
+  ],
+  tourSteps: [
+    { title: { nl: "Fasenflow", en: "Phase flow", fr: "Flux de phases" }, description: { nl: "Bovenaan ziet u de fasen REQ→DES→DEV→TST→DEP met voortgang en de poortstatus. Volg de functies hieronder per fase.", en: "At the top you see the phases REQ→DES→DEV→TST→DEP with progress and the gate status. Follow the features below per phase.", fr: "En haut, les phases REQ→DES→DEV→TST→DEP avec progression et statut du jalon. Suivez les fonctions ci-dessous par phase." } },
+  ],
+});
+
+const buildHybridGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Hybride", en: "Hybrid", fr: "Hybride" },
+  pageDescription: {
+    nl: "Combineer voorspellende en adaptieve aanpakken: per fase kiest u de methodiek (bv. waterfall voor ontwerp, scrum voor bouw). De gekozen methodiek bepaalt de werkwijze van die fase. Klik op een functie om er direct heen te gaan.",
+    en: "Blend predictive and adaptive approaches: per phase you choose the methodology (e.g. waterfall for design, scrum for build). The chosen methodology drives that phase's way of working. Click a feature to jump straight to it.",
+    fr: "Combinez approches prédictive et adaptative : par phase, choisissez la méthodologie (ex. cascade pour la conception, scrum pour la réalisation). La méthodologie choisie pilote la façon de travailler de la phase. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "Fasen, methodieken-in-gebruik en voortgang in één beeld", en: "Phases, methodologies-in-use and progress in one view", fr: "Phases, méthodologies utilisées et progression en une vue" }, path: `/projects/${projectId}/hybrid/overview` },
+    { icon: GitBranch, title: { nl: "Fasen & methodiek", en: "Phases & methodology", fr: "Phases & méthodologie" }, description: { nl: "Per fase de methodiek kiezen die de werkwijze stuurt", en: "Per phase choose the methodology that drives the workflow", fr: "Par phase, choisir la méthodologie qui pilote le flux" }, path: `/projects/${projectId}/hybrid/phases` },
+    { icon: ListChecks, title: { nl: "Taken", en: "Tasks", fr: "Tâches" }, description: { nl: "Werk per fase toewijzen en de status volgen", en: "Assign work per phase and track status", fr: "Attribuer le travail par phase et suivre le statut" }, path: `/projects/${projectId}/hybrid/tasks` },
+    { icon: Calendar, title: { nl: "Tijdlijn", en: "Timeline", fr: "Calendrier" }, description: { nl: "De fasen in de tijd met afhankelijkheden", en: "The phases over time with dependencies", fr: "Les phases dans le temps avec dépendances" }, path: `/projects/${projectId}/hybrid/timeline` },
+    { icon: FileText, title: { nl: "Artefacten", en: "Artifacts", fr: "Artefacts" }, description: { nl: "Documenten en producten per fase beheren", en: "Manage documents and products per phase", fr: "Gérer documents et produits par phase" }, path: `/projects/${projectId}/hybrid/artifacts` },
+    { icon: Settings, title: { nl: "Configuratie", en: "Configuration", fr: "Configuration" }, description: { nl: "Governance en regels per fase instellen", en: "Set governance and rules per phase", fr: "Définir la gouvernance et les règles par phase" }, path: `/projects/${projectId}/hybrid/configuration` },
+  ],
+  howTos: [
+    { title: { nl: "Een fase inrichten", en: "Set up a phase", fr: "Configurer une phase" }, steps: [
+      { nl: "Open Fasen & methodiek en voeg een fase toe", en: "Open Phases & methodology and add a phase", fr: "Ouvrez Phases & méthodologie et ajoutez une phase" },
+      { nl: "Kies de methodiek die bij die fase past", en: "Choose the methodology that fits that phase", fr: "Choisissez la méthodologie adaptée à la phase" },
+      { nl: "De gekozen methodiek bepaalt de artefacten en governance", en: "The chosen methodology drives the artifacts and governance", fr: "La méthodologie choisie pilote les artefacts et la gouvernance" },
+    ] },
+    { title: { nl: "Werk per fase uitvoeren", en: "Execute work per phase", fr: "Exécuter le travail par phase" }, steps: [
+      { nl: "Open Taken en filter op de actieve fase", en: "Open Tasks and filter on the active phase", fr: "Ouvrez Tâches et filtrez sur la phase active" },
+      { nl: "Wijs werk toe en volg de status", en: "Assign work and track status", fr: "Attribuez le travail et suivez le statut" },
+      { nl: "Volg de overkoepelende voortgang op het dashboard", en: "Track overall progress on the dashboard", fr: "Suivez la progression globale sur le tableau de bord" },
+    ] },
+  ],
+  tips: [
+    { nl: "Het methodiek-label per fase is functioneel: het verandert echt de werkwijze van die fase.", en: "The per-phase methodology label is functional: it actually changes that phase's way of working.", fr: "L'étiquette de méthodologie par phase est fonctionnelle : elle change réellement la façon de travailler." },
+    { nl: "Gebruik voorspellende fasen waar de scope vaststaat en adaptieve waar die nog evolueert.", en: "Use predictive phases where scope is fixed and adaptive where it still evolves.", fr: "Utilisez des phases prédictives où la portée est fixe et adaptatives où elle évolue." },
+    { nl: "Houd de configuratie per fase actueel zodat governance bij de aanpak past.", en: "Keep the per-phase configuration current so governance matches the approach.", fr: "Gardez la configuration par phase à jour pour aligner la gouvernance." },
+  ],
+  tourSteps: [
+    { title: { nl: "Fasenflow", en: "Phase flow", fr: "Flux de phases" }, description: { nl: "Bovenaan ziet u elke fase met zijn gekozen methodiek en voortgang. Gebruik de functies hieronder om fasen in te richten en uit te voeren.", en: "At the top you see each phase with its chosen methodology and progress. Use the features below to set up and execute phases.", fr: "En haut, chaque phase avec sa méthodologie choisie et sa progression. Utilisez les fonctions ci-dessous pour configurer et exécuter." } },
+  ],
+});
+
+const buildLssGreenGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Lean Six Sigma — Green Belt", en: "Lean Six Sigma — Green Belt", fr: "Lean Six Sigma — Green Belt" },
+  pageDescription: {
+    nl: "Verbeter een proces via DMAIC: Define → Measure → Analyze → Improve → Control. Een tollgate sluit elke fase af voordat de volgende start. Klik op een functie om er direct heen te gaan.",
+    en: "Improve a process through DMAIC: Define → Measure → Analyze → Improve → Control. A tollgate closes each phase before the next begins. Click a feature to jump straight to it.",
+    fr: "Améliorez un processus via DMAIC : Define → Measure → Analyze → Improve → Control. Un tollgate clôt chaque phase avant la suivante. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "DMAIC-flow, fasen en kwaliteitsmetrieken in één beeld", en: "DMAIC flow, phases and quality metrics in one view", fr: "Flux DMAIC, phases et métriques qualité en une vue" }, path: `/projects/${projectId}/lss-green/overview` },
+    { icon: Target, title: { nl: "DMAIC-fasen", en: "DMAIC Phases", fr: "Phases DMAIC" }, description: { nl: "Elke fase doorlopen met een tollgate als afsluiting", en: "Work each phase with a tollgate as the closeout", fr: "Dérouler chaque phase avec un tollgate de clôture" }, path: `/projects/${projectId}/lss-green/phases` },
+    { icon: ListChecks, title: { nl: "Taken", en: "Tasks", fr: "Tâches" }, description: { nl: "Verbeteracties per fase toewijzen en volgen", en: "Assign and track improvement actions per phase", fr: "Attribuer et suivre les actions d'amélioration par phase" }, path: `/projects/${projectId}/lss-green/tasks` },
+    { icon: BarChart3, title: { nl: "Metingen", en: "Measurements", fr: "Mesures" }, description: { nl: "Procesdata vastleggen voor een betrouwbare baseline", en: "Capture process data for a reliable baseline", fr: "Capturer les données process pour une référence fiable" }, path: `/projects/${projectId}/lss-green/measurements` },
+    { icon: TrendingUp, title: { nl: "Metrieken", en: "Metrics", fr: "Métriques" }, description: { nl: "Cp, Cpk, DPMO en sigma-niveau berekend uit echte data", en: "Cp, Cpk, DPMO and sigma level computed from real data", fr: "Cp, Cpk, DPMO et niveau sigma calculés depuis les données" }, path: `/projects/${projectId}/lss-green/metrics` },
+    { icon: Calendar, title: { nl: "Tijdlijn", en: "Timeline", fr: "Calendrier" }, description: { nl: "De DMAIC-fasen in de tijd uitgezet", en: "The DMAIC phases laid out over time", fr: "Les phases DMAIC réparties dans le temps" }, path: `/projects/${projectId}/lss-green/timeline` },
+  ],
+  howTos: [
+    { title: { nl: "Een DMAIC-fase afsluiten", en: "Close a DMAIC phase", fr: "Clôturer une phase DMAIC" }, steps: [
+      { nl: "Rond de taken en deliverables van de fase af", en: "Finish the phase's tasks and deliverables", fr: "Terminez les tâches et livrables de la phase" },
+      { nl: "Controleer dat de tollgate-criteria gehaald zijn", en: "Check the tollgate criteria are met", fr: "Vérifiez que les critères du tollgate sont atteints" },
+      { nl: "Sluit de tollgate — pas dan opent de volgende fase", en: "Pass the tollgate — only then does the next phase open", fr: "Franchissez le tollgate — alors seulement la phase suivante s'ouvre" },
+    ] },
+    { title: { nl: "Capability bepalen", en: "Establish capability", fr: "Établir la capabilité" }, steps: [
+      { nl: "Leg metingen vast in de Measure-fase", en: "Capture measurements in the Measure phase", fr: "Capturez les mesures en phase Measure" },
+      { nl: "Open Metrieken voor Cp/Cpk en sigma-niveau", en: "Open Metrics for Cp/Cpk and sigma level", fr: "Ouvrez les Métriques pour Cp/Cpk et le niveau sigma" },
+      { nl: "Vergelijk de baseline met het doel na Improve", en: "Compare the baseline to the target after Improve", fr: "Comparez la référence à la cible après Improve" },
+    ] },
+  ],
+  tips: [
+    { nl: "De tollgate is echt: een fase voltooien lukt niet zonder dat de poort gehaald is.", en: "The tollgate is real: you can't complete a phase without passing the gate.", fr: "Le tollgate est réel : impossible d'achever une phase sans le franchir." },
+    { nl: "Meet eerst, verbeter daarna — beslis op data, niet op aannames.", en: "Measure first, improve later — decide on data, not assumptions.", fr: "Mesurez d'abord, améliorez ensuite — décidez sur des données." },
+    { nl: "Cp/Cpk en sigma worden uit echte metingen berekend; vul de Measure-fase volledig.", en: "Cp/Cpk and sigma are computed from real measurements; complete the Measure phase fully.", fr: "Cp/Cpk et sigma sont calculés depuis des mesures réelles ; complétez la phase Measure." },
+  ],
+  tourSteps: [
+    { title: { nl: "DMAIC-flow", en: "DMAIC flow", fr: "Flux DMAIC" }, description: { nl: "Bovenaan ziet u D→M→A→I→C met de status per fase. Gebruik de functies hieronder om elke fase uit te voeren en af te sluiten.", en: "At the top you see D→M→A→I→C with each phase's status. Use the features below to execute and close each phase.", fr: "En haut, D→M→A→I→C avec le statut de chaque phase. Utilisez les fonctions ci-dessous pour exécuter et clôturer." } },
+  ],
+});
+
+const buildLssBlackGuide = (projectId: string): RawGuide => ({
+  pageTitle: { nl: "Lean Six Sigma — Black Belt", en: "Lean Six Sigma — Black Belt", fr: "Lean Six Sigma — Black Belt" },
+  pageDescription: {
+    nl: "Voer geavanceerde DMAIC-verbeteringen uit met statistische tools: hypothesetoetsen, DOE, control plans en SPC. Een tollgate sluit elke fase af. Klik op een functie om er direct heen te gaan.",
+    en: "Run advanced DMAIC improvements with statistical tools: hypothesis tests, DOE, control plans and SPC. A tollgate closes each phase. Click a feature to jump straight to it.",
+    fr: "Menez des améliorations DMAIC avancées avec des outils statistiques : tests d'hypothèses, plans d'expériences, plans de contrôle et SPC. Un tollgate clôt chaque phase. Cliquez sur une fonction pour y accéder.",
+  },
+  features: [
+    { icon: Layout, title: { nl: "Dashboard", en: "Dashboard", fr: "Tableau de bord" }, description: { nl: "DMAIC-flow, statistische studies en kosten in één beeld", en: "DMAIC flow, statistical studies and cost in one view", fr: "Flux DMAIC, études statistiques et coûts en une vue" }, path: `/projects/${projectId}/lss-black/overview` },
+    { icon: Target, title: { nl: "DMAIC-fasen", en: "DMAIC Phases", fr: "Phases DMAIC" }, description: { nl: "Elke fase doorlopen met een tollgate als afsluiting", en: "Work each phase with a tollgate as the closeout", fr: "Dérouler chaque phase avec un tollgate de clôture" }, path: `/projects/${projectId}/lss-black/phases` },
+    { icon: BarChart3, title: { nl: "Hypothesetoetsen", en: "Hypothesis Tests", fr: "Tests d'hypothèses" }, description: { nl: "Vermoede oorzaken statistisch bevestigen of verwerpen", en: "Statistically confirm or reject suspected causes", fr: "Confirmer ou rejeter statistiquement les causes suspectées" }, path: `/projects/${projectId}/lss-black/hypothesis-tests` },
+    { icon: Workflow, title: { nl: "DOE", en: "DOE", fr: "Plans d'expériences" }, description: { nl: "Design of Experiments om factoren te optimaliseren", en: "Design of Experiments to optimise factors", fr: "Plans d'expériences pour optimiser les facteurs" }, path: `/projects/${projectId}/lss-black/doe` },
+    { icon: Shield, title: { nl: "Control Plans", en: "Control Plans", fr: "Plans de contrôle" }, description: { nl: "Verbeteringen borgen met een beheersplan", en: "Lock in improvements with a control plan", fr: "Pérenniser les gains avec un plan de contrôle" }, path: `/projects/${projectId}/lss-black/control-plans` },
+    { icon: TrendingUp, title: { nl: "SPC-kaarten", en: "SPC Charts", fr: "Cartes SPC" }, description: { nl: "Statistische procesbeheersing — speciale oorzaken signaleren", en: "Statistical process control — flag special causes", fr: "Maîtrise statistique — signaler les causes spéciales" }, path: `/projects/${projectId}/lss-black/spc-charts` },
+    { icon: ListChecks, title: { nl: "Taken", en: "Tasks", fr: "Tâches" }, description: { nl: "Werk per fase toewijzen en de status volgen", en: "Assign work per phase and track status", fr: "Attribuer le travail par phase et suivre le statut" }, path: `/projects/${projectId}/lss-black/tasks` },
+  ],
+  howTos: [
+    { title: { nl: "Een oorzaak bewijzen", en: "Prove a root cause", fr: "Prouver une cause racine" }, steps: [
+      { nl: "Formuleer een hypothese in de Analyze-fase", en: "Formulate a hypothesis in the Analyze phase", fr: "Formulez une hypothèse en phase Analyze" },
+      { nl: "Voer een hypothesetoets uit met voldoende data", en: "Run a hypothesis test with sufficient data", fr: "Exécutez un test d'hypothèse avec assez de données" },
+      { nl: "Gebruik de p-waarde om de oorzaak te bevestigen of te verwerpen", en: "Use the p-value to confirm or reject the cause", fr: "Utilisez la p-value pour confirmer ou rejeter la cause" },
+    ] },
+    { title: { nl: "Verbeteringen borgen (Control)", en: "Lock in gains (Control)", fr: "Pérenniser les gains (Control)" }, steps: [
+      { nl: "Stel een Control Plan op voor de verbeterde proceswaarden", en: "Create a Control Plan for the improved process values", fr: "Créez un Plan de contrôle pour les valeurs améliorées" },
+      { nl: "Configureer een SPC-kaart om afwijkingen te bewaken", en: "Configure an SPC chart to monitor deviations", fr: "Configurez une carte SPC pour surveiller les écarts" },
+      { nl: "Sluit de Control-tollgate om het project af te ronden", en: "Pass the Control tollgate to finish the project", fr: "Franchissez le tollgate Control pour clôturer le projet" },
+    ] },
+  ],
+  tips: [
+    { nl: "De tollgate is echt: een fase voltooien lukt niet zonder dat de poort gehaald is.", en: "The tollgate is real: you can't complete a phase without passing the gate.", fr: "Le tollgate est réel : impossible d'achever une phase sans le franchir." },
+    { nl: "Bewijs oorzaken met statistiek (hypothesetoets/DOE) voordat u verbetert.", en: "Prove causes with statistics (hypothesis test/DOE) before you improve.", fr: "Prouvez les causes par la statistique (test/DOE) avant d'améliorer." },
+    { nl: "Borg in Control met een control plan + SPC; zonder borging keert de variatie terug.", en: "Secure in Control with a control plan + SPC; without it the variation returns.", fr: "Pérennisez en Control avec un plan + SPC ; sinon la variation revient." },
+  ],
+  tourSteps: [
+    { title: { nl: "DMAIC-flow", en: "DMAIC flow", fr: "Flux DMAIC" }, description: { nl: "Bovenaan ziet u D→M→A→I→C met de status per fase. De statistische tools hieronder horen bij Analyze, Improve en Control.", en: "At the top you see D→M→A→I→C with each phase's status. The statistical tools below belong to Analyze, Improve and Control.", fr: "En haut, D→M→A→I→C avec le statut de chaque phase. Les outils statistiques ci-dessous relèvent d'Analyze, Improve et Control." } },
+  ],
+});
+
+/* Methodology key (from the URL) → guide builder. Lets any project page show
+   its own methodology guide with working deep links instead of the generic
+   "Projecten" guide. */
+const METHODOLOGY_GUIDE_BUILDERS: Record<string, (projectId: string) => RawGuide> = {
+  prince2: buildPrince2Guide,
+  scrum: buildScrumGuide,
+  kanban: buildKanbanGuide,
+  agile: buildAgileGuide,
+  waterfall: buildWaterfallGuide,
+  hybrid: buildHybridGuide,
+  "lss-green": buildLssGreenGuide,
+  "lss-black": buildLssBlackGuide,
+};
+
 /* ─── Related pages navigation ─── */
 interface NavLink {
   label: string;
@@ -756,10 +1038,10 @@ export default function AICopilotSidebar() {
   const currentPath = "/" + location.pathname.split("/").filter(Boolean)[0];
   // Methodology-specific guides take precedence so a project page shows its own
   // guide (with working deep links) instead of the generic "Projecten" guide.
-  const prince2Match = location.pathname.match(/^\/projects\/([^/]+)\/prince2(?:\/|$)/);
+  const methodologyMatch = location.pathname.match(/^\/projects\/([^/]+)\/(prince2|scrum|kanban|agile|waterfall|hybrid|lss-green|lss-black)(?:\/|$)/);
   const guideLang: GuideLang = language === "nl" || language === "fr" ? language : "en";
-  const rawGuide: RawGuide = prince2Match
-    ? buildPrince2Guide(prince2Match[1])
+  const rawGuide: RawGuide = methodologyMatch
+    ? METHODOLOGY_GUIDE_BUILDERS[methodologyMatch[2]](methodologyMatch[1])
     : GUIDE_MAP[location.pathname] || GUIDE_MAP[currentPath] || DEFAULT_GUIDE;
   const guide = resolveGuide(rawGuide, guideLang);
 

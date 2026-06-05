@@ -27,11 +27,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { 
-  Layers, FolderKanban, TrendingUp, Euro, Calendar, 
+import {
+  Layers, FolderKanban, TrendingUp, Euro, Calendar,
   AlertTriangle, CheckCircle2, ArrowRight, Loader2, Plus,
-  Edit, Trash2, ArrowLeft
+  Edit, Trash2, ArrowLeft, Workflow, GraduationCap
 } from 'lucide-react';
+import MethodologyFlow from '@/components/MethodologyFlow';
+import { buildProgramFlow } from '@/lib/programFlow';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
@@ -194,6 +196,12 @@ const ProgramDashboard = () => {
       : 0,
     atRiskProjects: projects.filter((p: any) => p.health_status === 'amber' || p.health_status === 'red').length,
   };
+
+  // Which sidebar tab is rendered (dashboard / projects / risks / pi/* …).
+  const currentTab = location.pathname.split('/').filter(Boolean).pop() ?? 'dashboard';
+  // Programme lifecycle flow + Academy course, driven by the real methodology.
+  const programFlow = buildProgramFlow(program?.methodology, programMetrics);
+  const navFlow = (slug: string) => navigate(`/programs/${id}/${slug}`);
 
   // Filter upcoming milestones
   const upcomingMilestones = milestones
@@ -396,6 +404,29 @@ const ProgramDashboard = () => {
             </p>
           </CardContent>
         </Card>
+
+        {/* Programme lifecycle flow — only on the dashboard tab */}
+        {currentTab === 'dashboard' && (
+          <Card>
+            <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Workflow className="h-5 w-5 text-indigo-600" />
+                {pt("Programme Flow")}
+              </CardTitle>
+              <button
+                type="button"
+                onClick={() => navigate(`/academy/course/${programFlow.courseSlug}`)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300"
+                title={pt("Open the matching training in the Academy")}
+              >
+                <GraduationCap className="h-3.5 w-3.5" /> {pt(programFlow.courseLabel)}
+              </button>
+            </CardHeader>
+            <CardContent>
+              <MethodologyFlow steps={programFlow.steps} accent={programFlow.accent} onNavigate={navFlow} minWidth={560} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Projects Table */}
         <Card>

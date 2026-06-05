@@ -8,7 +8,9 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies";
-import { Loader2, Target, Users, ListChecks, Activity, BarChart3, Euro, Calendar, FlaskConical, Gauge } from "lucide-react";
+import { Loader2, Target, Users, ListChecks, Workflow, BarChart3, Euro, Calendar, FlaskConical, Gauge, GraduationCap } from "lucide-react";
+import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
+import { buildDmaicSteps } from "@/components/dmaicFlow";
 
 const fetchJson = async (url: string) => {
   const token = localStorage.getItem("access_token");
@@ -46,6 +48,14 @@ const LSSGreenOverview = () => {
   const recent = [...tasks].sort((a: any, b: any) => (b.id || 0) - (a.id || 0)).slice(0, 5);
   const latestMetric = metrics[0];
 
+  const greenSteps: FlowStep[] = buildDmaicSteps(phases, {
+    define:  [{ label: "Phases", slug: "phases" }, { label: "Tasks", slug: "tasks" }],
+    measure: [{ label: "Measurements", slug: "measurements" }, { label: "Metrics", slug: "metrics" }],
+    analyze: [{ label: "Metrics", slug: "metrics" }, { label: "Tasks", slug: "tasks" }],
+    improve: [{ label: "Tasks", slug: "tasks" }, { label: "Phases", slug: "phases" }],
+    control: [{ label: "Metrics", slug: "metrics" }, { label: "Measurements", slug: "measurements" }],
+  }, "/academy/course/lean-six-sigma");
+
   const formatCurrency = (val: number) => formatBudgetDetailed(val, getCurrencyFromLanguage(language));
   const loading = phasesQ.isLoading || tasksQ.isLoading;
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
@@ -70,18 +80,13 @@ const LSSGreenOverview = () => {
           <Card><CardContent className="p-4"><div className="flex items-center gap-2 mb-1"><Calendar className="h-4 w-4 text-muted-foreground" /><p className="text-sm text-muted-foreground">{pt("Target End")}</p></div><p className="text-base font-semibold">{targetEnd || "—"}</p></CardContent></Card>
         </div>
 
-        <Card><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2"><Activity className="h-4 w-4" /> {pt("DMAIC Progress")}</CardTitle></CardHeader>
+        <Card><CardHeader className="pb-3 flex-row items-center justify-between space-y-0"><CardTitle className="flex items-center gap-2"><Workflow className="h-4 w-4 text-green-600" /> {pt("DMAIC Flow")}</CardTitle>
+          <button type="button" onClick={() => navigate("/academy/course/lean-six-sigma")} className="inline-flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-300" title={pt("Open the LSS Green Belt course in the Academy")}><GraduationCap className="h-3.5 w-3.5" /> {pt("Green Belt course")}</button>
+          </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between mb-2"><span className="text-sm text-muted-foreground">{pt("Overall completion")}</span><span className="text-sm font-semibold">{phaseProgress}%</span></div>
             <Progress value={phaseProgress} className="h-3 mb-4" />
-            <div className="grid grid-cols-5 gap-2">
-              {["define", "measure", "analyze", "improve", "control"].map(ph => {
-                const found = phases.find((p: any) => (p.phase || "").toLowerCase() === ph);
-                const status = found?.status || "not_started";
-                const color = status === "completed" ? "bg-green-500" : status === "in_progress" ? "bg-blue-500" : "bg-gray-200";
-                return (<div key={ph} className="text-center"><div className={`h-2 rounded ${color} mb-1`} /><span className="text-xs capitalize">{ph}</span></div>);
-              })}
-            </div>
+            <MethodologyFlow steps={greenSteps} accent="green" onNavigate={nav} />
           </CardContent>
         </Card>
 

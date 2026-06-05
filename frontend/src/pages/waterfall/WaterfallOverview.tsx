@@ -6,9 +6,38 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
-import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milestone, BarChart3, GitPullRequest, Rocket, Wrench, Euro, AlertTriangle, AlertCircle, Package, Baseline, Users } from "lucide-react";
+import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milestone, BarChart3, GitPullRequest, Rocket, Wrench, Euro, AlertTriangle, AlertCircle, Package, Baseline, Users, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { DemoControls } from "@/components/DemoControls";
+import MethodologyFlow, { FlowStep, FlowStatus } from "@/components/MethodologyFlow";
+
+// Static metadata per Waterfall phase: short code, purpose, and the tabs it drives.
+const WF_PHASES: Record<string, { code: string; purpose: string; links: { label: string; slug: string }[] }> = {
+  requirements: { code: "REQ", purpose: "Capture and baseline what the system must do before any design starts.", links: [{ label: "Requirements", slug: "requirements" }, { label: "Phase Gate", slug: "phase-gate" }] },
+  design: { code: "DES", purpose: "Translate the baselined requirements into a technical design and architecture.", links: [{ label: "Design", slug: "design" }, { label: "Phase Gate", slug: "phase-gate" }] },
+  development: { code: "DEV", purpose: "Build the product to the approved design, tracking progress against the plan.", links: [{ label: "Development", slug: "development" }, { label: "Deliverables", slug: "deliverables" }] },
+  testing: { code: "TST", purpose: "Verify the build against the requirements; no failing tests pass the gate.", links: [{ label: "Testing", slug: "testing" }, { label: "Phase Gate", slug: "phase-gate" }] },
+  deployment: { code: "DEP", purpose: "Release the accepted product into production in a controlled hand-over.", links: [{ label: "Deployment", slug: "deployment" }, { label: "Milestones", slug: "milestones" }] },
+  maintenance: { code: "MNT", purpose: "Operate, support and improve the live product through its service life.", links: [{ label: "Maintenance", slug: "maintenance" }] },
+};
+
+const wfStatus = (s: string): FlowStatus =>
+  s === "completed" ? "done" : s === "in_progress" ? "active" : "todo";
+
+const buildWaterfallSteps = (phases: any[]): FlowStep[] =>
+  [...phases].sort((a, b) => (a.order || 0) - (b.order || 0)).map((p) => {
+    const meta = WF_PHASES[p.phase_type] || { code: (p.name || "?").slice(0, 3).toUpperCase(), purpose: "", links: [] };
+    return {
+      code: meta.code,
+      label: p.name,
+      purpose: meta.purpose,
+      progress: p.progress || 0,
+      status: wfStatus(p.status),
+      meta: typeof p.task_count === "number" ? `${p.task_count} ${p.task_count === 1 ? "task" : "tasks"}` : undefined,
+      links: meta.links,
+      academyHref: "/academy/course/waterfall-pm",
+    };
+  });
 
 const WaterfallOverview = () => {
   const { pt } = usePageTranslations();
@@ -49,11 +78,14 @@ const WaterfallOverview = () => {
         </div>
 
         {d.phases?.length > 0 && (
-          <Card><CardHeader className="pb-3"><CardTitle>{pt("Phase Progress")}</CardTitle></CardHeader><CardContent className="space-y-3">
-            {d.phases.map((p: any) => (
-              <div key={p.id} className="flex items-center gap-4"><span className="w-40 text-sm font-medium truncate">{p.name}</span><div className="flex-1"><Progress value={p.progress || 0} className="h-3" /></div><Badge variant={p.status === "completed" ? "default" : p.status === "in_progress" ? "secondary" : "outline"} className="w-24 justify-center text-xs">{p.status}</Badge><span className="text-sm w-10 text-right">{p.progress || 0}%</span></div>
-            ))}
-          </CardContent></Card>
+          <Card>
+            <CardHeader className="pb-3 flex-row items-center justify-between space-y-0"><CardTitle className="flex items-center gap-2 text-base"><Workflow className="h-5 w-5 text-cyan-600" /> {pt("Waterfall Phase Flow")}</CardTitle>
+              <button type="button" onClick={() => navigate("/academy/course/waterfall-pm")} className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300" title={pt("Open the Waterfall course in the Academy")}><GraduationCap className="h-3.5 w-3.5" /> {pt("Waterfall course")}</button>
+            </CardHeader>
+            <CardContent>
+              <MethodologyFlow steps={buildWaterfallSteps(d.phases)} accent="cyan" onNavigate={nav} />
+            </CardContent>
+          </Card>
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

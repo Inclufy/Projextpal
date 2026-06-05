@@ -17,7 +17,7 @@ from .models import (
     AgileUserPersona, AgileEpic, AgileBacklogItem, AgileIteration,
     AgileRelease, AgileDailyUpdate, AgileRetrospective, AgileRetroItem,
     AgileBudget, AgileBudgetItem, DefinitionOfDone,
-    AgileFlowConfig, AgileDodEntry
+    AgileFlowConfig, AgileDodEntry, StakeholderFeedback
 )
 from .serializers import (
     DefinitionOfDoneSerializer,
@@ -29,7 +29,8 @@ from .serializers import (
     AgileDailyUpdateSerializer, AgileRetrospectiveSerializer,
     AgileRetroItemSerializer, AgileBudgetSerializer,
     AgileBudgetItemSerializer, AgileDashboardSerializer,
-    AgileFlowConfigSerializer, AgileDodEntrySerializer
+    AgileFlowConfigSerializer, AgileDodEntrySerializer,
+    StakeholderFeedbackSerializer
 )
 
 User = get_user_model()
@@ -624,6 +625,30 @@ class AgileRetrospectiveViewSet(viewsets.ModelViewSet):
         )
         return Response(AgileRetroItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['get'], url_path='action-items')
+    def action_items(self, request, project_id=None):
+        """Carry-forward view: every retro action item across all iterations of
+        the project, so improvement actions don't get lost between retros.
+
+        Open + in-progress only by default (?include_done=1 to include closed),
+        each annotated with the iteration it came from. Ordered open-first,
+        then by votes."""
+        _gated_project_lookup(request.user, project_id)
+        qs = AgileRetroItem.objects.filter(
+            retrospective__iteration__project_id=project_id,
+            category='action_item',
+        ).select_related('retrospective__iteration', 'assignee').order_by('status', '-votes')
+        if request.query_params.get('include_done') not in ('1', 'true', 'True'):
+            qs = qs.exclude(status='done')
+        data = []
+        for item in qs:
+            row = AgileRetroItemSerializer(item).data
+            it = item.retrospective.iteration
+            row['iteration_id'] = it.id
+            row['iteration_name'] = it.name
+            data.append(row)
+        return Response(data)
+
 
 class AgileRetroItemViewSet(viewsets.ModelViewSet):
     queryset = AgileRetroItem.objects.all()
@@ -637,6 +662,40 @@ class AgileRetroItemViewSet(viewsets.ModelViewSet):
         item.votes += 1
         item.save()
         return Response(AgileRetroItemSerializer(item).data)
+
+
+# ============================================
+# STAKEHOLDER FEEDBACK (AG-3)
+# ============================================
+
+class StakeholderFeedbackViewSet(viewsets.ModelViewSet):
+    """Per-iteration stakeholder feedback on shipped work. Scoped to the project
+    (membership-gated); supports ?iteration= and ?open_follow_ups=1 filters."""
+    queryset = StakeholderFeedback.objects.all()
+    serializer_class = StakeholderFeedbackSerializer
+    permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        qs = StakeholderFeedback.objects.filter(
+            iteration__project_id=project_id
+        ).select_related('iteration', 'backlog_item', 'created_by')
+        iteration_id = self.request.query_params.get('iteration')
+        if iteration_id:
+            qs = qs.filter(iteration_id=iteration_id)
+        if self.request.query_params.get('open_follow_ups') in ('1', 'true', 'True'):
+            qs = qs.exclude(follow_up_action='').filter(follow_up_done=False)
+        return qs
+
+    def perform_create(self, serializer):
+        project = _gated_project_lookup(self.request.user, self.kwargs.get('project_id'))
+        iteration = serializer.validated_data.get('iteration')
+        if iteration is None or iteration.project_id != project.id:
+            raise ValidationError({'iteration': 'Feedback must target an iteration of this project.'})
+        item = serializer.validated_data.get('backlog_item')
+        if item is not None and item.project_id != project.id:
+            raise ValidationError({'backlog_item': 'Item does not belong to this project.'})
+        serializer.save(created_by=self.request.user)
 
 
 # ============================================

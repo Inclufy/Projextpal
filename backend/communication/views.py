@@ -6,8 +6,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
 from calendar import monthrange
 from datetime import date as dt_date, timedelta
-from .models import StatusReport, TrainingMaterial, ReportingItem, Meeting
-from .serializers import StatusReportSerializer, TrainingMaterialSerializer , ReportingItemSerializer , MeetingSerializer, MeetingOccurrenceSerializer
+from .models import (
+    StatusReport, TrainingMaterial, ReportingItem, Meeting,
+    GeneratedStatusReport, MethodologyReport,
+)
+from .serializers import (
+    StatusReportSerializer, TrainingMaterialSerializer, ReportingItemSerializer,
+    MeetingSerializer, MeetingOccurrenceSerializer, GeneratedStatusReportSerializer,
+    MethodologyReportSerializer,
+)
 
 
 def _company_scoped(qs, user):
@@ -75,6 +82,142 @@ class StatusReportViewSet(viewsets.ModelViewSet):
         report = get_object_or_404(self.get_queryset(), pk=pk)
         report.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class GeneratedStatusReportViewSet(viewsets.ReadOnlyModelViewSet):
+    """AI-synthesised executive status reports (IL-2).
+
+    Read-only history + a `generate` action that runs the synthesis engine for a
+    project and persists a new report. Company-scoped like the other surfaces.
+    """
+    serializer_class = GeneratedStatusReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = _company_scoped(
+            GeneratedStatusReport.objects.select_related("project", "created_by"),
+            self.request.user,
+        )
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    @action(detail=False, methods=["post"])
+    def generate(self, request):
+        """Body: {project: <id>}. Gathers live metrics, computes RAG, synthesises
+        the narrative (LLM if configured, else deterministic) and stores it."""
+        from projects.models import Project
+        from .status_synthesis import synthesize
+
+        project_id = request.data.get("project")
+        if not project_id:
+            return Response({"detail": "project is required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        proj_qs = Project.objects.all()
+        user = request.user
+        if not (getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)):
+            company_id = getattr(user, "company_id", None)
+            proj_qs = proj_qs.filter(company_id=company_id) if company_id else proj_qs.none()
+        project = get_object_or_404(proj_qs, pk=project_id)
+        result = synthesize(project)
+        report = GeneratedStatusReport.objects.create(
+            project=project,
+            metrics=result["metrics"],
+            overall_rag=result["overall_rag"],
+            rag_scope=result["rag_scope"],
+            rag_schedule=result["rag_schedule"],
+            rag_cost=result["rag_cost"],
+            rag_risk=result["rag_risk"],
+            executive_summary=result["executive_summary"],
+            highlights=result["highlights"],
+            blockers=result["blockers"],
+            next_steps=result["next_steps"],
+            model_used=result["model_used"],
+            original_ai_response=result["original_ai_response"],
+            created_by=request.user,
+        )
+        return Response(self.get_serializer(report).data,
+                        status=status.HTTP_201_CREATED)
+
+
+class MethodologyReportViewSet(viewsets.ModelViewSet):
+    """Doctrine-specific reports (one shared model, all methodologies).
+
+    Full CRUD so a user can hand-author/edit a report, plus a `generate`
+    action that synthesises one from the project's live methodology state.
+    Company-scoped; filterable by `project` and `methodology`.
+    """
+    serializer_class = MethodologyReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = _company_scoped(
+            MethodologyReport.objects.select_related("project", "created_by"),
+            self.request.user,
+        )
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        methodology = self.request.query_params.get("methodology")
+        if methodology:
+            qs = qs.filter(methodology=methodology)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, auto_generated=False)
+
+    @action(detail=False, methods=["post"])
+    def generate(self, request):
+        """Body: {project: <id>, methodology: <slug>}. Reads live methodology
+        state, synthesises the doctrine report and persists it."""
+        from projects.models import Project
+        from .doctrine_reports import synthesize
+
+        project_id = request.data.get("project")
+        methodology = request.data.get("methodology")
+        if not project_id or not methodology:
+            return Response({"detail": "project and methodology are required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if methodology not in dict(MethodologyReport.METHODOLOGY_CHOICES):
+            return Response({"detail": f"Unknown methodology '{methodology}'."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        proj_qs = Project.objects.all()
+        user = request.user
+        if not (getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)):
+            company_id = getattr(user, "company_id", None)
+            proj_qs = proj_qs.filter(company_id=company_id) if company_id else proj_qs.none()
+        project = get_object_or_404(proj_qs, pk=project_id)
+
+        result = synthesize(project, methodology)
+        report = MethodologyReport.objects.create(
+            project=project,
+            methodology=methodology,
+            report_type=result["report_type"],
+            title=result["title"],
+            period_start=result["period_start"],
+            period_end=result["period_end"],
+            scope_ref=result["scope_ref"],
+            overall_rag=result["overall_rag"],
+            rag_scope=result["rag_scope"],
+            rag_schedule=result["rag_schedule"],
+            rag_cost=result["rag_cost"],
+            rag_risk=result["rag_risk"],
+            executive_summary=result["executive_summary"],
+            highlights=result["highlights"],
+            blockers=result["blockers"],
+            next_steps=result["next_steps"],
+            metrics=result["metrics"],
+            payload=result["payload"],
+            auto_generated=True,
+            model_used=result["model_used"],
+            original_ai_response=result["original_ai_response"],
+            created_by=request.user,
+        )
+        return Response(self.get_serializer(report).data,
+                        status=status.HTTP_201_CREATED)
+
 
 # Training Material ViewSet
 class TrainingMaterialViewSet(viewsets.ModelViewSet):

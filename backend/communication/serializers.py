@@ -1,5 +1,47 @@
 from rest_framework import serializers
-from .models import StatusReport, TrainingMaterial , ReportingItem, Meeting
+from .models import (
+    StatusReport, TrainingMaterial, ReportingItem, Meeting,
+    GeneratedStatusReport, MethodologyReport,
+)
+
+
+class MethodologyReportSerializer(serializers.ModelSerializer):
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    created_by_name = serializers.CharField(source="created_by.username", read_only=True)
+    report_type_display = serializers.CharField(source="get_report_type_display", read_only=True)
+    methodology_display = serializers.CharField(source="get_methodology_display", read_only=True)
+
+    class Meta:
+        model = MethodologyReport
+        fields = [
+            "id", "project", "project_name", "methodology", "methodology_display",
+            "report_type", "report_type_display", "title", "period_start",
+            "period_end", "scope_ref", "overall_rag", "rag_scope", "rag_schedule",
+            "rag_cost", "rag_risk", "executive_summary", "highlights", "blockers",
+            "next_steps", "metrics", "payload", "auto_generated", "model_used",
+            "original_ai_response", "created_by", "created_by_name",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = [
+            "created_by", "created_at", "updated_at", "model_used",
+            "original_ai_response",
+        ]
+
+
+class GeneratedStatusReportSerializer(serializers.ModelSerializer):
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    created_by_name = serializers.CharField(source="created_by.username", read_only=True)
+
+    class Meta:
+        model = GeneratedStatusReport
+        fields = [
+            "id", "project", "project_name", "period_start", "period_end",
+            "metrics", "overall_rag", "rag_scope", "rag_schedule", "rag_cost",
+            "rag_risk", "executive_summary", "highlights", "blockers",
+            "next_steps", "model_used", "original_ai_response",
+            "created_by", "created_by_name", "created_at",
+        ]
+        read_only_fields = fields
 
 class StatusReportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)  # String ID to match frontend

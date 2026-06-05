@@ -292,3 +292,148 @@ class MeetingActionItem(models.Model):
             status="open",
             notes=self.notes,
         )
+
+
+class GeneratedStatusReport(models.Model):
+    """AI auto-synthesised executive status report (IL-2, NLP status synthesis).
+
+    Distinct from `StatusReport` (a hand-maintained status/progress row). This
+    one is *generated*: the engine gathers real project facts (task counts,
+    completion %, overdue/blocked, open risks, budget burn vs progress), computes
+    a deterministic RAG health per dimension, then synthesises an executive
+    narrative — via Claude when an API key is present, otherwise a deterministic
+    template. The raw metrics and raw model response are both persisted so the
+    report is auditable and reproducible.
+    """
+
+    RAG_CHOICES = [
+        ("green", "Green"),
+        ("amber", "Amber"),
+        ("red", "Red"),
+    ]
+
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.CASCADE, related_name="generated_status_reports",
+    )
+    period_start = models.DateField(null=True, blank=True)
+    period_end = models.DateField(null=True, blank=True)
+    # Snapshot of the facts the narrative was synthesised from (auditable).
+    metrics = models.JSONField(default=dict, blank=True)
+    overall_rag = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_scope = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_schedule = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_cost = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_risk = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    executive_summary = models.TextField(blank=True, default="")
+    highlights = models.JSONField(default=list, blank=True)
+    blockers = models.JSONField(default=list, blank=True)
+    next_steps = models.JSONField(default=list, blank=True)
+    # Which engine produced the narrative: a model id (e.g. 'claude-opus-4-7')
+    # or 'deterministic' when no API key was available.
+    model_used = models.CharField(max_length=64, default="deterministic")
+    # Raw model response kept verbatim for audit (mirrors the original_ai_response
+    # convention used elsewhere). Empty for deterministic synthesis.
+    original_ai_response = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="generated_status_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "generated_status_reports"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.project} status ({self.overall_rag}) @ {self.created_at:%Y-%m-%d}"
+
+
+class MethodologyReport(models.Model):
+    """Doctrine-specific report, one shared model for all methodologies.
+
+    Distinct from `GeneratedStatusReport` (methodology-agnostic executive
+    health). This is the *doctrinal* report each methodology mandates —
+    a Scrum Sprint Report, a Kanban Service Delivery Review, a Waterfall
+    Phase Gate Report, an Agile Iteration Report, an LSS DMAIC Tollgate
+    Report, a Hybrid Phase Report. One table keeps history consistent and
+    needs only a single migration.
+
+    Like the generated status report it is *synthesised* from live data
+    (`doctrine_reports.synthesize`) and the snapshot is persisted, but a
+    user may also create/edit one by hand. `payload` carries the
+    doctrine-specific fields (velocity, throughput, EVM, tollgate criteria…)
+    that don't fit the shared columns.
+    """
+
+    RAG_CHOICES = [
+        ("green", "Green"),
+        ("amber", "Amber"),
+        ("red", "Red"),
+    ]
+    METHODOLOGY_CHOICES = [
+        ("scrum", "Scrum"),
+        ("kanban", "Kanban"),
+        ("agile", "Agile"),
+        ("waterfall", "Waterfall"),
+        ("lss-green", "Lean Six Sigma — Green Belt"),
+        ("lss-black", "Lean Six Sigma — Black Belt"),
+        ("hybrid", "Hybrid"),
+    ]
+    REPORT_TYPE_CHOICES = [
+        ("sprint_report", "Sprint Report"),
+        ("service_delivery_review", "Service Delivery Review"),
+        ("iteration_report", "Iteration Report"),
+        ("phase_gate_report", "Phase Gate Report"),
+        ("tollgate_report", "DMAIC Tollgate Report"),
+        ("phase_report", "Phase Report"),
+    ]
+
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.CASCADE, related_name="methodology_reports",
+    )
+    methodology = models.CharField(max_length=20, choices=METHODOLOGY_CHOICES)
+    report_type = models.CharField(max_length=30, choices=REPORT_TYPE_CHOICES)
+    title = models.CharField(max_length=300, blank=True, default="")
+    period_start = models.DateField(null=True, blank=True)
+    period_end = models.DateField(null=True, blank=True)
+    # Human-readable scope unit this report covers, e.g. "Sprint 3 — Login",
+    # "Define phase", "Phase: Design (waterfall)".
+    scope_ref = models.CharField(max_length=200, blank=True, default="")
+    overall_rag = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_scope = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_schedule = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_cost = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    rag_risk = models.CharField(max_length=5, choices=RAG_CHOICES, default="green")
+    executive_summary = models.TextField(blank=True, default="")
+    highlights = models.JSONField(default=list, blank=True)
+    blockers = models.JSONField(default=list, blank=True)
+    next_steps = models.JSONField(default=list, blank=True)
+    # Computed numeric facts (auditable) — committed/done points, throughput,
+    # CPI/SPI, tollgate pass counts, etc.
+    metrics = models.JSONField(default=dict, blank=True)
+    # Doctrine-specific structured fields that don't map to shared columns.
+    payload = models.JSONField(default=dict, blank=True)
+    auto_generated = models.BooleanField(default=True)
+    model_used = models.CharField(max_length=64, default="deterministic")
+    original_ai_response = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="methodology_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "methodology_reports"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "methodology", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.get_report_type_display()} — {self.project} @ {self.created_at:%Y-%m-%d}"
