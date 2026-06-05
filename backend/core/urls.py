@@ -31,7 +31,7 @@ urlpatterns = [
     path("api/v1/finance/", include("finance.urls")),
     path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
-    path("api/v1/sixsigma/", include("sixsigma.urls")),
+    path("api/v1/", include("sixsigma.urls")),
     
     # ✅ MOVE ACADEMY HERE - BEFORE the broad api/v1/ patterns!
     path("api/v1/academy/", include("academy.urls")),

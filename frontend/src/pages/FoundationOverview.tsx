@@ -42,8 +42,15 @@ const FoundationOverview = () => {
   // Methodologies that have a dedicated, richer dashboard land there directly
   // instead of the generic Project Overview (keeps the project entry point in
   // sync with the methodology sidebar's "Overview" link).
+  // These land on their own dedicated overview rather than the embedded
+  // MethodologyDashboard, which for these three borrowed another methodology's
+  // dashboard (hybrid/agile -> Scrum, waterfall -> PRINCE2) and so fired
+  // cross-methodology API calls that 403 and mislabelled the project.
   const METHODOLOGY_LANDING: Record<string, string> = {
     prince2: "prince2/dashboard",
+    hybrid: "hybrid/overview",
+    agile: "agile/overview",
+    waterfall: "waterfall/overview",
   };
   const landing = METHODOLOGY_LANDING[project?.methodology?.toLowerCase()];
   if (landing && id) {

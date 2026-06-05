@@ -47,7 +47,7 @@ class TollgateGateTests(TestCase):
 
     def _approve_url(self, phase):
         gid = self.gates[phase].id
-        return f"/api/v1/sixsigma/projects/{self.project.id}/sixsigma/tollgates/{gid}/approve/"
+        return f"/api/v1/projects/{self.project.id}/sixsigma/tollgates/{gid}/approve/"
 
     def _make_define_deliverables(self, approved=True):
         ProjectCharter.objects.create(

@@ -113,7 +113,7 @@ class ControlChartActionTests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def _url(self, action):
-        return (f"/api/v1/sixsigma/projects/{self.project.id}"
+        return (f"/api/v1/projects/{self.project.id}"
                 f"/sixsigma/control-charts/{self.chart.id}/{action}/")
 
     def test_capability_post_persists_cp_cpk(self):
@@ -130,7 +130,7 @@ class ControlChartActionTests(TestCase):
             metric_name="x", ucl=Decimal("1"), lcl=Decimal("0"),
             center_line=Decimal("0.5"),  # no USL/LSL, no points
         )
-        url = (f"/api/v1/sixsigma/projects/{self.project.id}"
+        url = (f"/api/v1/projects/{self.project.id}"
                f"/sixsigma/control-charts/{empty.id}/capability/")
         resp = self.client.post(url, {}, format="json")
         self.assertEqual(resp.status_code, 400, resp.content)
@@ -208,7 +208,7 @@ class SavingsValidationGateTests(TestCase):
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
-        self.base = f"/api/v1/sixsigma/projects/{self.project.id}/sixsigma/savings-validations"
+        self.base = f"/api/v1/projects/{self.project.id}/sixsigma/savings-validations"
 
     def _create(self):
         resp = self.client.post(
