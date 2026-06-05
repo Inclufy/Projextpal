@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { RiskHeatmap } from "@/components/RiskHeatmap";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,17 @@ const Prince2Risks = () => {
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
       <div className="flex items-center justify-between"><div className="flex items-center gap-3"><AlertTriangle className="h-6 w-6 text-amber-500" /><h1 className="text-2xl font-bold">{pt("Risk Register")}</h1><Badge variant="outline">{items.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
+      {/* 5×5 Risk Map — Yanmar HR-05 */}
+      {items.length > 0 && (
+        <Card className="p-4">
+          <RiskHeatmap risks={items.map((i: any) => ({
+            id: i.id,
+            name: i.title,
+            probability: ({ low: 1, medium: 3, high: 5 } as any)[i.probability] ?? 3,
+            impact: ({ low: 1, medium: 3, high: 5 } as any)[i.impact] ?? 3,
+          }))} />
+        </Card>
+      )}
       {items.length === 0 ? <Card className="p-8 text-center"><AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No risks identified yet")}</h3></Card> : (
         <div className="space-y-2">{items.map(i => (<Card key={i.id}><CardContent className="p-4 flex items-center justify-between"><div className="flex-1"><div className="flex items-center gap-2 mb-1 flex-wrap"><span className="font-medium">{i.title}</span><Badge variant="outline" className="text-xs">{i.category}</Badge><Badge className={`text-xs ${impactColors[i.impact] || ""}`}>Impact: {i.impact}</Badge><Badge variant="outline" className="text-xs">Prob: {i.probability}</Badge><Badge variant="outline" className="text-xs">{i.response_type}</Badge><Badge variant={i.status === "managing" ? "default" : "secondary"} className="text-xs">{i.status}</Badge>{i.owner_name && <Badge variant="secondary" className="text-xs">{i.owner_name}</Badge>}</div>{i.description && <p className="text-sm text-muted-foreground">{i.description}</p>}{i.mitigation && <p className="text-xs mt-1"><span className="font-medium">{pt("Mitigation")}:</span> {i.mitigation}</p>}</div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(i)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(i.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>))}</div>
       )}

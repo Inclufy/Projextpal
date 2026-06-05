@@ -1145,3 +1145,26 @@ class BudgetOverviewSerializer(serializers.Serializer):
     total_remaining = serializers.DecimalField(max_digits=15, decimal_places=2)
     currency = serializers.CharField()
     categories = BudgetCategorySerializer(many=True)
+
+# ── Yanmar PP-01: six distinct project roles (ProjectMembership) ──────────
+from .models import ProjectMembership
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField(read_only=True)
+    user_email = serializers.CharField(source="user.email", read_only=True)
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    class Meta:
+        model = ProjectMembership
+        fields = [
+            "id", "project", "user", "user_name", "user_email",
+            "role", "role_display", "responsibilities", "is_primary",
+            "starts_on", "ends_on", "created_at", "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+
+    def get_user_name(self, obj):
+        u = obj.user
+        full = u.get_full_name() if hasattr(u, "get_full_name") else ""
+        return full or getattr(u, "username", "") or getattr(u, "email", "")

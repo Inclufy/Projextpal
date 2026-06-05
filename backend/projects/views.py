@@ -32,6 +32,7 @@ from .models import (
     TrainingMaterial,
     TimeEntry,
     RiskForecast,
+    ProjectMembership,
 )
 from .forecasting import forecast_for_active_projects, forecast_project_budget
 from .serializers import (
@@ -131,6 +132,7 @@ class CompanyScopedQuerysetMixin:
             Risk: 'project_id__in',
             ManualMitigation: 'risk__project_id__in',
             ProjectEvent: 'project_id__in',
+            ProjectMembership: 'project_id__in',
         }
         if base_qs.model in project_path_map:
             return base_qs.filter(**{project_path_map[base_qs.model]: accessible_ids})
@@ -2763,3 +2765,22 @@ def status_report_auto_draft(request, project_id):
         'persisted': False,
     }
     return Response(draft)
+
+
+# ── Yanmar PP-01: six distinct project roles CRUD ────────────────────────
+from .serializers import ProjectMembershipSerializer
+
+
+class ProjectMembershipViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """CRUD for the six Yanmar project roles (Owner/PM/Leader/Facilitator/
+    Outside Eyes/Stakeholder). Scoped through CompanyScopedQuerysetMixin."""
+    queryset = ProjectMembership.objects.all().select_related("project", "user")
+    serializer_class = ProjectMembershipSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
