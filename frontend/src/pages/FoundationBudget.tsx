@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { BudgetOneView } from "@/components/BudgetOneView";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
@@ -141,7 +142,9 @@ const FoundationBudget = () => {
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
-      <div className="p-6">
+      <div className="p-6 space-y-6">
+        {/* One-view financials: Budget × Internal × External × Contingency × Actuals × ETC × Variance — Yanmar HR-04 */}
+        {projectId && <BudgetOneView projectId={projectId} />}
         <Card className="p-6">
           <div className="mb-6 flex items-center justify-between">
             <div>

@@ -20,7 +20,7 @@ const Prince2HighlightReport = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ status_summary: "", overall_status: "green", report_date: "", period_start: "", period_end: "", work_completed: "", highlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+  const [form, setForm] = useState({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", report_date: "", period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -41,13 +41,13 @@ const Prince2HighlightReport = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ status_summary: "", overall_status: "green", report_date: new Date().toISOString().split("T")[0], period_start: "", period_end: "", work_completed: "", highlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
+    setForm({ status_summary: "", overall_status: "green", rag_budget: "green", rag_planning: "green", rag_resources: "green", report_date: new Date().toISOString().split("T")[0], period_start: "", period_end: "", work_completed: "", highlights: "", lowlights: "", issues_summary: "", risks_summary: "", work_planned_next_period: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (r: any) => {
     setEditing(r);
-    setForm({ status_summary: r.status_summary || "", overall_status: r.overall_status || "green", report_date: r.report_date?.split("T")[0] || "", period_start: r.period_start?.split("T")[0] || "", period_end: r.period_end?.split("T")[0] || "", work_completed: r.work_completed || "", highlights: r.highlights || "", issues_summary: r.issues_summary || "", risks_summary: r.risks_summary || "", work_planned_next_period: r.work_planned_next_period || "" });
+    setForm({ status_summary: r.status_summary || "", overall_status: r.overall_status || "green", rag_budget: r.rag_budget || "green", rag_planning: r.rag_planning || "green", rag_resources: r.rag_resources || "green", report_date: r.report_date?.split("T")[0] || "", period_start: r.period_start?.split("T")[0] || "", period_end: r.period_end?.split("T")[0] || "", work_completed: r.work_completed || "", highlights: r.highlights || "", lowlights: r.lowlights || "", issues_summary: r.issues_summary || "", risks_summary: r.risks_summary || "", work_planned_next_period: r.work_planned_next_period || "" });
     setDialogOpen(true);
   };
 
@@ -56,9 +56,13 @@ const Prince2HighlightReport = () => {
     try {
       const body: any = {
         overall_status: form.overall_status,
+        rag_budget: form.rag_budget,
+        rag_planning: form.rag_planning,
+        rag_resources: form.rag_resources,
         status_summary: form.status_summary,
         work_completed: form.work_completed,
         highlights: form.highlights,
+        lowlights: form.lowlights,
         issues_summary: form.issues_summary,
         risks_summary: form.risks_summary,
         work_planned_next_period: form.work_planned_next_period,
@@ -143,20 +147,30 @@ const Prince2HighlightReport = () => {
               <div className="space-y-2"><Label>{pt("Period Start")}</Label><Input type="date" value={form.period_start} onChange={(e) => setForm({ ...form, period_start: e.target.value })} /></div>
               <div className="space-y-2"><Label>{pt("Period End")}</Label><Input type="date" value={form.period_end} onChange={(e) => setForm({ ...form, period_end: e.target.value })} /></div>
             </div>
-            <div className="space-y-2">
-              <Label>{pt("Overall Status")}</Label>
-              <Select value={form.overall_status} onValueChange={(v) => setForm({ ...form, overall_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="green">🟢 Green</SelectItem>
-                  <SelectItem value="amber">🟡 Amber</SelectItem>
-                  <SelectItem value="red">🔴 Red</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              {([
+                ["overall_status", "Overall"],
+                ["rag_budget", "Budget"],
+                ["rag_planning", "Planning"],
+                ["rag_resources", "Resources"],
+              ] as const).map(([key, label]) => (
+                <div key={key} className="space-y-2">
+                  <Label>{pt(label)}</Label>
+                  <Select value={(form as any)[key]} onValueChange={(v) => setForm({ ...form, [key]: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="green">🟢 Green</SelectItem>
+                      <SelectItem value="amber">🟡 Amber</SelectItem>
+                      <SelectItem value="red">🔴 Red</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
             <div className="space-y-2"><Label>{pt("Status Summary")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.status_summary} onChange={(e) => setForm({ ...form, status_summary: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Work Completed")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.work_completed} onChange={(e) => setForm({ ...form, work_completed: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Highlights")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.highlights} onChange={(e) => setForm({ ...form, highlights: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{pt("Lowlights")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.lowlights} onChange={(e) => setForm({ ...form, lowlights: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Work Planned Next Period")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.work_planned_next_period} onChange={(e) => setForm({ ...form, work_planned_next_period: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Issues")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.issues_summary} onChange={(e) => setForm({ ...form, issues_summary: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Risks")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.risks_summary} onChange={(e) => setForm({ ...form, risks_summary: e.target.value })} /></div>

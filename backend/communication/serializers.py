@@ -122,7 +122,10 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'project', 'name', 'type', 'frequency',
             'date', 'time', 'location', 'agenda', 'participants',
-            'status', 'created_at', 'updated_at'
+            'status', 'created_at', 'updated_at',
+            # Yanmar Meeting Minutes template — MM-04 / MM-05
+            'customer_supplier', 'yanmar_meeting_room',
+            'discussion_notes', 'conclusions',
         ]
         read_only_fields = ['created_at', 'updated_at']
 

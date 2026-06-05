@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 import Prince2ProcessFlow from "./Prince2ProcessFlow";
 import Prince2MethodologyOverview from "./Prince2MethodologyOverview";
+import { TaskKpiTiles } from "@/components/TaskKpiTiles";
+import { DueDateChangeRequestQueue } from "@/components/DueDateChangeRequestQueue";
 
 const riskBadge: Record<string, string> = { high: "bg-red-100 text-red-700", medium: "bg-amber-100 text-amber-700", low: "bg-blue-100 text-blue-700" };
 
@@ -194,6 +196,12 @@ const Prince2Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* Action Tracker KPI tiles (Today / Tomorrow / This Week / Next Week) — Yanmar ATR-05 */}
+        {id && <TaskKpiTiles projectId={id} />}
+
+        {/* Due-date push-back approval queue — Yanmar PP-05 */}
+        {id && <DueDateChangeRequestQueue projectId={id} canDecide />}
 
         {/* No stages warning */}
         {dashboard?.total_stages === 0 && (
