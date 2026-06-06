@@ -79,15 +79,35 @@
 
 > Geen demo-cosmetica — dit zijn de eisen waarop Yanmar's IT/security tekent. Niet haasten.
 
-| # | Taak | Lost op | Prioriteit | Schatting |
+| # | Taak | Lost op | Prioriteit | Status |
 |---|---|---|---|---|
-| F3-1 | **Role-based cost/rate-visibility**: finance-rol-gating in serializers (`hourly_rate_snapshot`, `labor_cost`, budget-rollup) | SC-05 (nu FAIL) | **P0 security** | 1–2 dagen |
-| F3-2 | GDPR: wire delete-flow → `AuditLog` (de `TODO` in `accounts/gdpr.py:238`) + DPIA-bevestiging | SC-03 | P0 | 0,5–1 dag |
-| F3-3 | Live dashboards: WebSocket/SSE-consumer op Channels (nu pull-only) | SC-09 | P1 | 2–3 dagen |
-| F3-4 | AWS single-tenant: IaC-template (Terraform) voor Yanmar-isolated deploy | SC-01 | P1 (hosting-keuze afhankelijk) | afh. van hosting-model A/A+CMK/B |
-| F3-5 | BYO LLM-key demo-config voor YEU-key (vs Inclufy-pool) | SC-02 (PASS, maar demo-keuze) | P1 | 0,5 dag |
+| F3-1 | **Role-based cost/rate-visibility**: `can_view_costs()` over alle cost-surfaces | SC-05 | **P0 security** | ✅ **DONE** (data-leak-hunter geverifieerd, alle 7 G-gaps dicht) |
+| F3-2 | GDPR: delete-flow → `AuditLog` | SC-03 (audit-deel) | P0 | ✅ **DONE** (Art.17 erasure schrijft AuditLog) |
+| F3-2b | GDPR: EU-region compute hosting | SC-03 (infra-deel) | P0 | ⏳ infra/hosting-beslissing (geen code) |
+| F3-3 | Live dashboards: WebSocket-consumer + **prod WSGI→ASGI-switch** (daphne/uvicorn) + nginx WS-upgrade | SC-09 | P1 | ⏭️ **DEFERRED** — vereist serving-model-switch; ná demo, getest |
+| F3-4 | AWS single-tenant: IaC-template (Terraform) | SC-01 | P1 | ⏳ afh. van hosting-model A/A+CMK/B |
+| F3-5 | BYO LLM-key demo-config voor YEU-key (vs Inclufy-pool) | SC-02 (PASS, demo-keuze) | P1 | open (operationele keuze 8 juni) |
+| **F3-6** | **PP-08 Communication-plan editor** | PP-08 | P2 | ✅ **DONE** (editor + CRUD, bereikbaar) |
+| F3-7 | PP-09 methodologie-neutrale closing-pagina | PP-09 | P2 | open (frontend ~2-3u) |
 
-**F3-1 is een echte security-bug** (elke tenant-gebruiker ziet nu rates/kosten). Behandel als P0 maar **niet** vóór de demo haasten — doe het netjes met tests + `data-leak-hunter`-verificatie.
+**SC-09-noot:** echte WebSockets vereisen dat de productie-backend van `gunicorn core.wsgi` (WSGI)
+naar een ASGI-server gaat (`daphne core.asgi` of gunicorn+uvicorn-worker) + nginx `Upgrade`/`Connection`
+headers. De consumer-infra (`notifications/consumers.py`, Redis channel-layer, `core.asgi`) bestaat al;
+alleen het serving-model + een project-events-consumer + frontend-hook resten. Bewust ná de demo.
+
+---
+
+## FASE 3C — Kostenmodel unificatie (uit cost-model-review 2026-06-06)
+
+> Niet een Yanmar-eis (HR-04 is PASS), maar nodig voor échte **"business case → budget → actuals"**-
+> traceability en correcte cijfers bij intensief gebruik.
+
+| # | Taak | Waarom | Schatting |
+|---|---|---|---|
+| F3C-1 | **Eén external-spend bron**: rollup leest nu `invoices.Invoice`/`Expense`, terwijl het volwaardige `finance.Invoice` (vendors/VAT/payments) ernaast bestaat — consolideer naar één bron | dubbele invoice-modellen → inconsistente external spend | 1–2 dagen |
+| F3C-2 | **Snapshot-consistentie**: budget-rollup `Internal` herrekent met *huidig* `ProjectTeam.hourly_rate`, maar per-regel `labor_cost` gebruikt de *snapshot* — allebei snapshot maken | tariefwijziging mid-project geeft afwijkende totalen | 0,5 dag |
+| F3C-3 | **Eén budget-bron**: `Project.budget` én `ProjectBudget.total_budget` bestaan los → consolideer + idem voor de 2 ROI-velden (`Project.roi_*` vs `BusinessCase.roi_percentage`) | dubbele waarheid budget/ROI | 1 dag |
+| F3C-4 | **Business case → budget-koppeling**: `BusinessCase.development_costs + ongoing_costs` automatisch laten doorstromen/afstemmen met het werkbudget + variance-tracking tegen de business case | nu 3 losse lagen, geen traceability justificatie→budget→actuals | 1–2 dagen |
 
 ---
 
@@ -112,11 +132,15 @@ Niets te deployen vóór de architectuurbeslissing. Houd het in de SOW, niet in 
 
 ## Samenvatting-tijdlijn
 
-| Fase | Scope | DB-risico | Timing | Score na fase |
-|---|---|---|---|---|
-| **1** | 7× demo-wiring (FE + 1 serializer) | geen | **vóór 8 juni** | ~18/34 demo-baar |
-| **2** | 7× PARTIAL→PASS (4 met migratie) | backup-gate | na demo, vóór go-live | ~30/34 PASS |
-| **3** | 5× contract/security (SC-05 = P0) | backup-gate | go-live-gate | 33/34 (excl. SAP) |
-| **4** | SAP S/4HANA | n.v.t. | aparte SOW | Phase 2 |
+| Fase | Scope | Status | Score na fase |
+|---|---|---|---|
+| **1** | 7× demo-wiring (FE + 1 serializer) | ✅ **GEDEPLOYED** | 18/34 demo-baar |
+| **2 + 2B** | Highlight HR-01/02 + RACI + 6 rollen + risk-map + 5-staps + Meeting MM-01/02/03 + ATR-01 (1 migratie `prince2.0013`) | ✅ **GEDEPLOYED** | 27/34 PASS |
+| **3 (deel)** | SC-05 (P0 security) ✅ · SC-03 audit ✅ · PP-08 ✅ | gebouwd + gepusht, **deploy pending** | **29/34 PASS** |
+| **3 (rest)** | SC-03 EU-compute · SC-01 AWS · SC-09 WebSocket (deferred) · PP-09 | infra/na-demo | → 33/34 (excl. SAP) |
+| **3C** | Kostenmodel-unificatie (F3C-1..4) | backlog (na demo) | kwaliteit, geen eis |
+| **4** | SAP S/4HANA | aparte SOW | Phase 2 |
 
-**Kernboodschap:** Fase 1 is bijna risicoloos (frontend), levert de grootste demo-winst, en kan vóór 8 juni af. Alles met een migratie of security-impact gaat ná de demo, achter de backup-gate.
+**Kernboodschap (2026-06-06):** alle 4 templates staan **100% live**; SC-05 (P0 security) is gesloten
+en geverifieerd. Resterend = puur **infra/contract** (EU-hosting, AWS, WebSockets-deferred, SAP-Phase-2)
++ 1 kleine UI-partial (PP-09) + het kostenmodel-unificatie-spoor (kwaliteit, geen Yanmar-eis).
