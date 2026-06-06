@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { AIDraftButton } from "@/components/AIDraftButton";
 import { Loader2, Plus, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
@@ -100,7 +101,18 @@ const FoundationCommunicationPlan = () => {
             <h1 className="text-2xl font-bold">{pt("Communication Plan")}</h1>
             <Badge variant="outline">{events.length}</Badge>
           </div>
-          <Button onClick={() => openCreate()} className="gap-2"><Plus className="h-4 w-4" />{pt("New Event")}</Button>
+          <div className="flex gap-2">
+            <AIDraftButton
+              draftUrl={`/api/v1/projects/${id}/ai/draft-comms/`}
+              createUrl="/api/v1/projects/plan-events/"
+              buildPayload={(d) => ({ project: Number(id), name: d.name, event_type: d.event_type, cadence: d.cadence, audience: d.audience || [], notes: d.notes || "", status: "planned" })}
+              renderItem={(d) => (<span><span className="font-medium">{d.name}</span> <span className="text-xs text-muted-foreground">· {d.cadence} · {(d.audience || []).join(", ")}</span></span>)}
+              onDone={fetchData}
+              label={pt("AI Suggest")}
+              title={pt("Suggested communication plan")}
+            />
+            <Button onClick={() => openCreate()} className="gap-2"><Plus className="h-4 w-4" />{pt("New Event")}</Button>
+          </div>
         </div>
 
         {/* Grouped by lifecycle stage — Yanmar PP-08 */}

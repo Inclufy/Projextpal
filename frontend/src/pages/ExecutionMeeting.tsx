@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -73,6 +73,25 @@ const ExecutionMeeting = () => {
       agenda: agendaToText(m.agenda), discussion_notes: m.discussion_notes || "", conclusions: m.conclusions || "",
     });
     setDialogOpen(true);
+  };
+
+  const [drafting, setDrafting] = useState(false);
+  const draftAgenda = async () => {
+    setDrafting(true);
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/ai/draft-meeting/`, { headers });
+      if (r.ok) {
+        const d = await r.json();
+        const agendaText = Array.isArray(d.agenda) ? d.agenda.join("\n") : "";
+        setForm((f) => ({
+          ...f,
+          agenda: f.agenda ? f.agenda + "\n" + agendaText : agendaText,
+          discussion_notes: f.discussion_notes || d.discussion || "",
+        }));
+        toast.success(pt("Agenda drafted — review before saving"));
+      } else toast.error(pt("Could not draft agenda"));
+    } catch { toast.error(pt("Could not draft agenda")); }
+    finally { setDrafting(false); }
   };
 
   const handleSave = async () => {
@@ -326,7 +345,13 @@ const ExecutionMeeting = () => {
               <div className="space-y-2"><Label>{pt("Customer / Supplier")}</Label><Input value={form.customer_supplier} onChange={(e) => setForm({ ...form, customer_supplier: e.target.value })} /></div>
               <div className="space-y-2"><Label>{pt("Meeting Room")}</Label><Input value={form.yanmar_meeting_room} onChange={(e) => setForm({ ...form, yanmar_meeting_room: e.target.value })} /></div>
             </div>
-            <div className="space-y-2"><Label>{pt("Agenda")} <span className="text-xs text-muted-foreground">({pt("one per line")})</span></Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} /></div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{pt("Agenda")} <span className="text-xs text-muted-foreground">({pt("one per line")})</span></Label>
+                <Button type="button" variant="ghost" size="sm" className="gap-1 h-7 text-fuchsia-600" onClick={draftAgenda} disabled={drafting}>{drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}{pt("AI agenda")}</Button>
+              </div>
+              <textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} />
+            </div>
             <div className="space-y-2"><Label>{pt("Discussion")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.discussion_notes} onChange={(e) => setForm({ ...form, discussion_notes: e.target.value })} /></div>
             <div className="space-y-2"><Label>{pt("Conclusions")}</Label><textarea className="w-full min-h-[60px] px-3 py-2 border rounded-md bg-background" value={form.conclusions} onChange={(e) => setForm({ ...form, conclusions: e.target.value })} /></div>
             <div className="space-y-2">

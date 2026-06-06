@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
+import { AIDraftButton } from "@/components/AIDraftButton";
 import { Plus, Pencil, Trash2, Loader2, Lightbulb, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
@@ -85,6 +86,15 @@ const MonitoringLessonsSurveys = () => {
             <Badge variant="outline">{items.length}</Badge>
           </div>
           <div className="flex gap-2">
+            <AIDraftButton
+              draftUrl={`/api/v1/projects/${id}/ai/draft-lessons/`}
+              createUrl={BASE}
+              buildPayload={(d) => ({ project: Number(id), title: d.title, description: d.description, category: d.category, sentiment: d.sentiment, recommended_action: d.recommended_action })}
+              renderItem={(d) => (<span><span className="font-medium">{d.title}</span> <span className="text-xs text-muted-foreground">· {d.category}</span></span>)}
+              onDone={fetchData}
+              label={pt("AI Suggest")}
+              title={pt("Suggested lessons from closed issues & risks")}
+            />
             {items.length > 0 && <ReportExportMenu title="Lessons Learned" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Lesson")}</Button>
           </div>

@@ -289,6 +289,27 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
 
+    @action(detail=True, methods=["get"], url_path="ai/draft-lessons")
+    def ai_draft_lessons(self, request, pk=None):
+        """AI auto-draft Lessons Learned from closed issues + resolved risks (draft only)."""
+        from .ai_drafts import draft_lessons
+
+        return Response({"drafts": draft_lessons(self.get_object())})
+
+    @action(detail=True, methods=["get"], url_path="ai/draft-meeting")
+    def ai_draft_meeting(self, request, pk=None):
+        """AI auto-draft a meeting agenda from open actions, issues, signals, milestones."""
+        from .ai_drafts import draft_meeting_agenda
+
+        return Response(draft_meeting_agenda(self.get_object()))
+
+    @action(detail=True, methods=["get"], url_path="ai/draft-comms")
+    def ai_draft_comms(self, request, pk=None):
+        """AI auto-draft a communication plan from milestones + stakeholders (draft only)."""
+        from .ai_drafts import draft_comms_plan
+
+        return Response({"drafts": draft_comms_plan(self.get_object())})
+
     @action(detail=True, methods=["get"], url_path="ai/compound-signals")
     def compound_signals(self, request, pk=None):
         """AI connective-tissue layer: cross-module compound-risk signals.
