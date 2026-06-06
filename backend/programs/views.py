@@ -95,6 +95,24 @@ class ProgramViewSet(viewsets.ModelViewSet):
             created_by=user
         )
 
+    @action(detail=True, methods=['get'], url_path='ai/compound-signals')
+    def ai_compound_signals(self, request, pk=None):
+        """Programme cross-project compound signals (aggregated over projects)."""
+        from .ai_rollup import program_compound_signals
+        return Response(program_compound_signals(self.get_object()))
+
+    @action(detail=True, methods=['get'], url_path='ai/status-report')
+    def ai_status_report(self, request, pk=None):
+        """Programme AI status report — RAG + narrative rolled up from projects."""
+        from .ai_rollup import program_status_narrative
+        return Response(program_status_narrative(self.get_object()))
+
+    @action(detail=True, methods=['get'], url_path='progress')
+    def progress(self, request, pk=None):
+        """Programme progress/health rollup for the dashboard."""
+        from .ai_rollup import program_progress
+        return Response(program_progress(self.get_object()))
+
     @action(detail=True, methods=['get'])
     def projects(self, request, pk=None):
         """Get all projects linked to this program."""
