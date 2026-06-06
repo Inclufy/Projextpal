@@ -756,7 +756,32 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         project = self.get_project()
-        serializer.save(project=project)
+        # Auto-default the cover header (Sponsor/PM/Senior Supplier) from the
+        # PRINCE2 Project Board so governance roles are defined once, not retyped
+        # per report. Caller-supplied values always win.
+        defaults = self._board_header_defaults(project)
+        extra = {k: v for k, v in defaults.items()
+                 if v and not (serializer.validated_data.get(k) or "").strip()}
+        serializer.save(project=project, **extra)
+
+    @staticmethod
+    def _board_header_defaults(project):
+        """Map Project Board roles → highlight header fields."""
+        out = {"sponsor": "", "project_manager": "", "senior_supplier": ""}
+        board = getattr(project, "prince2_board", None)
+        if not board:
+            return out
+        role_to_field = {
+            "executive": "sponsor",
+            "project_manager": "project_manager",
+            "senior_supplier": "senior_supplier",
+        }
+        for m in board.members.select_related("user").all():
+            field = role_to_field.get(m.role)
+            if field and not out[field] and m.user:
+                full = m.user.get_full_name() if hasattr(m.user, "get_full_name") else ""
+                out[field] = (full or getattr(m.user, "username", "") or getattr(m.user, "email", "")).strip()
+        return out
 
     @action(detail=True, methods=['post'])
     def generate(self, request, project_id=None, pk=None):
