@@ -1,165 +1,126 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReportExportMenu } from "@/components/ReportExportMenu";
+import { Loader2, ScrollText, Euro, Calendar, Users, Target, FileText, ArrowRight } from "lucide-react";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 const FoundationCharter = () => {
   const { pt } = usePageTranslations();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<any>(null);
+  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [p, s] = await Promise.all([
+          fetch(`/api/v1/projects/${id}/`, { headers }),
+          fetch(`/api/v1/execution/stakeholders/?project=${id}`, { headers }),
+        ]);
+        if (p.ok) setProject(await p.json());
+        if (s.ok) { const d = await s.json(); setSponsors((Array.isArray(d) ? d : d.results || []).filter((x: any) => x.governance_type === "Sponsor")); }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
+  }, [id]);
+
+  if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
+
+  const fmtMoney = (v: any, c?: string) => v != null ? `${c || "EUR"} ${Number(v).toLocaleString()}` : "—";
+  const row = (label: string, value: any) => (
+    <div className="flex justify-between py-2 border-b last:border-0"><span className="text-sm text-muted-foreground">{label}</span><span className="text-sm font-medium text-right">{value || "—"}</span></div>
+  );
+
+  const exportSections = [
+    { heading: "Project Charter", rows: [
+      ["Project", project?.name], ["Status", project?.status], ["Methodology", project?.methodology],
+      ["Budget", fmtMoney(project?.budget, project?.currency)],
+      ["Start", project?.start_date], ["End", project?.end_date],
+      ["Sponsors", sponsors.map((s) => s.name).join(", ") || "—"],
+    ] as [string, any][] },
+    { heading: "Description / Mandate", text: project?.description || "—" },
+  ];
+
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
-      <div className="p-6">
-      <Card className="p-6">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
+      <div className="p-6 space-y-6 max-w-4xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ScrollText className="h-6 w-6 text-amber-600" />
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Project Charter Reporting</h2>
-              <p className="text-sm text-muted-foreground">Inclufy Website - Project Orchestrator: Samir Usuile</p>
+              <h1 className="text-2xl font-bold">{pt("Project Charter")}</h1>
+              <p className="text-sm text-muted-foreground">{pt("The project's mandate, scope and authority — composed from live project data.")}</p>
             </div>
+          </div>
+          <ReportExportMenu title={`Charter — ${project?.name || ""}`} sections={exportSections} />
+        </div>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4" />{pt("Project Definition")}</CardTitle></CardHeader>
+          <CardContent>
+            {row(pt("Project name"), project?.name)}
+            {row(pt("Status"), project?.status && <Badge variant="outline">{project.status}</Badge>)}
+            {row(pt("Methodology"), project?.methodology && <Badge variant="secondary">{project.methodology}</Badge>)}
+            {project?.description && (
+              <div className="pt-3"><p className="text-sm text-muted-foreground mb-1">{pt("Mandate / Description")}</p><p className="text-sm whitespace-pre-wrap">{project.description}</p></div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Calendar className="h-4 w-4" />{pt("Timeline")}</CardTitle></CardHeader>
+            <CardContent>
+              {row(pt("Start date"), project?.start_date)}
+              {row(pt("End date"), project?.end_date)}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Euro className="h-4 w-4" />{pt("Budget")}</CardTitle></CardHeader>
+            <CardContent>{row(pt("Authorised budget"), fmtMoney(project?.budget, project?.currency))}</CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" />{pt("Sponsors & Authority")}</CardTitle></CardHeader>
+          <CardContent>
+            {sponsors.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{pt("No sponsor recorded yet.")} <button className="text-primary underline" onClick={() => navigate(`/projects/${id}/execution/stakeholders`)}>{pt("Add in Stakeholders")}</button></p>
+            ) : (
+              <div className="space-y-1">
+                {sponsors.map((s) => (
+                  <div key={s.id} className="flex items-center gap-2 text-sm">
+                    <Badge className="bg-violet-100 text-violet-700 text-xs">{s.governance_type}</Badge>
+                    <span className="font-medium">{s.name}</span>
+                    {s.role && <span className="text-muted-foreground">· {s.role}</span>}
+                    {s.contact && <a href={`mailto:${s.contact}`} className="text-muted-foreground hover:underline">· {s.contact}</a>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-muted/30">
+          <CardContent className="p-4 flex items-center justify-between flex-wrap gap-2">
+            <span className="text-sm text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" />{pt("Related foundation artifacts")}</span>
             <div className="flex gap-2">
-              <Button variant="outline">Version 1</Button>
-              <Button className="bg-primary">+ Feedback</Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/foundation/business-case`)}>{pt("Business Case")}<ArrowRight className="h-3 w-3" /></Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/foundation/communication-plan`)}>{pt("Communication Plan")}<ArrowRight className="h-3 w-3" /></Button>
             </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">Scope/Capabilities</h3>
-              <Button variant="secondary" size="sm">+ Add</Button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-primary-foreground/20">
-                    <th className="text-left py-2">Capability</th>
-                    <th className="text-left py-2">{pt("Description")}</th>
-                    <th className="text-left py-2">End Game</th>
-                    <th className="text-right py-2">{pt("Actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-2">Solutions, Consulting & Academy</td>
-                    <td className="py-2">Solutions, Consulting & Academy</td>
-                    <td className="py-2">A full functional website with SaaS/Incr functionality to manage the content of the website</td>
-                    <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
-                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">Critical Interdependencies</h3>
-              <Button variant="secondary" size="sm">+ Add</Button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-primary-foreground/20">
-                    <th className="text-left py-2">Item</th>
-                    <th className="text-left py-2">{pt("Description")}</th>
-                    <th className="text-right py-2">{pt("Actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-2">The Inclufy AI Procurement & Sales portal</td>
-                    <td className="py-2">The Inclufy AI Procurement & Sales portal</td>
-                    <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
-                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Key Risks</h3>
-                <Button variant="secondary" size="sm">+ Add</Button>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between py-1 border-b border-primary-foreground/20">
-                  <span>{pt("Risk")}</span>
-                  <span>{pt("Description")}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span>Delay in development</span>
-                  <span>Missing the market opportunities due to non active presentation</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Key Deliverables</h3>
-                <Button variant="secondary" size="sm">+ Add</Button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-primary-foreground/20">
-                      <th className="text-left py-2">{pt("Deliverable")}</th>
-                      <th className="text-left py-2">{pt("Description")}</th>
-                      <th className="text-left py-2">{pt("Date")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-1">A functional website with SaaS/Incr</td>
-                      <td className="py-1">A functional website with SaaS/Incr</td>
-                      <td className="py-1">8-10-2025</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">{pt("Resources")}</h3>
-              <Button variant="secondary" size="sm">+ Add</Button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-primary-foreground/20">
-                    <th className="text-left py-2">{pt("Name")}</th>
-                    <th className="text-left py-2">{pt("Role")}</th>
-                    <th className="text-left py-2">Required</th>
-                    <th className="text-left py-2">FTE</th>
-                    <th className="text-right py-2">{pt("Actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-2">Ramail Naor</td>
-                    <td className="py-2">{pt("Project Manager")}</td>
-                    <td className="py-2">Yes</td>
-                    <td className="py-2">1.0</td>
-                    <td className="py-2 text-right">
-                      <Button variant="ghost" size="sm">{pt("Edit")}</Button>
-                      <Button variant="ghost" size="sm">{pt("Delete")}</Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
