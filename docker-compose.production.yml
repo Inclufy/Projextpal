@@ -66,7 +66,10 @@ services:
              gunicorn core.wsgi:application --bind 0.0.0.0:8001 --workers 4 --timeout 120"
 
   frontend:
-    image: registry.gitlab.com/inclufy/projextpal/frontend:latest
+    # Built + pushed by GitHub Actions (.github/workflows/ci.yml -> docker job).
+    # GitLab registry is NOT updated by CI, so we pull from ghcr where the image
+    # actually lands. Package may be private -> `docker login ghcr.io` first.
+    image: ghcr.io/inclufy/projextpal-web:latest
     container_name: projextpal-frontend-prod
     restart: unless-stopped
     networks:
