@@ -12,11 +12,13 @@ import { useParams } from "react-router-dom";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { toast } from "sonner";
 
-const MEETING_TYPES = ["Weekly Status", "Program Board", "Steering Committee", "Kickoff", "Ad-hoc"];
+// Model choices: type = recurring|onetime, frequency = weekly|biweekly|monthly.
+const MEETING_TYPES: [string, string][] = [["recurring", "Recurring"], ["onetime", "One-time"]];
+const FREQUENCIES: [string, string][] = [["weekly", "Weekly"], ["biweekly", "Bi-weekly"], ["monthly", "Monthly"]];
 const STATUSES = ["scheduled", "completed", "cancelled"];
 
 const emptyForm = {
-  name: "", type: "Weekly Status", date: "", time: "", location: "", status: "scheduled",
+  name: "", type: "recurring", frequency: "weekly", date: "", time: "09:00", location: "", status: "scheduled",
   customer_supplier: "", yanmar_meeting_room: "", previous_meeting: "",
   agenda: "", discussion_notes: "", conclusions: "",
 };
@@ -65,8 +67,8 @@ const ExecutionMeeting = () => {
   const openEdit = (m: any) => {
     setEditing(m);
     setForm({
-      name: m.name || "", type: m.type || "Weekly Status", date: m.date?.split("T")[0] || "",
-      time: m.time || "", location: m.location || "", status: m.status || "scheduled",
+      name: m.name || "", type: m.type || "recurring", frequency: m.frequency || "weekly", date: m.date?.split("T")[0] || "",
+      time: m.time || "09:00", location: m.location || "", status: m.status || "scheduled",
       customer_supplier: m.customer_supplier || "", yanmar_meeting_room: m.yanmar_meeting_room || "", previous_meeting: m.previous_meeting ? String(m.previous_meeting) : "",
       agenda: agendaToText(m.agenda), discussion_notes: m.discussion_notes || "", conclusions: m.conclusions || "",
     });
@@ -78,7 +80,7 @@ const ExecutionMeeting = () => {
     try {
       const body: any = {
         project: id,
-        name: form.name, type: form.type, location: form.location, status: form.status,
+        name: form.name, type: form.type, frequency: form.frequency, location: form.location, status: form.status,
         customer_supplier: form.customer_supplier, yanmar_meeting_room: form.yanmar_meeting_room,
         agenda: textToAgenda(form.agenda), discussion_notes: form.discussion_notes, conclusions: form.conclusions,
       };
@@ -296,9 +298,18 @@ const ExecutionMeeting = () => {
                 <Label>{pt("Type")}</Label>
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{MEETING_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                  <SelectContent>{MEETING_TYPES.map(([v, l]) => <SelectItem key={v} value={v}>{pt(l)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>{pt("Frequency")}</Label>
+                <Select value={form.frequency} onValueChange={(v) => setForm({ ...form, frequency: v })} disabled={form.type === "onetime"}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{FREQUENCIES.map(([v, l]) => <SelectItem key={v} value={v}>{pt(l)}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{pt("Status")}</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
