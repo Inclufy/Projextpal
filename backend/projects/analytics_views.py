@@ -6,13 +6,16 @@ company (org), a single programme, or a single project — always company-scoped
 so no tenant ever sees another's numbers. Everything is computed from live
 project state; the trend reuses the stored status snapshots.
 """
+import logging
 from datetime import timedelta
 
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 
 
 def _company_of(user):
@@ -90,7 +93,7 @@ def analytics_overview(request):
             project_id__in=proj_ids, status__in=["Open", "In Progress"]
         ).count()
     except Exception:
-        pass
+        logger.warning("analytics_overview: open_issues count failed", exc_info=True)
 
     milestones = Milestone.objects.filter(project_id__in=proj_ids)
     ms_total = milestones.count()
@@ -139,17 +142,31 @@ def analytics_overview(request):
     except Exception:
         pass
 
-    # Top projects — only meaningful when more than one is in scope.
+    # Top projects — only meaningful when more than one is in scope. Computed
+    # with two aggregate queries (task totals/done + open risks) instead of a
+    # per-project query loop, so the widget stays O(1) queries as tenants grow.
     top_projects = []
     if scope != "project":
-        for p in projects[:25]:
-            pt = Task.objects.filter(milestone__project=p)
-            tot = pt.count()
+        task_rows = (
+            Task.objects.filter(milestone__project_id__in=proj_ids)
+            .values("milestone__project_id")
+            .annotate(total=Count("id"), done=Count("id", filter=Q(status="done")))
+        )
+        task_map = {r["milestone__project_id"]: r for r in task_rows}
+        risk_map = {
+            r["project_id"]: r["n"]
+            for r in (
+                Risk.objects.filter(project_id__in=proj_ids).exclude(status="Closed")
+                .values("project_id").annotate(n=Count("id"))
+            )
+        }
+        for pid, name in projects.values_list("id", "name"):
+            t = task_map.get(pid, {})
             top_projects.append({
-                "id": p.id,
-                "name": p.name,
-                "completion_pct": _completion(tot, pt.filter(status="done").count()),
-                "open_risks": Risk.objects.filter(project=p).exclude(status="Closed").count(),
+                "id": pid,
+                "name": name,
+                "completion_pct": _completion(t.get("total", 0), t.get("done", 0)),
+                "open_risks": risk_map.get(pid, 0),
             })
         top_projects.sort(key=lambda x: -x["completion_pct"])
         top_projects = top_projects[:10]

@@ -2024,6 +2024,13 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     serializer_class = RiskSerializer
     permission_classes = [IsAuthenticated, IsAdminOrPM]
 
+    def get_throttles(self):
+        # Throttle only the AI-calling actions (create triggers AI mitigation,
+        # plus explicit regenerate) so a stolen JWT can't drain the AI budget.
+        if self.action in ("create", "regenerate_ai_mitigation"):
+            self.throttle_scope = "ai"
+        return super().get_throttles()
+
     def get_queryset(self):
         # Always scope to user's company and filter by optional project query param
         qs = (
@@ -2312,6 +2319,12 @@ class RiskForecastViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = RiskForecastSerializer
     permission_classes = [IsAuthenticated, IsAdminOrPM]
+
+    def get_throttles(self):
+        # Cap the AI-calling generate action per user (stolen-JWT budget guard).
+        if self.action == "generate":
+            self.throttle_scope = "ai"
+        return super().get_throttles()
 
     def _accessible_projects(self):
         user = self.request.user

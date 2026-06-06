@@ -210,6 +210,10 @@ REST_FRAMEWORK = {
         # rate-limit. Caps anonymous OpenAI calls at 20/hour per IP at the
         # Django layer (Cloudflare is plan-tier limited to 10s windows).
         "public_chat": "20/hour",
+        # Authenticated AI-calling endpoints (risk mitigation, risk forecast).
+        # Caps OpenAI/Anthropic spend per user so a stolen JWT can't drain the
+        # AI budget. Generous enough for real interactive use.
+        "ai": "60/hour",
     },
 }
 

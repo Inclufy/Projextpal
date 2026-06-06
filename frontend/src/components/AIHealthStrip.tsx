@@ -104,13 +104,23 @@ export function AIHealthStrip({ scope, id }: Props) {
           reqs.push(fetch(`${base}/progress/`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
         } else {
           reqs.push(fetch(`${base}/governance/decisions/`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+          // Real project totals (tasks/milestones/risks/issues) for the chips —
+          // the compound-signal `context` only counts items it analysed.
+          reqs.push(
+            fetch(`/api/v1/projects/analytics/overview/?scope=project&id=${id}`, { headers })
+              .then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          );
         }
-        const [sig, second] = await Promise.all(reqs);
+        const [sig, second, third] = await Promise.all(reqs);
         setSignals(sig?.count ?? 0);
         if (scope === "program") setProg(second);
         else {
           setGovCount(second?.count ?? 0);
-          setProg(sig?.context || null);
+          const k = third?.kpis;
+          setProg(k ? {
+            tasks: k.tasks_total, milestones: k.milestones_total,
+            open_risks: k.open_risks, open_issues: k.open_issues,
+          } : (sig?.context || null));
         }
       } catch { /* ignore */ }
       finally { setLoading(false); }
@@ -182,8 +192,9 @@ export function AIHealthStrip({ scope, id }: Props) {
               {pt("Trends appear after at least two status snapshots are captured.")}
             </p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
               <Spark label={pt("Completion %")} points={trend} dataKey="completion_pct" color="#6366f1" />
+              <Spark label={pt("Overdue")} points={trend} dataKey="overdue" color="#f97316" invert />
               <Spark label={pt("Open risks")} points={trend} dataKey="open_risks" color="#f59e0b" invert />
               <Spark label={pt("Open issues")} points={trend} dataKey="open_issues" color="#ef4444" invert />
               <Spark label={pt("Compound signals")} points={trend} dataKey="signals" color="#d946ef" invert />
