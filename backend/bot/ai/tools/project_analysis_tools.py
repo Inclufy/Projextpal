@@ -1055,3 +1055,86 @@ def analyze_project_summary(
         "project_id": project_id,
         "analysis_data": analysis,
     }
+
+
+@ToolRegistry.register_tool(return_direct=False)
+def analyze_cross_module_intelligence(project_id: str) -> Dict[str, Any]:
+    """
+    Holistic CROSS-MODULE intelligence for a project. Combines the AI compound-risk
+    signals (schedule × risk × cost × dependency × issue) with a roll-up of every
+    module: issues, stakeholders, communication plan, lessons learned, governance,
+    milestones and budget. Use this for BIG-PICTURE / cross-cutting questions such
+    as: "what should I worry about in project 5", "give me the full picture of
+    project 3", "are there cross-cutting risks", "how healthy is project 7 across
+    everything", "what connects the problems in this project".
+
+    Args:
+        project_id: The ID of the project to analyse.
+    """
+    permission_error = require_permission(
+        return_dict=True, allowed_roles=["superadmin", "admin", "pm", "program_manager", "team_member"]
+    )
+    if permission_error:
+        return permission_error
+
+    if not str(project_id).isdigit():
+        return {"error": "Invalid project ID format"}
+
+    session = get_user_session()
+    if not session or not session.get("user"):
+        return {"error": "User session not found. Please authenticate."}
+    user = session["user"]
+
+    from projects.models import Project
+    try:
+        project = Project.objects.get(id=int(project_id), company=user.company)
+    except Project.DoesNotExist:
+        return {"error": f"Project {project_id} not found or no access."}
+
+    try:
+        from projects.compound_signals import compute_compound_signals
+        sig = compute_compound_signals(project)
+    except Exception:
+        sig = {"signals": [], "count": 0}
+    try:
+        from communication.status_synthesis import gather_metrics
+        m = gather_metrics(project)
+    except Exception:
+        m = {}
+
+    signals = sig.get("signals", [])
+    md = f"# 🧠 Cross-module intelligence — {project.name}\n\n"
+    md += (
+        f"- Tasks: {m.get('tasks_done', 0)}/{m.get('tasks_total', 0)} done, "
+        f"{m.get('tasks_overdue', 0)} overdue\n"
+        f"- Milestones: {m.get('milestones_done', 0)}/{m.get('milestones_total', 0)}\n"
+        f"- Open risks: {m.get('open_risks_total', 0)} "
+        f"(high: {m.get('open_risks_by_level', {}).get('High', 0)})\n"
+        f"- Open issues: {m.get('open_issues_total', 0)} "
+        f"(critical: {m.get('critical_issues', 0)})\n"
+        f"- Stakeholders: {m.get('stakeholders_total', 0)} "
+        f"({m.get('stakeholders_high_influence', 0)} high-influence)\n"
+        f"- Communication events planned: {m.get('comms_events_planned', 0)}\n"
+        f"- Lessons captured: {m.get('lessons_captured', 0)}\n"
+        f"- Governance defined: {'yes' if m.get('governance_defined') else 'no'}\n\n"
+    )
+    if signals:
+        md += f"## ⚠️ {len(signals)} compound signal(s)\n"
+        for s in signals[:8]:
+            md += f"- [{s['severity'].upper()}] {s['title']} — {s['detail']}\n"
+    else:
+        md += "## ✅ No compound cross-module signals detected.\n"
+
+    return {
+        "project": project.name,
+        "summary_markdown": md,
+        "compound_signals": signals,
+        "facts": {
+            k: m.get(k) for k in (
+                "tasks_total", "tasks_done", "tasks_overdue", "milestones_total",
+                "milestones_done", "open_risks_total", "open_issues_total",
+                "critical_issues", "stakeholders_total", "comms_events_planned",
+                "lessons_captured", "governance_defined",
+            )
+        },
+    }
