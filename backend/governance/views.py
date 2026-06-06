@@ -368,6 +368,63 @@ class DecisionViewSet(viewsets.ModelViewSet):
         return company_id is not None and getattr(target, 'company_id', None) == company_id
 
     @action(detail=True, methods=['post'])
+    def escalate(self, request, pk=None):
+        """Escalate a pending decision UP the governance ladder:
+        Project board → Programme board → Steering committee.
+
+        Reassigns the decision to the next-tier board (creating it if absent) and
+        records the step. An already-applied decision (append-only) cannot move.
+        """
+        from django.db.models import Q
+        from .models import GovernanceBoard
+        decision = self.get_object()
+        if decision.applied_at is not None:
+            return Response({'detail': 'Applied decisions cannot be escalated.', 'code': 'already_applied'},
+                            status=drf_status.HTTP_409_CONFLICT)
+
+        board = decision.board
+        current = board.board_type if board else 'project_board'
+        if current in ('steering_committee', 'executive_board'):
+            return Response({'detail': 'Already at the highest tier (steering committee).', 'code': 'top_tier'},
+                            status=drf_status.HTTP_409_CONFLICT)
+
+        project = decision.authorized_project or (board.project if board else None)
+        program = decision.authorized_program or (board.program if board else None)
+        if program is None and project is not None:
+            program = project.programs.first()
+
+        next_board = None
+        tier = None
+        if current == 'project_board' and program is not None:
+            next_board = GovernanceBoard.objects.filter(program=program).first() or GovernanceBoard.objects.create(
+                program=program, name=f"{program.name} — Programme Board", board_type='program_board')
+            tier = 'Programme board'
+        else:
+            comp = getattr(request.user, 'company', None)
+            q = GovernanceBoard.objects.filter(board_type__in=['steering_committee', 'executive_board'])
+            if comp:
+                q = q.filter(Q(program__company=comp) | Q(portfolio__company=comp) | Q(project__company=comp))
+            next_board = q.first()
+            if next_board is None:
+                if program is not None:
+                    next_board = GovernanceBoard.objects.create(program=program, name="Steering Committee", board_type='steering_committee')
+                elif project is not None:
+                    next_board = GovernanceBoard.objects.create(project=project, name="Steering Committee", board_type='steering_committee')
+                else:
+                    return Response({'detail': 'No higher board available to escalate to.', 'code': 'no_target'},
+                                    status=drf_status.HTTP_400_BAD_REQUEST)
+            tier = 'Steering committee'
+
+        decision.board = next_board
+        fields = ['board', 'description']
+        if next_board.program_id:
+            decision.program_id = next_board.program_id
+            fields.append('program')
+        decision.description = (decision.description or '') + f"\n\n[Escalated up to {tier}.]"
+        decision.save(update_fields=fields)
+        return Response({**DecisionSerializer(decision).data, 'escalated_to': tier})
+
+    @action(detail=True, methods=['post'])
     def apply(self, request, pk=None):
         """Approve the decision and enact its outcome on the linked component.
 
