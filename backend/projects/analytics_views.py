@@ -169,7 +169,7 @@ def analytics_overview(request):
 # Saved (server-side) custom dashboards
 # ---------------------------------------------------------------------------
 from rest_framework import serializers, viewsets
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 class SavedAnalyticsDashboardSerializer(serializers.ModelSerializer):
@@ -213,6 +213,10 @@ class SavedAnalyticsDashboardViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         company = _company_of(self.request.user)
+        if company is None:
+            # company is a NOT NULL FK — guard so a company-less user gets a clean
+            # 400 instead of an IntegrityError → 500.
+            raise ValidationError("Your account has no associated company; cannot save a dashboard.")
         serializer.save(company=company, created_by=self.request.user)
 
     def _check_owner(self, instance):
