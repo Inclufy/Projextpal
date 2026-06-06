@@ -289,6 +289,32 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
 
+    @action(detail=True, methods=["post"], url_path="ai/signal-to-issue")
+    def ai_signal_to_issue(self, request, pk=None):
+        """Cross-module automation: turn a compound signal into a tracked RAID issue.
+
+        One click converts an AI-detected compound signal into an Issue in the
+        register so it is owned, tracked and surfaced to governance. Severity is
+        mapped from the signal's severity.
+        """
+        project = self.get_object()
+        sev_map = {"critical": "Critical", "high": "Major", "medium": "Minor"}
+        title = (request.data.get("title") or "AI compound signal").strip()[:255]
+        detail = request.data.get("detail") or ""
+        severity = sev_map.get(request.data.get("severity"), "Major")
+
+        issue = Issue.objects.create(
+            project=project,
+            name=title,
+            description=(detail + "\n\n[Auto-created from an AI compound signal.]").strip(),
+            severity=severity,
+            status="Open",
+            created_by=request.user,
+        )
+        from .serializers import IssueSerializer
+
+        return Response(IssueSerializer(issue).data, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=["get"], url_path="ai/draft-lessons")
     def ai_draft_lessons(self, request, pk=None):
         """AI auto-draft Lessons Learned from closed issues + resolved risks (draft only)."""

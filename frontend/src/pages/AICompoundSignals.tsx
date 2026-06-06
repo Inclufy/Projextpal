@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Loader2, BrainCircuit, RefreshCw, AlertTriangle, AlertOctagon, Info, ShieldCheck } from "lucide-react";
+import { Loader2, BrainCircuit, RefreshCw, AlertTriangle, AlertOctagon, Info, ShieldCheck, AlertCircle, Check } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -39,6 +39,23 @@ const AICompoundSignals = () => {
     finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, [id]);
+
+  const [created, setCreated] = useState<Record<number, boolean>>({});
+  const [working, setWorking] = useState<number | null>(null);
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
+
+  const createIssue = async (s: any, i: number) => {
+    setWorking(i);
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/ai/signal-to-issue/`, {
+        method: "POST", headers: jsonHeaders,
+        body: JSON.stringify({ title: s.title, detail: s.detail, severity: s.severity }),
+      });
+      if (r.ok) { setCreated((c) => ({ ...c, [i]: true })); toast.success(pt("Issue created in RAID register")); }
+      else toast.error(pt("Could not create issue"));
+    } catch { toast.error(pt("Could not create issue")); }
+    finally { setWorking(null); }
+  };
 
   const signals = data?.signals || [];
   const ctx = data?.context || {};
@@ -105,6 +122,15 @@ const AICompoundSignals = () => {
                           ))}
                         </div>
                       )}
+                      <div className="mt-3">
+                        {created[i] ? (
+                          <Badge className="bg-green-100 text-green-700 text-xs gap-1"><Check className="h-3 w-3" />{pt("Issue created")}</Badge>
+                        ) : (
+                          <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => createIssue(s, i)} disabled={working === i}>
+                            {working === i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5" />}{pt("Create RAID issue")}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent></Card>

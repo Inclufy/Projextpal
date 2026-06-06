@@ -72,6 +72,57 @@ def gather_metrics(project) -> dict:
     # actual work completion (a lightweight EVM-style SPI surrogate).
     schedule_elapsed_pct = _schedule_elapsed_pct(project, today)
 
+    # ---- Cross-module facts (comms / stakeholders / lessons / governance) ----
+    # Each block is defensive so a missing app never breaks the report.
+    open_issues = critical_issues = 0
+    try:
+        from projects.models import Issue
+        iqs = Issue.objects.filter(project=project)
+        open_issues = iqs.filter(status__in=["Open", "In Progress"]).count()
+        critical_issues = iqs.filter(status__in=["Open", "In Progress"], severity__in=["Blocker", "Critical"]).count()
+    except Exception:
+        pass
+
+    stakeholders_total = stakeholders_high = 0
+    try:
+        from execution.models import Stakeholder
+        sqs = Stakeholder.objects.filter(project=project)
+        stakeholders_total = sqs.count()
+        stakeholders_high = sqs.filter(influence="High").count()
+    except Exception:
+        pass
+
+    comms_planned = comms_done = 0
+    try:
+        from projects.models import PlanEvent
+        pqs = PlanEvent.objects.filter(plan__project=project)
+        comms_planned = pqs.filter(status="planned").count()
+        comms_done = pqs.filter(status="done").count()
+    except Exception:
+        pass
+
+    lessons_total = 0
+    try:
+        from projects.models import LessonLearned
+        lessons_total = LessonLearned.objects.filter(project=project).count()
+    except Exception:
+        pass
+
+    governance_defined = False
+    try:
+        from execution.models import Governance
+        g = Governance.objects.filter(project=project).first()
+        governance_defined = bool(g and (g.meeting_cadence or g.structure_data))
+    except Exception:
+        pass
+
+    compound_signals_count = 0
+    try:
+        from projects.compound_signals import compute_compound_signals
+        compound_signals_count = compute_compound_signals(project).get("count", 0)
+    except Exception:
+        pass
+
     return {
         "as_of": today.isoformat(),
         "project_name": project.name,
@@ -91,6 +142,16 @@ def gather_metrics(project) -> dict:
         "budget": float(budget),
         "currency": project.currency,
         "schedule_elapsed_pct": schedule_elapsed_pct,
+        # Cross-module facts
+        "open_issues_total": open_issues,
+        "critical_issues": critical_issues,
+        "stakeholders_total": stakeholders_total,
+        "stakeholders_high_influence": stakeholders_high,
+        "comms_events_planned": comms_planned,
+        "comms_events_done": comms_done,
+        "lessons_captured": lessons_total,
+        "governance_defined": governance_defined,
+        "compound_signals": compound_signals_count,
     }
 
 
@@ -215,12 +276,34 @@ def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
     else:
         summary += "No open risks are recorded."
 
+    # Cross-module facts
+    crit_issues = metrics.get("critical_issues", 0)
+    open_issues = metrics.get("open_issues_total", 0)
+    sh_total = metrics.get("stakeholders_total", 0)
+    comms_planned = metrics.get("comms_events_planned", 0)
+    lessons = metrics.get("lessons_captured", 0)
+    gov = metrics.get("governance_defined", False)
+    compound = metrics.get("compound_signals", 0)
+
+    if open_issues:
+        summary += f" {open_issues} issue(s) are open ({crit_issues} critical)."
+    if compound:
+        summary += f" AI detected {compound} compound cross-module signal(s)."
+
     highlights = [f"{done}/{total} tasks complete ({comp}%)"]
     m_total = metrics.get("milestones_total", 0)
     if m_total:
         highlights.append(
             f"{metrics.get('milestones_done', 0)}/{m_total} milestones reached"
         )
+    if sh_total:
+        highlights.append(f"{sh_total} stakeholder(s) engaged")
+    if comms_planned:
+        highlights.append(f"{comms_planned} communication event(s) planned")
+    if lessons:
+        highlights.append(f"{lessons} lesson(s) captured")
+    if gov:
+        highlights.append("Governance approach defined")
 
     blockers = []
     if blocked:
@@ -229,6 +312,10 @@ def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
         blockers.append(f"{overdue} task(s) past their due date")
     if high:
         blockers.append(f"{high} high-severity risk(s) open")
+    if crit_issues:
+        blockers.append(f"{crit_issues} critical issue(s) unresolved")
+    if compound:
+        blockers.append(f"{compound} AI compound signal(s) flagged")
 
     next_steps = []
     if rag["rag_schedule"] != "green":
@@ -237,6 +324,12 @@ def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
         next_steps.append("Review mitigation plans for open high/medium risks")
     if blocked:
         next_steps.append("Escalate and clear blocked tasks")
+    if crit_issues:
+        next_steps.append("Drive critical issues to resolution before the next gate")
+    if not gov:
+        next_steps.append("Define the governance approach (board, cadence, decisions)")
+    if not comms_planned and sh_total:
+        next_steps.append("Set up a communication plan for engaged stakeholders")
     if not next_steps:
         next_steps.append("Maintain current pace; no corrective action needed")
 
