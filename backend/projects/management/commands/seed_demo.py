@@ -89,7 +89,8 @@ class Command(BaseCommand):
             self.stderr.write(f"  snapshots skipped (import): {e}")
             return
 
-        POINTS = 12          # weekly points → ~3 months of history
+        POINTS = 30          # every STEP_DAYS over ~3 months
+        STEP_DAYS = 3        # dense enough that 7/30/90-day windows all show ≥2 pts
         now = timezone.now()
         made = 0
         for p in projects:
@@ -123,7 +124,7 @@ class Command(BaseCommand):
                         model_used="deterministic", created_by=user,
                     )
                     # created_at is auto_now_add → override via queryset update.
-                    stamp = now - timedelta(days=(POINTS - 1 - i) * 7)
+                    stamp = now - timedelta(days=(POINTS - 1 - i) * STEP_DAYS)
                     GeneratedStatusReport.objects.filter(pk=rep.pk).update(created_at=stamp)
                     made += 1
             except Exception as e:
@@ -234,7 +235,7 @@ class Command(BaseCommand):
         from programs.models import Program
         today = timezone.now().date()
         created = []
-        for meth, label in PROGRAM_METHODOLOGIES:
+        for idx, (meth, label) in enumerate(PROGRAM_METHODOLOGIES):
             name = f"Demo — {label} Programme"
             try:
                 program, _ = Program.objects.update_or_create(
@@ -247,9 +248,12 @@ class Command(BaseCommand):
                         total_budget=500000, currency="EUR", created_by=user,
                     ),
                 )
-                # link 2 demo projects so rollups + compound signals have data
+                # Link a rotating window of 3 snapshot-bearing demo projects so
+                # every programme has its own (distinct) rollup + trend data.
                 if projects:
-                    program.projects.set(projects[:3])
+                    n = len(projects)
+                    window = [projects[(idx + k) % n] for k in range(min(3, n))]
+                    program.projects.set(window)
                 created.append(program)
                 self.stdout.write(self.style.SUCCESS(f"  ✓ programme {name}"))
             except Exception as e:
