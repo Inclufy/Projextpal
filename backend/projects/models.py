@@ -1823,3 +1823,35 @@ class DefinitionOfDone(models.Model):
 
     def __str__(self):
         return f"DoD: {self.title} ({self.scope})"
+
+
+class SavedAnalyticsDashboard(models.Model):
+    """A user-authored, drag-and-drop Analytics dashboard layout.
+
+    Persists the widget order + visibility + the scope it was built for so a PM
+    can save "My programme view" once and reload it later. Company-scoped; when
+    `shared` is True the whole tenant can load it (read), but only the author or
+    an admin can edit/delete it.
+    """
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="analytics_dashboards"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="+",
+    )
+    name = models.CharField(max_length=120)
+    scope = models.CharField(max_length=16, default="org")   # org | program | project
+    ref_id = models.CharField(max_length=64, blank=True, default="")
+    days = models.IntegerField(default=30)
+    layout = models.JSONField(default=list, blank=True)       # [{id, hidden}]
+    shared = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        unique_together = ("company", "name")
+
+    def __str__(self):
+        return f"{self.name} ({self.scope})"

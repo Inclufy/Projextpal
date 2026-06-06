@@ -155,3 +155,68 @@ def analytics_overview(request):
         "top_projects": top_projects,
         "generated_at": timezone.now().isoformat(),
     })
+
+
+# ---------------------------------------------------------------------------
+# Saved (server-side) custom dashboards
+# ---------------------------------------------------------------------------
+from rest_framework import serializers, viewsets
+from rest_framework.exceptions import PermissionDenied
+
+
+class SavedAnalyticsDashboardSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import SavedAnalyticsDashboard
+        model = SavedAnalyticsDashboard
+        fields = [
+            "id", "name", "scope", "ref_id", "days", "layout", "shared",
+            "created_by", "created_by_name", "created_at", "updated_at",
+        ]
+        read_only_fields = ["created_by", "created_by_name", "created_at", "updated_at"]
+
+    def get_created_by_name(self, obj):
+        u = obj.created_by
+        if not u:
+            return None
+        return (getattr(u, "get_full_name", lambda: "")() or getattr(u, "email", "")) or None
+
+
+class SavedAnalyticsDashboardViewSet(viewsets.ModelViewSet):
+    """Company-scoped CRUD for saved Analytics dashboards.
+
+    Read: anyone in the company sees shared dashboards + their own. Write/delete:
+    only the author or a company admin/superadmin.
+    """
+    serializer_class = SavedAnalyticsDashboardSerializer
+
+    def get_queryset(self):
+        from django.db.models import Q
+        from .models import SavedAnalyticsDashboard
+        user = self.request.user
+        company = _company_of(user)
+        if not company:
+            return SavedAnalyticsDashboard.objects.none()
+        qs = SavedAnalyticsDashboard.objects.filter(company=company)
+        if getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False):
+            return qs
+        return qs.filter(Q(shared=True) | Q(created_by=user))
+
+    def perform_create(self, serializer):
+        company = _company_of(self.request.user)
+        serializer.save(company=company, created_by=self.request.user)
+
+    def _check_owner(self, instance):
+        user = self.request.user
+        is_admin = getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False)
+        if instance.created_by_id != getattr(user, "id", None) and not is_admin:
+            raise PermissionDenied("Only the author or an admin can modify this dashboard.")
+
+    def perform_update(self, serializer):
+        self._check_owner(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check_owner(instance)
+        instance.delete()

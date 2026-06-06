@@ -7,6 +7,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart,
   ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis,
 } from "recharts";
@@ -20,16 +23,19 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   Loader2, LayoutDashboard, Settings2, Download, Plus, GripVertical, Eye, EyeOff,
   TrendingUp, ShieldAlert, FolderKanban, CheckCircle2, AlertTriangle, Euro, Save, Trash2,
+  FileSpreadsheet, FileText, Users,
 } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
 type Scope = "org" | "program" | "project";
 interface LayoutItem { id: string; hidden?: boolean }
-interface SavedDash { name: string; scope: Scope; refId: string; days: number; layout: LayoutItem[] }
+interface SavedDash {
+  id?: number; name: string; scope: Scope; refId: string; days: number;
+  layout: LayoutItem[]; shared?: boolean; created_by_name?: string | null;
+}
 
 const PIE = ["#22c55e", "#3b82f6", "#a855f7", "#f59e0b", "#ef4444", "#14b8a6", "#94a3b8"];
-const LS_KEY = "ppxt-analytics-dashboards-v1";
 
 const WIDGETS = [
   { id: "kpis", title: "KPI Tiles" },
@@ -41,32 +47,54 @@ const WIDGETS = [
 
 const DEFAULT_LAYOUT: LayoutItem[] = WIDGETS.map((w) => ({ id: w.id, hidden: false }));
 
-const loadSaved = (): SavedDash[] => {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+// --- export helpers -------------------------------------------------------
+const toCsv = (rows: Record<string, any>[]): string => {
+  if (!rows.length) return "";
+  const headers = Object.keys(rows[0]);
+  const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join("\n");
 };
-const persistSaved = (d: SavedDash[]) => localStorage.setItem(LS_KEY, JSON.stringify(d));
+const download = (name: string, content: BlobPart, type: string) => {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+};
 
-function SortableWidget({ id, customizing, hidden, onToggle, title, children }: {
-  id: string; customizing: boolean; hidden?: boolean;
-  onToggle: () => void; title: string; children: React.ReactNode;
+function SortableWidget({ id, customizing, hidden, onToggle, title, onCsv, onPdf, children }: {
+  id: string; customizing: boolean; hidden?: boolean; onToggle: () => void; title: string;
+  onCsv: () => void; onPdf: () => void; children: React.ReactNode;
 }) {
+  const { pt } = usePageTranslations();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id, disabled: !customizing });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1 };
   if (hidden && !customizing) return null;
   return (
     <div ref={setNodeRef} style={style} className={hidden ? "opacity-50" : ""}>
-      <Card className={`h-full ${customizing ? "ring-1 ring-purple-300" : ""}`}>
-        {customizing && (
-          <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/40 rounded-t-lg">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground cursor-grab" {...attributes} {...listeners}>
-              <GripVertical className="h-3.5 w-3.5" /> {title}
-            </span>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggle}>
-              {hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            </Button>
+      <Card id={`widget-${id}`} className={`h-full ${customizing ? "ring-1 ring-purple-300" : ""}`}>
+        <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30 rounded-t-lg">
+          <span className={`flex items-center gap-1.5 text-xs font-medium text-muted-foreground ${customizing ? "cursor-grab" : ""}`} {...(customizing ? { ...attributes, ...listeners } : {})}>
+            {customizing && <GripVertical className="h-3.5 w-3.5" />} {title}
+          </span>
+          <div className="flex items-center gap-0.5">
+            {customizing ? (
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggle}>
+                {hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              </Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6"><Download className="h-3.5 w-3.5" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={onCsv}><FileSpreadsheet className="h-4 w-4 mr-2" />{pt("Export CSV")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onPdf}><FileText className="h-4 w-4 mr-2" />{pt("Export PDF")}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-        )}
+        </div>
         {children}
       </Card>
     </div>
@@ -77,6 +105,7 @@ export default function AnalyticsDashboard() {
   const { pt } = usePageTranslations();
   const token = localStorage.getItem("access_token");
   const headers = { Authorization: `Bearer ${token}` };
+  const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
   const [scope, setScope] = useState<Scope>("org");
   const [refId, setRefId] = useState<string>("");
@@ -87,14 +116,27 @@ export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [customizing, setCustomizing] = useState(false);
 
-  const [saved, setSaved] = useState<SavedDash[]>(loadSaved());
+  const [saved, setSaved] = useState<SavedDash[]>([]);
   const [activeDash, setActiveDash] = useState<string>("");
   const [layout, setLayout] = useState<LayoutItem[]>(DEFAULT_LAYOUT);
   const [newName, setNewName] = useState("");
+  const [shared, setShared] = useState(true);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
-  // Load the scope pickers once.
+  const mapDash = (d: any): SavedDash => ({
+    id: d.id, name: d.name, scope: d.scope, refId: d.ref_id || "", days: d.days,
+    layout: Array.isArray(d.layout) && d.layout.length ? d.layout : DEFAULT_LAYOUT,
+    shared: d.shared, created_by_name: d.created_by_name,
+  });
+
+  const fetchSaved = async () => {
+    try {
+      const r = await fetch("/api/v1/projects/analytics-dashboards/", { headers });
+      if (r.ok) { const d = await r.json(); setSaved((Array.isArray(d) ? d : d.results || []).map(mapDash)); }
+    } catch { /* ignore */ }
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -106,6 +148,7 @@ export default function AnalyticsDashboard() {
         setProjects(Array.isArray(pj) ? pj : pj.results || []);
       } catch { /* ignore */ }
     })();
+    fetchSaved();
   }, []);
 
   const fetchOverview = async () => {
@@ -129,43 +172,78 @@ export default function AnalyticsDashboard() {
   const onDragEnd = (e: any) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
-    setLayout((prev) => {
-      const oldI = prev.findIndex((l) => l.id === active.id);
-      const newI = prev.findIndex((l) => l.id === over.id);
-      return arrayMove(prev, oldI, newI);
-    });
+    setLayout((prev) => arrayMove(prev, prev.findIndex((l) => l.id === active.id), prev.findIndex((l) => l.id === over.id)));
   };
   const toggleHidden = (id: string) =>
     setLayout((prev) => prev.map((l) => (l.id === id ? { ...l, hidden: !l.hidden } : l)));
 
-  const saveDashboard = () => {
+  const saveDashboard = async () => {
     const name = (newName || activeDash || "").trim();
     if (!name) { toast.error(pt("Give the dashboard a name")); return; }
-    const entry: SavedDash = { name, scope, refId, days, layout };
-    const next = [...saved.filter((d) => d.name !== name), entry];
-    setSaved(next); persistSaved(next); setActiveDash(name); setNewName("");
-    setCustomizing(false);
-    toast.success(`${pt("Saved dashboard")}: ${name}`);
+    const existing = saved.find((d) => d.name === name);
+    const body = { name, scope, ref_id: scope === "org" ? "" : refId, days, layout, shared };
+    try {
+      const r = await fetch(
+        existing?.id ? `/api/v1/projects/analytics-dashboards/${existing.id}/` : "/api/v1/projects/analytics-dashboards/",
+        { method: existing?.id ? "PUT" : "POST", headers: jsonHeaders, body: JSON.stringify(body) },
+      );
+      if (!r.ok) { const e = await r.json().catch(() => ({})); toast.error(e.detail || pt("Could not save")); return; }
+      await fetchSaved();
+      setActiveDash(name); setNewName(""); setCustomizing(false);
+      toast.success(`${pt("Saved dashboard")}: ${name}`);
+    } catch { toast.error(pt("Could not save")); }
   };
   const loadDashboard = (name: string) => {
     const d = saved.find((s) => s.name === name);
     if (!d) return;
     setActiveDash(name); setScope(d.scope); setRefId(d.refId); setDays(d.days);
+    setShared(d.shared ?? true);
     setLayout(d.layout?.length ? d.layout : DEFAULT_LAYOUT);
   };
-  const deleteDashboard = () => {
-    if (!activeDash) return;
-    const next = saved.filter((d) => d.name !== activeDash);
-    setSaved(next); persistSaved(next); setActiveDash(""); setLayout(DEFAULT_LAYOUT);
-    toast.success(pt("Dashboard deleted"));
+  const deleteDashboard = async () => {
+    const d = saved.find((s) => s.name === activeDash);
+    if (!d?.id) { setActiveDash(""); setLayout(DEFAULT_LAYOUT); return; }
+    try {
+      const r = await fetch(`/api/v1/projects/analytics-dashboards/${d.id}/`, { method: "DELETE", headers });
+      if (r.ok || r.status === 204) {
+        await fetchSaved(); setActiveDash(""); setLayout(DEFAULT_LAYOUT);
+        toast.success(pt("Dashboard deleted"));
+      } else { toast.error(pt("Could not delete (only the author or an admin can).")); }
+    } catch { toast.error(pt("Could not delete")); }
   };
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `analytics-${scope}-${days}d.json`; a.click();
-    URL.revokeObjectURL(url);
+  // --- per-widget export --------------------------------------------------
+  const widgetRows = (id: string): Record<string, any>[] => {
+    switch (id) {
+      case "kpis": return Object.entries(kpis).map(([k, v]) => ({ metric: k, value: v as any }));
+      case "trend": return data?.completion_trend || [];
+      case "status": return data?.status_breakdown || [];
+      case "risks": return data?.risk_breakdown || [];
+      case "top": return data?.top_projects || [];
+      default: return [];
+    }
+  };
+  const exportCsv = (id: string) => {
+    const rows = widgetRows(id);
+    if (!rows.length) { toast.error(pt("Nothing to export yet")); return; }
+    download(`${id}-${scope}-${days}d.csv`, toCsv(rows), "text/csv;charset=utf-8");
+  };
+  const exportPdf = async (id: string) => {
+    const el = document.getElementById(`widget-${id}`);
+    if (!el) return;
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas"), import("jspdf"),
+      ]);
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
+      const img = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: canvas.width >= canvas.height ? "landscape" : "portrait",
+        unit: "px", format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(img, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`${id}-${scope}-${days}d.pdf`);
+    } catch { toast.error(pt("PDF export failed")); }
   };
 
   const kpiTile = (icon: any, label: string, value: any, accent = "") => {
@@ -325,26 +403,33 @@ export default function AnalyticsDashboard() {
         <div className="flex items-center gap-2 flex-wrap">
           {saved.length > 0 && (
             <Select value={activeDash} onValueChange={loadDashboard}>
-              <SelectTrigger className="w-44"><SelectValue placeholder={pt("Saved dashboards")} /></SelectTrigger>
-              <SelectContent>{saved.map((d) => <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="w-48"><SelectValue placeholder={pt("Saved dashboards")} /></SelectTrigger>
+              <SelectContent>
+                {saved.map((d) => (
+                  <SelectItem key={d.name} value={d.name}>
+                    {d.name}{d.created_by_name ? ` · ${d.created_by_name}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           )}
           <Button variant={customizing ? "default" : "outline"} size="sm" className="gap-1" onClick={() => setCustomizing((c) => !c)}>
             <Settings2 className="h-4 w-4" /> {customizing ? pt("Done") : pt("Customize")}
           </Button>
-          <Button variant="outline" size="sm" className="gap-1" onClick={exportJson}>
-            <Download className="h-4 w-4" /> {pt("Export")}
-          </Button>
         </div>
       </div>
 
-      {/* Customize bar — name + save + delete (drag & drop the widgets below) */}
+      {/* Customize bar — name + shared + save + delete (drag & drop the widgets below) */}
       {customizing && (
         <Card className="border-purple-200 bg-purple-50/40">
           <CardContent className="p-3 flex items-center gap-2 flex-wrap text-sm">
             <Plus className="h-4 w-4 text-purple-600" />
             <span className="text-muted-foreground">{pt("Drag widgets to reorder, toggle the eye to show/hide, then save this layout as a custom dashboard.")}</span>
-            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={pt("Dashboard name")} className="h-8 w-44 ml-auto" />
+            <label className="flex items-center gap-1 ml-auto cursor-pointer text-xs text-muted-foreground">
+              <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} />
+              <Users className="h-3.5 w-3.5" /> {pt("Share with team")}
+            </label>
+            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={pt("Dashboard name")} className="h-8 w-44" />
             <Button size="sm" className="h-8 gap-1" onClick={saveDashboard}><Save className="h-4 w-4" />{pt("Save")}</Button>
             {activeDash && <Button size="sm" variant="outline" className="h-8 gap-1 text-destructive" onClick={deleteDashboard}><Trash2 className="h-4 w-4" />{pt("Delete")}</Button>}
           </CardContent>
@@ -371,7 +456,11 @@ export default function AnalyticsDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {orderedVisible.map((l) => (
                   <div key={l.id} className={l.id === "kpis" ? "lg:col-span-2" : ""}>
-                    <SortableWidget id={l.id} customizing={customizing} hidden={l.hidden} onToggle={() => toggleHidden(l.id)} title={widgetTitle(l.id)}>
+                    <SortableWidget
+                      id={l.id} customizing={customizing} hidden={l.hidden}
+                      onToggle={() => toggleHidden(l.id)} title={widgetTitle(l.id)}
+                      onCsv={() => exportCsv(l.id)} onPdf={() => exportPdf(l.id)}
+                    >
                       {renderWidget(l.id)}
                     </SortableWidget>
                   </div>

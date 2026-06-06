@@ -31,10 +31,11 @@ from .views import (
 
 # Methodology views
 from .views_methodology import MethodologyListView, MethodologyDetailView, MethodologyTemplateView
-from .analytics_views import analytics_overview
+from .analytics_views import analytics_overview, SavedAnalyticsDashboardViewSet
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
+router.register(r"analytics-dashboards", SavedAnalyticsDashboardViewSet, basename="analytics-dashboard")
 router.register(r"milestones", MilestoneViewSet, basename="milestone")
 router.register(r"tasks", TaskViewSet, basename="task")
 router.register(r"task-due-change-requests", TaskDueDateChangeRequestViewSet, basename="task-due-change-request")
