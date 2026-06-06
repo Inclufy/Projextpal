@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LaunchAgent: runs the Docker/ProjeXtPal watchdog every 5 minutes for the
+  logged-in user (sami) on the Mac Studio.
+
+  Install:
+    cp scripts/com.inclufy.docker-watchdog.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.inclufy.docker-watchdog.plist
+  Reload after edits:
+    launchctl unload ~/Library/LaunchAgents/com.inclufy.docker-watchdog.plist
+    launchctl load   ~/Library/LaunchAgents/com.inclufy.docker-watchdog.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.inclufy.docker-watchdog</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/sami/Desktop/ProjextPal/scripts/docker-watchdog.sh</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/sami/Desktop/ProjextPal/logs/docker-watchdog.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/sami/Desktop/ProjextPal/logs/docker-watchdog.log</string>
+</dict>
+</plist>
