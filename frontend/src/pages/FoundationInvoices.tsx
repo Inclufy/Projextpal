@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,34 @@ const FoundationInvoices = () => {
   useEffect(() => { fetchData(); }, [id]);
 
   const openCreate = () => { setForm({ ...emptyForm, issue_date: new Date().toISOString().split("T")[0] }); setFile(null); setDialogOpen(true); };
+
+  const csvRef = useRef<HTMLInputElement>(null);
+  const pdfRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+
+  const importCsv = async (file: File) => {
+    setImporting(true);
+    try {
+      const raw = await file.text();
+      const r = await fetch(`/api/v1/finance/invoices/import/?project=${id}`, {
+        method: "POST", headers: { ...headers, "Content-Type": "text/csv" }, body: raw,
+      });
+      if (r.ok) { const d = await r.json(); toast.success(`${pt("Imported")}: ${d.created} ${pt("created")}, ${d.skipped} ${pt("skipped")}`); fetchData(); }
+      else toast.error(pt("Import failed"));
+    } catch { toast.error(pt("Import failed")); }
+    finally { setImporting(false); if (csvRef.current) csvRef.current.value = ""; }
+  };
+
+  const importPdf = async (file: File) => {
+    setImporting(true);
+    try {
+      const fd = new FormData(); fd.append("file", file); fd.append("project", String(id));
+      const r = await fetch(`/api/v1/finance/invoices/import-pdf/`, { method: "POST", headers, body: fd });
+      if (r.ok) { const d = await r.json(); toast.success(d.had_text ? pt("PDF imported — verify the extracted fields") : pt("PDF attached — please fill the fields")); fetchData(); }
+      else toast.error(pt("Import failed"));
+    } catch { toast.error(pt("Import failed")); }
+    finally { setImporting(false); if (pdfRef.current) pdfRef.current.value = ""; }
+  };
 
   const ensureVendor = async (): Promise<string | null> => {
     if (form.vendorId) return form.vendorId;
@@ -111,6 +139,10 @@ const FoundationInvoices = () => {
           </div>
           <div className="flex gap-2">
             {invoices.length > 0 && <ReportExportMenu title="Invoices" sections={exportSections} />}
+            <input ref={csvRef} type="file" accept=".csv" className="hidden" onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])} />
+            <input ref={pdfRef} type="file" accept=".pdf" className="hidden" onChange={(e) => e.target.files?.[0] && importPdf(e.target.files[0])} />
+            <Button variant="outline" className="gap-2" disabled={importing} onClick={() => csvRef.current?.click()}>{importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}{pt("Import CSV")}</Button>
+            <Button variant="outline" className="gap-2" disabled={importing} onClick={() => pdfRef.current?.click()}><Paperclip className="h-4 w-4" />{pt("Import PDF")}</Button>
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("New Invoice")}</Button>
           </div>
         </div>

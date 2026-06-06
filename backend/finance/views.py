@@ -29,6 +29,24 @@ INVOICED_STATUSES = ("received", "approved", "paid")
 NON_CANCELLED_STATUSES = ("draft", "received", "approved", "paid", "disputed")
 
 
+def _safe_json(raw):
+    """Parse a JSON object out of an LLM reply (tolerates code fences/prose)."""
+    import json as _json
+    import re as _re
+    if not raw:
+        return {}
+    try:
+        return _json.loads(raw)
+    except Exception:
+        m = _re.search(r"\{.*\}", raw, _re.DOTALL)
+        if m:
+            try:
+                return _json.loads(m.group(0))
+            except Exception:
+                return {}
+    return {}
+
+
 def _user_company(user):
     return getattr(user, "company", None)
 
@@ -170,6 +188,17 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not company and not _is_superadmin(user):
             return Response({"detail": "User has no company."}, status=400)
 
+        # Optional default project (?project=<id>) — all imported rows without a
+        # matching project_code land on this project.
+        default_project = None
+        pid = request.query_params.get("project")
+        if pid:
+            from projects.models import Project
+            pqs = Project.objects.all()
+            if not _is_superadmin(user) and company:
+                pqs = pqs.filter(company=company)
+            default_project = pqs.filter(pk=pid).first()
+
         source_default = "import_api"
         invoices_payload = []
         content_type = request.content_type or ""
@@ -192,7 +221,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         for idx, item in enumerate(invoices_payload):
             try:
                 with transaction.atomic():
-                    res = self._import_one(item, company, user, payload_source)
+                    res = self._import_one(item, company, user, payload_source, default_project)
                 results.append(res)
                 if res["status"] == "created":
                     created_count += 1
@@ -221,7 +250,118 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    def _import_one(self, item, company, user, source):
+    @action(detail=False, methods=["post"], url_path="import-pdf")
+    def import_pdf(self, request):
+        """Import a vendor invoice from an uploaded PDF.
+
+        Extracts text (pdfplumber), attempts structured extraction via the
+        company's LLM, then creates a DRAFT invoice with the PDF attached.
+        Falls back to a blank draft (PDF attached) if extraction is unavailable
+        so the user can complete it manually. Body: multipart {file, project}."""
+        user = request.user
+        company = _user_company(user)
+        if not company and not _is_superadmin(user):
+            return Response({"detail": "User has no company."}, status=400)
+        f = request.FILES.get("file") or request.FILES.get("attachment")
+        if not f:
+            return Response({"detail": "A PDF file is required."}, status=400)
+
+        # 1. Extract text
+        text = ""
+        try:
+            import pdfplumber
+            f.seek(0)
+            with pdfplumber.open(f) as pdf:
+                text = "\n".join((p.extract_text() or "") for p in pdf.pages[:5])
+        except Exception:
+            text = ""
+
+        # 2. LLM structured extraction (best-effort)
+        fields = self._llm_extract_invoice(text, company) if text.strip() else {}
+
+        # 3. Resolve project + vendor
+        project = None
+        pid = request.data.get("project") or request.query_params.get("project")
+        if pid:
+            from projects.models import Project
+            pqs = Project.objects.all()
+            if not _is_superadmin(user) and company:
+                pqs = pqs.filter(company=company)
+            project = pqs.filter(pk=pid).first()
+        vname = (fields.get("vendor_name") or "Unknown vendor").strip() or "Unknown vendor"
+        vendor = Vendor.objects.filter(company=company, name__iexact=vname).first()
+        if not vendor:
+            vendor = Vendor.objects.create(company=company, name=vname, created_by=user)
+
+        from datetime import date as _date
+
+        def _dec(v):
+            try:
+                return Decimal(str(v))
+            except (InvalidOperation, TypeError, ValueError):
+                return Decimal("0")
+
+        inv = Invoice.objects.create(
+            company=company,
+            vendor=vendor,
+            project=project,
+            invoice_number=(fields.get("invoice_number") or f"PDF-{f.name[:30]}"),
+            issue_date=fields.get("issue_date") or _date.today(),
+            currency=(fields.get("currency") or "EUR")[:3],
+            total_amount=_dec(fields.get("total_amount")),
+            vat_amount=_dec(fields.get("vat_amount")),
+            status="draft",
+            source="email_parse",
+            attachment=f,
+            submitted_by=user,
+            notes="Imported from PDF — please verify extracted fields.",
+        )
+        ser = InvoiceDetailSerializer(inv, context={"request": request})
+        return Response(
+            {"invoice": ser.data, "extracted": fields, "had_text": bool(text.strip())},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @staticmethod
+    def _llm_extract_invoice(text, company):
+        """Return {vendor_name, invoice_number, issue_date, total_amount,
+        vat_amount, currency} extracted from invoice text, or {} on failure."""
+        import json as _json
+        prompt = (
+            "Extract these fields from the vendor invoice text and reply with ONLY "
+            "a JSON object (no prose): vendor_name, invoice_number, issue_date "
+            "(YYYY-MM-DD), total_amount (number), vat_amount (number), currency "
+            "(3-letter). Use null if unknown.\n\nINVOICE TEXT:\n" + text[:6000]
+        )
+        # Try Anthropic, then OpenAI. Both helpers return just a client (or None).
+        try:
+            from core.llm_keys import get_anthropic_client
+            client = get_anthropic_client(company)
+            if client:
+                msg = client.messages.create(
+                    model="claude-3-5-haiku-latest",
+                    max_tokens=400,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                raw = "".join(getattr(b, "text", "") for b in msg.content)
+                return _safe_json(raw)
+        except Exception:
+            pass
+        try:
+            from core.llm_keys import get_openai_client
+            client = get_openai_client(company)
+            if client:
+                resp = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    max_tokens=400,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                return _safe_json(resp.choices[0].message.content)
+        except Exception:
+            pass
+        return {}
+
+    def _import_one(self, item, company, user, source, default_project=None):
         """Process one invoice payload — atomic per call. Returns result dict."""
         invoice_number = (item.get("invoice_number") or "").strip()
         issue_date = item.get("issue_date")
@@ -265,6 +405,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if program_code:
             from programs.models import Program
             program = Program.objects.filter(company=company, program_code=program_code).first()
+        if project is None:
+            project = default_project  # fall back to the import's default project
 
         external_id = (item.get("external_id") or "").strip()
 
