@@ -1179,7 +1179,39 @@ export function AppSidebar() {
           : []),
       ]
     : [];
-  const programPhases = programId ? getProgramPhases(programId, programMethodology) : [];
+  // Universal programme layer — parity with the project methodologies. Appended
+  // to every programme so Status Reporting, Communication and AI Insights (rolled
+  // up over constituent projects) are consistent across all programme methods.
+  const programUniversalGroups = (pid: string) => [
+    {
+      id: "prog-status-reporting",
+      title: "Status Reporting",
+      icon: Activity,
+      items: [
+        { title: "Reports", url: `/programs/${pid}/reports`, icon: FileText },
+        { title: "AI Status Report", url: `/programs/${pid}/ai/status`, icon: Sparkles },
+      ],
+    },
+    {
+      id: "prog-communication",
+      title: "Communication",
+      icon: Mail,
+      items: [
+        { title: "Communications", url: `/programs/${pid}/communications`, icon: Mail },
+      ],
+    },
+    {
+      id: "prog-ai-insights",
+      title: "AI Insights",
+      icon: Brain,
+      items: [
+        { title: "Compound Signals", url: `/programs/${pid}/ai/compound-signals`, icon: Brain },
+      ],
+    },
+  ];
+  const programPhases = programId
+    ? [...getProgramPhases(programId, programMethodology), ...programUniversalGroups(programId)]
+    : [];
 
   // Color mapping for menu icons
   const iconColors: Record<string, string> = {

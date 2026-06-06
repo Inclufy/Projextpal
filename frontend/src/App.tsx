@@ -114,6 +114,8 @@ const ProgramPMI = lazy(() => import("./pages/ProgramPMI"));
 const ProgramP2 = lazy(() => import("./pages/ProgramP2"));
 const ProgramHybridGovernance = lazy(() => import("./pages/ProgramHybridGovernance"));
 const ProgramGovernance = lazy(() => import("./pages/ProgramGovernance"));
+const ProgramCompoundSignals = lazy(() => import("./pages/ProgramCompoundSignals"));
+const ProgramAIStatus = lazy(() => import("./pages/ProgramAIStatus"));
 const ProgramResources = lazy(() => import("./pages/ProgramResources"));
 const ProgramRoadmap = lazy(() => import("./pages/ProgramRoadmap"));
 const ProgramDetail = lazy(() => import("./pages/ProgramDetail"));
@@ -816,7 +818,9 @@ const App = () => (
                   <ProtectedPage><ProgramGovernance /></ProtectedPage>
                 </FeatureGuard>
               } />
-              
+              <Route path="/programs/:id/ai/compound-signals" element={<ProtectedPage><ProgramCompoundSignals /></ProtectedPage>} />
+              <Route path="/programs/:id/ai/status" element={<ProtectedPage><ProgramAIStatus /></ProtectedPage>} />
+
               {/* ============================================ */}
               {/* Project Foundation Routes                    */}
               {/* ============================================ */}
