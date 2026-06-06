@@ -344,31 +344,34 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             pass
 
         # External spend — Invoice / Expense
+        # External spend = vendor invoices (finance.Invoice, the real AP source)
+        # + project Expenses. Paid = invoice paid_amount + paid expenses.
         external = 0.0
         paid = 0.0
         try:
-            from invoices.models import Invoice  # type: ignore
-            inv_qs = Invoice.objects.filter(project=project)
-            external = float(
-                inv_qs.aggregate(s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())))["s"] or 0
+            from finance.models import Invoice as VendorInvoice
+            inv_qs = VendorInvoice.objects.filter(project=project)
+            external += float(
+                inv_qs.aggregate(s=Coalesce(Sum("total_amount"), Value(0, output_field=DecimalField())))["s"] or 0
             )
-            paid = float(
-                inv_qs.filter(status="paid").aggregate(
-                    s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField()))
-                )["s"] or 0
+            paid += float(
+                inv_qs.aggregate(s=Coalesce(Sum("paid_amount"), Value(0, output_field=DecimalField())))["s"] or 0
             )
         except Exception:
-            # Fallback: use Expense model if Invoice isn't accessible.
+            pass
+        try:
             from .models import Expense
             ex_qs = Expense.objects.filter(project=project)
-            external = float(
+            external += float(
                 ex_qs.aggregate(s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField())))["s"] or 0
             )
-            paid = float(
+            paid += float(
                 ex_qs.filter(status="paid").aggregate(
                     s=Coalesce(Sum("amount"), Value(0, output_field=DecimalField()))
                 )["s"] or 0
             )
+        except Exception:
+            pass
 
         outstanding = max(0.0, external - paid)
         actuals = internal + external

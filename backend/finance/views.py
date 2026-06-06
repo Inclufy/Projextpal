@@ -76,6 +76,9 @@ class VendorViewSet(viewsets.ModelViewSet):
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
+    # Accept file uploads (invoice attachment) alongside JSON.
+    from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     queryset = Invoice.objects.all()
 
     def get_serializer_class(self):

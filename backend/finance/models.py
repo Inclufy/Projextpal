@@ -187,6 +187,10 @@ class Invoice(models.Model):
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="received")
     source = models.CharField(max_length=16, choices=SOURCE_CHOICES, default="manual")
     file_url = models.URLField(blank=True, help_text="PDF / file location.")
+    attachment = models.FileField(
+        upload_to="vendor_invoices/", null=True, blank=True,
+        help_text="Uploaded invoice document (PDF/scan).",
+    )
     notes = models.TextField(blank=True)
 
     # Approval audit

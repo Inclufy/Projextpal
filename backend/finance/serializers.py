@@ -96,7 +96,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             "issue_date", "due_date", "paid_at",
             "currency", "amount_excl_vat", "vat_rate", "vat_amount",
             "total_amount", "paid_amount",
-            "status", "source", "file_url", "notes",
+            "status", "source", "file_url", "attachment", "notes",
             "submitted_by", "approved_by", "approved_at",
             "created_at", "updated_at",
             "line_items", "payments",
@@ -119,8 +119,8 @@ class InvoiceCreateUpdateSerializer(serializers.ModelSerializer):
             "purchase_order", "external_id",
             "issue_date", "due_date",
             "currency", "amount_excl_vat", "vat_rate", "vat_amount",
-            "total_amount",
-            "status", "source", "file_url", "notes",
+            "total_amount", "paid_amount",
+            "status", "source", "file_url", "attachment", "notes",
             "line_items",
         ]
 

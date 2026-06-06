@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Pencil, Trash2, Euro } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Euro, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface Expense {
@@ -33,6 +33,7 @@ const FoundationBudget = () => {
   const { pt } = usePageTranslations();
   const { t, language } = useLanguage();
   const { id: projectId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [projectData, setProjectData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -152,6 +153,9 @@ const FoundationBudget = () => {
               <p className="text-sm text-muted-foreground">{projectData?.name || ""}</p>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" className="gap-2" onClick={() => navigate(`/projects/${projectId}/foundation/invoices`)}>
+                <FileText className="h-4 w-4" /> {pt("Invoices")}
+              </Button>
               <Button onClick={openCreate} className="gap-2">
                 <Plus className="h-4 w-4" /> {pt("Add")} Expense
               </Button>
