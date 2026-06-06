@@ -210,6 +210,11 @@ class AccountDeleteView(APIView):
         now = timezone.now()
         grace_until = now + timedelta(days=30)
 
+        # Capture originals BEFORE scrubbing — needed for the audit record.
+        orig_email = user.email
+        orig_user_id = user.id
+        orig_company_id = getattr(user, "company_id", None)
+
         with transaction.atomic():
             # Scrub PII in-place. Use a deterministic-yet-anonymous email
             # so audit logs are still queryable but no PII is preserved.
@@ -235,10 +240,37 @@ class AccountDeleteView(APIView):
                 ]
             )
 
-            # TODO: write to AuditLog table once that model exists.
-            # For now Sentry will record the auth-token revocation via
-            # the standard logout flow that the client must trigger after
-            # this 200 returns.
+            # GDPR Art. 17 — record the erasure in the immutable audit trail.
+            try:
+                from admin_portal.models import AuditLog
+                xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+                ip = (xff.split(",")[0].strip() if xff
+                      else request.META.get("REMOTE_ADDR")) or None
+                AuditLog.objects.create(
+                    user=user,
+                    user_email=orig_email,
+                    action="user_deleted",
+                    category="security",
+                    severity="warning",
+                    description=(
+                        f"GDPR Art. 17 erasure: account {orig_email} "
+                        f"(id={orig_user_id}) anonymized; hard-delete after "
+                        f"{grace_until.date().isoformat()}."
+                    ),
+                    metadata={
+                        "gdpr_article": "17",
+                        "grace_period_until": grace_until.isoformat(),
+                        "anonymized_at": now.isoformat(),
+                    },
+                    resource_type="user",
+                    resource_id=str(orig_user_id),
+                    company_id=orig_company_id,
+                    ip_address=ip,
+                    user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                )
+            except Exception:
+                # Audit must never block the erasure itself.
+                pass
 
         return Response(
             {
