@@ -113,6 +113,35 @@ class ProgramViewSet(viewsets.ModelViewSet):
         from .ai_rollup import program_progress
         return Response(program_progress(self.get_object()))
 
+    @action(detail=True, methods=['post'], url_path='ai/signal-to-decision')
+    def ai_signal_to_decision(self, request, pk=None):
+        """Governance integration: escalate a programme compound signal to a
+        Programme Board Decision (visible in the Decisions board for vote + apply)."""
+        program = self.get_object()
+        from governance.models import GovernanceBoard, Decision
+        from governance.serializers import DecisionSerializer
+
+        board = GovernanceBoard.objects.filter(program=program).first()
+        if not board:
+            board = GovernanceBoard.objects.create(
+                program=program,
+                name=f"{program.name} — Programme Board",
+                board_type="program_board",
+            )
+        sev_map = {"critical": "high", "high": "high", "medium": "medium"}
+        title = (request.data.get("title") or "AI compound signal").strip()[:255]
+        detail = request.data.get("detail") or ""
+        decision = Decision.objects.create(
+            board=board,
+            program=program,
+            authorized_program=program,
+            title=title,
+            description=(detail + "\n\n[Escalated from a programme AI compound signal.]").strip(),
+            impact=sev_map.get(request.data.get("severity"), "medium"),
+            status="pending",
+        )
+        return Response(DecisionSerializer(decision).data, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=['get'])
     def projects(self, request, pk=None):
         """Get all projects linked to this program."""

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Loader2, BrainCircuit, RefreshCw, AlertTriangle, AlertOctagon, Info, ShieldCheck, FolderKanban } from "lucide-react";
+import { Loader2, BrainCircuit, RefreshCw, AlertTriangle, AlertOctagon, Info, ShieldCheck, FolderKanban, Shield, Check } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -39,6 +39,21 @@ const ProgramCompoundSignals = () => {
     finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, [id]);
+
+  const [escalated, setEscalated] = useState<Record<number, boolean>>({});
+  const [working, setWorking] = useState<number | null>(null);
+  const escalate = async (s: any, i: number) => {
+    setWorking(i);
+    try {
+      const r = await fetch(`/api/v1/programs/${id}/ai/signal-to-decision/`, {
+        method: "POST", headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ title: `${s.title} (${s.project_name})`, detail: s.detail, severity: s.severity }),
+      });
+      if (r.ok) { setEscalated((c) => ({ ...c, [i]: true })); toast.success(pt("Escalated to programme board")); }
+      else toast.error(pt("Could not escalate"));
+    } catch { toast.error(pt("Could not escalate")); }
+    finally { setWorking(null); }
+  };
 
   const signals = data?.signals || [];
   const exportSections = signals.map((s: any) => ({ heading: `[${s.severity?.toUpperCase()}] ${s.title} — ${s.project_name}`, text: s.detail }));
@@ -91,6 +106,15 @@ const ProgramCompoundSignals = () => {
                       </div>
                       <h3 className="font-semibold">{s.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{s.detail}</p>
+                      <div className="mt-3">
+                        {escalated[i] ? (
+                          <Badge className="bg-violet-100 text-violet-700 text-xs gap-1"><Check className="h-3 w-3" />{pt("Escalated to board")}</Badge>
+                        ) : (
+                          <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => escalate(s, i)} disabled={working === i}>
+                            {working === i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}{pt("Escalate to governance")}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent></Card>

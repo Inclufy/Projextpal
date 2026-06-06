@@ -289,6 +289,38 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
 
+    @action(detail=True, methods=["post"], url_path="ai/signal-to-decision")
+    def ai_signal_to_decision(self, request, pk=None):
+        """Governance integration: escalate an AI compound signal to a board Decision.
+
+        Gets/creates a project-level GovernanceBoard, then raises a pending Decision
+        linked to it (visible in the Decisions board, where it can be voted on and
+        its outcome applied). Connects the AI layer → governance.
+        """
+        project = self.get_object()
+        from governance.models import GovernanceBoard, Decision
+        from governance.serializers import DecisionSerializer
+
+        board = GovernanceBoard.objects.filter(project=project).first()
+        if not board:
+            board = GovernanceBoard.objects.create(
+                project=project,
+                name=f"{project.name} — Project Board",
+                board_type="project_board",
+            )
+        sev_map = {"critical": "high", "high": "high", "medium": "medium"}
+        title = (request.data.get("title") or "AI compound signal").strip()[:255]
+        detail = request.data.get("detail") or ""
+        decision = Decision.objects.create(
+            board=board,
+            authorized_project=project,
+            title=title,
+            description=(detail + "\n\n[Escalated to governance from an AI compound signal.]").strip(),
+            impact=sev_map.get(request.data.get("severity"), "medium"),
+            status="pending",
+        )
+        return Response(DecisionSerializer(decision).data, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=["post"], url_path="ai/signal-to-issue")
     def ai_signal_to_issue(self, request, pk=None):
         """Cross-module automation: turn a compound signal into a tracked RAID issue.
