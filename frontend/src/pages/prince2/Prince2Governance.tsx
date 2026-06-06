@@ -107,7 +107,7 @@ const Prince2Governance = () => {
     try {
       const r = await fetch(`/api/v1/projects/${id}/prince2/pid/${pid.id}/baseline/`, { method: "POST", headers: jsonHeaders });
       if (r.ok) { toast.success(pt("Saved")); fetchData(); }
-      else toast.error(pt("Action failed"));
+      else { const d = await r.json().catch(() => null); toast.error(d?.error || d?.detail || pt("Action failed")); }
     } catch { toast.error(pt("Action failed")); }
   };
 

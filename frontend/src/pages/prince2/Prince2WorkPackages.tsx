@@ -257,7 +257,12 @@ const Prince2WorkPackages = () => {
         fetchData();
       } else {
         const err = await response.json().catch(() => ({}));
-        toast.error(err.error || pt("Save failed"));
+        // Surface DRF field-validation errors (e.g. {"depends_on": ["..."]}), not just {error}.
+        const firstField = err && typeof err === "object"
+          ? Object.entries(err).find(([k]) => !["error", "detail"].includes(k))
+          : null;
+        const fieldMsg = firstField ? `${firstField[0]}: ${Array.isArray(firstField[1]) ? firstField[1][0] : firstField[1]}` : null;
+        toast.error(err.error || err.detail || fieldMsg || pt("Save failed"));
       }
     } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
