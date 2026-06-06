@@ -468,13 +468,37 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
 // answer across every methodology. The Foundation/Inclufy nav already includes
 // this under Execution & Governance, so it is appended only for the dedicated
 // methodologies below.
-const centralReportingGroup = (projectId: string) => ({
+// Each dedicated methodology has exactly ONE doctrine "report" surface (Sprint
+// Report, Tollgate Report, Phase Gate Report, …). We fold it INTO the central
+// Status Reporting group rather than leaving it scattered in a phase group, so
+// every methodology has one single Status Reporting tab (parity with PRINCE2).
+const DOCTRINE_REPORT = (
+  projectId: string,
+  methodology: string | null,
+): { title: string; url: string; icon: any } | null => {
+  const m = (methodology || "").toLowerCase();
+  const map: Record<string, { title: string; slug: string }> = {
+    scrum: { title: "Sprint Reports", slug: "scrum/reports" },
+    kanban: { title: "Service Delivery Review", slug: "kanban/reports" },
+    agile: { title: "Iteration Reports", slug: "agile/reports" },
+    waterfall: { title: "Phase Gate Reports", slug: "waterfall/reports" },
+    hybrid: { title: "Phase Reports", slug: "hybrid/reports" },
+    lean_six_sigma_green: { title: "Tollgate Reports", slug: "lss-green/reports" },
+    lean_six_sigma_black: { title: "Tollgate Reports", slug: "lss-black/reports" },
+  };
+  const d = map[m];
+  return d ? { title: d.title, url: `/projects/${projectId}/${d.slug}`, icon: FileBarChart } : null;
+};
+
+const centralReportingGroup = (projectId: string, methodology: string | null = null) => ({
   id: "central-reporting",
   title: "Status Reporting",
   icon: Activity,
   items: [
     { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
     { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
+    // Methodology doctrine report folded in (Sprint/Tollgate/Phase-Gate/…).
+    ...(DOCTRINE_REPORT(projectId, methodology) ? [DOCTRINE_REPORT(projectId, methodology)!] : []),
     { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
   ],
 });
@@ -568,7 +592,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
             { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
-            { title: "Sprint Reports", url: `/projects/${projectId}/scrum/reports`, icon: FileBarChart },
           ],
         },
         {
@@ -617,7 +640,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Metrics Dashboard", url: `/projects/${projectId}/kanban/metrics`, icon: Gauge },
             { title: "Cumulative Flow", url: `/projects/${projectId}/kanban/cfd`, icon: BarChart3 },
-            { title: "Service Delivery Review", url: `/projects/${projectId}/kanban/reports`, icon: FileBarChart },
           ],
         },
         {
@@ -784,7 +806,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "SPC Charts", url: `/projects/${projectId}/control/spc`, icon: BarChart3 },
             { title: "Monitoring", url: `/projects/${projectId}/control/monitoring`, icon: Activity },
             { title: "Tollgate Review", url: `/projects/${projectId}/control/tollgate`, icon: CheckSquare },
-            { title: "Tollgate Reports", url: `/projects/${projectId}/${lssBase}/reports`, icon: FileBarChart },
             { title: "Closure", url: `/projects/${projectId}/control/closure`, icon: Award },
           ],
         },
@@ -839,7 +860,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Retrospective", url: `/projects/${projectId}/agile/retrospective`, icon: Lightbulb },
             { title: "Stakeholder Feedback", url: `/projects/${projectId}/agile/stakeholder-feedback`, icon: MessagesSquare },
             { title: "Definition of Done", url: `/projects/${projectId}/agile/definition-of-done`, icon: CheckSquare },
-            { title: "Iteration Reports", url: `/projects/${projectId}/agile/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -889,7 +909,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Risks", url: `/projects/${projectId}/waterfall/risks`, icon: Shield },
             { title: "Issues", url: `/projects/${projectId}/waterfall/issues`, icon: AlertCircle },
             { title: "Deliverables", url: `/projects/${projectId}/waterfall/deliverables`, icon: Package },
-            { title: "Phase Gate Reports", url: `/projects/${projectId}/waterfall/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -906,7 +925,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Tasks", url: `/projects/${projectId}/hybrid/tasks`, icon: ListChecks },
             { title: "Timeline", url: `/projects/${projectId}/hybrid/timeline`, icon: Calendar },
             { title: "Artifacts", url: `/projects/${projectId}/hybrid/artifacts`, icon: FileText },
-            { title: "Phase Reports", url: `/projects/${projectId}/hybrid/reports`, icon: FileBarChart },
             { title: "Configuration", url: `/projects/${projectId}/hybrid/configuration`, icon: Settings },
           ],
         },
@@ -1185,7 +1203,7 @@ export function AppSidebar() {
               // (doctrine reports + central status layer merged) inside its case,
               // so the shared central group is skipped to avoid a duplicate tab.
               ...(methodology.toLowerCase() !== "prince2"
-                ? [centralReportingGroup(projectId)]
+                ? [centralReportingGroup(projectId, methodology)]
                 : []),
               communicationGroup(projectId),
               aiInsightsGroup(projectId),
