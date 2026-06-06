@@ -16,6 +16,11 @@ from rest_framework.response import Response
 
 
 def _company_of(user):
+    # The user model carries the company FK directly (same source the rest of
+    # the app uses); fall back to a profile relation only if that's absent.
+    c = getattr(user, "company", None)
+    if c is not None:
+        return c
     prof = getattr(user, "profile", None)
     return getattr(prof, "company", None)
 
@@ -37,9 +42,12 @@ def _completion(qs_tasks_total, qs_tasks_done):
 def analytics_overview(request):
     """GET ?scope=org|program|project&id=<id>&days=30 -> dashboard payload."""
     from .models import Project, Task, Milestone, Risk
+    from .views import accessible_project_ids
 
-    company = _company_of(request.user)
-    projects = Project.objects.filter(company=company) if company else Project.objects.none()
+    # Scope the analytics to exactly the projects this user can see elsewhere
+    # (superadmin → all; admin/pm/program_manager → own company; others →
+    # their team memberships). Mirrors the Projects list so numbers always match.
+    projects = Project.objects.filter(id__in=accessible_project_ids(request.user))
 
     scope = (request.query_params.get("scope") or "org").lower()
     sid = request.query_params.get("id")
