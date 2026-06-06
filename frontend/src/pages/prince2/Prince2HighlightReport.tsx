@@ -10,7 +10,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, FileText, Pencil, Trash2, Eye, Download } from "lucide-react";
+import { ReportExportMenu, ReportSection } from "@/components/ReportExportMenu";
 import { toast } from "sonner";
+
+const reportSections = (r: any): ReportSection[] => [
+  { heading: "Cover", rows: [
+    ["Date", r.report_date || ""], ["Period", `${r.period_start || "—"} → ${r.period_end || "—"}`],
+    ["Sponsor", r.sponsor || ""], ["Project Manager", r.project_manager || ""], ["Senior Supplier", r.senior_supplier || ""],
+  ] },
+  { heading: "RAG", rows: [
+    ["Overall", r.overall_status], ["Budget", r.rag_budget], ["Planning", r.rag_planning], ["Resources", r.rag_resources],
+  ] },
+  ...(Array.isArray(r.phase_timeline) && r.phase_timeline.length ? [{ heading: "Phase Timeline", rows: r.phase_timeline.map((p: any) => [p.phase, `${p.start || "—"} → ${p.end || "—"} (${p.status})`]) as [string, any][] }] : []),
+  ...((r.budget_spent != null || r.budget_forecast != null) ? [{ heading: "Financials", rows: [["Budget spent", r.budget_spent ?? ""], ["Budget forecast", r.budget_forecast ?? ""]] as [string, any][] }] : []),
+  { heading: "Objectives", text: r.objectives || "" },
+  { heading: "Status Summary", text: r.status_summary || "" },
+  { heading: "Work Completed", text: r.work_completed || "" },
+  { heading: "Highlights", text: r.highlights || "" },
+  { heading: "Lowlights", text: r.lowlights || "" },
+  { heading: "Work Planned Next Period", text: r.work_planned_next_period || "" },
+  { heading: "Issues", text: r.issues_summary || "" },
+  { heading: "Risks", text: r.risks_summary || "" },
+].filter((s) => (s.rows && s.rows.length) || s.text);
 
 const Prince2HighlightReport = () => {
   const { pt } = usePageTranslations();
@@ -265,7 +286,11 @@ const Prince2HighlightReport = () => {
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between pr-6">
                   <span>{pt("Highlight Report")} · {viewing.report_date || ""}</span>
-                  <Button size="sm" variant="outline" className="gap-2" onClick={() => downloadPptx(viewing.id)}><Download className="h-4 w-4" />PPTX</Button>
+                  <ReportExportMenu
+                    title={`Highlight Report ${viewing.report_date || ""}`}
+                    sections={reportSections(viewing)}
+                    nativeExports={[{ label: "PPTX", url: `/api/v1/projects/${id}/prince2/highlight-reports/${viewing.id}/export/pptx/`, filename: `highlight-report-${viewing.id}.pptx` }]}
+                  />
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 text-sm">

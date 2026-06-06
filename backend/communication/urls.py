@@ -20,4 +20,5 @@ urlpatterns = [
         AIMeetingMinutesView.as_view(),
         name='ai-meeting-minutes',
     ),
+    path('reports/export/', views.ReportExportView.as_view(), name='report-export'),
 ]

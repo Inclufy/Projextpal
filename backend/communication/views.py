@@ -458,3 +458,85 @@ class MeetingActionItemViewSet(viewsets.ModelViewSet):
         if meeting_id:
             qs = qs.filter(meeting_id=meeting_id)
         return qs
+
+
+# ── Generic report export (DOCX / XLSX from a sections payload) ───────────
+# One endpoint for ALL reports — the frontend sends the same `sections` it
+# renders on screen, so any report gains Word/Excel export without a
+# per-report backend renderer. PDF/MD/CSV/JSON are produced client-side.
+import io as _io
+from rest_framework.views import APIView as _APIView
+
+
+class ReportExportView(_APIView):
+    """POST /api/v1/communication/reports/export/
+    Body: {"format": "docx"|"xlsx", "title": str,
+           "sections": [{"heading": str, "rows": [[label, value], ...], "text": str}]}"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        fmt = (request.data.get("format") or "docx").lower()
+        title = request.data.get("title") or "Report"
+        sections = request.data.get("sections") or []
+        if fmt == "xlsx":
+            content, ext, ctype = self._xlsx(title, sections)
+        else:
+            content, ext, ctype = self._docx(title, sections)
+        safe = "".join(c if c.isalnum() or c in "-_" else "-" for c in title)[:60] or "report"
+        from django.http import HttpResponse
+        r = HttpResponse(content, content_type=ctype)
+        r["Content-Disposition"] = f'attachment; filename="{safe}.{ext}"'
+        return r
+
+    def _docx(self, title, sections):
+        from docx import Document
+        doc = Document()
+        doc.add_heading(title, level=0)
+        for s in sections:
+            if s.get("heading"):
+                doc.add_heading(str(s["heading"]), level=1)
+            rows = s.get("rows") or []
+            if rows:
+                table = doc.add_table(rows=0, cols=2)
+                table.style = "Light Grid Accent 1"
+                for pair in rows:
+                    label = str(pair[0]) if len(pair) > 0 else ""
+                    value = str(pair[1]) if len(pair) > 1 else ""
+                    cells = table.add_row().cells
+                    cells[0].text = label
+                    cells[1].text = value
+            if s.get("text"):
+                doc.add_paragraph(str(s["text"]))
+        buf = _io.BytesIO()
+        doc.save(buf)
+        return buf.getvalue(), "docx", (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+
+    def _xlsx(self, title, sections):
+        from openpyxl import Workbook
+        from openpyxl.styles import Font
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Report"
+        ws.append([title])
+        ws["A1"].font = Font(bold=True, size=14)
+        ws.append([])
+        for s in sections:
+            if s.get("heading"):
+                ws.append([str(s["heading"])])
+                ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
+            for pair in (s.get("rows") or []):
+                label = str(pair[0]) if len(pair) > 0 else ""
+                value = str(pair[1]) if len(pair) > 1 else ""
+                ws.append([label, value])
+            if s.get("text"):
+                ws.append(["", str(s["text"])])
+            ws.append([])
+        ws.column_dimensions["A"].width = 28
+        ws.column_dimensions["B"].width = 60
+        buf = _io.BytesIO()
+        wb.save(buf)
+        return buf.getvalue(), "xlsx", (
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
