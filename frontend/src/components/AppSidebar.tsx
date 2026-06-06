@@ -220,8 +220,6 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           icon: Shield,
           items: [
             { title: "Programme Board", url: `/programs/${programId}/programme-projects`, icon: Crown },
-            { title: "Exception Reports", url: `/programs/${programId}/exceptions`, icon: BarChart3 },
-            { title: "Highlight Reports", url: `/programs/${programId}/highlights`, icon: Activity },
           ],
         },
         {
@@ -322,7 +320,6 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           items: [
             { title: "Programme Board", url: `/programs/${programId}/governance`, icon: Shield },
             { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
-            { title: "Reports", url: `/programs/${programId}/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -367,7 +364,6 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
           items: [
             { title: "Governance", url: `/programs/${programId}/governance`, icon: Shield },
             { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
-            { title: "Reports", url: `/programs/${programId}/reports`, icon: FileBarChart },
           ],
         },
       ];
@@ -1220,7 +1216,18 @@ export function AppSidebar() {
   // Universal programme layer — parity with the project methodologies. Appended
   // to every programme so Status Reporting, Communication and AI Insights (rolled
   // up over constituent projects) are consistent across all programme methods.
-  const programUniversalGroups = (pid: string) => [
+  // Programme doctrine reports folded into the single Status Reporting group
+  // (parity with the project sidebars) so a programme has one reporting tab.
+  const PROGRAMME_DOCTRINE_REPORTS = (pid: string, m: string | null) => {
+    const map: Record<string, { title: string; url: string; icon: any }[]> = {
+      prince2_programme: [
+        { title: "Highlight Reports", url: `/programs/${pid}/highlights`, icon: Activity },
+        { title: "Exception Reports", url: `/programs/${pid}/exceptions`, icon: AlertOctagon },
+      ],
+    };
+    return map[(m || "").toLowerCase()] || [];
+  };
+  const programUniversalGroups = (pid: string, methodology: string | null = null) => [
     {
       id: "prog-status-reporting",
       title: "Status Reporting",
@@ -1228,6 +1235,7 @@ export function AppSidebar() {
       items: [
         { title: "Reports", url: `/programs/${pid}/reports`, icon: FileText },
         { title: "AI Status Report", url: `/programs/${pid}/ai/status`, icon: Sparkles },
+        ...PROGRAMME_DOCTRINE_REPORTS(pid, methodology),
       ],
     },
     {
@@ -1248,7 +1256,7 @@ export function AppSidebar() {
     },
   ];
   const programPhases = programId
-    ? [...getProgramPhases(programId, programMethodology), ...programUniversalGroups(programId)]
+    ? [...getProgramPhases(programId, programMethodology), ...programUniversalGroups(programId, programMethodology)]
     : [];
 
   // Color mapping for menu icons
