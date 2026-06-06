@@ -174,6 +174,8 @@ const Decisions: React.FC = () => {
         board: boardFilter || "",
         meeting: meetingFilter || "",
         risk: riskFilter || "",
+        outcome: "",
+        authorized_program: programFilter || "",
       });
       setDialogOpen(true);
       const next = new URLSearchParams(searchParams);
