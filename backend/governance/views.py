@@ -425,6 +425,65 @@ class DecisionViewSet(viewsets.ModelViewSet):
         return Response({**DecisionSerializer(decision).data, 'escalated_to': tier})
 
     @action(detail=True, methods=['post'])
+    def delegate(self, request, pk=None):
+        """Top-down: push a decision DOWN the governance ladder —
+        Steering committee → Programme board → Project board (inverse of escalate).
+
+        Used when a higher board delegates a decision to the responsible lower tier.
+        Append-only (applied) decisions can't move.
+        """
+        from .models import GovernanceBoard
+        decision = self.get_object()
+        if decision.applied_at is not None:
+            return Response({'detail': 'Applied decisions cannot be delegated.', 'code': 'already_applied'},
+                            status=drf_status.HTTP_409_CONFLICT)
+
+        board = decision.board
+        current = board.board_type if board else None
+        if current == 'project_board':
+            return Response({'detail': 'Already at the lowest tier (project board).', 'code': 'bottom_tier'},
+                            status=drf_status.HTTP_409_CONFLICT)
+
+        program = decision.authorized_program or (board.program if board else None)
+        project = decision.authorized_project or (board.project if board else None)
+
+        next_board = None
+        tier = None
+        if current in ('steering_committee', 'executive_board'):
+            if program is not None:
+                next_board = GovernanceBoard.objects.filter(program=program).first() or GovernanceBoard.objects.create(
+                    program=program, name=f"{program.name} — Programme Board", board_type='program_board')
+                tier = 'Programme board'
+            elif project is not None:
+                next_board = GovernanceBoard.objects.filter(project=project).first() or GovernanceBoard.objects.create(
+                    project=project, name=f"{project.name} — Project Board", board_type='project_board')
+                tier = 'Project board'
+            else:
+                return Response({'detail': 'No lower component to delegate to.', 'code': 'no_target'},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
+        else:  # program_board → project board
+            if project is None and program is not None:
+                project = program.projects.first()
+            if project is None:
+                return Response({'detail': 'No project to delegate this decision to.', 'code': 'no_target'},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
+            next_board = GovernanceBoard.objects.filter(project=project).first() or GovernanceBoard.objects.create(
+                project=project, name=f"{project.name} — Project Board", board_type='project_board')
+            tier = 'Project board'
+
+        decision.board = next_board
+        fields = ['board', 'description']
+        if next_board.program_id:
+            decision.program_id = next_board.program_id
+            fields.append('program')
+        if next_board.project_id and not decision.authorized_project_id:
+            decision.authorized_project_id = next_board.project_id
+            fields.append('authorized_project')
+        decision.description = (decision.description or '') + f"\n\n[Delegated down to {tier}.]"
+        decision.save(update_fields=fields)
+        return Response({**DecisionSerializer(decision).data, 'delegated_to': tier})
+
+    @action(detail=True, methods=['post'])
     def apply(self, request, pk=None):
         """Approve the decision and enact its outcome on the linked component.
 

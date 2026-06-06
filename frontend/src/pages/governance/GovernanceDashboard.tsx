@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Shield, Gavel, Users, Briefcase, AlertTriangle, ArrowRight, RefreshCw, ChevronsUp } from "lucide-react";
+import { Loader2, Shield, Gavel, Users, Briefcase, AlertTriangle, ArrowRight, RefreshCw, ChevronsUp, ChevronsDown } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -30,15 +30,15 @@ const GovernanceDashboard = () => {
   useEffect(() => { fetchData(); }, []);
 
   const [escalating, setEscalating] = useState<string | null>(null);
-  const escalateUp = async (decId: string) => {
+  const move = async (decId: string, dir: "escalate" | "delegate") => {
     setEscalating(decId);
     try {
-      const r = await fetch(`/api/v1/governance/decisions/${decId}/escalate/`, {
+      const r = await fetch(`/api/v1/governance/decisions/${decId}/${dir}/`, {
         method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: "{}",
       });
-      if (r.ok) { const d = await r.json(); toast.success(`${pt("Escalated to")} ${d.escalated_to || pt("next tier")}`); fetchData(); }
-      else { const d = await r.json().catch(() => ({})); toast.error(d.detail || pt("Could not escalate")); }
-    } catch { toast.error(pt("Could not escalate")); }
+      if (r.ok) { const d = await r.json(); toast.success(`${dir === "escalate" ? pt("Escalated to") : pt("Delegated to")} ${d.escalated_to || d.delegated_to || pt("next tier")}`); fetchData(); }
+      else { const d = await r.json().catch(() => ({})); toast.error(d.detail || pt("Action failed")); }
+    } catch { toast.error(pt("Action failed")); }
     finally { setEscalating(null); }
   };
 
@@ -119,8 +119,11 @@ const GovernanceDashboard = () => {
                     <span className="text-sm font-medium">{x.title}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => escalateUp(x.id)} disabled={escalating === x.id}>
+                    <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => move(x.id, "escalate")} disabled={escalating === x.id} title={pt("Escalate up: project → programme → steering")}>
                       {escalating === x.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ChevronsUp className="h-3.5 w-3.5" />}{pt("Escalate ↑")}
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => move(x.id, "delegate")} disabled={escalating === x.id} title={pt("Delegate down: steering → programme → project")}>
+                      <ChevronsDown className="h-3.5 w-3.5" />{pt("Delegate ↓")}
                     </Button>
                     <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate(`/governance/decisions?decision=${x.id}`)}>{pt("Review")}<ArrowRight className="h-3.5 w-3.5" /></Button>
                   </div>
