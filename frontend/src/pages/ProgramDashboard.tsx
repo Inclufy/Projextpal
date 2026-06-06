@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
+import { AIHealthStrip } from '@/components/AIHealthStrip';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -287,6 +288,7 @@ const ProgramDashboard = () => {
       </div>
 
       <div className="p-6 space-y-6">
+        {id && <AIHealthStrip scope="program" id={id} />}
         <div className="flex items-center justify-between">
           <div>
             {(() => {
