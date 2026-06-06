@@ -24,6 +24,7 @@ from .models import (
     ApprovalStage,
     Upload,
     Risk,
+    Issue,
     AIMitigation,
     ManualMitigation,
     ProjectTeam,
@@ -2034,6 +2035,45 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 {"error": f"Failed to regenerate AI mitigation: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class IssueViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """Methodology-agnostic RAID Issue register.
+
+    Generic counterpart to RiskViewSet so every methodology (Scrum, Kanban,
+    Waterfall, Agile, LSS, Hybrid) shares one Issue register, rather than the
+    PRINCE2-namespaced one. Company-scoped + optional ?project= filter.
+    """
+
+    from .serializers import IssueSerializer as _IssueSerializer
+
+    serializer_class = _IssueSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = (
+            Issue.objects.all()
+            .select_related("project", "owner", "created_by", "related_risk")
+            .filter(project__company=self.request.user.company)
+        )
+        project_id = self.request.query_params.get("project") or self.kwargs.get(
+            "project_id"
+        )
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    def perform_create(self, serializer):
+        kwargs = {"created_by": self.request.user}
+        project_id = self.kwargs.get("project_id")
+        if project_id:
+            try:
+                kwargs["project"] = Project.objects.get(
+                    id=project_id, company=self.request.user.company
+                )
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("Project not found or access denied")
+        serializer.save(**kwargs)
 
 
 class RiskForecastViewSet(viewsets.ReadOnlyModelViewSet):

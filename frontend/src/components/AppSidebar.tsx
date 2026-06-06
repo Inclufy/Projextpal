@@ -433,6 +433,32 @@ const communicationGroup = (projectId: string) => ({
   ],
 });
 
+// Universal RAID layer — Risk + Issue register. Methodology-agnostic generic
+// routes (PlanningRisks + PlanningIssues), so every methodology shares one RAID
+// register. PRINCE2 is excluded from the auto-append (it carries its own richer
+// Risk/Issue registers under Governance).
+const raidGroup = (projectId: string) => ({
+  id: "raid",
+  title: "Risk & Issues",
+  icon: AlertOctagon,
+  items: [
+    { title: "Risk Register", url: `/projects/${projectId}/planning/risks`, icon: AlertCircle },
+    { title: "Issue Register", url: `/projects/${projectId}/planning/issues`, icon: AlertOctagon },
+  ],
+});
+
+// Universal cost layer — Budget + Invoices. Generic routes shared by every
+// methodology (PRINCE2 excluded — it has Budget under Project Initiation).
+const costGroup = (projectId: string) => ({
+  id: "cost",
+  title: "Cost Management",
+  icon: Euro,
+  items: [
+    { title: "Budget & Costs", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+    { title: "Invoices", url: `/projects/${projectId}/foundation/invoices`, icon: CreditCard },
+  ],
+});
+
 // Slugs that get a dedicated methodology sidebar (not the Foundation fallback,
 // which already carries the central reporting group).
 const DEDICATED_METHODOLOGIES = new Set([
@@ -1070,7 +1096,16 @@ export function AppSidebar() {
     ? [
         ...getMethodologyPhases(projectId, methodology),
         ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
-          ? [centralReportingGroup(projectId), communicationGroup(projectId)]
+          ? [
+              centralReportingGroup(projectId),
+              communicationGroup(projectId),
+              // Universal RAID + Cost layer — appended to every dedicated
+              // methodology EXCEPT prince2, which carries its own richer
+              // Risk/Issue registers + Budget natively.
+              ...(methodology.toLowerCase() !== "prince2"
+                ? [raidGroup(projectId), costGroup(projectId)]
+                : []),
+            ]
           : []),
       ]
     : [];

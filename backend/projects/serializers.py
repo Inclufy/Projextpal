@@ -626,6 +626,44 @@ class RiskListSerializer(serializers.ModelSerializer):
         return obj.owner.first_name or obj.owner.email
 
 
+class IssueSerializer(serializers.ModelSerializer):
+    """RAID-log Issue serializer — methodology-agnostic generic issue register."""
+
+    owner_name = serializers.SerializerMethodField()
+    owner_email = serializers.ReadOnlyField(source="owner.email")
+    related_risk_name = serializers.ReadOnlyField(source="related_risk.name")
+
+    class Meta:
+        from .models import Issue
+
+        model = Issue
+        fields = [
+            "id",
+            "project",
+            "name",
+            "description",
+            "severity",
+            "status",
+            "raised_date",
+            "target_resolution_date",
+            "resolved_at",
+            "resolution",
+            "related_risk",
+            "related_risk_name",
+            "owner",
+            "owner_name",
+            "owner_email",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at", "resolved_at"]
+
+    def get_owner_name(self, obj):
+        if not obj.owner:
+            return None
+        return obj.owner.first_name or obj.owner.email
+
+
 class ProjectTeamSerializer(serializers.ModelSerializer):
     """Serializer for ProjectTeam model"""
 
