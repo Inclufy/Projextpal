@@ -63,6 +63,7 @@ const FoundationCharter = lazy(() => import("./pages/FoundationCharter"));
 const FoundationTeam = lazy(() => import("./pages/FoundationTeam"));
 const FoundationBudget = lazy(() => import("./pages/FoundationBudget"));
 const FoundationCommunicationPlan = lazy(() => import("./pages/FoundationCommunicationPlan"));
+const FoundationClosure = lazy(() => import("./pages/FoundationClosure"));
 const PlanningTasks = lazy(() => import("./pages/PlanningTasks"));
 const PlanningRaci = lazy(() => import("./pages/PlanningRaci"));
 const PlanningDependencies = lazy(() => import("./pages/PlanningDependencies"));
@@ -822,6 +823,7 @@ const App = () => (
               <Route path="/projects/:id/foundation/team" element={<ProtectedPage><FoundationTeam /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/budget" element={<ProtectedPage><FoundationBudget /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/communication-plan" element={<ProtectedPage><FoundationCommunicationPlan /></ProtectedPage>} />
+              <Route path="/projects/:id/foundation/closure" element={<ProtectedPage><FoundationClosure /></ProtectedPage>} />
               
               {/* Planning & Design Routes */}
               <Route path="/projects/:id/planning/timeline" element={<ProtectedPage><ProjectTimeline /></ProtectedPage>} />
