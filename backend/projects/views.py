@@ -289,6 +289,29 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
 
+    @action(detail=True, methods=["get"], url_path="governance/decisions")
+    def governance_decisions(self, request, pk=None):
+        """Feedback loop: governance decisions taken on this project (incl. ones
+        escalated up to a programme board / steering committee), with their status,
+        outcome and whether they've been applied — so the board's verdict is
+        visible back at project level."""
+        project = self.get_object()
+        from django.db.models import Q
+        from governance.models import Decision
+        from governance.serializers import DecisionSerializer
+
+        qs = Decision.objects.filter(
+            Q(authorized_project=project) | Q(board__project=project)
+        ).select_related("board").order_by("-created_at")
+        data = []
+        for d in qs:
+            row = DecisionSerializer(d).data
+            row["board_type"] = getattr(d.board, "board_type", None)
+            row["board_name"] = getattr(d.board, "name", None)
+            row["applied"] = d.applied_at is not None
+            data.append(row)
+        return Response({"count": len(data), "decisions": data})
+
     @action(detail=True, methods=["post"], url_path="ai/signal-to-decision")
     def ai_signal_to_decision(self, request, pk=None):
         """Governance integration: escalate an AI compound signal to a board Decision.
