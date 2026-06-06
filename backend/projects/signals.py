@@ -9,6 +9,7 @@ from .models import (
     Project,
     ProjectTeam,
     ApprovalStage,
+    Risk,
 )
 
 
@@ -214,3 +215,47 @@ def log_approval_stage_changes(sender, instance, created, **kwargs):
                 )
     except Exception:
         pass
+
+
+# ---------------------------------------------------------------------------
+# Event-driven AI status refresh — keep the status report current in real time.
+# On a significant change (milestone state, high risk raised) regenerate a fresh
+# *deterministic* report (fast, no LLM, no network). Debounced to at most one per
+# 10 minutes per project so bulk edits don't create a storm. The richer LLM
+# narrative still comes from the scheduled job and the manual Generate button.
+# ---------------------------------------------------------------------------
+def _maybe_regen_status(project):
+    if project is None:
+        return
+    try:
+        from datetime import timedelta
+        from django.utils import timezone
+        from communication.models import GeneratedStatusReport
+        from communication.status_synthesis import generate_and_store
+
+        recent = GeneratedStatusReport.objects.filter(
+            project=project,
+            created_at__gte=timezone.now() - timedelta(minutes=10),
+        ).exists()
+        if recent:
+            return
+        generate_and_store(project, user=None, use_llm=False)
+    except Exception:
+        # Never let report generation break the originating save.
+        pass
+
+
+@receiver(post_save, sender=Milestone)
+def regen_status_on_milestone(sender, instance, created, raw=False, **kwargs):
+    if raw:
+        return
+    _maybe_regen_status(getattr(instance, "project", None))
+
+
+@receiver(post_save, sender=Risk)
+def regen_status_on_high_risk(sender, instance, created, raw=False, **kwargs):
+    if raw:
+        return
+    # Only a newly-raised high-level risk is significant enough to refresh.
+    if created and getattr(instance, "level", None) == "High":
+        _maybe_regen_status(getattr(instance, "project", None))

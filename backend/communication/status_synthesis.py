@@ -402,3 +402,32 @@ def synthesize(
         "model_used": model_used,
         "original_ai_response": raw,
     }
+
+
+def generate_and_store(project, *, user=None, use_llm: bool = True):
+    """Synthesise + persist a GeneratedStatusReport. Reused by the API action,
+    the scheduled management command, and the event-driven signal.
+
+    Returns the created report, or None on failure (never raises)."""
+    from .models import GeneratedStatusReport
+
+    try:
+        result = synthesize(project, use_llm=use_llm)
+        return GeneratedStatusReport.objects.create(
+            project=project,
+            metrics=result["metrics"],
+            overall_rag=result["overall_rag"],
+            rag_scope=result["rag_scope"],
+            rag_schedule=result["rag_schedule"],
+            rag_cost=result["rag_cost"],
+            rag_risk=result["rag_risk"],
+            executive_summary=result["executive_summary"],
+            highlights=result["highlights"],
+            blockers=result["blockers"],
+            next_steps=result["next_steps"],
+            model_used=result["model_used"],
+            original_ai_response=result["original_ai_response"],
+            created_by=user,
+        )
+    except Exception:
+        return None
