@@ -10,7 +10,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { Loader2, Sparkles, Activity, AlertTriangle, ArrowRight } from "lucide-react";
+import { ReportExportMenu, type ReportSection } from "@/components/ReportExportMenu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Loader2, Sparkles, Activity, AlertTriangle, ArrowRight, Share2, Copy, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface Report {
@@ -40,6 +42,43 @@ const ragBadge = (label: string, value: string) => (
     {label}: {value?.toUpperCase()}
   </Badge>
 );
+
+// Build export sections (PDF/Word/Excel/CSV/JSON) from a report.
+const buildSections = (rep: Report): ReportSection[] => [
+  {
+    rows: [
+      ["Overall RAG", rep.overall_rag?.toUpperCase()],
+      ["Scope", rep.rag_scope?.toUpperCase()],
+      ["Schedule", rep.rag_schedule?.toUpperCase()],
+      ["Cost", rep.rag_cost?.toUpperCase()],
+      ["Risk", rep.rag_risk?.toUpperCase()],
+      ["Generated", new Date(rep.created_at).toLocaleString()],
+      ["Model", rep.model_used],
+    ] as [string, any][],
+  },
+  { heading: "Executive Summary", text: rep.executive_summary },
+  { heading: "Highlights", rows: (rep.highlights || []).map((h, i) => [String(i + 1), h]) as [string, any][] },
+  { heading: "Blockers", rows: (rep.blockers || []).map((b, i) => [String(i + 1), b]) as [string, any][] },
+  { heading: "Next Steps", rows: (rep.next_steps || []).map((s, i) => [String(i + 1), s]) as [string, any][] },
+];
+
+// Plain-text rendering for clipboard + email share.
+const buildText = (rep: Report): string => {
+  const L: string[] = [];
+  L.push(`AI STATUS REPORT — ${new Date(rep.created_at).toLocaleString()}`);
+  L.push(`Overall: ${rep.overall_rag?.toUpperCase()}  |  Scope: ${rep.rag_scope?.toUpperCase()}  |  Schedule: ${rep.rag_schedule?.toUpperCase()}  |  Cost: ${rep.rag_cost?.toUpperCase()}  |  Risk: ${rep.rag_risk?.toUpperCase()}`);
+  L.push("");
+  L.push(rep.executive_summary || "");
+  const block = (title: string, arr?: string[]) => {
+    if (!arr?.length) return;
+    L.push("", `${title}:`);
+    arr.forEach((x) => L.push(`  • ${x}`));
+  };
+  block("Highlights", rep.highlights);
+  block("Blockers", rep.blockers);
+  block("Next steps", rep.next_steps);
+  return L.join("\n");
+};
 
 const AIStatusReport = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +111,20 @@ const AIStatusReport = () => {
       else toast.error("Genereren mislukt");
     } catch { toast.error("Genereren mislukt"); }
     finally { setGenerating(false); }
+  };
+
+  const copyReport = async (rep: Report) => {
+    try {
+      await navigator.clipboard.writeText(buildText(rep));
+      toast.success("Gekopieerd naar klembord");
+    } catch { toast.error("Kopiëren mislukt"); }
+  };
+
+  const emailReport = (rep: Report) => {
+    const subject = encodeURIComponent(`AI Status Report — ${rep.overall_rag?.toUpperCase()}`);
+    const body = encodeURIComponent(buildText(rep));
+    // Opens the user's own mail client — no server-side send.
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   if (loading) return (
@@ -117,9 +170,21 @@ const AIStatusReport = () => {
                     {ragBadge("Cost", rep.rag_cost)}
                     {ragBadge("Risk", rep.rag_risk)}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(rep.created_at).toLocaleString()} · {rep.model_used}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(rep.created_at).toLocaleString()} · {rep.model_used}
+                    </span>
+                    <ReportExportMenu title="AI Status Report" sections={buildSections(rep)} />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1"><Share2 className="h-3.5 w-3.5" />Delen</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => copyReport(rep)}><Copy className="h-4 w-4 mr-2" />Kopieer tekst</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => emailReport(rep)}><Mail className="h-4 w-4 mr-2" />E-mail</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
 
                 <p className="text-sm leading-relaxed">{rep.executive_summary}</p>

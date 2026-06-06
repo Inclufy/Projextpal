@@ -14,7 +14,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Sum, Q, F
 from django.db.models.functions import TruncMonth
@@ -1715,7 +1715,7 @@ class CourseImportView(APIView):
     JSON: array of course objects with the same fields
     """
     permission_classes = [IsAuthenticated, IsSuperAdmin]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
         from academy.models import Course, CourseCategory, CourseModule, CourseLesson

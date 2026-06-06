@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from calendar import monthrange
 from datetime import date as dt_date, timedelta
 from .models import (
@@ -274,7 +274,7 @@ class TrainingMaterialViewSet(viewsets.ModelViewSet):
 class ReportingItemViewSet(viewsets.ModelViewSet):
     queryset = ReportingItem.objects.all()
     serializer_class = ReportingItemSerializer
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -335,7 +335,11 @@ class MeetingViewSet(viewsets.ModelViewSet):
         meeting = self.get_object()
         prev = meeting.previous_meeting
         if not prev:
-            return Response({"detail": "No previous meeting set."}, status=400)
+            # Not a client error — there is simply nothing to carry forward yet.
+            return Response(
+                {"carried_forward": 0, "detail": "No previous meeting set."},
+                status=200,
+            )
         existing = set(meeting.action_items.values_list("subject", flat=True))
         created = 0
         for item in prev.action_items.filter(status="open"):
