@@ -68,9 +68,67 @@ class Command(BaseCommand):
         projects = self._seed_projects(company, user)
         programs = self._seed_programs(company, user, projects)
         self._seed_governance(company, user, projects, programs)
+        self._seed_snapshots(projects, user)
         self.stdout.write(self.style.SUCCESS(
-            f"Done. {len(projects)} project(s), {len(programs)} programme(s) + governance demo seeded."
+            f"Done. {len(projects)} project(s), {len(programs)} programme(s) + governance + trend snapshots seeded."
         ))
+
+    # ------------------------------------------------------- status snapshots
+    def _seed_snapshots(self, projects, user):
+        """Backfill ~12 weekly GeneratedStatusReport snapshots per demo project so
+        the Completion Trend chart, AI Health sparklines and analytics trend have
+        real history to render. Completion ramps up over time; risks/issues taper.
+        Idempotent: clears prior demo snapshots (those tagged in metrics) first.
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+        try:
+            from communication.models import GeneratedStatusReport
+            from communication.status_synthesis import gather_metrics
+        except Exception as e:
+            self.stderr.write(f"  snapshots skipped (import): {e}")
+            return
+
+        POINTS = 12          # weekly points → ~3 months of history
+        now = timezone.now()
+        made = 0
+        for p in projects:
+            try:
+                base = gather_metrics(p)                 # current real facts
+                target = int(base.get("completion_pct") or 0) or 60
+                risks_now = int(base.get("open_risks_total") or 0) or 3
+                issues_now = int(base.get("open_issues_total") or 0) or 1
+                # Clear prior demo snapshots for this project (marked below).
+                GeneratedStatusReport.objects.filter(
+                    project=p, metrics__demo_seed=True,
+                ).delete()
+                for i in range(POINTS):
+                    frac = (i + 1) / POINTS               # 0→1 oldest→newest
+                    completion = max(0, int(round(target * (0.25 + 0.75 * frac))))
+                    open_risks = max(0, int(round(risks_now * (1.6 - 0.6 * frac))))
+                    open_issues = max(0, int(round(issues_now * (1.8 - 0.8 * frac))))
+                    rag = "green" if completion >= 70 and open_risks <= 2 else \
+                          "red" if completion < 35 or open_risks >= 6 else "amber"
+                    metrics = {
+                        "demo_seed": True,
+                        "completion_pct": completion,
+                        "open_risks_total": open_risks,
+                        "open_issues_total": open_issues,
+                        "tasks_overdue": max(0, 3 - i // 3),
+                        "compound_signals": max(0, 2 - i // 5),
+                    }
+                    rep = GeneratedStatusReport.objects.create(
+                        project=p, metrics=metrics, overall_rag=rag,
+                        executive_summary="Demo snapshot for trend history.",
+                        model_used="deterministic", created_by=user,
+                    )
+                    # created_at is auto_now_add → override via queryset update.
+                    stamp = now - timedelta(days=(POINTS - 1 - i) * 7)
+                    GeneratedStatusReport.objects.filter(pk=rep.pk).update(created_at=stamp)
+                    made += 1
+            except Exception as e:
+                self.stderr.write(f"  snapshot for {p}: {e}")
+        self.stdout.write(self.style.SUCCESS(f"  ✓ {made} trend snapshot(s) across {len(projects)} project(s)"))
 
     # ------------------------------------------------------------------ wipe
     def _wipe(self, company):
