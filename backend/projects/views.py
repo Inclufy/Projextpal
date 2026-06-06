@@ -25,6 +25,7 @@ from .models import (
     Upload,
     Risk,
     Issue,
+    LessonLearned,
     AIMitigation,
     ManualMitigation,
     ProjectTeam,
@@ -2065,6 +2066,44 @@ class IssueViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         kwargs = {"created_by": self.request.user}
+        project_id = self.kwargs.get("project_id")
+        if project_id:
+            try:
+                kwargs["project"] = Project.objects.get(
+                    id=project_id, company=self.request.user.company
+                )
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("Project not found or access denied")
+        serializer.save(**kwargs)
+
+
+class LessonLearnedViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """Methodology-agnostic Lessons Learned register (PMBOK/PRINCE2/MSP).
+
+    Generic counterpart to the PRINCE2-namespaced lessons log, so every
+    methodology shares one register. Company-scoped + optional ?project= filter.
+    """
+
+    from .serializers import LessonLearnedSerializer as _LessonLearnedSerializer
+
+    serializer_class = _LessonLearnedSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = (
+            LessonLearned.objects.all()
+            .select_related("project", "captured_by")
+            .filter(project__company=self.request.user.company)
+        )
+        project_id = self.request.query_params.get("project") or self.kwargs.get(
+            "project_id"
+        )
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    def perform_create(self, serializer):
+        kwargs = {"captured_by": self.request.user}
         project_id = self.kwargs.get("project_id")
         if project_id:
             try:

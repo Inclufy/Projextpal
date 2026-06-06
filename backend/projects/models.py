@@ -238,6 +238,15 @@ class Task(models.Model):
         blank=True,
         related_name="tasks",
     )
+    # Task dependencies (Finish-to-Start): tasks that must complete before this
+    # one can start. Self-referential, non-symmetrical so A→B does not imply B→A.
+    depends_on = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        blank=True,
+        related_name="dependents",
+        help_text="Tasks that must complete before this task can start.",
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     # Yanmar Action Tracker (PRJ LEGO) uses a free-text Category column to group

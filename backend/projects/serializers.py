@@ -52,6 +52,10 @@ class TaskSerializer(serializers.ModelSerializer):
     raci_informed_ids = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.all(), source="raci_informed", required=False
     )
+    depends_on = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Task.objects.all(), required=False
+    )
+    depends_on_titles = serializers.SerializerMethodField()
     project_id = serializers.ReadOnlyField(source="milestone.project_id")
     work_package_title = serializers.ReadOnlyField(source="work_package.title")
     product_title = serializers.ReadOnlyField(source="product.title")
@@ -90,12 +94,17 @@ class TaskSerializer(serializers.ModelSerializer):
             "raci_accountable_email",
             "raci_consulted_ids",
             "raci_informed_ids",
+            "depends_on",
+            "depends_on_titles",
             "subtasks",
             "created_at",
             "updated_at",
             "project_id",
         ]
         read_only_fields = ["created_at", "updated_at", "project_id"]
+
+    def get_depends_on_titles(self, obj):
+        return [{"id": t.id, "title": t.title, "status": t.status} for t in obj.depends_on.all()]
 
     def get_assigned_to_name(self, obj):
         user = getattr(obj, "assigned_to", None)
@@ -662,6 +671,38 @@ class IssueSerializer(serializers.ModelSerializer):
         if not obj.owner:
             return None
         return obj.owner.first_name or obj.owner.email
+
+
+class LessonLearnedSerializer(serializers.ModelSerializer):
+    """Methodology-agnostic Lessons Learned serializer."""
+
+    captured_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import LessonLearned
+
+        model = LessonLearned
+        fields = [
+            "id",
+            "project",
+            "title",
+            "description",
+            "category",
+            "sentiment",
+            "recommended_action",
+            "applicable_to",
+            "captured_during_phase",
+            "captured_by",
+            "captured_by_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at", "captured_by"]
+
+    def get_captured_by_name(self, obj):
+        if not obj.captured_by:
+            return None
+        return obj.captured_by.first_name or obj.captured_by.email
 
 
 class ProjectTeamSerializer(serializers.ModelSerializer):
