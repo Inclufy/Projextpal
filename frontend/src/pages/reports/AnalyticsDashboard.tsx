@@ -36,6 +36,29 @@ interface SavedDash {
 }
 
 const PIE = ["#22c55e", "#3b82f6", "#a855f7", "#f59e0b", "#ef4444", "#14b8a6", "#94a3b8"];
+// Semantic colours for risk levels so High reads red, Medium amber, Low green.
+const RISK_COLOR: Record<string, string> = {
+  High: "#ef4444", Medium: "#f59e0b", Low: "#22c55e", Unknown: "#94a3b8",
+};
+
+// Clean in-slice percentage label (no overlapping edge labels / leader lines).
+const renderPct = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  if (!percent || percent < 0.06) return null;
+  const RAD = Math.PI / 180;
+  const r = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + r * Math.cos(-midAngle * RAD);
+  const y = cy + r * Math.sin(-midAngle * RAD);
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+};
+// Legend that shows "name (value)" so exact counts are readable without hover.
+const legendWithValue = (data: any[]) => (value: string) => {
+  const item = data.find((d) => d.name === value);
+  return `${value}${item ? ` (${item.value})` : ""}`;
+};
 
 const WIDGETS = [
   { id: "kpis", title: "KPI Tiles" },
@@ -320,10 +343,11 @@ export default function AnalyticsDashboard() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={data.status_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} label>
+                    <Pie data={data.status_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%"
+                      innerRadius={55} outerRadius={100} paddingAngle={2} labelLine={false} label={renderPct}>
                       {data.status_breakdown.map((_: any, i: number) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
                     </Pie>
-                    <Legend /><RTooltip />
+                    <Legend formatter={legendWithValue(data.status_breakdown)} /><RTooltip />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -339,10 +363,13 @@ export default function AnalyticsDashboard() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={data.risk_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} label>
-                      {data.risk_breakdown.map((_: any, i: number) => <Cell key={i} fill={PIE[(i + 3) % PIE.length]} />)}
+                    <Pie data={data.risk_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%"
+                      innerRadius={55} outerRadius={100} paddingAngle={2} labelLine={false} label={renderPct}>
+                      {data.risk_breakdown.map((r: any, i: number) => (
+                        <Cell key={i} fill={RISK_COLOR[r.name] || PIE[(i + 3) % PIE.length]} />
+                      ))}
                     </Pie>
-                    <Legend /><RTooltip />
+                    <Legend formatter={legendWithValue(data.risk_breakdown)} /><RTooltip />
                   </PieChart>
                 </ResponsiveContainer>
               )}
