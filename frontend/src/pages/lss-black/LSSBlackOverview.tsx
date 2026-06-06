@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { AIHealthStrip } from "@/components/AIHealthStrip";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies";
@@ -66,6 +67,7 @@ const LSSBlackOverview = () => {
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6 space-y-6">
+        {id && <AIHealthStrip scope="project" id={id} />}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-gray-900 flex items-center justify-center"><FlaskConical className="h-5 w-5 text-white" /></div>

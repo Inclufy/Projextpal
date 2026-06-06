@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { AIHealthStrip } from "@/components/AIHealthStrip";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Loader2, RefreshCw, FileText, Briefcase, Shield,
@@ -178,6 +179,7 @@ const Prince2Dashboard = () => {
     <div className="min-h-full bg-background">
       <ProjectHeader />
       <div className="p-6 space-y-6">
+        {id && <AIHealthStrip scope="project" id={id} />}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

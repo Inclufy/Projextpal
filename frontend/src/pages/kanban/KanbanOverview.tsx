@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { AIHealthStrip } from "@/components/AIHealthStrip";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, FileText, Users, Euro, TrendingUp, Zap, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
@@ -83,6 +84,7 @@ const KanbanOverview = () => {
   return (
     <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
+        {id && <AIHealthStrip scope="project" id={id} />}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-lg bg-violet-600 flex items-center justify-center"><Layout className="h-5 w-5 text-white" /></div><div><h1 className="text-2xl font-bold">Kanban Dashboard</h1><p className="text-sm text-muted-foreground">{d.project_name || ""}</p></div></div>
           <div className="flex gap-2">
