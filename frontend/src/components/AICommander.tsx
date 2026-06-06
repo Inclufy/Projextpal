@@ -487,7 +487,7 @@ const AICommander = ({
   const atRiskCount = projects.filter(p => p.health_status === 'at_risk' || p.health_status === 'critical').length;
 
   return (
-    <div ref={containerRef} className={cn('relative w-full max-w-3xl mx-auto', className)}>
+    <div ref={containerRef} className={cn('relative w-full max-w-5xl mx-auto', className)}>
       {/* Search Input */}
       <div className={cn(
         'relative flex items-center bg-white dark:bg-gray-900 rounded-2xl border-2 transition-all duration-300',
@@ -495,9 +495,9 @@ const AICommander = ({
           ? 'border-purple-300 shadow-xl shadow-purple-500/10 ring-4 ring-purple-50 dark:ring-purple-900/20' 
           : 'border-purple-100 dark:border-purple-800/50 shadow-lg hover:border-purple-200 hover:shadow-xl'
       )}>
-        <div className="pl-4">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
-            <Brain className="h-4 w-4 text-white" />
+        <div className="pl-5">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
+            <Brain className="h-5 w-5 text-white" />
           </div>
         </div>
 
@@ -509,25 +509,25 @@ const AICommander = ({
           onFocus={() => setIsFocused(true)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           placeholder={t.placeholder}
-          className="flex-1 h-12 bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm px-4"
+          className="flex-1 h-16 bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-base px-4"
         />
 
         {!isFocused && !query && (
-          <div className="hidden md:flex items-center gap-1 px-2 py-1 mr-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-xs text-purple-600 dark:text-purple-400 font-medium">
-            <Command className="h-3 w-3" /><span>K</span>
+          <div className="hidden md:flex items-center gap-1 px-2.5 py-1.5 mr-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-sm text-purple-600 dark:text-purple-400 font-medium">
+            <Command className="h-3.5 w-3.5" /><span>K</span>
           </div>
         )}
 
         {query && (
           <button onClick={() => { setQuery(''); setAiResponse(null); setError(null); }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mr-1">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-5 w-5 text-gray-400" />
           </button>
         )}
 
         <Button
           onClick={() => handleSubmit()}
           disabled={!query.trim() || isProcessing}
-          className="h-9 px-4 mr-1.5 rounded-xl text-white text-sm font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          className="h-11 px-5 mr-2 rounded-xl text-white text-sm font-semibold shadow-lg shadow-purple-500/30 disabled:opacity-50 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
         >
           {isProcessing ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" />{t.thinking}</> : <><Sparkles className="h-4 w-4 mr-1.5" />{t.askAI}</>}
         </Button>
