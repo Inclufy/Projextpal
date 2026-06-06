@@ -14,6 +14,7 @@ import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useAuth } from '@/contexts/AuthContext';
 import { MethodologyBreakdown, CertificationsWidget, RecommendedCourses } from "./DashboardWidgets";
 import HomeAIVoiceCards from "./HomeAIVoiceCards";
+import AnalyticsDashboard from "@/pages/reports/AnalyticsDashboard";
 import {
   Building2,
   FolderKanban,
@@ -455,6 +456,18 @@ const ExecutiveDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Portfolio Analytics — same customizable analytics as Reports, embedded
+            so the executive landing carries trends + breakdowns inline. */}
+        <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              <h2 className="text-lg font-bold">{pt("Portfolio Analytics")}</h2>
+            </div>
+            <AnalyticsDashboard />
+          </CardContent>
+        </Card>
 
         <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
           <Tabs defaultValue="programs" className="w-full">
