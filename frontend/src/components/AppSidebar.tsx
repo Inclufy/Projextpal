@@ -367,11 +367,17 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
         title: "Communication",
         icon: MessagesSquare,
         subItems: [
+          { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
           { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
+          { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+        ],
+      },
+      {
+        title: "Status Reporting",
+        icon: Activity,
+        subItems: [
           { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
           { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
-          { title: "Meeting", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
-          { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
         ],
       },
       { title: "Governance", url: `/projects/${projectId}/execution/governance`, icon: Shield },
@@ -412,9 +418,18 @@ const centralReportingGroup = (projectId: string) => ({
   items: [
     { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
     { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
-    { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
-    { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
     { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+  ],
+});
+
+// Communication-related items live in their own group (not under Status Reporting).
+const communicationGroup = (projectId: string) => ({
+  id: "communication",
+  title: "Communication",
+  icon: Mail,
+  items: [
+    { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
+    { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
   ],
 });
 
@@ -1055,7 +1070,7 @@ export function AppSidebar() {
     ? [
         ...getMethodologyPhases(projectId, methodology),
         ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
-          ? [centralReportingGroup(projectId)]
+          ? [centralReportingGroup(projectId), communicationGroup(projectId)]
           : []),
       ]
     : [];
