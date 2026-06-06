@@ -664,10 +664,8 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Shield,
           items: [
             { title: "Project Board", url: `/projects/${projectId}/prince2/project-board`, icon: Users },
-            { title: "Highlight Reports", url: `/projects/${projectId}/prince2/highlight-report`, icon: Activity },
             { title: "Risk Register", url: `/projects/${projectId}/prince2/risks`, icon: AlertCircle },
             { title: "Issue Register", url: `/projects/${projectId}/prince2/issues`, icon: ClipboardList },
-            { title: "Exception Reports", url: `/projects/${projectId}/prince2/exception-reports`, icon: AlertOctagon },
             { title: "Exception Plans", url: `/projects/${projectId}/prince2/exception-plan`, icon: FileBarChart },
             { title: "Management Approaches", url: `/projects/${projectId}/prince2/management-approaches`, icon: Gavel },
             { title: "Daily Log", url: `/projects/${projectId}/prince2/daily-log`, icon: BookOpen },
@@ -676,12 +674,28 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           ],
         },
         {
+          // All PRINCE2 reporting consolidated here: doctrine reports
+          // (Highlight / Exception / End Project) + the central status layer
+          // (Status Reporting / AI Status Report / Reporting), so "where is the
+          // report?" has one answer in PRINCE2.
+          id: "reporting",
+          title: "Status Reporting",
+          icon: Activity,
+          items: [
+            { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
+            { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
+            { title: "Highlight Reports", url: `/projects/${projectId}/prince2/highlight-report`, icon: Activity },
+            { title: "Exception Reports", url: `/projects/${projectId}/prince2/exception-reports`, icon: AlertOctagon },
+            { title: "End Project Report", url: `/projects/${projectId}/prince2/end-project-report`, icon: File },
+            { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+          ],
+        },
+        {
           id: "closure",
           title: "Project Closure",
           icon: CheckSquare,
           items: [
             { title: "Closure Checklist", url: `/projects/${projectId}/prince2/closure-checklist`, icon: CheckSquare },
-            { title: "End Project Report", url: `/projects/${projectId}/prince2/end-project-report`, icon: File },
             { title: "Lessons Log", url: `/projects/${projectId}/prince2/lessons-log`, icon: Lightbulb },
             { title: "Benefits Review", url: `/projects/${projectId}/prince2/benefits-review`, icon: Award },
           ],
@@ -1167,7 +1181,12 @@ export function AppSidebar() {
         ...getMethodologyPhases(projectId, methodology),
         ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
           ? [
-              centralReportingGroup(projectId),
+              // PRINCE2 carries its own consolidated "Status Reporting" group
+              // (doctrine reports + central status layer merged) inside its case,
+              // so the shared central group is skipped to avoid a duplicate tab.
+              ...(methodology.toLowerCase() !== "prince2"
+                ? [centralReportingGroup(projectId)]
+                : []),
               communicationGroup(projectId),
               aiInsightsGroup(projectId),
               // Universal RAID + Cost layer — appended to every dedicated
