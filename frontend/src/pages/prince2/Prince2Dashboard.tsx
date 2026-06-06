@@ -671,7 +671,7 @@ const Prince2Dashboard = () => {
               </div>
             ) : (
               dashboard.recent_highlight_reports.map((report: any) => (
-                <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors" onClick={() => nav("highlight-report")}>
                   <div>
                     <p className="font-medium">{report.title || `Report #${report.id}`}</p>
                     <p className="text-sm text-muted-foreground">{report.report_date}</p>

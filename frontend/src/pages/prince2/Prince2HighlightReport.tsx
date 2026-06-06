@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, FileText, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, FileText, Pencil, Trash2, Eye, Download } from "lucide-react";
 import { toast } from "sonner";
 
 const Prince2HighlightReport = () => {
@@ -27,6 +27,20 @@ const Prince2HighlightReport = () => {
     { phase: "Run", start: "", end: "", status: "todo" },
   ];
   const [phases, setPhases] = useState<any[]>(defaultPhases());
+  const [viewing, setViewing] = useState<any>(null);
+
+  const downloadPptx = async (rId: number) => {
+    try {
+      const res = await fetch(`/api/v1/projects/${id}/prince2/highlight-reports/${rId}/export/pptx/`, { headers });
+      if (!res.ok) { toast.error(pt("Export failed")); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `highlight-report-${rId}.pptx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch { toast.error(pt("Export failed")); }
+  };
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -132,7 +146,7 @@ const Prince2HighlightReport = () => {
             {reports.map((r) => (
               <Card key={r.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex-1">
+                  <div className="flex-1 cursor-pointer" onClick={() => setViewing(r)}>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {(["overall_status", "rag_budget", "rag_planning", "rag_resources"] as const).map((k) => (
                         <Badge key={k} className={`text-xs ${statusColor(r[k])}`}>{({ overall_status: "Overall", rag_budget: "Budget", rag_planning: "Planning", rag_resources: "Resources" }[k])}</Badge>
@@ -157,6 +171,8 @@ const Prince2HighlightReport = () => {
                     )}
                   </div>
                   <div className="flex gap-1 ml-4">
+                    <Button variant="ghost" size="sm" title={pt("View")} onClick={() => setViewing(r)}><Eye className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" title={pt("Download PPTX")} onClick={() => downloadPptx(r.id)}><Download className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
@@ -238,6 +254,69 @@ const Prince2HighlightReport = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Read-only overview — Yanmar HR (click a row to open) */}
+      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+        <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
+          {viewing && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center justify-between pr-6">
+                  <span>{pt("Highlight Report")} · {viewing.report_date || ""}</span>
+                  <Button size="sm" variant="outline" className="gap-2" onClick={() => downloadPptx(viewing.id)}><Download className="h-4 w-4" />PPTX</Button>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-sm">
+                {/* Cover / header */}
+                <div className="grid grid-cols-2 gap-3 border rounded-md p-3">
+                  {[["Sponsor", viewing.sponsor], ["Project Manager", viewing.project_manager], ["Senior Supplier", viewing.senior_supplier], ["Period", `${viewing.period_start || "—"} → ${viewing.period_end || "—"}`]].map(([k, v]) => (
+                    <div key={k as string}><span className="text-xs text-muted-foreground">{pt(k as string)}</span><p className="font-medium">{(v as string) || "—"}</p></div>
+                  ))}
+                </div>
+                {viewing.objectives && <div><span className="text-xs text-muted-foreground">{pt("Objectives")}</span><p className="whitespace-pre-wrap">{viewing.objectives}</p></div>}
+
+                {/* 4-axis RAG */}
+                <div className="flex flex-wrap gap-2">
+                  {(["overall_status", "rag_budget", "rag_planning", "rag_resources"] as const).map((k) => (
+                    <Badge key={k} className={`${statusColor(viewing[k])}`}>{({ overall_status: "Overall", rag_budget: "Budget", rag_planning: "Planning", rag_resources: "Resources" }[k])}: {viewing[k]}</Badge>
+                  ))}
+                </div>
+
+                {/* Phase timeline */}
+                {Array.isArray(viewing.phase_timeline) && viewing.phase_timeline.some((p: any) => p.start || p.end) && (
+                  <div><span className="text-xs text-muted-foreground">{pt("Phase Timeline")}</span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {viewing.phase_timeline.map((p: any, i: number) => (
+                        <Badge key={i} variant="outline" className={p.status === "done" ? "border-green-400 text-green-700" : p.status === "active" ? "border-blue-400 text-blue-700" : ""}>{p.phase} {p.start || "—"}→{p.end || "—"}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Financials (cost-gated by SC-05; shown to finance roles) */}
+                {(viewing.budget_spent != null || viewing.budget_forecast != null) && (
+                  <div className="grid grid-cols-2 gap-3 border rounded-md p-3">
+                    <div><span className="text-xs text-muted-foreground">{pt("Budget spent")}</span><p className="font-medium">{viewing.budget_spent ?? "—"}</p></div>
+                    <div><span className="text-xs text-muted-foreground">{pt("Budget forecast")}</span><p className="font-medium">{viewing.budget_forecast ?? "—"}</p></div>
+                  </div>
+                )}
+
+                {/* Narrative sections */}
+                {([["Status Summary", "status_summary"], ["Work Completed", "work_completed"], ["Highlights", "highlights"], ["Lowlights", "lowlights"], ["Work Planned Next Period", "work_planned_next_period"], ["Issues", "issues_summary"], ["Risks", "risks_summary"]] as const).map(([label, key]) => (
+                  viewing[key] ? (
+                    <div key={key}><span className="text-xs font-semibold">{pt(label)}</span><p className="whitespace-pre-wrap text-muted-foreground">{viewing[key]}</p></div>
+                  ) : null
+                ))}
+
+                <div className="flex justify-end gap-2 border-t pt-3">
+                  <Button variant="outline" onClick={() => { const r = viewing; setViewing(null); openEdit(r); }} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
+                  <Button onClick={() => setViewing(null)}>{pt("Close")}</Button>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
