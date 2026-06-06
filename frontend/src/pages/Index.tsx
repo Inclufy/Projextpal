@@ -1,3 +1,4 @@
+import AnalyticsDashboard from "./reports/AnalyticsDashboard";
 import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
 import ProgramManagerDashboard from "@/components/dashboards/ProgramManagerDashboard";
 import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
@@ -556,6 +557,18 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Portfolio Analytics — same customizable dashboard as Reports, embedded
+            on the home page so trends + breakdowns sit alongside the overview. */}
+        <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              <h2 className="text-lg font-bold">{t?.app?.portfolioAnalytics || "Portfolio Analytics"}</h2>
+            </div>
+            <AnalyticsDashboard />
+          </CardContent>
+        </Card>
 
         <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
           <Tabs defaultValue="programs" className="w-full">
