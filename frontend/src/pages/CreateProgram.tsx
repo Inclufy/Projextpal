@@ -51,7 +51,7 @@ import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // Types
-type ProgramMethodology = 'safe' | 'msp' | 'pmi' | 'prince2_programme' | 'hybrid';
+type ProgramMethodology = 'inclufy' | 'safe' | 'msp' | 'pmi' | 'prince2_programme' | 'hybrid';
 
 interface MethodologyOption {
   id: ProgramMethodology;
@@ -96,6 +96,28 @@ const CreateProgram = () => {
   const { pt } = usePageTranslations();
 
   const METHODOLOGIES: MethodologyOption[] = [
+    {
+      id: 'inclufy',
+      name: 'Inclufy Best Practice',
+      shortName: 'Best Practice',
+      description: pt('The recommended, opinionated best-of-breed programme method — Blueprint + Benefits (MSP), governance + roadmap (PMI) and structured delivery in one curated flow.'),
+      icon: <Sparkles className="h-6 w-6" />,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-500',
+      features: [
+        pt('Blueprint / Vision — define the target operating model'),
+        pt('Benefits Map + Realization Plan — value tracked end-to-end'),
+        pt('Roadmap, milestones & dependencies across projects'),
+        pt('Programme board governance + risk assurance'),
+        pt('Stakeholder engagement + communication plan'),
+      ],
+      bestFor: [
+        pt('Most programmes — start here if unsure'),
+        pt('Teams that want best practice without picking a framework'),
+        pt('Benefits- and outcome-driven initiatives'),
+        pt('Cross-project coordination with clear governance'),
+      ],
+    },
     {
       id: 'safe',
       name: 'Scaled Agile Framework (SAFe)',

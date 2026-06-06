@@ -6,6 +6,7 @@ class Program(models.Model):
     """Program management model for coordinating multiple related projects."""
 
     METHODOLOGY_CHOICES = [
+        ("inclufy", "Inclufy Best Practice"),
         ("safe", "SAFe (Scaled Agile Framework)"),
         ("msp", "MSP (Managing Successful Programmes)"),
         ("pmi", "PMI Program Management"),

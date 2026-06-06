@@ -270,6 +270,63 @@ const getProgramPhases = (programId: string, methodology: string | null) => {
         },
       ];
 
+    case 'inclufy':
+      // Inclufy Best Practice (programme) — curated best-of-breed: MSP Blueprint +
+      // Benefits, PMI governance + roadmap, structured delivery. The opinionated
+      // ProjeXtPal-recommended programme method (mirrors the project-level USP).
+      return [
+        {
+          id: "overview",
+          title: "Programme Overview",
+          icon: Layers,
+          items: [
+            { title: "Dashboard", url: `/programs/${programId}/dashboard`, icon: LayoutDashboard },
+            { title: "Blueprint / Vision", url: `/programs/${programId}/blueprint`, icon: FileText },
+            { title: "Projects", url: `/programs/${programId}/projects`, icon: FolderKanban },
+            { title: "Roadmap", url: `/programs/${programId}/roadmap`, icon: TrendingUp },
+          ],
+        },
+        {
+          id: "value",
+          title: "Benefits & Value",
+          icon: Target,
+          items: [
+            { title: "Benefits Map", url: `/programs/${programId}/benefits`, icon: Target },
+            { title: "Realization Plan", url: `/programs/${programId}/benefits/realization`, icon: TrendingUp },
+            { title: "Business Case", url: `/programs/${programId}/business-case`, icon: FileCheck },
+          ],
+        },
+        {
+          id: "delivery",
+          title: "Delivery & Planning",
+          icon: Rocket,
+          items: [
+            { title: "Milestones", url: `/programs/${programId}/milestones`, icon: CheckSquare },
+            { title: "Dependencies", url: `/programs/${programId}/dependencies`, icon: GitBranch },
+            { title: "Resources", url: `/programs/${programId}/resources`, icon: Users },
+          ],
+        },
+        {
+          id: "stakeholders",
+          title: "Stakeholders & Comms",
+          icon: Users,
+          items: [
+            { title: "Stakeholders", url: `/programs/${programId}/stakeholders`, icon: Users },
+            { title: "Communications", url: `/programs/${programId}/communications`, icon: Mail },
+          ],
+        },
+        {
+          id: "governance",
+          title: "Governance & Assurance",
+          icon: Shield,
+          items: [
+            { title: "Programme Board", url: `/programs/${programId}/governance`, icon: Shield },
+            { title: "Risks", url: `/programs/${programId}/risks`, icon: BarChart3 },
+            { title: "Reports", url: `/programs/${programId}/reports`, icon: FileBarChart },
+          ],
+        },
+      ];
+
     case 'hybrid':
     default:
       return [
