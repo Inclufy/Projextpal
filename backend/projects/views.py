@@ -289,6 +289,29 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
 
+    @action(detail=True, methods=["get"], url_path="ai/compound-signals")
+    def compound_signals(self, request, pk=None):
+        """AI connective-tissue layer: cross-module compound-risk signals.
+
+        Combines schedule × risk × cost × dependency × issue into signals no single
+        module surfaces. Cost-derived signals are masked for users without
+        cost-visibility (SC-05).
+        """
+        from .compound_signals import compute_compound_signals
+        from .permissions import can_view_costs
+
+        project = self.get_object()
+        result = compute_compound_signals(project)
+
+        if not can_view_costs(request.user):
+            result["signals"] = [
+                s for s in result["signals"] if "cost" not in s.get("areas", [])
+            ]
+            result["count"] = len(result["signals"])
+            if isinstance(result.get("context"), dict):
+                result["context"]["budget_pct"] = None
+        return Response(result)
+
     @action(detail=True, methods=["get"], url_path="budget-rollup")
     def budget_rollup(self, request, pk=None):
         """

@@ -73,6 +73,7 @@ const PlanningWorkflowDiagram = lazy(() => import("./pages/PlanningWorkflowDiagr
 const PlanningSystemIntegration = lazy(() => import("./pages/PlanningSystemIntegration"));
 const PlanningRisks = lazy(() => import("./pages/PlanningRisks"));
 const PlanningIssues = lazy(() => import("./pages/PlanningIssues"));
+const AICompoundSignals = lazy(() => import("./pages/AICompoundSignals"));
 const ExecutionStakeholders = lazy(() => import("./pages/ExecutionStakeholders"));
 const ExecutionNewsletters = lazy(() => import("./pages/ExecutionNewsletters"));
 const ExecutionStatusReporting = lazy(() => import("./pages/ExecutionStatusReporting"));
@@ -839,6 +840,7 @@ const App = () => (
               <Route path="/projects/:id/planning/system-integration" element={<ProtectedPage><PlanningSystemIntegration /></ProtectedPage>} />
               <Route path="/projects/:id/planning/risks" element={<ProtectedPage><PlanningRisks /></ProtectedPage>} />
               <Route path="/projects/:id/planning/issues" element={<ProtectedPage><PlanningIssues /></ProtectedPage>} />
+              <Route path="/projects/:id/ai/compound-signals" element={<ProtectedPage><AICompoundSignals /></ProtectedPage>} />
               <Route path="/projects/:id/risk-forecast" element={<ProtectedPage><AIRiskForecast /></ProtectedPage>} />
               
               {/* Execution & Governance Routes */}

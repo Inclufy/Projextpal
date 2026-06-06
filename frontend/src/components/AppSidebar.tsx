@@ -459,6 +459,18 @@ const costGroup = (projectId: string) => ({
   ],
 });
 
+// Universal AI layer — cross-module intelligence. Methodology-agnostic; appended
+// to every dedicated methodology (no duplication risk — these surfaces don't exist
+// elsewhere). Compound Signals connects schedule × risk × cost × dependency.
+const aiInsightsGroup = (projectId: string) => ({
+  id: "ai-insights",
+  title: "AI Insights",
+  icon: Brain,
+  items: [
+    { title: "Compound Signals", url: `/projects/${projectId}/ai/compound-signals`, icon: Brain },
+  ],
+});
+
 // Slugs that get a dedicated methodology sidebar (not the Foundation fallback,
 // which already carries the central reporting group).
 const DEDICATED_METHODOLOGIES = new Set([
@@ -1099,6 +1111,7 @@ export function AppSidebar() {
           ? [
               centralReportingGroup(projectId),
               communicationGroup(projectId),
+              aiInsightsGroup(projectId),
               // Universal RAID + Cost layer — appended to every dedicated
               // methodology EXCEPT prince2, which carries its own richer
               // Risk/Issue registers + Budget natively.
