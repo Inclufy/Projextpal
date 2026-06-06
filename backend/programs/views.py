@@ -113,6 +113,12 @@ class ProgramViewSet(viewsets.ModelViewSet):
         from .ai_rollup import program_progress
         return Response(program_progress(self.get_object()))
 
+    @action(detail=True, methods=['get'], url_path='progress-trend')
+    def progress_trend(self, request, pk=None):
+        """Programme trend series (aggregated over projects) for dashboard sparklines."""
+        from .ai_rollup import program_progress_trend
+        return Response(program_progress_trend(self.get_object()))
+
     @action(detail=True, methods=['post'], url_path='ai/signal-to-decision')
     def ai_signal_to_decision(self, request, pk=None):
         """Governance integration: escalate a programme compound signal to a

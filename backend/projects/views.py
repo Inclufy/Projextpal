@@ -178,6 +178,20 @@ IsAdminOrPM = HasRole("admin", "pm", "program_manager", "superadmin")
 IsAdminOrPMOrContributor = HasRole("admin", "pm", "superadmin", "contributor")
 
 
+def _trend_point(report):
+    """Map a stored GeneratedStatusReport into a sparkline-ready trend point."""
+    m = report.metrics or {}
+    return {
+        "date": report.created_at.date().isoformat(),
+        "completion_pct": int(m.get("completion_pct") or 0),
+        "open_risks": int(m.get("open_risks_total") or 0),
+        "open_issues": int(m.get("open_issues_total") or 0),
+        "overdue": int(m.get("tasks_overdue") or 0),
+        "signals": int(m.get("compound_signals") or 0),
+        "rag": report.overall_rag,
+    }
+
+
 class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = (
         Project.objects.all()
@@ -443,6 +457,24 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             if isinstance(result.get("context"), dict):
                 result["context"]["budget_pct"] = None
         return Response(result)
+
+    @action(detail=True, methods=["get"], url_path="progress-trend")
+    def progress_trend(self, request, pk=None):
+        """Historical trend series for the dashboard AI-health sparklines.
+
+        Sourced from the stored GeneratedStatusReport snapshots in time order, so
+        every point is a real measured value rather than a synthetic curve. When
+        fewer than two snapshots exist the frontend shows an "awaiting history"
+        hint instead of a misleading flat line.
+        """
+        from communication.models import GeneratedStatusReport
+
+        project = self.get_object()
+        rows = list(
+            GeneratedStatusReport.objects.filter(project=project).order_by("created_at")
+        )[-12:]
+        points = [_trend_point(r) for r in rows]
+        return Response({"count": len(points), "points": points})
 
     @action(detail=True, methods=["get"], url_path="budget-rollup")
     def budget_rollup(self, request, pk=None):

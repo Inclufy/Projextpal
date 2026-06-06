@@ -127,3 +127,42 @@ def program_status_narrative(program):
         "compound_signals": sig["signals"],
         "generated_at": timezone.now().isoformat(),
     }
+
+
+def program_progress_trend(program, limit=12):
+    """Aggregate trend series across the programme's projects, sourced from the
+    stored GeneratedStatusReport snapshots so the chart reflects real measured
+    movement (never a synthetic curve). Reports are grouped by calendar day;
+    completion is averaged across reports that day, counts are summed.
+    """
+    from communication.models import GeneratedStatusReport
+
+    projs = list(program.projects.all())
+    if not projs:
+        return {"count": 0, "points": []}
+    reports = (
+        GeneratedStatusReport.objects
+        .filter(project__in=projs)
+        .order_by("created_at")
+    )
+    buckets = {}  # date-iso -> aggregate
+    for r in reports:
+        day = r.created_at.date().isoformat()
+        m = r.metrics or {}
+        b = buckets.setdefault(day, {
+            "date": day, "_compl": [], "open_risks": 0,
+            "open_issues": 0, "overdue": 0, "signals": 0,
+        })
+        b["_compl"].append(int(m.get("completion_pct") or 0))
+        b["open_risks"] += int(m.get("open_risks_total") or 0)
+        b["open_issues"] += int(m.get("open_issues_total") or 0)
+        b["overdue"] += int(m.get("tasks_overdue") or 0)
+        b["signals"] += int(m.get("compound_signals") or 0)
+    points = []
+    for day in sorted(buckets.keys()):
+        b = buckets[day]
+        compl = b.pop("_compl")
+        b["completion_pct"] = int(round(sum(compl) / len(compl))) if compl else 0
+        points.append(b)
+    points = points[-limit:]
+    return {"count": len(points), "points": points}
