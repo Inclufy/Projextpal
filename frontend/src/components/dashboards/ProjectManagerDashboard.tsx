@@ -279,7 +279,7 @@ const ProjectManagerDashboard: React.FC = () => {
       <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
       <div className="absolute bottom-0 left-20 w-[28rem] h-[28rem] bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
 
-      <div className="relative z-10 p-8 md:p-10 space-y-8 max-w-[1800px] mx-auto">
+      <div className="relative z-10 p-4 md:p-6 space-y-6 w-full">
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />
