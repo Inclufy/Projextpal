@@ -425,6 +425,37 @@ class DecisionViewSet(viewsets.ModelViewSet):
         return Response({**DecisionSerializer(decision).data, 'escalated_to': tier})
 
     @action(detail=True, methods=['post'])
+    def assign(self, request, pk=None):
+        """Escalate a decision to a PERSON — set the responsible decider/owner.
+
+        Body: {user_id}. Company-guarded. Append-only decisions can't be reassigned.
+        """
+        from django.contrib.auth import get_user_model
+        decision = self.get_object()
+        if decision.applied_at is not None:
+            return Response({'detail': 'Applied decisions cannot be reassigned.', 'code': 'already_applied'},
+                            status=drf_status.HTTP_409_CONFLICT)
+        uid = request.data.get('user_id') or request.data.get('user')
+        if not uid:
+            return Response({'detail': 'A valid user_id is required.', 'code': 'user_required'},
+                            status=drf_status.HTTP_400_BAD_REQUEST)
+        User = get_user_model()
+        target_user = User.objects.filter(id=uid).first()
+        if target_user is None:
+            return Response({'detail': 'User not found.', 'code': 'user_not_found'},
+                            status=drf_status.HTTP_404_NOT_FOUND)
+        requester = request.user
+        is_superadmin = getattr(requester, 'role', None) == 'superadmin' or getattr(requester, 'is_superuser', False)
+        if not is_superadmin and getattr(target_user, 'company_id', None) != getattr(requester, 'company_id', None):
+            return Response({'detail': 'Cannot assign across tenants.', 'code': 'cross_tenant_denied'},
+                            status=drf_status.HTTP_403_FORBIDDEN)
+        who = target_user.get_full_name() or target_user.email
+        decision.decided_by = target_user
+        decision.description = (decision.description or '') + f"\n\n[Assigned to {who}.]"
+        decision.save(update_fields=['decided_by', 'description'])
+        return Response({**DecisionSerializer(decision).data, 'assigned_to': who})
+
+    @action(detail=True, methods=['post'])
     def delegate(self, request, pk=None):
         """Top-down: push a decision DOWN the governance ladder —
         Steering committee → Programme board → Project board (inverse of escalate).

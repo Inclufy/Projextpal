@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Shield, Gavel, Users, Briefcase, AlertTriangle, ArrowRight, RefreshCw, ChevronsUp, ChevronsDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Loader2, Shield, Gavel, Users, Briefcase, AlertTriangle, ArrowRight, RefreshCw, ChevronsUp, ChevronsDown, UserPlus } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -27,7 +28,25 @@ const GovernanceDashboard = () => {
     } catch { toast.error(pt("Failed to load")); }
     finally { setLoading(false); }
   };
-  useEffect(() => { fetchData(); }, []);
+  const [users, setUsers] = useState<any[]>([]);
+  const fetchUsers = async () => {
+    try {
+      const r = await fetch(`/api/v1/auth/company-users/members/`, { headers });
+      if (r.ok) { const d = await r.json(); setUsers(Array.isArray(d) ? d : d.results || []); }
+    } catch { /* ignore */ }
+  };
+  useEffect(() => { fetchData(); fetchUsers(); }, []);
+
+  const assignTo = async (decId: string, userId: any, label: string) => {
+    try {
+      const r = await fetch(`/api/v1/governance/decisions/${decId}/assign/`, {
+        method: "POST", headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      if (r.ok) { toast.success(`${pt("Assigned to")} ${label}`); fetchData(); }
+      else { const d = await r.json().catch(() => ({})); toast.error(d.detail || pt("Could not assign")); }
+    } catch { toast.error(pt("Could not assign")); }
+  };
 
   const [escalating, setEscalating] = useState<string | null>(null);
   const move = async (decId: string, dir: "escalate" | "delegate") => {
@@ -125,6 +144,19 @@ const GovernanceDashboard = () => {
                     <Button variant="outline" size="sm" className="gap-1 h-7" onClick={() => move(x.id, "delegate")} disabled={escalating === x.id} title={pt("Delegate down: steering → programme → project")}>
                       <ChevronsDown className="h-3.5 w-3.5" />{pt("Delegate ↓")}
                     </Button>
+                    {users.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-1 h-7"><UserPlus className="h-3.5 w-3.5" />{pt("Assign ▾")}</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
+                          {users.map((u: any) => {
+                            const label = u.name || u.full_name || `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email;
+                            return <DropdownMenuItem key={u.id} onClick={() => assignTo(x.id, u.id, label)}>{label}</DropdownMenuItem>;
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                     <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate(`/governance/decisions?decision=${x.id}`)}>{pt("Review")}<ArrowRight className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>

@@ -29,6 +29,14 @@ const AICompoundSignals = () => {
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
   const BASE = `/api/v1/projects/${id}/ai/compound-signals/`;
 
+  const [govDecisions, setGovDecisions] = useState<any[]>([]);
+  const fetchGov = async () => {
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/governance/decisions/`, { headers });
+      if (r.ok) { const d = await r.json(); setGovDecisions(d.decisions || []); }
+    } catch { /* ignore */ }
+  };
+
   const fetchData = async (toastOnDone = false) => {
     setLoading(true);
     try {
@@ -38,7 +46,7 @@ const AICompoundSignals = () => {
     } catch { toast.error(pt("Failed to load")); }
     finally { setLoading(false); }
   };
-  useEffect(() => { fetchData(); }, [id]);
+  useEffect(() => { fetchData(); fetchGov(); }, [id]);
 
   const [created, setCreated] = useState<Record<number, boolean>>({});
   const [escalated, setEscalated] = useState<Record<number, boolean>>({});
@@ -65,7 +73,7 @@ const AICompoundSignals = () => {
         method: "POST", headers: jsonHeaders,
         body: JSON.stringify({ title: s.title, detail: s.detail, severity: s.severity }),
       });
-      if (r.ok) { setEscalated((c) => ({ ...c, [i]: true })); toast.success(pt("Escalated to governance board")); }
+      if (r.ok) { setEscalated((c) => ({ ...c, [i]: true })); toast.success(pt("Escalated to governance board")); fetchGov(); }
       else toast.error(pt("Could not escalate"));
     } catch { toast.error(pt("Could not escalate")); }
     finally { setWorking(null); }
@@ -158,6 +166,34 @@ const AICompoundSignals = () => {
               );
             })}
           </div>
+        )}
+
+        {/* Feedback loop — governance decisions taken on this project */}
+        {govDecisions.length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="h-4 w-4 text-slate-600" />
+                <h3 className="font-semibold text-sm">{pt("Governance decisions on this project")}</h3>
+                <Badge variant="outline" className="text-xs">{govDecisions.length}</Badge>
+              </div>
+              <div className="space-y-2">
+                {govDecisions.map((d: any) => (
+                  <div key={d.id} className="flex items-center justify-between gap-2 border-b last:border-0 pb-2 text-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={`text-xs ${d.applied ? "bg-violet-100 text-violet-700" : d.status === "approved" ? "bg-green-100 text-green-700" : d.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                        {d.applied ? pt("applied") : d.status}
+                      </Badge>
+                      <span className="font-medium">{d.title}</span>
+                      {d.board_name && <span className="text-xs text-muted-foreground">· {d.board_name}</span>}
+                      {d.outcome && <Badge variant="secondary" className="text-xs">{d.outcome}</Badge>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">{pt("Decisions escalated up to a programme board or steering committee show their verdict here.")}</p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
