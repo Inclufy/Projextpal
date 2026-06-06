@@ -669,3 +669,80 @@ class ComponentFundingViewSet(viewsets.ModelViewSet):
         funding.status = 'rejected'
         funding.save(update_fields=['status', 'updated_at'])
         return Response(self.get_serializer(funding).data)
+
+
+# ---------------------------------------------------------------------------
+# Governance dashboard — org-wide rollup across portfolios, boards, decisions,
+# stakeholders + the escalation queue (pending decisions). Company-scoped.
+# ---------------------------------------------------------------------------
+from rest_framework.decorators import api_view, permission_classes as drf_permission_classes
+from rest_framework.permissions import IsAuthenticated as _IsAuthenticated
+
+
+@api_view(["GET"])
+@drf_permission_classes([_IsAuthenticated])
+def governance_dashboard(request):
+    from django.db.models import Q
+    from .models import Portfolio, GovernanceBoard, GovernanceStakeholder, Decision, ComponentFunding
+    from .serializers import DecisionSerializer
+
+    user = request.user
+    company = getattr(user, "company", None)
+    is_superadmin = getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)
+    all_tenants = request.query_params.get("all_tenants") in ("1", "true", "yes")
+
+    # Decision scope mirrors DecisionViewSet (reaches across program/board/meeting).
+    if is_superadmin and (all_tenants or not company):
+        decisions = Decision.objects.all()
+        boards = GovernanceBoard.objects.all()
+        portfolios = Portfolio.objects.all()
+        stakeholders = GovernanceStakeholder.objects.all()
+        fundings = ComponentFunding.objects.all()
+    elif company:
+        decisions = Decision.objects.filter(
+            Q(program__company=company)
+            | Q(board__portfolio__company=company)
+            | Q(board__program__company=company)
+            | Q(board__project__company=company)
+            | Q(meeting__program__company=company)
+        ).distinct()
+        boards = GovernanceBoard.objects.filter(
+            Q(portfolio__company=company) | Q(program__company=company) | Q(project__company=company)
+        ).distinct()
+        portfolios = Portfolio.objects.filter(company=company)
+        stakeholders = GovernanceStakeholder.objects.filter(
+            Q(portfolio__company=company) | Q(program__company=company) | Q(project__company=company)
+        ).distinct()
+        fundings = ComponentFunding.objects.filter(portfolio__company=company)
+    else:
+        decisions = Decision.objects.none()
+        boards = GovernanceBoard.objects.none()
+        portfolios = Portfolio.objects.none()
+        stakeholders = GovernanceStakeholder.objects.none()
+        fundings = ComponentFunding.objects.none()
+
+    def by(qs, field):
+        out = {}
+        for v in qs.values_list(field, flat=True):
+            out[v or "unknown"] = out.get(v or "unknown", 0) + 1
+        return out
+
+    pending = decisions.filter(status="pending")
+    escalations = pending.filter(description__icontains="Escalated").order_by("-created_at")
+
+    return Response({
+        "boards": {"total": boards.count(), "by_type": by(boards, "board_type")},
+        "portfolios": portfolios.count(),
+        "stakeholders": stakeholders.count(),
+        "component_fundings": fundings.count(),
+        "decisions": {
+            "total": decisions.count(),
+            "pending": pending.count(),
+            "approved": decisions.filter(status="approved").count(),
+            "rejected": decisions.filter(status="rejected").count(),
+            "applied": decisions.exclude(applied_at__isnull=True).count(),
+            "by_impact": by(decisions, "impact"),
+        },
+        "escalation_queue": DecisionSerializer(escalations[:15], many=True).data,
+        "recent_decisions": DecisionSerializer(decisions.order_by("-created_at")[:10], many=True).data,
+    })

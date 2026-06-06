@@ -35,3 +35,8 @@ from .views import ai_generate_text
 urlpatterns += [
     path('ai/generate/', ai_generate_text, name='ai-generate-text'),
 ]
+
+from .views import governance_dashboard
+urlpatterns += [
+    path('dashboard/', governance_dashboard, name='governance-dashboard'),
+]

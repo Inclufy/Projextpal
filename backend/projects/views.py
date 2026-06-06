@@ -298,28 +298,58 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         its outcome applied). Connects the AI layer → governance.
         """
         project = self.get_object()
+        from django.db.models import Q
         from governance.models import GovernanceBoard, Decision
         from governance.serializers import DecisionSerializer
 
-        board = GovernanceBoard.objects.filter(project=project).first()
-        if not board:
-            board = GovernanceBoard.objects.create(
-                project=project,
-                name=f"{project.name} — Project Board",
-                board_type="project_board",
-            )
+        sev = request.data.get("severity")
+        program = project.programs.first()
+
+        # Escalation routing: critical -> steering committee (if any) -> programme
+        # board; high -> programme board; else -> project board.
+        board = None
+        tier = "Project board"
+        if sev == "critical":
+            board = GovernanceBoard.objects.filter(
+                board_type__in=["steering_committee", "executive_board"]
+            ).filter(
+                Q(project__company=project.company)
+                | Q(program__company=project.company)
+                | Q(portfolio__company=project.company)
+            ).first()
+            if board:
+                tier = "Steering committee"
+        if board is None and sev in ("critical", "high") and program:
+            board = GovernanceBoard.objects.filter(program=program).first()
+            if board is None:
+                board = GovernanceBoard.objects.create(
+                    program=program, name=f"{program.name} — Programme Board", board_type="program_board"
+                )
+            tier = "Programme board"
+        if board is None:
+            board = GovernanceBoard.objects.filter(project=project).first()
+            if board is None:
+                board = GovernanceBoard.objects.create(
+                    project=project, name=f"{project.name} — Project Board", board_type="project_board"
+                )
+            tier = "Project board"
+
         sev_map = {"critical": "high", "high": "high", "medium": "medium"}
         title = (request.data.get("title") or "AI compound signal").strip()[:255]
         detail = request.data.get("detail") or ""
         decision = Decision.objects.create(
             board=board,
+            program=program if board.program_id else None,
             authorized_project=project,
             title=title,
-            description=(detail + "\n\n[Escalated to governance from an AI compound signal.]").strip(),
-            impact=sev_map.get(request.data.get("severity"), "medium"),
+            description=(detail + f"\n\n[Escalated to governance ({tier}) from an AI compound signal.]").strip(),
+            impact=sev_map.get(sev, "medium"),
             status="pending",
         )
-        return Response(DecisionSerializer(decision).data, status=status.HTTP_201_CREATED)
+        return Response(
+            {**DecisionSerializer(decision).data, "escalation_tier": tier},
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=True, methods=["post"], url_path="ai/signal-to-issue")
     def ai_signal_to_issue(self, request, pk=None):

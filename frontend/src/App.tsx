@@ -35,6 +35,7 @@ const PortfolioDetail = lazy(() => import("./pages/governance/PortfolioDetail"))
 const GovernanceBoards = lazy(() => import("./pages/governance/GovernanceBoards"));
 const Stakeholders = lazy(() => import("./pages/governance/Stakeholders"));
 const Decisions = lazy(() => import("./pages/governance/Decisions"));
+const GovernanceDashboard = lazy(() => import("./pages/governance/GovernanceDashboard"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const DemoRequests = lazy(() => import('./pages/admin/DemoRequests'));
@@ -1059,6 +1060,7 @@ const App = () => (
               <Route path="/settings/biometric" element={<ProtectedPage><BiometricAuth /></ProtectedPage>} />
 
               {/* Governance */}
+              <Route path="/governance/dashboard" element={<ProtectedPage><GovernanceDashboard /></ProtectedPage>} />
               <Route path="/governance/portfolios" element={<ProtectedPage><Portfolios /></ProtectedPage>} />
               <Route path="/governance/portfolios/new" element={<ProtectedPage><CreatePortfolio /></ProtectedPage>} />
               <Route path="/governance/portfolios/:id" element={<ProtectedPage><PortfolioDetail /></ProtectedPage>} />

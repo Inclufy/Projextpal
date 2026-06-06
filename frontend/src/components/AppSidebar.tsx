@@ -1072,10 +1072,11 @@ export function AppSidebar() {
     if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
       baseItems.push({ 
         title: ts.governance, 
-        url: "/governance/portfolios", 
+        url: "/governance/dashboard",
         icon: Briefcase,
         feature: null,
         children: [
+          { title: "Dashboard", url: "/governance/dashboard", icon: LayoutDashboard },
           { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
           { title: ts.boards, url: "/governance/boards", icon: Shield },
           { title: ts.stakeholders, url: "/governance/stakeholders", icon: Users },
