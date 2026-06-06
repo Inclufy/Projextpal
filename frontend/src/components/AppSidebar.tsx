@@ -1081,28 +1081,26 @@ export function AppSidebar() {
 
   // Role-based menu items
   const getMenuItemsForRole = () => {
+    // Logical order: Overview → Delivery (Projects → Programs → Governance) →
+    // Insights (Reports & Analytics → AI Chat) → Resources (Team → Time) →
+    // Lifecycle (Post Project). Role gates unchanged.
+    const isPMPlus = ['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole);
+    const isPgmPlus = ['program_manager', 'admin', 'superadmin'].includes(userRole);
+
     const baseItems = [
-      { 
-        title: ts.dashboard, 
-        url: "/dashboard", 
-        icon: LayoutDashboard,
-        feature: null,
-      },
-      { 
-        title: ts.aiAssistant, 
-        url: "/ai-assistant", 
-        icon: MessageSquare,
-        feature: 'ai_assistant',
-      },
+      // — Overview —
+      { title: ts.dashboard, url: "/dashboard", icon: LayoutDashboard, feature: null },
+      // — Delivery —
+      { title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null },
     ];
 
-    // Governance - only for program managers and admins
-    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
-      baseItems.push({ 
-        title: ts.governance, 
-        url: "/governance/dashboard",
-        icon: Briefcase,
-        feature: null,
+    if (isPgmPlus) {
+      baseItems.push({
+        title: ts.programs, url: "/programs", icon: Layers,
+        isProgramLink: true, feature: 'program_management',
+      });
+      baseItems.push({
+        title: ts.governance, url: "/governance/dashboard", icon: Briefcase, feature: null,
         children: [
           { title: "Dashboard", url: "/governance/dashboard", icon: LayoutDashboard },
           { title: ts.portfolios, url: "/governance/portfolios", icon: Briefcase },
@@ -1113,59 +1111,19 @@ export function AppSidebar() {
       });
     }
 
-    // Programs - only for program managers and admins
-    if (['program_manager', 'admin', 'superadmin'].includes(userRole)) {
-      baseItems.push({ 
-        title: ts.programs, 
-        url: "/programs", 
-        icon: Layers, 
-        isProgramLink: true,
-        feature: 'program_management',
-      });
+    // — Insights —
+    baseItems.push({ title: "Reports & Analytics", url: "/reports", icon: FileBarChart, feature: null });
+    baseItems.push({ title: ts.aiAssistant, url: "/ai-assistant", icon: MessageSquare, feature: 'ai_assistant' });
+
+    // — Resources —
+    if (isPMPlus) {
+      baseItems.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
     }
+    baseItems.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
 
-    // Reports - everyone can see
-    baseItems.push({ 
-      title: ts.reports, 
-      url: "/reports", 
-      icon: FileBarChart,
-      feature: null,
-    });
-
-    // Projects - everyone can see
-    baseItems.push({ 
-      title: ts.allProjects, 
-      url: "/projects", 
-      icon: FolderKanban,
-      feature: null,
-    });
-
-    // Team - PM and above
-    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
-      baseItems.push({ 
-        title: ts.team, 
-        url: "/team", 
-        icon: Users,
-        feature: 'teams',
-      });
-    }
-
-    // Time Tracking - everyone
-    baseItems.push({ 
-      title: ts.timeTracking, 
-      url: "/time-tracking", 
-      icon: Clock,
-      feature: 'time_tracking',
-    });
-
-    // Post Project - PM and above
-    if (['pm', 'program_manager', 'admin', 'superadmin'].includes(userRole)) {
-      baseItems.push({ 
-        title: ts.postProject, 
-        url: "/post-project", 
-        icon: FileCheck,
-        feature: 'post_project',
-      });
+    // — Lifecycle —
+    if (isPMPlus) {
+      baseItems.push({ title: ts.postProject, url: "/post-project", icon: FileCheck, feature: 'post_project' });
     }
 
     return baseItems;
@@ -1266,6 +1224,7 @@ export function AppSidebar() {
     "Governance": "text-indigo-500",
     "Programs": "text-orange-500",
     "Reports": "text-emerald-500",
+    "Reports & Analytics": "text-emerald-500",
     "Projects": "text-sky-500",
     "Team": "text-pink-500",
     "Time Tracking": "text-amber-500",
