@@ -890,8 +890,8 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
 
   return (
     <div className="min-h-full bg-background">
-      <div className="py-8 px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="p-4 md:p-6">
+        <div className="w-full">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
