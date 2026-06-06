@@ -56,7 +56,9 @@ class NewsletterViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve", "preview", "recipients"]:
             return [IsAuthenticated()]
-        return [IsAuthenticated(), HasRole("admin", "pm", "contibuter")()]
+        # superadmin + program_manager were missing — a superadmin PM got 403 on
+        # create/send (same gap as the projects IsAdminOrPM fix).
+        return [IsAuthenticated(), HasRole("superadmin", "admin", "pm", "program_manager", "contibuter")()]
 
     def perform_create(self, serializer):
         """Create newsletter with current user as creator"""

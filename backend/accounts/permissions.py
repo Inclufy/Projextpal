@@ -11,11 +11,14 @@ def HasRole(*roles):
 
     class _HasRolePermission(BasePermission):
         def has_permission(self, request, view):
-            return (
-                IsAuthenticated().has_permission(request, view)
-                and hasattr(request.user, "role")
-                and request.user.role in roles
-            )
+            if not IsAuthenticated().has_permission(request, view):
+                return False
+            user = request.user
+            # superadmin is a tenant-spanning operational role — it always
+            # passes any role gate (fixes call sites that forgot to list it).
+            if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+                return True
+            return getattr(user, "role", None) in roles
 
     return _HasRolePermission
 
