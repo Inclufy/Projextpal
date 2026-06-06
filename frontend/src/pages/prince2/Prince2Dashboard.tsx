@@ -204,6 +204,13 @@ const Prince2Dashboard = () => {
         {/* Task sub-totals per category — Yanmar ATR-01 */}
         {id && <TaskCategorySubtotals projectId={id} />}
 
+        {/* Quick link to the Communication Plan editor — Yanmar PP-08 */}
+        {id && (
+          <Button variant="outline" className="gap-2" onClick={() => navigate(`/projects/${id}/foundation/communication-plan`)}>
+            <FileText className="h-4 w-4" /> {pt("Communication Plan")}
+          </Button>
+        )}
+
         {/* Due-date push-back approval queue — Yanmar PP-05 */}
         {id && <DueDateChangeRequestQueue projectId={id} canDecide />}
 

@@ -33,6 +33,7 @@ from .models import (
     TimeEntry,
     RiskForecast,
     ProjectMembership,
+    PlanEvent,
 )
 from .forecasting import forecast_for_active_projects, forecast_project_budget
 from .serializers import (
@@ -133,6 +134,7 @@ class CompanyScopedQuerysetMixin:
             ManualMitigation: 'risk__project_id__in',
             ProjectEvent: 'project_id__in',
             ProjectMembership: 'project_id__in',
+            PlanEvent: 'plan__project_id__in',
         }
         if base_qs.model in project_path_map:
             return base_qs.filter(**{project_path_map[base_qs.model]: accessible_ids})
@@ -2804,4 +2806,23 @@ class ProjectMembershipViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
+        return qs
+
+
+# ── Yanmar PP-08: Communication plan events CRUD ─────────────────────────
+from .serializers import PlanEventSerializer
+
+
+class PlanEventViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """CRUD for communication-plan events (kickoff/onboarding/regular/gate/
+    closing). The CommunicationPlan is auto-created per project on first event."""
+    queryset = PlanEvent.objects.all().select_related("plan", "plan__project")
+    serializer_class = PlanEventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        project_id = self.request.query_params.get("project")
+        if project_id:
+            qs = qs.filter(plan__project_id=project_id)
         return qs

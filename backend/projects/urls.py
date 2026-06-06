@@ -18,6 +18,7 @@ from .views import (
     TimeEntryViewSet,
     ProjectTeamRateViewSet,
     ProjectMembershipViewSet,
+    PlanEventViewSet,
     # Budget views
     BudgetCategoryViewSet,
     BudgetItemViewSet,
@@ -47,6 +48,7 @@ router.register(r"events", ProjectEventViewSet, basename="event")
 router.register(r"time-entries", TimeEntryViewSet, basename="time-entry")
 router.register(r"team-rates", ProjectTeamRateViewSet, basename="team-rate")
 router.register(r"memberships", ProjectMembershipViewSet, basename="membership")
+router.register(r"plan-events", PlanEventViewSet, basename="plan-event")
 
 # Budget routes
 router.register(r'budget-categories', BudgetCategoryViewSet, basename='budget-category')

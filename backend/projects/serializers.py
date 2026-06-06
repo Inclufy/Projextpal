@@ -1208,3 +1208,27 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         u = obj.user
         full = u.get_full_name() if hasattr(u, "get_full_name") else ""
         return full or getattr(u, "username", "") or getattr(u, "email", "")
+
+
+# ── Yanmar PP-08: Communication plan editor (events) ─────────────────────
+from .models import CommunicationPlan, PlanEvent
+
+
+class PlanEventSerializer(serializers.ModelSerializer):
+    project = serializers.IntegerField(write_only=True, required=False)
+
+    class Meta:
+        model = PlanEvent
+        fields = [
+            "id", "plan", "project", "event_type", "cadence", "name",
+            "audience", "scheduled_at", "last_held_at", "notes", "status",
+            "meeting", "created_at", "updated_at",
+        ]
+        read_only_fields = ["plan", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        project_id = validated_data.pop("project", None)
+        if project_id and not validated_data.get("plan"):
+            plan, _ = CommunicationPlan.objects.get_or_create(project_id=project_id)
+            validated_data["plan"] = plan
+        return super().create(validated_data)
