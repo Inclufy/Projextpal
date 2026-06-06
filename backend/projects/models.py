@@ -628,10 +628,28 @@ class Risk(models.Model):
         ("Closed", "Closed"),
     ]
 
+    # What the risk threatens — the impact area (Yanmar risk-management ask).
+    IMPACT_AREA_CHOICES = [
+        ("cost", "Cost / Budget"),
+        ("schedule", "Schedule / Delay"),
+        ("deliverable", "Deliverable / Quality"),
+        ("milestone", "Milestone"),
+        ("resource", "Resource availability"),
+        ("scope", "Scope"),
+        ("other", "Other"),
+    ]
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="risks")
     name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    # Impact area(s) — list of IMPACT_AREA_CHOICES keys (cost/schedule/deliverable/…).
+    impact_areas = models.JSONField(default=list, blank=True)
+    # Optional direct link to the threatened milestone.
+    affected_milestone = models.ForeignKey(
+        "projects.Milestone", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="risks",
+    )
     impact = models.CharField(max_length=20, choices=IMPACT_CHOICES)
     # Probability stored as percentage integer [0-100]
     probability = models.PositiveIntegerField(default=0)

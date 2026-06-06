@@ -556,6 +556,8 @@ class RiskSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
+            "impact_areas",
+            "affected_milestone",
             "impact",
             "probability",  # integer percentage 0-100
             "level",
