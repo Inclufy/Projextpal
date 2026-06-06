@@ -1260,14 +1260,15 @@ export function AppSidebar() {
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton className={cn(
-                            "rounded-lg transition-all duration-200",
-                            isGovActive 
-                              ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
-                              : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                            "rounded-lg transition-colors duration-150",
+                            isGovActive
+                              ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
+                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                           )}>
-                            <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", isGovActive ? "bg-white dark:bg-gray-800 shadow-sm" : "bg-gray-100/80 dark:bg-gray-800")}>
-                              <item.icon className={cn("h-4 w-4", iconColor)} />
-                            </div>
+                            <item.icon className={cn(
+                              "h-[18px] w-[18px] shrink-0",
+                              isGovActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500"
+                            )} />
                             <span className="text-sm">{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
@@ -1303,11 +1304,11 @@ export function AppSidebar() {
 
                 return (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       asChild
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
-                        "rounded-lg transition-all duration-200",
+                        "rounded-lg transition-colors duration-150",
                         isLocked && "opacity-60 hover:opacity-80"
                       )}
                     >
@@ -1321,8 +1322,8 @@ export function AppSidebar() {
                               title: "🔒 Upgrade Required",
                               description: `${item.title} is available with a paid subscription.`,
                               action: (
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => navigate('/profile?tab=subscription')}
                                 >
@@ -1334,37 +1335,38 @@ export function AppSidebar() {
                         }}
                         className={({ isActive: navIsActive }) =>
                           cn(
-                            "flex items-center gap-3",
+                            "flex items-center gap-3 rounded-lg",
                             (navIsActive || isActive)
-                              ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
-                              : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300",
+                              ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
+                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
                             isLocked && "cursor-not-allowed"
                           )
                         }
                       >
-                        <div className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
-                          (isActive || location.pathname === item.url)
-                            ? "bg-white dark:bg-gray-800 shadow-sm"
-                            : "bg-gray-100 dark:bg-gray-800",
-                          isLocked && "bg-gray-50 dark:bg-gray-900"
-                        )}>
-                          <item.icon className={cn(
-                            "h-4 w-4",
-                            isLocked ? "text-muted-foreground" : iconColor
-                          )} />
-                        </div>
-                        {!isCollapsed && (
-                          <span className={cn(
-                            "text-sm",
-                            isLocked && "text-muted-foreground"
-                          )}>
-                            {item.title}
-                          </span>
-                        )}
-                        {isLocked && !isCollapsed && (
-                          <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
-                        )}
+                        {({ isActive: navIsActive }) => {
+                          const on = navIsActive || isActive;
+                          return (
+                            <>
+                              <item.icon className={cn(
+                                "h-[18px] w-[18px] shrink-0",
+                                isLocked
+                                  ? "text-muted-foreground"
+                                  : on
+                                    ? "text-purple-600 dark:text-purple-300"
+                                    : "text-gray-400 dark:text-gray-500"
+                              )} />
+                              {!isCollapsed && (
+                                <span className="text-sm">{item.title}</span>
+                              )}
+                              {isLocked && !isCollapsed && (
+                                <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                              {on && !isLocked && !isCollapsed && (
+                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-purple-500" />
+                              )}
+                            </>
+                          );
+                        }}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

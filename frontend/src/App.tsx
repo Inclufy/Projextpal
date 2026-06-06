@@ -365,11 +365,16 @@ const AppHeader = () => {
   const toggleTheme = () => document.documentElement.classList.toggle("dark");
 
   return (
-    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6">
-      <SidebarTrigger />
-      <div className="flex items-center gap-2">
-        {user && <span className="text-sm text-muted-foreground mr-2">{user.email}</span>}
-
+    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 md:px-6">
+      {/* Left: sidebar toggle + workspace wordmark (IQ-Helix-style topbar) */}
+      <div className="flex items-center gap-3 min-w-0">
+        <SidebarTrigger />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center text-white text-sm font-bold shrink-0">P</div>
+          <span className="font-semibold text-foreground truncate hidden sm:inline">ProjeXtPal</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
         {/* Website Button */}
         <Button
           variant="outline"
@@ -410,6 +415,16 @@ const AppHeader = () => {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
+
+        {/* User chip */}
+        {user && (
+          <div className="flex items-center gap-2 pl-2 ml-1 border-l border-border">
+            <div className="h-7 w-7 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 flex items-center justify-center text-xs font-semibold uppercase">
+              {(user.email || "?").charAt(0)}
+            </div>
+            <span className="text-sm text-muted-foreground max-w-[160px] truncate hidden md:inline">{user.email}</span>
+          </div>
+        )}
 
         {/* Logout */}
         <Button variant="ghost" size="icon" onClick={logout} title={t.nav?.logout || 'Logout'}>
