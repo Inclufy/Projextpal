@@ -280,7 +280,7 @@ const Prince2HighlightReport = () => {
 
       {/* Read-only overview — Yanmar HR (click a row to open) */}
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl w-[92vw] max-h-[90vh] overflow-y-auto">
           {viewing && (
             <>
               <DialogHeader>
