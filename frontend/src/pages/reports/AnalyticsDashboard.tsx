@@ -47,6 +47,16 @@ const WIDGETS = [
 
 const DEFAULT_LAYOUT: LayoutItem[] = WIDGETS.map((w) => ({ id: w.id, hidden: false }));
 
+// Responsive column spans on a 6-col grid so wide screens are filled densely:
+// KPIs full row, trend wide + a pie beside it, then the other pie + top projects.
+const SPAN: Record<string, string> = {
+  kpis: "col-span-1 lg:col-span-6",
+  trend: "col-span-1 lg:col-span-6 xl:col-span-4",
+  status: "col-span-1 lg:col-span-3 xl:col-span-2",
+  risks: "col-span-1 lg:col-span-3 xl:col-span-2",
+  top: "col-span-1 lg:col-span-6 xl:col-span-4",
+};
+
 // --- export helpers -------------------------------------------------------
 const toCsv = (rows: Record<string, any>[]): string => {
   if (!rows.length) return "";
@@ -72,10 +82,10 @@ function SortableWidget({ id, customizing, hidden, onToggle, title, onCsv, onPdf
   if (hidden && !customizing) return null;
   return (
     <div ref={setNodeRef} style={style} className={hidden ? "opacity-50" : ""}>
-      <Card id={`widget-${id}`} className={`h-full ${customizing ? "ring-1 ring-purple-300" : ""}`}>
-        <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30 rounded-t-lg">
-          <span className={`flex items-center gap-1.5 text-xs font-medium text-muted-foreground ${customizing ? "cursor-grab" : ""}`} {...(customizing ? { ...attributes, ...listeners } : {})}>
-            {customizing && <GripVertical className="h-3.5 w-3.5" />} {title}
+      <Card id={`widget-${id}`} className={`h-full rounded-2xl border shadow-sm ${customizing ? "ring-2 ring-purple-300" : ""}`}>
+        <div className="flex items-center justify-between px-5 pt-4 pb-1">
+          <span className={`flex items-center gap-1.5 font-semibold text-foreground ${customizing ? "cursor-grab" : ""}`} {...(customizing ? { ...attributes, ...listeners } : {})}>
+            {customizing && <GripVertical className="h-4 w-4 text-muted-foreground" />} {title}
           </span>
           <div className="flex items-center gap-0.5">
             {customizing ? (
@@ -246,13 +256,15 @@ export default function AnalyticsDashboard() {
     } catch { toast.error(pt("PDF export failed")); }
   };
 
-  const kpiTile = (icon: any, label: string, value: any, accent = "") => {
+  const kpiTile = (icon: any, label: string, value: any, accent = "text-purple-600", soft = "bg-purple-50") => {
     const Icon = icon;
     return (
-      <div className="rounded-xl border bg-background p-4">
-        <Icon className={`h-5 w-5 mb-2 ${accent}`} />
-        <div className="text-2xl font-bold leading-none">{value ?? 0}</div>
-        <div className="text-xs text-muted-foreground mt-1">{label}</div>
+      <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
+        <div className={`h-11 w-11 rounded-xl ${soft} flex items-center justify-center mb-3`}>
+          <Icon className={`h-5 w-5 ${accent}`} />
+        </div>
+        <div className="text-3xl font-bold leading-none">{value ?? 0}</div>
+        <div className="text-sm text-muted-foreground mt-1.5">{label}</div>
       </div>
     );
   };
@@ -261,24 +273,23 @@ export default function AnalyticsDashboard() {
     switch (id) {
       case "kpis":
         return (
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {kpiTile(FolderKanban, pt("Projects"), kpis.projects, "text-sky-500")}
-              {kpiTile(CheckCircle2, pt("Completion"), `${kpis.completion_pct ?? 0}%`, "text-green-500")}
-              {kpiTile(TrendingUp, pt("Tasks done"), `${kpis.tasks_done ?? 0}/${kpis.tasks_total ?? 0}`, "text-violet-500")}
-              {kpiTile(AlertTriangle, pt("Overdue"), kpis.tasks_overdue, "text-amber-500")}
-              {kpiTile(ShieldAlert, pt("Open risks"), kpis.open_risks, "text-red-500")}
-              {kpiTile(AlertTriangle, pt("Open issues"), kpis.open_issues, "text-orange-500")}
-              {kpiTile(CheckCircle2, pt("Milestones"), `${kpis.milestones_done ?? 0}/${kpis.milestones_total ?? 0}`, "text-teal-500")}
-              {kpiTile(Euro, pt("Budget"), `€${Number(kpis.budget || 0).toLocaleString()}`, "text-emerald-500")}
+          <CardContent className="px-5 pb-5 pt-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {kpiTile(FolderKanban, pt("Projects"), kpis.projects, "text-sky-600", "bg-sky-50")}
+              {kpiTile(CheckCircle2, pt("Completion"), `${kpis.completion_pct ?? 0}%`, "text-green-600", "bg-green-50")}
+              {kpiTile(TrendingUp, pt("Tasks done"), `${kpis.tasks_done ?? 0}/${kpis.tasks_total ?? 0}`, "text-violet-600", "bg-violet-50")}
+              {kpiTile(AlertTriangle, pt("Overdue"), kpis.tasks_overdue, "text-amber-600", "bg-amber-50")}
+              {kpiTile(ShieldAlert, pt("Open risks"), kpis.open_risks, "text-red-600", "bg-red-50")}
+              {kpiTile(AlertTriangle, pt("Open issues"), kpis.open_issues, "text-orange-600", "bg-orange-50")}
+              {kpiTile(CheckCircle2, pt("Milestones"), `${kpis.milestones_done ?? 0}/${kpis.milestones_total ?? 0}`, "text-teal-600", "bg-teal-50")}
+              {kpiTile(Euro, pt("Budget"), `€${Number(kpis.budget || 0).toLocaleString()}`, "text-emerald-600", "bg-emerald-50")}
             </div>
           </CardContent>
         );
       case "trend":
         return (
           <>
-            <CardHeader className="pb-2"><CardTitle className="text-base">{pt("Completion Trend")}</CardTitle></CardHeader>
-            <CardContent className="h-64">
+            <CardContent className="h-80">
               {(data?.completion_trend || []).length < 2 ? (
                 <p className="text-sm text-muted-foreground pt-8 text-center">{pt("Trends appear after at least two status snapshots.")}</p>
               ) : (
@@ -303,14 +314,13 @@ export default function AnalyticsDashboard() {
       case "status":
         return (
           <>
-            <CardHeader className="pb-2"><CardTitle className="text-base">{pt("Task Status Breakdown")}</CardTitle></CardHeader>
-            <CardContent className="h-64">
+            <CardContent className="h-80">
               {(data?.status_breakdown || []).length === 0 ? (
                 <p className="text-sm text-muted-foreground pt-8 text-center">{pt("No tasks yet.")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={data.status_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    <Pie data={data.status_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} label>
                       {data.status_breakdown.map((_: any, i: number) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
                     </Pie>
                     <Legend /><RTooltip />
@@ -323,14 +333,13 @@ export default function AnalyticsDashboard() {
       case "risks":
         return (
           <>
-            <CardHeader className="pb-2"><CardTitle className="text-base">{pt("Risk Breakdown")}</CardTitle></CardHeader>
-            <CardContent className="h-64">
+            <CardContent className="h-80">
               {(data?.risk_breakdown || []).length === 0 ? (
                 <p className="text-sm text-muted-foreground pt-8 text-center">{pt("No open risks.")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={data.risk_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    <Pie data={data.risk_breakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} label>
                       {data.risk_breakdown.map((_: any, i: number) => <Cell key={i} fill={PIE[(i + 3) % PIE.length]} />)}
                     </Pie>
                     <Legend /><RTooltip />
@@ -343,8 +352,7 @@ export default function AnalyticsDashboard() {
       case "top":
         return (
           <>
-            <CardHeader className="pb-2"><CardTitle className="text-base">{pt("Top Projects")}</CardTitle></CardHeader>
-            <CardContent className="h-64">
+            <CardContent className="h-80">
               {(data?.top_projects || []).length === 0 ? (
                 <p className="text-sm text-muted-foreground pt-8 text-center">{pt("Select an org or programme scope to compare projects.")}</p>
               ) : (
@@ -453,9 +461,9 @@ export default function AnalyticsDashboard() {
           )}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={orderedVisible.map((l) => l.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
                 {orderedVisible.map((l) => (
-                  <div key={l.id} className={l.id === "kpis" ? "lg:col-span-2" : ""}>
+                  <div key={l.id} className={SPAN[l.id] || "col-span-1 lg:col-span-3"}>
                     <SortableWidget
                       id={l.id} customizing={customizing} hidden={l.hidden}
                       onToggle={() => toggleHidden(l.id)} title={widgetTitle(l.id)}

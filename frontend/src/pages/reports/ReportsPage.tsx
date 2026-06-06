@@ -286,58 +286,42 @@ const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-violet-900/20">
-      <div className="absolute top-0 -left-4 w-[28rem] h-[28rem] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-      <div className="absolute top-0 -right-4 w-[28rem] h-[28rem] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-      <div className="absolute bottom-0 left-20 w-[28rem] h-[28rem] bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
-
-      <div className="relative z-10 p-8 md:p-10 space-y-8 max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-            <Sparkles className="h-4 w-4" />
-            <span>{pt("AI-Powered Reports")}</span>
-            <Badge className="ml-1 bg-green-500 text-white text-xs">{pt("New")}</Badge>
+    <div className="min-h-screen w-full bg-background">
+      <div className="p-4 md:p-6 space-y-4 w-full">
+        {/* Compact header row: title left, mode switcher right (full-width layout) */}
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 text-purple-600" />
+              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+                {pt("Reports & Analytics")}
+              </span>
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {pt("Customizable dashboards, KPIs and AI-powered reports")}
+            </p>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-              {pt("Reports & Analytics")}
-            </span>
-          </h1>
-
-          <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            {pt("Generate AI-powered insights and reports tailored to your role")}
-          </p>
-        </div>
-
-        {/* Mode switcher: customizable Analytics dashboards vs the report library */}
-        <div className="flex justify-center">
-          <div className="inline-flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-1.5 ring-1 ring-purple-100 dark:ring-purple-900/50 shadow">
+          <div className="inline-flex bg-muted rounded-xl p-1 ring-1 ring-border">
             <Button
               variant={mode === "analytics" ? "default" : "ghost"}
+              size="sm"
               onClick={() => setMode("analytics")}
-              className={`rounded-xl gap-2 ${mode === "analytics" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
+              className={`rounded-lg gap-2 ${mode === "analytics" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
             >
               <BarChart3 className="h-4 w-4" /> {pt("Analytics Dashboard")}
             </Button>
             <Button
               variant={mode === "library" ? "default" : "ghost"}
+              size="sm"
               onClick={() => setMode("library")}
-              className={`rounded-xl gap-2 ${mode === "library" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
+              className={`rounded-lg gap-2 ${mode === "library" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
             >
               <FileText className="h-4 w-4" /> {pt("Report Library")}
             </Button>
           </div>
         </div>
 
-        {mode === "analytics" && (
-          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-7">
-              <AnalyticsDashboard />
-            </CardContent>
-          </Card>
-        )}
+        {mode === "analytics" && <AnalyticsDashboard />}
 
         {/* Category Tabs */}
         {mode === "library" && (
