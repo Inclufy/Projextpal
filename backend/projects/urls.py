@@ -31,6 +31,7 @@ from .views import (
 
 # Methodology views
 from .views_methodology import MethodologyListView, MethodologyDetailView, MethodologyTemplateView
+from .analytics_views import analytics_overview
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -69,6 +70,10 @@ urlpatterns = [
         ProjectViewSet.as_view({"get": "export_project_plan"}),
         name="project-export-project-plan-file",
     ),
+    # Unified analytics overview (org / programme / project scope) for the
+    # Reports & Analytics dashboards. Placed before the router so the literal
+    # "analytics/" segment is never captured by a <pk> detail route.
+    path("analytics/overview/", analytics_overview, name="analytics-overview"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),

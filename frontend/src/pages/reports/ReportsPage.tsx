@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -188,6 +189,7 @@ const ReportsPage: React.FC = () => {
   const { language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+  const [mode, setMode] = useState<"analytics" | "library">("analytics");
 
   const userRole = user?.role || "guest";
 
@@ -309,7 +311,36 @@ const ReportsPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Mode switcher: customizable Analytics dashboards vs the report library */}
+        <div className="flex justify-center">
+          <div className="inline-flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-1.5 ring-1 ring-purple-100 dark:ring-purple-900/50 shadow">
+            <Button
+              variant={mode === "analytics" ? "default" : "ghost"}
+              onClick={() => setMode("analytics")}
+              className={`rounded-xl gap-2 ${mode === "analytics" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
+            >
+              <BarChart3 className="h-4 w-4" /> {pt("Analytics Dashboard")}
+            </Button>
+            <Button
+              variant={mode === "library" ? "default" : "ghost"}
+              onClick={() => setMode("library")}
+              className={`rounded-xl gap-2 ${mode === "library" ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : ""}`}
+            >
+              <FileText className="h-4 w-4" /> {pt("Report Library")}
+            </Button>
+          </div>
+        </div>
+
+        {mode === "analytics" && (
+          <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
+            <CardContent className="p-7">
+              <AnalyticsDashboard />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Category Tabs */}
+        {mode === "library" && (
         <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
             <div className="border-b border-purple-100 dark:border-purple-900/30 px-7 pt-7">
@@ -400,6 +431,7 @@ const ReportsPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </Card>
+        )}
       </div>
       <ReportModal
         open={reportModalOpen}
