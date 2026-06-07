@@ -1143,6 +1143,7 @@ export function AppSidebar() {
   const academyMenu = [
     { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
+    { title: isNL ? 'Skill-paspoort' : 'Skill Passport', url: '/academy/skill-passport', icon: Award },
     { title: isNL ? 'Prijzen' : 'Pricing', url: '/academy/pricing', icon: CreditCard },
     { title: isNL ? 'Offerte aanvragen' : 'Request a Quote', url: '/academy/quote', icon: FileText },
     { title: isNL ? 'Terug naar werkruimte' : 'Back to Workspace', url: '/dashboard', icon: LayoutDashboard },
