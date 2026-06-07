@@ -6,13 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useLanguage, languages } from "./contexts/LanguageContext";
@@ -398,17 +400,49 @@ const AppHeader = () => {
           <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
         </Button>
 
-        {/* Academy ⇄ PM View toggle (IQ-Helix-style workspace switch).
-            In the Academy this becomes "PM View" to jump back to the projects side. */}
-        <Button
-          variant={onAcademy ? "default" : "outline"}
-          size="sm"
-          onClick={() => navigate(onAcademy ? '/dashboard' : '/academy')}
-          className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
-        >
-          {onAcademy ? <FolderKanban className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
-          <span className="hidden sm:inline">{onAcademy ? 'PM View' : 'Academy'}</span>
-        </Button>
+        {/* Workspace switcher dropdown (IQ-Helix-style). */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={onAcademy ? "default" : "outline"}
+              size="sm"
+              className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
+            >
+              {onAcademy ? <GraduationCap className="h-4 w-4" /> : <FolderKanban className="h-4 w-4" />}
+              <span className="hidden sm:inline">{onAcademy ? 'Academy' : 'Projects'}</span>
+              <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>{t.nav?.workspace || 'Workspace'}</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+              <FolderKanban className="h-4 w-4 mr-2" /> Projects {!onAcademy && <Check className="h-4 w-4 ml-auto text-purple-600" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/academy')}>
+              <GraduationCap className="h-4 w-4 mr-2" /> Academy {onAcademy && <Check className="h-4 w-4 ml-auto" />}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {onAcademy ? (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Academy</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => navigate('/academy/dashboard')}>Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/academy')}>Catalog</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/academy/learning-paths')}>Learning Paths</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/academy/skills')}>Skills</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/academy/skill-intelligence')}>Skill Intelligence</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/academy/certifications')}>Certifications</DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Projects</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => navigate('/dashboard')}>Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/projects')}>Projects</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/programs')}>Programs</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/reports')}>Reports &amp; Analytics</DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Language Selector */}
         <LanguageSelector />
