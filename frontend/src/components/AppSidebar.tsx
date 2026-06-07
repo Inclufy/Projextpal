@@ -588,6 +588,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Repeat,
           items: [
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
             { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
@@ -630,6 +631,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: LayoutGrid,
           items: [
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
             { title: "Work Items", url: `/projects/${projectId}/kanban/work-items`, icon: ListChecks },
             { title: "Board View", url: `/projects/${projectId}/kanban/board`, icon: Columns },
             { title: "Blocked Items", url: `/projects/${projectId}/kanban/blocked`, icon: Shield },
@@ -676,6 +678,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           items: [
             { title: "Planning", url: `/projects/${projectId}/prince2/planning`, icon: CalendarDays },
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
             { title: "Stage Plan", url: `/projects/${projectId}/prince2/stage-plan`, icon: Calendar },
             { title: "Work Packages", url: `/projects/${projectId}/prince2/work-packages`, icon: ListChecks },
             { title: "Stage Gates", url: `/projects/${projectId}/prince2/stage-gates`, icon: Shield },
@@ -854,6 +857,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           icon: Rocket,
           items: [
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
             { title: "Iteration Board", url: `/projects/${projectId}/agile/iteration-board`, icon: Columns },
             { title: "Daily Progress", url: `/projects/${projectId}/agile/daily-progress`, icon: MessageSquare },
           ],
@@ -894,6 +898,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Gantt Chart", url: `/projects/${projectId}/waterfall/gantt`, icon: Calendar },
             { title: "Milestones", url: `/projects/${projectId}/waterfall/milestones`, icon: Flag },
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
+            { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
           ],
         },
         {

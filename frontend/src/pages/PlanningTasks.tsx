@@ -119,6 +119,7 @@ const PlanningTasks = () => {
           <div className="flex gap-2 flex-wrap items-center">
             <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {pt("Planning")}</Button>
             <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>📦 {pt("Work Packages")}</Button>
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/action-tracker`)}>✅ {pt("Action Tracker")}</Button>
             {tasks.length > 0 && <ReportExportMenu title="Tasks" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Task")}</Button>
           </div>
