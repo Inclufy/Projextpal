@@ -49,8 +49,22 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_users_list(request):
-    """Get all users for team management"""
-    users = CustomUser.objects.all().order_by('first_name', 'email')
+    """Get users for team management.
+
+    Multi-tenant scoping (cross-tenant leak fix): superadmin / is_superuser see
+    every user (operational, tenant-spanning role); everyone else only sees
+    users in their own company. Previously returned CustomUser.objects.all() to
+    any authenticated user, exposing every tenant's user list.
+    """
+    requester = request.user
+    if getattr(requester, 'role', None) == 'superadmin' or getattr(requester, 'is_superuser', False):
+        users = CustomUser.objects.all().order_by('first_name', 'email')
+    elif getattr(requester, 'company_id', None):
+        users = CustomUser.objects.filter(
+            company_id=requester.company_id
+        ).order_by('first_name', 'email')
+    else:
+        users = CustomUser.objects.none()
     
     data = []
     for user in users:
