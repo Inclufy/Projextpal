@@ -1139,7 +1139,9 @@ export function AppSidebar() {
   // Academy gets its own sidenav (IQ-Helix-style) when you're inside it — the
   // top-level project/methodology nav is replaced by Academy features. The
   // in-course learning sub-nav (further down) still takes over while in a lesson.
-  const inAcademy = location.pathname.startsWith('/academy') && !location.pathname.includes('/learn');
+  // In-course learning mode = a `/learn` path SEGMENT (e.g. /academy/course/x/learn),
+  // NOT "/academy/learning-paths" (which merely contains the substring "learn").
+  const inAcademy = location.pathname.startsWith('/academy') && !/\/learn(\/|$)/.test(location.pathname);
   const academyMenu = [
     { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
