@@ -15,38 +15,47 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 
-# Skill catalogue (id, name, name_nl)
+# Skill catalogue (id, name, name_nl).
+# IMPORTANT: the 6 competencies that also exist as lesson-mapped course skills
+# use the canonical skill-c-* ids so demo progress and real lesson completions
+# accrue on the SAME skill (no duplicate cards in the catalogue / passport).
+# skill-risk and skill-planning have no course equivalent, so they stay
+# standalone.
 SKILLS = [
-    ("skill-prince2", "PRINCE2 Practitioner", "PRINCE2 Practitioner"),
-    ("skill-scrum", "Scrum Mastery", "Scrum-beheersing"),
-    ("skill-kanban", "Kanban Flow", "Kanban-flow"),
+    ("skill-c-prince2-practitioner", "PRINCE2 Practitioner", "PRINCE2 Practitioner"),
+    ("skill-c-scrum-mastery", "Scrum Mastery", "Scrum-beheersing"),
+    ("skill-c-kanban-flow", "Kanban Flow", "Kanban-flow"),
     ("skill-risk", "Risk Management", "Risicomanagement"),
-    ("skill-stakeholder", "Stakeholder Management", "Stakeholdermanagement"),
+    ("skill-c-stakeholder-management", "Stakeholder Management", "Stakeholdermanagement"),
     ("skill-planning", "Planning & Scheduling", "Planning & Roostering"),
-    ("skill-agile", "Agile Delivery", "Agile-levering"),
-    ("skill-leadership", "Leadership", "Leiderschap"),
+    ("skill-c-agile-delivery", "Agile Delivery", "Agile-levering"),
+    ("skill-c-leadership", "Leadership", "Leiderschap"),
 ]
 
 # Per-user points per skill (drives the level via the 0/100/300/600/1000 bands).
 # email -> { skill_id: points }
 USER_POINTS = {
     "sami@inclufy.com": {
-        "skill-prince2": 1200, "skill-scrum": 820, "skill-kanban": 430,
-        "skill-risk": 700, "skill-stakeholder": 350, "skill-planning": 560,
-        "skill-agile": 250, "skill-leadership": 980,
+        "skill-c-prince2-practitioner": 1200, "skill-c-scrum-mastery": 820,
+        "skill-c-kanban-flow": 430, "skill-risk": 700,
+        "skill-c-stakeholder-management": 350, "skill-planning": 560,
+        "skill-c-agile-delivery": 250, "skill-c-leadership": 980,
     },
     "maya.okonkwo@yanmar-demo.com": {
-        "skill-prince2": 900, "skill-risk": 480, "skill-planning": 320,
-        "skill-stakeholder": 610,
+        "skill-c-prince2-practitioner": 900, "skill-risk": 480,
+        "skill-planning": 320, "skill-c-stakeholder-management": 610,
     },
     "tom.devries@yanmar-demo.com": {
-        "skill-scrum": 700, "skill-kanban": 540, "skill-agile": 410,
+        "skill-c-scrum-mastery": 700, "skill-c-kanban-flow": 540,
+        "skill-c-agile-delivery": 410,
     },
     "lena.fischer@yanmar-demo.com": {
-        "skill-risk": 360, "skill-planning": 250, "skill-prince2": 180,
+        "skill-risk": 360, "skill-planning": 250,
+        "skill-c-prince2-practitioner": 180,
     },
     "raj.patel@yanmar-demo.com": {
-        "skill-stakeholder": 430, "skill-leadership": 290, "skill-kanban": 160,
+        "skill-c-stakeholder-management": 430, "skill-c-leadership": 290,
+        "skill-c-kanban-flow": 160,
     },
 }
 
