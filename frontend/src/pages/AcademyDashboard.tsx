@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Loader2, GraduationCap, Users, CheckCircle2, Award, Target, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, GraduationCap, Users, CheckCircle2, Award, Target, TrendingUp, Trophy, BookOpen } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 
@@ -30,6 +31,8 @@ const AcademyDashboard = () => {
   const inProgress = Math.max(0, enrollments - completed);
   const completionPct = enrollments ? Math.round((completed / enrollments) * 100) : 0;
   const scope = data?.meta?.scope === "company" ? pt("your organization") : pt("all learners");
+  const leaderboard: any[] = data?.leaderboard || [];
+  const courseRows: any[] = data?.courses || [];
 
   const tiles = [
     { label: pt("Enrollments"), value: enrollments, icon: GraduationCap, color: "text-indigo-600 bg-indigo-50" },
@@ -102,6 +105,59 @@ const AcademyDashboard = () => {
             <Row label={pt("Average quiz score")} value={`${o.average_quiz_score || 0}%`} />
           </div>
           <p className="text-[11px] text-muted-foreground mt-4">{pt("Scope")}: {scope}</p>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Leaderboard */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-1 flex items-center gap-2"><Trophy className="h-4 w-4 text-amber-500" />{pt("Leaderboard")}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{pt("Top learners by completed courses")}</p>
+          {leaderboard.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">{pt("No learner activity yet")}</div>
+          ) : (
+            <div className="space-y-2">
+              {leaderboard.map((l, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-gray-200 text-gray-700" : i === 2 ? "bg-orange-100 text-orange-700" : "bg-muted text-muted-foreground"}`}>{i + 1}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{l.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{l.completed}/{l.total} {pt("completed")}</div>
+                  </div>
+                  <Badge className="bg-green-100 text-green-700 text-[10px]">{l.completion_pct}%</Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Per-course progress */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4 text-indigo-500" />{pt("Course progress")}</h3>
+          <p className="text-xs text-muted-foreground mb-4">{pt("Completion per course (assigned / done / in progress)")}</p>
+          {courseRows.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">{pt("No enrollments yet")}</div>
+          ) : (
+            <div className="space-y-3">
+              {courseRows.map((c, i) => {
+                const a = c.assigned || 1;
+                const dPct = Math.round((c.completed / a) * 100);
+                const pPct = Math.round((c.in_progress / a) * 100);
+                return (
+                  <div key={i}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium truncate pr-2">{c.title}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">{c.completed}/{c.assigned} · {c.completion_pct}%</span>
+                    </div>
+                    <div className="mt-1 h-2 w-full rounded-full bg-muted overflow-hidden flex">
+                      <div className="h-full bg-green-500" style={{ width: `${dPct}%` }} title={`${pt("Completed")} ${c.completed}`} />
+                      <div className="h-full bg-blue-400" style={{ width: `${pPct}%` }} title={`${pt("In progress")} ${c.in_progress}`} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       </div>
     </div>

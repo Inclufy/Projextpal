@@ -1899,6 +1899,50 @@ def academy_dashboard(request):
     )
     avg_quiz_score = round(avg_pct_agg['avg_score'] or 0, 1)
 
+    # --- Leaderboard: top learners by completed enrollments + completion % ---
+    from django.db.models import Count
+    leaderboard = []
+    learner_rows = (
+        enrollments_qs.values('user_id', 'first_name', 'last_name', 'email')
+        .annotate(
+            total=Count('id'),
+            completed=Count('id', filter=Q(status='completed')),
+        )
+        .order_by('-completed', '-total')[:10]
+    )
+    for r in learner_rows:
+        name = (f"{r.get('first_name') or ''} {r.get('last_name') or ''}".strip()
+                or r.get('email') or 'Learner')
+        total = r['total'] or 0
+        pct = round(r['completed'] / total * 100) if total else 0
+        leaderboard.append({
+            'name': name, 'completed': r['completed'],
+            'total': total, 'completion_pct': pct,
+        })
+
+    # --- Per-course progress (assigned / completed / in-progress) ---
+    courses = []
+    course_rows = (
+        enrollments_qs.values('course_id', 'course__title')
+        .annotate(
+            assigned=Count('id'),
+            completed=Count('id', filter=Q(status='completed')),
+            in_progress=Count('id', filter=Q(status='active')),
+        )
+        .order_by('-assigned')[:30]
+    )
+    for r in course_rows:
+        assigned = r['assigned'] or 0
+        pct = round(r['completed'] / assigned * 100) if assigned else 0
+        courses.append({
+            'title': r.get('course__title') or 'Course',
+            'assigned': assigned,
+            'completed': r['completed'],
+            'in_progress': r['in_progress'],
+            'not_started': max(0, assigned - r['completed'] - r['in_progress']),
+            'completion_pct': pct,
+        })
+
     return Response({
         'overview': {
             'total_enrollments': total_enrollments,
@@ -1907,6 +1951,8 @@ def academy_dashboard(request):
             'certificates_issued': certificates_issued,
             'average_quiz_score': avg_quiz_score,
         },
+        'leaderboard': leaderboard,
+        'courses': courses,
         'meta': {
             'generated_at': timezone.now().isoformat(),
             'window_days': 30,
