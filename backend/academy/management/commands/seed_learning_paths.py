@@ -15,9 +15,9 @@ PATHS = [
     ("Traditional PM", "Master structured methodologies", True,
      ["Project Management Fundamentals", "Waterfall", "PRINCE2"]),
     ("Process Excellence", "Optimize with Lean Six Sigma", True,
-     ["Lean Six Sigma", "Kanban"]),
+     ["Lean Six Sigma Green Belt", "Kanban"]),
     ("Complete PM", "Full PM certification path", True,
-     ["Project Management Fundamentals", "PRINCE2", "Scrum Master", "Lean Six Sigma"]),
+     ["Project Management Fundamentals", "PRINCE2", "Scrum Master", "Lean Six Sigma Green Belt"]),
 ]
 
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             # Rebuild items idempotently
             path.items.all().delete()
             for i, kw in enumerate(items):
-                course = Course.objects.filter(title__icontains=kw).first()
+                course = Course.objects.filter(title__icontains=kw).order_by("title").first()
                 LearningPathItem.objects.create(
                     path=path, order=i,
                     item_type="course" if course else "module",

@@ -2,8 +2,7 @@
 // COURSES INDEX - UPDATED
 // ============================================
 // Only exports courses that have actual content (modules + lessons)
-// Total: 11 courses, 35 modules, 166 lessons
-// Use getCourseStats() to get real-time accurate stats
+// Total: 14 courses — use getCourseStats() for live module/lesson counts
 // ============================================
 
 import { Course, Module } from '../types';
@@ -78,8 +77,7 @@ export {
 // COURSES WITH CONTENT (for marketplace)
 // ============================================
 // These are the only courses shown in TrainingMarketplace
-// Total: 12 courses, 39 modules, 182 lessons
-// Use getCourseStats() to get real-time accurate stats
+// Total: 14 courses — use getCourseStats() for live module/lesson counts
 export const coursesWithContent: Course[] = [
   pmFundamentalsCourse,      // 5 modules, 26 lessons, ~8h
   prince2Course,             // 4 modules, 20 lessons, ~12h
