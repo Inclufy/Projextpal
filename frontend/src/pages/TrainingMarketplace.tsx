@@ -821,7 +821,7 @@ const TrainingMarketplace = () => {
         <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(180deg, ${BRAND.purple}10 0%, transparent 50%, ${BRAND.green}05 100%)` }} />
         
         <div className="relative w-full px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
+          <div className="text-center w-full">
             {/* Badge - Updated to show 11 courses dynamically */}
             <div 
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium mb-8"
@@ -869,7 +869,7 @@ const TrainingMarketplace = () => {
             <p className="text-sm text-muted-foreground mb-6">{content.hero.trustedBy}</p>
 
             {/* Stats - UPDATED: Now using dynamic stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
               {content.stats.map((stat, i) => (
                 <div 
                   key={i} 
