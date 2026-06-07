@@ -234,10 +234,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     expenses = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
     team_members_count = serializers.SerializerMethodField()
+    company_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = [
+            "company_logo",
             "id",
             "company",
             "portfolio",
@@ -304,6 +306,16 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_team_members_count(self, obj):
         return obj.team_members.filter(is_active=True).count()
+
+    def get_company_logo(self, obj):
+        try:
+            logo = getattr(getattr(obj, "company", None), "logo", None)
+            if not logo:
+                return None
+            request = self.context.get("request")
+            return request.build_absolute_uri(logo.url) if request else logo.url
+        except Exception:
+            return None
 
     def to_representation(self, instance):
         # Yanmar SC-05 — hide budget/expenses from non-finance roles (ROI %

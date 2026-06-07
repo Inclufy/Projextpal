@@ -83,6 +83,23 @@ def _gather_recipients(meeting, extra) -> list:
     return sorted(out)
 
 
+def _minutes_html(title: str, body_text: str) -> str:
+    """Wrap plain-text minutes/body into a clean branded HTML email."""
+    from django.utils.html import escape
+    safe = escape(body_text or "").replace("\n", "<br>")
+    return (
+        '<div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;color:#1f2937">'
+        '<div style="background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;padding:16px 20px;border-radius:10px 10px 0 0">'
+        f'<div style="font-weight:700;font-size:18px">{escape(title)}</div>'
+        '<div style="opacity:.85;font-size:12px">ProjeXtPal · Meeting</div>'
+        '</div>'
+        '<div style="border:1px solid #eee;border-top:0;padding:18px 20px;border-radius:0 0 10px 10px;'
+        f'font-size:14px;line-height:1.55">{safe}</div>'
+        '<p style="color:#9ca3af;font-size:11px;text-align:center;margin-top:12px">Sent via ProjeXtPal</p>'
+        '</div>'
+    )
+
+
 def _ics_escape(s: str) -> str:
     return (s or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
 
@@ -578,7 +595,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
     def send_email(self, request, pk=None):
         """Compose-and-send: custom recipients + subject + body, optional .ics
         attachment. Powers the meeting email screen."""
-        from django.core.mail import EmailMessage
+        from django.core.mail import EmailMultiAlternatives
         from django.conf import settings as dj_settings
 
         meeting = self.get_object()
@@ -590,11 +607,12 @@ class MeetingViewSet(viewsets.ModelViewSet):
         if not body or not str(body).strip():
             body = _build_minutes_text(meeting)
         try:
-            msg = EmailMessage(
+            msg = EmailMultiAlternatives(
                 subject=subject, body=str(body),
                 from_email=getattr(dj_settings, "DEFAULT_FROM_EMAIL", None) or getattr(dj_settings, "EMAIL_HOST_USER", None),
                 to=recipients,
             )
+            msg.attach_alternative(_minutes_html(subject, str(body)), "text/html")
             if request.data.get("attach_ics"):
                 msg.attach(f"meeting-{meeting.id}.ics", _build_ics(meeting), "text/calendar; method=REQUEST")
             msg.send(fail_silently=False)
