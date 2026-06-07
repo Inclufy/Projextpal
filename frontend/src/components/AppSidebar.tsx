@@ -679,6 +679,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Planning", url: `/projects/${projectId}/prince2/planning`, icon: CalendarDays },
             { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
             { title: "Action Tracker", url: `/projects/${projectId}/action-tracker`, icon: ClipboardList },
+            { title: "RACI", url: `/projects/${projectId}/planning/raci`, icon: Network },
             { title: "Stage Plan", url: `/projects/${projectId}/prince2/stage-plan`, icon: Calendar },
             { title: "Work Packages", url: `/projects/${projectId}/prince2/work-packages`, icon: ListChecks },
             { title: "Stage Gates", url: `/projects/${projectId}/prince2/stage-gates`, icon: Shield },
