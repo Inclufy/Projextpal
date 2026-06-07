@@ -5,6 +5,7 @@ from .views import SkillViewSet, SkillCategoryViewSet, UserSkillViewSet, SkillGo
 from .views_visual import LessonVisualViewSet
 from .api_views import EnrollmentViewSet
 from .assignment_api import TenantCourseEntitlementViewSet, CourseAssignmentViewSet
+from .learning_path_api import LearningPathViewSet
 
 router = DefaultRouter()
 router.register(r'courses', api_views.CourseViewSet, basename='course')
@@ -13,6 +14,7 @@ router.register(r'lessons', api_views.CourseLessonViewSet, basename='lesson')
 router.register(r'enrollments', EnrollmentViewSet, basename='enrollment')
 router.register(r'entitlements', TenantCourseEntitlementViewSet, basename='course-entitlement')
 router.register(r'assignments', CourseAssignmentViewSet, basename='course-assignment')
+router.register(r'learning-paths', LearningPathViewSet, basename='learning-path')
 # Register lesson-visuals at the top-level /academy/ so /api/v1/academy/lesson-visuals/
 # resolves (in addition to the legacy /academy/visuals/lesson-visuals/ mount).
 router.register(r'lesson-visuals', LessonVisualViewSet, basename='lesson-visual-top')

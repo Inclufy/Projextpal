@@ -1190,3 +1190,62 @@ class CourseAssignment(models.Model):
     def __str__(self):
         tgt = self.target_user.email if self.target_user_id else self.get_target_type_display()
         return f"{self.course_id} → {tgt}"
+
+
+# ============================================================================
+# Learning Paths — structured tracks (ordered items + awarded skills) that can
+# lead to a certificate. (IQ-Helix-style path builder.)
+# ============================================================================
+class LearningPath(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    title_nl = models.CharField(max_length=255, blank=True, default="")
+    description = models.TextField(blank=True, default="")
+    description_nl = models.TextField(blank=True, default="")
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, null=True, blank=True,
+        related_name="learning_paths",
+        help_text="null = global template visible to every tenant.",
+    )
+    active = models.BooleanField(default=True)
+    leads_to_certificate = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
+    skills = models.ManyToManyField("Skill", blank=True, related_name="learning_paths")
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="created_learning_paths",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "academy_learning_paths"
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
+class LearningPathItem(models.Model):
+    ITEM_TYPES = [
+        ("course", "Course"),
+        ("microlearning", "Microlearning"),
+        ("module", "Module"),
+        ("lesson", "Lesson"),
+        ("exam", "Exam"),
+    ]
+    path = models.ForeignKey(LearningPath, on_delete=models.CASCADE, related_name="items")
+    item_type = models.CharField(max_length=20, choices=ITEM_TYPES, default="course")
+    course = models.ForeignKey(
+        Course, on_delete=models.SET_NULL, null=True, blank=True, related_name="path_items"
+    )
+    ref_id = models.CharField(max_length=200, blank=True, default="")
+    label = models.CharField(max_length=300, blank=True, default="")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "academy_learning_path_items"
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"{self.path_id} · {self.label or self.item_type}"
