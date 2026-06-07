@@ -1126,3 +1126,67 @@ class PracticeSubmission(models.Model):
         
     def __str__(self):
         return f"{self.user.email} - {self.assignment.title}"
+
+# ============================================================================
+# Course assignment — 2-tier: Portal admin grants to tenants, tenant admin
+# assigns to users or the whole org. (Academy assignment feature.)
+# ============================================================================
+class TenantCourseEntitlement(models.Model):
+    """A course a Portal admin (superadmin) has granted to a tenant (company)."""
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="course_entitlements"
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="tenant_entitlements"
+    )
+    active = models.BooleanField(default=True)
+    seats = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Max seats; null = unlimited."
+    )
+    granted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="granted_entitlements",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "academy_tenant_course_entitlements"
+        unique_together = ["company", "course"]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.company_id} ⇐ {self.course_id}"
+
+
+class CourseAssignment(models.Model):
+    """A tenant admin assigns an entitled course to a user or the whole org."""
+    TARGET_CHOICES = [
+        ("user", "Specific user"),
+        ("entire_org", "Entire organization"),
+    ]
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="course_assignments"
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="assignments"
+    )
+    target_type = models.CharField(max_length=20, choices=TARGET_CHOICES, default="user")
+    target_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True,
+        related_name="course_assignments",
+    )
+    assigned_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="assigned_courses",
+    )
+    due_date = models.DateField(null=True, blank=True)
+    mandatory = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "academy_course_assignments"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        tgt = self.target_user.email if self.target_user_id else self.get_target_type_display()
+        return f"{self.course_id} → {tgt}"
