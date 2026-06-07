@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Plus, FlaskConical, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 
 const SixSigmaHypothesis = () => {
   const { pt } = usePageTranslations();

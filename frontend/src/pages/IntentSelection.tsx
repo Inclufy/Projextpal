@@ -101,7 +101,7 @@ const IntentSelection = () => {
     try {
       // Save intent to backend
       const token = localStorage.getItem('access_token');
-      await fetch('/api/v1/accounts/registration-intent/', {
+      await fetch('/api/v1/auth/registration-intent/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

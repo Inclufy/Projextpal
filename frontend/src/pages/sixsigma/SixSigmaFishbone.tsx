@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Plus, GitBranch, Pencil, Trash2, ThumbsUp, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 const CATEGORIES = ["manpower", "machine", "method", "material", "measurement", "mother_nature"];
 const CATEGORY_LABELS: Record<string, string> = { manpower: "Manpower", machine: "Machine", method: "Method", material: "Material", measurement: "Measurement", mother_nature: "Mother Nature" };
 

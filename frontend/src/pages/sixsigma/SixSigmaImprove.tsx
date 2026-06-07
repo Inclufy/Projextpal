@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Loader2, Lightbulb, FlaskConical, Shield, Rocket, ArrowRight } from "lucide-react";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 
 const SixSigmaImprove = () => {
   const { id } = useParams<{ id: string }>();

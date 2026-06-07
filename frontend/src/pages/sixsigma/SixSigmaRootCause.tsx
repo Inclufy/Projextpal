@@ -8,7 +8,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, Search, CheckCircle2, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 
 const SixSigmaRootCause = () => {
   const { pt } = usePageTranslations();

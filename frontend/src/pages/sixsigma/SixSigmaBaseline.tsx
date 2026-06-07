@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Plus, TrendingUp, Pencil, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 
 const SixSigmaBaseline = () => {
   const { pt } = usePageTranslations();

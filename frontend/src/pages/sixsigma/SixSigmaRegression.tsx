@@ -7,7 +7,7 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, TrendingUp } from "lucide-react";
 
-const BASE = (id: string) => `/api/v1/sixsigma/projects/${id}/sixsigma`;
+const BASE = (id: string) => `/api/v1/projects/${id}/sixsigma`;
 
 const SixSigmaRegression = () => {
   const { pt } = usePageTranslations();
