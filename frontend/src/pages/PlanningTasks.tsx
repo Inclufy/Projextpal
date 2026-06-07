@@ -29,7 +29,7 @@ const PlanningTasks = () => {
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
-  const [groupBy, setGroupBy] = useState<"type" | "milestone" | "owner" | "status">("type");
+  const [groupBy, setGroupBy] = useState<"category" | "milestone" | "type" | "owner" | "status">("category");
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -89,6 +89,7 @@ const PlanningTasks = () => {
         : t.work_package_title ? "Work Package"
           : "General";
   const groupOf = (t: any): string => {
+    if (groupBy === "category") return t.category || pt("Uncategorized");
     if (groupBy === "type") return taskType(t);
     if (groupBy === "milestone") return t.milestone_name || msName(t.milestone) || pt("No milestone");
     if (groupBy === "owner") return t.assigned_to_name || pt("Unassigned");
@@ -124,10 +125,10 @@ const PlanningTasks = () => {
         {tasks.length > 0 && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">{pt("Group by")}:</span>
-            <div className="flex bg-muted rounded-lg p-1">
-              {(["type", "milestone", "owner", "status"] as const).map((g) => (
-                <Button key={g} size="sm" variant={groupBy === g ? "default" : "ghost"} className="h-7 capitalize" onClick={() => setGroupBy(g)}>
-                  {pt(g === "type" ? "Type" : g === "milestone" ? "Milestone" : g === "owner" ? "Owner" : "Status")}
+            <div className="flex bg-muted rounded-lg p-1 flex-wrap">
+              {(["category", "milestone", "type", "owner", "status"] as const).map((g) => (
+                <Button key={g} size="sm" variant={groupBy === g ? "default" : "ghost"} className="h-7" onClick={() => setGroupBy(g)}>
+                  {pt(g === "category" ? "Category" : g === "milestone" ? "Milestone" : g === "type" ? "Type" : g === "owner" ? "Owner" : "Status")}
                 </Button>
               ))}
             </div>
@@ -146,48 +147,60 @@ const PlanningTasks = () => {
           </Card>
         ) : (
           <div className="space-y-5">
-            {groups.map(([groupName, items]) => (
-              <div key={groupName}>
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-sm font-semibold text-foreground">{groupName}</h3>
-                  <Badge variant="outline" className="text-xs">{items.length}</Badge>
-                </div>
-                <div className="space-y-2">
-                  {items.map((t) => {
-                    const overdue = t.due_date && t.due_date < today && t.status !== "done";
-                    return (
-                      <Card key={t.id}><CardContent className="p-4 flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="font-medium">{t.title}</span>
-                            <Badge className={`text-xs ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge>
-                            <Badge className={`text-xs ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge>
-                            {(t.category || "").toLowerCase().includes("meeting") && <Badge className="text-xs bg-violet-100 text-violet-700">💬 {pt("Meeting")}</Badge>}
-                            {t.product_title && <Badge className="text-xs bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
-                            {t.work_package_title && (
-                              <Badge className="text-xs bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>
-                            )}
-                            {(t.milestone_name || t.milestone) && (
-                              <Badge variant="secondary" className="text-xs cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>
-                            )}
-                            {t.category && !(t.category || "").toLowerCase().includes("meeting") && <Badge variant="outline" className="text-xs">{t.category}</Badge>}
-                          </div>
-                          <div className="flex items-center gap-3 mt-1 flex-wrap text-xs text-muted-foreground">
-                            <span>👤 {t.assigned_to_name || pt("Unassigned")}</span>
-                            {t.due_date && <span className={overdue ? "text-red-600 font-medium" : ""}>📅 {t.due_date}{overdue ? ` · ${pt("overdue")}` : ""}</span>}
-                            <span className="flex items-center gap-1"><Progress value={t.progress} className="h-2 w-24" />{t.progress}%</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </CardContent></Card>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+            {groups.map(([groupName, items]) => {
+              const done = items.filter((t) => t.status === "done").length;
+              return (
+                <Card key={groupName} className="overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 bg-muted/50 border-b">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{groupName}</span>
+                      <Badge variant="outline" className="text-xs">{done}/{items.length}</Badge>
+                    </div>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-muted-foreground border-b">
+                        <th className="font-medium px-4 py-2">{pt("Activity")}</th>
+                        <th className="font-medium px-3 py-2 w-40">{pt("Owner")}</th>
+                        <th className="font-medium px-3 py-2 w-28">{pt("Due")}</th>
+                        <th className="font-medium px-3 py-2 w-28">{pt("Status")}</th>
+                        <th className="font-medium px-3 py-2 w-32">{pt("Progress")}</th>
+                        <th className="px-2 py-2 w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((t) => {
+                        const overdue = t.due_date && t.due_date < today && t.status !== "done";
+                        return (
+                          <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40">
+                            <td className="px-4 py-2.5">
+                              <div className="font-medium">{t.title}</div>
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
+                                {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>}
+                                {groupBy !== "milestone" && (t.milestone_name || t.milestone) && <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>}
+                                {groupBy !== "category" && t.category && <Badge variant="outline" className="text-[10px]">{t.category}</Badge>}
+                                <Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>
+                            <td className={`px-3 py-2.5 ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
+                            <td className="px-3 py-2.5"><Badge className={`text-[10px] ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge></td>
+                            <td className="px-3 py-2.5"><div className="flex items-center gap-1.5"><Progress value={t.progress} className="h-1.5 w-16" /><span className="text-xs text-muted-foreground">{t.progress}%</span></div></td>
+                            <td className="px-2 py-2.5">
+                              <div className="flex gap-0.5">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(t.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
