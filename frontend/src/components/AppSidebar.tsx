@@ -569,6 +569,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Team", url: `/projects/${projectId}/scrum/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: Euro },
             { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
+            { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
             { title: "Definition of Done", url: `/projects/${projectId}/scrum/definition-of-done`, icon: CheckSquare },
           ],
         },
@@ -620,6 +621,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "WIP Limits", url: `/projects/${projectId}/kanban/wip-limits`, icon: Shield },
             { title: "Work Policies", url: `/projects/${projectId}/kanban/work-policies`, icon: FileText },
             { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
+            { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
           ],
         },
         {
@@ -824,6 +826,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Team", url: `/projects/${projectId}/agile/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/agile/budget`, icon: Euro },
             { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
+            { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
           ],
         },
         {
@@ -879,6 +882,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Team", url: `/projects/${projectId}/waterfall/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/waterfall/budget`, icon: Euro },
             { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
+            { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
           ],
         },
         {
