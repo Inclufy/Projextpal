@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -138,6 +138,15 @@ const PlanningTasks = () => {
             </div>
           </div>
         )}
+
+        <Card className="p-3 border-indigo-100 bg-indigo-50/40">
+          <div className="flex gap-2.5 text-xs text-muted-foreground">
+            <Info className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
+            <p>
+              <span className="font-medium text-foreground">{pt("Activity List")}</span> = {pt("the full breakdown of all project work, grouped by stage. It shares one data store with the")} <span className="font-medium text-foreground">{pt("Action Tracker")}</span> ({pt("the open actions / follow-ups")}), {pt("and links to")} <span className="font-medium text-foreground">{pt("Planning")}</span> ({pt("stages & milestones")}) {pt("and")} <span className="font-medium text-foreground">{pt("Work Packages")}</span> ({pt("delegated work")}). {pt("Progress you update here rolls up everywhere.")}
+            </p>
+          </div>
+        </Card>
 
         {milestones.length === 0 && (
           <Card className="p-4 border-amber-200 bg-amber-50/50"><p className="text-sm text-amber-700">{pt("Create a milestone first — tasks belong to a milestone.")}</p></Card>

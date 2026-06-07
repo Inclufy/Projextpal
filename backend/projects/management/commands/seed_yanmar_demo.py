@@ -98,6 +98,38 @@ class Command(BaseCommand):
         # PRINCE2 board (members require User FK; left empty in demo)
         ProjectBoard.objects.get_or_create(project=project)
 
+        # ---- Demo team members (owners / team managers) -----------------
+        from accounts.models import CustomUser
+        from projects.models import ProjectTeam
+
+        team_spec = [
+            ("maya.okonkwo@yanmar-demo.com", "Maya", "Okonkwo", "pm"),
+            ("tom.devries@yanmar-demo.com", "Tom", "de Vries", "contibuter"),
+            ("lena.fischer@yanmar-demo.com", "Lena", "Fischer", "contibuter"),
+            ("raj.patel@yanmar-demo.com", "Raj", "Patel", "contibuter"),
+        ]
+        people = {}
+        for email, first, last, role in team_spec:
+            u, _ = CustomUser.objects.get_or_create(
+                email=email,
+                defaults=dict(username=email, first_name=first, last_name=last,
+                              company=company, role=role, is_active=True),
+            )
+            # keep company/name in sync on re-run
+            if u.company_id != company.id or u.first_name != first:
+                u.company = company
+                u.first_name = first
+                u.last_name = last
+                u.save(update_fields=["company", "first_name", "last_name"])
+            people[first.lower()] = u
+            ProjectTeam.objects.get_or_create(
+                project=project, user=u, defaults=dict(is_active=True),
+            )
+        maya = people["maya"]
+        tom = people["tom"]
+        lena = people["lena"]
+        raj = people["raj"]
+
         # Stages -- PRINCE2 status choices: planned / active / completed / exception
         stages_spec = [
             ("Prepare", date(2025, 12, 1), date(2026, 2, 28), "completed"),
@@ -114,6 +146,57 @@ class Command(BaseCommand):
                     status=status,
                 )
             )
+
+        # ---- Work Packages (Managing Product Delivery) ------------------
+        from prince2.models import WorkPackage
+        WorkPackage.objects.filter(project=project).delete()
+        wp_hvac = WorkPackage.objects.create(
+            project=project, stage=stages[1], reference="WP-01",
+            title="HVAC installation", team_manager=tom,
+            description="Supply and install HVAC across floors 1 and 2.",
+            product_descriptions="Installed + commissioned HVAC system with handover docs.",
+            techniques="Mechanical install per spec MS-204; pressure-test before sign-off.",
+            tolerances="Time: +1 week. Cost: +5%. Quality: zero open defects at handover.",
+            constraints="Work outside core hours on floor 2 (occupied).",
+            reporting_requirements="Weekly checkpoint report every Friday.",
+            planned_start_date=date(2026, 3, 15), planned_end_date=date(2026, 6, 30),
+            actual_start_date=date(2026, 3, 18),
+            status="in_progress", priority="high", progress_percentage=45,
+            accepted_by_tm=True, accepted_at=timezone.now(),
+        )
+        wp_elec = WorkPackage.objects.create(
+            project=project, stage=stages[1], reference="WP-02",
+            title="Electrical fit-out", team_manager=lena,
+            description="First + second fix electrical, new distribution boards.",
+            product_descriptions="Certified electrical installation (NEN 1010).",
+            tolerances="Time: +3 days. Cost: +5%.",
+            reporting_requirements="Weekly checkpoint report.",
+            planned_start_date=date(2026, 4, 1), planned_end_date=date(2026, 6, 15),
+            status="authorized", priority="high", progress_percentage=10,
+            accepted_by_tm=True, accepted_at=timezone.now(),
+        )
+        wp_furniture = WorkPackage.objects.create(
+            project=project, stage=stages[1], reference="WP-03",
+            title="Furniture & interior", team_manager=raj,
+            description="Order and install furniture, meeting rooms, signage.",
+            product_descriptions="Furnished floors with meeting-room AV.",
+            tolerances="Time: +1 week. Cost: +3%.",
+            planned_start_date=date(2026, 4, 15), planned_end_date=date(2026, 7, 10),
+            actual_start_date=date(2026, 4, 16),
+            status="in_progress", priority="medium", progress_percentage=60,
+            accepted_by_tm=True, accepted_at=timezone.now(),
+        )
+        wp_it = WorkPackage.objects.create(
+            project=project, stage=stages[2], reference="WP-04",
+            title="IT cutover", team_manager=tom,
+            description="Network + AV cutover from old to new infrastructure.",
+            product_descriptions="Live network on new infra, zero data loss.",
+            tolerances="Time: 0 (fixed window). Quality: zero downtime in core hours.",
+            constraints="Cutover only in the maintenance window (weekend).",
+            planned_start_date=date(2026, 8, 10), planned_end_date=date(2026, 8, 31),
+            status="draft", priority="urgent", progress_percentage=0,
+        )
+        wp_it.depends_on.set([wp_hvac, wp_elec])
 
         # Milestones + tasks (Milestone uses start_date/end_date, not due_date)
         Milestone.objects.filter(project=project).delete()
@@ -136,32 +219,78 @@ class Command(BaseCommand):
             start_date=date(2026, 8, 1), end_date=date(2026, 9, 20),
         )
 
+        # --- Activity List: work activities (owners + work-package links) ---
         Task.objects.create(
             milestone=m_reno, title="Block 4 permit follow-up",
             description="Chase municipality on Block 4 permit",
-            due_date=date(2026, 5, 15),
-            revised_due_date=date(2026, 5, 26),
+            assigned_to=maya, raci_responsible=maya,
+            due_date=date(2026, 5, 15), revised_due_date=date(2026, 5, 26),
             status="in_progress", priority="high", progress=40,
         )
         Task.objects.create(
             milestone=m_reno, title="HVAC commissioning",
             description="Final commissioning + handover docs",
+            assigned_to=tom, raci_responsible=tom, work_package=wp_hvac,
             due_date=date(2026, 6, 20),
-            status="todo", priority="medium", progress=10,
+            status="in_progress", priority="high", progress=45,
+        )
+        Task.objects.create(
+            milestone=m_reno, title="Electrical first fix — floor 1",
+            description="First-fix wiring + distribution board floor 1",
+            assigned_to=lena, raci_responsible=lena, work_package=wp_elec,
+            due_date=date(2026, 6, 10),
+            status="in_progress", priority="high", progress=30,
         )
         Task.objects.create(
             milestone=m_reno, title="Furniture order — Wave 1",
             description="Order desks + chairs for floor 1",
-            due_date=date(2026, 5, 5),
-            completed_on=date(2026, 5, 3),
+            assigned_to=raj, raci_responsible=raj, work_package=wp_furniture,
+            due_date=date(2026, 5, 5), completed_on=date(2026, 5, 3),
             status="done", priority="medium", progress=100,
+        )
+        Task.objects.create(
+            milestone=m_reno, title="Furniture install — Wave 2",
+            description="Install meeting-room furniture + AV floor 2",
+            assigned_to=raj, raci_responsible=raj, work_package=wp_furniture,
+            due_date=date(2026, 7, 1),
+            status="todo", priority="medium", progress=0,
         )
         Task.objects.create(
             milestone=m_run, title="Network cutover",
             description="Switch users from old to new network",
+            assigned_to=tom, raci_responsible=tom, work_package=wp_it,
             due_date=date(2026, 8, 25),
             status="todo", priority="urgent", progress=0,
         )
+        Task.objects.create(
+            milestone=m_run, title="Snagging list — floor 1",
+            description="Walk floor 1, log + close snags before handover",
+            assigned_to=lena, raci_responsible=lena,
+            due_date=date(2026, 9, 5),
+            status="todo", priority="medium", progress=0,
+        )
+
+        # --- Action Tracker: open actions / follow-ups (category="Action") ---
+        m_actions = Milestone.objects.create(
+            project=project, name="Meeting Actions",
+            description="Action items raised in meetings and reviews",
+            status="in_progress",
+            start_date=date(2026, 4, 1), end_date=date(2026, 9, 30),
+        )
+        actions_spec = [
+            ("Send permit escalation letter to municipality", maya, date(2026, 5, 20), "high", "in_progress", 50),
+            ("Confirm HVAC commissioning date with supplier", tom, date(2026, 5, 28), "urgent", "todo", 0),
+            ("Circulate Steerco #4 minutes to board", maya, date(2026, 5, 22), "medium", "done", 100),
+            ("Update risk register after permit review", lena, date(2026, 6, 12), "medium", "todo", 0),
+            ("Arrange parking-mitigation comms to staff", raj, date(2026, 6, 18), "low", "todo", 0),
+            ("Order long-lead AV equipment for cutover", tom, date(2026, 6, 9), "high", "in_progress", 25),
+        ]
+        for title, owner, due, prio, status, prog in actions_spec:
+            Task.objects.create(
+                milestone=m_actions, title=title, category="Action",
+                assigned_to=owner, raci_responsible=owner,
+                due_date=due, status=status, priority=prio, progress=prog,
+            )
 
         # Budget
         ProjectBudget.objects.update_or_create(
@@ -258,6 +387,13 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"Seeded Yanmar demo project (id={project.id}) under {company.name}."
         ))
+        self.stdout.write(
+            f"  Team: {maya.email}, {tom.email}, {lena.email}, {raj.email}\n"
+            f"  Activity List: /projects/{project.id}/planning/tasks\n"
+            f"  Action Tracker: /projects/{project.id}/action-tracker\n"
+            f"  Work Packages: /projects/{project.id}/prince2/work-packages\n"
+            f"  Planning:      /projects/{project.id}/planning/milestones"
+        )
         self.stdout.write(
             f"  PPTX export: /api/v1/prince2/projects/{project.id}/"
             f"prince2/highlight-reports/<id>/export/pptx/"
