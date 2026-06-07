@@ -685,6 +685,30 @@ class IssueSerializer(serializers.ModelSerializer):
         return obj.owner.first_name or obj.owner.email
 
 
+class AssumptionSerializer(serializers.ModelSerializer):
+    """RAID-log Assumption register — methodology-agnostic (the 'A' in RAID)."""
+
+    owner_name = serializers.SerializerMethodField()
+    owner_email = serializers.ReadOnlyField(source="owner.email")
+
+    class Meta:
+        from .models import Assumption as _Assumption
+
+        model = _Assumption
+        fields = [
+            "id", "project", "name", "description", "impact",
+            "validation_status", "validation_target_date", "validated_at",
+            "validated_by", "owner", "owner_name", "owner_email",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at", "validated_at"]
+
+    def get_owner_name(self, obj):
+        if not obj.owner:
+            return None
+        return obj.owner.first_name or obj.owner.email
+
+
 class LessonLearnedSerializer(serializers.ModelSerializer):
     """Methodology-agnostic Lessons Learned serializer."""
 

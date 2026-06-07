@@ -7,7 +7,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -696,6 +696,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Project Board", url: `/projects/${projectId}/prince2/project-board`, icon: Users },
             { title: "Risk Register", url: `/projects/${projectId}/prince2/risks`, icon: AlertCircle },
             { title: "Issue Register", url: `/projects/${projectId}/prince2/issues`, icon: ClipboardList },
+            { title: "Assumptions", url: `/projects/${projectId}/assumptions`, icon: HelpCircle },
             { title: "Exception Plans", url: `/projects/${projectId}/prince2/exception-plan`, icon: FileBarChart },
             { title: "Management Approaches", url: `/projects/${projectId}/prince2/management-approaches`, icon: Gavel },
             { title: "Daily Log", url: `/projects/${projectId}/prince2/daily-log`, icon: BookOpen },
@@ -718,6 +719,15 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Exception Reports", url: `/projects/${projectId}/prince2/exception-reports`, icon: AlertOctagon },
             { title: "End Project Report", url: `/projects/${projectId}/prince2/end-project-report`, icon: File },
             { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
+          ],
+        },
+        {
+          id: "communication",
+          title: "Communication",
+          icon: Mail,
+          items: [
+            { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
+            { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
           ],
         },
         {

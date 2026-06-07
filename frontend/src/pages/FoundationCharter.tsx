@@ -102,6 +102,23 @@ const FoundationCharter = () => {
     finally { document.body.removeChild(node); }
   };
 
+  // PP-09 — Project Plan DOCX export (Yanmar template), auth'd blob download.
+  const downloadDocx = async () => {
+    if (!id) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      const r = await fetch(`/api/v1/projects/${id}/export/project-plan.docx`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) { toast.error(pt("Export failed")); return; }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `project-plan-${(project?.name || "project").replace(/[^\w.-]+/g, "_")}.docx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch { toast.error(pt("Export failed")); }
+  };
+
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
 
   const fmtMoney = (v: any, c?: string) => v != null ? `${c || "EUR"} ${Number(v).toLocaleString()}` : "—";
@@ -133,6 +150,7 @@ const FoundationCharter = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="gap-2" onClick={downloadPdf}><Download className="h-4 w-4" />{pt("Download PDF")}</Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={downloadDocx}><FileText className="h-4 w-4" />{pt("Project Plan (.docx)")}</Button>
             <ReportExportMenu title={`Charter — ${project?.name || ""}`} sections={exportSections} />
           </div>
         </div>

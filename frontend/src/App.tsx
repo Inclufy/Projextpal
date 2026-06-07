@@ -93,6 +93,7 @@ const FoundationClosure = lazyWithRetry(() => import("./pages/FoundationClosure"
 const FoundationInvoices = lazyWithRetry(() => import("./pages/FoundationInvoices"));
 const PlanningTasks = lazyWithRetry(() => import("./pages/PlanningTasks"));
 const ActionTracker = lazyWithRetry(() => import("./pages/ActionTracker"));
+const AssumptionsRegister = lazyWithRetry(() => import("./pages/AssumptionsRegister"));
 const PlanningRaci = lazyWithRetry(() => import("./pages/PlanningRaci"));
 const PlanningDependencies = lazyWithRetry(() => import("./pages/PlanningDependencies"));
 const PlanningCalendar = lazyWithRetry(() => import("./pages/PlanningCalendar"));
@@ -880,6 +881,7 @@ const App = () => (
               <Route path="/projects/:id/planning/milestones" element={<ProtectedPage><ProjectMilestones /></ProtectedPage>} />
               <Route path="/projects/:id/planning/tasks" element={<ProtectedPage><PlanningTasks /></ProtectedPage>} />
               <Route path="/projects/:id/action-tracker" element={<ProtectedPage><ActionTracker /></ProtectedPage>} />
+              <Route path="/projects/:id/assumptions" element={<ProtectedPage><AssumptionsRegister /></ProtectedPage>} />
               <Route path="/projects/:id/planning/raci" element={<ProtectedPage><PlanningRaci /></ProtectedPage>} />
               <Route path="/projects/:id/planning/dependencies" element={<ProtectedPage><PlanningDependencies /></ProtectedPage>} />
               <Route path="/projects/:id/planning/calendar" element={<ProtectedPage><PlanningCalendar /></ProtectedPage>} />

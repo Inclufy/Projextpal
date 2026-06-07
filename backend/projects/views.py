@@ -2271,6 +2271,46 @@ class IssueViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         serializer.save(**kwargs)
 
 
+class AssumptionViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
+    """Methodology-agnostic RAID Assumption register (the 'A' in RAID).
+
+    Generic counterpart to RiskViewSet / IssueViewSet so every methodology
+    shares one Assumption register. Company-scoped + optional ?project= filter.
+    """
+
+    from .models import Assumption as _Assumption
+    from .serializers import AssumptionSerializer as _AssumptionSerializer
+
+    serializer_class = _AssumptionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        from .models import Assumption
+        qs = (
+            Assumption.objects.all()
+            .select_related("project", "owner", "created_by", "validated_by")
+            .filter(project__company=self.request.user.company)
+        )
+        project_id = self.request.query_params.get("project") or self.kwargs.get(
+            "project_id"
+        )
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    def perform_create(self, serializer):
+        kwargs = {"created_by": self.request.user}
+        project_id = self.kwargs.get("project_id")
+        if project_id:
+            try:
+                kwargs["project"] = Project.objects.get(
+                    id=project_id, company=self.request.user.company
+                )
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("Project not found or access denied")
+        serializer.save(**kwargs)
+
+
 class LessonLearnedViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     """Methodology-agnostic Lessons Learned register (PMBOK/PRINCE2/MSP).
 
