@@ -17,7 +17,65 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Gavel, Plus, Pencil, Trash2, Shield, CalendarDays, Layers, X, Loader2,
   AlertTriangle, CheckCircle2, PlayCircle, Target, ThumbsUp, ThumbsDown, MinusCircle,
+  MessageSquare, Send,
 } from "lucide-react";
+
+// Inline discussion thread on a decision — boards/steering deliberate on an
+// escalated item alongside the binding vote. Lazy-loads on expand.
+function DecisionComments({ decisionId, pt }: { decisionId: string; pt: (s: string) => string }) {
+  const [open, setOpen] = React.useState(false);
+  const [items, setItems] = React.useState<any[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+  const [text, setText] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const url = `/api/v1/governance/decisions/${decisionId}/comments/`;
+
+  const load = async () => {
+    try { const r = await fetch(url, { headers }); if (r.ok) setItems(await r.json()); }
+    catch { /* ignore */ } finally { setLoaded(true); }
+  };
+  const toggle = () => { const n = !open; setOpen(n); if (n && !loaded) load(); };
+  const post = async () => {
+    const body = text.trim(); if (!body) return;
+    setBusy(true);
+    try {
+      const r = await fetch(url, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ body }) });
+      if (r.ok) { const c = await r.json(); setItems((p) => [...p, c]); setText(""); }
+    } catch { /* ignore */ } finally { setBusy(false); }
+  };
+
+  return (
+    <CardContent className="pt-0">
+      <button onClick={toggle} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+        <MessageSquare className="h-3.5 w-3.5" /> {pt("Comments")}{loaded ? ` (${items.length})` : ""}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2">
+          {loaded && items.length === 0 && (
+            <p className="text-xs text-muted-foreground">{pt("No comments yet — start the discussion.")}</p>
+          )}
+          {items.map((c) => (
+            <div key={c.id} className="text-sm bg-muted/40 rounded-md p-2">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-xs font-medium">{c.author_name || pt("Unknown")}</span>
+                <span className="text-[10px] text-muted-foreground">{c.created_at ? new Date(c.created_at).toLocaleString() : ""}</span>
+              </div>
+              <p className="whitespace-pre-wrap leading-snug">{c.body}</p>
+            </div>
+          ))}
+          <div className="flex items-start gap-2">
+            <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={pt("Add a comment…")} className="text-sm" />
+            <Button size="sm" disabled={busy || !text.trim()} onClick={post} className="gap-1 shrink-0">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}{pt("Post")}
+            </Button>
+          </div>
+        </div>
+      )}
+    </CardContent>
+  );
+}
 
 // Module-scope form type so the dialog state has a stable identity (same
 // pattern as AgileEpics — avoids the "inner Field re-mounts every render"
@@ -666,6 +724,7 @@ const Decisions: React.FC = () => {
                     </div>
                   </CardContent>
                 )}
+                <DecisionComments decisionId={d.id} pt={pt} />
               </Card>
             );
           })}

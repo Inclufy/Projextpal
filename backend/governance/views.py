@@ -455,6 +455,24 @@ class DecisionViewSet(viewsets.ModelViewSet):
         decision.save(update_fields=['decided_by', 'description'])
         return Response({**DecisionSerializer(decision).data, 'assigned_to': who})
 
+    @action(detail=True, methods=['get', 'post'])
+    def comments(self, request, pk=None):
+        """Discussion thread on a decision. GET lists comments oldest→newest;
+        POST {body} adds one (author = request.user). Access is gated by
+        get_object() (company-scoped), so no cross-tenant read/write."""
+        from .models import DecisionComment
+        from .serializers import DecisionCommentSerializer
+        decision = self.get_object()
+        if request.method.upper() == 'POST':
+            body = (request.data.get('body') or '').strip()
+            if not body:
+                return Response({'detail': 'A non-empty body is required.', 'code': 'body_required'},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
+            c = DecisionComment.objects.create(decision=decision, author=request.user, body=body)
+            return Response(DecisionCommentSerializer(c).data, status=drf_status.HTTP_201_CREATED)
+        qs = decision.comments.select_related('author').all()
+        return Response(DecisionCommentSerializer(qs, many=True).data)
+
     @action(detail=True, methods=['post'])
     def delegate(self, request, pk=None):
         """Top-down: push a decision DOWN the governance ladder —

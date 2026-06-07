@@ -220,6 +220,21 @@ class DecisionVoteSerializer(serializers.ModelSerializer):
         return obj.voter.get_full_name() or obj.voter.email
 
 
+class DecisionCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import DecisionComment
+        model = DecisionComment
+        fields = ['id', 'decision', 'author', 'author_name', 'body', 'created_at']
+        read_only_fields = ['id', 'decision', 'author', 'author_name', 'created_at']
+
+    def get_author_name(self, obj):
+        if not obj.author:
+            return None
+        return obj.author.get_full_name() or obj.author.email
+
+
 class ComponentFundingSerializer(serializers.ModelSerializer):
     portfolio_name = serializers.CharField(source='portfolio.name', read_only=True)
     program_name = serializers.CharField(source='program.name', read_only=True)

@@ -589,3 +589,28 @@ class MeetingAction(models.Model):
         if self.status in self.CLOSED_STATUSES or not self.due_date:
             return False
         return self.due_date < timezone.now().date()
+
+
+class DecisionComment(models.Model):
+    """A free-text comment on a governance Decision — the discussion thread that
+    sits alongside the binding vote, so boards / steering can deliberate on an
+    escalated item (context, questions, conditions) without overloading the
+    decision description."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    decision = models.ForeignKey(
+        Decision, on_delete=models.CASCADE, related_name='comments'
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='decision_comments'
+    )
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Decision Comment'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"comment by {self.author} on {self.decision_id}"
