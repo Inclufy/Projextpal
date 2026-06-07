@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -81,6 +81,7 @@ const PlanningTasks = () => {
   const statusColor = (s: string) => ({ todo: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", done: "bg-green-100 text-green-700", blocked: "bg-red-100 text-red-700" }[s] || "bg-gray-100");
   const prioColor = (p: string) => ({ low: "bg-gray-100 text-gray-600", medium: "bg-blue-100 text-blue-700", high: "bg-amber-100 text-amber-700", urgent: "bg-red-100 text-red-700" }[p] || "bg-gray-100");
   const typeColor = (ty: string) => ({ Meeting: "bg-purple-100 text-purple-700", Deliverable: "bg-teal-100 text-teal-700", "Work Package": "bg-sky-100 text-sky-700", General: "bg-gray-100 text-gray-600" }[ty] || "bg-gray-100 text-gray-600");
+  const typeIcon = (ty: string) => { const cls = "h-2.5 w-2.5"; return ty === "Meeting" ? <Users className={cls} /> : ty === "Deliverable" ? <Package className={cls} /> : ty === "Work Package" ? <Boxes className={cls} /> : <CircleDot className={cls} />; };
   const stageOf = (t: any): string => t.milestone_name || msName(t.milestone) || t.category || "";
   const label = (arr: [string, string][], v: string) => arr.find(([k]) => k === v)?.[1] || v;
   const msName = (mid: any) => milestones.find((m) => m.id === mid)?.name || "";
@@ -117,9 +118,9 @@ const PlanningTasks = () => {
             <Badge variant="outline">{tasks.length}</Badge>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
-            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {pt("Planning")}</Button>
-            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>📦 {pt("Work Packages")}</Button>
-            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/action-tracker`)}>✅ {pt("Action Tracker")}</Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/planning/milestones`)}><CalendarRange className="h-4 w-4" />{pt("Planning")}</Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}><Package className="h-4 w-4" />{pt("Work Packages")}</Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/action-tracker`)}><ClipboardCheck className="h-4 w-4" />{pt("Action Tracker")}</Button>
             {tasks.length > 0 && <ReportExportMenu title="Tasks" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Task")}</Button>
           </div>
@@ -188,12 +189,12 @@ const PlanningTasks = () => {
                               <div className="font-medium">{t.title}</div>
                               {(t.product_title || t.work_package_title) && (
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                  {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
-                                  {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>}
+                                  {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700 inline-flex items-center gap-1"><Package className="h-2.5 w-2.5" />{t.product_title}</Badge>}
+                                  {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer inline-flex items-center gap-1" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}><Boxes className="h-2.5 w-2.5" />{t.work_package_title}</Badge>}
                                 </div>
                               )}
                             </td>
-                            {groupBy !== "type" && <td className="px-3 py-2.5"><Badge className={`text-[10px] font-normal ${typeColor(ty)}`}>{pt(ty)}</Badge></td>}
+                            {groupBy !== "type" && <td className="px-3 py-2.5"><Badge className={`text-[10px] font-normal inline-flex items-center gap-1 ${typeColor(ty)}`}>{typeIcon(ty)}{pt(ty)}</Badge></td>}
                             {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" className="text-[10px] font-normal cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{stage}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
                             {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>}

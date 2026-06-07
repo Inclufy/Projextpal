@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ClipboardList } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
@@ -152,7 +152,7 @@ const ActionTracker = () => {
             {overdueCount > 0 && <Badge className="bg-red-100 text-red-700">{overdueCount} {pt("overdue")}</Badge>}
           </div>
           <div className="flex gap-2 flex-wrap items-center">
-            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/planning/tasks`)}>📋 {pt("Activity List")}</Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/planning/tasks`)}><ListTodo className="h-4 w-4" />{pt("Activity List")}</Button>
             {actions.length > 0 && <ReportExportMenu title="Action Tracker" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Action")}</Button>
           </div>
@@ -200,8 +200,8 @@ const ActionTracker = () => {
                           <div className="font-medium">{t.title}</div>
                           {(t.milestone_name || t.work_package_title) && (
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                              {t.milestone_name && !/^actions?$/i.test(t.milestone_name) && <Badge variant="secondary" className="text-[10px]">🗒 {t.milestone_name}</Badge>}
-                              {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700">🗂 {t.work_package_title}</Badge>}
+                              {t.milestone_name && !/^actions?$/i.test(t.milestone_name) && <Badge variant="secondary" className="text-[10px] inline-flex items-center gap-1"><StickyNote className="h-2.5 w-2.5" />{t.milestone_name}</Badge>}
+                              {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 inline-flex items-center gap-1"><Boxes className="h-2.5 w-2.5" />{t.work_package_title}</Badge>}
                             </div>
                           )}
                         </td>
