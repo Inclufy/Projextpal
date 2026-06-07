@@ -1136,8 +1136,18 @@ export function AppSidebar() {
     return baseItems;
   };
 
-  const menuItems = getMenuItemsForRole();
-  
+  // Academy gets its own sidenav (IQ-Helix-style) when you're inside it — the
+  // top-level project/methodology nav is replaced by Academy features. The
+  // in-course learning sub-nav (further down) still takes over while in a lesson.
+  const inAcademy = location.pathname.startsWith('/academy') && !location.pathname.includes('/learn');
+  const academyMenu = [
+    { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
+    { title: isNL ? 'Prijzen' : 'Pricing', url: '/academy/pricing', icon: CreditCard },
+    { title: isNL ? 'Offerte aanvragen' : 'Request a Quote', url: '/academy/quote', icon: FileText },
+    { title: isNL ? 'Terug naar werkruimte' : 'Back to Workspace', url: '/dashboard', icon: LayoutDashboard },
+  ];
+  const menuItems = inAcademy ? academyMenu : getMenuItemsForRole();
+
   const pathParts = location.pathname.split('/');
   const isProjectContext = pathParts[1] === 'projects' && pathParts[2] && pathParts[2] !== 'new';
   const isProgramContext = pathParts[1] === 'programs' && pathParts[2] && pathParts[2] !== 'new';

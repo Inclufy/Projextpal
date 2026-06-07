@@ -120,6 +120,7 @@ const CourseDetail = lazyWithRetry(() => import("./pages/CourseDetail"));
 const CourseCheckout = lazyWithRetry(() => import("./pages/CourseCheckout"));
 const CourseLearningPlayer = lazyWithRetry(() => import("./pages/CourseLearningPlayer"));
 const RequestQuote = lazyWithRetry(() => import("./pages/RequestQuote"));
+const AcademyPricing = lazyWithRetry(() => import("./pages/AcademyPricing"));
 const MonitoringLessonsSurveys = lazyWithRetry(() => import("./pages/MonitoringLessonsSurveys"));
 const TimeTracking = lazyWithRetry(() => import("./pages/TimeTracking"));
 const CreateProject = lazyWithRetry(() => import("./pages/CreateProject"));
@@ -1104,6 +1105,7 @@ const App = () => (
                             {/* Academy Routes */}
               <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
               <Route path="/academy/marketplace" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
+              <Route path="/academy/pricing" element={<ProtectedPage><AcademyPricing /></ProtectedPage>} />
               <Route path="/academy/course/:id" element={<ProtectedPage><CourseDetail /></ProtectedPage>} />
               <Route path="/academy/checkout/:id" element={<ProtectedPage><CourseCheckout /></ProtectedPage>} />
               <Route path="/academy/checkout/success" element={<ProtectedPage><CheckoutSuccess /></ProtectedPage>} />
