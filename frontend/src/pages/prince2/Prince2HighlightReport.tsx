@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, FileText, Pencil, Trash2, Eye, Download } from "lucide-react";
 import { ReportExportMenu, ReportSection } from "@/components/ReportExportMenu";
+import { BudgetOneView } from "@/components/BudgetOneView";
 import { toast } from "sonner";
 
 const reportSections = (r: any): ReportSection[] => [
@@ -155,6 +156,16 @@ const Prince2HighlightReport = () => {
           </div>
           <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("New Report")}</Button>
         </div>
+
+        {/* Financials one-view (QW-4): full Budget × Actuals × ETC × Variance,
+            Internal/External split — the Yanmar Highlight Report financial block,
+            on the same page as the RAG indicators. */}
+        {id && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">{pt("Financials")}</CardTitle></CardHeader>
+            <CardContent><BudgetOneView projectId={id} /></CardContent>
+          </Card>
+        )}
 
         {reports.length === 0 ? (
           <Card className="p-8 text-center">
