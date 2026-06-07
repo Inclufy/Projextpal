@@ -1151,8 +1151,6 @@ export function AppSidebar() {
     ...(['admin', 'superadmin'].includes(userRole)
       ? [{ title: isNL ? 'Cursussen toewijzen' : 'Assign Courses', url: '/academy/assignments', icon: UserCheck }]
       : []),
-    { title: isNL ? 'Prijzen' : 'Pricing', url: '/academy/pricing', icon: CreditCard },
-    { title: isNL ? 'Offerte aanvragen' : 'Request a Quote', url: '/academy/quote', icon: FileText },
     { title: isNL ? 'Terug naar werkruimte' : 'Back to Workspace', url: '/dashboard', icon: LayoutDashboard },
   ];
   const menuItems = inAcademy ? academyMenu : getMenuItemsForRole();
