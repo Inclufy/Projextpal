@@ -90,11 +90,36 @@ const ExecutionMeeting = () => {
   const downloadIcs = async () => {
     if (!selected) return;
     try {
-      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/invite.ics`, { headers });
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/invite-ics/`, { headers });
       if (!r.ok) { toast.error(pt("Failed")); return; }
       const blob = await r.blob(); const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = `meeting-${selected.id}.ics`; a.click(); URL.revokeObjectURL(url);
     } catch { toast.error(pt("Failed")); }
+  };
+  const downloadMinutes = () => {
+    const m = selected; if (!m) return;
+    const L: string[] = [`# Minutes — ${m.name || "Meeting"}`, ""];
+    const when = [m.date, m.time].filter(Boolean).join(" ");
+    if (when) L.push(`**Date/time:** ${when}`);
+    const loc = m.location || m.yanmar_meeting_room || "";
+    if (loc) L.push(`**Location:** ${loc}`);
+    if (m.customer_supplier) L.push(`**${m.customer_supplier} ↔ Yanmar Europe**`);
+    const atts = m.attendees || [];
+    if (atts.length) { L.push("", "## Attendees"); atts.forEach((a: any) => L.push(`- ${a.name_text || ""} (${a.presence || ""})`)); }
+    const agenda = Array.isArray(m.agenda) ? m.agenda : [];
+    if (agenda.length) { L.push("", "## Agenda"); agenda.forEach((a: string, i: number) => L.push(`${i + 1}. ${a}`)); }
+    if (m.discussion_notes) L.push("", "## Discussion", m.discussion_notes);
+    if (m.conclusions) L.push("", "## Conclusions", m.conclusions);
+    const acts = m.action_items || [];
+    if (acts.length) {
+      L.push("", "## Action items", "", "| Subject | PIC | Due | Status |", "|---|---|---|---|");
+      acts.forEach((it: any) => L.push(`| ${it.subject || ""} | ${it.pic_name || it.pic_text || "—"} | ${it.action_due || "—"} | ${it.status || ""} |`));
+    }
+    const blob = new Blob([L.join("\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `minutes-${(m.name || "meeting").replace(/[^\w.-]+/g, "_")}.md`; a.click();
+    URL.revokeObjectURL(url);
   };
   const onFile = async (file?: File) => {
     if (!file || !selected) return;
@@ -309,7 +334,8 @@ const ExecutionMeeting = () => {
                   <div className="flex gap-2 flex-wrap justify-end">
                     <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2"><Sparkles className="h-4 w-4 text-fuchsia-600" />{pt("Minutes from notes")}</Button>
                     <Button variant="outline" size="sm" onClick={openShare} className="gap-2"><Mail className="h-4 w-4" />{pt("Share")}</Button>
-                    <Button variant="outline" size="sm" onClick={downloadIcs} className="gap-2"><Download className="h-4 w-4" />{pt("Download .ics")}</Button>
+                    <Button variant="outline" size="sm" onClick={downloadMinutes} className="gap-2"><Download className="h-4 w-4" />{pt("Download minutes")}</Button>
+                    <Button variant="outline" size="sm" onClick={downloadIcs} className="gap-2"><CalendarIcon className="h-4 w-4" />{pt("Download .ics")}</Button>
                     <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
                   </div>
                 </div>

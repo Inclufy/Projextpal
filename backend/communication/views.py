@@ -574,7 +574,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
             return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
         return Response({"sent_to": recipients}, status=200)
 
-    @action(detail=True, methods=["get"], url_path="invite.ics")
+    @action(detail=True, methods=["get"], url_path="invite-ics")
     def invite_ics(self, request, pk=None):
         """Download a calendar invite (.ics) for the meeting — date/time/location/
         agenda — to add to a calendar or forward as an agenda invite."""
