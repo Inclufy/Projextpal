@@ -7,7 +7,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -1148,6 +1148,8 @@ export function AppSidebar() {
     { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
     { title: isNL ? 'Leertrajecten' : 'Learning Paths', url: '/academy/learning-paths', icon: Network },
+    { title: isNL ? 'Skills' : 'Skills', url: '/academy/skills', icon: Star },
+    { title: isNL ? 'Skill Intelligence' : 'Skill Intelligence', url: '/academy/skill-intelligence', icon: Brain },
     { title: isNL ? 'Skill-paspoort' : 'Skill Passport', url: '/academy/skill-passport', icon: Target },
     { title: isNL ? 'Certificaten' : 'Certifications', url: '/academy/certifications', icon: Award },
     ...(['admin', 'superadmin'].includes(userRole)

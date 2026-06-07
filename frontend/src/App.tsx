@@ -126,6 +126,8 @@ const SkillPassport = lazyWithRetry(() => import("./pages/SkillPassport"));
 const AcademyLearningPaths = lazyWithRetry(() => import("./pages/AcademyLearningPaths"));
 const AcademyCertifications = lazyWithRetry(() => import("./pages/AcademyCertifications"));
 const AcademyAssignments = lazyWithRetry(() => import("./pages/AcademyAssignments"));
+const AcademySkills = lazyWithRetry(() => import("./pages/AcademySkills"));
+const AcademySkillIntelligence = lazyWithRetry(() => import("./pages/AcademySkillIntelligence"));
 const MonitoringLessonsSurveys = lazyWithRetry(() => import("./pages/MonitoringLessonsSurveys"));
 const TimeTracking = lazyWithRetry(() => import("./pages/TimeTracking"));
 const CreateProject = lazyWithRetry(() => import("./pages/CreateProject"));
@@ -1117,6 +1119,8 @@ const App = () => (
               <Route path="/academy/learning-paths" element={<ProtectedPage><AcademyLearningPaths /></ProtectedPage>} />
               <Route path="/academy/certifications" element={<ProtectedPage><AcademyCertifications /></ProtectedPage>} />
               <Route path="/academy/assignments" element={<ProtectedPage><AcademyAssignments /></ProtectedPage>} />
+              <Route path="/academy/skills" element={<ProtectedPage><AcademySkills /></ProtectedPage>} />
+              <Route path="/academy/skill-intelligence" element={<ProtectedPage><AcademySkillIntelligence /></ProtectedPage>} />
               <Route path="/academy/course/:id" element={<ProtectedPage><CourseDetail /></ProtectedPage>} />
               <Route path="/academy/checkout/:id" element={<ProtectedPage><CourseCheckout /></ProtectedPage>} />
               <Route path="/academy/checkout/success" element={<ProtectedPage><CheckoutSuccess /></ProtectedPage>} />
