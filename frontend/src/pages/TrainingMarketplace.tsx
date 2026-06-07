@@ -751,8 +751,9 @@ const TrainingMarketplace = () => {
         <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full blur-[100px] animate-pulse" style={{ backgroundColor: `${BRAND.green}08`, animationDelay: '2s' }} />
       </div>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      {/* Navigation — hidden inside the app shell: the standard ProjeXtPal
+          top bar + the Academy sidenav handle navigation (IQ-Helix style). */}
+      <nav className="hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-8">
@@ -816,7 +817,7 @@ const TrainingMarketplace = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-10 pb-20 overflow-hidden">
         <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(180deg, ${BRAND.purple}10 0%, transparent 50%, ${BRAND.green}05 100%)` }} />
         
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
