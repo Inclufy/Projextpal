@@ -157,11 +157,14 @@ const PlanningTasks = () => {
                       <Badge variant="outline" className="text-xs">{done}/{items.length}</Badge>
                     </div>
                   </div>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left text-xs text-muted-foreground border-b">
                         <th className="font-medium px-4 py-2">{pt("Activity")}</th>
-                        <th className="font-medium px-3 py-2 w-40">{pt("Owner")}</th>
+                        {groupBy !== "category" && <th className="font-medium px-3 py-2 w-44">{pt("Phase")}</th>}
+                        <th className="font-medium px-3 py-2 w-24">{pt("Priority")}</th>
+                        {groupBy !== "owner" && <th className="font-medium px-3 py-2 w-40">{pt("Owner")}</th>}
                         <th className="font-medium px-3 py-2 w-28">{pt("Due")}</th>
                         <th className="font-medium px-3 py-2 w-28">{pt("Status")}</th>
                         <th className="font-medium px-3 py-2 w-32">{pt("Progress")}</th>
@@ -172,19 +175,21 @@ const PlanningTasks = () => {
                       {items.map((t) => {
                         const overdue = t.due_date && t.due_date < today && t.status !== "done";
                         return (
-                          <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40">
+                          <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
                             <td className="px-4 py-2.5">
                               <div className="font-medium">{t.title}</div>
-                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
-                                {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>}
-                                {groupBy !== "milestone" && (t.milestone_name || t.milestone) && <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>}
-                                {groupBy !== "category" && t.category && <Badge variant="outline" className="text-[10px]">{t.category}</Badge>}
-                                <Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge>
-                              </div>
+                              {(t.product_title || t.work_package_title || (groupBy !== "milestone" && (t.milestone_name || t.milestone))) && (
+                                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                  {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
+                                  {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>}
+                                  {groupBy !== "milestone" && (t.milestone_name || t.milestone) && <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>}
+                                </div>
+                              )}
                             </td>
-                            <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>
-                            <td className={`px-3 py-2.5 ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
+                            {groupBy !== "category" && <td className="px-3 py-2.5">{t.category ? <Badge variant="outline" className="text-[10px] font-normal">{t.category}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
+                            <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
+                            {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>}
+                            <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge></td>
                             <td className="px-3 py-2.5"><div className="flex items-center gap-1.5"><Progress value={t.progress} className="h-1.5 w-16" /><span className="text-xs text-muted-foreground">{t.progress}%</span></div></td>
                             <td className="px-2 py-2.5">
@@ -198,6 +203,7 @@ const PlanningTasks = () => {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </Card>
               );
             })}
