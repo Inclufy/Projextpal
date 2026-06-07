@@ -140,9 +140,11 @@ export default function AnalyticsDashboard() {
   const headers = { Authorization: `Bearer ${token}` };
   const jsonHeaders = { ...headers, "Content-Type": "application/json" };
 
-  const [scope, setScope] = useState<Scope>("org");
-  const [refId, setRefId] = useState<string>("");
-  const [days, setDays] = useState(30);
+  // Remember the chosen scope across reloads/navigation so a selected project
+  // or programme stays put (e.g. for a demo) instead of resetting to org.
+  const [scope, setScope] = useState<Scope>(() => (localStorage.getItem("analytics_scope") as Scope) || "org");
+  const [refId, setRefId] = useState<string>(() => localStorage.getItem("analytics_refId") || "");
+  const [days, setDays] = useState(() => Number(localStorage.getItem("analytics_days")) || 30);
   const [programs, setPrograms] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [data, setData] = useState<any>(null);
@@ -195,6 +197,11 @@ export default function AnalyticsDashboard() {
     finally { setLoading(false); }
   };
   useEffect(() => { if (scope === "org" || refId) fetchOverview(); else setLoading(false); }, [scope, refId, days]);
+  useEffect(() => {
+    localStorage.setItem("analytics_scope", scope);
+    localStorage.setItem("analytics_refId", refId);
+    localStorage.setItem("analytics_days", String(days));
+  }, [scope, refId, days]);
 
   const kpis = data?.kpis || {};
   const orderedVisible = useMemo(
