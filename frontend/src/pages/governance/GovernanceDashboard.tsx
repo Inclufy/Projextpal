@@ -157,7 +157,7 @@ const GovernanceDashboard = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
-                    <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate(`/governance/decisions?decision=${x.id}`)}>{pt("Review")}<ArrowRight className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate(`/governance/decisions?highlight=${x.id}`)}>{pt("Review")}<ArrowRight className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
               ))}
