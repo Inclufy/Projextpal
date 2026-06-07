@@ -3,10 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -363,6 +363,8 @@ const AppHeader = () => {
   const { logout, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  const onAcademy = location.pathname.startsWith('/academy');
   const { toggle: toggleCopilot, isOpen: copilotOpen, openWithTab } = useCopilot();
   const toggleTheme = () => document.documentElement.classList.toggle("dark");
 
@@ -386,6 +388,17 @@ const AppHeader = () => {
         >
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
+        </Button>
+
+        {/* Academy (moved from sidebar to topnav, IQ-Helix-style) */}
+        <Button
+          variant={onAcademy ? "default" : "outline"}
+          size="sm"
+          onClick={() => navigate('/academy')}
+          className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
+        >
+          <GraduationCap className="h-4 w-4" />
+          <span className="hidden sm:inline">Academy</span>
         </Button>
 
         {/* Language Selector */}

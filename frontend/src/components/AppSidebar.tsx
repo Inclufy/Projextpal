@@ -1587,17 +1587,10 @@ export function AppSidebar() {
         );
       }
       
-      // Default Academy link (when not in learning mode)
-      return (
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <a href="/academy">
-              <GraduationCap className="h-4 w-4" />
-              <span>Academy</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      );
+      // Academy moved to the top nav (IQ-Helix-style). The sidebar only shows
+      // the in-course learning sub-nav (above) while inside a lesson; otherwise
+      // there is no Academy entry in the sidebar.
+      return null;
     })()}
   </SidebarMenu>
     </SidebarGroup>
