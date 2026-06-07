@@ -65,6 +65,24 @@ def _build_minutes_text(meeting) -> str:
     return "\n".join(lines)
 
 
+def _gather_recipients(meeting, extra) -> list:
+    """Attendee emails (contact_info / name that looks like an email) + any extra
+    addresses the caller passed (list or comma/newline-separated string)."""
+    import re as _re
+    out = set()
+    for a in meeting.attendees.all():
+        for cand in [getattr(a, "contact_info", ""), getattr(a, "name_text", "")]:
+            if cand and _re.match(r"[^@\s]+@[^@\s]+\.[^@\s]+", cand.strip()):
+                out.add(cand.strip())
+    if isinstance(extra, str):
+        extra = _re.split(r"[,\n;]+", extra)
+    for e in (extra or []):
+        e = (e or "").strip()
+        if _re.match(r"[^@\s]+@[^@\s]+\.[^@\s]+", e):
+            out.add(e)
+    return sorted(out)
+
+
 def _ics_escape(s: str) -> str:
     return (s or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
 
@@ -502,31 +520,59 @@ class MeetingViewSet(viewsets.ModelViewSet):
         email) + any extra recipients in the body. Uses the configured backend."""
         from django.core.mail import EmailMessage
         from django.conf import settings as dj_settings
-        import re as _re
 
         meeting = self.get_object()
-        recipients = set()
-        for a in meeting.attendees.all():
-            for cand in [getattr(a, "contact_info", ""), getattr(a, "name_text", "")]:
-                if cand and _re.match(r"[^@\s]+@[^@\s]+\.[^@\s]+", cand.strip()):
-                    recipients.add(cand.strip())
-        for extra in (request.data.get("recipients") or []):
-            if isinstance(extra, str) and "@" in extra:
-                recipients.add(extra.strip())
+        recipients = _gather_recipients(meeting, request.data.get("recipients"))
         if not recipients:
-            return Response({"detail": "No attendee email addresses found. Add emails on attendees or pass recipients.",
+            return Response({"detail": "No recipient email addresses. Add attendee emails or enter recipients.",
                              "code": "no_recipients"}, status=400)
-        body = _build_minutes_text(meeting)
         try:
             EmailMessage(
                 subject=f"Minutes — {meeting.name}",
-                body=body,
+                body=_build_minutes_text(meeting),
                 from_email=getattr(dj_settings, "DEFAULT_FROM_EMAIL", None) or getattr(dj_settings, "EMAIL_HOST_USER", None),
-                to=list(recipients),
+                to=recipients,
             ).send(fail_silently=False)
         except Exception as e:
             return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
-        return Response({"sent_to": sorted(recipients)}, status=200)
+        return Response({"sent_to": recipients}, status=200)
+
+    @action(detail=True, methods=["post"], url_path="email-invite")
+    def email_invite(self, request, pk=None):
+        """Distribute the meeting as a calendar invite — emails the agenda + an
+        attached .ics so recipients can add it to their calendar. Recipients =
+        attendees with email + any extra addresses passed in `recipients`."""
+        from django.core.mail import EmailMessage
+        from django.conf import settings as dj_settings
+
+        meeting = self.get_object()
+        recipients = _gather_recipients(meeting, request.data.get("recipients"))
+        if not recipients:
+            return Response({"detail": "No recipient email addresses. Add attendee emails or enter recipients.",
+                             "code": "no_recipients"}, status=400)
+        when = " ".join(filter(None, [str(meeting.date or ""), str(meeting.time or "")])).strip()
+        agenda = meeting.agenda if isinstance(meeting.agenda, list) else []
+        body = f"You are invited to: {meeting.name}\n"
+        if when:
+            body += f"When: {when}\n"
+        loc = meeting.location or getattr(meeting, "yanmar_meeting_room", "") or ""
+        if loc:
+            body += f"Where: {loc}\n"
+        if agenda:
+            body += "\nAgenda:\n" + "\n".join(f"  {i+1}. {a}" for i, a in enumerate(agenda))
+        body += "\n\n(Open the attached .ics to add this to your calendar.)"
+        try:
+            msg = EmailMessage(
+                subject=f"Invitation — {meeting.name}",
+                body=body,
+                from_email=getattr(dj_settings, "DEFAULT_FROM_EMAIL", None) or getattr(dj_settings, "EMAIL_HOST_USER", None),
+                to=recipients,
+            )
+            msg.attach(f"meeting-{meeting.id}.ics", _build_ics(meeting), "text/calendar; method=REQUEST")
+            msg.send(fail_silently=False)
+        except Exception as e:
+            return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
+        return Response({"sent_to": recipients}, status=200)
 
     @action(detail=True, methods=["get"], url_path="invite.ics")
     def invite_ics(self, request, pk=None):

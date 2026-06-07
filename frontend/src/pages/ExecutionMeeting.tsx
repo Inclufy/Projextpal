@@ -38,6 +38,9 @@ const ExecutionMeeting = () => {
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const [importing, setImporting] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareRecipients, setShareRecipients] = useState("");
+  const [sharing, setSharing] = useState(false);
 
   const runExtract = async () => {
     if (!selected) return;
@@ -62,15 +65,27 @@ const ExecutionMeeting = () => {
       else toast.error(d.detail || pt("Failed"));
     } catch { toast.error(pt("Failed")); }
   };
-  const emailMinutes = async () => {
+  const openShare = () => {
+    const emails = (selected?.attendees || [])
+      .map((a: any) => a.contact_info || a.name_text || "")
+      .filter((s: string) => /[^@\s]+@[^@\s]+\.[^@\s]+/.test(s));
+    setShareRecipients(Array.from(new Set(emails)).join(", "));
+    setShareOpen(true);
+  };
+  const sendShare = async (kind: "minutes" | "invite") => {
     if (!selected) return;
-    if (!confirm(pt("Email the minutes to all attendees with an email address?"))) return;
+    setSharing(true);
     try {
-      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/email-minutes/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      const path = kind === "invite" ? "email-invite" : "email-minutes";
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/${path}/`, {
+        method: "POST", headers: jsonHeaders,
+        body: JSON.stringify({ recipients: shareRecipients }),
+      });
       const d = await r.json().catch(() => ({}));
-      if (r.ok) toast.success(`${pt("Sent to")} ${(d.sent_to || []).length} ${pt("recipient(s)")}`);
+      if (r.ok) { toast.success(`${pt("Sent to")} ${(d.sent_to || []).length} ${pt("recipient(s)")}`); setShareOpen(false); }
       else toast.error(d.detail || pt("Email failed"));
     } catch { toast.error(pt("Email failed")); }
+    finally { setSharing(false); }
   };
   const downloadIcs = async () => {
     if (!selected) return;
@@ -293,8 +308,8 @@ const ExecutionMeeting = () => {
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                     <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2"><Sparkles className="h-4 w-4 text-fuchsia-600" />{pt("Minutes from notes")}</Button>
-                    <Button variant="outline" size="sm" onClick={emailMinutes} className="gap-2"><Mail className="h-4 w-4" />{pt("Email minutes")}</Button>
-                    <Button variant="outline" size="sm" onClick={downloadIcs} className="gap-2"><Download className="h-4 w-4" />{pt("Calendar invite")}</Button>
+                    <Button variant="outline" size="sm" onClick={openShare} className="gap-2"><Mail className="h-4 w-4" />{pt("Share")}</Button>
+                    <Button variant="outline" size="sm" onClick={downloadIcs} className="gap-2"><Download className="h-4 w-4" />{pt("Download .ics")}</Button>
                     <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
                   </div>
                 </div>
@@ -440,6 +455,29 @@ const ExecutionMeeting = () => {
               <Button onClick={handleSave} disabled={submitting || !form.name}>
                 {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share meeting — email minutes or a calendar invite to recipients */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />{pt("Share meeting")}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>{pt("Recipients")} <span className="text-xs text-muted-foreground">({pt("comma-separated emails")})</span></Label>
+              <textarea
+                className="w-full min-h-[70px] px-3 py-2 border rounded-md bg-background text-sm"
+                placeholder="alice@example.com, bob@example.com"
+                value={shareRecipients} onChange={(e) => setShareRecipients(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">{pt("Pre-filled with attendee emails. Add anyone else here.")}</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShareOpen(false)}>{pt("Cancel")}</Button>
+              <Button variant="outline" disabled={sharing} onClick={() => sendShare("invite")} className="gap-1"><CalendarIcon className="h-4 w-4" />{pt("Send calendar invite")}</Button>
+              <Button disabled={sharing} onClick={() => sendShare("minutes")} className="gap-1">{sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}{pt("Send minutes")}</Button>
             </div>
           </div>
         </DialogContent>
