@@ -722,15 +722,6 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           ],
         },
         {
-          id: "communication",
-          title: "Communication",
-          icon: Mail,
-          items: [
-            { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
-            { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
-          ],
-        },
-        {
           id: "closure",
           title: "Project Closure",
           icon: CheckSquare,
