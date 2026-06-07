@@ -33,6 +33,70 @@ def _company_scoped(qs, user):
     return qs.filter(project__company_id=company_id)
 
 
+def _build_minutes_text(meeting) -> str:
+    """Plain-text minutes for email."""
+    lines = [f"MINUTES — {meeting.name}", ""]
+    when = " ".join(filter(None, [str(meeting.date or ""), str(meeting.time or "")])).strip()
+    if when:
+        lines.append(f"Date/time: {when}")
+    loc = meeting.location or getattr(meeting, "yanmar_meeting_room", "") or ""
+    if loc:
+        lines.append(f"Location: {loc}")
+    atts = list(meeting.attendees.all())
+    if atts:
+        lines.append("")
+        lines.append("Attendees:")
+        for a in atts:
+            tag = getattr(a, "presence", "") or ""
+            lines.append(f"  - {a.name_text or ''} ({tag})".rstrip())
+    agenda = meeting.agenda if isinstance(meeting.agenda, list) else []
+    if agenda:
+        lines += ["", "Agenda:"] + [f"  {i+1}. {a}" for i, a in enumerate(agenda)]
+    if getattr(meeting, "discussion_notes", ""):
+        lines += ["", "Discussion:", meeting.discussion_notes]
+    if getattr(meeting, "conclusions", ""):
+        lines += ["", "Conclusions:", meeting.conclusions]
+    acts = list(meeting.action_items.all())
+    if acts:
+        lines += ["", "Action items:"]
+        for it in acts:
+            pic = it.pic_text or (it.pic_user.email if it.pic_user else "") or "—"
+            lines.append(f"  - {it.subject} | PIC: {pic} | Due: {it.action_due or '—'} | {it.status}")
+    return "\n".join(lines)
+
+
+def _ics_escape(s: str) -> str:
+    return (s or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+
+
+def _build_ics(meeting) -> str:
+    """Minimal RFC-5545 VEVENT (all-day if no time, else a 1-hour slot)."""
+    from datetime import datetime, timedelta
+    uid = f"meeting-{meeting.id}@projextpal.com"
+    summary = _ics_escape(meeting.name or "Meeting")
+    loc = _ics_escape(meeting.location or getattr(meeting, "yanmar_meeting_room", "") or "")
+    agenda = meeting.agenda if isinstance(meeting.agenda, list) else []
+    desc = _ics_escape("Agenda:\n" + "\n".join(f"{i+1}. {a}" for i, a in enumerate(agenda)) if agenda else "")
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ProjeXtPal//Meetings//EN", "BEGIN:VEVENT", f"UID:{uid}"]
+    d = meeting.date
+    if d and meeting.time:
+        try:
+            start = datetime.combine(d, meeting.time)
+            end = start + timedelta(hours=1)
+            lines += [f"DTSTART:{start.strftime('%Y%m%dT%H%M%S')}", f"DTEND:{end.strftime('%Y%m%dT%H%M%S')}"]
+        except Exception:
+            lines += [f"DTSTART;VALUE=DATE:{d.strftime('%Y%m%d')}"]
+    elif d:
+        lines += [f"DTSTART;VALUE=DATE:{d.strftime('%Y%m%d')}"]
+    lines += [f"SUMMARY:{summary}"]
+    if loc:
+        lines += [f"LOCATION:{loc}"]
+    if desc:
+        lines += [f"DESCRIPTION:{desc}"]
+    lines += ["END:VEVENT", "END:VCALENDAR"]
+    return "\r\n".join(lines)
+
+
 class StatusReportViewSet(viewsets.ModelViewSet):
     queryset = StatusReport.objects.all()
     serializer_class = StatusReportSerializer
@@ -393,6 +457,87 @@ class MeetingViewSet(viewsets.ModelViewSet):
             "agenda_count": len(parsed.get("agenda") or []),
             "meeting": MeetingSerializer(meeting).data,
         }, status=200)
+
+    @action(detail=True, methods=["post"], url_path="push-actions-to-tasks")
+    def push_actions_to_tasks(self, request, pk=None):
+        """Push this meeting's OPEN action items into the project task list /
+        Action Tracker — each becomes a Task (under a 'Meeting Actions' milestone)
+        with owner (PIC) + due date, so meeting actions live in one activity list."""
+        from datetime import datetime
+        from projects.models import Task, Milestone
+
+        meeting = self.get_object()
+        project = meeting.project
+        if not project:
+            return Response({"detail": "Meeting has no project.", "code": "no_project"}, status=400)
+        ms, _ = Milestone.objects.get_or_create(
+            project=project, name="Meeting Actions",
+            defaults={"description": "Actions captured from meetings", "status": "in_progress"},
+        )
+        existing = set(Task.objects.filter(milestone__project=project).values_list("title", flat=True))
+        created = 0
+        for it in meeting.action_items.filter(status="open"):
+            title = (it.subject or "").strip()
+            if not title or title in existing:
+                continue
+            due = None
+            for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+                try:
+                    due = datetime.strptime((it.action_due or "").strip(), fmt).date(); break
+                except (ValueError, TypeError):
+                    continue
+            Task.objects.create(
+                milestone=ms, title=title[:255],
+                description=f"From meeting: {meeting.name}",
+                category="Meeting", status="todo", priority="medium",
+                due_date=due, assigned_to=it.pic_user,
+            )
+            existing.add(title)
+            created += 1
+        return Response({"created": created}, status=200)
+
+    @action(detail=True, methods=["post"], url_path="email-minutes")
+    def email_minutes(self, request, pk=None):
+        """Email the formatted minutes to the meeting attendees (those with an
+        email) + any extra recipients in the body. Uses the configured backend."""
+        from django.core.mail import EmailMessage
+        from django.conf import settings as dj_settings
+        import re as _re
+
+        meeting = self.get_object()
+        recipients = set()
+        for a in meeting.attendees.all():
+            for cand in [getattr(a, "contact_info", ""), getattr(a, "name_text", "")]:
+                if cand and _re.match(r"[^@\s]+@[^@\s]+\.[^@\s]+", cand.strip()):
+                    recipients.add(cand.strip())
+        for extra in (request.data.get("recipients") or []):
+            if isinstance(extra, str) and "@" in extra:
+                recipients.add(extra.strip())
+        if not recipients:
+            return Response({"detail": "No attendee email addresses found. Add emails on attendees or pass recipients.",
+                             "code": "no_recipients"}, status=400)
+        body = _build_minutes_text(meeting)
+        try:
+            EmailMessage(
+                subject=f"Minutes — {meeting.name}",
+                body=body,
+                from_email=getattr(dj_settings, "DEFAULT_FROM_EMAIL", None) or getattr(dj_settings, "EMAIL_HOST_USER", None),
+                to=list(recipients),
+            ).send(fail_silently=False)
+        except Exception as e:
+            return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
+        return Response({"sent_to": sorted(recipients)}, status=200)
+
+    @action(detail=True, methods=["get"], url_path="invite.ics")
+    def invite_ics(self, request, pk=None):
+        """Download a calendar invite (.ics) for the meeting — date/time/location/
+        agenda — to add to a calendar or forward as an agenda invite."""
+        from django.http import HttpResponse
+        meeting = self.get_object()
+        ics = _build_ics(meeting)
+        resp = HttpResponse(ics, content_type="text/calendar; charset=utf-8")
+        resp["Content-Disposition"] = f'attachment; filename="meeting-{meeting.id}.ics"'
+        return resp
 
     def list(self, request, *args, **kwargs):
         """

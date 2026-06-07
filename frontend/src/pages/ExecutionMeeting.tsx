@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText, Sparkles, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText, Sparkles, Trash2, Mail, Download, ListChecks } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -52,6 +52,34 @@ const ExecutionMeeting = () => {
       } else toast.error(d.detail || pt("Could not extract"));
     } catch { toast.error(pt("Could not extract")); }
     finally { setImporting(false); }
+  };
+  const pushActions = async () => {
+    if (!selected) return;
+    try {
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/push-actions-to-tasks/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) toast.success(`${d.created ?? 0} ${pt("action(s) added to the task list")}`);
+      else toast.error(d.detail || pt("Failed"));
+    } catch { toast.error(pt("Failed")); }
+  };
+  const emailMinutes = async () => {
+    if (!selected) return;
+    if (!confirm(pt("Email the minutes to all attendees with an email address?"))) return;
+    try {
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/email-minutes/`, { method: "POST", headers: jsonHeaders, body: "{}" });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) toast.success(`${pt("Sent to")} ${(d.sent_to || []).length} ${pt("recipient(s)")}`);
+      else toast.error(d.detail || pt("Email failed"));
+    } catch { toast.error(pt("Email failed")); }
+  };
+  const downloadIcs = async () => {
+    if (!selected) return;
+    try {
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/invite.ics`, { headers });
+      if (!r.ok) { toast.error(pt("Failed")); return; }
+      const blob = await r.blob(); const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `meeting-${selected.id}.ics`; a.click(); URL.revokeObjectURL(url);
+    } catch { toast.error(pt("Failed")); }
   };
   const onFile = async (file?: File) => {
     if (!file || !selected) return;
@@ -263,8 +291,10 @@ const ExecutionMeeting = () => {
                       {selected.customer_supplier && <span className="flex items-center gap-1"><Users className="h-4 w-4" />{selected.customer_supplier} ↔ Yanmar Europe</span>}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap justify-end">
                     <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2"><Sparkles className="h-4 w-4 text-fuchsia-600" />{pt("Minutes from notes")}</Button>
+                    <Button variant="outline" size="sm" onClick={emailMinutes} className="gap-2"><Mail className="h-4 w-4" />{pt("Email minutes")}</Button>
+                    <Button variant="outline" size="sm" onClick={downloadIcs} className="gap-2"><Download className="h-4 w-4" />{pt("Calendar invite")}</Button>
                     <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
                   </div>
                 </div>
@@ -315,7 +345,8 @@ const ExecutionMeeting = () => {
 
                 {/* MM-02 + MM-03 — Action items with PIC + due, carry-forward */}
                 <Section title={pt("Action Items")}>
-                  <div className="flex justify-end mb-2">
+                  <div className="flex justify-end gap-2 mb-2">
+                    <Button size="sm" variant="outline" onClick={pushActions} className="gap-1 text-xs"><ListChecks className="h-3 w-3" />{pt("Send actions to task list")}</Button>
                     <Button size="sm" variant="outline" onClick={carryForward} className="gap-1 text-xs"><FileText className="h-3 w-3" />{pt("Carry forward previous actions")}</Button>
                   </div>
                   {(selected.action_items || []).length === 0 ? <Empty pt={pt} /> : (
