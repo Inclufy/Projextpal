@@ -84,7 +84,7 @@ const FoundationCharter = () => {
   return (
     <div className="min-h-full bg-background">
       <ProjectHeader />
-      <div className="p-6 space-y-6 max-w-4xl">
+      <div className="p-4 md:p-6 space-y-6 w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ScrollText className="h-6 w-6 text-amber-600" />
@@ -191,7 +191,8 @@ const FoundationCharter = () => {
           <CardContent className="p-4 flex items-center justify-between flex-wrap gap-2">
             <span className="text-sm text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" />{pt("Related foundation artifacts")}</span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/foundation/business-case`)}>{pt("Business Case")}<ArrowRight className="h-3 w-3" /></Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/prince2/business-case`)}>{pt("Business Case")}<ArrowRight className="h-3 w-3" /></Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/prince2/project-brief`)}>{pt("Project Brief")}<ArrowRight className="h-3 w-3" /></Button>
               <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/foundation/communication-plan`)}>{pt("Communication Plan")}<ArrowRight className="h-3 w-3" /></Button>
             </div>
           </CardContent>

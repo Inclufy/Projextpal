@@ -1,5 +1,5 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle } from "lucide-react";
+import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 
 type BusinessCaseForm = {
@@ -51,6 +51,7 @@ const Field = ({ label, field, multiline = false, form, setForm }: {
 const Prince2BusinessCase = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [bc, setBc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -163,6 +164,7 @@ const Prince2BusinessCase = () => {
             <div><h1 className="text-2xl font-bold">Business Case</h1>{bc && <Badge className="mt-1">{bc.status}</Badge>}</div>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate(`/projects/${id}/foundation/charter`)} className="gap-2"><ScrollText className="h-4 w-4" /> {pt("Project Charter")}</Button>
             {bc && bc.status !== "approved" && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600"><CheckCircle2 className="h-4 w-4" /> {pt("Approve")}</Button>
             )}
