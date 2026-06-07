@@ -4,6 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Star, Award, Trophy, Zap, ShieldCheck } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+// level_name arrives from the API as { en, nl } — pick the active language,
+// guarding against it ever being a plain string. Avoids "[object Object]".
+const levelLabel = (ln: any, lang: string): string => {
+  if (!ln) return "";
+  if (typeof ln === "string") return ln;
+  return ln[lang] || ln.en || ln.nl || "";
+};
 
 const LEVEL_COLORS: Record<number, string> = {
   1: "bg-gray-100 text-gray-700",
@@ -15,6 +24,7 @@ const LEVEL_COLORS: Record<number, string> = {
 
 const SkillPassport = () => {
   const { pt } = usePageTranslations();
+  const { language } = useLanguage();
   const [skills, setSkills] = useState<any[]>([]);
   const [certs, setCerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +106,7 @@ const SkillPassport = () => {
                   <Card key={x.id} className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="font-medium">{x.skill?.name || `Skill #${x.skill?.id ?? x.id}`}</div>
-                      <Badge className={`text-[10px] ${LEVEL_COLORS[level] || LEVEL_COLORS[1]}`}>{pt("Lv")} {level}{x.level_name ? ` · ${x.level_name}` : ""}</Badge>
+                      <Badge className={`text-[10px] ${LEVEL_COLORS[level] || LEVEL_COLORS[1]}`}>{pt("Lv")} {level}{levelLabel(x.level_name, language) ? ` · ${levelLabel(x.level_name, language)}` : ""}</Badge>
                     </div>
                     <div className="mt-3 flex items-center gap-2">
                       <Progress value={pct} className="h-1.5 flex-1" />
