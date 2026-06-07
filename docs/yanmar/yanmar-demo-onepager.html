@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Yanmar deep-dive — ProjeXtPal afvinklijst (8 juni)</title>
+<style>
+  @page { size: A4; margin: 12mm 12mm 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #1e1b2e; font-size: 9.2px; line-height: 1.35; margin: 0; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #6d28d9; padding-bottom: 6px; margin-bottom: 8px; }
+  .brand { font-size: 17px; font-weight: 800; color: #6d28d9; letter-spacing: -.3px; }
+  .brand span { color: #1e1b2e; }
+  .sub { font-size: 8.4px; color: #6b7280; margin-top: 1px; }
+  .score { text-align: right; }
+  .score .big { font-size: 17px; font-weight: 800; color: #16a34a; line-height: 1; }
+  .score .lbl { font-size: 7.6px; color: #6b7280; }
+  h2 { font-size: 9.6px; text-transform: uppercase; letter-spacing: .4px; color: #6d28d9; margin: 7px 0 3px; border-bottom: 1px solid #ece9f6; padding-bottom: 2px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 1.6px 3px; vertical-align: top; border-bottom: .5px solid #f1eff7; }
+  .box { display: inline-block; width: 8px; height: 8px; border: 1.2px solid #9ca3af; border-radius: 2px; margin-right: 4px; }
+  .id { font-weight: 700; color: #4c1d95; white-space: nowrap; }
+  .where { color: #6b7280; }
+  .ok { color: #16a34a; font-weight: 700; }
+  .partial { color: #d97706; font-weight: 700; }
+  .defer { color: #dc2626; font-weight: 700; }
+  .pill { display:inline-block; background:#ecfdf5; color:#16a34a; border-radius:6px; padding:0 5px; font-weight:700; font-size:8px; }
+  .foot { margin-top: 8px; border-top: 1px solid #ece9f6; padding-top: 5px; font-size: 8.2px; color: #4b5563; }
+  .foot b { color:#1e1b2e; }
+  .two { column-count: 2; column-gap: 16px; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <div class="brand">Proje<span>X</span>tPal <span style="font-weight:600;font-size:11px;color:#6b7280">· Yanmar Europe deep-dive</span></div>
+      <div class="sub">Afvinklijst 8 juni 2026 · demo-project “Renovation Phase 2” · ✅ live · 🟡 infra/contract · 🔴 Phase-2</div>
+    </div>
+    <div class="score">
+      <div class="big">30/34</div>
+      <div class="lbl">full PASS · 97% dekking<br>4 templates = <span class="pill">100%</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <h2>1 · Action Tracker — 5/5 ✅</h2>
+      <table>
+        <tr><td><span class="box"></span><span class="id">ATR-01</span></td><td>Category + sub-totalen <span class="where">· PRINCE2 dashboard</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">ATR-02</span></td><td>RACI R/A/C/I <span class="where">· Planning → RACI</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">ATR-03</span></td><td>Revised due / Completed / Delay</td></tr>
+        <tr><td><span class="box"></span><span class="id">ATR-04</span></td><td>5-staps voortgang ○◔◑◕● <span class="where">· klik-to-set</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">ATR-05</span></td><td>KPI Today / Tomorrow / Week / Next</td></tr>
+        <tr><td><span class="box"></span><span class="id">Bonus</span></td><td>Action Tracker-scherm (Nr·Action·Owner·Raised·Due·Prio·Status)</td></tr>
+      </table>
+
+      <h2>2 · Project Plan — 9/9 ✅</h2>
+      <table>
+        <tr><td><span class="box"></span><span class="id">PP-01</span></td><td>6 rollen (Owner/PM/Leader/Facilitator/Outside Eyes/Stakeholders)</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-02</span></td><td>Scope IN / OUT apart <span class="where">· Charter</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-03</span></td><td>Impact / Solution / ROI</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-04</span></td><td>Start / Target Impl / Target End</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-05</span></td><td>Push-back-regel (1×, max 14 dgn → akkoord)</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-06</span></td><td>RAID (Risks/Assumptions/Issues/Dependencies)</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-07</span></td><td>Senior Manager sign-off + handtekening</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-08</span></td><td>Communicatieplan (kickoff/onboarding/regular/closing)</td></tr>
+        <tr><td><span class="box"></span><span class="id">PP-09</span></td><td>Afsluit-workflow + <b>DOCX-export</b> = Yanmar-template</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <h2>3 · Highlight Report — 6/6 ✅</h2>
+      <table>
+        <tr><td><span class="box"></span><span class="id">HR-01</span></td><td>Sponsor / PM / Senior Supplier / Objectives</td></tr>
+        <tr><td><span class="box"></span><span class="id">HR-02</span></td><td>Maand-fasetijdlijn (Prepare/Renovations/Run)</td></tr>
+        <tr><td><span class="box"></span><span class="id">HR-03</span></td><td>4-assige RAG (Budget/Planning/Resources/Overall)</td></tr>
+        <tr><td><span class="box"></span><span class="id">HR-04</span></td><td>Financials incl. ETC + Variance</td></tr>
+        <tr><td><span class="box"></span><span class="id">HR-05</span></td><td>5×5 Risk Map (kans × impact)</td></tr>
+        <tr><td><span class="box"></span><span class="id">HR-06</span></td><td>Highlights / Lowlights + <b>PPTX-export</b></td></tr>
+      </table>
+
+      <h2>4 · Meeting Minutes — 5/5 ✅</h2>
+      <table>
+        <tr><td><span class="box"></span><span class="id">MM-01</span></td><td>Invited / Attended / Absent</td></tr>
+        <tr><td><span class="box"></span><span class="id">MM-02</span></td><td>Acties met PIC + due + status</td></tr>
+        <tr><td><span class="box"></span><span class="id">MM-03</span></td><td>Vorige acties carry-forward</td></tr>
+        <tr><td><span class="box"></span><span class="id">MM-04</span></td><td>Customer/Supplier ↔ YEU + meeting room</td></tr>
+        <tr><td><span class="box"></span><span class="id">MM-05</span></td><td>Agenda / Discussion / Conclusions</td></tr>
+        <tr><td><span class="box"></span><span class="id">Bonus</span></td><td>AI-minutes uit transcript + PDF met logo + e-mail/.ics</td></tr>
+      </table>
+
+      <h2>5 · Sales / Contract — 5 ✅ · 3 🟡 · 1 🔴</h2>
+      <table>
+        <tr><td><span class="box"></span><span class="id">SC-02</span></td><td>BYO LLM-key (encrypted at rest) <span class="ok">✅</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-04</span></td><td>Project-isolatie (multi-tenant) <span class="ok">✅</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-05</span></td><td>Role-based cost/rate-zichtbaarheid <span class="ok">✅</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-06</span></td><td>Geen 3rd-party analytics <span class="ok">✅</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-08</span></td><td>Multi-methodologie in één programma <span class="ok">✅</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-01</span></td><td>AWS single-tenant hosting <span class="partial">🟡 infra</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-03</span></td><td>GDPR EU-compute + audit-trail <span class="partial">🟡</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-09</span></td><td>Live/streaming dashboards <span class="partial">🟡 deferred</span></td></tr>
+        <tr><td><span class="box"></span><span class="id">SC-07</span></td><td>SAP S/4HANA system of record <span class="defer">🔴 Phase-2</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Afsluiting:</b> alle vier templates 100% live · AWS + SAP estimate tonen → pilot (hosting PoC + SAP push-only) → go/no-go.
+    &nbsp; <b>Eerlijke caveats:</b> de 4 open items zijn <b>infra/contract, geen productgaten</b> — EU-compute &amp; AWS = hostingkeuze (estimate ligt klaar), live streaming = latere ASGI-switch, SAP = afgesproken Phase-2 SOW.
+  </div>
+</body>
+</html>
