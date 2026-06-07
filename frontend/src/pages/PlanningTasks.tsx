@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ const emptyForm = { milestone: "", title: "", description: "", category: "", sta
 const PlanningTasks = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ const PlanningTasks = () => {
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [groupBy, setGroupBy] = useState<"type" | "milestone" | "owner" | "status">("type");
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -80,6 +82,23 @@ const PlanningTasks = () => {
   const prioColor = (p: string) => ({ low: "bg-gray-100 text-gray-600", medium: "bg-blue-100 text-blue-700", high: "bg-amber-100 text-amber-700", urgent: "bg-red-100 text-red-700" }[p] || "bg-gray-100");
   const label = (arr: [string, string][], v: string) => arr.find(([k]) => k === v)?.[1] || v;
   const msName = (mid: any) => milestones.find((m) => m.id === mid)?.name || "";
+  const today = new Date().toISOString().split("T")[0];
+  const taskType = (t: any): string =>
+    (t.category || "").toLowerCase().includes("meeting") ? "Meeting"
+      : t.product_title ? "Deliverable"
+        : t.work_package_title ? "Work Package"
+          : "General";
+  const groupOf = (t: any): string => {
+    if (groupBy === "type") return taskType(t);
+    if (groupBy === "milestone") return t.milestone_name || msName(t.milestone) || pt("No milestone");
+    if (groupBy === "owner") return t.assigned_to_name || pt("Unassigned");
+    return label(STATUSES, t.status);
+  };
+  const groups: [string, any[]][] = (() => {
+    const map: Record<string, any[]> = {};
+    tasks.forEach((t) => { const k = groupOf(t) || "—"; (map[k] = map[k] || []).push(t); });
+    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+  })();
   const exportSections = [{ heading: "Tasks", rows: tasks.map((t) => [t.title, `${label(STATUSES, t.status)} · ${label(PRIORITIES, t.priority)} · ${t.progress}%`]) as [string, any][] }];
 
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
@@ -94,11 +113,26 @@ const PlanningTasks = () => {
             <h1 className="text-2xl font-bold">{pt("Tasks")}</h1>
             <Badge variant="outline">{tasks.length}</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap items-center">
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {pt("Planning")}</Button>
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>📦 {pt("Work Packages")}</Button>
             {tasks.length > 0 && <ReportExportMenu title="Tasks" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Task")}</Button>
           </div>
         </div>
+
+        {tasks.length > 0 && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">{pt("Group by")}:</span>
+            <div className="flex bg-muted rounded-lg p-1">
+              {(["type", "milestone", "owner", "status"] as const).map((g) => (
+                <Button key={g} size="sm" variant={groupBy === g ? "default" : "ghost"} className="h-7 capitalize" onClick={() => setGroupBy(g)}>
+                  {pt(g === "type" ? "Type" : g === "milestone" ? "Milestone" : g === "owner" ? "Owner" : "Status")}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {milestones.length === 0 && (
           <Card className="p-4 border-amber-200 bg-amber-50/50"><p className="text-sm text-amber-700">{pt("Create a milestone first — tasks belong to a milestone.")}</p></Card>
@@ -111,28 +145,48 @@ const PlanningTasks = () => {
             <Button onClick={openCreate} disabled={milestones.length === 0}><Plus className="h-4 w-4 mr-2" />{pt("Add Task")}</Button>
           </Card>
         ) : (
-          <div className="space-y-2">
-            {tasks.map((t) => (
-              <Card key={t.id}><CardContent className="p-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-medium">{t.title}</span>
-                    <Badge className={`text-xs ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge>
-                    <Badge className={`text-xs ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge>
-                    {t.category && <Badge variant="outline" className="text-xs">{t.category}</Badge>}
-                    {t.milestone && <Badge variant="secondary" className="text-xs">🏁 {msName(t.milestone)}</Badge>}
-                    {t.due_date && <span className="text-xs text-muted-foreground">{t.due_date}</span>}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Progress value={t.progress} className="h-2 w-32" />
-                    <span className="text-xs text-muted-foreground">{t.progress}%</span>
-                  </div>
+          <div className="space-y-5">
+            {groups.map(([groupName, items]) => (
+              <div key={groupName}>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-semibold text-foreground">{groupName}</h3>
+                  <Badge variant="outline" className="text-xs">{items.length}</Badge>
                 </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                <div className="space-y-2">
+                  {items.map((t) => {
+                    const overdue = t.due_date && t.due_date < today && t.status !== "done";
+                    return (
+                      <Card key={t.id}><CardContent className="p-4 flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="font-medium">{t.title}</span>
+                            <Badge className={`text-xs ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge>
+                            <Badge className={`text-xs ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge>
+                            {(t.category || "").toLowerCase().includes("meeting") && <Badge className="text-xs bg-violet-100 text-violet-700">💬 {pt("Meeting")}</Badge>}
+                            {t.product_title && <Badge className="text-xs bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
+                            {t.work_package_title && (
+                              <Badge className="text-xs bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>
+                            )}
+                            {(t.milestone_name || t.milestone) && (
+                              <Badge variant="secondary" className="text-xs cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>
+                            )}
+                            {t.category && !(t.category || "").toLowerCase().includes("meeting") && <Badge variant="outline" className="text-xs">{t.category}</Badge>}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 flex-wrap text-xs text-muted-foreground">
+                            <span>👤 {t.assigned_to_name || pt("Unassigned")}</span>
+                            {t.due_date && <span className={overdue ? "text-red-600 font-medium" : ""}>📅 {t.due_date}{overdue ? ` · ${pt("overdue")}` : ""}</span>}
+                            <span className="flex items-center gap-1"><Progress value={t.progress} className="h-2 w-24" />{t.progress}%</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </CardContent></Card>
+                    );
+                  })}
                 </div>
-              </CardContent></Card>
+              </div>
             ))}
           </div>
         )}
