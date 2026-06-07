@@ -209,17 +209,27 @@ const TeamMemberDashboard: React.FC = () => {
   const [aiSummary, setAiSummary] = useState("");
 
   const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const { data: overviewData } = useQuery({
+    queryKey: ["analytics-overview", "org"],
+    queryFn: async () => {
+      const token = localStorage.getItem("access_token");
+      const r = await fetch("/api/v1/projects/analytics/overview/?scope=org", { headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) throw new Error("Failed to fetch analytics overview");
+      return r.json();
+    },
+  });
 
   const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
+  const kpis = overviewData?.kpis;
 
-  const totalProjects = projects.length;
+  const totalProjects = kpis?.projects ?? projects.length;
   const activeProjects = projects.filter((p: any) => p.status === 'in_progress' || p.status === 'active').length;
   const completedProjects = projects.filter((p: any) => p.status === 'completed').length;
   const myTasks = 0; // TODO: fetch from tasks API when available
   const completedTasks = 0; // TODO: fetch from tasks API
-  const avgProgress = projects.length > 0 
+  const avgProgress = kpis?.completion_pct ?? (projects.length > 0
     ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length)
-    : 0;
+    : 0);
 
   const projectStatusCounts = projects.reduce((acc: Record<string, number>, p: any) => {
     const status = p.status || 'pending';

@@ -55,6 +55,17 @@ const fetchPrograms = async () => {
   return response.json();
 };
 
+// Single source of truth for the headline KPIs — the SAME endpoint that powers
+// the Portfolio Analytics section, so the dashboard and analytics always agree.
+const fetchAnalyticsOverview = async () => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch("/api/v1/projects/analytics/overview/?scope=org", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch analytics overview");
+  return response.json();
+};
+
 const callAI = async (prompt: string, language: "en" | "nl" = "nl"): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
@@ -244,19 +255,25 @@ const ExecutiveDashboard: React.FC = () => {
 
   const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const { data: programsData } = useQuery({ queryKey: ["programs"], queryFn: fetchPrograms });
+  const { data: overviewData } = useQuery({ queryKey: ["analytics-overview", "org"], queryFn: fetchAnalyticsOverview });
 
   const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
   const programs = Array.isArray(programsData) ? programsData : (programsData?.results || []);
+  const kpis = overviewData?.kpis;
 
   const totalPrograms = programs.length;
-  const totalProjects = projects.length;
+  // Headline KPIs come from the analytics endpoint when available so the top
+  // strip matches the Portfolio Analytics tiles below (same scope + definition).
+  const totalProjects = kpis?.projects ?? projects.length;
   const activeProjects = projects.filter((p: any) => p.status === 'in_progress' || p.status === 'active').length;
   const atRiskProjects = projects.filter((p: any) => p.health_status === 'at_risk' || p.health_status === 'critical').length;
-  const totalBudget = projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0) + 
-                      programs.reduce((sum: number, p: any) => sum + (parseFloat(p.total_budget) || 0), 0);
-  const avgProgress = projects.length > 0 
+  const totalBudget = kpis?.budget ?? (
+    projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0) +
+    programs.reduce((sum: number, p: any) => sum + (parseFloat(p.total_budget) || 0), 0)
+  );
+  const avgProgress = kpis?.completion_pct ?? (projects.length > 0
     ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length)
-    : 0;
+    : 0);
 
   const programStatusCounts = programs.reduce((acc: Record<string, number>, p: any) => {
     const status = p.status || 'planning';

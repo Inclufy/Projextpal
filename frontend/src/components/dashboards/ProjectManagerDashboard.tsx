@@ -209,18 +209,30 @@ const ProjectManagerDashboard: React.FC = () => {
   const [aiSummary, setAiSummary] = useState("");
 
   const { data: projectsData } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const { data: overviewData } = useQuery({
+    queryKey: ["analytics-overview", "org"],
+    queryFn: async () => {
+      const token = localStorage.getItem("access_token");
+      const r = await fetch("/api/v1/projects/analytics/overview/?scope=org", { headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) throw new Error("Failed to fetch analytics overview");
+      return r.json();
+    },
+  });
 
   const projects = Array.isArray(projectsData) ? projectsData : (projectsData?.results || []);
+  const kpis = overviewData?.kpis;
 
-  const totalProjects = projects.length;
+  // Headline KPIs from the shared analytics endpoint so they match the
+  // Portfolio Analytics tiles (same scope + definition).
+  const totalProjects = kpis?.projects ?? projects.length;
   const activeProjects = projects.filter((p: any) => p.status === 'in_progress' || p.status === 'active').length;
   const completedProjects = projects.filter((p: any) => p.status === 'completed').length;
   const atRiskProjects = projects.filter((p: any) => p.health_status === 'at_risk' || p.health_status === 'critical').length;
-  const totalBudget = projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0);
+  const totalBudget = kpis?.budget ?? projects.reduce((sum: number, p: any) => sum + (parseFloat(p.budget) || 0), 0);
   const totalSpent = projects.reduce((sum: number, p: any) => sum + (p.expenses_total || 0), 0);
-  const avgProgress = projects.length > 0 
+  const avgProgress = kpis?.completion_pct ?? (projects.length > 0
     ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length)
-    : 0;
+    : 0);
 
   const projectStatusCounts = projects.reduce((acc: Record<string, number>, p: any) => {
     const status = p.status || 'pending';
