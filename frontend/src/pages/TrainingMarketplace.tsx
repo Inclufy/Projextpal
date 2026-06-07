@@ -754,7 +754,7 @@ const TrainingMarketplace = () => {
       {/* Navigation — hidden inside the app shell: the standard ProjeXtPal
           top bar + the Academy sidenav handle navigation (IQ-Helix style). */}
       <nav className="hidden">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-8">
               <button onClick={() => navigate('/landing')} className="flex items-center gap-2">
@@ -820,7 +820,7 @@ const TrainingMarketplace = () => {
       <section className="relative pt-10 pb-20 overflow-hidden">
         <div className="absolute inset-0 opacity-30" style={{ background: `linear-gradient(180deg, ${BRAND.purple}10 0%, transparent 50%, ${BRAND.green}05 100%)` }} />
         
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="relative w-full px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge - Updated to show 11 courses dynamically */}
             <div 
@@ -887,7 +887,7 @@ const TrainingMarketplace = () => {
         </div>
       </section>
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pb-20">
+      <div className="relative w-full px-6 lg:px-8 pb-20">
         {/* Learning Paths */}
         <section className="mb-20">
           <div className="flex items-center justify-between mb-8">
@@ -1170,7 +1170,7 @@ const TrainingMarketplace = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/50 bg-card/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        <div className="w-full px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <ProjeXtPalLogo size="sm" />
             <p className="text-sm text-muted-foreground">
