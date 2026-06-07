@@ -7,7 +7,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
   Palette, Code, TestTube, Wrench, FileEdit, Settings, CreditCard, Lock, 
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -658,6 +658,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Overview", url: `/projects/${projectId}/prince2/dashboard`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
             { title: "Business Case", url: `/projects/${projectId}/prince2/business-case`, icon: FileCheck },
             { title: "Project Brief", url: `/projects/${projectId}/prince2/project-brief`, icon: FileText },
           ],
