@@ -340,10 +340,13 @@ def send_enrollment_confirmation(email, first_name, course_title):
 
 
 @api_view(['POST'])
-@permission_classes([IsSuperAdmin])
+@permission_classes([AllowAny])
 def request_quote(request):
     """
-    Handle enterprise/team quote requests
+    Handle enterprise/team quote requests.
+
+    Public lead-gen form — a prospect requesting a team/enterprise quote is not
+    a superadmin, so this must be AllowAny (was IsSuperAdmin -> always 403).
     """
     try:
         data = request.data

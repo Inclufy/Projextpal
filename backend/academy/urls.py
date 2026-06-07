@@ -92,6 +92,9 @@ urlpatterns = [
     path('checkout/success/', checkout.checkout_success,
          name='academy-checkout-success'),
 
+    # Enterprise/team quote request (public lead-gen form)
+    path('request-quote/', views.request_quote, name='academy-request-quote'),
+
     # Bulk AI content generation (admin-only). Run after importing
     # frontend courses (manage.py import_frontend_courses) so lessons
     # exist in the DB for the generators to attach questions/skills to.

@@ -254,7 +254,7 @@ const CourseCheckout = () => {
 
     try {
       // Create Stripe checkout session
-      const response = await fetch('/api/v1/academy/create-checkout-session/', {
+      const response = await fetch('/api/v1/academy/checkout/create-session/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
