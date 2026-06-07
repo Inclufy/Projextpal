@@ -574,6 +574,34 @@ class MeetingViewSet(viewsets.ModelViewSet):
             return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
         return Response({"sent_to": recipients}, status=200)
 
+    @action(detail=True, methods=["post"], url_path="send-email")
+    def send_email(self, request, pk=None):
+        """Compose-and-send: custom recipients + subject + body, optional .ics
+        attachment. Powers the meeting email screen."""
+        from django.core.mail import EmailMessage
+        from django.conf import settings as dj_settings
+
+        meeting = self.get_object()
+        recipients = _gather_recipients(meeting, request.data.get("recipients"))
+        if not recipients:
+            return Response({"detail": "No recipient email addresses.", "code": "no_recipients"}, status=400)
+        subject = (request.data.get("subject") or f"Minutes — {meeting.name}").strip()
+        body = request.data.get("body")
+        if not body or not str(body).strip():
+            body = _build_minutes_text(meeting)
+        try:
+            msg = EmailMessage(
+                subject=subject, body=str(body),
+                from_email=getattr(dj_settings, "DEFAULT_FROM_EMAIL", None) or getattr(dj_settings, "EMAIL_HOST_USER", None),
+                to=recipients,
+            )
+            if request.data.get("attach_ics"):
+                msg.attach(f"meeting-{meeting.id}.ics", _build_ics(meeting), "text/calendar; method=REQUEST")
+            msg.send(fail_silently=False)
+        except Exception as e:
+            return Response({"detail": f"Email failed: {e}", "code": "send_failed"}, status=502)
+        return Response({"sent_to": recipients}, status=200)
+
     @action(detail=True, methods=["get"], url_path="invite-ics")
     def invite_ics(self, request, pk=None):
         """Download a calendar invite (.ics) for the meeting — date/time/location/
