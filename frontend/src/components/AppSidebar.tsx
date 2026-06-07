@@ -416,23 +416,9 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
     icon: Rocket,
     items: [
       { title: "Stakeholders", url: `/projects/${projectId}/execution/stakeholders`, icon: UserCheck },
-      {
-        title: "Communication",
-        icon: MessagesSquare,
-        subItems: [
-          { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
-          { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
-          { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
-        ],
-      },
-      {
-        title: "Status Reporting",
-        icon: Activity,
-        subItems: [
-          { title: "Status Reporting", url: `/projects/${projectId}/execution/communication/status-reporting`, icon: Activity },
-          { title: "AI Status Report", url: `/projects/${projectId}/execution/communication/ai-status-report`, icon: Sparkles },
-        ],
-      },
+      // Communication + Status Reporting are provided by the shared
+      // communicationGroup + centralReportingGroup appended to every dedicated
+      // methodology (hybrid included), so they're not duplicated inline here.
       { title: "Governance", url: `/projects/${projectId}/execution/governance`, icon: Shield },
       { title: "Deployment Strategy", url: `/projects/${projectId}/execution/deployment`, icon: Rocket },
     ],
