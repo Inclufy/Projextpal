@@ -1,9 +1,23 @@
+"""
+⚠️ DEPRECATED — DO NOT RUN ON PRODUCTION.
+
+This command seeds a granular, parallel skill taxonomy under different ids
+(project-planning, agile-scrum, prince2, …). The CANONICAL Academy taxonomy
+is now the course-level skill-c-* set seeded by:
+    seed_lesson_skills  (skill-c-* + lesson mappings)
+    seed_learning_demo  (demo progress on the canonical ids)
+    dedupe_skills       (merges legacy duplicates into the canonical set)
+
+Running this alongside the canonical set creates a confusing mix of coarse
+course-level skills and fine-grained competency skills in the Skill Passport.
+Kept only for reference / future redesign. Superseded 2026-06.
+"""
 from django.core.management.base import BaseCommand
 from academy.models import SkillCategory, Skill, LessonSkillMapping
 
 
 class Command(BaseCommand):
-    help = 'Seeds initial skills data for ProjeXtPal Academy'
+    help = '[DEPRECATED] Granular skill taxonomy — superseded by seed_lesson_skills (skill-c-*). Do not run on prod.'
 
     def handle(self, *args, **options):
         self.stdout.write('Seeding skills data...')

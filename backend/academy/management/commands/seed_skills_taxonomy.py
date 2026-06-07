@@ -2,6 +2,14 @@
 # ACADEMY - SEED SKILLS TAXONOMY (full coverage)
 # ============================================================
 #
+# ⚠️ DEPRECATED — DO NOT RUN ON PRODUCTION.
+# This seeds a granular, parallel skill taxonomy (~50+ skills under ids like
+# project-planning / agile-scrum) that coexists with — and visually conflicts
+# with — the CANONICAL course-level skill-c-* set (seed_lesson_skills +
+# seed_learning_demo + dedupe_skills). Running it mixes coarse and fine-grained
+# skills in the Skill Passport. Kept for reference / future redesign.
+# Superseded 2026-06.
+#
 # Adds 3 missing categories (technology, process-improvement,
 # scaled-delivery), ~50+ skills, and bulk-creates LessonSkillMapping
 # rows for every CourseLesson across all 12 courses using a title-based
