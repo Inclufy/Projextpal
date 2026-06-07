@@ -1669,7 +1669,7 @@ const markAsComplete = async () => {
           {/* Assignment */}
           {currentLesson.type === 'assignment' && (
             <ScrollArea className="flex-1">
-              <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="w-full px-4 py-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1710,7 +1710,7 @@ const markAsComplete = async () => {
           {/* Scrollable Content (for video/reading lessons) */}
           {(currentLesson.type === 'video' || currentLesson.type === 'reading' || !currentLesson.type) && (
             <ScrollArea className="flex-1">
-              <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+              <div className="w-full px-6 py-8 space-y-8">
                 
                 {/* Lesson Header */}
                 <div>
