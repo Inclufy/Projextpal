@@ -17,8 +17,54 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
   Gavel, Plus, Pencil, Trash2, Shield, CalendarDays, Layers, X, Loader2,
   AlertTriangle, CheckCircle2, PlayCircle, Target, ThumbsUp, ThumbsDown, MinusCircle,
-  MessageSquare, Send,
+  MessageSquare, Send, Clock,
 } from "lucide-react";
+
+// Visual escalation audit-trail (timeline) for a decision: who escalated /
+// delegated / assigned, from→to tier, when. Lazy-loads on expand.
+function DecisionHistory({ decisionId, pt }: { decisionId: string; pt: (s: string) => string }) {
+  const [open, setOpen] = React.useState(false);
+  const [items, setItems] = React.useState<any[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+  const token = localStorage.getItem("access_token");
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const load = async () => {
+    try { const r = await fetch(`/api/v1/governance/decisions/${decisionId}/events/`, { headers }); if (r.ok) setItems(await r.json()); }
+    catch { /* ignore */ } finally { setLoaded(true); }
+  };
+  const toggle = () => { const n = !open; setOpen(n); if (n && !loaded) load(); };
+  const dotColor = (t: string) => t === "escalated" ? "bg-amber-500" : t === "delegated" ? "bg-sky-500" : t === "assigned" ? "bg-violet-500" : "bg-purple-500";
+  return (
+    <CardContent className="pt-0">
+      <button onClick={toggle} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+        <Clock className="h-3.5 w-3.5" /> {pt("History")}{loaded ? ` (${items.length})` : ""}
+      </button>
+      {open && (
+        <ol className="mt-2 border-l-2 border-purple-200 dark:border-purple-800/40 ml-1.5 pl-4 space-y-2">
+          {loaded && items.length === 0 && (
+            <p className="text-xs text-muted-foreground -ml-3">{pt("No escalation history yet.")}</p>
+          )}
+          {items.map((e) => (
+            <li key={e.id} className="relative text-sm">
+              <span className={`absolute -left-[21px] top-1.5 h-2 w-2 rounded-full ${dotColor(e.event_type)}`} />
+              <span className="font-medium">{e.event_label || e.event_type}</span>
+              {e.from_tier && e.to_tier
+                ? <span className="text-muted-foreground"> · {e.from_tier} → {e.to_tier}</span>
+                : e.to_tier
+                  ? <span className="text-muted-foreground"> → {e.to_tier}</span>
+                  : e.detail
+                    ? <span className="text-muted-foreground"> · {e.detail}</span>
+                    : null}
+              <div className="text-[10px] text-muted-foreground">
+                {(e.actor_name || pt("Someone"))} · {e.created_at ? new Date(e.created_at).toLocaleString() : ""}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </CardContent>
+  );
+}
 
 // Inline discussion thread on a decision — boards/steering deliberate on an
 // escalated item alongside the binding vote. Lazy-loads on expand.
@@ -724,6 +770,7 @@ const Decisions: React.FC = () => {
                     </div>
                   </CardContent>
                 )}
+                <DecisionHistory decisionId={d.id} pt={pt} />
                 <DecisionComments decisionId={d.id} pt={pt} />
               </Card>
             );

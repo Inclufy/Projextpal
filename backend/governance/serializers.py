@@ -235,6 +235,23 @@ class DecisionCommentSerializer(serializers.ModelSerializer):
         return obj.author.get_full_name() or obj.author.email
 
 
+class DecisionEventSerializer(serializers.ModelSerializer):
+    actor_name = serializers.SerializerMethodField()
+    event_label = serializers.CharField(source='get_event_type_display', read_only=True)
+
+    class Meta:
+        from .models import DecisionEvent
+        model = DecisionEvent
+        fields = ['id', 'decision', 'actor', 'actor_name', 'event_type', 'event_label',
+                  'from_tier', 'to_tier', 'detail', 'created_at']
+        read_only_fields = fields
+
+    def get_actor_name(self, obj):
+        if not obj.actor:
+            return None
+        return obj.actor.get_full_name() or obj.actor.email
+
+
 class ComponentFundingSerializer(serializers.ModelSerializer):
     portfolio_name = serializers.CharField(source='portfolio.name', read_only=True)
     program_name = serializers.CharField(source='program.name', read_only=True)

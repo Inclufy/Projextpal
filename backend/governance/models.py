@@ -614,3 +614,41 @@ class DecisionComment(models.Model):
 
     def __str__(self):
         return f"comment by {self.author} on {self.decision_id}"
+
+
+class DecisionEvent(models.Model):
+    """Append-only governance audit-trail for a Decision: each escalate / delegate
+    / assign step is recorded as a structured event (actor, from→to tier, when)
+    so the history is a clean visual timeline instead of bracketed notes baked
+    into the description."""
+
+    EVENT_CHOICES = [
+        ('created', 'Created'),
+        ('escalated', 'Escalated up'),
+        ('delegated', 'Delegated down'),
+        ('assigned', 'Assigned to person'),
+        ('voted', 'Voted'),
+        ('applied', 'Applied'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    decision = models.ForeignKey(
+        Decision, on_delete=models.CASCADE, related_name='events'
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='decision_events'
+    )
+    event_type = models.CharField(max_length=16, choices=EVENT_CHOICES)
+    from_tier = models.CharField(max_length=40, blank=True, default='')
+    to_tier = models.CharField(max_length=80, blank=True, default='')
+    detail = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Decision Event'
+        ordering = ['created_at']
+        indexes = [models.Index(fields=['decision', 'created_at'])]
+
+    def __str__(self):
+        return f"{self.event_type} on {self.decision_id} @ {self.created_at:%Y-%m-%d}"

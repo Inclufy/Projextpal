@@ -416,12 +416,15 @@ class DecisionViewSet(viewsets.ModelViewSet):
             tier = 'Steering committee'
 
         decision.board = next_board
-        fields = ['board', 'description']
+        fields = ['board']
         if next_board.program_id:
             decision.program_id = next_board.program_id
             fields.append('program')
-        decision.description = (decision.description or '') + f"\n\n[Escalated up to {tier}.]"
         decision.save(update_fields=fields)
+        from .models import DecisionEvent
+        DecisionEvent.objects.create(
+            decision=decision, actor=request.user if request.user.is_authenticated else None,
+            event_type='escalated', from_tier=current, to_tier=tier)
         return Response({**DecisionSerializer(decision).data, 'escalated_to': tier})
 
     @action(detail=True, methods=['post'])
@@ -451,8 +454,11 @@ class DecisionViewSet(viewsets.ModelViewSet):
                             status=drf_status.HTTP_403_FORBIDDEN)
         who = target_user.get_full_name() or target_user.email
         decision.decided_by = target_user
-        decision.description = (decision.description or '') + f"\n\n[Assigned to {who}.]"
-        decision.save(update_fields=['decided_by', 'description'])
+        decision.save(update_fields=['decided_by'])
+        from .models import DecisionEvent
+        DecisionEvent.objects.create(
+            decision=decision, actor=request.user if request.user.is_authenticated else None,
+            event_type='assigned', detail=who)
         return Response({**DecisionSerializer(decision).data, 'assigned_to': who})
 
     @action(detail=True, methods=['get', 'post'])
@@ -472,6 +478,15 @@ class DecisionViewSet(viewsets.ModelViewSet):
             return Response(DecisionCommentSerializer(c).data, status=drf_status.HTTP_201_CREATED)
         qs = decision.comments.select_related('author').all()
         return Response(DecisionCommentSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def events(self, request, pk=None):
+        """Structured escalation audit-trail (timeline) for a decision —
+        each escalate/delegate/assign step, oldest→newest."""
+        from .serializers import DecisionEventSerializer
+        decision = self.get_object()
+        qs = decision.events.select_related('actor').all()
+        return Response(DecisionEventSerializer(qs, many=True).data)
 
     @action(detail=True, methods=['post'])
     def delegate(self, request, pk=None):
@@ -521,15 +536,18 @@ class DecisionViewSet(viewsets.ModelViewSet):
             tier = 'Project board'
 
         decision.board = next_board
-        fields = ['board', 'description']
+        fields = ['board']
         if next_board.program_id:
             decision.program_id = next_board.program_id
             fields.append('program')
         if next_board.project_id and not decision.authorized_project_id:
             decision.authorized_project_id = next_board.project_id
             fields.append('authorized_project')
-        decision.description = (decision.description or '') + f"\n\n[Delegated down to {tier}.]"
         decision.save(update_fields=fields)
+        from .models import DecisionEvent
+        DecisionEvent.objects.create(
+            decision=decision, actor=request.user if request.user.is_authenticated else None,
+            event_type='delegated', from_tier=current or '', to_tier=tier)
         return Response({**DecisionSerializer(decision).data, 'delegated_to': tier})
 
     @action(detail=True, methods=['post'])
@@ -892,8 +910,13 @@ def governance_dashboard(request):
             out[v or "unknown"] = out.get(v or "unknown", 0) + 1
         return out
 
+    from django.db.models import Q as _Q
     pending = decisions.filter(status="pending")
-    escalations = pending.filter(description__icontains="Escalated").order_by("-created_at")
+    # In the queue: pending decisions that carry a structured escalation event,
+    # or (legacy / signal-origin) still have the bracketed marker in description.
+    escalations = pending.filter(
+        _Q(events__isnull=False) | _Q(description__icontains="Escalated")
+    ).distinct().order_by("-created_at")
 
     return Response({
         "boards": {"total": boards.count(), "by_type": by(boards, "board_type")},
