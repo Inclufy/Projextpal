@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -393,15 +393,16 @@ const AppHeader = () => {
           <span className="hidden sm:inline">{t.nav?.home || 'Home'}</span>
         </Button>
 
-        {/* Academy (moved from sidebar to topnav, IQ-Helix-style) */}
+        {/* Academy ⇄ PM View toggle (IQ-Helix-style workspace switch).
+            In the Academy this becomes "PM View" to jump back to the projects side. */}
         <Button
           variant={onAcademy ? "default" : "outline"}
           size="sm"
-          onClick={() => navigate('/academy')}
+          onClick={() => navigate(onAcademy ? '/dashboard' : '/academy')}
           className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
         >
-          <GraduationCap className="h-4 w-4" />
-          <span className="hidden sm:inline">Academy</span>
+          {onAcademy ? <FolderKanban className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
+          <span className="hidden sm:inline">{onAcademy ? 'PM View' : 'Academy'}</span>
         </Button>
 
         {/* Language Selector */}
