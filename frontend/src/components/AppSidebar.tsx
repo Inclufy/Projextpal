@@ -568,6 +568,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Overview", url: `/projects/${projectId}/scrum/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/scrum/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/scrum/budget`, icon: Euro },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
             { title: "Definition of Done", url: `/projects/${projectId}/scrum/definition-of-done`, icon: CheckSquare },
           ],
         },
@@ -585,6 +586,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Sprint Management",
           icon: Repeat,
           items: [
+            { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
             { title: "Sprint Board", url: `/projects/${projectId}/scrum/sprint-board`, icon: Columns },
             { title: "Velocity", url: `/projects/${projectId}/scrum/velocity`, icon: Gauge },
             { title: "Increments", url: `/projects/${projectId}/scrum/increments`, icon: Package },
@@ -617,6 +619,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Board Configuration", url: `/projects/${projectId}/kanban/board-configuration`, icon: Columns },
             { title: "WIP Limits", url: `/projects/${projectId}/kanban/wip-limits`, icon: Shield },
             { title: "Work Policies", url: `/projects/${projectId}/kanban/work-policies`, icon: FileText },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
           ],
         },
         {
@@ -624,6 +627,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Kanban Board",
           icon: LayoutGrid,
           items: [
+            { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
             { title: "Work Items", url: `/projects/${projectId}/kanban/work-items`, icon: ListChecks },
             { title: "Board View", url: `/projects/${projectId}/kanban/board`, icon: Columns },
             { title: "Blocked Items", url: `/projects/${projectId}/kanban/blocked`, icon: Shield },
@@ -819,6 +823,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Overview", url: `/projects/${projectId}/agile/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/agile/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/agile/budget`, icon: Euro },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
           ],
         },
         {
@@ -845,6 +850,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
           title: "Execution",
           icon: Rocket,
           items: [
+            { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
             { title: "Iteration Board", url: `/projects/${projectId}/agile/iteration-board`, icon: Columns },
             { title: "Daily Progress", url: `/projects/${projectId}/agile/daily-progress`, icon: MessageSquare },
           ],
@@ -872,6 +878,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Overview", url: `/projects/${projectId}/waterfall/overview`, icon: LayoutDashboard },
             { title: "Team", url: `/projects/${projectId}/waterfall/team`, icon: Users },
             { title: "Budget", url: `/projects/${projectId}/waterfall/budget`, icon: Euro },
+            { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: ScrollText },
           ],
         },
         {
@@ -882,6 +889,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
             { title: "Requirements", url: `/projects/${projectId}/waterfall/requirements`, icon: FileText },
             { title: "Gantt Chart", url: `/projects/${projectId}/waterfall/gantt`, icon: Calendar },
             { title: "Milestones", url: `/projects/${projectId}/waterfall/milestones`, icon: Flag },
+            { title: "Activity List", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
           ],
         },
         {
