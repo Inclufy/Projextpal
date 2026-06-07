@@ -381,7 +381,7 @@ export default function ExamEngine({
   if (!examStarted && !results) {
     const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
     return (
-      <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="w-full py-8 px-4">
         <Card className="border-2 border-purple-200 dark:border-purple-800">
           <CardContent className="pt-8 text-center">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-purple-500/20">
@@ -445,7 +445,7 @@ export default function ExamEngine({
   // ============================================
   if (results) {
     return (
-      <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="w-full py-8 px-4">
         <Card className={results.passed
           ? "border-green-300 bg-green-50 dark:bg-green-950/20"
           : "border-red-300 bg-red-50 dark:bg-red-950/20"
@@ -545,7 +545,7 @@ export default function ExamEngine({
     const flaggedQuestions = questions.filter(q => flagged.has(q.id));
 
     return (
-      <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="w-full py-8 px-4">
         {/* Timer */}
         {timeRemaining !== null && (
           <div className={`mb-4 p-4 rounded-lg border-2 ${
@@ -658,7 +658,7 @@ export default function ExamEngine({
   const showTimeWarning = timeRemaining !== null && timeRemaining < 300;
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="w-full py-8 px-4">
       {/* Timer */}
       {timeRemaining !== null && (
         <div className={`mb-4 p-4 rounded-lg border-2 ${

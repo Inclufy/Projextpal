@@ -1141,7 +1141,9 @@ export function AppSidebar() {
   // in-course learning sub-nav (further down) still takes over while in a lesson.
   // In-course learning mode = a `/learn` path SEGMENT (e.g. /academy/course/x/learn),
   // NOT "/academy/learning-paths" (which merely contains the substring "learn").
-  const inAcademy = location.pathname.startsWith('/academy') && !/\/learn(\/|$)/.test(location.pathname);
+  const onAcademyAny = location.pathname.startsWith('/academy');
+  const inLearn = /\/learn(\/|$)/.test(location.pathname);
+  const inAcademy = onAcademyAny && !inLearn;
   const academyMenu = [
     { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
@@ -1153,7 +1155,9 @@ export function AppSidebar() {
       : []),
     { title: isNL ? 'Terug naar werkruimte' : 'Back to Workspace', url: '/dashboard', icon: LayoutDashboard },
   ];
-  const menuItems = inAcademy ? academyMenu : getMenuItemsForRole();
+  // In a lesson (/learn) the in-course sub-nav (further down) is the nav, so the
+  // top menu is empty — never the PM nav. Elsewhere in the Academy: academyMenu.
+  const menuItems = !onAcademyAny ? getMenuItemsForRole() : (inLearn ? [] : academyMenu);
 
   const pathParts = location.pathname.split('/');
   const isProjectContext = pathParts[1] === 'projects' && pathParts[2] && pathParts[2] !== 'new';

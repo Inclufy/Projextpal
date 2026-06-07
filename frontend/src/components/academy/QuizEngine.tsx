@@ -401,7 +401,7 @@ export default function QuizEngine({
   // RESULTS VIEW
   if (results) {
     return (
-      <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="w-full py-8 px-4">
         <Card className={results.passed ? "border-green-300 bg-green-50 dark:bg-green-950/20" : "border-red-300 bg-red-50 dark:bg-red-950/20"}>
           <CardContent className="pt-8 text-center">
             {results.passed ? (
@@ -488,7 +488,7 @@ export default function QuizEngine({
   const showTimeWarning = timeRemaining !== null && timeRemaining < 300;
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="w-full py-8 px-4">
       {/* ADDED: Timer Display */}
       {timeRemaining !== null && (
         <div className={`mb-4 p-4 rounded-lg border-2 ${
