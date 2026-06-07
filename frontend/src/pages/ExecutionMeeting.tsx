@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText, Sparkles } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Plus, Pencil, Loader2, MapPin, Users, FileText, Sparkles, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
