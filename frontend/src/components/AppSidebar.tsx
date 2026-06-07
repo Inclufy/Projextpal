@@ -1141,6 +1141,7 @@ export function AppSidebar() {
   // in-course learning sub-nav (further down) still takes over while in a lesson.
   const inAcademy = location.pathname.startsWith('/academy') && !location.pathname.includes('/learn');
   const academyMenu = [
+    { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
     { title: isNL ? 'Prijzen' : 'Pricing', url: '/academy/pricing', icon: CreditCard },
     { title: isNL ? 'Offerte aanvragen' : 'Request a Quote', url: '/academy/quote', icon: FileText },
