@@ -80,6 +80,8 @@ const PlanningTasks = () => {
 
   const statusColor = (s: string) => ({ todo: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", done: "bg-green-100 text-green-700", blocked: "bg-red-100 text-red-700" }[s] || "bg-gray-100");
   const prioColor = (p: string) => ({ low: "bg-gray-100 text-gray-600", medium: "bg-blue-100 text-blue-700", high: "bg-amber-100 text-amber-700", urgent: "bg-red-100 text-red-700" }[p] || "bg-gray-100");
+  const typeColor = (ty: string) => ({ Meeting: "bg-purple-100 text-purple-700", Deliverable: "bg-teal-100 text-teal-700", "Work Package": "bg-sky-100 text-sky-700", General: "bg-gray-100 text-gray-600" }[ty] || "bg-gray-100 text-gray-600");
+  const stageOf = (t: any): string => t.milestone_name || msName(t.milestone) || t.category || "";
   const label = (arr: [string, string][], v: string) => arr.find(([k]) => k === v)?.[1] || v;
   const msName = (mid: any) => milestones.find((m) => m.id === mid)?.name || "";
   const today = new Date().toISOString().split("T")[0];
@@ -161,8 +163,10 @@ const PlanningTasks = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left text-xs text-muted-foreground border-b">
-                        <th className="font-medium px-4 py-2">{pt("Activity")}</th>
-                        {groupBy !== "category" && <th className="font-medium px-3 py-2 w-44">{pt("Phase")}</th>}
+                        <th className="font-medium px-4 py-2 w-12">{pt("Nr.")}</th>
+                        <th className="font-medium px-3 py-2">{pt("Activity")}</th>
+                        {groupBy !== "type" && <th className="font-medium px-3 py-2 w-32">{pt("Type")}</th>}
+                        {groupBy !== "milestone" && <th className="font-medium px-3 py-2 w-44">{pt("Stage")}</th>}
                         <th className="font-medium px-3 py-2 w-24">{pt("Priority")}</th>
                         {groupBy !== "owner" && <th className="font-medium px-3 py-2 w-40">{pt("Owner")}</th>}
                         <th className="font-medium px-3 py-2 w-28">{pt("Due")}</th>
@@ -172,21 +176,24 @@ const PlanningTasks = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {items.map((t) => {
+                      {items.map((t, idx) => {
                         const overdue = t.due_date && t.due_date < today && t.status !== "done";
+                        const ty = taskType(t);
+                        const stage = stageOf(t);
                         return (
                           <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
-                            <td className="px-4 py-2.5">
+                            <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
+                            <td className="px-3 py-2.5">
                               <div className="font-medium">{t.title}</div>
-                              {(t.product_title || t.work_package_title || (groupBy !== "milestone" && (t.milestone_name || t.milestone))) && (
+                              {(t.product_title || t.work_package_title) && (
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                   {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700">📦 {t.product_title}</Badge>}
                                   {t.work_package_title && <Badge className="text-[10px] bg-sky-100 text-sky-700 cursor-pointer" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}>🗂 {t.work_package_title}</Badge>}
-                                  {groupBy !== "milestone" && (t.milestone_name || t.milestone) && <Badge variant="secondary" className="text-[10px] cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>🏁 {t.milestone_name || msName(t.milestone)}</Badge>}
                                 </div>
                               )}
                             </td>
-                            {groupBy !== "category" && <td className="px-3 py-2.5">{t.category ? <Badge variant="outline" className="text-[10px] font-normal">{t.category}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
+                            {groupBy !== "type" && <td className="px-3 py-2.5"><Badge className={`text-[10px] font-normal ${typeColor(ty)}`}>{pt(ty)}</Badge></td>}
+                            {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" className="text-[10px] font-normal cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{stage}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
                             {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>}
                             <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
