@@ -35,6 +35,43 @@ const ExecutionMeeting = () => {
   const [form, setForm] = useState({ ...emptyForm });
   const [newAtt, setNewAtt] = useState({ name_text: "", presence: "invited" });
   const [newAct, setNewAct] = useState({ subject: "", pic_text: "", action_due: "" });
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const runExtract = async () => {
+    if (!selected) return;
+    setImporting(true);
+    try {
+      const url = `/api/v1/communication/meetings/${selected.id}/extract-minutes/`;
+      const r = await fetch(url, { method: "POST", headers: jsonHeaders, body: JSON.stringify({ text: importText }) });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        toast.success(`${pt("Minutes generated")} — ${d.agenda_count ?? 0} ${pt("agenda")}, ${d.actions_created ?? 0} ${pt("actions")}`);
+        setImportOpen(false); setImportText(""); fetchData();
+      } else toast.error(d.detail || pt("Could not extract"));
+    } catch { toast.error(pt("Could not extract")); }
+    finally { setImporting(false); }
+  };
+  const onFile = async (file?: File) => {
+    if (!file || !selected) return;
+    if (file.name.toLowerCase().endsWith(".txt")) {
+      setImportText(await file.text());
+      return;
+    }
+    // .docx / other → send to the server for extraction
+    setImporting(true);
+    try {
+      const fd = new FormData(); fd.append("file", file);
+      const r = await fetch(`/api/v1/communication/meetings/${selected.id}/extract-minutes/`, { method: "POST", headers, body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        toast.success(`${pt("Minutes generated")} — ${d.agenda_count ?? 0} ${pt("agenda")}, ${d.actions_created ?? 0} ${pt("actions")}`);
+        setImportOpen(false); setImportText(""); fetchData();
+      } else toast.error(d.detail || pt("Could not extract"));
+    } catch { toast.error(pt("Could not extract")); }
+    finally { setImporting(false); }
+  };
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -226,7 +263,10 @@ const ExecutionMeeting = () => {
                       {selected.customer_supplier && <span className="flex items-center gap-1"><Users className="h-4 w-4" />{selected.customer_supplier} ↔ Yanmar Europe</span>}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2"><Sparkles className="h-4 w-4 text-fuchsia-600" />{pt("Minutes from notes")}</Button>
+                    <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-2"><Pencil className="h-4 w-4" />{pt("Edit")}</Button>
+                  </div>
                 </div>
 
                 <Section title={pt("Agenda")}>
@@ -280,7 +320,7 @@ const ExecutionMeeting = () => {
                   </div>
                   {(selected.action_items || []).length === 0 ? <Empty pt={pt} /> : (
                     <table className="w-full text-sm mb-3">
-                      <thead><tr className="text-left text-muted-foreground border-b"><th className="py-1">{pt("Subject")}</th><th className="py-1 px-2">{pt("PIC")}</th><th className="py-1 px-2">{pt("Due")}</th><th className="py-1 px-2">{pt("Status")}</th></tr></thead>
+                      <thead><tr className="text-left text-muted-foreground border-b"><th className="py-1">{pt("Subject")}</th><th className="py-1 px-2" title={pt("PIC = Person In Charge")}>{pt("PIC")}</th><th className="py-1 px-2">{pt("Due")}</th><th className="py-1 px-2">{pt("Status")}</th></tr></thead>
                       <tbody>
                         {(selected.action_items || []).map((it: any) => (
                           <tr key={it.id} className="border-b">
@@ -295,8 +335,8 @@ const ExecutionMeeting = () => {
                   )}
                   <div className="flex gap-2">
                     <Input className="h-8 flex-1" placeholder={pt("Subject")} value={newAct.subject} onChange={(e) => setNewAct({ ...newAct, subject: e.target.value })} />
-                    <Input className="h-8 w-[120px]" placeholder={pt("PIC")} value={newAct.pic_text} onChange={(e) => setNewAct({ ...newAct, pic_text: e.target.value })} />
-                    <Input className="h-8 w-[120px]" placeholder={pt("Due")} value={newAct.action_due} onChange={(e) => setNewAct({ ...newAct, action_due: e.target.value })} />
+                    <Input className="h-8 w-[150px]" placeholder={pt("Person In Charge")} title={pt("PIC = Person In Charge")} value={newAct.pic_text} onChange={(e) => setNewAct({ ...newAct, pic_text: e.target.value })} />
+                    <Input className="h-8 w-[150px]" type="date" title={pt("Due date")} value={newAct.action_due} onChange={(e) => setNewAct({ ...newAct, action_due: e.target.value })} />
                     <Button size="sm" onClick={addAction}><Plus className="h-4 w-4" /></Button>
                   </div>
                 </Section>
@@ -368,6 +408,34 @@ const ExecutionMeeting = () => {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.name}>
                 {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate minutes + actions from notes / a document (AI extraction) */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-fuchsia-600" />{pt("Minutes from notes")}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{pt("Paste raw notes or upload a .docx/.txt. AI extracts the agenda, discussion, conclusions and action items (with PIC + due date) and applies them to this meeting.")}</p>
+            <div>
+              <input
+                type="file" accept=".docx,.txt,.md,text/plain"
+                onChange={(e) => onFile(e.target.files?.[0])}
+                className="text-sm file:mr-3 file:rounded-md file:border file:px-3 file:py-1.5 file:text-sm file:bg-muted"
+              />
+            </div>
+            <textarea
+              className="w-full min-h-[180px] px-3 py-2 border rounded-md bg-background text-sm"
+              placeholder={pt("…or paste meeting notes here")}
+              value={importText} onChange={(e) => setImportText(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setImportOpen(false)}>{pt("Cancel")}</Button>
+              <Button onClick={runExtract} disabled={importing || !importText.trim()} className="gap-1">
+                {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{pt("Generate minutes")}
               </Button>
             </div>
           </div>

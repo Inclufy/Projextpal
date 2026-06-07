@@ -349,6 +349,51 @@ class MeetingViewSet(viewsets.ModelViewSet):
             created += 1
         return Response({"carried_forward": created}, status=200)
 
+    @action(detail=True, methods=["post"], url_path="extract-minutes",
+            parser_classes=[MultiPartParser, FormParser, JSONParser])
+    def extract_minutes(self, request, pk=None):
+        """Generate minutes + action items from raw notes — pasted `text` or an
+        uploaded `file` (.docx/.txt). AI-extracts agenda/discussion/conclusions +
+        actions and applies them to this meeting (actions appended, not replaced)."""
+        from .minutes_extract import extract_text_from_upload, ai_extract_minutes
+        from .models import MeetingActionItem
+
+        meeting = self.get_object()
+        text = (request.data.get("text") or "").strip()
+        f = request.FILES.get("file")
+        if f and not text:
+            text = extract_text_from_upload(f).strip()
+        if not text:
+            return Response({"detail": "Provide notes text or a document.", "code": "no_input"}, status=400)
+
+        parsed = ai_extract_minutes(text)
+        if parsed.get("agenda"):
+            meeting.agenda = parsed["agenda"]
+        if parsed.get("discussion"):
+            meeting.discussion_notes = parsed["discussion"]
+        if parsed.get("conclusions"):
+            meeting.conclusions = parsed["conclusions"]
+        meeting.save()
+
+        existing = set(meeting.action_items.values_list("subject", flat=True))
+        created = 0
+        for a in parsed.get("actions", []):
+            subj = (a.get("subject") or "").strip()
+            if not subj or subj in existing:
+                continue
+            MeetingActionItem.objects.create(
+                meeting=meeting, subject=subj[:255],
+                pic_text=(a.get("pic") or "")[:120],
+                action_due=a.get("due") or None, status="open",
+            )
+            existing.add(subj)
+            created += 1
+        return Response({
+            "applied": True, "actions_created": created,
+            "agenda_count": len(parsed.get("agenda") or []),
+            "meeting": MeetingSerializer(meeting).data,
+        }, status=200)
+
     def list(self, request, *args, **kwargs):
         """
         GET /communication/meetings/?project=<id>
