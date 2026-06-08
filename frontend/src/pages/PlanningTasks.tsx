@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, GanttChartSquare, MessageSquare } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
@@ -137,6 +137,7 @@ const PlanningTasks = () => {
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/planning/milestones`)}><CalendarRange className="h-4 w-4" />{pt("Planning")}</Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/prince2/work-packages`)}><Package className="h-4 w-4" />{pt("Work Packages")}</Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/action-tracker`)}><ClipboardCheck className="h-4 w-4" />{pt("Action Tracker")}</Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/gantt`)}><GanttChartSquare className="h-4 w-4" />{pt("Timeline")}</Button>
             {tasks.length > 0 && <ReportExportMenu title="Tasks" sections={exportSections} />}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Task")}</Button>
           </div>

@@ -103,6 +103,7 @@ const ProjectDiscussion = lazyWithRetry(() => import("./pages/ProjectDiscussion"
 const Messages = lazyWithRetry(() => import("./pages/Messages"));
 const MyWork = lazyWithRetry(() => import("./pages/MyWork"));
 const CustomFieldsSettings = lazyWithRetry(() => import("./pages/CustomFieldsSettings"));
+const ProjectGantt = lazyWithRetry(() => import("./pages/ProjectGantt"));
 const AssumptionsRegister = lazyWithRetry(() => import("./pages/AssumptionsRegister"));
 const PlanningRaci = lazyWithRetry(() => import("./pages/PlanningRaci"));
 const PlanningDependencies = lazyWithRetry(() => import("./pages/PlanningDependencies"));
@@ -957,6 +958,7 @@ const App = () => (
               <Route path="/messages" element={<ProtectedPage><Messages /></ProtectedPage>} />
               <Route path="/my-work" element={<ProtectedPage><MyWork /></ProtectedPage>} />
               <Route path="/settings/custom-fields" element={<ProtectedPage><CustomFieldsSettings /></ProtectedPage>} />
+              <Route path="/projects/:id/gantt" element={<ProtectedPage><ProjectGantt /></ProtectedPage>} />
               <Route path="/projects/:id/assumptions" element={<ProtectedPage><AssumptionsRegister /></ProtectedPage>} />
               <Route path="/projects/:id/planning/raci" element={<ProtectedPage><PlanningRaci /></ProtectedPage>} />
               <Route path="/projects/:id/planning/dependencies" element={<ProtectedPage><PlanningDependencies /></ProtectedPage>} />

@@ -5,7 +5,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users, Inbox,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, Sparkles,
   Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
   TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
-  Palette, Code, TestTube, Wrench, FileEdit, Settings, Settings2, CreditCard, Lock,
+  Palette, Code, TestTube, Wrench, FileEdit, Settings, Settings2, CreditCard, Lock, GanttChartSquare,
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
   BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star
 } from "lucide-react";
@@ -402,6 +402,7 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
           { title: "Tasks", url: `/projects/${projectId}/planning/tasks`, icon: ListChecks },
           { title: "RACI", url: `/projects/${projectId}/planning/raci`, icon: Network },
           { title: "Dependencies", url: `/projects/${projectId}/planning/dependencies`, icon: GitBranch },
+          { title: "Critical Path", url: `/projects/${projectId}/gantt`, icon: GanttChartSquare },
           { title: "Calendar", url: `/projects/${projectId}/planning/calendar`, icon: CalendarDays },
         ],
       },

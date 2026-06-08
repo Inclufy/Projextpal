@@ -38,6 +38,7 @@ from .custom_field_views import CustomFieldDefinitionViewSet
 from .doctor_views import project_diagnose, project_doctor_apply
 from .role_views import my_project_role
 from .my_work_views import my_work
+from .gantt_views import project_gantt
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -85,6 +86,7 @@ urlpatterns = [
     # "analytics/" segment is never captured by a <pk> detail route.
     path("analytics/overview/", analytics_overview, name="analytics-overview"),
     path("my-work/", my_work, name="my-work"),
+    path("<int:project_id>/gantt/", project_gantt, name="project-gantt"),
     path("<int:pk>/doctor/diagnose/", project_diagnose, name="project-diagnose"),
     path("<int:pk>/doctor/apply/", project_doctor_apply, name="project-doctor-apply"),
     path("<int:pk>/my-role/", my_project_role, name="project-my-role"),
