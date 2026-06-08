@@ -35,6 +35,7 @@ from .views_methodology import MethodologyListView, MethodologyDetailView, Metho
 from .analytics_views import analytics_overview, SavedAnalyticsDashboardViewSet
 from .saved_view_views import SavedViewViewSet
 from .custom_field_views import CustomFieldDefinitionViewSet
+from .recurring_views import RecurringTaskRuleViewSet
 from .doctor_views import project_diagnose, project_doctor_apply
 from .role_views import my_project_role
 from .my_work_views import my_work
@@ -45,6 +46,7 @@ router = DefaultRouter()
 router.register(r"analytics-dashboards", SavedAnalyticsDashboardViewSet, basename="analytics-dashboard")
 router.register(r"saved-views", SavedViewViewSet, basename="saved-view")
 router.register(r"custom-fields", CustomFieldDefinitionViewSet, basename="custom-field")
+router.register(r"recurring-tasks", RecurringTaskRuleViewSet, basename="recurring-task")
 router.register(r"milestones", MilestoneViewSet, basename="milestone")
 router.register(r"tasks", TaskViewSet, basename="task")
 router.register(r"task-due-change-requests", TaskDueDateChangeRequestViewSet, basename="task-due-change-request")

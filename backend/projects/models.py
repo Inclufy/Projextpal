@@ -1948,3 +1948,77 @@ class CustomFieldDefinition(models.Model):
 
     def __str__(self):
         return f"{self.label} ({self.entity}.{self.key})"
+
+
+def _add_months(d, n):
+    """Add n calendar months to date d, clamping the day to the month end."""
+    import calendar
+    month = d.month - 1 + n
+    year = d.year + month // 12
+    month = month % 12 + 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return d.replace(year=year, month=month, day=day)
+
+
+class RecurringTaskRule(models.Model):
+    """A template that materializes a Task on a schedule (daily/weekly/monthly).
+
+    A management command (`generate_recurring_tasks`, run by cron) creates the
+    next Task whenever ``next_run_date`` is due, then advances the schedule.
+    Company + project scoped so each tenant only sees its own rules.
+    """
+    FREQUENCY_CHOICES = [
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
+    ]
+    PRIORITY_CHOICES = Task.PRIORITY_CHOICES
+
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="recurring_task_rules"
+    )
+    project = models.ForeignKey(
+        "Project", on_delete=models.CASCADE, related_name="recurring_task_rules"
+    )
+    milestone = models.ForeignKey(
+        "Milestone", on_delete=models.SET_NULL, null=True, blank=True, related_name="recurring_rules"
+    )
+    # Template fields copied onto each generated Task.
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    category = models.CharField(max_length=100, blank=True, default="")
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default="medium")
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    custom_fields = models.JSONField(default=dict, blank=True)
+    # Schedule.
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default="weekly")
+    interval = models.PositiveIntegerField(default=1)   # every N days/weeks/months
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    next_run_date = models.DateField(db_index=True)
+    last_generated_date = models.DateField(null=True, blank=True)
+    due_offset_days = models.PositiveIntegerField(default=0)  # due_date = run_date + offset
+    active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["next_run_date", "title"]
+
+    def __str__(self):
+        return f"{self.title} ({self.frequency} x{self.interval})"
+
+    def step(self, d):
+        """Return the next run date after ``d`` for this rule's cadence."""
+        from datetime import timedelta
+        step = max(1, self.interval)
+        if self.frequency == "daily":
+            return d + timedelta(days=step)
+        if self.frequency == "weekly":
+            return d + timedelta(weeks=step)
+        return _add_months(d, step)
