@@ -50,6 +50,7 @@ import { LessonDetailScreen } from '../screens/lessons/LessonDetailScreen';
 
 // New feature screens
 import { TasksScreen } from '../screens/tasks/TasksScreen';
+import { MyWorkScreen } from '../screens/work/MyWorkScreen';
 import { TeamScreen } from '../screens/team/TeamScreen';
 import { DocumentsScreen } from '../screens/documents/DocumentsScreen';
 import { AnalyticsScreen } from '../screens/analytics/AnalyticsScreen';
@@ -143,6 +144,7 @@ const MainStackNavigator = () => {
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ animation: 'slide_from_right' }} />
 
       {/* New Feature Screens */}
+      <Stack.Screen name="MyWork" component={MyWorkScreen} />
       <Stack.Screen name="Tasks" component={TasksScreen} />
       <Stack.Screen name="Team" component={TeamScreen} />
       <Stack.Screen name="Documents" component={DocumentsScreen} />

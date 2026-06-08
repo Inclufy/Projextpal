@@ -72,6 +72,7 @@ export const DashboardScreen = ({ navigation }: any) => {
   const [recentCourses, setRecentCourses] = useState<RecentCourse[]>([]);
 
   const quickActions: { name: string; icon: string; screen: string; colors: [string, string]; soon?: boolean }[] = [
+    { name: isNL ? 'Mijn werk' : 'My Work', icon: 'list-circle', screen: 'MyWork', colors: ['#7C3AED', '#A855F7'] },
     { name: isNL ? 'Projecten' : 'Projects', icon: 'folder', screen: 'Projects', colors: ['#8B5CF6', '#EC4899'] },
     { name: isNL ? "Programma's" : 'Programs', icon: 'briefcase', screen: 'Programs', colors: ['#3B82F6', '#8B5CF6'] },
     { name: 'Time', icon: 'time', screen: 'TimeTracking', colors: ['#F59E0B', '#EF4444'] },
