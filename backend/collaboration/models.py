@@ -18,6 +18,10 @@ class Comment(models.Model):
         "projects.Task", on_delete=models.CASCADE, null=True, blank=True,
         related_name="comments",
     )
+    # Generic target for non-task registers (risk / issue / work_package / …).
+    # task comments keep using the FK above; other registers use these two.
+    target_type = models.CharField(max_length=24, blank=True, default="", db_index=True)
+    target_id = models.IntegerField(null=True, blank=True, db_index=True)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
     )

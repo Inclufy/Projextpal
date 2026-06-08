@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ReportExportMenu } from "@/components/ReportExportMenu";
 import { AlertTriangle, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import CommentThread from "@/components/CommentThread";
 import { toast } from "sonner";
 
 const CATEGORIES = ["Technical", "Schedule", "Financial", "Operational", "Strategic", "Compliance"];
@@ -212,6 +213,12 @@ const PlanningRisks = () => {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.name || !form.description}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button>
             </div>
+            {editing && (
+              <div className="border-t pt-4">
+                <Label className="mb-2 block">{pt("Comments")}</Label>
+                <CommentThread projectId={id!} targetType="risk" targetId={editing.id} />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

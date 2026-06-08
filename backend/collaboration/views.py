@@ -41,12 +41,16 @@ class CommentViewSet(viewsets.ModelViewSet):
         task = self.request.query_params.get("task")
         project = self.request.query_params.get("project")
         scope = self.request.query_params.get("scope")  # 'project' -> board only
+        target_type = self.request.query_params.get("target_type")
+        target_id = self.request.query_params.get("target_id")
         if task:
             qs = qs.filter(task_id=task)
+        elif target_type and target_id:
+            qs = qs.filter(target_type=target_type, target_id=target_id)
         elif project:
             qs = qs.filter(project_id=project)
             if scope == "project":
-                qs = qs.filter(task__isnull=True)
+                qs = qs.filter(task__isnull=True, target_type="")
         return qs
 
     def perform_create(self, serializer):
@@ -65,12 +69,17 @@ class CommentViewSet(viewsets.ModelViewSet):
         comment = serializer.save(author=user, project=project)
 
         # Deep-link + notify mentioned users (scoped to the project's company).
+        tt = serializer.validated_data.get("target_type") or ""
         if task is not None:
             url = f"/projects/{project.id}/planning/tasks"
-            where = f"task “{task.title}”"
+        elif tt == "risk":
+            url = f"/projects/{project.id}/planning/risks"
+        elif tt == "issue":
+            url = f"/projects/{project.id}/planning/issues"
+        elif tt == "work_package":
+            url = f"/projects/{project.id}/prince2/work-packages"
         else:
             url = f"/projects/{project.id}/discussion"
-            where = f"the “{project.name}” discussion"
         valid = set(
             User.objects.filter(id__in=mention_ids, company=project.company)
             .values_list("id", flat=True)
@@ -89,16 +98,24 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def counts(self, request):
-        """Per-task comment counts + the tasks where the current user is
-        mentioned, so list screens can badge items with discussion/mentions."""
-        qs = self.get_queryset().filter(task__isnull=False)
+        """Per-item comment counts + the items where the current user is
+        mentioned, so list screens can badge items with discussion/mentions.
+        Default keys = task ids; pass ?target_type=risk|issue|work_package to
+        key by that register's object ids instead."""
+        ids = list(_accessible_project_ids(request.user))
+        base = Comment.objects.filter(project_id__in=ids)
         project = request.query_params.get("project")
         if project:
-            qs = qs.filter(project_id=project)
-        counts = {r["task_id"]: r["n"] for r in qs.values("task_id").annotate(n=Count("id"))}
-        mentioned = list(
-            qs.filter(mentioned_users=request.user).values_list("task_id", flat=True).distinct()
-        )
+            base = base.filter(project_id=project)
+        target_type = request.query_params.get("target_type")
+        if target_type:
+            base = base.filter(target_type=target_type).exclude(target_id=None)
+            counts = {r["target_id"]: r["n"] for r in base.values("target_id").annotate(n=Count("id"))}
+            mentioned = list(base.filter(mentioned_users=request.user).values_list("target_id", flat=True).distinct())
+        else:
+            base = base.filter(task__isnull=False)
+            counts = {r["task_id"]: r["n"] for r in base.values("task_id").annotate(n=Count("id"))}
+            mentioned = list(base.filter(mentioned_users=request.user).values_list("task_id", flat=True).distinct())
         return Response({"counts": counts, "mentioned_task_ids": mentioned})
 
     def perform_update(self, serializer):

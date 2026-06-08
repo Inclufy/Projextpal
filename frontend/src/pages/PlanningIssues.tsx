@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ReportExportMenu } from "@/components/ReportExportMenu";
 import { Plus, Pencil, Trash2, Loader2, AlertOctagon } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import CommentThread from "@/components/CommentThread";
 import { toast } from "sonner";
 
 const SEVERITIES: [string, string][] = [["Blocker", "Blocker"], ["Critical", "Critical"], ["Major", "Major"], ["Minor", "Minor"]];
@@ -152,6 +153,12 @@ const PlanningIssues = () => {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.name}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button>
             </div>
+            {editing && (
+              <div className="border-t pt-4">
+                <Label className="mb-2 block">{pt("Comments")}</Label>
+                <CommentThread projectId={id!} targetType="issue" targetId={editing.id} />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -16,8 +16,9 @@ interface Member { id: number; first_name?: string; last_name?: string; email: s
 
 /** Reusable discussion thread. Pass taskId for a task thread, omit it for the
  *  project discussion board. */
-export default function CommentThread({ projectId, taskId, currentUserId }: {
-  projectId: string | number; taskId?: string | number; currentUserId?: number;
+export default function CommentThread({ projectId, taskId, targetType, targetId, currentUserId }: {
+  projectId: string | number; taskId?: string | number;
+  targetType?: string; targetId?: string | number; currentUserId?: number;
 }) {
   const { pt } = usePageTranslations();
   const [items, setItems] = useState<CommentT[]>([]);
@@ -35,12 +36,14 @@ export default function CommentThread({ projectId, taskId, currentUserId }: {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const q = taskId ? `task=${taskId}` : `project=${projectId}&scope=project`;
+      const q = taskId ? `task=${taskId}`
+        : targetType ? `target_type=${targetType}&target_id=${targetId}`
+        : `project=${projectId}&scope=project`;
       const r = await fetch(`/api/v1/comments/?${q}`, { headers: headers() });
       if (r.ok) { const d = await r.json(); setItems(Array.isArray(d) ? d : d.results || []); }
     } catch { /* ignore */ }
     finally { setLoading(false); }
-  }, [projectId, taskId]);
+  }, [projectId, taskId, targetType, targetId]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
@@ -64,6 +67,7 @@ export default function CommentThread({ projectId, taskId, currentUserId }: {
     try {
       const payload: any = { project: Number(projectId), body: body.trim(), mention_user_ids: mentions };
       if (taskId) payload.task = Number(taskId);
+      else if (targetType) { payload.target_type = targetType; payload.target_id = Number(targetId); }
       const r = await fetch(`/api/v1/comments/`, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(payload) });
       if (r.ok) { setBody(""); setMentions([]); load(); }
       else { toast.error(pt("Could not post comment")); }
