@@ -1840,11 +1840,22 @@ class SavedAnalyticsDashboard(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name="+",
     )
+    AUDIENCE_CHOICES = [
+        ("private", "Private (only me)"),
+        ("management", "Management"),
+        ("tenant", "Whole organization"),
+    ]
     name = models.CharField(max_length=120)
+    description = models.TextField(blank=True, default="")
     scope = models.CharField(max_length=16, default="org")   # org | program | project
     ref_id = models.CharField(max_length=64, blank=True, default="")
     days = models.IntegerField(default=30)
-    layout = models.JSONField(default=list, blank=True)       # [{id, hidden}]
+    # layout holds widget order + visibility AND custom KPI selection, e.g.
+    #   [{"id": "kpis", "hidden": false, "metrics": ["open_risks", "budget"]}, ...]
+    layout = models.JSONField(default=list, blank=True)
+    # Who can load this dashboard. `shared` is kept for backwards-compat and is
+    # kept in sync with audience (private -> False, otherwise True).
+    audience = models.CharField(max_length=16, choices=AUDIENCE_CHOICES, default="private")
     shared = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

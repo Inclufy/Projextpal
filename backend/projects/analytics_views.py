@@ -102,16 +102,38 @@ def analytics_overview(request):
     budget = projects.aggregate(s=Sum("budget"))["s"] or 0
     completion_pct = _completion(tasks_total, tasks_done)
 
+    # --- extra composable metrics (for custom dashboards) -------------------
+    tasks_in_progress = tasks.filter(status="in_progress").count()
+    tasks_todo = tasks.filter(status="todo").count()
+    tasks_blocked = tasks.filter(status="blocked").count()
+    ms_overdue = milestones.exclude(status="completed").filter(
+        end_date__isnull=False, end_date__lt=today
+    ).count()
+    risk_high = risks.filter(level__in=["High", "Critical"]).count()
+    overdue_proj = set(
+        tasks.exclude(status="done")
+        .filter(due_date__isnull=False, due_date__lt=today)
+        .values_list("milestone__project_id", flat=True)
+    )
+    highrisk_proj = set(risks.filter(level__in=["High", "Critical"]).values_list("project_id", flat=True))
+    at_risk_projects = len(overdue_proj | highrisk_proj)
+
     kpis = {
         "projects": len(proj_ids),
         "tasks_total": tasks_total,
         "tasks_done": tasks_done,
+        "tasks_in_progress": tasks_in_progress,
+        "tasks_todo": tasks_todo,
+        "tasks_blocked": tasks_blocked,
         "completion_pct": completion_pct,
         "tasks_overdue": overdue,
         "open_risks": open_risks,
+        "risk_high": risk_high,
         "open_issues": open_issues,
         "milestones_total": ms_total,
         "milestones_done": ms_done,
+        "milestones_overdue": ms_overdue,
+        "at_risk_projects": at_risk_projects,
         "budget": float(budget),
         "rag": _rag(completion_pct, overdue, open_risks),
     }
@@ -196,10 +218,11 @@ class SavedAnalyticsDashboardSerializer(serializers.ModelSerializer):
         from .models import SavedAnalyticsDashboard
         model = SavedAnalyticsDashboard
         fields = [
-            "id", "name", "scope", "ref_id", "days", "layout", "shared",
+            "id", "name", "description", "scope", "ref_id", "days", "layout",
+            "audience", "shared",
             "created_by", "created_by_name", "created_at", "updated_at",
         ]
-        read_only_fields = ["created_by", "created_by_name", "created_at", "updated_at"]
+        read_only_fields = ["created_by", "created_by_name", "created_at", "updated_at", "shared"]
 
     def get_created_by_name(self, obj):
         u = obj.created_by
@@ -224,9 +247,24 @@ class SavedAnalyticsDashboardViewSet(viewsets.ModelViewSet):
         if not company:
             return SavedAnalyticsDashboard.objects.none()
         qs = SavedAnalyticsDashboard.objects.filter(company=company)
-        if getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False):
+        role = getattr(user, "role", None)
+        if role in ("admin", "superadmin") or getattr(user, "is_superuser", False):
             return qs
-        return qs.filter(Q(shared=True) | Q(created_by=user))
+        # Everyone sees their own + tenant-wide dashboards. Managers also see
+        # dashboards shared specifically with management.
+        visible = Q(created_by=user) | Q(audience="tenant") | Q(shared=True)
+        if role in ("pm", "program_manager", "manager"):
+            visible |= Q(audience="management")
+        return qs.filter(visible)
+
+    @staticmethod
+    def _sync_shared(serializer):
+        # Keep the legacy `shared` flag in step with audience (private -> not shared).
+        audience = serializer.validated_data.get("audience")
+        if audience is not None:
+            serializer.save(shared=(audience != "private"))
+        else:
+            serializer.save()
 
     def perform_create(self, serializer):
         company = _company_of(self.request.user)
@@ -234,7 +272,8 @@ class SavedAnalyticsDashboardViewSet(viewsets.ModelViewSet):
             # company is a NOT NULL FK — guard so a company-less user gets a clean
             # 400 instead of an IntegrityError → 500.
             raise ValidationError("Your account has no associated company; cannot save a dashboard.")
-        serializer.save(company=company, created_by=self.request.user)
+        audience = serializer.validated_data.get("audience", "private")
+        serializer.save(company=company, created_by=self.request.user, shared=(audience != "private"))
 
     def _check_owner(self, instance):
         user = self.request.user
@@ -244,7 +283,7 @@ class SavedAnalyticsDashboardViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         self._check_owner(serializer.instance)
-        serializer.save()
+        self._sync_shared(serializer)
 
     def perform_destroy(self, instance):
         self._check_owner(instance)

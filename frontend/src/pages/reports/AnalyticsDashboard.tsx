@@ -29,11 +29,40 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 
 type Scope = "org" | "program" | "project";
-interface LayoutItem { id: string; hidden?: boolean }
+interface LayoutItem { id: string; hidden?: boolean; metrics?: string[] }
 interface SavedDash {
-  id?: number; name: string; scope: Scope; refId: string; days: number;
-  layout: LayoutItem[]; shared?: boolean; created_by_name?: string | null;
+  id?: number; name: string; description?: string; scope: Scope; refId: string; days: number;
+  layout: LayoutItem[]; audience?: string; shared?: boolean; created_by_name?: string | null;
 }
+
+// Catalogue of composable KPI metrics. Each maps to a key in the analytics
+// `kpis` payload; users pick which ones appear on the KPI Tiles widget.
+interface MetricDef { id: string; label: string; icon: any; accent: string; soft: string; fmt: (k: any) => any }
+const METRIC_CATALOG: MetricDef[] = [
+  { id: "projects", label: "Projects", icon: FolderKanban, accent: "text-sky-600", soft: "bg-sky-50", fmt: (k) => k.projects ?? 0 },
+  { id: "completion_pct", label: "Completion %", icon: CheckCircle2, accent: "text-green-600", soft: "bg-green-50", fmt: (k) => `${k.completion_pct ?? 0}%` },
+  { id: "tasks_total", label: "Total tasks", icon: TrendingUp, accent: "text-violet-600", soft: "bg-violet-50", fmt: (k) => k.tasks_total ?? 0 },
+  { id: "tasks_done", label: "Tasks done", icon: TrendingUp, accent: "text-violet-600", soft: "bg-violet-50", fmt: (k) => `${k.tasks_done ?? 0}/${k.tasks_total ?? 0}` },
+  { id: "tasks_in_progress", label: "In progress", icon: TrendingUp, accent: "text-blue-600", soft: "bg-blue-50", fmt: (k) => k.tasks_in_progress ?? 0 },
+  { id: "tasks_todo", label: "To do", icon: TrendingUp, accent: "text-slate-600", soft: "bg-slate-50", fmt: (k) => k.tasks_todo ?? 0 },
+  { id: "tasks_blocked", label: "Blocked", icon: AlertTriangle, accent: "text-rose-600", soft: "bg-rose-50", fmt: (k) => k.tasks_blocked ?? 0 },
+  { id: "tasks_overdue", label: "Overdue tasks", icon: AlertTriangle, accent: "text-amber-600", soft: "bg-amber-50", fmt: (k) => k.tasks_overdue ?? 0 },
+  { id: "open_risks", label: "Open risks", icon: ShieldAlert, accent: "text-red-600", soft: "bg-red-50", fmt: (k) => k.open_risks ?? 0 },
+  { id: "risk_high", label: "High/critical risks", icon: ShieldAlert, accent: "text-red-700", soft: "bg-red-50", fmt: (k) => k.risk_high ?? 0 },
+  { id: "open_issues", label: "Open issues", icon: AlertTriangle, accent: "text-orange-600", soft: "bg-orange-50", fmt: (k) => k.open_issues ?? 0 },
+  { id: "milestones_done", label: "Milestones", icon: CheckCircle2, accent: "text-teal-600", soft: "bg-teal-50", fmt: (k) => `${k.milestones_done ?? 0}/${k.milestones_total ?? 0}` },
+  { id: "milestones_overdue", label: "Milestones overdue", icon: AlertTriangle, accent: "text-amber-700", soft: "bg-amber-50", fmt: (k) => k.milestones_overdue ?? 0 },
+  { id: "at_risk_projects", label: "At-risk projects", icon: AlertTriangle, accent: "text-rose-600", soft: "bg-rose-50", fmt: (k) => k.at_risk_projects ?? 0 },
+  { id: "budget", label: "Budget", icon: Euro, accent: "text-emerald-600", soft: "bg-emerald-50", fmt: (k) => `€${Number(k.budget || 0).toLocaleString()}` },
+];
+const METRIC_BY_ID: Record<string, MetricDef> = Object.fromEntries(METRIC_CATALOG.map((m) => [m.id, m]));
+const DEFAULT_KPI_METRICS = ["projects", "completion_pct", "tasks_done", "tasks_overdue", "open_risks", "open_issues", "milestones_done", "budget"];
+
+const AUDIENCES = [
+  { value: "private", label: "Private (only me)" },
+  { value: "management", label: "Management" },
+  { value: "tenant", label: "Whole organisation" },
+];
 
 const PIE = ["#22c55e", "#3b82f6", "#a855f7", "#f59e0b", "#ef4444", "#14b8a6", "#94a3b8"];
 // Semantic colours for risk levels so High reads red, Medium amber, Low green.
@@ -155,13 +184,15 @@ export default function AnalyticsDashboard() {
   const [activeDash, setActiveDash] = useState<string>("");
   const [layout, setLayout] = useState<LayoutItem[]>(DEFAULT_LAYOUT);
   const [newName, setNewName] = useState("");
-  const [shared, setShared] = useState(true);
+  const [audience, setAudience] = useState<string>("private");
+  const [description, setDescription] = useState("");
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const mapDash = (d: any): SavedDash => ({
     id: d.id, name: d.name, scope: d.scope, refId: d.ref_id || "", days: d.days,
     layout: Array.isArray(d.layout) && d.layout.length ? d.layout : DEFAULT_LAYOUT,
+    description: d.description, audience: d.audience || (d.shared ? "tenant" : "private"),
     shared: d.shared, created_by_name: d.created_by_name,
   });
 
@@ -217,11 +248,24 @@ export default function AnalyticsDashboard() {
   const toggleHidden = (id: string) =>
     setLayout((prev) => prev.map((l) => (l.id === id ? { ...l, hidden: !l.hidden } : l)));
 
+  // Which KPI metrics the user has chosen for the KPI Tiles widget.
+  const kpiMetricIds: string[] = useMemo(() => {
+    const entry = layout.find((l) => l.id === "kpis");
+    return entry?.metrics?.length ? entry.metrics : DEFAULT_KPI_METRICS;
+  }, [layout]);
+  const toggleMetric = (id: string) =>
+    setLayout((prev) => prev.map((l) => {
+      if (l.id !== "kpis") return l;
+      const cur = l.metrics?.length ? l.metrics : DEFAULT_KPI_METRICS;
+      const next = cur.includes(id) ? cur.filter((m) => m !== id) : [...cur, id];
+      return { ...l, metrics: next.length ? next : DEFAULT_KPI_METRICS };
+    }));
+
   const saveDashboard = async () => {
     const name = (newName || activeDash || "").trim();
     if (!name) { toast.error(pt("Give the dashboard a name")); return; }
     const existing = saved.find((d) => d.name === name);
-    const body = { name, scope, ref_id: scope === "org" ? "" : refId, days, layout, shared };
+    const body = { name, description, scope, ref_id: scope === "org" ? "" : refId, days, layout, audience };
     try {
       const r = await fetch(
         existing?.id ? `/api/v1/projects/analytics-dashboards/${existing.id}/` : "/api/v1/projects/analytics-dashboards/",
@@ -237,7 +281,8 @@ export default function AnalyticsDashboard() {
     const d = saved.find((s) => s.name === name);
     if (!d) return;
     setActiveDash(name); setScope(d.scope); setRefId(d.refId); setDays(d.days);
-    setShared(d.shared ?? true);
+    setAudience(d.audience || (d.shared ? "tenant" : "private"));
+    setDescription(d.description || "");
     setLayout(d.layout?.length ? d.layout : DEFAULT_LAYOUT);
   };
   const deleteDashboard = async () => {
@@ -255,7 +300,7 @@ export default function AnalyticsDashboard() {
   // --- per-widget export --------------------------------------------------
   const widgetRows = (id: string): Record<string, any>[] => {
     switch (id) {
-      case "kpis": return Object.entries(kpis).map(([k, v]) => ({ metric: k, value: v as any }));
+      case "kpis": return kpiMetricIds.map((id) => ({ metric: METRIC_BY_ID[id]?.label || id, value: METRIC_BY_ID[id] ? METRIC_BY_ID[id].fmt(kpis) : kpis[id] }));
       case "trend": return data?.completion_trend || [];
       case "status": return data?.status_breakdown || [];
       case "risks": return data?.risk_breakdown || [];
@@ -303,16 +348,29 @@ export default function AnalyticsDashboard() {
     switch (id) {
       case "kpis":
         return (
-          <CardContent className="px-5 pb-5 pt-2">
+          <CardContent className="px-5 pb-5 pt-2 space-y-4">
+            {customizing && (
+              <div className="rounded-xl border border-dashed border-purple-300 p-3">
+                <div className="text-xs font-medium text-muted-foreground mb-2">{pt("Pick which KPIs to show")}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {METRIC_CATALOG.map((m) => {
+                    const on = kpiMetricIds.includes(m.id);
+                    return (
+                      <button key={m.id} type="button" onClick={() => toggleMetric(m.id)}
+                        className={`text-xs rounded-full px-2.5 py-1 border transition ${on ? "bg-purple-600 text-white border-purple-600" : "bg-background hover:bg-muted text-muted-foreground border-input"}`}>
+                        {on ? "✓ " : "+ "}{pt(m.label)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {kpiTile(FolderKanban, pt("Projects"), kpis.projects, "text-sky-600", "bg-sky-50")}
-              {kpiTile(CheckCircle2, pt("Completion"), `${kpis.completion_pct ?? 0}%`, "text-green-600", "bg-green-50")}
-              {kpiTile(TrendingUp, pt("Tasks done"), `${kpis.tasks_done ?? 0}/${kpis.tasks_total ?? 0}`, "text-violet-600", "bg-violet-50")}
-              {kpiTile(AlertTriangle, pt("Overdue"), kpis.tasks_overdue, "text-amber-600", "bg-amber-50")}
-              {kpiTile(ShieldAlert, pt("Open risks"), kpis.open_risks, "text-red-600", "bg-red-50")}
-              {kpiTile(AlertTriangle, pt("Open issues"), kpis.open_issues, "text-orange-600", "bg-orange-50")}
-              {kpiTile(CheckCircle2, pt("Milestones"), `${kpis.milestones_done ?? 0}/${kpis.milestones_total ?? 0}`, "text-teal-600", "bg-teal-50")}
-              {kpiTile(Euro, pt("Budget"), `€${Number(kpis.budget || 0).toLocaleString()}`, "text-emerald-600", "bg-emerald-50")}
+              {kpiMetricIds.map((id) => {
+                const m = METRIC_BY_ID[id];
+                if (!m) return null;
+                return <div key={id}>{kpiTile(m.icon, pt(m.label), m.fmt(kpis), m.accent, m.soft)}</div>;
+              })}
             </div>
           </CardContent>
         );
@@ -466,14 +524,20 @@ export default function AnalyticsDashboard() {
         <Card className="border-purple-200 bg-purple-50/40">
           <CardContent className="p-3 flex items-center gap-2 flex-wrap text-sm">
             <Plus className="h-4 w-4 text-purple-600" />
-            <span className="text-muted-foreground">{pt("Drag widgets to reorder, toggle the eye to show/hide, then save this layout as a custom dashboard.")}</span>
-            <label className="flex items-center gap-1 ml-auto cursor-pointer text-xs text-muted-foreground">
-              <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} />
-              <Users className="h-3.5 w-3.5" /> {pt("Share with team")}
-            </label>
-            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={pt("Dashboard name")} className="h-8 w-44" />
-            <Button size="sm" className="h-8 gap-1" onClick={saveDashboard}><Save className="h-4 w-4" />{pt("Save")}</Button>
-            {activeDash && <Button size="sm" variant="outline" className="h-8 gap-1 text-destructive" onClick={deleteDashboard}><Trash2 className="h-4 w-4" />{pt("Delete")}</Button>}
+            <span className="text-muted-foreground">{pt("Add/remove KPIs, drag widgets to reorder, toggle the eye to show/hide — then name it, choose who can see it, and save.")}</span>
+            <div className="flex items-center gap-2 ml-auto flex-wrap">
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={pt("Dashboard name")} className="h-8 w-40" />
+              <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={pt("Description (optional)")} className="h-8 w-48" />
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3.5 w-3.5" />
+                <Select value={audience} onValueChange={setAudience}>
+                  <SelectTrigger className="h-8 w-44"><SelectValue /></SelectTrigger>
+                  <SelectContent>{AUDIENCES.map((a) => <SelectItem key={a.value} value={a.value}>{pt(a.label)}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <Button size="sm" className="h-8 gap-1" onClick={saveDashboard}><Save className="h-4 w-4" />{pt("Save")}</Button>
+              {activeDash && <Button size="sm" variant="outline" className="h-8 gap-1 text-destructive" onClick={deleteDashboard}><Trash2 className="h-4 w-4" />{pt("Delete")}</Button>}
+            </div>
           </CardContent>
         </Card>
       )}
