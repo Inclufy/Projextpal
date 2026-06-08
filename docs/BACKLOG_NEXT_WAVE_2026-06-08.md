@@ -77,6 +77,21 @@ Lower-frequency table-stakes still missing vs Jira/Asana/Monday/ClickUp/Linear. 
 
 ---
 
+## EPIC D — Fix-round follow-ups (i18n completeness + dev hygiene)
+
+Surfaced during the post-feature "ga door met fixes" sweep (2026-06-08). The high-value latent bugs of the *empty-label / dead-link / orphan-feature* class were all fixed inline (see commits below); these two are the residue that are content/infra tasks rather than quick fixes.
+
+| ID | Story | Why | Effort |
+|---|---|---|---|
+| D-1 | **Surveys i18n map** | `src/pages/Surveys.tsx` reads `t.surveys` but `LanguageContext` has **no `surveys:` map** in any language → the English fallback object is *always* used, so NL/FR users see English survey labels (~11 keys). Add a `surveys:` block to the EN/NL/FR translation trees. Unlike the Decisions bug this renders text (fallback), so it is cosmetic, not broken. | S |
+| D-2 | **i18n key-balance guard** | EN/NL/FR are currently balanced at 362/362/362 keys (verified). Add a tiny CI/test that re-diffs the three language trees so a future PR that adds an EN key without NL/FR can't silently ship an empty label (the Decisions-bug class). | S |
+| D-3 | **Local dev DB is 40 migrations behind** | the local Postgres `projextpal` is partially migrated (missing academy/governance/collaboration tables), which caused spurious `relation … does not exist` errors during local testing. Run a clean `migrate` (or document `USE_SQLITE=1` for local) so local tests reflect prod. Dev-hygiene only; no prod impact. | XS |
+| D-4 | **Custom fields on Risk/Issue** (= A-1) — referenced here because the entity picker was restricted to `task` this round to avoid orphan definitions; re-enable risk/issue when A-1 wires the storage + editor + columns. | dup of A-1 | — |
+
+**Fixed inline this round (no backlog needed):** `c2d3285c` missing Decisions sidebar label (EN/NL/FR); `de572f6b` custom-fields entity picker restricted to Tasks (orphan-feature); `f0137e3f` CSV import now parses EU/US date formats, not just ISO. Audits that came back clean: full sidebar i18n coverage, no dead nav links (219 targets vs 303 routes), tenant-isolation on all 5 new endpoints (saved-views / custom-fields / recurring / import / gantt).
+
+---
+
 ## Notes / observations logged this session
 
 - **Migration-state-drift** hit twice (0029 custom_fields, 0030 recurringtaskrule). Both fixed with idempotent migrations. **Recommendation:** make idempotency the default for all future column/table-adding migrations in this repo.
