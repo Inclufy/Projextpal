@@ -51,7 +51,10 @@ from accounts.views import save_registration_intent
 router = DefaultRouter()
 router.register(r"crm-api-keys", CrmApiKeyViewSet, basename="crm-api-key")
 
+from notifications.views import DeviceRegisterView
+
 urlpatterns = [
+    path("devices/register/", DeviceRegisterView.as_view(), name="device_register"),
     path("login/", MyTokenObtainPairView.as_view(), name="login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
