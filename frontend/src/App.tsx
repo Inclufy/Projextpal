@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesIcon from "@/components/MessagesIcon";
+import CommandPalette from "@/components/CommandPalette";
 import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -515,6 +516,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
           inner panels (main + AI Copilot sidebar) scroll independently and
           the page itself never scrolls. Previously min-h-screen allowed the
           AI Copilot's chat/issues content to push the body past the viewport. */}
+      <CommandPalette />
       <div className="h-screen flex w-full overflow-hidden">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0 h-screen">
