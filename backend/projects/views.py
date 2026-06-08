@@ -73,6 +73,26 @@ from .serializers import (
 COMPANY_WIDE_ROLES = frozenset({"admin", "pm", "program_manager"})
 
 
+def _parse_import_date(v):
+    """Parse a date from a CSV cell. Tries ISO first, then common EU/US formats
+    (Excel-exported CSVs are usually DD-MM-YYYY or DD/MM/YYYY for EU users).
+    Returns a date or None. Strips any trailing time component first."""
+    from datetime import datetime
+    v = (v or "").strip()
+    if not v:
+        return None
+    v = v.split("T")[0].split(" ")[0]
+    iso = parse_date(v)
+    if iso:
+        return iso
+    for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%d.%m.%Y", "%d-%m-%y", "%d/%m/%y"):
+        try:
+            return datetime.strptime(v, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
 def accessible_project_ids(user):
     """Return the queryset of Project IDs the user is allowed to see.
 
@@ -1548,7 +1568,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             for date_field in ("due_date", "start_date"):
                 v = (str(row.get(date_field) or "")).strip()
                 if v:
-                    parsed = parse_date(v)
+                    parsed = _parse_import_date(v)
                     if parsed:
                         setattr(t, date_field, parsed)
                     else:
