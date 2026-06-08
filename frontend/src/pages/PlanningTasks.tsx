@@ -193,6 +193,7 @@ const PlanningTasks = () => {
                         <th className="font-medium px-3 py-2 w-28">{pt("Due")}</th>
                         <th className="font-medium px-3 py-2 w-28">{pt("Status")}</th>
                         <th className="font-medium px-3 py-2 w-32">{pt("Progress")}</th>
+                        <th className="font-medium px-3 py-2 w-24" title={pt("Discussion")}><span className="inline-flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" />{pt("Discussion")}</span></th>
                         <th className="px-2 py-2 w-16"></th>
                       </tr>
                     </thead>
@@ -205,11 +206,7 @@ const PlanningTasks = () => {
                           <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
                             <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
                             <td className="px-3 py-2.5">
-                              <div className="font-medium flex items-center gap-1.5 flex-wrap">
-                                <span>{t.title}</span>
-                                {commentMeta.counts[t.id] > 0 && <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"><MessageSquare className="h-3 w-3" />{commentMeta.counts[t.id]}</span>}
-                                {commentMeta.mentioned.has(t.id) && <span className="text-[10px] bg-purple-100 text-purple-700 rounded px-1 font-medium">@you</span>}
-                              </div>
+                              <div className="font-medium">{t.title}</div>
                               {(t.product_title || t.work_package_title) && (
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                   {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700 inline-flex items-center gap-1"><Package className="h-2.5 w-2.5" />{t.product_title}</Badge>}
@@ -224,6 +221,12 @@ const PlanningTasks = () => {
                             <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge></td>
                             <td className="px-3 py-2.5"><div className="flex items-center gap-1.5"><Progress value={t.progress} className="h-1.5 w-16" /><span className="text-xs text-muted-foreground">{t.progress}%</span></div></td>
+                            <td className="px-3 py-2.5">
+                              <button onClick={() => openEdit(t)} className="inline-flex items-center gap-1.5 hover:underline">
+                                <span className="inline-flex items-center gap-0.5 text-muted-foreground"><MessageSquare className="h-3.5 w-3.5" />{commentMeta.counts[t.id] || 0}</span>
+                                {commentMeta.mentioned.has(t.id) && <span className="text-[10px] bg-purple-100 text-purple-700 rounded px-1 font-medium">@you</span>}
+                              </button>
+                            </td>
                             <td className="px-2 py-2.5">
                               <div className="flex gap-0.5">
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
