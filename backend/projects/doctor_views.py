@@ -6,9 +6,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.permissions import HasRole
 from .views import accessible_project_ids
 from .models import Project, Milestone, Task
 from .project_doctor import diagnose
+
+# Applying a proposed fix creates an Action task — a management action, so
+# gate it to PM+ (superadmin always passes). Diagnosing (read) stays open to
+# anyone who can already see the project.
+IsManager = HasRole("admin", "pm", "program_manager")
 
 
 def _get_project(request, pk):
@@ -26,7 +32,7 @@ def project_diagnose(request, pk):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsManager])
 def project_doctor_apply(request, pk):
     """Execute a proposed action: create an Action task in the Action Tracker."""
     project = _get_project(request, pk)

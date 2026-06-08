@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Loader2, Activity, RefreshCw, ShieldAlert, CheckCircle2, Plus, ArrowRight } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+
+const PM_PLUS = ["pm", "program_manager", "admin", "superadmin"];
 
 interface ProposedAction { title: string; priority: string; due_in_days: number }
 interface Problem {
@@ -34,6 +37,8 @@ export default function ProjectDoctor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { pt } = usePageTranslations();
+  const { user } = useAuth();
+  const isPMPlus = PM_PLUS.includes(user?.role || "") || (user as any)?.isSuperAdmin === true;
   const [data, setData] = useState<Diagnosis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -153,11 +158,13 @@ export default function ProjectDoctor() {
                         </div>
                         {done ? (
                           <Badge className="bg-green-100 text-green-700 gap-1"><CheckCircle2 className="h-3.5 w-3.5" />{pt("Applied")}</Badge>
-                        ) : (
+                        ) : isPMPlus ? (
                           <Button size="sm" className="gap-1.5 h-8" disabled={applying === key} onClick={() => apply(p.id, i, a)}>
                             {applying === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                             {pt("Apply")}
                           </Button>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground italic">{pt("PM/admin only")}</span>
                         )}
                       </div>
                     );

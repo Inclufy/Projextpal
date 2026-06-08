@@ -15,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useAuth } from '@/contexts/AuthContext';
+
+const PM_PLUS = ['pm', 'program_manager', 'admin', 'superadmin'];
 
 const fetchProject = async (id: string) => {
   const token = localStorage.getItem("access_token");
@@ -42,6 +45,8 @@ const updateProject = async ({ id, data }: { id: string; data: any }) => {
 export const ProjectHeader = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
+  const isPMPlus = PM_PLUS.includes(user?.role || '') || (user as any)?.isSuperAdmin === true;
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -103,13 +108,15 @@ export const ProjectHeader = () => {
             <Edit2 className="h-4 w-4" />
             {pt("Edit Project")}
           </Button>
-          <Button
-            className="gap-2"
-            onClick={() => navigate(`/projects/${id}/ai-doctor`)}
-          >
-            <Sparkles className="h-4 w-4" />
-            {pt("Analyze with AI")}
-          </Button>
+          {isPMPlus && (
+            <Button
+              className="gap-2"
+              onClick={() => navigate(`/projects/${id}/ai-doctor`)}
+            >
+              <Sparkles className="h-4 w-4" />
+              {pt("Analyze with AI")}
+            </Button>
+          )}
         </div>
       </div>
 
