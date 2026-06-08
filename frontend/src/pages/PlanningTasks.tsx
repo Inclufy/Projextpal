@@ -14,6 +14,7 @@ import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes,
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
+import SavedViews from "@/components/SavedViews";
 import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "To Do"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
@@ -33,6 +34,7 @@ const PlanningTasks = () => {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [groupBy, setGroupBy] = useState<"category" | "milestone" | "type" | "owner" | "status">("category");
+  const [search, setSearch] = useState("");
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -108,9 +110,13 @@ const PlanningTasks = () => {
     if (groupBy === "owner") return t.assigned_to_name || pt("Unassigned");
     return label(STATUSES, t.status);
   };
+  const q = search.trim().toLowerCase();
+  const visibleTasks = q
+    ? tasks.filter((t) => (`${t.title} ${t.category || ""} ${t.assigned_to_name || ""}`).toLowerCase().includes(q))
+    : tasks;
   const groups: [string, any[]][] = (() => {
     const map: Record<string, any[]> = {};
-    tasks.forEach((t) => { const k = groupOf(t) || "—"; (map[k] = map[k] || []).push(t); });
+    visibleTasks.forEach((t) => { const k = groupOf(t) || "—"; (map[k] = map[k] || []).push(t); });
     return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
   })();
   const exportSections = [{ heading: "Tasks", rows: tasks.map((t) => [t.title, `${label(STATUSES, t.status)} · ${label(PRIORITIES, t.priority)} · ${t.progress}%`]) as [string, any][] }];
@@ -137,14 +143,20 @@ const PlanningTasks = () => {
         </div>
 
         {tasks.length > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">{pt("Group by")}:</span>
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={pt("Search tasks…")} className="h-8 w-48" />
+            <span className="text-muted-foreground ml-1">{pt("Group by")}:</span>
             <div className="flex bg-muted rounded-lg p-1 flex-wrap">
               {(["category", "milestone", "type", "owner", "status"] as const).map((g) => (
                 <Button key={g} size="sm" variant={groupBy === g ? "default" : "ghost"} className="h-7" onClick={() => setGroupBy(g)}>
                   {pt(g === "category" ? "Category" : g === "milestone" ? "Milestone" : g === "type" ? "Type" : g === "owner" ? "Owner" : "Status")}
                 </Button>
               ))}
+            </div>
+            <div className="ml-auto">
+              <SavedViews surface="tasks" projectId={id}
+                currentConfig={{ groupBy, search }}
+                onApply={(c) => { if (c.groupBy) setGroupBy(c.groupBy); setSearch(c.search || ""); }} />
             </div>
           </div>
         )}

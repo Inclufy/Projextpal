@@ -33,6 +33,7 @@ from .views import (
 # Methodology views
 from .views_methodology import MethodologyListView, MethodologyDetailView, MethodologyTemplateView
 from .analytics_views import analytics_overview, SavedAnalyticsDashboardViewSet
+from .saved_view_views import SavedViewViewSet
 from .doctor_views import project_diagnose, project_doctor_apply
 from .role_views import my_project_role
 from .my_work_views import my_work
@@ -40,6 +41,7 @@ from .my_work_views import my_work
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
 router.register(r"analytics-dashboards", SavedAnalyticsDashboardViewSet, basename="analytics-dashboard")
+router.register(r"saved-views", SavedViewViewSet, basename="saved-view")
 router.register(r"milestones", MilestoneViewSet, basename="milestone")
 router.register(r"tasks", TaskViewSet, basename="task")
 router.register(r"task-due-change-requests", TaskDueDateChangeRequestViewSet, basename="task-due-change-request")

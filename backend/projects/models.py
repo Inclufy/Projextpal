@@ -1866,3 +1866,37 @@ class SavedAnalyticsDashboard(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.scope})"
+
+
+class SavedView(models.Model):
+    """A user-authored saved list view (filters + grouping + sort) for a given
+    surface ('tasks', 'actions', 'risks', …). Lets a user save 'My overdue
+    work' once and reload it. Company-scoped; audience controls who can load it.
+    Mirrors SavedAnalyticsDashboard.
+    """
+    AUDIENCE_CHOICES = [
+        ("private", "Private (only me)"),
+        ("management", "Management"),
+        ("tenant", "Whole organization"),
+    ]
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="saved_views"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    surface = models.CharField(max_length=32, db_index=True)   # tasks | actions | risks | …
+    project_id_ref = models.IntegerField(null=True, blank=True)  # null = global view
+    name = models.CharField(max_length=120)
+    config = models.JSONField(default=dict, blank=True)         # {filters, group_by, sort, search}
+    audience = models.CharField(max_length=16, choices=AUDIENCE_CHOICES, default="private")
+    shared = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        unique_together = ("company", "surface", "name")
+
+    def __str__(self):
+        return f"{self.name} [{self.surface}]"
