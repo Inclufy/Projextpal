@@ -97,6 +97,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "depends_on",
             "depends_on_titles",
             "subtasks",
+            "custom_fields",
             "created_at",
             "updated_at",
             "project_id",

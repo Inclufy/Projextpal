@@ -13,6 +13,7 @@ import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNo
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
+import CustomFieldsEditor, { useCustomFieldDefs } from "@/components/CustomFieldsEditor";
 import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "Open"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
@@ -32,6 +33,9 @@ const ActionTracker = () => {
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [customValues, setCustomValues] = useState<Record<string, any>>({});
+  const { defs: customDefs } = useCustomFieldDefs("task");
+  const tableCustom = customDefs.filter((f) => f.show_in_table);
   const [noteText, setNoteText] = useState("");
   const { user } = useAuth();
   const [showClosed, setShowClosed] = useState(false);
@@ -101,13 +105,14 @@ const ActionTracker = () => {
     return milestones[0] ? String(milestones[0].id) : null;
   };
 
-  const openCreate = () => { setEditing(null); setForm({ ...emptyForm }); setNoteText(""); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ ...emptyForm }); setCustomValues({}); setNoteText(""); setDialogOpen(true); };
   const openEdit = (t: any) => {
     setEditing(t);
     setForm({
       title: t.title || "", assigned_to: t.assigned_to ? String(t.assigned_to) : "",
       priority: t.priority || "medium", status: t.status || "todo", due_date: t.due_date?.split("T")[0] || "",
     });
+    setCustomValues(t.custom_fields || {});
     setNoteText("");
     setDialogOpen(true);
   };
@@ -119,6 +124,7 @@ const ActionTracker = () => {
       const body: any = { title: form.title, priority: form.priority, status: form.status, category: "Action" };
       if (form.assigned_to) body.assigned_to = Number(form.assigned_to);
       if (form.due_date) body.due_date = form.due_date;
+      if (customDefs.length) body.custom_fields = customValues;
       let url: string; let method: string;
       if (editing) { url = `/api/v1/projects/tasks/${editing.id}/`; method = "PATCH"; }
       else {
@@ -245,6 +251,7 @@ const ActionTracker = () => {
                     <th className="font-medium px-3 py-2.5 w-28">{pt("Due")}</th>
                     <th className="font-medium px-3 py-2.5 w-24">{pt("Priority")}</th>
                     <th className="font-medium px-3 py-2.5 w-32">{pt("Status")}</th>
+                    {tableCustom.map((f) => <th key={f.id} className="font-medium px-3 py-2.5 whitespace-nowrap">{f.label}</th>)}
                     <th className="font-medium px-3 py-2.5 w-24" title={pt("Discussion")}><span className="inline-flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" />{pt("Discussion")}</span></th>
                     <th className="px-2 py-2.5 w-16"></th>
                   </tr>
@@ -277,6 +284,16 @@ const ActionTracker = () => {
                             <SelectContent>{STATUSES.map(([v, l]) => <SelectItem key={v} value={v}>{pt(l)}</SelectItem>)}</SelectContent>
                           </Select>
                         </td>
+                        {tableCustom.map((f) => {
+                          const v = (t.custom_fields || {})[f.key];
+                          return (
+                            <td key={f.id} className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
+                              {f.field_type === "checkbox" ? (v ? "✓" : "—")
+                                : f.field_type === "url" && v ? <a href={String(v)} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">link</a>
+                                : (v === undefined || v === null || v === "" ? "—" : String(v))}
+                            </td>
+                          );
+                        })}
                         <td className="px-3 py-2.5">
                           <button onClick={() => openEdit(t)} className="inline-flex items-center gap-1.5 hover:underline">
                             <span className="inline-flex items-center gap-0.5 text-muted-foreground"><MessageSquare className="h-3.5 w-3.5" />{commentMeta.counts[t.id] || 0}</span>
@@ -328,6 +345,11 @@ const ActionTracker = () => {
                 </Select>
               </div>
             </div>
+            {customDefs.length > 0 && (
+              <div className="border-t pt-3">
+                <CustomFieldsEditor entity="task" values={customValues} onChange={setCustomValues} />
+              </div>
+            )}
             {form.assigned_to && (
               <div className="space-y-2">
                 <Label>{pt("Message for the owner (optional)")}</Label>

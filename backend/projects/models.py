@@ -305,6 +305,9 @@ class Task(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Tenant-defined custom fields. Values keyed by CustomFieldDefinition.key.
+    # Stored as JSON so adding a field needs no schema migration.
+    custom_fields = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ["order_index", "id"]
@@ -1900,3 +1903,48 @@ class SavedView(models.Model):
 
     def __str__(self):
         return f"{self.name} [{self.surface}]"
+
+
+class CustomFieldDefinition(models.Model):
+    """A tenant-defined extra field on an entity (tasks for now). Admins create
+    these; the value lives in Task.custom_fields keyed by ``key``. Lets a
+    customer add e.g. 'Cost Centre', 'Sprint', 'External Ref' without a schema
+    change. Company-scoped so each tenant has its own field set.
+    """
+    ENTITY_CHOICES = [
+        ("task", "Task / Action"),
+        ("risk", "Risk"),
+        ("issue", "Issue"),
+    ]
+    FIELD_TYPES = [
+        ("text", "Text"),
+        ("number", "Number"),
+        ("date", "Date"),
+        ("select", "Single select"),
+        ("checkbox", "Checkbox"),
+        ("url", "URL"),
+    ]
+    company = models.ForeignKey(
+        "accounts.Company", on_delete=models.CASCADE, related_name="custom_field_defs"
+    )
+    entity = models.CharField(max_length=16, choices=ENTITY_CHOICES, default="task", db_index=True)
+    key = models.SlugField(max_length=40)   # stable JSON key, e.g. "cost_centre"
+    label = models.CharField(max_length=80)
+    field_type = models.CharField(max_length=16, choices=FIELD_TYPES, default="text")
+    options = models.JSONField(default=list, blank=True)   # for select: ["A","B"]
+    required = models.BooleanField(default=False)
+    show_in_table = models.BooleanField(default=False)     # render as a list column
+    order_index = models.PositiveIntegerField(default=0)
+    active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["entity", "order_index", "label"]
+        unique_together = ("company", "entity", "key")
+
+    def __str__(self):
+        return f"{self.label} ({self.entity}.{self.key})"
