@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from projects.role_views import my_program_role
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -43,6 +44,7 @@ urlpatterns = [
     # Demo seed/clear (admins, PMs, programme managers only)
     path('<int:pk>/seed-demo/', ProgramSeedDemoView.as_view(), name='program-seed-demo'),
     path('<int:pk>/clear-demo/', ProgramClearDemoView.as_view(), name='program-clear-demo'),
+    path('<int:pk>/my-role/', my_program_role, name='program-my-role'),
 
     # Nested routes for benefits
     path('<int:program_pk>/benefits/',
