@@ -830,12 +830,6 @@ def get_project_analysis(
     Returns:
         Comprehensive analysis dictionary
     """
-    # Validate project ID
-    if not project_id.isdigit():
-        return {"error": "Invalid project ID format"}
-
-    project_id = int(project_id)
-
     # Get user session for permissions
     user_session = get_user_session()
     if not user_session or not user_session.get("user"):
@@ -843,13 +837,26 @@ def get_project_analysis(
 
     user = user_session["user"]
 
-    # Get the project with permission check
-    try:
-        project = Project.objects.get(id=project_id, company=user.company)
-    except Project.DoesNotExist:
-        return {
-            "error": f"Project with ID {project_id} not found or you don't have access to it."
-        }
+    # Resolve the project by ID *or* name, so "analyze Stage zanjabil" works
+    # just as well as "analyze project 5".
+    is_superadmin = getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)
+    base = Project.objects.all() if is_superadmin else Project.objects.filter(company=user.company)
+    query = str(project_id).strip().strip('"').strip("'")
+
+    project = None
+    if query.isdigit():
+        project = base.filter(id=int(query)).first()
+    if project is None and query:
+        matches = list(base.filter(name__icontains=query)[:6])
+        if len(matches) == 1:
+            project = matches[0]
+        elif len(matches) > 1:
+            listing = ", ".join(f'"{m.name}" (#{m.id})' for m in matches)
+            return {"error": f"Multiple projects match '{query}': {listing}. Which one do you mean?"}
+    if project is None:
+        return {"error": f"No project found matching '{project_id}'. Try the exact project name or its numeric ID."}
+
+    project_id = project.id
 
     # Get time filter dates
     start_date, end_date = get_time_filter_dates(time_filter)
@@ -922,14 +929,16 @@ def analyze_project_summary(
     project analysis, project summary, project health, or project status.
 
     Args:
-        project_id: The ID of the project to analyze
+        project_id: The project to analyze — accepts EITHER the numeric ID OR the
+            project NAME (e.g. "Stage zanjabil"). The name is matched
+            case-insensitively; pass exactly what the user wrote.
         time_filter: Time period for analysis - 'day', 'week', 'month', or 'overall' (default: 'overall')
 
     Examples:
     - "Analyze project 5"
-    - "Give me a summary of project 3 for the last week"
+    - "Analyze project Stage zanjabil"  -> pass project_id="Stage zanjabil"
+    - "Give me a summary of the Renovation project"  -> pass project_id="Renovation"
     - "What's the health status of project 10?"
-    - "Show me project 7 analysis for the last month"
     """
     # Check permissions
     permission_error = require_permission(
