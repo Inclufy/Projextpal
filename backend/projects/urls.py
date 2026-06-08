@@ -34,6 +34,7 @@ from .views import (
 from .views_methodology import MethodologyListView, MethodologyDetailView, MethodologyTemplateView
 from .analytics_views import analytics_overview, SavedAnalyticsDashboardViewSet
 from .doctor_views import project_diagnose, project_doctor_apply
+from .role_views import my_project_role
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -80,6 +81,7 @@ urlpatterns = [
     path("analytics/overview/", analytics_overview, name="analytics-overview"),
     path("<int:pk>/doctor/diagnose/", project_diagnose, name="project-diagnose"),
     path("<int:pk>/doctor/apply/", project_doctor_apply, name="project-doctor-apply"),
+    path("<int:pk>/my-role/", my_project_role, name="project-my-role"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),
