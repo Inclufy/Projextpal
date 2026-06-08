@@ -37,6 +37,7 @@ import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { CreditCard, ArrowUpRight, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import OnboardingChecklist from '@/components/OnboardingChecklist';
 
 const fetchProjects = async () => {
   const token = localStorage.getItem("access_token");
@@ -500,6 +501,8 @@ const Index = () => {
           isLoading={aiLoading} 
           content={aiSummary} 
         />
+
+        <OnboardingChecklist />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
           <StatCard title={pt("Programs")} value={totalPrograms} subtitle={t.app.totalPrograms} icon={Building2} color="purple" />
