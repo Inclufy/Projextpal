@@ -491,6 +491,7 @@ const communicationGroup = (projectId: string) => ({
   title: "Communication",
   icon: Mail,
   items: [
+    { title: "Discussion", url: `/projects/${projectId}/discussion`, icon: MessageSquare },
     { title: "Meetings", url: `/projects/${projectId}/execution/communication/meeting`, icon: Users },
     { title: "Newsletters", url: `/projects/${projectId}/execution/communication/newsletters`, icon: Mail },
   ],

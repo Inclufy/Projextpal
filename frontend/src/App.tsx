@@ -7,6 +7,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import NotificationBell from "@/components/NotificationBell";
+import MessagesIcon from "@/components/MessagesIcon";
 import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,6 +98,8 @@ const FoundationInvoices = lazyWithRetry(() => import("./pages/FoundationInvoice
 const PlanningTasks = lazyWithRetry(() => import("./pages/PlanningTasks"));
 const ActionTracker = lazyWithRetry(() => import("./pages/ActionTracker"));
 const ProjectDoctor = lazyWithRetry(() => import("./pages/ProjectDoctor"));
+const ProjectDiscussion = lazyWithRetry(() => import("./pages/ProjectDiscussion"));
+const Messages = lazyWithRetry(() => import("./pages/Messages"));
 const AssumptionsRegister = lazyWithRetry(() => import("./pages/AssumptionsRegister"));
 const PlanningRaci = lazyWithRetry(() => import("./pages/PlanningRaci"));
 const PlanningDependencies = lazyWithRetry(() => import("./pages/PlanningDependencies"));
@@ -475,6 +478,9 @@ const AppHeader = () => {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
+
+        {/* Direct messages */}
+        <MessagesIcon />
 
         {/* Notification centre */}
         <NotificationBell />
@@ -943,6 +949,8 @@ const App = () => (
               <Route path="/projects/:id/planning/tasks" element={<ProtectedPage><PlanningTasks /></ProtectedPage>} />
               <Route path="/projects/:id/action-tracker" element={<ProtectedPage><ActionTracker /></ProtectedPage>} />
               <Route path="/projects/:id/ai-doctor" element={<ProtectedPage><ProjectDoctor /></ProtectedPage>} />
+              <Route path="/projects/:id/discussion" element={<ProtectedPage><ProjectDiscussion /></ProtectedPage>} />
+              <Route path="/messages" element={<ProtectedPage><Messages /></ProtectedPage>} />
               <Route path="/projects/:id/assumptions" element={<ProtectedPage><AssumptionsRegister /></ProtectedPage>} />
               <Route path="/projects/:id/planning/raci" element={<ProtectedPage><PlanningRaci /></ProtectedPage>} />
               <Route path="/projects/:id/planning/dependencies" element={<ProtectedPage><PlanningDependencies /></ProtectedPage>} />
