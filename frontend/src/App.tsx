@@ -9,7 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesIcon from "@/components/MessagesIcon";
 import CommandPalette from "@/components/CommandPalette";
-import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban, ChevronDown, Check } from "lucide-react";
+import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, Search, FolderKanban, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -452,6 +452,24 @@ const AppHeader = () => {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Global search / command palette (discoverability for ⌘K) */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+          title={t.nav?.search || "Search"}
+          className="hidden md:flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-muted/40 text-muted-foreground hover:bg-muted transition-colors text-sm"
+        >
+          <Search className="h-4 w-4" />
+          <span>{t.nav?.search || "Search"}</span>
+          <kbd className="ml-1 px-1.5 py-0.5 rounded bg-background border border-border text-[10px] font-mono">⌘K</kbd>
+        </button>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+          title={t.nav?.search || "Search"}
+          className="md:hidden flex items-center justify-center h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground"
+        >
+          <Search className="h-5 w-5" />
+        </button>
 
         {/* Language Selector */}
         <LanguageSelector />

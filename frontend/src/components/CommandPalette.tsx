@@ -26,8 +26,14 @@ export default function CommandPalette() {
         setOpen((o) => !o);
       }
     };
+    // Also openable from a visible button (discoverability) via a custom event.
+    const onOpenEvent = () => setOpen(true);
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    window.addEventListener("open-command-palette", onOpenEvent);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-command-palette", onOpenEvent);
+    };
   }, []);
 
   // Load projects once the palette is first opened.
