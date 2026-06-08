@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquare, FolderKanban, Users, 
+import { LayoutDashboard, MessageSquare, FolderKanban, Users, Inbox,
   FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare, 
   GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText, 
   Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers, 
@@ -1134,6 +1134,7 @@ export function AppSidebar() {
     const baseItems = [
       // — Overview —
       { title: ts.dashboard, url: "/dashboard", icon: LayoutDashboard, feature: null },
+      { title: isNL ? "Mijn werk" : "My Work", url: "/my-work", icon: Inbox, feature: null },
       // — Delivery —
       { title: ts.allProjects, url: "/projects", icon: FolderKanban, feature: null },
     ];
