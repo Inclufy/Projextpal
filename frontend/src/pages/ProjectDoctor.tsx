@@ -36,6 +36,7 @@ export default function ProjectDoctor() {
   const { pt } = usePageTranslations();
   const [data, setData] = useState<Diagnosis | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [applied, setApplied] = useState<Record<string, boolean>>({});
   const [applying, setApplying] = useState<string | null>(null);
 
@@ -43,11 +44,12 @@ export default function ProjectDoctor() {
   const jsonHeaders = () => ({ ...headers(), "Content-Type": "application/json" });
 
   const run = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setError(false);
     try {
       const r = await fetch(`/api/v1/projects/${id}/doctor/diagnose/`, { headers: headers() });
-      setData(r.ok ? await r.json() : null);
-    } catch { setData(null); }
+      if (r.ok) { setData(await r.json()); }
+      else { setData(null); setError(true); }
+    } catch { setData(null); setError(true); }
     finally { setLoading(false); }
   }, [id]);
 
@@ -94,7 +96,14 @@ export default function ProjectDoctor() {
           <Button variant="outline" size="sm" className="gap-2" onClick={run}><RefreshCw className="h-4 w-4" />{pt("Re-analyze")}</Button>
         </div>
 
-        {problems.length === 0 ? (
+        {error ? (
+          <Card className="p-10 text-center border-red-200">
+            <ShieldAlert className="h-12 w-12 mx-auto text-red-400 mb-3" />
+            <h3 className="text-lg font-semibold mb-1">{pt("Could not analyze this project")}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{pt("The AI Doctor service did not respond (or you don't have access to this project). Try again.")}</p>
+            <Button variant="outline" size="sm" className="gap-2 mx-auto" onClick={run}><RefreshCw className="h-4 w-4" />{pt("Re-analyze")}</Button>
+          </Card>
+        ) : problems.length === 0 ? (
           <Card className="p-10 text-center">
             <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-3" />
             <h3 className="text-lg font-semibold mb-1">{pt("No problems detected")}</h3>
