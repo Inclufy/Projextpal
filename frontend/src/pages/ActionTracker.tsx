@@ -62,6 +62,21 @@ const ActionTracker = () => {
   };
   useEffect(() => { fetchData(); fetchCommentMeta(); }, [id]);
 
+  // ------- bulk select + edit -------
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const toggleSel = (tid: number) => setSelected((p) => { const n = new Set(p); n.has(tid) ? n.delete(tid) : n.add(tid); return n; });
+  const clearSel = () => setSelected(new Set());
+  const bulkApply = async (body: any) => {
+    try {
+      const r = await fetch(`/api/v1/projects/tasks/bulk-update/`, {
+        method: "POST", headers: jsonHeaders,
+        body: JSON.stringify({ ids: Array.from(selected), ...body }),
+      });
+      if (r.ok) { toast.success(pt("Updated")); clearSel(); fetchData(); fetchCommentMeta(); }
+      else toast.error(pt("Bulk action failed"));
+    } catch { toast.error(pt("Bulk action failed")); }
+  };
+
   // ------- what counts as an "action" -------
   const isAction = (t: any): boolean => {
     const cat = (t.category || "").toLowerCase();
@@ -201,11 +216,28 @@ const ActionTracker = () => {
             <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />{pt("Add Action")}</Button>
           </Card>
         ) : (
+          <>
+          {selected.size > 0 && (
+            <Card className="p-2.5 mb-3 flex items-center gap-2 flex-wrap bg-purple-50/60 border-purple-200">
+              <span className="text-sm font-medium ml-1">{selected.size} {pt("selected")}</span>
+              <Select onValueChange={(v) => bulkApply({ status: v })}>
+                <SelectTrigger className="h-8 w-36"><SelectValue placeholder={pt("Set status")} /></SelectTrigger>
+                <SelectContent>{STATUSES.map(([v, l]) => <SelectItem key={v} value={v}>{pt(l)}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select onValueChange={(v) => bulkApply({ priority: v })}>
+                <SelectTrigger className="h-8 w-36"><SelectValue placeholder={pt("Set priority")} /></SelectTrigger>
+                <SelectContent>{PRIORITIES.map(([v, l]) => <SelectItem key={v} value={v}>{pt(l)}</SelectItem>)}</SelectContent>
+              </Select>
+              <Button size="sm" variant="outline" className="h-8 gap-1 text-destructive" onClick={() => { if (confirm(pt("Delete the selected actions?"))) bulkApply({ action: "delete" }); }}><Trash2 className="h-3.5 w-3.5" />{pt("Delete")}</Button>
+              <Button size="sm" variant="ghost" className="h-8 ml-auto" onClick={clearSel}>{pt("Clear")}</Button>
+            </Card>
+          )}
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-muted-foreground border-b bg-muted/50">
+                    <th className="px-3 py-2.5 w-8"><input type="checkbox" checked={actions.length > 0 && actions.every((a) => selected.has(a.id))} onChange={(e) => setSelected(e.target.checked ? new Set(actions.map((a) => a.id)) : new Set())} /></th>
                     <th className="font-medium px-4 py-2.5 w-12">{pt("Nr.")}</th>
                     <th className="font-medium px-3 py-2.5">{pt("Action")}</th>
                     <th className="font-medium px-3 py-2.5 w-40">{pt("Owner")}</th>
@@ -221,7 +253,8 @@ const ActionTracker = () => {
                   {actions.map((t, idx) => {
                     const overdue = t.due_date && t.due_date < today && t.status !== "done";
                     return (
-                      <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
+                      <tr key={t.id} className={`border-b last:border-0 hover:bg-accent/40 align-top ${selected.has(t.id) ? "bg-purple-50/40" : ""}`}>
+                        <td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleSel(t.id)} /></td>
                         <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
                         <td className="px-3 py-2.5">
                           <div className="font-medium">{t.title}</div>
@@ -263,6 +296,7 @@ const ActionTracker = () => {
               </table>
             </div>
           </Card>
+          </>
         )}
       </div>
 

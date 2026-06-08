@@ -1441,9 +1441,34 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [IsAuthenticated()]
-        if self.action in ["create", "update", "partial_update"]:
+        if self.action in ["create", "update", "partial_update", "bulk_update"]:
             return [IsAuthenticated(), IsAdminOrPMOrContributor()]
         return [IsAuthenticated(), IsAdminOrPM()]
+
+    @action(detail=False, methods=["post"], url_path="bulk-update")
+    def bulk_update(self, request):
+        """Update or delete many tasks at once. Body:
+        {ids:[...], action:'update'|'delete', status?, priority?, assigned_to?}.
+        Scoped through get_queryset so only accessible tasks are touched."""
+        ids = request.data.get("ids") or []
+        if not isinstance(ids, list) or not ids:
+            return Response({"detail": "ids (non-empty list) required"}, status=400)
+        qs = self.get_queryset().filter(id__in=ids)
+        if (request.data.get("action") or "update") == "delete":
+            n = qs.count()
+            qs.delete()
+            return Response({"ok": True, "deleted": n})
+        fields = {}
+        if request.data.get("status"):
+            fields["status"] = request.data["status"]
+        if request.data.get("priority"):
+            fields["priority"] = request.data["priority"]
+        if "assigned_to" in request.data:
+            fields["assigned_to_id"] = request.data["assigned_to"] or None
+        if not fields:
+            return Response({"detail": "no fields to update"}, status=400)
+        n = qs.update(**fields)
+        return Response({"ok": True, "updated": n})
 
     def get_queryset(self):
         qs = super().get_queryset()
