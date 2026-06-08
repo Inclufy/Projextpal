@@ -49,7 +49,14 @@ const PlanningTasks = () => {
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
-  useEffect(() => { fetchData(); }, [id]);
+  const [commentMeta, setCommentMeta] = useState<{ counts: Record<string, number>; mentioned: Set<number> }>({ counts: {}, mentioned: new Set() });
+  const fetchCommentMeta = async () => {
+    try {
+      const r = await fetch(`/api/v1/comments/counts/?project=${id}`, { headers });
+      if (r.ok) { const d = await r.json(); setCommentMeta({ counts: d.counts || {}, mentioned: new Set(d.mentioned_task_ids || []) }); }
+    } catch { /* ignore */ }
+  };
+  useEffect(() => { fetchData(); fetchCommentMeta(); }, [id]);
 
   const openCreate = () => { setEditing(null); setForm({ ...emptyForm, milestone: milestones[0] ? String(milestones[0].id) : "" }); setDialogOpen(true); };
   const openEdit = (t: any) => {
@@ -69,7 +76,7 @@ const PlanningTasks = () => {
       if (form.due_date) body.due_date = form.due_date;
       const url = editing ? `/api/v1/projects/tasks/${editing.id}/` : `/api/v1/projects/tasks/`;
       const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) });
-      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); fetchCommentMeta(); }
       else { const d = await r.json().catch(() => ({})); toast.error(d.detail || JSON.stringify(d).slice(0, 120) || pt("Save failed")); }
     } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
@@ -198,7 +205,11 @@ const PlanningTasks = () => {
                           <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
                             <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
                             <td className="px-3 py-2.5">
-                              <div className="font-medium">{t.title}</div>
+                              <div className="font-medium flex items-center gap-1.5 flex-wrap">
+                                <span>{t.title}</span>
+                                {commentMeta.counts[t.id] > 0 && <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"><MessageSquare className="h-3 w-3" />{commentMeta.counts[t.id]}</span>}
+                                {commentMeta.mentioned.has(t.id) && <span className="text-[10px] bg-purple-100 text-purple-700 rounded px-1 font-medium">@you</span>}
+                              </div>
                               {(t.product_title || t.work_package_title) && (
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                   {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700 inline-flex items-center gap-1"><Package className="h-2.5 w-2.5" />{t.product_title}</Badge>}

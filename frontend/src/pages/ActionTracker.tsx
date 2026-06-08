@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote, MessageSquare } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
@@ -53,7 +53,14 @@ const ActionTracker = () => {
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
-  useEffect(() => { fetchData(); }, [id]);
+  const [commentMeta, setCommentMeta] = useState<{ counts: Record<string, number>; mentioned: Set<number> }>({ counts: {}, mentioned: new Set() });
+  const fetchCommentMeta = async () => {
+    try {
+      const r = await fetch(`/api/v1/comments/counts/?project=${id}`, { headers });
+      if (r.ok) { const d = await r.json(); setCommentMeta({ counts: d.counts || {}, mentioned: new Set(d.mentioned_task_ids || []) }); }
+    } catch { /* ignore */ }
+  };
+  useEffect(() => { fetchData(); fetchCommentMeta(); }, [id]);
 
   // ------- what counts as an "action" -------
   const isAction = (t: any): boolean => {
@@ -118,7 +125,7 @@ const ActionTracker = () => {
             });
           } catch { /* note is best-effort */ }
         }
-        toast.success(pt("Saved")); setDialogOpen(false); fetchData();
+        toast.success(pt("Saved")); setDialogOpen(false); fetchData(); fetchCommentMeta();
       }
       else { const d = await r.json().catch(() => ({})); toast.error(d.detail || JSON.stringify(d).slice(0, 120) || pt("Save failed")); }
     } catch { toast.error(pt("Save failed")); }
@@ -216,7 +223,11 @@ const ActionTracker = () => {
                       <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
                         <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
                         <td className="px-3 py-2.5">
-                          <div className="font-medium">{t.title}</div>
+                          <div className="font-medium flex items-center gap-1.5 flex-wrap">
+                            <span>{t.title}</span>
+                            {commentMeta.counts[t.id] > 0 && <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"><MessageSquare className="h-3 w-3" />{commentMeta.counts[t.id]}</span>}
+                            {commentMeta.mentioned.has(t.id) && <span className="text-[10px] bg-purple-100 text-purple-700 rounded px-1 font-medium">@you</span>}
+                          </div>
                           {(t.milestone_name || t.work_package_title) && (
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {t.milestone_name && !/^actions?$/i.test(t.milestone_name) && <Badge variant="secondary" className="text-[10px] inline-flex items-center gap-1"><StickyNote className="h-2.5 w-2.5" />{t.milestone_name}</Badge>}
