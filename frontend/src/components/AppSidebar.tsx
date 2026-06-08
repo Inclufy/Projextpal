@@ -502,7 +502,7 @@ const categoryOf = (url: string): string => {
   return "planning"; // tasks/plan/board/gantt/sprint/phase + unmatched
 };
 
-interface RoleInfo { full_access: boolean; can_view_costs: boolean; allowed_categories: string[]; role_label?: string; read_only?: boolean }
+interface RoleInfo { full_access: boolean; can_view_costs: boolean; allowed_categories: string[]; role_label?: string; read_only?: boolean; previewable_roles?: string[]; preview?: boolean }
 
 const filterPhasesByRole = (phases: any[], info: RoleInfo | null) => {
   if (!info || info.full_access) return phases;
@@ -1218,14 +1218,20 @@ export function AppSidebar() {
   const programMethodology = isProgramContext ? (program?.methodology || 'hybrid') : null;
   const programMethodologyBadge = isProgramContext ? getMethodologyBadge(programMethodology) : null;
   
-  // Effective per-project role → curates which tabs this user sees.
+  // Effective role on this project/programme → curates which tabs are shown.
+  // Admins can preview another role's view via previewRole (?preview_role=).
   const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  const [previewRole, setPreviewRole] = useState<string | null>(null);
+  useEffect(() => { setPreviewRole(null); }, [projectId, programId]);
   useEffect(() => {
-    if (!projectId) { setRoleInfo(null); return; }
+    const kind = projectId ? "projects" : programId ? "programs" : null;
+    const eid = projectId || programId;
+    if (!kind || !eid) { setRoleInfo(null); return; }
     let cancelled = false;
     (async () => {
       try {
-        const r = await fetch(`/api/v1/projects/${projectId}/my-role/`, {
+        const qs = previewRole ? `?preview_role=${previewRole}` : "";
+        const r = await fetch(`/api/v1/${kind}/${eid}/my-role/${qs}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
         });
         if (r.ok && !cancelled) setRoleInfo(await r.json());
@@ -1233,7 +1239,7 @@ export function AppSidebar() {
       } catch { if (!cancelled) setRoleInfo(null); }
     })();
     return () => { cancelled = true; };
-  }, [projectId]);
+  }, [projectId, programId, previewRole]);
 
   const projectPhases = projectId
     ? [
@@ -1305,6 +1311,30 @@ export function AppSidebar() {
   const programPhases = programId
     ? [...getProgramPhases(programId, programMethodology), ...programUniversalGroups(programId, programMethodology)]
     : [];
+  const filteredProgramPhases = filterPhasesByRole(programPhases, roleInfo);
+
+  // Role badge + admin "Preview as role" dropdown, shown in both the project
+  // and programme nav. Lets an admin see exactly what a Stakeholder sees.
+  const roleViewControls = (!isCollapsed && roleInfo &&
+    ((roleInfo.previewable_roles && roleInfo.previewable_roles.length > 0) || !roleInfo.full_access)) ? (
+    <div className="px-3 pb-1 space-y-1">
+      {!roleInfo.full_access && (
+        <Badge variant="outline" className="text-[10px] gap-1">
+          {roleInfo.role_label || "Member"}{roleInfo.read_only ? " · read-only" : ""}{roleInfo.preview ? " · preview" : ""}
+        </Badge>
+      )}
+      {roleInfo.previewable_roles && roleInfo.previewable_roles.length > 0 && (
+        <select
+          value={previewRole || ""}
+          onChange={(e) => setPreviewRole(e.target.value || null)}
+          className="w-full text-[11px] rounded-md border bg-background px-2 py-1 text-muted-foreground"
+        >
+          <option value="">{previewRole ? "Exit preview (your view)" : "Preview as role…"}</option>
+          {roleInfo.previewable_roles.map((r) => <option key={r} value={r}>Preview: {r.replace(/_/g, " ")}</option>)}
+        </select>
+      )}
+    </div>
+  ) : null;
 
   // Color mapping for menu icons
   const iconColors: Record<string, string> = {
@@ -1472,8 +1502,9 @@ export function AppSidebar() {
                   </Badge>
                 </div>
               )}
+              {isProgramContext && roleViewControls}
 
-              {isProgramContext && programPhases.map((phase) => (
+              {isProgramContext && filteredProgramPhases.map((phase) => (
                 <Collapsible key={phase.id} defaultOpen={phase.id === "overview"} className="group/collapsible">
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
@@ -1514,17 +1545,13 @@ export function AppSidebar() {
               ))}
 
               {isProjectContext && methodologyBadge && !isCollapsed && (
-                <div className="px-3 py-2 flex items-center gap-1.5 flex-wrap">
+                <div className="px-3 py-2">
                   <Badge className={`${methodologyBadge.color} text-white text-xs`}>
                     {methodologyBadge.label}
                   </Badge>
-                  {roleInfo && !roleInfo.full_access && (
-                    <Badge variant="outline" className="text-[10px] gap-1">
-                      {roleInfo.role_label || "Member"} {roleInfo.read_only ? "· read-only" : ""}
-                    </Badge>
-                  )}
                 </div>
               )}
+              {isProjectContext && roleViewControls}
 
               {isProjectContext && filteredProjectPhases.map((phase) => (
                 <Collapsible key={phase.id} defaultOpen={phase.id === "foundation" || phase.id === "define" || phase.id === "requirements"} className="group/collapsible">
