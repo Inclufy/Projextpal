@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { CommentsThread } from '../../components/CommentsThread';
 import { COLORS } from '../../constants/colors';
 import { risksService } from '../../services/risks';
 import type { Risk } from '../../types';
@@ -302,6 +303,13 @@ export const RiskDetailScreen: React.FC = () => {
               <Text style={styles.mitigationText}>{risk.mitigation}</Text>
             </View>
           </View>
+        ) : null}
+
+        {risk && ((risk as any).project_id || (risk as any).project) ? (
+          <CommentsThread
+            target={{ projectId: (risk as any).project_id || (risk as any).project, targetType: 'risk', targetId: risk.id }}
+            isNL={isNL}
+          />
         ) : null}
 
         <View style={styles.bottomSpacer} />

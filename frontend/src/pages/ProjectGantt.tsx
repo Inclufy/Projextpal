@@ -4,6 +4,7 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, GanttChartSquare, AlertTriangle, Flag } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 interface GTask {
@@ -66,7 +67,23 @@ export default function ProjectGantt() {
     return ticks;
   }, [rows, minT, totalDays]);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-purple-600" /></div>;
+  if (loading) return (
+    <div className="space-y-4">
+      <ProjectHeader projectId={id!} />
+      <div className="flex items-center gap-2 px-1">
+        <GanttChartSquare className="h-5 w-5 text-purple-300" />
+        <Skeleton className="h-6 w-56" />
+      </div>
+      <Card className="p-4 space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-4 w-48 shrink-0" />
+            <Skeleton className="h-6 rounded" style={{ width: `${30 + (i * 11) % 55}%`, marginLeft: `${(i * 7) % 30}%` }} />
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
