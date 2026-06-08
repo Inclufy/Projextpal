@@ -649,11 +649,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         # is en lijkt op een data-leak.
         all_tenants = self.request.query_params.get("all_tenants") in ("1", "true", "yes")
         if user.role == "superadmin":
-            if all_tenants or not getattr(user, "company_id", None):
-                # Either explicitly requested, or a legacy SuperAdmin with no
-                # company assigned — fall back to platform-wide visibility
-                # rather than dropping into the membership branch which would
-                # silently return a near-empty list.
+            # Default LIST scope = own company, so the dashboard isn't a jumble
+            # of every tenant. But a SuperAdmin is the platform owner: any
+            # *specific* project opened by id (retrieve + detail actions), and
+            # an explicit ?all_tenants=1 listing, get platform-wide visibility.
+            # Without this, opening a project that lives in another tenant 404s
+            # even for a SuperAdmin.
+            if all_tenants or self.action != "list" or not getattr(user, "company_id", None):
                 qs = base.all()
             else:
                 qs = base.filter(company_id=user.company_id)
