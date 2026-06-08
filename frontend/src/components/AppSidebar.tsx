@@ -1275,7 +1275,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5 px-1">
+            <SidebarMenu className={cn("px-1", inAcademy ? "space-y-1.5 py-2" : "space-y-0.5")}>
               {menuItems.map((item) => {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
@@ -1336,6 +1336,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
                       asChild
+                      size={inAcademy ? "lg" : undefined}
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
                         "rounded-lg transition-colors duration-150",
@@ -1366,6 +1367,7 @@ export function AppSidebar() {
                         className={({ isActive: navIsActive }) =>
                           cn(
                             "flex items-center gap-3 rounded-lg",
+                            inAcademy && "gap-3.5 px-3",
                             (navIsActive || isActive)
                               ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
                               : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
@@ -1378,7 +1380,7 @@ export function AppSidebar() {
                           return (
                             <>
                               <item.icon className={cn(
-                                "h-[18px] w-[18px] shrink-0",
+                                inAcademy ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
                                 isLocked
                                   ? "text-muted-foreground"
                                   : on
@@ -1386,7 +1388,7 @@ export function AppSidebar() {
                                     : "text-gray-400 dark:text-gray-500"
                               )} />
                               {!isCollapsed && (
-                                <span className="text-sm">{item.title}</span>
+                                <span className={cn("text-sm", inAcademy && "text-[15px]")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
