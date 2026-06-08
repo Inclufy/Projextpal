@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ReportExportMenu } from "@/components/ReportExportMenu";
 import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { useAuth } from "@/contexts/AuthContext";
+import CommentThread from "@/components/CommentThread";
 import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "Open"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
@@ -30,6 +32,8 @@ const ActionTracker = () => {
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
+  const [noteText, setNoteText] = useState("");
+  const { user } = useAuth();
   const [showClosed, setShowClosed] = useState(false);
 
   const token = localStorage.getItem("access_token");
@@ -75,13 +79,14 @@ const ActionTracker = () => {
     return milestones[0] ? String(milestones[0].id) : null;
   };
 
-  const openCreate = () => { setEditing(null); setForm({ ...emptyForm }); setDialogOpen(true); };
+  const openCreate = () => { setEditing(null); setForm({ ...emptyForm }); setNoteText(""); setDialogOpen(true); };
   const openEdit = (t: any) => {
     setEditing(t);
     setForm({
       title: t.title || "", assigned_to: t.assigned_to ? String(t.assigned_to) : "",
       priority: t.priority || "medium", status: t.status || "todo", due_date: t.due_date?.split("T")[0] || "",
     });
+    setNoteText("");
     setDialogOpen(true);
   };
 
@@ -100,7 +105,21 @@ const ActionTracker = () => {
         body.milestone = Number(msId); url = `/api/v1/projects/tasks/`; method = "POST";
       }
       const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
-      if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); }
+      if (r.ok) {
+        // Optional note when assigning -> post a comment that @mentions the
+        // owner, so they get a notification with the message.
+        const saved = await r.json().catch(() => ({}));
+        const taskId = editing ? editing.id : saved.id;
+        if (taskId && form.assigned_to && noteText.trim()) {
+          try {
+            await fetch(`/api/v1/comments/`, {
+              method: "POST", headers: jsonHeaders,
+              body: JSON.stringify({ project: Number(id), task: Number(taskId), body: noteText.trim(), mention_user_ids: [Number(form.assigned_to)] }),
+            });
+          } catch { /* note is best-effort */ }
+        }
+        toast.success(pt("Saved")); setDialogOpen(false); fetchData();
+      }
       else { const d = await r.json().catch(() => ({})); toast.error(d.detail || JSON.stringify(d).slice(0, 120) || pt("Save failed")); }
     } catch { toast.error(pt("Save failed")); }
     finally { setSubmitting(false); }
@@ -261,10 +280,28 @@ const ActionTracker = () => {
                 </Select>
               </div>
             </div>
+            {form.assigned_to && (
+              <div className="space-y-2">
+                <Label>{pt("Message for the owner (optional)")}</Label>
+                <textarea
+                  className="w-full min-h-[50px] px-3 py-2 border rounded-md bg-background text-sm"
+                  value={noteText} onChange={(e) => setNoteText(e.target.value)}
+                  placeholder={pt("e.g. Can you pick this up before Friday?")}
+                />
+                <p className="text-[11px] text-muted-foreground">{pt("Sent to the owner as a notification + recorded on the action.")}</p>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.title.trim()}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button>
             </div>
+
+            {editing && (
+              <div className="border-t pt-4">
+                <Label className="mb-2 block">{pt("Comments")}</Label>
+                <CommentThread projectId={id!} taskId={editing.id} currentUserId={(user as any)?.id} />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

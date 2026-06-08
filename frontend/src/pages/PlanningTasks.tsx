@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, MessageSquare } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { useAuth } from "@/contexts/AuthContext";
+import CommentThread from "@/components/CommentThread";
 import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "To Do"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
@@ -21,6 +23,7 @@ const emptyForm = { milestone: "", title: "", description: "", category: "", sta
 const PlanningTasks = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
@@ -264,6 +267,13 @@ const PlanningTasks = () => {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.title || !form.milestone}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button>
             </div>
+
+            {editing && (
+              <div className="border-t pt-4">
+                <Label className="flex items-center gap-1.5 mb-2"><MessageSquare className="h-4 w-4" />{pt("Comments")}</Label>
+                <CommentThread projectId={id!} taskId={editing.id} currentUserId={(user as any)?.id} />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
