@@ -92,6 +92,36 @@ Surfaced during the post-feature "ga door met fixes" sweep (2026-06-08). The hig
 
 ---
 
+## EPIC F — Friendliness + web↔mobile parity (this session)
+
+Built across 4 batches after the "make it more user-friendly + which features to mobile" review.
+
+**Web user-friendliness (items A–E):**
+| Item | Status | What shipped |
+|---|---|---|
+| A First-run guidance | ✅ | reusable `EmptyState` + dismissible dashboard onboarding checklist (self-detects project/team/task progress) |
+| B Sidenav progressive disclosure | ✅ already in place | methodology phases render as Collapsible, only Overview open by default |
+| C Consistency | 🟡 partial | Gantt skeleton loader shipped; **remaining: roll skeletons + i18n (`pt()`) across the new pages** (CustomFields, Import, Recurring, SavedViews) |
+| D Discoverability | ✅ | visible "Search ⌘K" topbar button → `open-command-palette` event |
+| E Trust on high-impact actions | ✅ | Undo toast on bulk status/priority change |
+
+**Mobile parity (Expo `src/`):**
+| Feature | Status | Notes |
+|---|---|---|
+| My Work | ✅ | `MyWorkScreen` + service, Dashboard quick-action, stack route |
+| Push notifications | ✅ | backend `DeviceToken` + register endpoint + `send_push()` from `notify()`; mobile already registered tokens. **Needs a new EAS build to test.** |
+| Comments / @mentions | 🟡 partial | reusable `CommentsThread` + service, mounted on RiskDetailScreen (`target_type=risk`). **Mentions are plain-text** |
+| Custom-field display on tasks | ⬜ deferred | needs a mobile **TaskDetailScreen** first (tasks are list-only today) |
+
+**Deferred follow-ups (need new infra or visual QA):**
+- F-1 **Mobile TaskDetailScreen** — unlocks task comments + custom-field display on the phone.
+- F-2 **Mention autocomplete** on mobile CommentsThread (web has the @-picker).
+- F-3 **Skeleton + i18n rollout** across the new web pages (mechanical sweep, item C remainder).
+- F-4 **Undo on bulk delete** — requires soft-delete (records are currently hard-deleted).
+- F-5 Mount `CommentsThread` on IssueDetail / a project discussion screen on mobile too.
+
+---
+
 ## Notes / observations logged this session
 
 - **Migration-state-drift** hit twice (0029 custom_fields, 0030 recurringtaskrule). Both fixed with idempotent migrations. **Recommendation:** make idempotency the default for all future column/table-adding migrations in this repo.
