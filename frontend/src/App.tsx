@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import NotificationBell from "@/components/NotificationBell";
 import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, FolderKanban, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -473,6 +474,9 @@ const AppHeader = () => {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
+
+        {/* Notification centre */}
+        <NotificationBell />
 
         {/* User chip */}
         {user && (

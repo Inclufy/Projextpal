@@ -113,6 +113,7 @@ INSTALLED_APPS = [
     'onboarding',
     'integrations',
     'product_issues',  # NEW: user-feedback + auto-CI issue capture
+    'notifications',   # NEW: per-user in-app notification centre (the bell)
 ]
 
 MIDDLEWARE = [

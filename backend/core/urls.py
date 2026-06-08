@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/v1/projects/", include("projects.urls")),
     path("api/v1/programs/", include("programs.urls")),
     path("api/v1/", include("product_issues.urls")),  # /product-issues/ + /product-issues/auto/ci/
+    path("api/v1/", include("notifications.urls")),  # /notifications/ + unread_count + mark_read
     path("api/v1/finance/", include("finance.urls")),
     path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
