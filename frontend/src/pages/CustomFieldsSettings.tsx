@@ -14,10 +14,11 @@ import type { CustomFieldDef } from "@/components/CustomFieldsEditor";
 const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("access_token")}` });
 const jsonHeaders = () => ({ ...authHeaders(), "Content-Type": "application/json" });
 
+// Only "task" is wired end-to-end (form + table columns). Risk/Issue custom
+// fields are modelled but not yet rendered, so they are intentionally not
+// offered here to avoid orphan definitions (tracked as backlog A-1).
 const ENTITIES = [
   { value: "task", label: "Tasks / Actions" },
-  { value: "risk", label: "Risks" },
-  { value: "issue", label: "Issues" },
 ];
 const TYPES = [
   { value: "text", label: "Text" },
