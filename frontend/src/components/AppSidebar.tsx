@@ -9,6 +9,7 @@ import { LayoutDashboard, MessageSquare, FolderKanban, Users,
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
   BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -484,6 +485,41 @@ const centralReportingGroup = (projectId: string, methodology: string | null = n
     { title: "Reporting", url: `/projects/${projectId}/execution/communication/reporting`, icon: FileText },
   ],
 });
+
+// ── Role-aware project view ──────────────────────────────────────────────
+// Map a sidebar item URL to a high-level tab-category, so a limited
+// membership role (Stakeholder / Outside Eyes) sees a curated set of tabs.
+const categoryOf = (url: string): string => {
+  const u = (url || "").toLowerCase();
+  if (u.includes("discussion")) return "discussion";
+  if (/(budget|cost|expense)/.test(u)) return "costs";
+  if (/(risk|issue|raid|assumption|dependenc|quality)/.test(u)) return "raid";
+  if (/(governance|decision|board|sign-off|tollgate|exception|change-auth|config-item|configuration)/.test(u)) return "governance";
+  if (/(report|status|highlight|communication|newsletter|meeting)/.test(u)) return "reports";
+  if (/(team|raci|resource)/.test(u)) return "team";
+  if (/(overview|charter|business-case|brief|vision|mandate|blueprint)/.test(u)) return "overview";
+  if (/(execution|time-track|daily|checkpoint|deliver|product-status|deploy)/.test(u)) return "execution";
+  return "planning"; // tasks/plan/board/gantt/sprint/phase + unmatched
+};
+
+interface RoleInfo { full_access: boolean; can_view_costs: boolean; allowed_categories: string[]; role_label?: string; read_only?: boolean }
+
+const filterPhasesByRole = (phases: any[], info: RoleInfo | null) => {
+  if (!info || info.full_access) return phases;
+  const allowed = new Set(info.allowed_categories || []);
+  const ok = (cat: string) => allowed.has("*") || allowed.has(cat) || cat === "overview";
+  return phases
+    .map((g) => ({
+      ...g,
+      items: (g.items || []).filter((it: any) => {
+        const url = it.url || (it.subItems && it.subItems[0] && it.subItems[0].url) || "";
+        const cat = categoryOf(url);
+        if (cat === "costs" && !info.can_view_costs) return false;
+        return ok(cat);
+      }),
+    }))
+    .filter((g) => (g.items || []).length > 0);
+};
 
 // Communication-related items live in their own group (not under Status Reporting).
 const communicationGroup = (projectId: string) => ({
@@ -1182,6 +1218,23 @@ export function AppSidebar() {
   const programMethodology = isProgramContext ? (program?.methodology || 'hybrid') : null;
   const programMethodologyBadge = isProgramContext ? getMethodologyBadge(programMethodology) : null;
   
+  // Effective per-project role → curates which tabs this user sees.
+  const [roleInfo, setRoleInfo] = useState<RoleInfo | null>(null);
+  useEffect(() => {
+    if (!projectId) { setRoleInfo(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/v1/projects/${projectId}/my-role/`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        });
+        if (r.ok && !cancelled) setRoleInfo(await r.json());
+        else if (!cancelled) setRoleInfo(null);
+      } catch { if (!cancelled) setRoleInfo(null); }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);
+
   const projectPhases = projectId
     ? [
         ...getMethodologyPhases(projectId, methodology),
@@ -1205,6 +1258,8 @@ export function AppSidebar() {
           : []),
       ]
     : [];
+  // Curate the project tabs to the user's effective role (Stakeholder etc.).
+  const filteredProjectPhases = filterPhasesByRole(projectPhases, roleInfo);
   // Universal programme layer — parity with the project methodologies. Appended
   // to every programme so Status Reporting, Communication and AI Insights (rolled
   // up over constituent projects) are consistent across all programme methods.
@@ -1459,14 +1514,19 @@ export function AppSidebar() {
               ))}
 
               {isProjectContext && methodologyBadge && !isCollapsed && (
-                <div className="px-3 py-2">
+                <div className="px-3 py-2 flex items-center gap-1.5 flex-wrap">
                   <Badge className={`${methodologyBadge.color} text-white text-xs`}>
                     {methodologyBadge.label}
                   </Badge>
+                  {roleInfo && !roleInfo.full_access && (
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      {roleInfo.role_label || "Member"} {roleInfo.read_only ? "· read-only" : ""}
+                    </Badge>
+                  )}
                 </div>
               )}
 
-              {isProjectContext && projectPhases.map((phase) => (
+              {isProjectContext && filteredProjectPhases.map((phase) => (
                 <Collapsible key={phase.id} defaultOpen={phase.id === "foundation" || phase.id === "define" || phase.id === "requirements"} className="group/collapsible">
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
