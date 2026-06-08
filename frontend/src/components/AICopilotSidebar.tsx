@@ -53,6 +53,7 @@ import DynamicForm from "@/components/chat/DynamicForm";
 import { AIMessageRenderer } from "@/components/AIMessageRenderer";
 import { useCopilot } from "@/contexts/CopilotContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
@@ -983,6 +984,9 @@ export default function AICopilotSidebar() {
   const { isOpen, close, requestedTab } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
+  const { user } = useAuth();
+  // Setup + Issues tabs are admin-only (config + issue triage are admin tasks).
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin" || (user as any)?.isSuperAdmin === true;
   const location = useLocation();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
@@ -1052,6 +1056,12 @@ export default function AICopilotSidebar() {
   useEffect(() => {
     if (requestedTab) setActiveTab(requestedTab);
   }, [requestedTab]);
+
+  // Admin-only tabs: a non-admin can never land on Setup/Issues (covers the
+  // issue-intent auto-switch, the in-chat CTA, a requested tab, or stale state).
+  useEffect(() => {
+    if (!isAdmin && (activeTab === "issues" || activeTab === "setup")) setActiveTab("chat");
+  }, [isAdmin, activeTab]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -1323,14 +1333,18 @@ export default function AICopilotSidebar() {
             <HelpCircle className="h-3.5 w-3.5" />
             {pt("Guide")}
           </button>
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
-            <Settings className="h-3.5 w-3.5" />
-            Setup
-          </button>
-          <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "issues" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("issues")}>
-            <AlertTriangle className="h-3.5 w-3.5" />
-            Issues
-          </button>
+          {isAdmin && (
+            <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "setup" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("setup")}>
+              <Settings className="h-3.5 w-3.5" />
+              Setup
+            </button>
+          )}
+          {isAdmin && (
+            <button className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors border-b-2", activeTab === "issues" ? "border-purple-600 text-purple-700 dark:text-purple-400" : "border-transparent text-muted-foreground hover:text-foreground")} onClick={() => setActiveTab("issues")}>
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Issues
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -1432,7 +1446,7 @@ export default function AICopilotSidebar() {
                   <div className="space-y-1">
                     {messages.map((message, idx) => {
                       const prevUserMsg = idx > 0 && messages[idx - 1].role === "user" ? messages[idx - 1].content : "";
-                      const showIssueCta = message.role === "assistant" && isIssueIntent(prevUserMsg);
+                      const showIssueCta = isAdmin && message.role === "assistant" && isIssueIntent(prevUserMsg);
                       return (
                         <div key={message.id}>
                           <AIMessageRenderer message={{ id: message.id, role: message.role, content: message.content }} onCopy={handleCopyMessage} onFeedback={handleFeedback} showActions={message.role === "assistant"} />
