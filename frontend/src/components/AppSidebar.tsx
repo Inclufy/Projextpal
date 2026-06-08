@@ -1160,6 +1160,9 @@ export function AppSidebar() {
   // In a lesson (/learn) the in-course sub-nav (further down) is the nav, so the
   // top menu is empty — never the PM nav. Elsewhere in the Academy: academyMenu.
   const menuItems = !onAcademyAny ? getMenuItemsForRole() : (inLearn ? [] : academyMenu);
+  // Roomy (IQ-Helix-style) rows for the top-level nav — both the Academy nav
+  // and the Projects/PM role nav. Only the in-lesson player nav stays empty.
+  const roomyNav = inAcademy || !onAcademyAny;
 
   const pathParts = location.pathname.split('/');
   const isProjectContext = pathParts[1] === 'projects' && pathParts[2] && pathParts[2] !== 'new';
@@ -1275,7 +1278,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className={cn("px-1", inAcademy ? "space-y-1.5 py-2" : "space-y-0.5")}>
+            <SidebarMenu className={cn("px-1", roomyNav ? "space-y-1.5 py-2" : "space-y-0.5")}>
               {menuItems.map((item) => {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
@@ -1289,17 +1292,18 @@ export function AppSidebar() {
                     <Collapsible key={item.url} defaultOpen={isGovActive} className="group/governance">
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={cn(
+                          <SidebarMenuButton size={roomyNav ? "lg" : undefined} className={cn(
                             "rounded-lg transition-colors duration-150",
+                            roomyNav && "gap-3.5 px-3",
                             isGovActive
                               ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
                               : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                           )}>
                             <item.icon className={cn(
-                              "h-[18px] w-[18px] shrink-0",
+                              roomyNav ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
                               isGovActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500"
                             )} />
-                            <span className="text-sm">{item.title}</span>
+                            <span className={cn("text-sm", roomyNav && "text-[15px]")}>{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -1336,7 +1340,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
                       asChild
-                      size={inAcademy ? "lg" : undefined}
+                      size={roomyNav ? "lg" : undefined}
                       tooltip={isLocked ? "🔒 Upgrade Required" : item.title}
                       className={cn(
                         "rounded-lg transition-colors duration-150",
@@ -1367,7 +1371,7 @@ export function AppSidebar() {
                         className={({ isActive: navIsActive }) =>
                           cn(
                             "flex items-center gap-3 rounded-lg",
-                            inAcademy && "gap-3.5 px-3",
+                            roomyNav && "gap-3.5 px-3",
                             (navIsActive || isActive)
                               ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
                               : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
@@ -1380,7 +1384,7 @@ export function AppSidebar() {
                           return (
                             <>
                               <item.icon className={cn(
-                                inAcademy ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
+                                roomyNav ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
                                 isLocked
                                   ? "text-muted-foreground"
                                   : on
@@ -1388,7 +1392,7 @@ export function AppSidebar() {
                                     : "text-gray-400 dark:text-gray-500"
                               )} />
                               {!isCollapsed && (
-                                <span className={cn("text-sm", inAcademy && "text-[15px]")}>{item.title}</span>
+                                <span className={cn("text-sm", roomyNav && "text-[15px]")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
