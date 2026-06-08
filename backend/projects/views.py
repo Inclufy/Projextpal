@@ -14,6 +14,7 @@ from accounts.permissions import HasRole
 from django.db import models
 from django.db.models import Sum, F
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from .models import (
     Project,
     Milestone,
@@ -1441,7 +1442,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [IsAuthenticated()]
-        if self.action in ["create", "update", "partial_update", "bulk_update"]:
+        if self.action in ["create", "update", "partial_update", "bulk_update", "import_tasks"]:
             return [IsAuthenticated(), IsAdminOrPMOrContributor()]
         return [IsAuthenticated(), IsAdminOrPM()]
 
@@ -1469,6 +1470,117 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             return Response({"detail": "no fields to update"}, status=400)
         n = qs.update(**fields)
         return Response({"ok": True, "updated": n})
+
+    @action(detail=False, methods=["post"], url_path="import")
+    def import_tasks(self, request):
+        """Bulk-create tasks from parsed rows (CSV/Excel import). Body:
+        {project:<id>, milestone?:<id>, rows:[{title, category?, assigned_to_email?,
+        due_date?, start_date?, priority?, status?, custom_fields?:{}}]}.
+
+        The project must be accessible to the caller. assigned_to_email is
+        resolved against users in the project's company (unknown → left blank,
+        reported in `warnings`). priority/status are coerced to valid choices.
+        Returns {created, skipped, errors, warnings}.
+        """
+        from .models import Milestone, CustomFieldDefinition
+        from django.contrib.auth import get_user_model
+
+        project_id = request.data.get("project")
+        rows = request.data.get("rows") or []
+        if not project_id:
+            return Response({"detail": "project required"}, status=400)
+        if not isinstance(rows, list) or not rows:
+            return Response({"detail": "rows (non-empty list) required"}, status=400)
+        if len(rows) > 2000:
+            return Response({"detail": "Too many rows (max 2000 per import)."}, status=400)
+
+        # Authorise: project must be in the caller's accessible set.
+        if int(project_id) not in set(accessible_project_ids(request.user)):
+            return Response({"detail": "Project not found or not accessible."}, status=404)
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response({"detail": "Project not found."}, status=404)
+
+        # Target milestone: explicit, else an "Imported" milestone (create once).
+        milestone_id = request.data.get("milestone")
+        if milestone_id:
+            milestone = Milestone.objects.filter(id=milestone_id, project_id=project.id).first()
+            if not milestone:
+                return Response({"detail": "Milestone not found in this project."}, status=400)
+        else:
+            milestone = Milestone.objects.filter(project_id=project.id, name="Imported").first()
+            if not milestone:
+                first = Milestone.objects.filter(project_id=project.id).first()
+                milestone = first or Milestone.objects.create(
+                    project_id=project.id, name="Imported", description="Imported items"
+                )
+
+        # Resolve owners by email within the project's company (case-insensitive).
+        User = get_user_model()
+        company_users = {
+            (u.email or "").strip().lower(): u
+            for u in User.objects.filter(company_id=getattr(project, "company_id", None))
+        }
+        valid_status = {c[0] for c in Task.STATUS_CHOICES}
+        valid_prio = {c[0] for c in Task.PRIORITY_CHOICES}
+        status_alias = {"open": "todo", "to do": "todo", "doing": "in_progress",
+                        "in progress": "in_progress", "complete": "done", "completed": "done",
+                        "closed": "done", "wip": "in_progress"}
+        prio_alias = {"critical": "urgent", "highest": "urgent", "p1": "high", "p2": "medium", "p3": "low"}
+        active_keys = set(
+            CustomFieldDefinition.objects.filter(
+                company_id=getattr(project, "company_id", None), entity="task", active=True
+            ).values_list("key", flat=True)
+        )
+
+        created, errors, warnings = 0, [], []
+        to_create = []
+        for i, row in enumerate(rows):
+            n = i + 1
+            title = (str(row.get("title") or "")).strip()
+            if not title:
+                errors.append({"row": n, "error": "missing title"})
+                continue
+            t = Task(milestone=milestone, title=title[:255])
+            t.category = (str(row.get("category") or "")).strip()[:100]
+            t.description = (str(row.get("description") or "")).strip()
+            for date_field in ("due_date", "start_date"):
+                v = (str(row.get(date_field) or "")).strip()
+                if v:
+                    parsed = parse_date(v)
+                    if parsed:
+                        setattr(t, date_field, parsed)
+                    else:
+                        warnings.append({"row": n, "warning": f"unparseable {date_field} '{v}'"})
+            pr = (str(row.get("priority") or "")).strip().lower()
+            pr = prio_alias.get(pr, pr)
+            t.priority = pr if pr in valid_prio else "medium"
+            st = (str(row.get("status") or "")).strip().lower()
+            st = status_alias.get(st, st)
+            t.status = st if st in valid_status else "todo"
+            email = (str(row.get("assigned_to_email") or "")).strip().lower()
+            if email:
+                owner = company_users.get(email)
+                if owner:
+                    t.assigned_to = owner
+                else:
+                    warnings.append({"row": n, "warning": f"unknown owner '{email}'"})
+            cf = row.get("custom_fields") or {}
+            if isinstance(cf, dict) and active_keys:
+                t.custom_fields = {k: v for k, v in cf.items() if k in active_keys}
+            to_create.append(t)
+
+        if to_create:
+            Task.objects.bulk_create(to_create)
+            created = len(to_create)
+        return Response({
+            "created": created,
+            "skipped": len(errors),
+            "errors": errors[:50],
+            "warnings": warnings[:50],
+            "milestone": milestone.id,
+        })
 
     def get_queryset(self):
         qs = super().get_queryset()

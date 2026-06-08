@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ClipboardList, ListTodo, Boxes, StickyNote, MessageSquare, Upload } from "lucide-react";
+import ImportDialog from "@/components/ImportDialog";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
@@ -39,6 +40,8 @@ const ActionTracker = () => {
   const [noteText, setNoteText] = useState("");
   const { user } = useAuth();
   const [showClosed, setShowClosed] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const canManage = ["admin", "superadmin", "pm", "program_manager", "project_manager"].includes((user as any)?.role);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -201,6 +204,7 @@ const ActionTracker = () => {
           <div className="flex gap-2 flex-wrap items-center">
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/planning/tasks`)}><ListTodo className="h-4 w-4" />{pt("Activity List")}</Button>
             {actions.length > 0 && <ReportExportMenu title="Action Tracker" sections={exportSections} />}
+            {canManage && <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />{pt("Import")}</Button>}
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Action")}</Button>
           </div>
         </div>
@@ -375,6 +379,9 @@ const ActionTracker = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} projectId={id!}
+        onImported={() => { fetchData(); fetchCommentMeta(); }} />
     </div>
   );
 };
