@@ -105,13 +105,7 @@ export const ProjectHeader = () => {
           </Button>
           <Button
             className="gap-2"
-            onClick={() => {
-              const prompt = pt("Analyze project")
-                + ": "
-                + (project?.name || pt("this project"))
-                + ". " + pt("Give me insights on status, risks, and recommended actions.");
-              navigate(`/ai-assistant?prompt=${encodeURIComponent(prompt)}`);
-            }}
+            onClick={() => navigate(`/projects/${id}/ai-doctor`)}
           >
             <Sparkles className="h-4 w-4" />
             {pt("Analyze with AI")}
