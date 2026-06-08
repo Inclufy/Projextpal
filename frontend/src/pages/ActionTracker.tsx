@@ -76,13 +76,37 @@ const ActionTracker = () => {
   const toggleSel = (tid: number) => setSelected((p) => { const n = new Set(p); n.has(tid) ? n.delete(tid) : n.add(tid); return n; });
   const clearSel = () => setSelected(new Set());
   const bulkApply = async (body: any) => {
+    const ids = Array.from(selected);
+    // Snapshot prior values for an Undo on revertible field changes (not delete).
+    const field: "status" | "priority" | null = body.status ? "status" : body.priority ? "priority" : null;
+    const snapshot: Record<string, number[]> = {};
+    if (field) {
+      tasks.forEach((t) => {
+        if (selected.has(t.id)) { const old = String(t[field] ?? ""); if (old) (snapshot[old] = snapshot[old] || []).push(t.id); }
+      });
+    }
+    const revert = async () => {
+      for (const [oldVal, gids] of Object.entries(snapshot)) {
+        await fetch(`/api/v1/projects/tasks/bulk-update/`, {
+          method: "POST", headers: jsonHeaders,
+          body: JSON.stringify({ ids: gids, [field as string]: oldVal }),
+        });
+      }
+      fetchData(); fetchCommentMeta(); toast.success(pt("Reverted"));
+    };
     try {
       const r = await fetch(`/api/v1/projects/tasks/bulk-update/`, {
         method: "POST", headers: jsonHeaders,
-        body: JSON.stringify({ ids: Array.from(selected), ...body }),
+        body: JSON.stringify({ ids, ...body }),
       });
-      if (r.ok) { toast.success(pt("Updated")); clearSel(); fetchData(); fetchCommentMeta(); }
-      else toast.error(pt("Bulk action failed"));
+      if (r.ok) {
+        clearSel(); fetchData(); fetchCommentMeta();
+        if (field && Object.keys(snapshot).length) {
+          toast.success(`${pt("Updated")} (${ids.length})`, { action: { label: pt("Undo"), onClick: revert } });
+        } else {
+          toast.success(pt("Updated"));
+        }
+      } else toast.error(pt("Bulk action failed"));
     } catch { toast.error(pt("Bulk action failed")); }
   };
 
