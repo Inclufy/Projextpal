@@ -75,6 +75,8 @@ class CommentViewSet(viewsets.ModelViewSet):
             User.objects.filter(id__in=mention_ids, company=project.company)
             .values_list("id", flat=True)
         )
+        if valid:
+            comment.mentioned_users.set(list(valid))
         for uid in valid:
             if uid == user.id:
                 continue
@@ -84,6 +86,20 @@ class CommentViewSet(viewsets.ModelViewSet):
                 body=(comment.body[:140]),
                 url=url, actor=user, company=project.company,
             )
+
+    @action(detail=False, methods=["get"])
+    def counts(self, request):
+        """Per-task comment counts + the tasks where the current user is
+        mentioned, so list screens can badge items with discussion/mentions."""
+        qs = self.get_queryset().filter(task__isnull=False)
+        project = request.query_params.get("project")
+        if project:
+            qs = qs.filter(project_id=project)
+        counts = {r["task_id"]: r["n"] for r in qs.values("task_id").annotate(n=Count("id"))}
+        mentioned = list(
+            qs.filter(mentioned_users=request.user).values_list("task_id", flat=True).distinct()
+        )
+        return Response({"counts": counts, "mentioned_task_ids": mentioned})
 
     def perform_update(self, serializer):
         if serializer.instance.author_id != getattr(self.request.user, "id", None):

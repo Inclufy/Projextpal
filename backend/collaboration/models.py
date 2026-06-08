@@ -21,6 +21,9 @@ class Comment(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
     )
+    mentioned_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="mentioned_in_comments"
+    )
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
     )
