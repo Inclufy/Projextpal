@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjeXtPal — Proeftuin (mockup)</title>
+<style>
+  :root{
+    --bg:hsl(270 20% 98%); --card:#fff; --ink:hsl(270 30% 20%); --muted:hsl(270 10% 48%);
+    --line:hsl(270 15% 88%); --primary:hsl(270 60% 50%); --primary-hover:hsl(270 60% 42%);
+    --primary-light:hsl(270 60% 96%); --grad:linear-gradient(135deg,#7c3aed,#c026d3); --radius:14px;
+    --shadow:0 1px 3px rgba(80,40,120,.07); --shadow-lg:0 14px 40px rgba(90,40,130,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
+  .shell{max-width:960px;margin:0 auto;padding:24px 20px 70px}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800}
+  .top{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+  .top b{font-size:18px}
+
+  /* proeftuin banner */
+  .banner{border-radius:var(--radius);padding:16px 20px;background:linear-gradient(135deg,#faf5ff,#fdf2f8);border:1px solid #eaddff;display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .banner .pill{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--grad);padding:5px 11px;border-radius:30px;flex-shrink:0}
+  .banner .txt{flex:1;font-size:13px}
+  .banner .txt b{color:var(--ink)}
+  .banner .meta{display:flex;gap:18px;margin-top:5px;font-size:12px;color:var(--muted)}
+  .banner .meta span{display:flex;align-items:center;gap:5px}
+  .banner .dim{font-weight:700;color:var(--primary)}
+  .btn{border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:0 6px 18px rgba(124,58,237,.3)}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:1.3fr .7fr;gap:18px}
+  @media(max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .pad{padding:20px}
+  h2{font-size:16px;margin-bottom:3px}
+  .sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+
+  /* checklist */
+  .step{display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .step:last-child{border-bottom:none}
+  .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex-shrink:0;color:#fff;transition:.15s}
+  .step.done .check{background:#16a34a;border-color:#16a34a}
+  .step.done .check svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none}
+  .step .n{font-weight:700;color:var(--muted);font-size:12px}
+  .step.done .n{display:none}
+  .step .body{flex:1}
+  .step .t{font-size:13.5px;font-weight:600}
+  .step.done .t{color:var(--muted);text-decoration:line-through}
+  .step .d{font-size:11.5px;color:var(--muted)}
+  .step .go{font-size:12px;font-weight:600;color:var(--primary);cursor:pointer;white-space:nowrap}
+  .step.done .go{display:none}
+
+  /* progress ring */
+  .ringwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+  .ring{position:relative;width:120px;height:120px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;font-weight:800}
+  .ringwrap .lbl{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
+
+  /* sample projects */
+  .samples{margin-top:18px}
+  .samples h3{font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#eef;color:#5b21b6}
+  .srow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:600px){.srow{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;background:var(--card)}
+  .scard:hover{border-color:var(--primary);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+  .scard .h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .itile{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff}
+  .itile svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none}
+  .scard b{font-size:13.5px}
+  .scard p{font-size:11.5px;color:var(--muted)}
+  .scard .tags{display:flex;gap:6px;margin-top:8px}
+  .tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--primary-light);color:var(--primary)}
+
+  .note{margin-top:18px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top"><span class="logo">P</span><b>ProjeXtPal</b></div>
+
+  <!-- PROEFTUIN BANNER -->
+  <div class="banner">
+    <span class="pill">Proeftuin</span>
+    <div class="txt">
+      <b>Welkom in je proeftuin — verken ProjeXtPal vrijblijvend.</b>
+      <div class="meta">
+        <span>⏳ Nog <b class="dim">11 dagen</b></span>
+        <span>📁 <b class="dim">1 / 2</b> projecten</span>
+        <span>👥 <b class="dim">1 / 3</b> teamleden</span>
+      </div>
+    </div>
+    <button class="btn btn-ghost">Reset demo</button>
+    <button class="btn btn-primary">Upgrade &amp; behoud je werk →</button>
+  </div>
+
+  <div class="grid">
+    <!-- ONBOARDING CHECKLIST -->
+    <div class="card pad">
+      <h2>Aan de slag in 5 stappen</h2>
+      <div class="sub">Leer ProjeXtPal kennen met je eerste echte project — de AI helpt je onderweg.</div>
+
+      <div class="step done">
+        <div class="check"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="body"><div class="t">Maak je eerste project met de wizard</div><div class="d">Kies een scenario → AI zet methodiek + vorm</div></div>
+        <span class="go">Open →</span>
+      </div>
+      <div class="step done">
+        <div class="check"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="body"><div class="t">Stel de tailoring in</div><div class="d">Vorm + governance bepalen welke tabs vooraan staan</div></div>
+        <span class="go">Open →</span>
+      </div>
+      <div class="step">
+        <div class="check"><span class="n">3</span></div>
+        <div class="body"><div class="t">Vraag de AI-coach iets</div><div class="d">Methodiek-bewuste begeleiding tijdens je project</div></div>
+        <span class="go">Open →</span>
+      </div>
+      <div class="step">
+        <div class="check"><span class="n">4</span></div>
+        <div class="body"><div class="t">Volg één Academy-les</div><div class="d">Van kennis naar kunde — de cursus bij je methodiek</div></div>
+        <span class="go">Open →</span>
+      </div>
+      <div class="step">
+        <div class="check"><span class="n">5</span></div>
+        <div class="body"><div class="t">Nodig een teamlid uit</div><div class="d">Werk samen in je proeftuin (max 3)</div></div>
+        <span class="go">Open →</span>
+      </div>
+
+      <!-- SAMPLE PROJECTS -->
+      <div class="samples">
+        <h3>Voorbeeldprojecten <span class="badge">DEMO</span> <span style="font-weight:400;color:var(--muted);font-size:11px">— klik rond, of verwijder ze</span></h3>
+        <div class="srow">
+          <div class="scard">
+            <div class="h"><span class="itile" style="background:linear-gradient(135deg,#818cf8,#4f46e5)"><svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span><b>Klantportaal (voorbeeld)</b></div>
+            <p>Volledig gevuld: business case, fasen, risico's, taken.</p>
+            <div class="tags"><span class="tag">PRINCE2</span><span class="tag">Heavy</span></div>
+          </div>
+          <div class="scard">
+            <div class="h"><span class="itile" style="background:linear-gradient(135deg,#a855f7,#7c3aed)"><svg viewBox="0 0 24 24"><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span><b>Nieuw product (voorbeeld)</b></div>
+            <p>Sprints, backlog en burndown om mee te oefenen.</p>
+            <div class="tags"><span class="tag">Scrum</span><span class="tag">Light</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS RING -->
+    <div class="card pad">
+      <div class="ringwrap">
+        <div class="ring">
+          <svg width="120" height="120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#ece9f5" stroke-width="12"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="326.7" stroke-dashoffset="130.7"/>
+            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#c026d3"/></linearGradient></defs>
+          </svg>
+          <div class="pct">60%</div>
+        </div>
+        <div class="lbl"><b style="color:var(--ink)">2 van 5</b> stappen klaar<br>Nog 3 te gaan — je bent goed op weg!</div>
+        <button class="btn btn-primary" style="margin-top:16px">Volgende stap →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">De proeftuin is een afgeschermde demo-werkruimte. Bij upgrade wordt het je echte werkruimte — zonder dataverlies.</div>
+</div>
+</body>
+</html>

@@ -59,7 +59,10 @@ router.register(r"audit-logs", AuditLogViewSet, basename="audit-log")
 
 from notifications.views import DeviceRegisterView
 
+from accounts.onboarding_views import onboarding_status
+
 urlpatterns = [
+    path("onboarding/status/", onboarding_status, name="onboarding-status"),
     path("devices/register/", DeviceRegisterView.as_view(), name="device_register"),
     path("login/", MyTokenObtainPairView.as_view(), name="login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
