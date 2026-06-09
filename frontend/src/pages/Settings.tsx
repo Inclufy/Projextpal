@@ -20,6 +20,7 @@ import {
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import NotificationPreferences from '@/components/NotificationPreferences';
 import PrivacyDataSettings from '@/components/PrivacyDataSettings';
+import SessionsCard from '@/components/SessionsCard';
 
 // ============================================================
 // Types
@@ -640,6 +641,7 @@ export default function Settings() {
               </CardContent>
             </Card>
 
+            <SessionsCard />
             <PrivacyDataSettings />
           </div>
         </TabsContent>

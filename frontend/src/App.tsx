@@ -78,6 +78,7 @@ const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
 const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
 const SecurityPage = lazyWithRetry(() => import("./pages/SecurityPage"));
 const StatusPage = lazyWithRetry(() => import("./pages/StatusPage"));
+const SubProcessorsPage = lazyWithRetry(() => import("./pages/SubProcessorsPage"));
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
 const Settings = lazyWithRetry(() => import("./pages/Settings"));
 const AIAssistant = lazyWithRetry(() => import("./pages/AIAssistant"));
@@ -639,6 +640,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/status" element={<StatusPage />} />
+              <Route path="/sub-processors" element={<SubProcessorsPage />} />
               <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} /> 
               <Route path="/trial-pending" element={<PublicRoute><TrialPending /></PublicRoute>} />

@@ -50,6 +50,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from accounts.views import save_registration_intent
 
 from .audit_views import AuditLogViewSet
+from .sessions_views import SessionsView, RevokeSessionView
 
 router = DefaultRouter()
 router.register(r"crm-api-keys", CrmApiKeyViewSet, basename="crm-api-key")
@@ -85,6 +86,8 @@ urlpatterns = [
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
     path('2fa/status/', Check2FAStatusView.as_view(), name='2fa-status'),
     path('2fa/recovery-codes/', RecoveryCodesView.as_view(), name='2fa-recovery-codes'),
+    path('sessions/', SessionsView.as_view(), name='sessions'),
+    path('sessions/revoke/', RevokeSessionView.as_view(), name='sessions-revoke'),
     # Canonical aliases used by the admin portal & mobile clients
     path('2fa/enable/', Setup2FAView.as_view(), name='2fa-enable'),
     path('2fa/qr/', Setup2FAView.as_view(), name='2fa-qr'),
