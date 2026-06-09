@@ -8,8 +8,14 @@ type Status = {
   limits: { max_projects: number; max_programs: number; max_users: number };
   usage: { projects: number; programs: number; users: number };
   steps: Step[]; completed: number; total: number; percent: number; complete: boolean;
-  has_sample: boolean;
+  has_sample: boolean; experience?: string; intro?: string; skippable?: boolean;
 };
+
+const LEVELS: { v: string; label: string }[] = [
+  { v: "beginner", label: "Beginner" },
+  { v: "gevorderd", label: "Medior" },
+  { v: "pro", label: "Professional" },
+];
 
 /**
  * Proeftuin banner (trial state + limits) + onboarding checklist.
@@ -40,6 +46,18 @@ const OnboardingProeftuin = () => {
       await refresh();
     } catch { /* ignore */ }
     finally { setSeeding(false); }
+  };
+
+  const setLevel = async (v: string) => {
+    setS((prev) => prev ? { ...prev, experience: v } : prev);   // optimistic
+    try {
+      await fetch(`/api/v1/projects/methodology-profile/`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ pm_experience: v }),
+      });
+      await refresh();   // checklist length + copy adapt to the level
+    } catch { /* ignore */ }
   };
 
   const reset = async () => {
@@ -90,12 +108,24 @@ const OnboardingProeftuin = () => {
         <div className="rounded-2xl border bg-card shadow-sm p-5">
           <div className="flex items-start gap-5">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <h3 className="font-bold">Aan de slag in {s.total} stappen</h3>
-                <button onClick={() => setDismissed(true)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">verbergen</button>
+                {/* Experience-level selector — adapts the checklist depth */}
+                <div className="flex bg-muted rounded-lg p-0.5 gap-0.5 ml-1">
+                  {LEVELS.map((l) => (
+                    <button key={l.v} onClick={() => setLevel(l.v)}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+                        (s.experience || "gevorderd") === l.v ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setDismissed(true)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
+                  {s.skippable ? "overslaan" : "verbergen"}
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">Leer ProjeXtPal kennen met je eerste echte project — de AI helpt je onderweg.</p>
+              <p className="text-xs text-muted-foreground mb-3">{s.intro || "Leer ProjeXtPal kennen met je eerste echte project — de AI helpt je onderweg."}</p>
               {!s.has_sample && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 mb-3 flex items-center gap-3">
                   <Sparkles className="h-4 w-4 text-primary shrink-0" />

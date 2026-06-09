@@ -63,18 +63,46 @@ def onboarding_status(request):
     started_academy = _safe(lambda: __import__("academy.models", fromlist=["Enrollment"]).Enrollment.objects.filter(user=user).exists())
     invited_team = usage["users"] > 1
 
-    steps = [
-        {"key": "project", "title": "Maak je eerste project met de wizard",
-         "desc": "Kies een scenario → AI zet methodiek + vorm", "url": "/projects/new", "done": has_project},
-        {"key": "tailoring", "title": "Stel de tailoring in",
-         "desc": "Vorm + governance bepalen welke tabs vooraan staan", "url": "/projects", "done": has_tailoring},
-        {"key": "coach", "title": "Vraag de AI-coach iets",
-         "desc": "Methodiek-bewuste begeleiding tijdens je project", "url": "/projects", "done": used_coach},
-        {"key": "academy", "title": "Volg één Academy-les",
-         "desc": "Van kennis naar kunde — de cursus bij je methodiek", "url": "/academy", "done": started_academy},
-        {"key": "team", "title": "Nodig een teamlid uit",
-         "desc": "Werk samen in je proeftuin", "url": "/team", "done": invited_team},
-    ]
+    # Experience level (beginner / gevorderd≈medior / pro) drives how deep the
+    # first-run flow is. Read it from the reusable methodology profile.
+    experience = "gevorderd"
+    try:
+        from accounts.models import UserMethodologyProfile
+        prof = UserMethodologyProfile.objects.filter(user=user).first()
+        if prof and prof.pm_experience:
+            experience = prof.pm_experience
+    except Exception:
+        pass
+
+    all_steps = {
+        "project": {"key": "project", "title": "Maak je eerste project met de wizard",
+                    "desc": "Kies een scenario → AI zet methodiek + vorm", "url": "/projects/new", "done": has_project},
+        "tailoring": {"key": "tailoring", "title": "Stel de tailoring in",
+                      "desc": "Vorm + governance bepalen welke tabs vooraan staan", "url": "/projects", "done": has_tailoring},
+        "coach": {"key": "coach", "title": "Vraag de AI-coach iets",
+                  "desc": "Methodiek-bewuste begeleiding tijdens je project", "url": "/projects", "done": used_coach},
+        "academy": {"key": "academy", "title": "Volg één Academy-les",
+                    "desc": "Van kennis naar kunde — de cursus bij je methodiek", "url": "/academy", "done": started_academy},
+        "team": {"key": "team", "title": "Nodig een teamlid uit",
+                 "desc": "Werk samen in je proeftuin", "url": "/team", "done": invited_team},
+    }
+
+    # Experience-adaptive: pros get a condensed, skippable flow; beginners the full
+    # guided path with the coach + Academy; medior the standard set.
+    if experience == "pro":
+        order = ["project", "team"]
+        intro = "Je bent ervaren — we houden het kort. Maak een project aan en nodig je team uit; de rest wijst zich vanzelf."
+        skippable = True
+    elif experience == "beginner":
+        order = ["project", "tailoring", "coach", "academy", "team"]
+        intro = "Nieuw met projectmanagement? Geen zorgen — we lopen er stap voor stap doorheen en de AI-coach + Academy helpen je onderweg."
+        skippable = False
+    else:  # gevorderd ≈ medior
+        order = ["project", "tailoring", "coach", "academy", "team"]
+        intro = "Leer ProjeXtPal kennen met je eerste echte project — de AI helpt je onderweg."
+        skippable = True
+
+    steps = [all_steps[k] for k in order]
     done = sum(1 for s in steps if s["done"])
     total = len(steps)
 
@@ -83,6 +111,9 @@ def onboarding_status(request):
         "days_remaining": days_remaining,
         "limits": limits,
         "usage": usage,
+        "experience": experience,          # beginner | gevorderd | pro
+        "intro": intro,
+        "skippable": skippable,
         "steps": steps,
         "completed": done,
         "total": total,
