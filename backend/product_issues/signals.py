@@ -291,6 +291,7 @@ def _wrap_html(title: str, body_html: str, cta_url: str, cta_label: str) -> str:
     <h1 style="margin: 0; font-size: 22px;">{title}</h1>
   </div>
   <div style="background: #fafafa; padding: 32px 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;"><tr><td align="center" valign="middle" style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);box-shadow:0 8px 18px rgba(139,92,246,0.3);"><span style="display:inline-block;line-height:0;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span></td></tr></table>
     {body_html}
     <div style="text-align: center; margin: 28px 0;">
       <a href="{cta_url}" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 14px;">{cta_label}</a>
