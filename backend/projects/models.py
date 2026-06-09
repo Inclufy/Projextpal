@@ -2027,3 +2027,65 @@ class RecurringTaskRule(models.Model):
         if self.frequency == "weekly":
             return d + timedelta(weeks=step)
         return _add_months(d, step)
+
+
+class ProjectTailoring(models.Model):
+    """Tailoring decision for a project (the wizard outcome).
+
+    Records *why* a project is shaped the way it is — methodology, type, the six
+    dimensions, governance choices and the computed shape — so the recommendation
+    is reproducible and can be justified in the PID (PRINCE2 tailoring).
+
+    Nothing here replaces Project.methodology or Project.pm_can_authorize; this is
+    an additive record that drives the "Recommended vs More" surfacing.
+    """
+
+    SHAPE_CHOICES = [("light", "Light"), ("medium", "Medium"), ("heavy", "Heavy")]
+    SOURCE_CHOICES = [("ai", "AI"), ("manual", "Manual"), ("scenario", "Scenario")]
+    BOARD_CHOICES = [("auto", "AI bepaalt"), ("light", "Lichte review"), ("formal", "Formele board")]
+    AUTH_CHOICES = [("owner", "Alleen eigenaar/board"), ("owner_pm", "Eigenaar + PM")]
+
+    project = models.OneToOneField(
+        "Project", on_delete=models.CASCADE, related_name="tailoring"
+    )
+    project_type = models.CharField(max_length=40, blank=True, default="")
+
+    # Six tailoring dimensions (1=laag, 2=midden, 3=hoog)
+    dim_scope = models.PositiveSmallIntegerField(default=2)
+    dim_budget = models.PositiveSmallIntegerField(default=2)
+    dim_duur = models.PositiveSmallIntegerField(default=2)
+    dim_politiek = models.PositiveSmallIntegerField(default=1)
+    dim_risico = models.PositiveSmallIntegerField(default=2)
+    dim_regel = models.PositiveSmallIntegerField(default=1)
+
+    # Project facts that feed scope
+    team_size = models.CharField(max_length=4, blank=True, default="m")   # s/m/l
+    departments = models.PositiveSmallIntegerField(default=1)
+
+    # Governance choices
+    gov_authority = models.CharField(max_length=12, choices=AUTH_CHOICES, default="owner")
+    gov_board = models.CharField(max_length=8, choices=BOARD_CHOICES, default="auto")
+    gov_portfolio = models.BooleanField(default=False)
+    gov_stakeholder_matrix = models.BooleanField(default=False)
+    gov_periodic_cadence = models.BooleanField(default=False)
+
+    # Outcome
+    shape = models.CharField(max_length=8, choices=SHAPE_CHOICES, default="medium")
+    score = models.PositiveSmallIntegerField(default=11)
+    recommended_modules = models.JSONField(default=list, blank=True)
+    coach_mode = models.BooleanField(default=False)
+    ai_rationale = models.TextField(blank=True, default="")
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="manual")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Tailoring<{self.project_id}> {self.shape}"
+
+    @property
+    def dimensions(self):
+        return {
+            "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
+            "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
+        }

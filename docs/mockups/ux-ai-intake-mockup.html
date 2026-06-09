@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjeXtPal — AI-projectintake (mockup)</title>
+<style>
+  :root{
+    --primary:#7c3aed;--primary-50:#f5f3ff;--primary-100:#ede9fe;--primary-200:#ddd6fe;
+    --ink:#1e1b2e;--muted:#6b7280;--line:#e9e7ef;--bg:#f7f7fb;--card:#fff;--radius:14px;
+    --light:#16a34a;--medium:#d97706;--heavy:#dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 20px 60px}
+  .head{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;display:grid;place-items:center;font-weight:800}
+  h1{font-size:20px}
+
+  /* stepper */
+  .steps{display:flex;gap:6px;margin-bottom:22px}
+  .step{flex:1;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .step .n{width:20px;height:20px;border-radius:50%;background:#ece9f5;color:var(--muted);display:grid;place-items:center;font-size:11px;flex-shrink:0}
+  .step.on{border-color:var(--primary);color:var(--primary);background:var(--primary-50)}
+  .step.on .n{background:var(--primary);color:#fff}
+  .step.done .n{background:var(--light);color:#fff}
+  .step.done{color:var(--ink)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .view{display:none}.view.on{display:block}
+  h2{font-size:17px;margin-bottom:5px}
+  .sub{color:var(--muted);margin-bottom:18px;max-width:680px}
+
+  textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:14px;font-family:inherit;min-height:120px;background:#fcfcfe;resize:vertical}
+  textarea:focus{outline:none;border-color:var(--primary);background:#fff}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px;font-size:12px;cursor:pointer;color:#4b4360;transition:.12s}
+  .chip:hover{border-color:var(--primary);background:var(--primary-50);color:var(--primary)}
+
+  .btn{border:none;border-radius:10px;padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-ai{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff}
+  .btn:disabled{opacity:.5;cursor:default}
+  .row-actions{display:flex;justify-content:space-between;margin-top:22px}
+
+  /* AI thinking + result */
+  .ai-think{display:none;align-items:center;gap:12px;background:var(--primary-50);border:1px solid var(--primary-100);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13px;color:#4b4360}
+  .ai-think.on{display:flex}
+  .spin{width:18px;height:18px;border:2.5px solid var(--primary-200);border-top-color:var(--primary);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .ai-card{border:1px solid var(--primary-100);border-radius:12px;padding:16px;margin-bottom:14px;background:linear-gradient(180deg,#fdfcff,#faf8ff)}
+  .ai-tag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .ai-pick{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .ai-pick .big{font-size:18px;font-weight:800}
+  .conf{margin-left:auto;font-size:11px;color:var(--muted)}
+  .conf b{color:var(--light)}
+  .ai-reason{font-size:12.5px;color:var(--muted);line-height:1.55}
+  .ai-reason b{color:var(--ink)}
+  .change{font-size:12px;color:var(--primary);cursor:pointer;font-weight:600;margin-top:8px;display:inline-block}
+
+  /* method / type option grids */
+  .opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+  .opt{border:1px solid var(--line);border-radius:11px;padding:12px 13px;cursor:pointer;transition:.12s;display:flex;gap:10px;align-items:flex-start}
+  .opt:hover{border-color:var(--primary);background:var(--primary-50)}
+  .opt.sel{border-color:var(--primary);background:var(--primary-50);box-shadow:0 0 0 1px var(--primary-200)}
+  .opt .em{font-size:18px}
+  .opt b{font-size:13.5px}
+  .opt small{color:var(--muted);font-size:11.5px;display:block}
+  .opt .recb{font-size:9px;background:var(--primary);color:#fff;padding:2px 6px;border-radius:20px;font-weight:700;margin-left:6px}
+
+  /* wizard refine */
+  .q{margin-bottom:15px}
+  .q .qh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .q label{font-weight:600;font-size:13px}
+  .q .ai-pre{font-size:11px;color:var(--primary);font-weight:600}
+  .seg3{display:flex;background:#f1f0f6;border-radius:9px;padding:3px;gap:2px}
+  .seg3 button{flex:1;border:none;background:none;padding:7px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .seg3 button.on{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(20,10,40,.12)}
+
+  /* result */
+  .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:820px){.res-grid{grid-template-columns:1fr}.opt-grid{grid-template-columns:1fr}}
+  .band-card{border-radius:12px;padding:18px;color:#fff}
+  .band-light{background:linear-gradient(135deg,#16a34a,#22c55e)}
+  .band-medium{background:linear-gradient(135deg,#d97706,#f59e0b)}
+  .band-heavy{background:linear-gradient(135deg,#dc2626,#ef4444)}
+  .band-card .bl{font-size:10.5px;opacity:.85;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+  .band-card .bv{font-size:23px;font-weight:800;margin:2px 0 4px}
+  .band-card .bx{font-size:12px;opacity:.92}
+  .meter{height:6px;border-radius:20px;background:rgba(255,255,255,.3);margin-top:10px;overflow:hidden}
+  .meter i{display:block;height:100%;background:#fff}
+  .methpill{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12.5px;font-weight:600;margin-bottom:12px}
+
+  .sp-h{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin:2px 2px 7px}
+  .sp-h.more{margin-top:13px;display:flex;align-items:center;gap:7px}
+  .sp-h.more::after{content:"optioneel — \00e9\00e9n klik weg";font-size:9px;background:#f1f0f6;color:var(--muted);padding:2px 7px;border-radius:20px;letter-spacing:0;text-transform:none}
+  .sp-item{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;font-size:12.5px;color:#3f3a52}
+  .sp-item.rec{background:var(--primary-50);font-weight:600;color:var(--ink)}
+  .sp-item.more{opacity:.6}
+  .sp-item .d{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .sp-item .trig{margin-left:auto;font-size:9px;color:var(--primary);font-weight:700}
+  .pid{background:#fbfbfe;border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-top:16px;font-size:12px;grid-column:1/-1}
+  .pid b{display:block;margin-bottom:4px}
+  .pid p{color:var(--muted)}.pid .pq{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><span class="logo">P</span><h1>Nieuw project — AI bepaalt methodiek, type &amp; vorm</h1></div>
+
+  <div class="steps">
+    <div class="step on" id="st0"><span class="n">1</span> Beschrijf</div>
+    <div class="step" id="st1"><span class="n">2</span> AI-voorstel</div>
+    <div class="step" id="st2"><span class="n">3</span> Kennis &amp; opleiding</div>
+    <div class="step" id="st3"><span class="n">4</span> Verfijn</div>
+    <div class="step" id="st4"><span class="n">5</span> Vorm &amp; tabs</div>
+  </div>
+
+  <div class="panel">
+    <!-- STEP 1 -->
+    <div class="view on" id="v0">
+      <h2>Vertel kort waar je project over gaat</h2>
+      <p class="sub">Eén of twee zinnen is genoeg. AI leidt hieruit de <b>methodiek</b>, het <b>projecttype</b> en de <b>projectvorm</b> af — je kunt alles daarna bijsturen.</p>
+      <textarea id="desc" placeholder="Bijv. We bouwen een klantportaal voor een externe opdrachtgever. Vaste scope en budget, oplevering in drie fasen, oplevering eind Q1."></textarea>
+      <div class="chips">
+        <span class="chip" onclick="ex(0)">📦 Klantportaal, vaste scope, extern</span>
+        <span class="chip" onclick="ex(1)">🚀 Nieuw product, veranderende eisen, sprints</span>
+        <span class="chip" onclick="ex(2)">⚖️ Facturatiesysteem, AVG + audit, directie kijkt mee</span>
+        <span class="chip" onclick="ex(3)">🔧 Intern proces sneller maken, klein team</span>
+      </div>
+      <div class="ai-think" id="think"><span class="spin"></span> AI leest je beschrijving en bepaalt methodiek, type en vorm…</div>
+      <div class="row-actions"><span></span><button class="btn btn-ai" onclick="analyze()">✨ Analyseer met AI</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="view" id="v1">
+      <h2>Dit stelt AI voor</h2>
+      <p class="sub">Op basis van je beschrijving. Niet eens? Kies gerust iets anders — AI is het startpunt, jij beslist.</p>
+
+      <div class="ai-card">
+        <span class="ai-tag">✨ Aanbevolen methodiek</span>
+        <div class="ai-pick"><span class="big" id="mName">PRINCE2</span><span class="conf">zekerheid <b id="mConf">hoog</b></span></div>
+        <div class="ai-reason" id="mReason"></div>
+        <span class="change" onclick="toggle('methGrid')">Andere methodiek kiezen ▾</span>
+        <div id="methGrid" style="display:none"><div class="opt-grid" id="methOpts"></div></div>
+      </div>
+
+      <div class="ai-card">
+        <span class="ai-tag">✨ Projecttype (template)</span>
+        <div class="ai-pick"><span class="big" id="tName">Klantimplementatie</span></div>
+        <div class="ai-reason" id="tReason"></div>
+        <span class="change" onclick="toggle('typeGrid')">Ander type kiezen ▾</span>
+        <div id="typeGrid" style="display:none"><div class="opt-grid" id="typeOpts"></div></div>
+      </div>
+
+      <div class="ai-card" style="background:#f0fdf4;border-color:#bbf7d0">
+        <span class="ai-tag" style="color:var(--light)">✓ Vervolgvragen ingevuld</span>
+        <div class="ai-reason">AI heeft de 6 verfijningsvragen alvast beantwoord op basis van je tekst. In de volgende stap zie je ze — pas aan wat niet klopt.</div>
+      </div>
+
+      <div class="row-actions"><button class="btn btn-ghost" onclick="go(0)">← Terug</button><button class="btn btn-primary" onclick="go(2)">Kennis &amp; opleiding →</button></div>
+    </div>
+
+    <!-- STEP 3: KENNIS & OPLEIDING -->
+    <div class="view" id="v2">
+      <h2>Jouw kennis &amp; voorkeur</h2>
+      <p class="sub">Twee dingen los van elkaar: je <b>algemene PM-ervaring</b> bepaalt hoe vol of begeleid de schermen zijn, je <b>kennis van de methodiek</b> bepaalt de opleiding/coach. Beide uit de <b>Academy</b>.</p>
+
+      <div class="ai-card" style="background:#fbfaff">
+        <span class="ai-tag">Hoeveel ervaring heb je met projectmanagement in het algemeen?</span>
+        <div class="seg3" id="pmSeg" style="margin-top:4px">
+          <button onclick="setPm('beginner')">Beginner</button>
+          <button class="on" onclick="setPm('gevorderd')">Gevorderd</button>
+          <button onclick="setPm('pro')">Professional</button>
+        </div>
+        <div class="ai-reason" id="pmHint" style="margin-top:10px"></div>
+      </div>
+
+      <div class="ai-card">
+        <span class="ai-tag">Hoe goed ken je <span id="kMeth">PRINCE2</span>? <span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">(deze specifieke methodiek)</span></span>
+        <div class="seg3" id="compSeg" style="margin-top:4px">
+          <button onclick="setComp('none')">Niet</button>
+          <button onclick="setComp('basis')">Basis</button>
+          <button class="on" onclick="setComp('ervaren')">Ervaren</button>
+          <button onclick="setComp('expert')">Expert</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--muted)">
+          <input type="checkbox" id="prefChk" onchange="renderKnow()"> Ik werk liever in een methodiek die ik al ken
+        </label>
+        <div id="prefBox" style="display:none;margin-top:10px"><div class="opt-grid" id="prefOpts"></div></div>
+      </div>
+
+      <div class="ai-card">
+        <span class="ai-tag">Welke methodieken ken je verder? <span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">(bouwt je profiel — hergebruikt bij elk project)</span></span>
+        <div class="chips" id="methKnowChips" style="margin:8px 0 0"></div>
+        <div class="ai-reason" id="methKnowHint" style="margin-top:8px"></div>
+      </div>
+
+      <!-- AI-reactive: training nudge -->
+      <div id="trainBox"></div>
+
+      <div class="row-actions"><button class="btn btn-ghost" onclick="go(1)">← Terug</button><button class="btn btn-primary" onclick="go(3)">Vragen nakijken →</button></div>
+    </div>
+
+    <!-- STEP 4: VERFIJN -->
+    <div class="view" id="v3">
+      <h2>Verfijn (AI heeft dit alvast ingevuld)</h2>
+      <p class="sub">Elke aanpassing herberekent meteen de projectvorm in de laatste stap.</p>
+
+      <div class="ai-card" style="background:#fbfaff;margin-bottom:16px">
+        <span class="ai-tag">Projectfeiten</span>
+        <div class="q"><div class="qh"><label>Teamgrootte</label><span class="ai-pre" id="teamPre"></span></div>
+          <div class="seg3" id="teamSeg">
+            <button onclick="setFact('team','s')">1–3</button><button onclick="setFact('team','m')">4–9</button><button onclick="setFact('team','l')">10+</button></div></div>
+        <div class="q"><div class="qh"><label>Betrokken afdelingen</label><span class="ai-pre" id="deptPre"></span></div>
+          <div class="seg3" id="deptSeg">
+            <button onclick="setFact('dept','s')">1</button><button onclick="setFact('dept','m')">2–3</button><button onclick="setFact('dept','l')">4+</button></div></div>
+        <div class="ai-reason" style="margin-top:4px">Teamgrootte &amp; afdelingen bepalen mee de <b>scope/omvang</b> hieronder — en daarmee de governance-zwaarte.</div>
+      </div>
+
+      <div id="qbox"></div>
+      <div class="row-actions"><button class="btn btn-ghost" onclick="go(2)">← Terug</button><button class="btn btn-primary" onclick="go(4)">Naar resultaat →</button></div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="view" id="v4">
+      <h2>Voorgestelde inrichting</h2>
+      <p class="sub">Methodiek + vorm bepalen samen welke tabs vooraan staan. Niks verdwijnt — de rest staat onder “Meer”.</p>
+      <div class="res-grid">
+        <div>
+          <div class="methpill" id="resMeth">📘 PRINCE2</div>
+          <div class="band-card band-medium" id="bandCard">
+            <div class="bl">Projectvorm</div><div class="bv" id="bandName">Medium</div>
+            <div class="bx" id="bandX">Score 11/18 · gestandaardiseerde governance</div>
+            <div class="meter"><i id="bandMeter" style="width:55%"></i></div>
+          </div>
+        </div>
+        <div>
+          <div class="sp-h">Aanbevolen tabs</div><div id="recList"></div>
+          <div class="sp-h more">Meer</div><div id="moreList"></div>
+        </div>
+        <div class="pid" style="background:#f5f3ff;border-color:var(--primary-100)">
+          <b>🎓 Leer &amp; ondersteuning</b>
+          <p id="learnText"></p>
+        </div>
+        <div class="pid">
+          <b>✨ AI schrijft de tailoring-onderbouwing voor de PID</b>
+          <p id="pidText"></p>
+        </div>
+      </div>
+      <div class="row-actions"><button class="btn btn-ghost" onclick="go(3)">← Terug</button><button class="btn btn-primary">✓ Project aanmaken</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- data ----------
+  const DIMS=[
+    {k:'scope',label:'Scope / omvang'},{k:'budget',label:'Budget'},{k:'duur',label:'Doorlooptijd'},
+    {k:'politiek',label:'Politieke gevoeligheid'},{k:'risico',label:'Risico / onzekerheid'},{k:'regel',label:'Regelgeving'},
+  ];
+  const SEG=['Laag','Midden','Hoog'];
+  const METHODS={
+    prince2:{name:'PRINCE2',em:'📘',d:'Gecontroleerde fases + business case'},
+    scrum:{name:'Scrum',em:'🏉',d:'Iteratief, sprints, veranderende eisen'},
+    kanban:{name:'Kanban',em:'📋',d:'Continue stroom, flow & WIP-limieten'},
+    waterfall:{name:'Waterfall',em:'🌊',d:'Voorspelbaar, vaste scope, fasen'},
+    lss:{name:'Lean Six Sigma',em:'📊',d:'Procesverbetering, kwaliteit, data'},
+    hybrid:{name:'Hybrid',em:'🔀',d:'Mix van voorspelbaar en agile'},
+    inclufy:{name:'Inclufy Best Practice',em:'⭐',d:'Gecureerde standaard — veilige default'},
+  };
+  const TYPES={
+    klant:{name:'Klantimplementatie',em:'🤝',d:'Externe opdrachtgever, vaste scope'},
+    intern:{name:'Intern verbeterproject',em:'🔧',d:'Klein team, laag risico'},
+    gereguleerd:{name:'Gereguleerd / compliance',em:'⚖️',d:'Wettelijke eisen, audit-trail'},
+    strategisch:{name:'Strategisch programma',em:'🎯',d:'Veel stakeholders, hoge zichtbaarheid'},
+    product:{name:'Productontwikkeling',em:'🚀',d:'Nieuw product, onzekere eisen'},
+  };
+  // module sets per methodology (base level 1/2/3, optional trigger dim)
+  const MODSETS={
+    prince2:[['Overview',1],['Business Case',1],['Project Charter',1],['Team',1],['Statusrapport',1],['Risks',2],['Stages',2],['Budget',2,'budget'],['Highlight Reports',2],['Project Board',3,'politiek'],['Stage Gates',3],['Tolerances',3],['Exception Reports',3],['Assurance',3,'regel'],['Mgmt Approaches',3]],
+    scrum:[['Overview',1],['Product Backlog',1],['Sprint Board',1],['Team',1],['Daily Scrum',1],['Sprints',2],['Burndown',2],['Velocity',2],['Retrospectives',2],['Definition of Done',2],['Release Planning',3],['Stakeholder Reviews',3,'politiek'],['Scaled / PI',3]],
+    kanban:[['Overview',1],['Board',1],['Team',1],['Statusrapport',1],['WIP-limieten',2],['Classes of Service',2],['Cycle Time',2],['CFD',3],['Expliciete policies',3],['SLA / SLE',3,'regel']],
+    waterfall:[['Overview',1],['Requirements',1],['Plan / Gantt',1],['Team',1],['Fasen',2],['Milestones',2],['Risks',2],['Fasepoorten',3],['Baselines',3],['EVM',3],['Change Control',3,'regel']],
+    lss:[['Overview',1],['Define (SIPOC)',1],['Team',1],['Measure',2],['Analyse',2],['Improve',2],['Control',3],['Capability (Cp/Cpk)',3],['Control Plan',3,'regel']],
+    hybrid:[['Overview',1],['Backlog',1],['Plan / Fasen',1],['Team',1],['Sprints',2],['Milestones',2],['Risks',2],['Fasepoorten',3,'politiek'],['Governance',3],['Reports',3]],
+    inclufy:[['Overview',1],['Doelen',1],['Taken',1],['Team',1],['Statusrapport',1],['Risks',2],['Milestones',2],['Budget',2,'budget'],['Stakeholders',2,'politiek'],['Governance',3],['Reports',3]],
+  };
+
+  // courses per methodology (Academy)
+  const COURSES={
+    prince2:['PRINCE2 Foundation — essentials','45 min'],
+    scrum:['Scrum in de praktijk','30 min'],
+    kanban:['Kanban & Flow — basis','25 min'],
+    waterfall:['Faseplanning & gates','30 min'],
+    lss:['Lean Six Sigma — Green Belt','60 min'],
+    hybrid:['Hybride werken — tailoring','35 min'],
+    inclufy:['Inclufy Best Practice — rondleiding','20 min'],
+  };
+
+  // ---------- state ----------
+  let S={scope:2,budget:2,duur:2,politiek:2,risico:1,regel:1};
+  let meth='prince2', type='klant', curStep=0;
+  let reasons={m:'',t:''};
+  let comp='ervaren';            // none | basis | ervaren | expert  (methodiek-kennis)
+  let pmLevel='gevorderd';       // beginner | gevorderd | pro       (algemene PM-ervaring → weergave)
+  let methKnow={};               // {scrum:true,...} kennis van overige methodieken (profiel)
+  let team='m', dept='s';        // projectfeiten s|m|l
+  let pref=false, prefMeth=null; // preference toggle + chosen
+  let train={course:false,coach:false,refresh:false};
+  let knowInit=false;
+
+  // ---------- examples ----------
+  const EX=[
+    "We bouwen een klantportaal voor een externe opdrachtgever. Vaste scope en budget, oplevering in drie fasen eind Q1.",
+    "Nieuw softwareproduct met onzekere, veranderende eisen. Een klein team werkt in sprints richting een MVP.",
+    "We vervangen het facturatiesysteem. Het moet voldoen aan de AVG en aan accountantscontrole; hoog afbreukrisico en de directie kijkt mee.",
+    "We willen een intern administratief proces sneller maken. Klein team, laag risico, een paar weken werk.",
+  ];
+  function ex(i){document.getElementById('desc').value=EX[i];}
+
+  // ---------- the "AI" (keyword heuristics) ----------
+  function aiAnalyze(text){
+    const t=(text||'').toLowerCase();
+    const has=(...w)=>w.some(x=>t.includes(x));
+    // dimensions
+    let d={scope:2,budget:2,duur:2,politiek:1,risico:2,regel:1};
+    if(has('extern','opdrachtgever','klant')) d.politiek=2;
+    if(has('directie','bestuur','politiek','gevoelig','stakeholders','zichtbaar')) d.politiek=3;
+    if(has('avg','gdpr','compliance','audit','wettelijk','accountant','iso','regelgeving')) {d.regel=3;d.risico=3;}
+    if(has('miljoen','groot budget','grootschalig','programma')) d.budget=3;
+    if(has('jaar','meerjarig','langlopend')) d.duur=3;
+    if(has('intern','klein','paar weken','simpel','eenvoudig')) {d.scope=1;d.budget=1;d.duur=1;d.risico=1;}
+    if(has('onzeker','veranderende','wijzigende','experiment','innovat')) d.risico=3;
+    // methodology score
+    let ms={prince2:0,scrum:0,kanban:0,waterfall:0,lss:0,hybrid:0,inclufy:0};
+    if(has('sprint','scrum','mvp','product','iterat','backlog','veranderende','wijzigende','agile')) ms.scrum+=3;
+    if(has('support','ticket','continue','stroom','operationeel','flow','doorlopend','beheer')) ms.kanban+=3;
+    if(has('vaste scope','voorspelbaar','bouw','constructie','fasen','fase','waterval','sequent','duidelijke eisen')) ms.waterfall+=2;
+    if(has('governance','stuurgroep','business case','extern','opdrachtgever','klant','formeel','gecontroleerd')) ms.prince2+=3;
+    if(has('proces','verspilling','defect','kwaliteit','doorlooptijd','six sigma','lean','sneller maken')) ms.lss+=3;
+    if(has('mix','hybride','deels')) ms.hybrid+=3;
+    if(has('avg','compliance','audit','accountant')) ms.prince2+=1;
+    let m=Object.entries(ms).sort((a,b)=>b[1]-a[1])[0];
+    let chosenMeth = m[1]>=2 ? m[0] : 'inclufy';   // unsure → curated default
+    // type
+    let chosenType='intern';
+    if(has('avg','gdpr','compliance','audit','wettelijk','accountant','iso')) chosenType='gereguleerd';
+    else if(has('directie','bestuur','politiek','programma','stakeholders')) chosenType='strategisch';
+    else if(has('extern','opdrachtgever','klant')) chosenType='klant';
+    else if(has('product','mvp','sprint')) chosenType='product';
+    else if(has('intern','proces','klein')) chosenType='intern';
+    // reasons
+    const mr = chosenMeth==='inclufy'
+      ? `Je beschrijving wijst niet duidelijk op één methode, dus AI kiest de <b>gecureerde Inclufy-standaard</b> als veilige start. Je kunt later altijd overstappen.`
+      : `Gekozen omdat je tekst wijst op <b>${reasonForMeth(chosenMeth,t)}</b>.`;
+    const tr = `Herkend aan signalen voor <b>${TYPES[chosenType].name.toLowerCase()}</b> in je beschrijving.`;
+    return {d,meth:chosenMeth,type:chosenType,mr,tr,conf:(m[1]>=3?'hoog':m[1>=2]?'gemiddeld':'laag')};
+  }
+  function reasonForMeth(m,t){
+    return {prince2:'gecontroleerde governance met fases en een business case (extern/klant-project)',
+      scrum:'iteratief werken met sprints en veranderende eisen',
+      kanban:'een continue werkstroom die je met flow & WIP-limieten beheert',
+      waterfall:'een voorspelbaar traject met vaste scope en duidelijke fasen',
+      lss:'procesverbetering en kwaliteit (DMAIC)',
+      hybrid:'een mix van voorspelbaar en agile werken'}[m];
+  }
+
+  // ---------- flow ----------
+  function analyze(){
+    const txt=document.getElementById('desc').value.trim();
+    if(!txt){document.getElementById('desc').focus();return;}
+    document.getElementById('think').classList.add('on');
+    setTimeout(()=>{
+      const r=aiAnalyze(txt);
+      S={...r.d}; meth=r.meth; type=r.type; reasons={m:r.mr,t:r.tr};
+      knowInit=false; comp='ervaren'; pmLevel='gevorderd'; pref=false; prefMeth=null; methKnow={};
+      team=r.d.scope>=3?'l':r.d.scope===1?'s':'m'; dept=r.d.politiek>=3?'l':'s';
+      document.getElementById('think').classList.remove('on');
+      paintProposal(r.conf); go(1);
+    },800);
+  }
+  function paintProposal(conf){
+    document.getElementById('mName').textContent=METHODS[meth].name;
+    document.getElementById('mConf').textContent=conf;
+    document.getElementById('mReason').innerHTML=reasons.m;
+    document.getElementById('tName').textContent=TYPES[type].name;
+    document.getElementById('tReason').innerHTML=reasons.t;
+    // option grids
+    document.getElementById('methOpts').innerHTML=Object.entries(METHODS).map(([k,v])=>
+      `<div class="opt ${k===meth?'sel':''}" onclick="setMeth('${k}')"><span class="em">${v.em}</span><div><b>${v.name}${k===meth?'<span class=recb>AI</span>':''}</b><small>${v.d}</small></div></div>`).join('');
+    document.getElementById('typeOpts').innerHTML=Object.entries(TYPES).map(([k,v])=>
+      `<div class="opt ${k===type?'sel':''}" onclick="setType('${k}')"><span class="em">${v.em}</span><div><b>${v.name}${k===type?'<span class=recb>AI</span>':''}</b><small>${v.d}</small></div></div>`).join('');
+  }
+  function setMeth(k){meth=k;document.getElementById('mName').textContent=METHODS[k].name;
+    document.querySelectorAll('#methOpts .opt').forEach(o=>o.classList.remove('sel'));
+    [...document.querySelectorAll('#methOpts .opt')][Object.keys(METHODS).indexOf(k)].classList.add('sel');}
+
+  // ---------- knowledge & training step ----------
+  const PMINFO={
+    beginner:'Eenvoudige weergave: alleen het essentiële vooraan, extra uitleg en voorbeelden bij elk veld.',
+    gevorderd:'Gestandaardiseerde weergave: volledige velden met korte hints.',
+    pro:'Compacte Professional-weergave: alles direct beschikbaar, bulk-acties, minimale uitleg.',
+  };
+  const PMVIEW={beginner:'Eenvoudig (begeleid)',gevorderd:'Gevorderd',pro:'Professional (compact)'};
+  function setPm(v){
+    pmLevel=v;
+    document.querySelectorAll('#pmSeg button').forEach((b,i)=>b.classList.toggle('on',['beginner','gevorderd','pro'][i]===v));
+    document.getElementById('pmHint').innerHTML='✨ '+PMINFO[v];
+  }
+  function setComp(c){
+    comp=c;
+    document.querySelectorAll('#compSeg button').forEach((b,i)=>b.classList.toggle('on',['none','basis','ervaren','expert'][i]===c));
+    // sensible defaults driven by competence (AI suggestion)
+    train.course = (c==='none'||c==='basis');
+    train.coach  = (c==='none'||c==='basis');
+    train.refresh= (c==='ervaren');
+    renderKnow();
+  }
+  function setPrefMeth(k){prefMeth=k;meth=k;document.getElementById('kMeth').textContent=METHODS[k].name;
+    document.querySelectorAll('#prefOpts .opt').forEach(o=>o.classList.remove('sel'));
+    [...document.querySelectorAll('#prefOpts .opt')][Object.keys(METHODS).indexOf(k)].classList.add('sel');
+    setComp('ervaren'); // you picked one you know
+  }
+  function tg(key){train[key]=!train[key];renderKnow();}
+  function tgMethKnow(k){methKnow[k]=!methKnow[k];renderKnow();}
+  function setFact(kind,v){
+    if(kind==='team')team=v; else dept=v;
+    const val={s:1,m:2,l:3};
+    S.scope=Math.max(val[team],val[dept]);   // facts drive the scope dimension
+    document.querySelectorAll('#teamSeg button').forEach((b,i)=>b.classList.toggle('on',['s','m','l'][i]===team));
+    document.querySelectorAll('#deptSeg button').forEach((b,i)=>b.classList.toggle('on',['s','m','l'][i]===dept));
+    document.getElementById('teamPre').textContent='✨ '+({s:'1–3',m:'4–9',l:'10+'})[team];
+    document.getElementById('deptPre').textContent='✨ '+({s:'1',m:'2–3',l:'4+'})[dept];
+    renderQs();
+  }
+  function renderKnow(){
+    document.getElementById('kMeth').textContent=METHODS[meth].name;
+    // other-methodology knowledge chips (exclude the chosen one)
+    document.getElementById('methKnowChips').innerHTML=Object.entries(METHODS).filter(([k])=>k!==meth).map(([k,v])=>
+      `<span class="chip ${methKnow[k]?'sel':''}" style="${methKnow[k]?'border-color:var(--primary);background:var(--primary-50);color:var(--primary)':''}" onclick="tgMethKnow('${k}')">${methKnow[k]?'✓ ':''}${v.em} ${v.name}</span>`).join('');
+    const known=Object.keys(methKnow).filter(k=>methKnow[k]&&k!==meth);
+    document.getElementById('methKnowHint').innerHTML = known.length
+      ? `Genoteerd in je profiel: je kent ook <b>${known.map(k=>METHODS[k].name).join(', ')}</b>. Handig — als een volgend project daar beter bij past, raadt AI het meteen aan zónder nieuwe cursus.`
+      : `Nog niets aangevinkt. AI gebruikt dit profiel om je bij volgende projecten een methodiek aan te raden die je al beheerst.`;
+    pref=document.getElementById('prefChk').checked;
+    document.getElementById('prefBox').style.display=pref?'block':'none';
+    if(pref){
+      document.getElementById('prefOpts').innerHTML=Object.entries(METHODS).map(([k,v])=>
+        `<div class="opt ${k===prefMeth?'sel':''}" onclick="setPrefMeth('${k}')"><span class="em">${v.em}</span><div><b>${v.name}</b><small>${v.d}</small></div></div>`).join('');
+    }
+    const [course,dur]=COURSES[meth];
+    let html='';
+    if(comp==='none'||comp==='basis'){
+      html=`<div class="ai-card" style="background:#fffbeb;border-color:#fde68a">
+        <span class="ai-tag" style="color:#b45309">📚 AI ziet een kennisgat</span>
+        <div class="ai-reason">Je gaf aan <b>${comp==='none'?'deze methodiek niet te kennen':'alleen de basis te kennen'}</b>, terwijl het project <b>${METHODS[meth].name}</b> gebruikt. Aanrader voordat je start:</div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+          ${optRow('course',`🎓 Plan de cursus «${course}» (${dur})`,'In je Academy-pad gezet vóór de eerste fase')}
+          ${optRow('coach','🧭 Coach-modus aan','Extra inline uitleg & tips bij elke stap in dit project')}
+        </div></div>`;
+    } else if(comp==='ervaren'){
+      html=`<div class="ai-card" style="background:#f0f9ff;border-color:#bae6fd">
+        <span class="ai-tag" style="color:#0369a1">↻ Opfris (optioneel)</span>
+        <div class="ai-reason">Je bent ervaren met <b>${METHODS[meth].name}</b>. Wil je een korte opfris van wat er in deze versie veranderd is?</div>
+        <div style="margin-top:12px">${optRow('refresh',`↻ 5-min opfris «${course}»`,'Alleen de wijzigingen — geen volledige cursus')}</div></div>`;
+    } else {
+      html=`<div class="ai-card" style="background:#f0fdf4;border-color:#bbf7d0">
+        <span class="ai-tag" style="color:var(--light)">✓ Geen opleiding nodig</span>
+        <div class="ai-reason">Je bent <b>expert</b> in ${METHODS[meth].name}. Coach-modus staat uit; je krijgt de compacte (Professional) weergave.</div></div>`;
+    }
+    document.getElementById('trainBox').innerHTML=html;
+  }
+  function optRow(key,label,desc){
+    return `<div class="opt ${train[key]?'sel':''}" onclick="tg('${key}')" style="cursor:pointer">
+      <div class="switch ${train[key]?'on':''}" style="margin-top:1px"><i></i></div>
+      <div><b>${label}</b><small>${desc}</small></div></div>`;
+  }
+  function setType(k){type=k;document.getElementById('tName').textContent=TYPES[k].name;
+    document.querySelectorAll('#typeOpts .opt').forEach(o=>o.classList.remove('sel'));
+    [...document.querySelectorAll('#typeOpts .opt')][Object.keys(TYPES).indexOf(k)].classList.add('sel');}
+  function toggle(id){const e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none';}
+
+  function renderQs(){
+    document.getElementById('qbox').innerHTML=DIMS.map(d=>`
+      <div class="q"><div class="qh"><label>${d.label}</label><span class="ai-pre">✨ AI: ${SEG[S[d.k]-1]}</span></div>
+      <div class="seg3">${[1,2,3].map(v=>`<button class="${S[d.k]===v?'on':''}" onclick="setDim('${d.k}',${v})">${SEG[v-1]}</button>`).join('')}</div></div>`).join('');
+  }
+  function setDim(k,v){S[k]=v;renderQs();}
+
+  // result
+  const total=()=>DIMS.reduce((a,d)=>a+S[d.k],0);
+  const band=t=>t<=9?'light':t<=13?'medium':'heavy';
+  const bandNum=b=>b==='light'?1:b==='medium'?2:3;
+  const BI={light:['Light','minimale governance — snel starten'],medium:['Medium','gestandaardiseerde governance'],heavy:['Heavy','volledige governance + assurance']};
+  function renderResult(){
+    const t=total(),b=band(t),info=BI[b];
+    document.getElementById('resMeth').innerHTML=`${METHODS[meth].em} ${METHODS[meth].name}`;
+    const c=document.getElementById('bandCard');c.className='band-card band-'+b;
+    document.getElementById('bandName').textContent=info[0];
+    document.getElementById('bandX').textContent=`Score ${t}/18 · ${info[1]}`;
+    document.getElementById('bandMeter').style.width=Math.round((t-5)/13*100)+'%';
+    const dot={light:'#16a34a',medium:'#d97706',heavy:'#dc2626'}[b];
+    const rec=[],more=[];
+    MODSETS[meth].forEach(([n,base,trig])=>{
+      let on=base<=bandNum(b);
+      let tr='';
+      if(trig && S[trig]>=3){on=true; if(base>bandNum(b)) tr=trig+' hoog';}
+      (on?rec:more).push({n,tr});
+    });
+    document.getElementById('recList').innerHTML=rec.map(m=>`<div class="sp-item rec"><span class="d" style="background:${dot}"></span>${m.n}${m.tr?`<span class="trig">↑ ${m.tr}</span>`:''}</div>`).join('');
+    document.getElementById('moreList').innerHTML=more.map(m=>`<div class="sp-item more"><span class="d" style="background:#cfcad9"></span>${m.n}</div>`).join('')||'<div class="sp-item more" style="font-style:italic">— alles aanbevolen —</div>';
+    // learning & support summary
+    const [course,dur]=COURSES[meth];
+    const bits=[];
+    if(train.course) bits.push(`cursus <span class="pq">«${course}» (${dur})</span> ingepland in je Academy-pad`);
+    if(train.coach) bits.push(`<span class="pq">coach-modus aan</span> (inline uitleg bij elke stap)`);
+    if(train.refresh) bits.push(`<span class="pq">5-min opfris</span> klaargezet`);
+    const compLbl={none:'niet bekend',basis:'basis',ervaren:'ervaren',expert:'expert'}[comp];
+    document.getElementById('learnText').innerHTML=
+      `Weergave: <span class="pq">${PMVIEW[pmLevel]}</span> (PM-ervaring: ${pmLevel}). `+
+      `Methodiek-kennis: <span class="pq">${compLbl}</span> in ${METHODS[meth].name}. `+
+      (bits.length?bits.join(' · ')+'.':'Geen opleiding nodig voor deze methodiek.');
+
+    const highs=DIMS.filter(d=>S[d.k]===3).map(d=>d.label.toLowerCase());
+    document.getElementById('pidText').innerHTML=`Methodiek <span class="pq">${METHODS[meth].name}</span>, projecttype <span class="pq">${TYPES[type].name.toLowerCase()}</span>. Tailoring <span class="pq">${info[0]}</span> (score ${t}/18)${highs.length?`, verhoogd door <span class="pq">${highs.join(', ')}</span>`:''}. ${b==='light'?'Lichte governance, geen formele board of poorten.':b==='medium'?'Fases, risico\'s en highlight reports actief.':'Volledige governance incl. board, poorten, toleranties en assurance.'}`;
+  }
+
+  function go(step){
+    curStep=step;
+    [0,1,2,3,4].forEach(i=>{
+      document.getElementById('v'+i).classList.toggle('on',i===step);
+      const s=document.getElementById('st'+i);
+      s.classList.toggle('on',i===step);s.classList.toggle('done',i<step);
+    });
+    if(step===2){if(!knowInit){knowInit=true;setPm(pmLevel);setComp(comp);}else renderKnow();}
+    if(step===3){setFact('team',team);}
+    if(step===4)renderResult();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

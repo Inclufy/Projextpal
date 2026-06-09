@@ -887,3 +887,32 @@ def audit(actor, action, *, summary="", target_type="", target_id="", company=No
 
 # Re-export biometric model so Django auto-discovers it for migrations.
 from .models_biometric import BiometricCredential  # noqa: E402,F401
+
+
+class UserMethodologyProfile(models.Model):
+    """A user's reusable methodology profile — captured once, reused on every project.
+
+    Drives two distinct things at project intake:
+      * pm_experience -> how dense/guided the screens are (presentation),
+      * methodology_competence -> whether to offer an Academy course / coach mode.
+    """
+
+    PM_EXPERIENCE_CHOICES = [
+        ("beginner", "Beginner"),
+        ("gevorderd", "Gevorderd"),
+        ("pro", "Professional"),
+    ]
+
+    user = models.OneToOneField(
+        CustomUser, on_delete=models.CASCADE, related_name="methodology_profile"
+    )
+    pm_experience = models.CharField(
+        max_length=12, choices=PM_EXPERIENCE_CHOICES, default="gevorderd"
+    )
+    # {"prince2": "none|basis|ervaren|expert", "scrum": "...", ...}
+    methodology_competence = models.JSONField(default=dict, blank=True)
+    preferred_methodology = models.CharField(max_length=40, blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"MethodologyProfile<{self.user_id}> {self.pm_experience}"

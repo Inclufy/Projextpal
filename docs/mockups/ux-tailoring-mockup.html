@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjeXtPal — Project-tailoring (mockup): Wizard · Scorecard · Templates</title>
+<style>
+  :root{
+    --primary:#7c3aed;--primary-50:#f5f3ff;--primary-100:#ede9fe;--primary-200:#ddd6fe;
+    --ink:#1e1b2e;--muted:#6b7280;--line:#e9e7ef;--bg:#f7f7fb;--card:#fff;--radius:14px;
+    --light:#16a34a;--medium:#d97706;--heavy:#dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+  .head{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;display:grid;place-items:center;font-weight:800}
+  h1{font-size:21px}
+  .lead{color:var(--muted);margin:8px 0 22px;max-width:760px}
+  .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start}
+  @media(max-width:960px){.layout{grid-template-columns:1fr}}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .tabs{display:flex;border-bottom:1px solid var(--line);background:#fbfbfe}
+  .tab{flex:1;border:none;background:none;padding:14px 10px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.12s}
+  .tab.on{color:var(--primary);border-bottom-color:var(--primary);background:#fff}
+  .tabnote{font-size:11px;color:var(--muted);font-weight:500;display:block;margin-top:2px}
+  .pane{display:none;padding:22px}
+  .pane.on{display:block}
+
+  /* wizard */
+  .q{margin-bottom:18px}
+  .q .qh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .q label{font-weight:600;font-size:13.5px}
+  .q .qd{font-size:11.5px;color:var(--muted)}
+  .seg3{display:flex;background:#f1f0f6;border-radius:9px;padding:3px;gap:2px}
+  .seg3 button{flex:1;border:none;background:none;padding:7px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:.12s}
+  .seg3 button.on{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(20,10,40,.12)}
+
+  /* scorecard */
+  .slider-row{display:grid;grid-template-columns:140px 1fr 42px;align-items:center;gap:12px;margin-bottom:14px}
+  .slider-row label{font-weight:600;font-size:13px}
+  input[type=range]{width:100%;accent-color:var(--primary)}
+  .sv{font-weight:700;text-align:right;color:var(--primary)}
+  .mod-toggles{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px}
+  .mt{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px}
+  .switch{width:38px;height:22px;border-radius:20px;background:#d8d4e4;position:relative;cursor:pointer;transition:.15s;flex-shrink:0}
+  .switch.on{background:var(--primary)}
+  .switch i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+  .switch.on i{left:18px}
+  .mt .why{margin-left:auto;font-size:10.5px;color:var(--muted)}
+
+  /* templates */
+  .tpl{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:11px;cursor:pointer;display:flex;gap:13px;align-items:flex-start;transition:.12s}
+  .tpl:hover{border-color:var(--primary);background:var(--primary-50)}
+  .tpl.sel{border-color:var(--primary);background:var(--primary-50);box-shadow:0 0 0 1px var(--primary-200)}
+  .tpl .em{font-size:24px}
+  .tpl b{font-size:14px}
+  .tpl small{color:var(--muted);font-size:12px}
+  .tpl .vform{margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;align-self:center}
+
+  /* RESULT side */
+  .result{position:sticky;top:20px}
+  .band-card{border-radius:var(--radius);padding:20px;color:#fff;margin-bottom:18px;transition:.2s}
+  .band-light{background:linear-gradient(135deg,#16a34a,#22c55e)}
+  .band-medium{background:linear-gradient(135deg,#d97706,#f59e0b)}
+  .band-heavy{background:linear-gradient(135deg,#dc2626,#ef4444)}
+  .band-card .bl{font-size:11px;opacity:.85;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .band-card .bv{font-size:26px;font-weight:800;margin:2px 0 6px}
+  .band-card .bscore{font-size:12.5px;opacity:.92}
+  .meter{height:7px;border-radius:20px;background:rgba(255,255,255,.3);margin-top:12px;overflow:hidden}
+  .meter i{display:block;height:100%;background:#fff;transition:.3s}
+
+  .side-preview{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .sp-h{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin:4px 2px 8px}
+  .sp-h.more{margin-top:14px;display:flex;align-items:center;gap:7px}
+  .sp-h.more::after{content:"optioneel voor dit project";font-size:9px;background:#f1f0f6;color:var(--muted);padding:2px 7px;border-radius:20px;letter-spacing:0;text-transform:none}
+  .sp-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:13px;color:#3f3a52}
+  .sp-item.rec{background:var(--primary-50);font-weight:600;color:var(--ink)}
+  .sp-item.more{opacity:.6}
+  .sp-item .d{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .sp-item .trig{margin-left:auto;font-size:9.5px;color:var(--primary);font-weight:600}
+
+  .pid{background:#fbfbfe;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:12.5px}
+  .pid b{display:block;margin-bottom:5px;color:var(--ink)}
+  .pid p{color:var(--muted);line-height:1.55}
+  .pid .pq{color:var(--ink)}
+
+  .foot{max-width:1180px;margin:24px auto 0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:12.5px;color:var(--muted)}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><span class="logo">P</span><h1>Project-tailoring — bepaal de vorm, verberg geen functies</h1></div>
+  <p class="lead">Drie ingangen, één uitkomst. Het <b>project</b> bepaalt de vorm (Light / Medium / Heavy), niet de gebruiker. Modules die er niet bij passen verdwijnen niet — ze schuiven naar <b>“Meer”</b> en blijven één klik weg. De keuze wordt onderbouwd vastgelegd in de PID (PRINCE2-tailoring).</p>
+
+  <div class="layout">
+    <!-- LEFT: intake -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab on" onclick="tab('wizard')">Wizard<span class="tabnote">6 vragen</span></button>
+        <button class="tab" onclick="tab('score')">Scorecard<span class="tabnote">schuif + bevestig</span></button>
+        <button class="tab" onclick="tab('tpl')">Templates<span class="tabnote">kies een type</span></button>
+      </div>
+
+      <!-- WIZARD -->
+      <div id="pane-wizard" class="pane on">
+        <div id="qbox"></div>
+      </div>
+
+      <!-- SCORECARD -->
+      <div id="pane-score" class="pane">
+        <div id="sliders"></div>
+        <div class="mod-toggles">
+          <div class="sp-h" style="margin:0 0 8px">Modules — automatisch voorgesteld, jij bevestigt</div>
+          <div id="modlist"></div>
+        </div>
+      </div>
+
+      <!-- TEMPLATES -->
+      <div id="pane-tpl" class="pane">
+        <div class="tpl sel" data-tpl="light" onclick="pickTpl(this,'light')"><span class="em">🔧</span><div><b>Intern verbeterproject</b><br><small>Klein team, laag risico, korte looptijd, geen externe partijen.</small></div><span class="vform" style="background:#dcfce7;color:var(--light)">LIGHT</span></div>
+        <div class="tpl" data-tpl="medium" onclick="pickTpl(this,'medium')"><span class="em">🤝</span><div><b>Klantimplementatie</b><br><small>Externe klant, vaste scope &amp; budget, meerdere fases. (bv. Recare-portaal)</small></div><span class="vform" style="background:#ffedd5;color:var(--medium)">MEDIUM</span></div>
+        <div class="tpl" data-tpl="heavy" onclick="pickTpl(this,'heavy')"><span class="em">🏛️</span><div><b>Gereguleerd / compliance-project</b><br><small>Wettelijke eisen, audit-trail, hoog afbreukrisico.</small></div><span class="vform" style="background:#fee2e2;color:var(--heavy)">HEAVY</span></div>
+        <div class="tpl" data-tpl="heavy2" onclick="pickTpl(this,'heavy2')"><span class="em">🎯</span><div><b>Strategisch / politiek programma</b><br><small>Veel stakeholders met tegengestelde belangen, hoge zichtbaarheid.</small></div><span class="vform" style="background:#fee2e2;color:var(--heavy)">HEAVY</span></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Een template zet de 6 dimensies meteen goed — open daarna de Wizard- of Scorecard-tab om bij te sturen.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: live result -->
+    <div class="result">
+      <div id="bandCard" class="band-card band-medium">
+        <div class="bl">Aanbevolen projectvorm</div>
+        <div class="bv" id="bandName">Medium</div>
+        <div class="bscore" id="bandScore">Score 11 / 18 · gestandaardiseerde governance</div>
+        <div class="meter"><i id="bandMeter" style="width:55%"></i></div>
+      </div>
+
+      <div class="side-preview">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px">Zo ziet de sidebar er dan uit</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">Alles blijft bestaan — alleen anders geordend.</div>
+        <div class="sp-h">Aanbevolen voor dit project</div>
+        <div id="recList"></div>
+        <div class="sp-h more">Meer modules</div>
+        <div id="moreList"></div>
+      </div>
+
+      <div class="pid">
+        <b>Wordt vastgelegd in de PID (tailoring-onderbouwing)</b>
+        <p id="pidText"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>De kern:</b> dit verbergt geen functionaliteit — het <b>prioriteert</b>. Een Light-project ziet 5 modules vooraan en de rest onder “Meer”; schaalt het project op (politiek gevoeliger, meer budget), dan schuift de governance vanzelf naar voren. Elke wijziging is omkeerbaar en wordt — net als jouw goedkeuringsgates — in de audit-log en PID verantwoord.
+  </div>
+</div>
+
+<script>
+  // ----- model -----
+  const DIMS=[
+    {k:'scope',  label:'Scope / omvang',        d:'Aantal deelresultaten & teams'},
+    {k:'budget', label:'Budget',                d:'Ordegrootte investering'},
+    {k:'duur',   label:'Doorlooptijd',          d:'Weken → meerdere jaren'},
+    {k:'politiek',label:'Politieke gevoeligheid',d:'Tegengestelde belangen / zichtbaarheid'},
+    {k:'risico', label:'Risico / onzekerheid',  d:'Bekend terrein → veel onbekend'},
+    {k:'regel',  label:'Regelgeving',           d:'Compliance / audit-verplichting'},
+  ];
+  // each module: when does it become "recommended"? band threshold + optional dimension trigger
+  const MODS=[
+    {n:'Overview',            base:1},
+    {n:'Business Case',       base:1},
+    {n:'Project Charter',     base:1},
+    {n:'Taken / Team',        base:1},
+    {n:'Statusrapport',       base:1},
+    {n:'Risks',               base:2},
+    {n:'Stages',              base:2},
+    {n:'Budget',              base:2, trig:{k:'budget',v:3,t:'budget hoog'}},
+    {n:'Highlight Reports',   base:2},
+    {n:'Project Board',       base:3, trig:{k:'politiek',v:3,t:'politiek hoog'}},
+    {n:'Stage Gates',         base:3},
+    {n:'Tolerances',          base:3},
+    {n:'Exception Reports',   base:3},
+    {n:'Assurance',           base:3, trig:{k:'regel',v:3,t:'regelgeving hoog'}},
+    {n:'Management Approaches',base:3},
+  ];
+  // shared state: each dim 1..3
+  let S={scope:2,budget:2,duur:2,politiek:2,risico:1,regel:1};
+  let overrides={}; // scorecard manual module overrides
+
+  const SEGLBL=['Laag','Midden','Hoog'];
+  function total(){return DIMS.reduce((a,d)=>a+S[d.k],0);}            // 6..18
+  function band(t){return t<=9?'light':t<=13?'medium':'heavy';}
+  const BANDINFO={
+    light:{name:'Light', score:'minimale governance — snel starten', color:'light'},
+    medium:{name:'Medium',score:'gestandaardiseerde governance',     color:'medium'},
+    heavy:{name:'Heavy', score:'volledige governance + assurance',   color:'heavy'},
+  };
+  function bandNum(b){return b==='light'?1:b==='medium'?2:3;}
+
+  // is a module recommended given current band + triggers?
+  function modRec(m,b){
+    if(m.n in overrides) return overrides[m.n];
+    let rec = m.base<=bandNum(b);
+    if(m.trig && S[m.trig.k]>=m.trig.v) rec=true;
+    return rec;
+  }
+  function modTrigText(m){ return (m.trig && S[m.trig.k]>=m.trig.v && m.base>bandNum(band(total()))) ? m.trig.t : ''; }
+
+  // ----- render: wizard -----
+  function renderWizard(){
+    document.getElementById('qbox').innerHTML = DIMS.map(d=>`
+      <div class="q">
+        <div class="qh"><label>${d.label}</label><span class="qd">${d.d}</span></div>
+        <div class="seg3">${[1,2,3].map(v=>`<button class="${S[d.k]===v?'on':''}" onclick="setDim('${d.k}',${v})">${SEGLBL[v-1]}</button>`).join('')}</div>
+      </div>`).join('');
+  }
+  // ----- render: scorecard -----
+  function renderScore(){
+    document.getElementById('sliders').innerHTML = DIMS.map(d=>`
+      <div class="slider-row">
+        <label>${d.label}</label>
+        <input type="range" min="1" max="3" step="1" value="${S[d.k]}" oninput="setDim('${d.k}',+this.value)">
+        <span class="sv">${SEGLBL[S[d.k]-1]}</span>
+      </div>`).join('');
+    const b=band(total());
+    document.getElementById('modlist').innerHTML = MODS.map(m=>{
+      const on=modRec(m,b);
+      const why = m.trig && S[m.trig.k]>=m.trig.v ? `↑ ${m.trig.t}` : (m.base<=bandNum(b)?'past bij vorm':'optioneel');
+      return `<div class="mt"><div class="switch ${on?'on':''}" onclick="toggleMod('${m.n}')"><i></i></div> ${m.n} <span class="why">${why}</span></div>`;
+    }).join('');
+  }
+  // ----- render: result -----
+  function renderResult(){
+    const t=total(), b=band(t), info=BANDINFO[b];
+    const card=document.getElementById('bandCard');
+    card.className='band-card band-'+info.color;
+    document.getElementById('bandName').textContent=info.name;
+    document.getElementById('bandScore').textContent=`Score ${t} / 18 · ${info.score}`;
+    document.getElementById('bandMeter').style.width=Math.round((t-5)/13*100)+'%';
+
+    const dotColor={light:'#16a34a',medium:'#d97706',heavy:'#dc2626'}[b];
+    const rec=[],more=[];
+    MODS.forEach(m=>{
+      if(modRec(m,b)){
+        const tr=modTrigText(m);
+        rec.push(`<div class="sp-item rec"><span class="d" style="background:${dotColor}"></span>${m.n}${tr?`<span class="trig">↑ ${tr}</span>`:''}</div>`);
+      } else {
+        more.push(`<div class="sp-item more"><span class="d" style="background:#cfcad9"></span>${m.n}</div>`);
+      }
+    });
+    document.getElementById('recList').innerHTML=rec.join('');
+    document.getElementById('moreList').innerHTML=more.join('')||'<div class="sp-item more" style="font-style:italic">— alles is aanbevolen —</div>';
+
+    // PID justification
+    const highs=DIMS.filter(d=>S[d.k]===3).map(d=>d.label.toLowerCase());
+    const lows=DIMS.filter(d=>S[d.k]===1).map(d=>d.label.toLowerCase());
+    let reason = highs.length? `verhoogd door <span class="pq">${highs.join(', ')}</span>` : (lows.length? `beperkt gehouden gezien lage ${lows.slice(0,2).join(' & ')}` : 'een gebalanceerd risicoprofiel');
+    document.getElementById('pidText').innerHTML=
+      `Tailoring: <span class="pq"><b>${info.name}</b></span> (score ${t}/18), ${reason}. `+
+      `${b==='light'?'Lichte governance: geen formele Project Board of fasepoorten.':b==='medium'?'Gestandaardiseerde governance met fases, risico\'s en highlight reports.':'Volledige governance incl. Project Board, fasepoorten, toleranties en assurance.'}`;
+  }
+
+  function renderAll(){renderWizard();renderScore();renderResult();}
+
+  // ----- interactions -----
+  function setDim(k,v){S[k]=v; overrides={}; clearTplSel(); renderAll();}
+  function toggleMod(n){
+    const b=band(total());
+    const cur=modRec(MODS.find(m=>m.n===n),b);
+    overrides[n]=!cur; renderScore(); renderResult();
+  }
+  function tab(name){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',['wizard','score','tpl'][i]===name));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+    document.getElementById('pane-'+name).classList.add('on');
+  }
+  const TPL={
+    light:{scope:1,budget:1,duur:1,politiek:1,risico:1,regel:1},
+    medium:{scope:2,budget:2,duur:2,politiek:2,risico:2,regel:1},
+    heavy:{scope:2,budget:2,duur:2,politiek:2,risico:2,regel:3},
+    heavy2:{scope:3,budget:2,duur:3,politiek:3,risico:2,regel:1},
+  };
+  function pickTpl(el,key){
+    document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('sel'));
+    el.classList.add('sel');
+    S={...TPL[key]}; overrides={}; renderAll();
+  }
+  function clearTplSel(){document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('sel'));}
+
+  renderAll();
+</script>
+</body>
+</html>
