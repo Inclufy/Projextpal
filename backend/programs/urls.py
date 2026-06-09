@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from projects.role_views import my_program_role
+from .tailoring_views import program_intake_scenarios, program_intake_analyze, program_tailoring
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -45,6 +46,10 @@ urlpatterns = [
     path('<int:pk>/seed-demo/', ProgramSeedDemoView.as_view(), name='program-seed-demo'),
     path('<int:pk>/clear-demo/', ProgramClearDemoView.as_view(), name='program-clear-demo'),
     path('<int:pk>/my-role/', my_program_role, name='program-my-role'),
+    # Programme tailoring + AI intake (literal segments before <pk> router routes)
+    path('intake/scenarios/', program_intake_scenarios, name='program-intake-scenarios'),
+    path('intake/analyze/', program_intake_analyze, name='program-intake-analyze'),
+    path('<int:pk>/tailoring/', program_tailoring, name='program-tailoring'),
 
     # Nested routes for benefits
     path('<int:program_pk>/benefits/',

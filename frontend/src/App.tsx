@@ -98,6 +98,7 @@ const FoundationWorkflow = lazyWithRetry(() => import("./pages/FoundationWorkflo
 const FoundationCharter = lazyWithRetry(() => import("./pages/FoundationCharter"));
 const ProjectTailoring = lazyWithRetry(() => import("./pages/ProjectTailoring"));
 const ProjectCoach = lazyWithRetry(() => import("./pages/ProjectCoach"));
+const ProgramTailoring = lazyWithRetry(() => import("./pages/ProgramTailoring"));
 const FoundationTeam = lazyWithRetry(() => import("./pages/FoundationTeam"));
 const FoundationBudget = lazyWithRetry(() => import("./pages/FoundationBudget"));
 const FoundationCommunicationPlan = lazyWithRetry(() => import("./pages/FoundationCommunicationPlan"));
@@ -873,6 +874,7 @@ const App = () => (
                   <ProtectedPage><ProgramPMI /></ProtectedPage>
                 </FeatureGuard>
               } />
+              <Route path="/programs/:id/tailoring" element={<ProtectedPage><ProgramTailoring /></ProtectedPage>} />
               <Route path="/programs/:id/components" element={
                 <FeatureGuard feature="program_management" requiredTier="Professional">
                   <ProtectedPage><ProgramPMI /></ProtectedPage>

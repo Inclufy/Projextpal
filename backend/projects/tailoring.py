@@ -137,6 +137,104 @@ SCENARIOS = [
 ]
 
 
+# Programme module sets (governance woven in: Programme Board, Benefits,
+# Stakeholders, Portfolio, Assurance). Keys match Program.METHODOLOGY_CHOICES.
+PROGRAM_MODULES = {
+    "safe": [
+        ("Overview", 1, None), ("Agile Release Trains", 1, None), ("PI Planning", 1, None), ("Team", 1, None),
+        ("PI Objectives", 2, None), ("Dependencies", 2, None), ("Benefits", 2, None), ("System Demo", 2, None),
+        ("Inspect & Adapt", 3, None), ("Lean Portfolio", 3, "budget"), ("Programme Board", 3, "politiek"),
+        ("Stakeholders", 2, "politiek"),
+    ],
+    "msp": [
+        ("Overview", 1, None), ("Vision & Blueprint", 1, None), ("Tranches", 1, None), ("Benefits Map", 1, None),
+        ("Benefit Profiles", 2, None), ("Business Change", 2, None), ("Risks", 2, None), ("Stakeholders", 2, "politiek"),
+        ("Programme Board", 3, "politiek"), ("Dossier", 3, None), ("Assurance", 3, "regel"),
+    ],
+    "pmi": [
+        ("Overview", 1, None), ("Program Charter", 1, None), ("Roadmap", 1, None), ("Components", 1, None),
+        ("Benefits", 2, None), ("Stakeholder Engagement", 2, "politiek"), ("Programme Risk", 2, None),
+        ("Governance Board", 3, None), ("Audit / Assurance", 3, "regel"),
+    ],
+    "prince2_programme": [
+        ("Overview", 1, None), ("Mandate & Brief", 1, None), ("Blueprint (POTI)", 1, None), ("Programme Projects", 1, None),
+        ("Benefits", 2, None), ("Tranches", 2, None), ("Programme Board", 2, None), ("Risks", 2, None),
+        ("Assurance", 3, "regel"), ("Dossier", 3, None),
+    ],
+    "hybrid_programme": [
+        ("Overview", 1, None), ("Governance Config", 1, None), ("Constituent Projects", 1, None),
+        ("Cadence & Gates", 2, None), ("Benefits", 2, None), ("Risks", 2, None), ("Roll-up Reports", 2, None),
+        ("Programme Board", 3, "politiek"), ("Portfolio Link", 3, "budget"),
+    ],
+    "inclufy": [
+        ("Overview", 1, None), ("Doelen", 1, None), ("Programmaprojecten", 1, None), ("Team", 1, None),
+        ("Benefits", 2, None), ("Risks", 2, None), ("Stakeholders", 2, "politiek"), ("Governance", 3, None),
+        ("Reports", 3, None),
+    ],
+}
+# aliases
+PROGRAM_MODULES["p2_programme"] = PROGRAM_MODULES["prince2_programme"]
+PROGRAM_MODULES["hybrid"] = PROGRAM_MODULES["hybrid_programme"]
+
+PROGRAM_COURSE = {
+    "safe": "safe-scaling-agile", "msp": "program-management-pro", "pmi": "program-management-pro",
+    "prince2_programme": "program-management-pro", "p2_programme": "program-management-pro",
+    "hybrid_programme": "program-management-pro", "hybrid": "program-management-pro", "inclufy": "pm-fundamentals",
+}
+
+
+def recommend_program_modules(methodology, dims, governance=None):
+    return recommend_modules(methodology, dims, governance, modules=PROGRAM_MODULES,
+                             analytics_label="Analytics (organisatie)", board_name="Programme Board")
+
+
+def classify_program(description):
+    """Classify a programme description into a programme methodology + dims."""
+    t = (description or "").lower()
+
+    def has(*words):
+        return any(w in t for w in words)
+
+    dims = {"scope": 3, "budget": 2, "duur": 3, "politiek": 2, "risico": 2, "regel": 1}
+    if has("avg", "compliance", "wet", "regelgeving", "audit", "iso"):
+        dims["regel"] = 3
+    if has("transformatie", "verandering", "cultuur", "directie", "bestuur", "politiek"):
+        dims["politiek"] = 3
+    if has("miljoen", "grootschalig"):
+        dims["budget"] = 3
+
+    if has("agile", "release", "trein", "teams", "safe", "scaled", "pi planning"):
+        meth = "safe"
+    elif has("blueprint", "prince2", "operating model", "poti"):
+        meth = "prince2_programme"
+    elif has("transformatie", "baten", "tranche", "msp", "business change"):
+        meth = "msp"
+    elif has("fusie", "integratie", "hybride", "gemengd"):
+        meth = "hybrid_programme"
+    elif has("portfolio", "componenten", "samenhangend", "pmi"):
+        meth = "pmi"
+    else:
+        meth = "inclufy"
+
+    ptype = ("complianceprog" if has("compliance", "wet", "avg")
+             else "integratie" if has("fusie", "integratie")
+             else "productlijn" if has("release", "product", "trein")
+             else "portfolio" if has("portfolio") else "transformatie")
+    rationale = f"Programma-methodiek {meth}: gekozen op basis van je beschrijving."
+    return {"methodology": meth, "methodology_confidence": "gemiddeld",
+            "project_type": ptype, "dimensions": dims, "rationale": rationale, "source": "deterministic"}
+
+
+PROGRAM_SCENARIOS = [
+    {"key": "transformatie", "title": "Bedrijfstransformatie", "desc": "Organisatiebrede verandering met baten over meerdere jaren en tranches.", "icon": "target", "color": "pink", "tags": ["MSP", "Heavy"], "methodology": "msp", "project_type": "transformatie", "dimensions": _d(3, 3, 3, 3, 2, 1)},
+    {"key": "productlijn", "title": "Productlijn / release-trein", "desc": "Meerdere agile teams synchroon op één product via PI-planning.", "icon": "rocket", "color": "blue", "tags": ["SAFe", "Heavy"], "methodology": "safe", "project_type": "productlijn", "dimensions": _d(3, 2, 3, 2, 2, 1)},
+    {"key": "portfolio", "title": "Portfolio-initiatief", "desc": "Samenhangende set projecten met gedeelde, gemanagede baten.", "icon": "columns", "color": "indigo", "tags": ["PMI", "Medium"], "methodology": "pmi", "project_type": "portfolio", "dimensions": _d(2, 3, 2, 2, 2, 1)},
+    {"key": "blueprintprog", "title": "Gestuurd programma (blueprint)", "desc": "PRINCE2-programma met target operating model en programmabestuur.", "icon": "book", "color": "purple", "tags": ["PRINCE2 Programme", "Heavy"], "methodology": "prince2_programme", "project_type": "transformatie", "dimensions": _d(3, 3, 3, 3, 2, 2)},
+    {"key": "complianceprog", "title": "Compliance-programma", "desc": "Meerdere projecten om aan nieuwe wet-/regelgeving te voldoen.", "icon": "shield", "color": "red", "tags": ["PMI", "Heavy"], "methodology": "pmi", "project_type": "complianceprog", "dimensions": _d(2, 2, 2, 2, 3, 3)},
+    {"key": "integratie", "title": "Fusie / integratie", "desc": "Twee organisaties samenvoegen: mix van voorspelbare en agile projecten.", "icon": "building", "color": "orange", "tags": ["Hybrid Programme", "Heavy"], "methodology": "hybrid_programme", "project_type": "integratie", "dimensions": _d(3, 3, 3, 3, 3, 2)},
+]
+
+
 PROJECT_TYPES = [
     "klant", "intern", "gereguleerd", "strategisch", "product", "operatie", "it",
     "migratie", "bouw", "marketing", "rnd", "proces", "logistiek", "zorg", "event",
@@ -164,14 +262,14 @@ def _clamp(v):
     return max(1, min(3, v))
 
 
-def governance_tabs(governance, shape):
+def governance_tabs(governance, shape, board_name="Project Board"):
     """Extra governance-layer tabs the user explicitly switched on at intake.
     Returned as forced-recommended (base_level 0 == always)."""
     g = governance or {}
     tabs = []
     board = g.get("board", "auto")
     if board == "formal" or (board == "auto" and shape == "heavy"):
-        tabs.append("Project Board")
+        tabs.append(board_name)
     if g.get("portfolio") == "yes":
         tabs.append("Portfolio")
     if g.get("stakeholder") == "matrix":
@@ -181,14 +279,17 @@ def governance_tabs(governance, shape):
     return tabs
 
 
-def recommend_modules(methodology, dims, governance=None):
-    """Return {shape, score, recommended:[...], more:[...]} for a methodology + dims."""
+def recommend_modules(methodology, dims, governance=None, modules=None,
+                      analytics_label="Analytics (dit project)", board_name="Project Board"):
+    """Return {shape, score, recommended:[...], more:[...]} for a methodology + dims.
+    `modules` defaults to the project module sets; pass PROGRAM_MODULES for programmes."""
+    sets = modules if modules is not None else PROJECT_MODULES
+    fallback_key = "inclufy" if "inclufy" in sets else next(iter(sets))
     shape, total = compute_shape(dims)
     level = SHAPE_LEVEL[shape]
-    base = list(PROJECT_MODULES.get(methodology, PROJECT_MODULES["inclufy"]))
-    # analytics label is per-project here
-    cross = [("Rapportages", 1, None), ("Analytics (dit project)", 2, None)]
-    gov_forced = set(governance_tabs(governance, shape))
+    base = list(sets.get(methodology, sets[fallback_key]))
+    cross = [("Rapportages", 1, None), (analytics_label, 2, None)]
+    gov_forced = set(governance_tabs(governance, shape, board_name))
     board_formal = (governance or {}).get("board") == "formal"
 
     recommended, more, seen = [], [], set()

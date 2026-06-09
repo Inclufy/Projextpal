@@ -440,3 +440,52 @@ class ProgramBudgetItem(models.Model):
 
     def __str__(self):
         return f"{self.description} - €{self.amount} - {self.program.name}"
+
+class ProgramTailoring(models.Model):
+    """Tailoring decision for a programme (the programme-wizard outcome).
+    Mirrors projects.ProjectTailoring at programme scale — drives the
+    'Aanbevolen vs Meer' surfacing and records the tailoring justification."""
+
+    SHAPE_CHOICES = [("light", "Light"), ("medium", "Medium"), ("heavy", "Heavy")]
+    SOURCE_CHOICES = [("ai", "AI"), ("manual", "Manual"), ("scenario", "Scenario")]
+    BOARD_CHOICES = [("auto", "AI bepaalt"), ("light", "Lichte review"), ("formal", "Formele board")]
+    AUTH_CHOICES = [("owner", "Alleen programmabestuur"), ("owner_pm", "Bestuur + programmamanager")]
+
+    program = models.OneToOneField("Program", on_delete=models.CASCADE, related_name="tailoring")
+    project_type = models.CharField(max_length=40, blank=True, default="")
+
+    dim_scope = models.PositiveSmallIntegerField(default=3)
+    dim_budget = models.PositiveSmallIntegerField(default=2)
+    dim_duur = models.PositiveSmallIntegerField(default=3)
+    dim_politiek = models.PositiveSmallIntegerField(default=2)
+    dim_risico = models.PositiveSmallIntegerField(default=2)
+    dim_regel = models.PositiveSmallIntegerField(default=1)
+
+    team_size = models.CharField(max_length=4, blank=True, default="l")
+    departments = models.PositiveSmallIntegerField(default=2)
+
+    gov_authority = models.CharField(max_length=12, choices=AUTH_CHOICES, default="owner")
+    gov_board = models.CharField(max_length=8, choices=BOARD_CHOICES, default="auto")
+    gov_portfolio = models.BooleanField(default=False)
+    gov_stakeholder_matrix = models.BooleanField(default=False)
+    gov_periodic_cadence = models.BooleanField(default=False)
+
+    shape = models.CharField(max_length=8, choices=SHAPE_CHOICES, default="heavy")
+    score = models.PositiveSmallIntegerField(default=14)
+    recommended_modules = models.JSONField(default=list, blank=True)
+    coach_mode = models.BooleanField(default=False)
+    ai_rationale = models.TextField(blank=True, default="")
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="manual")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"ProgramTailoring<{self.program_id}> {self.shape}"
+
+    @property
+    def dimensions(self):
+        return {
+            "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
+            "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
+        }

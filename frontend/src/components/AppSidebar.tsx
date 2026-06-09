@@ -1368,7 +1368,18 @@ export function AppSidebar() {
     },
   ];
   const programPhases = programId
-    ? [...getProgramPhases(programId, programMethodology), ...programUniversalGroups(programId, programMethodology)]
+    ? [
+        {
+          id: "prog-tailoring",
+          title: "Setup",
+          icon: Settings2,
+          items: [
+            { title: "Programma-tailoring", url: `/programs/${programId}/tailoring`, icon: Settings2 },
+          ],
+        },
+        ...getProgramPhases(programId, programMethodology),
+        ...programUniversalGroups(programId, programMethodology),
+      ]
     : [];
   const filteredProgramPhases = filterPhasesByRole(programPhases, roleInfo);
 
