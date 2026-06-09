@@ -151,3 +151,27 @@ def start_proeftuin(request):
             continue
 
     return Response({"seeded": bool(created), "projects": created})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def reset_proeftuin(request):
+    """Remove the seeded example projects so the user can start fresh. Only ever
+    touches projects whose name starts with the 'Voorbeeld — ' marker, so real
+    work is never deleted."""
+    user = request.user
+    company = getattr(user, "company", None)
+    if not company:
+        return Response({"detail": "Je account is niet aan een bedrijf gekoppeld."}, status=400)
+    try:
+        from projects.models import Project
+        qs = Project.objects.filter(company=company, name__startswith="Voorbeeld — ")
+        removed = qs.count()
+        for p in qs:
+            try:
+                p.delete()
+            except Exception:
+                pass
+        return Response({"reset": True, "removed": removed})
+    except Exception:
+        return Response({"reset": False, "removed": 0})

@@ -42,6 +42,18 @@ const OnboardingProeftuin = () => {
     finally { setSeeding(false); }
   };
 
+  const reset = async () => {
+    if (!window.confirm("De voorbeeldprojecten verwijderen? Je eigen projecten blijven staan.")) return;
+    setSeeding(true);
+    try {
+      await fetch(`/api/v1/auth/onboarding/reset-proeftuin/`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` },
+      });
+      await refresh();
+    } catch { /* ignore */ }
+    finally { setSeeding(false); }
+  };
+
   if (!s || dismissed) return null;
   // Nothing to show: not a trial and onboarding already complete.
   if (!s.is_trial && s.complete) return null;
@@ -62,6 +74,11 @@ const OnboardingProeftuin = () => {
               <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.users} / {s.limits.max_users}</b> teamleden</span>
             </div>
           </div>
+          {s.has_sample && (
+            <button onClick={reset} disabled={seeding} className="text-xs font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-2 disabled:opacity-50">
+              Reset demo
+            </button>
+          )}
           <button onClick={() => navigate("/settings")} className="text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 px-4 py-2.5 rounded-lg shadow hover:brightness-105 transition">
             Upgrade &amp; behoud je werk →
           </button>
