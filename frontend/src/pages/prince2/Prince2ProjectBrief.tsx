@@ -164,7 +164,7 @@ const Prince2ProjectBrief = () => {
                 <Send className="h-4 w-4" /> {pt("Submit for Review")}
               </Button>
             )}
-            {brief && brief.status === "in_review" && (
+            {brief && (brief.status === "submitted" || brief.status === "in_review") && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600">
                 <CheckCircle2 className="h-4 w-4" /> {pt("Approve")}
               </Button>
