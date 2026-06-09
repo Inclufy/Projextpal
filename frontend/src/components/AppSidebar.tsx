@@ -1780,6 +1780,28 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
+          {['admin', 'superadmin'].includes(userRole) && (
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to="/compliance"
+                  className={({ isActive }) =>
+                    cn("rounded-lg transition-all duration-200 flex items-center gap-3",
+                      isActive
+                        ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                        : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                    )
+                  }
+                >
+                  <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-gray-100 dark:bg-gray-800")}>
+                    <Shield className="h-4 w-4 text-gray-500" />
+                  </div>
+                  {!isCollapsed && <span className="text-sm">{isNL ? 'Compliance' : 'Compliance'}</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+
           {['admin', 'superadmin', 'pm', 'program_manager'].includes(userRole) && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>

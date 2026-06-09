@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from admin_portal.views import CurrentUserView
+from core.compliance_views import compliance_posture
 from subscriptions.public_api import PublicPlansView
 from subscriptions.pricing_catalog_view import PricingCatalogView
 from drf_spectacular.views import (
@@ -18,6 +19,9 @@ urlpatterns = [
     # mount so ops tooling (load balancers, uptime checks) doesn't break.
     path("api/v1/health/", include("health.urls")),
     
+    # Compliance evidence surface (admin-only)
+    path("api/v1/compliance/posture/", compliance_posture, name="compliance-posture"),
+
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
 
