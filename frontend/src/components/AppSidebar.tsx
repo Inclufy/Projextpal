@@ -1248,12 +1248,17 @@ export function AppSidebar() {
   useEffect(() => {
     if (!projectId) { setTailoring(null); return; }
     let cancelled = false;
-    fetch(`/api/v1/projects/${projectId}/tailoring/`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-    }).then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (!cancelled) setTailoring(d); })
-      .catch(() => { if (!cancelled) setTailoring(null); });
-    return () => { cancelled = true; };
+    const fetchTailoring = () =>
+      fetch(`/api/v1/projects/${projectId}/tailoring/`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      }).then((r) => r.ok ? r.json() : null)
+        .then((d) => { if (!cancelled) setTailoring(d); })
+        .catch(() => { if (!cancelled) setTailoring(null); });
+    fetchTailoring();
+    // Live-refresh when the tailoring page saves (no page reload needed).
+    const onUpdated = (e: any) => { if (!e?.detail?.projectId || String(e.detail.projectId) === String(projectId)) fetchTailoring(); };
+    window.addEventListener("tailoring-updated", onUpdated);
+    return () => { cancelled = true; window.removeEventListener("tailoring-updated", onUpdated); };
   }, [projectId]);
 
   // Build a recommended-shortcuts group by matching the tailoring's module names

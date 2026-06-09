@@ -122,7 +122,13 @@ const ProjectTailoring = () => {
       const r = await fetch(`/api/v1/projects/${id}/tailoring/`, {
         method: "PUT", headers, body: JSON.stringify(t),
       });
-      if (r.ok) { const d = await r.json(); setT(d); toast.success(`Opgeslagen — vorm: ${d.shape}`); }
+      if (r.ok) {
+        const d = await r.json();
+        setT(d);
+        toast.success(`Opgeslagen — vorm: ${d.shape}`);
+        // Tell the sidebar (and any listener) the tailoring changed → live refresh.
+        window.dispatchEvent(new CustomEvent("tailoring-updated", { detail: { projectId: id } }));
+      }
       else toast.error("Opslaan mislukt");
     } catch { toast.error("Opslaan mislukt"); }
     finally { setSaving(false); }
