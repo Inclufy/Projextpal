@@ -109,6 +109,34 @@ Mac Studio has **no public IP**. Cloudflare Tunnel name: `projextpal`.
 - Don't try to unify them — they intentionally diverge.
 - Deploy commands use `master` on Mac Studio.
 
+### ⚠️ 6a. TWO remotes — push to BOTH or the deploy silently uses old code
+
+The **MacBook** dev repo has two remotes:
+- `origin` → **GitLab** (`git@gitlab.com:inclufy/projextpal.git`)
+- `github` → **GitHub** (`https://github.com/Inclufy/Projextpal.git`)
+
+The **Mac Studio** production tree pulls `master` from **GitHub** (`origin` there = GitHub). So a `git push origin master` from the MacBook (→ GitLab) is **invisible** to the Mac Studio — `git pull` there says "Already up to date" and `docker build` rebuilds the **old code** (migrations report "No migrations to apply", new routes 404).
+
+**Rule: after committing, push to BOTH:**
+```bash
+git push origin master && git push github master
+```
+Verify before deploy: `git ls-remote github master` must equal your local `git rev-parse HEAD`.
+
+### 6b. Backend/frontend have NO `build:` in compose — build the image manually
+
+`docker compose build backend` does nothing (the service only has `image:`). On Mac Studio, rebuild the image yourself then force-recreate:
+```bash
+docker build --no-cache -t registry.gitlab.com/inclufy/projextpal/backend:latest ./backend
+docker compose -f docker-compose.production.yml up -d --force-recreate backend
+docker build -f frontend/Dockerfile.prod -t ghcr.io/inclufy/projextpal-web:latest ./frontend
+docker compose -f docker-compose.production.yml up -d --force-recreate frontend
+```
+
+### 6c. `api.projextpal.com` 404 is an edge/tunnel quirk — not the app
+
+The SPA calls `/api/v1` relative (→ `projextpal.com/api` → nginx → backend). Verify a route the way the app uses it: `curl -s -o /dev/null -w "%{http_code}\n" https://projextpal.com/api/v1/<route>` → **401** means the route is live. The `api.projextpal.com` direct host can 404 at the edge while Django serves it fine; don't trust it as a deploy check.
+
 ---
 
 ## 7. Mobile (iOS + Android)
