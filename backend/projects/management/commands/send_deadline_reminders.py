@@ -81,6 +81,13 @@ class Command(BaseCommand):
                     by_owner.setdefault(t.assigned_to, []).append(t)
 
             for owner, owner_tasks in by_owner.items():
+                # Respect the owner's email preference for deadline reminders.
+                try:
+                    from notifications.models import should_email
+                    if not should_email(owner, "deadline"):
+                        continue
+                except Exception:
+                    pass
                 subject = f"⏰ {len(owner_tasks)} task(s) due in {project.name}"
                 lines = [f"Hi {owner.first_name or owner.email},", "",
                          f"You have {len(owner_tasks)} task(s) due soon in '{project.name}':", ""]

@@ -18,6 +18,7 @@ import {
   Eye, EyeOff, Save, Check, Info,
 } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import NotificationPreferences from '@/components/NotificationPreferences';
 
 // ============================================================
 // Types
@@ -704,6 +705,10 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="mt-6">
+            <NotificationPreferences />
+          </div>
         </TabsContent>
 
         {/* API KEYS TAB (admin roles only) */}

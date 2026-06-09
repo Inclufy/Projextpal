@@ -80,3 +80,29 @@ class DeviceRegisterView(APIView):
         if token:
             DeviceToken.objects.filter(token=token, user=request.user).update(active=False)
         return Response({"ok": True})
+
+
+class NotificationPreferenceView(APIView):
+    """GET/PUT the caller's own notification preferences.
+    GET returns the prefs (defaults all-on if none stored yet)."""
+    permission_classes = [IsAuthenticated]
+    FIELDS = ["email_enabled", "push_enabled", "task_assigned", "mention",
+              "message", "approval", "deadline", "status_digest", "programme_update"]
+
+    def get(self, request):
+        from .models import NotificationPreference
+        p = NotificationPreference.objects.filter(user=request.user).first()
+        if p is None:
+            return Response({f: True for f in self.FIELDS})
+        return Response({f: getattr(p, f) for f in self.FIELDS})
+
+    def put(self, request):
+        from .models import NotificationPreference
+        p, _ = NotificationPreference.objects.get_or_create(user=request.user)
+        for f in self.FIELDS:
+            if f in request.data:
+                setattr(p, f, bool(request.data[f]))
+        p.save()
+        return Response({f: getattr(p, f) for f in self.FIELDS})
+
+    patch = put

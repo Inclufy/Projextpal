@@ -49,6 +49,74 @@ class Notification(models.Model):
         return f"{self.title} -> {self.recipient_id} ({'read' if self.read else 'unread'})"
 
 
+# Notification categories the user can independently mute (per channel).
+# Maps the notify() `kind` values onto a smaller set of user-facing categories.
+NOTIF_CATEGORIES = ["task_assigned", "mention", "message", "approval", "deadline", "status_digest", "programme_update"]
+_KIND_TO_CATEGORY = {
+    "task_assigned": "task_assigned",
+    "action_assigned": "task_assigned",
+    "mention": "mention",
+    "message": "message",
+    "approval": "approval",
+    "deadline": "deadline",
+    "status": "status_digest",
+    "system": "status_digest",
+}
+
+
+class NotificationPreference(models.Model):
+    """Per-user notification preferences. Master switches per channel (email /
+    push) plus a per-category toggle. Missing row = everything on (opt-out
+    model). Essential transactional mail (password reset, email verification,
+    invitations) ignores these — only notification mail/push is governed."""
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_preference"
+    )
+    email_enabled = models.BooleanField(default=True)   # master email switch
+    push_enabled = models.BooleanField(default=True)    # master push switch
+    # Per-category (applies to whichever channel is enabled).
+    task_assigned = models.BooleanField(default=True)
+    mention = models.BooleanField(default=True)
+    message = models.BooleanField(default=True)
+    approval = models.BooleanField(default=True)
+    deadline = models.BooleanField(default=True)
+    status_digest = models.BooleanField(default=True)
+    programme_update = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notif prefs for {self.user_id}"
+
+    def category_on(self, kind):
+        cat = _KIND_TO_CATEGORY.get(kind, "status_digest")
+        return bool(getattr(self, cat, True))
+
+
+def _prefs_for(user):
+    if user is None:
+        return None
+    try:
+        return NotificationPreference.objects.filter(user=user).first()
+    except Exception:
+        return None
+
+
+def should_email(user, kind):
+    """Whether a NOTIFICATION email of this kind should go to the user.
+    Opt-out: True unless the user explicitly disabled the master or category."""
+    p = _prefs_for(user)
+    if p is None:
+        return True
+    return p.email_enabled and p.category_on(kind)
+
+
+def should_push(user, kind):
+    p = _prefs_for(user)
+    if p is None:
+        return True
+    return p.push_enabled and p.category_on(kind)
+
+
 class DeviceToken(models.Model):
     """An Expo push token for one of a user's devices. The mobile app registers
     it on startup (POST /api/v1/auth/devices/register/); notify() fans a push
@@ -122,8 +190,10 @@ def notify(recipient, *, kind="system", title="", body="", url="", actor=None, c
             recipient=recipient, company=company, actor=actor,
             kind=kind, title=title[:255], body=body or "", url=url or "",
         )
-        # Fan out to the recipient's mobile devices (best-effort, never raises).
-        send_push(recipient, title=title, body=body, url=url, data={"kind": kind})
+        # Fan out to the recipient's mobile devices, respecting their push
+        # preference (best-effort, never raises).
+        if should_push(recipient, kind):
+            send_push(recipient, title=title, body=body, url=url, data={"kind": kind})
         return n
     except Exception:
         return None
