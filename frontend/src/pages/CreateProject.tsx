@@ -200,6 +200,7 @@ const CreateProject = () => {
   const [intake, setIntake] = useState<{ project_type: string; dimensions: Record<string, number>; rationale: string } | null>(null);
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+  const [showMethodologies, setShowMethodologies] = useState(false);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -341,6 +342,7 @@ const CreateProject = () => {
     setSelectedScenario(s.key);
     setFormData((prev) => ({ ...prev, methodology: s.methodology as ProjectMethodology }));
     setIntake({ project_type: s.project_type, dimensions: s.dimensions, rationale: `Scenario: ${s.title}` });
+    setShowMethodologies(false);   // scenario chosen → collapse the manual grid
   };
 
   const applyAIRecommendation = () => {
@@ -457,6 +459,8 @@ Be specific and professional. Use the context to determine appropriate methodolo
 
   const handleMethodologySelect = (methodologyId: ProjectMethodology) => {
     setFormData(prev => ({ ...prev, methodology: methodologyId }));
+    setSelectedScenario(null);   // manual pick → not from a scenario
+    setIntake(null);             // no scenario tailoring captured
   };
 
   const canProceed = () => {
@@ -724,13 +728,13 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   </Dialog>
                 </div>
 
-                {/* Quick-start: pick a recognisable scenario → sets methodology + tailoring */}
+                {/* Primary path: pick a recognisable scenario → sets methodology + tailoring */}
                 {scenarios.length > 0 && (
                   <div className="rounded-xl border bg-muted/30 p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-semibold">{pt("Of begin met een scenario")}</span>
-                      <span className="text-xs text-muted-foreground">{pt("één klik zet de methodiek + de juiste governance")}</span>
+                      <span className="text-sm font-semibold">{pt("Begin met een scenario")}</span>
+                      <span className="text-xs text-muted-foreground">{pt("één klik zet de methodiek + de juiste governance — meest gekozen")}</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-72 overflow-y-auto pr-1">
                       {scenarios.map((s) => (
@@ -756,6 +760,26 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   </div>
                 )}
 
+                {/* Confirmation of what was chosen */}
+                {selectedMethodology && (
+                  <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm">
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                    <span>Gekozen: <b>{selectedMethodology.shortName}</b>{selectedScenario ? " — via scenario" : ""}. Klik <b>{pt("Next")}</b> om door te gaan.</span>
+                    {!showMethodologies && (
+                      <button type="button" onClick={() => setShowMethodologies(true)} className="ml-auto text-xs font-semibold text-primary hover:underline whitespace-nowrap">methodiek wijzigen</button>
+                    )}
+                  </div>
+                )}
+
+                {/* Secondary path: pick a methodology manually */}
+                {scenarios.length > 0 && !showMethodologies && (
+                  <button type="button" onClick={() => setShowMethodologies(true)}
+                    className="text-sm font-semibold text-primary hover:underline">
+                    {pt("Of kies zelf een methodiek")} →
+                  </button>
+                )}
+
+                {(showMethodologies || scenarios.length === 0) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {METHODOLOGIES.map((methodology) => (
                     <Card
@@ -801,6 +825,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </Card>
                   ))}
                 </div>
+                )}
               </div>
             )}
 
