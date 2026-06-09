@@ -6,6 +6,22 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from projects.permissions import MethodologyMatchesProjectPermission
+
+
+def _can_authorize(user, project):
+    """PRINCE2 separation of duties: only the Project Owner (Executive, who
+    chairs the Project Board) — or a company admin/superadmin — may authorize
+    (approve) initiation products. The author/submitter cannot self-approve
+    unless they hold that role."""
+    try:
+        from projects.role_views import effective_project_role, _is_admin
+        if _is_admin(user):
+            return True
+        role, _ = effective_project_role(user, project)
+        return role == "project_owner"
+    except Exception:
+        # Fail safe: deny rather than allow if the role check errors.
+        return getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False)
 from .models import (
     Product,
     ProjectBrief, BusinessCase, BusinessCaseBenefit, BusinessCaseRisk,
@@ -97,8 +113,19 @@ class ProjectBriefViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, project_id=None, pk=None):
         brief = self.get_object()
+        if not _can_authorize(request.user, brief.project):
+            return Response(
+                {'detail': 'Only the Project Owner (Executive) can authorize this — PRINCE2 separation of duties.'},
+                status=403,
+            )
         brief.status = 'approved'
         brief.save()
+        try:
+            from accounts.models import audit
+            audit(request.user, "prince2.brief_approved", summary=f"Approved Project Brief for project {brief.project_id}",
+                  target_type="project_brief", target_id=brief.id, request=request)
+        except Exception:
+            pass
         return Response(ProjectBriefSerializer(brief).data)
 
 
@@ -120,8 +147,19 @@ class BusinessCaseViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, project_id=None, pk=None):
         bc = self.get_object()
+        if not _can_authorize(request.user, bc.project):
+            return Response(
+                {'detail': 'Only the Project Owner (Executive) can authorize this — PRINCE2 separation of duties.'},
+                status=403,
+            )
         bc.status = 'approved'
         bc.save()
+        try:
+            from accounts.models import audit
+            audit(request.user, "prince2.business_case_approved", summary=f"Approved Business Case for project {bc.project_id}",
+                  target_type="business_case", target_id=bc.id, request=request)
+        except Exception:
+            pass
         return Response(BusinessCaseSerializer(bc).data)
 
     @action(detail=True, methods=['post'])

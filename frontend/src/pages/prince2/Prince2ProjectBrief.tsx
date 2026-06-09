@@ -57,6 +57,7 @@ const Prince2ProjectBrief = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [brief, setBrief] = useState<any>(null);
+  const [canApprove, setCanApprove] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<BriefForm>({
@@ -98,6 +99,15 @@ const Prince2ProjectBrief = () => {
   };
 
   useEffect(() => { fetchBrief(); }, [id]);
+
+  // Only the Project Owner (Executive) / admin may authorize (PRINCE2 SoD).
+  useEffect(() => {
+    if (!id) return;
+    fetch(`/api/v1/projects/${id}/my-role/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.role === "project_owner") setCanApprove(true); })
+      .catch(() => {});
+  }, [id]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -164,10 +174,13 @@ const Prince2ProjectBrief = () => {
                 <Send className="h-4 w-4" /> {pt("Submit for Review")}
               </Button>
             )}
-            {brief && (brief.status === "submitted" || brief.status === "in_review") && (
+            {brief && (brief.status === "submitted" || brief.status === "in_review") && canApprove && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600">
-                <CheckCircle2 className="h-4 w-4" /> {pt("Approve")}
+                <CheckCircle2 className="h-4 w-4" /> {pt("Approve as Project Owner")}
               </Button>
+            )}
+            {brief && (brief.status === "submitted" || brief.status === "in_review") && !canApprove && (
+              <Badge variant="outline" className="self-center text-amber-600 border-amber-300">{pt("Awaiting Project Owner approval")}</Badge>
             )}
             <Button onClick={handleSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
