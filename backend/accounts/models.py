@@ -841,5 +841,49 @@ class TeamInvitation(models.Model):
         return self.status == 'pending' and not self.is_expired
 
 
+_AUDIT_CATEGORY = {
+    "data": "user", "account": "user", "user": "user",
+    "task": "project", "custom_field": "settings", "import": "project",
+}
+
+
+def audit(actor, action, *, summary="", target_type="", target_id="", company=None,
+          severity="info", request=None, **metadata):
+    """Write one immutable audit record (ISO 27001 A.8 logging; GDPR
+    accountability). Reuses the existing admin_portal.AuditLog store. Best-effort
+    — never raises, so an audit failure can't break the action it records.
+
+    Called from the high-blast-radius write paths (GDPR rights, bulk ops,
+    import, custom-field config, role changes)."""
+    try:
+        from admin_portal.models import AuditLog  # lazy → avoid circular import
+        ip = ua = None
+        if request is not None:
+            ip = (request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+                  or request.META.get("REMOTE_ADDR"))
+            ua = (request.META.get("HTTP_USER_AGENT") or "")[:512]
+            if actor is None:
+                actor = getattr(request, "user", None)
+        if company is None:
+            company = getattr(actor, "company", None)
+        category = _AUDIT_CATEGORY.get((action or "").split(".")[0], "admin")
+        return AuditLog.objects.create(
+            user=actor if getattr(actor, "is_authenticated", False) else None,
+            user_email=(getattr(actor, "email", "") or "system")[:254],
+            action=action[:50],
+            category=category,
+            severity=severity,
+            description=(summary or action)[:1000],
+            resource_type=(target_type or "")[:50],
+            resource_id=str(target_id or "")[:100],
+            company=company,
+            ip_address=ip,
+            user_agent=ua or "",
+            metadata=metadata or {},
+        )
+    except Exception:
+        return None
+
+
 # Re-export biometric model so Django auto-discovers it for migrations.
 from .models_biometric import BiometricCredential  # noqa: E402,F401

@@ -1478,6 +1478,12 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         if (request.data.get("action") or "update") == "delete":
             n = qs.count()
             qs.delete()
+            try:
+                from accounts.models import audit
+                audit(request.user, "task.bulk_delete", summary=f"Bulk-deleted {n} task(s)",
+                      target_type="task", request=request, ids=ids[:200])
+            except Exception:
+                pass
             return Response({"ok": True, "deleted": n})
         fields = {}
         if request.data.get("status"):
@@ -1489,6 +1495,12 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         if not fields:
             return Response({"detail": "no fields to update"}, status=400)
         n = qs.update(**fields)
+        try:
+            from accounts.models import audit
+            audit(request.user, "task.bulk_update", summary=f"Bulk-updated {n} task(s): {fields}",
+                  target_type="task", request=request, ids=ids[:200], fields=fields)
+        except Exception:
+            pass
         return Response({"ok": True, "updated": n})
 
     @action(detail=False, methods=["post"], url_path="import")
@@ -1594,6 +1606,12 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         if to_create:
             Task.objects.bulk_create(to_create)
             created = len(to_create)
+            try:
+                from accounts.models import audit
+                audit(request.user, "task.import", summary=f"Imported {created} task(s) into project {project.id}",
+                      target_type="project", target_id=project.id, request=request, created=created)
+            except Exception:
+                pass
         return Response({
             "created": created,
             "skipped": len(errors),

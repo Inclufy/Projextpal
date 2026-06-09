@@ -33,7 +33,7 @@ ISO = [
     {"id": "I3", "control": "Encryption at rest + in transit", "status": "pass", "kind": "engineering", "evidence": "Fernet EncryptedTextField; HSTS + SSL redirect + secure cookies"},
     {"id": "I4", "control": "Rate limiting", "status": "pass", "kind": "engineering", "evidence": "DRF ScopedRateThrottle"},
     {"id": "I5", "control": "Secrets management", "status": "pass", "kind": "engineering", "evidence": ".env gitignored; Fernet for stored credentials"},
-    {"id": "I6", "control": "Audit log (all sensitive writes)", "status": "partial", "kind": "engineering", "evidence": "admin + consent + issue logs; unify for custom-fields/bulk-edit/import/role-change"},
+    {"id": "I6", "control": "Audit log (all sensitive writes)", "status": "pass", "kind": "engineering", "evidence": "audit() helper → AuditLog; emits on data.export, account.delete, task.bulk_update/delete/import, custom_field.*; admin viewer at /audit-log"},
     {"id": "I7", "control": "Vulnerability & change mgmt", "status": "partial", "kind": "engineering", "evidence": "add npm audit + pip-audit to CI; code review in place"},
     {"id": "I8", "control": "Backup & DR (off-site + tested restore)", "status": "partial", "kind": "engineering", "evidence": "pg_dump + runbook; verify cron paths + off-site + restore test"},
     {"id": "I9", "control": "Monitoring & error tracking", "status": "pass", "kind": "engineering", "evidence": "Sentry (backend + RN)"},

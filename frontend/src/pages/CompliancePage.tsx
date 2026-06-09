@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, FileText, Loader2, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { ShieldCheck, FileText, Loader2, CheckCircle2, AlertTriangle, XCircle, ScrollText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 interface Control { id: string; control: string; status: "pass" | "partial" | "fail"; kind: string; evidence: string }
@@ -91,8 +92,11 @@ export default function CompliancePage() {
         <CardContent className="flex flex-wrap gap-10 py-6">
           <ScoreRing label="GDPR / AVG" score={data.gdpr.score} />
           <ScoreRing label="ISO 27001" score={data.iso27001.score} />
-          <div className="flex-1 min-w-[240px] flex items-center">
+          <div className="flex-1 min-w-[240px] flex flex-col justify-center gap-2">
             <p className="text-xs text-muted-foreground italic">{data.note}</p>
+            <Link to="/audit-log" className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:underline">
+              <ScrollText className="h-4 w-4" /> {pt("View the audit log")}
+            </Link>
           </div>
         </CardContent>
       </Card>

@@ -48,8 +48,11 @@ from .biometric import (
 from rest_framework_simplejwt.views import TokenRefreshView
 from accounts.views import save_registration_intent
 
+from .audit_views import AuditLogViewSet
+
 router = DefaultRouter()
 router.register(r"crm-api-keys", CrmApiKeyViewSet, basename="crm-api-key")
+router.register(r"audit-logs", AuditLogViewSet, basename="audit-log")
 
 from notifications.views import DeviceRegisterView
 

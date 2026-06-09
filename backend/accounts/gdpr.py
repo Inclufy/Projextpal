@@ -185,6 +185,11 @@ class DataExportView(APIView):
             f"{timezone.now().strftime('%Y-%m-%d')}.json"
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        try:
+            from .models import audit
+            audit(request.user, "data.export", summary="Downloaded a GDPR Art. 15 data export", request=request)
+        except Exception:
+            pass
         return response
 
 
@@ -272,6 +277,13 @@ class AccountDeleteView(APIView):
                 # Audit must never block the erasure itself.
                 pass
 
+        try:
+            from .models import audit
+            audit(None, "account.delete",
+                  summary=f"GDPR Art. 17 erasure of {orig_email} (anonymized, 30-day grace)",
+                  target_type="user", target_id=orig_user_id, request=request)
+        except Exception:
+            pass
         return Response(
             {
                 "status": "anonymized",

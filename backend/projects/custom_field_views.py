@@ -65,7 +65,13 @@ class CustomFieldDefinitionViewSet(viewsets.ModelViewSet):
         company = _company_of(self.request.user)
         if company is None:
             raise serializers.ValidationError("Your account has no associated company.")
-        serializer.save(company=company, created_by=self.request.user)
+        obj = serializer.save(company=company, created_by=self.request.user)
+        try:
+            from accounts.models import audit
+            audit(self.request.user, "custom_field.create", summary=f"Created custom field '{obj.label}' on {obj.entity}",
+                  target_type="custom_field", target_id=obj.id, request=self.request)
+        except Exception:
+            pass
 
     def perform_update(self, serializer):
         self._guard_manager()
@@ -73,4 +79,11 @@ class CustomFieldDefinitionViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         self._guard_manager()
+        label, entity, fid = instance.label, instance.entity, instance.id
         instance.delete()
+        try:
+            from accounts.models import audit
+            audit(self.request.user, "custom_field.delete", summary=f"Deleted custom field '{label}' on {entity}",
+                  target_type="custom_field", target_id=fid, request=self.request)
+        except Exception:
+            pass
