@@ -350,12 +350,13 @@ class Registration(models.Model):
         return delta.days
 
 class TrialLimits:
-    """Trial user limitations"""
+    """Trial / proeftuin limitations — roomy enough to actually try the product
+    (2 example projects + a small team), still clearly capped."""
     MAX_PROGRAMS = 1
-    MAX_PROGRAM_METHODOLOGIES = 1
-    MAX_PROJECTS = 1
-    MAX_PROJECT_METHODOLOGIES = 1
-    MAX_USERS = 1
+    MAX_PROGRAM_METHODOLOGIES = 2
+    MAX_PROJECTS = 2
+    MAX_PROJECT_METHODOLOGIES = 2
+    MAX_USERS = 3
     
     DISABLED_FEATURES = [
         "time_tracking",

@@ -88,4 +88,66 @@ def onboarding_status(request):
         "total": total,
         "percent": round(done / total * 100) if total else 0,
         "complete": done == total,
+        "has_sample": has_project,
     })
+
+
+# Two starter scenarios for the sandbox (a heavy PRINCE2 + a light Scrum project).
+_SAMPLE_KEYS = ["klant", "product"]
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def start_proeftuin(request):
+    """Seed 2 fully-shaped example projects into the user's company so the sandbox
+    isn't empty. Idempotent: skips if example projects already exist."""
+    user = request.user
+    company = getattr(user, "company", None)
+    if not company:
+        return Response({"detail": "Je account is niet aan een bedrijf gekoppeld."}, status=400)
+
+    from projects.models import Project, ProjectTailoring
+    from projects.tailoring import SCENARIOS, recommend_modules
+    from django.utils import timezone
+    from django.db import transaction
+    from datetime import timedelta
+
+    if Project.objects.filter(company=company, name__startswith="Voorbeeld — ").exists():
+        return Response({"seeded": False, "message": "Voorbeeldprojecten bestaan al."})
+
+    by_key = {s["key"]: s for s in SCENARIOS}
+    created = []
+    today = timezone.now().date()
+
+    for key in _SAMPLE_KEYS:
+        sc = by_key.get(key)
+        if not sc:
+            continue
+        # Each project (+ tailoring + tasks) in its own savepoint so a signal
+        # failure on one never aborts the whole seed.
+        try:
+            with transaction.atomic():
+                project = Project.objects.create(
+                    company=company, created_by=user,
+                    name=f"Voorbeeld — {sc['title']}",
+                    description=f"{sc['desc']} (demo-project om mee te oefenen — veilig te verwijderen)",
+                    methodology=sc["methodology"],
+                    start_date=today, end_date=today + timedelta(days=90),
+                    budget=50000,
+                )
+                dims = sc["dimensions"]
+                rec = recommend_modules(sc["methodology"], dims)
+                ProjectTailoring.objects.create(
+                    project=project, project_type=sc["project_type"],
+                    dim_scope=dims["scope"], dim_budget=dims["budget"], dim_duur=dims["duur"],
+                    dim_politiek=dims["politiek"], dim_risico=dims["risico"], dim_regel=dims["regel"],
+                    shape=rec["shape"], score=rec["score"], recommended_modules=rec["recommended"],
+                    source="scenario", ai_rationale=f"Voorbeeldproject op basis van scenario '{sc['title']}'.",
+                )
+                # The methodology's own signals scaffold the project's starter
+                # structure on create, so no manual tasks are needed here.
+                created.append({"id": project.id, "name": project.name, "url": f"/projects/{project.id}/tailoring"})
+        except Exception:
+            continue
+
+    return Response({"seeded": bool(created), "projects": created})

@@ -8,6 +8,7 @@ type Status = {
   limits: { max_projects: number; max_programs: number; max_users: number };
   usage: { projects: number; programs: number; users: number };
   steps: Step[]; completed: number; total: number; percent: number; complete: boolean;
+  has_sample: boolean;
 };
 
 /**
@@ -18,15 +19,28 @@ type Status = {
 const OnboardingProeftuin = () => {
   const [s, setS] = useState<Status | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token");
+  const refresh = () =>
     fetch(`/api/v1/auth/onboarding/status/`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => d && setS(d))
       .catch(() => {});
-  }, []);
+
+  useEffect(() => { refresh(); }, []);
+
+  const seed = async () => {
+    setSeeding(true);
+    try {
+      await fetch(`/api/v1/auth/onboarding/start-proeftuin/`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` },
+      });
+      await refresh();
+    } catch { /* ignore */ }
+    finally { setSeeding(false); }
+  };
 
   if (!s || dismissed) return null;
   // Nothing to show: not a trial and onboarding already complete.
@@ -65,6 +79,16 @@ const OnboardingProeftuin = () => {
                 <button onClick={() => setDismissed(true)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">verbergen</button>
               </div>
               <p className="text-xs text-muted-foreground mb-3">Leer ProjeXtPal kennen met je eerste echte project — de AI helpt je onderweg.</p>
+              {!s.has_sample && (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 mb-3 flex items-center gap-3">
+                  <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 text-xs">Geen zin in een leeg scherm? Laat ons <b>2 voorbeeldprojecten</b> klaarzetten om mee te oefenen.</div>
+                  <button onClick={seed} disabled={seeding}
+                    className="text-xs font-semibold text-white bg-primary px-3 py-1.5 rounded-md hover:brightness-110 transition disabled:opacity-50 whitespace-nowrap">
+                    {seeding ? "Bezig…" : "Vul met voorbeelden"}
+                  </button>
+                </div>
+              )}
               <div className="divide-y">
                 {s.steps.map((step, i) => (
                   <div key={step.key} className="flex items-center gap-3 py-2.5">
