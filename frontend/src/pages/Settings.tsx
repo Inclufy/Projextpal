@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import NotificationPreferences from '@/components/NotificationPreferences';
+import PrivacyDataSettings from '@/components/PrivacyDataSettings';
 
 // ============================================================
 // Types
@@ -638,6 +639,8 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
+
+            <PrivacyDataSettings />
           </div>
         </TabsContent>
 
