@@ -29,6 +29,9 @@ class Company(models.Model):
     onboarding_completed = models.BooleanField(default=False)
     onboarding_completed_at = models.DateTimeField(null=True, blank=True)
     onboarding_data = models.JSONField(null=True, blank=True, help_text="Raw onboarding answers for audit/replay.")
+    # Roomy evaluation mode: keeps the proeftuin banner/onboarding (trial) but
+    # lifts the hard project/user caps — for enterprise pilots (e.g. Yanmar).
+    eval_mode = models.BooleanField(default=False, help_text="Time-limited pilot with the proeftuin layer but no hard caps.")
 
     # Tenant-wide 2FA enforcement
     # When True, every user in the tenant must enrol 2FA at next login.
@@ -384,10 +387,12 @@ class TrialLimits:
         """Check if user has reached trial limit for resource"""
         if not TrialLimits.is_trial_user(user):
             return True  # Not a trial user, no limits
-        
+
         company = user.company
         if not company:
             return False
+        if getattr(company, "eval_mode", False):
+            return True  # roomy evaluation pilot — banner stays, caps lifted
         
         if resource_type == "programs":
             from programs.models import Program

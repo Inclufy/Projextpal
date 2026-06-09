@@ -88,8 +88,8 @@ const OnboardingProeftuin = () => {
             <div className="text-sm font-semibold">Welkom in je proeftuin — verken ProjeXtPal vrijblijvend.</div>
             <div className="flex flex-wrap gap-4 mt-1 text-xs text-muted-foreground">
               {s.days_remaining != null && <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Nog <b className="text-primary">{s.days_remaining} dagen</b></span>}
-              <span className="flex items-center gap-1"><Folder className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.projects} / {s.limits.max_projects}</b> projecten</span>
-              <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.users} / {s.limits.max_users}</b> teamleden</span>
+              <span className="flex items-center gap-1"><Folder className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.projects}{s.limits.max_projects >= 0 ? ` / ${s.limits.max_projects}` : ""}</b> projecten{s.limits.max_projects < 0 ? " · onbeperkt" : ""}</span>
+              <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.users}{s.limits.max_users >= 0 ? ` / ${s.limits.max_users}` : ""}</b> teamleden</span>
             </div>
           </div>
           {s.has_sample && (

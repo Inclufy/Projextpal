@@ -34,11 +34,15 @@ def onboarding_status(request):
         delta = reg.trial_end_date - timezone.now()
         days_remaining = max(0, delta.days)
 
-    limits = {
-        "max_projects": getattr(TrialLimits, "MAX_PROJECTS", 2),
-        "max_programs": getattr(TrialLimits, "MAX_PROGRAMS", 1),
-        "max_users": getattr(TrialLimits, "MAX_USERS", 3),
-    }
+    eval_mode = bool(getattr(company, "eval_mode", False))
+    if eval_mode:
+        limits = {"max_projects": -1, "max_programs": -1, "max_users": -1}  # -1 == unlimited
+    else:
+        limits = {
+            "max_projects": getattr(TrialLimits, "MAX_PROJECTS", 2),
+            "max_programs": getattr(TrialLimits, "MAX_PROGRAMS", 1),
+            "max_users": getattr(TrialLimits, "MAX_USERS", 3),
+        }
 
     # --- usage -------------------------------------------------------------
     def count(model_path, **flt):
