@@ -201,6 +201,7 @@ const CreateProject = () => {
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [showMethodologies, setShowMethodologies] = useState(false);
+  const [showAdvancedDetails, setShowAdvancedDetails] = useState(false);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -839,6 +840,14 @@ Be specific and professional. Use the context to determine appropriate methodolo
                   </p>
                 </div>
 
+                {/* Carry the chosen approach forward so it's visible */}
+                {selectedMethodology && (
+                  <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm">
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                    <span>Aanpak: <b>{selectedMethodology.shortName}</b>{intake?.project_type ? ` · ${intake.project_type}` : ""} — de tailoring (vorm + governance) richten we automatisch in na het aanmaken.</span>
+                  </div>
+                )}
+
                 <div className="grid gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="name">{pt("Project Name")} *</Label>
@@ -848,35 +857,6 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label>{pt("Portfolio (optional)")}</Label>
-                      <select
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={formData.portfolio}
-                        onChange={(e) => setFormData(prev => ({ ...prev, portfolio: e.target.value }))}
-                      >
-                        <option value="">{pt("No portfolio")}</option>
-                        {portfolios.map((p: any) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>{pt("Program (optional)")}</Label>
-                      <select
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={formData.program}
-                        onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
-                      >
-                        <option value="">{pt("No program")}</option>
-                        {programs.map((p: any) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
 
                   <div className="grid gap-2">
@@ -999,6 +979,44 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       </Select>
                     </div>
                   </div>
+
+                  {/* Advanced (less-used) options — collapsed by default */}
+                  <div className="border-t pt-4">
+                    <button type="button" onClick={() => setShowAdvancedDetails(v => !v)}
+                      className="text-sm font-semibold text-primary hover:underline">
+                      {showAdvancedDetails ? "− " : "+ "}{pt("Geavanceerde opties")} ({pt("portfolio, programma")})
+                    </button>
+                    {showAdvancedDetails && (
+                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        <div className="grid gap-2">
+                          <Label>{pt("Portfolio (optional)")}</Label>
+                          <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={formData.portfolio}
+                            onChange={(e) => setFormData(prev => ({ ...prev, portfolio: e.target.value }))}
+                          >
+                            <option value="">{pt("No portfolio")}</option>
+                            {portfolios.map((p: any) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>{pt("Program (optional)")}</Label>
+                          <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={formData.program}
+                            onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
+                          >
+                            <option value="">{pt("No program")}</option>
+                            {programs.map((p: any) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1033,6 +1051,19 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       )}
                     </CardContent>
                   </Card>
+
+                  {intake && (
+                    <Card className="border-primary/20 bg-primary/5">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" /> {pt("Aanpak (tailoring)")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm">
+                        <p>Projecttype: <b>{intake.project_type}</b>. Na het aanmaken wordt de <b>vorm</b> (Light/Medium/Heavy) en de <b>governance</b> automatisch ingericht op basis van je keuze — je landt meteen op de tailoring-pagina om te bevestigen.</p>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   <Card>
                     <CardHeader className="pb-3">
