@@ -1243,6 +1243,53 @@ export function AppSidebar() {
     return () => { cancelled = true; };
   }, [projectId, programId, previewRole]);
 
+  // Project tailoring → drives the additive "Aanbevolen voor dit project" group.
+  const [tailoring, setTailoring] = useState<{ shape?: string; recommended_modules?: string[] } | null>(null);
+  useEffect(() => {
+    if (!projectId) { setTailoring(null); return; }
+    let cancelled = false;
+    fetch(`/api/v1/projects/${projectId}/tailoring/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+    }).then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (!cancelled) setTailoring(d); })
+      .catch(() => { if (!cancelled) setTailoring(null); });
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  // Build a recommended-shortcuts group by matching the tailoring's module names
+  // against the REAL methodology nav items (never hides anything — purely additive).
+  const buildRecommendedGroup = (phases: any[], rec?: string[], shape?: string) => {
+    if (!rec || rec.length === 0) return null;
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const alias: Record<string, string> = {
+      statusrapport: "statusreporting", rapportages: "statusreporting",
+      analyticsditproject: "reports", projectcharter: "projectcharter",
+    };
+    const index: Record<string, { title: string; url: string; icon: any }> = {};
+    phases.forEach((g: any) => (g.items || []).forEach((it: any) => {
+      const k = norm(it.title);
+      if (!index[k]) index[k] = { title: it.title, url: it.url, icon: it.icon };
+    }));
+    const seen = new Set<string>();
+    const items: any[] = [];
+    rec.forEach((name) => {
+      const k = norm(name);
+      const hit = index[k] || index[alias[k]];
+      if (hit && !seen.has(hit.url)) { seen.add(hit.url); items.push(hit); }
+    });
+    if (items.length === 0) return null;
+    return {
+      id: "recommended",
+      title: shape ? `Aanbevolen · ${shape}` : "Aanbevolen voor dit project",
+      icon: Sparkles,
+      items,
+    };
+  };
+
+  const methodologyPhases = projectId ? getMethodologyPhases(projectId, methodology) : [];
+  const recommendedGroup = projectId
+    ? buildRecommendedGroup(methodologyPhases, tailoring?.recommended_modules, tailoring?.shape)
+    : null;
   const projectPhases = projectId
     ? [
         {
@@ -1254,7 +1301,8 @@ export function AppSidebar() {
             { title: "AI Project-coach", url: `/projects/${projectId}/coach`, icon: Sparkles },
           ],
         },
-        ...getMethodologyPhases(projectId, methodology),
+        ...(recommendedGroup ? [recommendedGroup] : []),
+        ...methodologyPhases,
         ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
           ? [
               // PRINCE2 carries its own consolidated "Status Reporting" group
