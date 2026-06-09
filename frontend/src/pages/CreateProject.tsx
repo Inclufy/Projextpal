@@ -196,6 +196,8 @@ const CreateProject = () => {
   } | null>(null);
   const [generatePrompt, setGeneratePrompt] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // Tailoring intake captured from the AI advisor, persisted after project creation.
+  const [intake, setIntake] = useState<{ project_type: string; dimensions: Record<string, number>; rationale: string } | null>(null);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -253,13 +255,34 @@ const CreateProject = () => {
 
   const selectedMethodology = METHODOLOGIES.find(m => m.id === formData.methodology);
 
+  // Persist the tailoring captured at intake onto the freshly-created project.
+  const persistTailoring = async (projectId: number | string) => {
+    if (!intake || !projectId) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      await fetch(`/api/v1/projects/${projectId}/tailoring/`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_type: intake.project_type,
+          dim_scope: intake.dimensions.scope, dim_budget: intake.dimensions.budget,
+          dim_duur: intake.dimensions.duur, dim_politiek: intake.dimensions.politiek,
+          dim_risico: intake.dimensions.risico, dim_regel: intake.dimensions.regel,
+          ai_rationale: intake.rationale, source: "ai",
+        }),
+      });
+    } catch { /* tailoring is additive — never block project creation */ }
+  };
+
   // Create project mutation
   const createMutation = useMutation({
     mutationFn: (data: any) => projectsApi.create(data),
-    onSuccess: () => {
+    onSuccess: async (created: any) => {
+      const newId = created?.id ?? created?.data?.id;
+      await persistTailoring(newId);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(pt("Project created successfully!"));
-      navigate("/projects");
+      navigate(newId ? `/projects/${newId}/tailoring` : "/projects");
     },
     onError: (error: any) => {
       console.error("Create project error:", error);
@@ -276,43 +299,25 @@ const CreateProject = () => {
 
     setAiLoading(true);
     try {
-      const prompt = `You are a project management expert. Based on the following project description, recommend the best methodology from: PRINCE2, Agile, Scrum, Kanban, Waterfall, Lean Six Sigma (Green Belt), Lean Six Sigma (Black Belt), or Hybrid.
-
-Project Description: ${aiPrompt}
-
-Analyze and respond in this exact JSON format:
-{
-  "methodology": "prince2|agile|scrum|kanban|waterfall|lean_six_sigma_green|lean_six_sigma_black|hybrid",
-  "reasoning": "2-3 sentences explaining why this methodology fits best",
-  "confidence": 85
-}
-
-Consider:
-- Project size and complexity
-- Team experience
-- Flexibility requirements
-- Stakeholder involvement
-- Delivery timeline
-- Industry standards`;
-
-      const response = await callAI(prompt);
-      
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      // Use the tailoring engine (deterministic + optional LLM) so the advice is
+      // consistent with the project's tailoring and also yields the dimensions.
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`/api/v1/projects/intake/analyze/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ description: aiPrompt }),
+      });
+      const d = await res.json();
+      if (res.ok && d.methodology) {
+        const confMap: Record<string, number> = { hoog: 90, gemiddeld: 70, laag: 55 };
         setAiRecommendation({
-          methodology: parsed.methodology as ProjectMethodology,
-          reasoning: parsed.reasoning,
-          confidence: parsed.confidence || 80,
+          methodology: d.methodology as ProjectMethodology,
+          reasoning: `${d.rationale} (voorgestelde vorm: ${d.preview?.shape || "—"})`,
+          confidence: confMap[d.methodology_confidence] || 75,
         });
+        setIntake({ project_type: d.project_type, dimensions: d.dimensions, rationale: d.rationale });
       } else {
-        const methodologies = ['prince2', 'agile', 'scrum', 'kanban', 'waterfall', 'lean_six_sigma_green', 'lean_six_sigma_black', 'hybrid'];
-        const found = methodologies.find(m => response.toLowerCase().includes(m.replace('_', ' ')));
-        setAiRecommendation({
-          methodology: (found as ProjectMethodology) || 'agile',
-          reasoning: response.slice(0, 200),
-          confidence: 70,
-        });
+        throw new Error("no result");
       }
     } catch (error) {
       toast.error(pt("AI advisor temporarily unavailable. Please select manually."));
