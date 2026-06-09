@@ -131,12 +131,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🚀</div>
             <h1 class="header-title">ProjeXtPal</h1>
             <p class="header-subtitle">Project Management Excellence</p>
         </div>
-        
+
         <div class="content">
+            {% include "emails/_icon_badge.html" with variant="mail" %}
+
             <h2 class="greeting">Welkom bij ProjeXtPal!</h2>
             
             <p class="message">
@@ -146,7 +147,7 @@
             
             <div class="button-container">
                 <a href="{{ verification_url }}" class="button">
-                    ✓ Verifieer Email Adres
+                    Verifieer Email Adres
                 </a>
             </div>
             
