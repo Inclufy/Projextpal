@@ -152,3 +152,51 @@ def _profile_data(profile):
         "preferred_methodology": profile.preferred_methodology,
         "updated_at": profile.updated_at,
     }
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def methodology_course(request):
+    """
+    GET  ?methodology=prince2  -> the Academy course for a methodology + whether
+                                  the user is already enrolled.
+    POST {methodology}         -> enrol the current user in that course ("Plan cursus").
+    """
+    from .tailoring import METHODOLOGY_COURSE
+    methodology = (request.query_params.get("methodology")
+                   or (request.data or {}).get("methodology") or "inclufy")
+    slug = METHODOLOGY_COURSE.get(methodology, "pm-fundamentals")
+
+    try:
+        from academy.models import Course, Enrollment
+        course = Course.objects.filter(slug=slug).first()
+    except Exception:
+        course = None
+    if not course:
+        return Response({"methodology": methodology, "slug": slug, "course": None, "enrolled": False})
+
+    enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
+
+    if request.method == "POST":
+        if not enrolled:
+            Enrollment.objects.create(
+                user=request.user, course=course, status="pending",
+                email=request.user.email or "",
+                first_name=getattr(request.user, "first_name", "") or "",
+                last_name=getattr(request.user, "last_name", "") or "",
+                company=str(getattr(request.user, "company", "") or ""),
+            )
+            enrolled = True
+            try:
+                from accounts.models import audit
+                audit(request.user, "academy.enroll",
+                      summary=f"Enrolled in {course.slug} via tailoring",
+                      target_type="course", target_id=str(course.id), request=request)
+            except Exception:
+                pass
+
+    return Response({
+        "methodology": methodology, "slug": slug,
+        "course": {"title": course.title, "slug": course.slug},
+        "enrolled": enrolled,
+    })

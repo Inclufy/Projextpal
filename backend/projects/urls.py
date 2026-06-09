@@ -40,7 +40,7 @@ from .doctor_views import project_diagnose, project_doctor_apply
 from .role_views import my_project_role
 from .my_work_views import my_work
 from .gantt_views import project_gantt
-from .tailoring_views import intake_analyze, project_tailoring, methodology_profile
+from .tailoring_views import intake_analyze, project_tailoring, methodology_profile, methodology_course
 from .coach_views import project_coach
 
 router = DefaultRouter()
@@ -97,6 +97,7 @@ urlpatterns = [
     # Tailoring + AI intake (literal segments before the <pk> router routes)
     path("intake/analyze/", intake_analyze, name="project-intake-analyze"),
     path("methodology-profile/", methodology_profile, name="methodology-profile"),
+    path("methodology-course/", methodology_course, name="methodology-course"),
     path("<int:pk>/tailoring/", project_tailoring, name="project-tailoring"),
     path("<int:pk>/coach/", project_coach, name="project-coach"),
     path("", include(router.urls)),

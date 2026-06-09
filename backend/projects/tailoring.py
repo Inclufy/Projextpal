@@ -87,6 +87,21 @@ PROJECT_MODULES = {
     ],
 }
 
+# Methodology -> Academy course slug (the real catalog slugs). Drives the
+# "plan een cursus / opfris" nudge when a user's competence is low.
+METHODOLOGY_COURSE = {
+    "prince2": "prince2-foundation",
+    "scrum": "scrum-master",
+    "agile": "agile-fundamentals",
+    "kanban": "kanban-practitioner",
+    "waterfall": "waterfall-pm",
+    "lean_six_sigma_green": "lean-six-sigma",
+    "lean_six_sigma_black": "lean-six-sigma",
+    "hybrid": "pm-fundamentals",
+    "inclufy": "pm-fundamentals",
+}
+
+
 PROJECT_TYPES = [
     "klant", "intern", "gereguleerd", "strategisch", "product", "operatie", "it",
     "migratie", "bouw", "marketing", "rnd", "proces", "logistiek", "zorg", "event",

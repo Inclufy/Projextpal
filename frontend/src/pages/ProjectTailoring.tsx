@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { Loader2, Sparkles, Save, Wand2, ShieldCheck } from "lucide-react";
+import { Loader2, Sparkles, Save, Wand2, ShieldCheck, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 
 type Gov = {
@@ -46,6 +46,9 @@ const ProjectTailoring = () => {
   const [saving, setSaving] = useState(false);
   const [desc, setDesc] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
+  const [profile, setProfile] = useState<{ pm_experience: string; methodology_competence: Record<string, string> } | null>(null);
+  const [course, setCourse] = useState<{ course: { title: string; slug: string } | null; enrolled: boolean } | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
 
   const token = localStorage.getItem("access_token");
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
@@ -58,6 +61,36 @@ const ProjectTailoring = () => {
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, [id]);
+
+  // Load the reusable methodology profile + the Academy course for this methodology.
+  const meth = t?.methodology;
+  useEffect(() => {
+    if (!meth) return;
+    fetch(`/api/v1/projects/methodology-profile/`, { headers }).then((r) => r.ok ? r.json() : null).then((d) => d && setProfile(d)).catch(() => {});
+    fetch(`/api/v1/projects/methodology-course/?methodology=${meth}`, { headers }).then((r) => r.ok ? r.json() : null).then((d) => d && setCourse(d)).catch(() => {});
+  }, [meth]);
+
+  const competence = (meth && profile?.methodology_competence?.[meth]) || "basis";
+
+  const saveProfile = async (patch: { pm_experience?: string; competence?: string }) => {
+    const body: any = {};
+    if (patch.pm_experience) body.pm_experience = patch.pm_experience;
+    if (patch.competence && meth) body.methodology_competence = { [meth]: patch.competence };
+    try {
+      const r = await fetch(`/api/v1/projects/methodology-profile/`, { method: "PUT", headers, body: JSON.stringify(body) });
+      if (r.ok) setProfile(await r.json());
+    } catch { /* ignore */ }
+  };
+
+  const enroll = async () => {
+    if (!meth) return;
+    setEnrolling(true);
+    try {
+      const r = await fetch(`/api/v1/projects/methodology-course/`, { method: "POST", headers, body: JSON.stringify({ methodology: meth }) });
+      if (r.ok) { setCourse(await r.json()); toast.success("Cursus ingepland in je Academy-pad"); }
+    } catch { toast.error("Inschrijven mislukt"); }
+    finally { setEnrolling(false); }
+  };
 
   const set = (patch: Partial<Tailoring>) => setT((prev) => prev ? { ...prev, ...patch } : prev);
 
@@ -185,6 +218,45 @@ const ProjectTailoring = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Knowledge & training */}
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" /> Kennis &amp; opleiding</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Jouw PM-ervaring (bepaalt de weergave)</Label>
+                <Seg value={profile?.pm_experience || "gevorderd"} onChange={(v) => saveProfile({ pm_experience: v })}
+                  options={[{ v: "beginner", label: "Beginner" }, { v: "gevorderd", label: "Gevorderd" }, { v: "pro", label: "Pro" }]} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Kennis van {meth} (bepaalt de coach &amp; opleiding)</Label>
+                <Seg value={competence} onChange={(v) => saveProfile({ competence: v })}
+                  options={[{ v: "none", label: "Niet" }, { v: "basis", label: "Basis" }, { v: "ervaren", label: "Ervaren" }, { v: "expert", label: "Expert" }]} />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2.5 text-sm cursor-pointer">
+              <input type="checkbox" checked={!!t.coach_mode} onChange={(e) => set({ coach_mode: e.target.checked })} className="accent-primary h-4 w-4" />
+              Coach-modus aan — extra inline uitleg &amp; tips tijdens dit project
+            </label>
+
+            {(competence === "none" || competence === "basis") && course?.course && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex items-center gap-3">
+                <GraduationCap className="h-5 w-5 text-amber-600 shrink-0" />
+                <div className="flex-1 text-sm">
+                  <span className="font-semibold">AI ziet een kennisgat.</span> Aanrader vóór de start:{" "}
+                  <span className="font-medium">«{course.course.title}»</span>
+                </div>
+                {course.enrolled
+                  ? <Badge className="bg-green-100 text-green-700 border-green-200" variant="outline">Ingeschreven ✓</Badge>
+                  : <Button size="sm" variant="outline" onClick={enroll} disabled={enrolling} className="gap-1.5">
+                      {enrolling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <GraduationCap className="h-3.5 w-3.5" />} Plan cursus
+                    </Button>}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Result */}
         <Card>
