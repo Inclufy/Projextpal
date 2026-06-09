@@ -29,7 +29,7 @@ GDPR = [
 
 ISO = [
     {"id": "I1", "control": "Access control (RBAC + tenant isolation)", "status": "pass", "kind": "engineering", "evidence": "HasRole, accessible_project_ids, CompanyScopedQuerysetMixin"},
-    {"id": "I2", "control": "MFA / 2FA", "status": "pass", "kind": "engineering", "evidence": "django_otp + TOTP + Settings → Security"},
+    {"id": "I2", "control": "MFA / 2FA + recovery codes", "status": "pass", "kind": "engineering", "evidence": "django_otp TOTP + otp_static recovery codes (generate on enable, consume at login, regenerate); Settings → Security"},
     {"id": "I3", "control": "Encryption at rest + in transit", "status": "pass", "kind": "engineering", "evidence": "Fernet EncryptedTextField; HSTS + SSL redirect + secure cookies"},
     {"id": "I4", "control": "Rate limiting", "status": "pass", "kind": "engineering", "evidence": "DRF ScopedRateThrottle"},
     {"id": "I5", "control": "Secrets management", "status": "pass", "kind": "engineering", "evidence": ".env gitignored; Fernet for stored credentials"},

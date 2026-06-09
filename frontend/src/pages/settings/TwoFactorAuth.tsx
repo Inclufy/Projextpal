@@ -27,6 +27,7 @@ const TwoFactorAuth = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [disableCode, setDisableCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,17 +66,29 @@ const TwoFactorAuth = () => {
     }
     setSubmitting(true);
     try {
-      await api.post('/auth/2fa/verify-setup/', { code: verificationCode });
+      const res = await api.post<{ recovery_codes?: string[] }>('/auth/2fa/verify-setup/', { code: verificationCode });
       toast({ title: 'Success', description: '2FA has been enabled successfully!' });
       setHas2FA(true);
       setSetupMode(false);
       setQrCode('');
       setSecret('');
       setVerificationCode('');
+      setRecoveryCodes(res?.recovery_codes || []);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Invalid code', variant: 'destructive' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const regenerateCodes = async () => {
+    if (!window.confirm('Regenerate recovery codes? Your current codes will stop working.')) return;
+    try {
+      const res = await api.post<{ recovery_codes?: string[] }>('/auth/2fa/recovery-codes/', {});
+      setRecoveryCodes(res?.recovery_codes || []);
+      toast({ title: 'New recovery codes generated', description: 'Save them now — they will not be shown again.' });
+    } catch {
+      toast({ title: 'Error', description: 'Could not regenerate codes', variant: 'destructive' });
     }
   };
 
@@ -118,6 +131,24 @@ const TwoFactorAuth = () => {
                 <ShieldCheck className="h-5 w-5" />
                 <span className="font-medium">2FA is enabled</span>
               </div>
+
+              {recoveryCodes.length > 0 && (
+                <div className="border rounded-lg bg-amber-50 dark:bg-amber-900/20 border-amber-200 p-4">
+                  <h4 className="font-medium mb-1">Your recovery codes</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Store these somewhere safe. Each works once if you lose your authenticator. They won't be shown again.</p>
+                  <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+                    {recoveryCodes.map((c) => <span key={c} className="bg-white dark:bg-gray-800 rounded px-2 py-1 text-center">{c}</span>)}
+                  </div>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => { navigator.clipboard?.writeText(recoveryCodes.join('\n')); toast({ title: 'Copied' }); }}>Copy codes</Button>
+                </div>
+              )}
+
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-1">Recovery codes</h4>
+                <p className="text-sm text-muted-foreground mb-3">One-time backup codes for when you can't use your authenticator.</p>
+                <Button variant="outline" size="sm" onClick={regenerateCodes}>Regenerate recovery codes</Button>
+              </div>
+
               <div className="border-t pt-4">
                 <h4 className="font-medium mb-2">Disable 2FA</h4>
                 <p className="text-sm text-muted-foreground mb-4">Enter your authenticator code to disable 2FA</p>

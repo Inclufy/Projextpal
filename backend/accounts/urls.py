@@ -36,6 +36,7 @@ from .two_factor import (
     Disable2FAView,
     Check2FAStatusView,
     LoginWith2FAView,
+    RecoveryCodesView,
 )
 from .biometric import (
     BiometricRegisterOptionsView,
@@ -83,6 +84,7 @@ urlpatterns = [
     path('2fa/validate/', Validate2FAView.as_view(), name='2fa-validate'),
     path('2fa/disable/', Disable2FAView.as_view(), name='2fa-disable'),
     path('2fa/status/', Check2FAStatusView.as_view(), name='2fa-status'),
+    path('2fa/recovery-codes/', RecoveryCodesView.as_view(), name='2fa-recovery-codes'),
     # Canonical aliases used by the admin portal & mobile clients
     path('2fa/enable/', Setup2FAView.as_view(), name='2fa-enable'),
     path('2fa/qr/', Setup2FAView.as_view(), name='2fa-qr'),

@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'admin_portal',
     'django_otp',
     'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',  # backup / recovery codes
     'academy',
     'deployment',
     'lss_green',
