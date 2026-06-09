@@ -1,0 +1,8 @@
+# ProjeXtPal (Inclufy) — security contact (RFC 9116)
+Contact: mailto:security@inclufy.com
+Expires: 2027-06-09T00:00:00.000Z
+Preferred-Languages: en, nl
+Canonical: https://projextpal.com/.well-known/security.txt
+Policy: https://projextpal.com/security
+# We welcome responsible disclosure. Please give us reasonable time to fix
+# before public disclosure, and do not access data that is not yours.
