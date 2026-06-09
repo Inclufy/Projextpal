@@ -33,6 +33,10 @@ class Command(BaseCommand):
         parser.add_argument("--days", type=int, default=14, help="Trial length in days (default 14).")
         parser.add_argument("--first-name", default="Yanmar", help="Evaluator first name.")
         parser.add_argument("--last-name", default="Evaluator", help="Evaluator last name.")
+        parser.add_argument("--invite", action="store_true",
+                            help="Send a sandbox invitation email (Accept-Invitation + set password).")
+        parser.add_argument("--invite-from", default="Het ProjeXtPal-team",
+                            help="Inviter name shown in the invitation email.")
 
     def handle(self, *args, **opts):
         from accounts.models import Company, Registration
@@ -85,12 +89,27 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"✓ trial active: {days} days, ends {reg.trial_end_date:%Y-%m-%d}"))
 
+        # 4) Optional: send the sandbox invitation email (Accept + set password).
+        invited = False
+        if opts.get("invite"):
+            from accounts.sandbox_invite import send_sandbox_invitation
+            invited = send_sandbox_invitation(
+                user, days=days, inviter_name=opts.get("invite_from"),
+                trial_end=f"{reg.trial_end_date:%Y-%m-%d}",
+            )
+            if invited:
+                self.stdout.write(self.style.SUCCESS(f"✓ sandbox invitation emailed to {email}"))
+            else:
+                self.stdout.write(self.style.WARNING(
+                    "! invitation email failed (check Resend config) — send a reset manually."))
+
         self.stdout.write("")
         self.stdout.write(self.style.MIGRATE_HEADING("Yanmar sandbox ready."))
         self.stdout.write(f"  Login email : {email}")
         self.stdout.write(f"  Company     : {company.name} (eval mode, no caps)")
         self.stdout.write(f"  Trial ends  : {reg.trial_end_date:%Y-%m-%d} ({days} days)")
         self.stdout.write("")
-        self.stdout.write(self.style.WARNING(
-            "Next: send a password-reset / invitation to the evaluator — this command "
-            "never sets a password. They'll see the sandbox banner + onboarding on login."))
+        if not invited:
+            self.stdout.write(self.style.WARNING(
+                "Next: re-run with --invite to email the invitation, or send a password-reset "
+                "manually. This command never sets a password."))
