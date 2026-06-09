@@ -102,6 +102,41 @@ METHODOLOGY_COURSE = {
 }
 
 
+# Recognisable scenario presets for the project-creation picker. One click sets
+# methodology + type + the six dimensions. Single source of truth (frontend reads
+# these via the intake/scenarios endpoint).
+def _d(scope, budget, duur, politiek, risico, regel):
+    return {"scope": scope, "budget": budget, "duur": duur,
+            "politiek": politiek, "risico": risico, "regel": regel}
+
+
+SCENARIOS = [
+    {"key": "klant", "title": "Klantimplementatie", "desc": "Externe opdrachtgever, vaste scope & budget, oplevering in fasen.", "icon": "users", "color": "blue", "tags": ["PRINCE2", "Medium"], "methodology": "prince2", "project_type": "klant", "dimensions": _d(2, 2, 2, 2, 2, 1)},
+    {"key": "compliance", "title": "Compliance / gereguleerd", "desc": "Wettelijke eisen (AVG/ISO), audit-trail, hoog afbreukrisico.", "icon": "shield", "color": "red", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "gereguleerd", "dimensions": _d(2, 2, 2, 2, 3, 3)},
+    {"key": "product", "title": "Productontwikkeling", "desc": "Nieuw product, onzekere/veranderende eisen. Werken in sprints.", "icon": "rocket", "color": "purple", "tags": ["Scrum", "Light"], "methodology": "scrum", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 3, 1)},
+    {"key": "agileops", "title": "Digitale dienst doorontwikkelen", "desc": "Continue waardestroom, lichte ceremonie.", "icon": "sparkles", "color": "pink", "tags": ["Agile", "Light"], "methodology": "agile", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 2, 1)},
+    {"key": "intern", "title": "Intern verbeterproject", "desc": "Klein team, laag risico, korte looptijd.", "icon": "wrench", "color": "teal", "tags": ["Inclufy", "Light"], "methodology": "inclufy", "project_type": "intern", "dimensions": _d(1, 1, 1, 1, 1, 1)},
+    {"key": "strategisch", "title": "Strategisch programma", "desc": "Veel stakeholders met tegengestelde belangen, hoge zichtbaarheid.", "icon": "target", "color": "pink", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "strategisch", "dimensions": _d(3, 3, 3, 3, 2, 1)},
+    {"key": "operatie", "title": "Doorlopende operatie", "desc": "Continue werkstroom (support/beheer) via flow.", "icon": "repeat", "color": "green", "tags": ["Kanban", "Light"], "methodology": "kanban", "project_type": "operatie", "dimensions": _d(1, 1, 2, 1, 1, 1)},
+    {"key": "it", "title": "IT / software-implementatie", "desc": "Deels vaste, deels evoluerende eisen.", "icon": "code", "color": "indigo", "tags": ["Hybrid", "Medium"], "methodology": "hybrid", "project_type": "it", "dimensions": _d(2, 2, 2, 2, 2, 2)},
+    {"key": "migratie", "title": "Datamigratie", "desc": "Voorspelbaar traject met strikte stappen en terugval-scenario.", "icon": "database", "color": "blue", "tags": ["Waterfall", "Medium"], "methodology": "waterfall", "project_type": "migratie", "dimensions": _d(2, 2, 2, 2, 3, 2)},
+    {"key": "bouw", "title": "Bouw / constructie", "desc": "Vaste scope, fysieke oplevering, strakke fasering.", "icon": "building", "color": "orange", "tags": ["Waterfall", "Heavy"], "methodology": "waterfall", "project_type": "bouw", "dimensions": _d(3, 3, 3, 2, 2, 2)},
+    {"key": "marketing", "title": "Marketingcampagne", "desc": "Snel schakelen, korte cycli, veel iteraties.", "icon": "megaphone", "color": "pink", "tags": ["Kanban", "Light"], "methodology": "kanban", "project_type": "marketing", "dimensions": _d(1, 2, 1, 1, 2, 1)},
+    {"key": "rnd", "title": "Onderzoek / R&D", "desc": "Hoge onzekerheid, experimenteel, leren staat centraal.", "icon": "flask", "color": "purple", "tags": ["Scrum", "Light"], "methodology": "scrum", "project_type": "rnd", "dimensions": _d(2, 2, 2, 1, 3, 1)},
+    {"key": "proces", "title": "Procesoptimalisatie", "desc": "Proces sneller/beter maken op basis van data (DMAIC).", "icon": "gauge", "color": "green", "tags": ["LSS Green", "Medium"], "methodology": "lean_six_sigma_green", "project_type": "proces", "dimensions": _d(2, 1, 2, 2, 2, 2)},
+    {"key": "procesbb", "title": "Complexe procesverbetering", "desc": "Statistische analyse, DOE/MSA (Black Belt).", "icon": "gauge", "color": "slate", "tags": ["LSS Black", "Medium"], "methodology": "lean_six_sigma_black", "project_type": "proces", "dimensions": _d(2, 2, 2, 2, 2, 2)},
+    {"key": "mobiel", "title": "Mobiele app", "desc": "Nieuwe app voor iOS/Android, iteratief richting release.", "icon": "smartphone", "color": "purple", "tags": ["Scrum", "Light"], "methodology": "scrum", "project_type": "mobiel", "dimensions": _d(1, 2, 2, 1, 2, 1)},
+    {"key": "ecommerce", "title": "Webshop / e-commerce", "desc": "Online verkoopplatform bouwen en doorontwikkelen.", "icon": "cart", "color": "blue", "tags": ["Hybrid", "Medium"], "methodology": "hybrid", "project_type": "ecommerce", "dimensions": _d(2, 2, 2, 1, 2, 2)},
+    {"key": "infra", "title": "Infrastructuur / netwerk", "desc": "Technische uitrol met strikte stappen en testmomenten.", "icon": "server", "color": "indigo", "tags": ["Waterfall", "Medium"], "methodology": "waterfall", "project_type": "infra", "dimensions": _d(2, 2, 2, 1, 2, 2)},
+    {"key": "change", "title": "Organisatieverandering", "desc": "Nieuwe werkwijze invoeren; mensen meekrijgen.", "icon": "shuffle", "color": "orange", "tags": ["PRINCE2", "Medium"], "methodology": "prince2", "project_type": "change", "dimensions": _d(2, 2, 2, 3, 2, 1)},
+    {"key": "pilot", "title": "Pilot / proof-of-concept", "desc": "Klein experiment om iets te bewijzen vóór opschalen.", "icon": "flask", "color": "purple", "tags": ["Agile", "Light"], "methodology": "agile", "project_type": "pilot", "dimensions": _d(1, 1, 1, 1, 3, 1)},
+    {"key": "event", "title": "Evenement / congres", "desc": "Vaste datum, strak draaiboek, veel coördinatie.", "icon": "calendar", "color": "pink", "tags": ["Waterfall", "Medium"], "methodology": "waterfall", "project_type": "event", "dimensions": _d(2, 2, 1, 2, 2, 1)},
+    {"key": "duurzaam", "title": "Duurzaamheid / ESG", "desc": "Verduurzaming met meetbare doelen en rapportageplicht.", "icon": "leaf", "color": "green", "tags": ["Inclufy", "Medium"], "methodology": "inclufy", "project_type": "duurzaam", "dimensions": _d(2, 2, 3, 2, 1, 2)},
+    {"key": "opleiding", "title": "Opleidings-/L&D-traject", "desc": "Leerprogramma ontwikkelen en uitrollen.", "icon": "graduation", "color": "teal", "tags": ["Inclufy", "Light"], "methodology": "inclufy", "project_type": "opleiding", "dimensions": _d(1, 1, 2, 1, 1, 1)},
+    {"key": "zorg", "title": "Zorg / cliëntsysteem", "desc": "Patiëntdata — privacy en veiligheid voorop.", "icon": "heart", "color": "red", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "zorg", "dimensions": _d(2, 2, 2, 2, 3, 3)},
+]
+
+
 PROJECT_TYPES = [
     "klant", "intern", "gereguleerd", "strategisch", "product", "operatie", "it",
     "migratie", "bouw", "marketing", "rnd", "proces", "logistiek", "zorg", "event",

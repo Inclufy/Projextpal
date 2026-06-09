@@ -198,6 +198,8 @@ const CreateProject = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   // Tailoring intake captured from the AI advisor, persisted after project creation.
   const [intake, setIntake] = useState<{ project_type: string; dimensions: Record<string, number>; rationale: string } | null>(null);
+  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -324,6 +326,21 @@ const CreateProject = () => {
     } finally {
       setAiLoading(false);
     }
+  };
+
+  // Load scenario presets for the quick-start picker.
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    fetch(`/api/v1/projects/intake/scenarios/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => d?.scenarios && setScenarios(d.scenarios))
+      .catch(() => {});
+  }, []);
+
+  const applyScenario = (s: any) => {
+    setSelectedScenario(s.key);
+    setFormData((prev) => ({ ...prev, methodology: s.methodology as ProjectMethodology }));
+    setIntake({ project_type: s.project_type, dimensions: s.dimensions, rationale: `Scenario: ${s.title}` });
   };
 
   const applyAIRecommendation = () => {
@@ -706,6 +723,38 @@ Be specific and professional. Use the context to determine appropriate methodolo
                     </DialogContent>
                   </Dialog>
                 </div>
+
+                {/* Quick-start: pick a recognisable scenario → sets methodology + tailoring */}
+                {scenarios.length > 0 && (
+                  <div className="rounded-xl border bg-muted/30 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold">{pt("Of begin met een scenario")}</span>
+                      <span className="text-xs text-muted-foreground">{pt("één klik zet de methodiek + de juiste governance")}</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                      {scenarios.map((s) => (
+                        <button
+                          key={s.key}
+                          type="button"
+                          onClick={() => applyScenario(s)}
+                          className={cn(
+                            "text-left rounded-lg border p-3 transition hover:border-primary hover:shadow-sm bg-background",
+                            selectedScenario === s.key ? "ring-2 ring-primary border-primary" : "border-border"
+                          )}
+                        >
+                          <div className="text-[13px] font-semibold leading-tight mb-1">{s.title}</div>
+                          <div className="text-[11px] text-muted-foreground line-clamp-2 mb-2">{s.desc}</div>
+                          <div className="flex flex-wrap gap-1">
+                            {(s.tags || []).map((t: string) => (
+                              <span key={t} className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{t}</span>
+                            ))}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {METHODOLOGIES.map((methodology) => (

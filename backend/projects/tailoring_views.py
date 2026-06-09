@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Project, ProjectTailoring
-from .tailoring import classify_with_llm, recommend_modules, DIMENSIONS
+from .tailoring import classify_with_llm, recommend_modules, DIMENSIONS, SCENARIOS
 
 
 # --------------------------------------------------------------------------- #
@@ -44,6 +44,13 @@ class ProjectTailoringSerializer(serializers.ModelSerializer):
 # --------------------------------------------------------------------------- #
 # Intake: analyse a description
 # --------------------------------------------------------------------------- #
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def intake_scenarios(request):
+    """The recognisable scenario presets for the project-creation picker."""
+    return Response({"scenarios": SCENARIOS})
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def intake_analyze(request):
