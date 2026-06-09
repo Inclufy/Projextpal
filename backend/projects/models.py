@@ -6,6 +6,11 @@ from django.utils import timezone
 
 
 class Project(models.Model):
+    # PRINCE2 governance tailoring: strict separation of duties means only the
+    # Project Owner (Executive) authorizes initiation products. Smaller orgs can
+    # let the Project Manager authorize too — opt-in per project (admin/owner).
+    pm_can_authorize = models.BooleanField(default=False)
+
     PROJECT_TYPE_CHOICES = [
         ("software", "Software"),
         ("design", "Design"),

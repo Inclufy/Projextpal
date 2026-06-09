@@ -263,6 +263,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "roi_realized_pct",
             "status",
             "progress",
+            "pm_can_authorize",
             "created_by",
             "created_at",
             "updated_at",

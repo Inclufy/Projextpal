@@ -721,6 +721,24 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             raise serializers.ValidationError(
                 {"company": "Je account is niet gekoppeld aan een bedrijf. Neem contact op met je beheerder."}
             )
+        # Separation of duties: only the Project Owner (Executive) / admin may
+        # change who is allowed to authorize. A Project Manager must not be able
+        # to self-grant authorization rights.
+        if "pm_can_authorize" in serializer.validated_data:
+            instance = serializer.instance
+            new_val = serializer.validated_data.get("pm_can_authorize")
+            if instance is not None and new_val != getattr(instance, "pm_can_authorize", False):
+                try:
+                    from projects.role_views import effective_project_role, _is_admin
+                    role, _ = effective_project_role(user, instance)
+                    allowed = _is_admin(user) or role == "project_owner"
+                except Exception:
+                    allowed = getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False)
+                if not allowed:
+                    from rest_framework.exceptions import PermissionDenied
+                    raise PermissionDenied(
+                        "Only the Project Owner (Executive) can change authorization rights — PRINCE2 separation of duties."
+                    )
         project = serializer.save(company=user.company)
         # Keep Program M2M aligned after FK changes
         if project.program_id:

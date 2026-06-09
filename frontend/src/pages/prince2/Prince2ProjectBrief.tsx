@@ -7,6 +7,7 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, FileText, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -57,7 +58,8 @@ const Prince2ProjectBrief = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [brief, setBrief] = useState<any>(null);
-  const [canApprove, setCanApprove] = useState(false);
+  const [myRole, setMyRole] = useState<string>("");
+  const [pmCanAuth, setPmCanAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<BriefForm>({
@@ -100,14 +102,33 @@ const Prince2ProjectBrief = () => {
 
   useEffect(() => { fetchBrief(); }, [id]);
 
-  // Only the Project Owner (Executive) / admin may authorize (PRINCE2 SoD).
+  // Who may authorize (PRINCE2 SoD): the Project Owner (Executive) always; the
+  // Project Manager only when this project opted in (pm_can_authorize).
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/v1/projects/${id}/my-role/`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.role === "project_owner") setCanApprove(true); })
-      .catch(() => {});
+    const h = { Authorization: `Bearer ${token}` };
+    Promise.all([
+      fetch(`/api/v1/projects/${id}/my-role/`, { headers: h }).then((r) => r.ok ? r.json() : null),
+      fetch(`/api/v1/projects/${id}/`, { headers: h }).then((r) => r.ok ? r.json() : null),
+    ]).then(([role, proj]) => {
+      setMyRole(role?.role || "");
+      setPmCanAuth(!!proj?.pm_can_authorize);
+    }).catch(() => {});
   }, [id]);
+
+  const isOwner = myRole === "project_owner";
+  const canApprove = isOwner || (myRole === "project_manager" && pmCanAuth);
+
+  const togglePmAuth = async (value: boolean) => {
+    setPmCanAuth(value);
+    try {
+      await fetch(`/api/v1/projects/${id}/`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ pm_can_authorize: value }),
+      });
+    } catch { setPmCanAuth(!value); }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -168,7 +189,15 @@ const Prince2ProjectBrief = () => {
               {brief && <Badge className="mt-1">{brief.status}</Badge>}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {isOwner && (
+              <div className="flex items-center gap-2 mr-2 rounded-md border px-3 py-1.5">
+                <Switch id="pm-auth" checked={pmCanAuth} onCheckedChange={togglePmAuth} />
+                <Label htmlFor="pm-auth" className="text-xs text-muted-foreground cursor-pointer">
+                  {pt("PM may approve")}
+                </Label>
+              </div>
+            )}
             {brief && brief.status === "draft" && (
               <Button variant="outline" onClick={handleSubmitForReview} className="gap-2">
                 <Send className="h-4 w-4" /> {pt("Submit for Review")}
@@ -176,7 +205,7 @@ const Prince2ProjectBrief = () => {
             )}
             {brief && (brief.status === "submitted" || brief.status === "in_review") && canApprove && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600">
-                <CheckCircle2 className="h-4 w-4" /> {pt("Approve as Project Owner")}
+                <CheckCircle2 className="h-4 w-4" /> {isOwner ? pt("Approve as Project Owner") : pt("Approve as Project Manager")}
               </Button>
             )}
             {brief && (brief.status === "submitted" || brief.status === "in_review") && !canApprove && (

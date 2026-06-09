@@ -18,7 +18,13 @@ def _can_authorize(user, project):
         if _is_admin(user):
             return True
         role, _ = effective_project_role(user, project)
-        return role == "project_owner"
+        if role == "project_owner":
+            return True
+        # Per-project tailoring: the Project Manager may authorize too when the
+        # project has opted in (set by the Owner/admin).
+        if role == "project_manager" and getattr(project, "pm_can_authorize", False):
+            return True
+        return False
     except Exception:
         # Fail safe: deny rather than allow if the role check errors.
         return getattr(user, "role", None) in ("admin", "superadmin") or getattr(user, "is_superuser", False)
