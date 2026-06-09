@@ -59,12 +59,17 @@ router.register(r"audit-logs", AuditLogViewSet, basename="audit-log")
 
 from notifications.views import DeviceRegisterView
 
-from accounts.onboarding_views import onboarding_status, start_proeftuin, reset_proeftuin
+from accounts.onboarding_views import onboarding_status, start_sandbox, reset_sandbox
 
 urlpatterns = [
     path("onboarding/status/", onboarding_status, name="onboarding-status"),
-    path("onboarding/start-proeftuin/", start_proeftuin, name="onboarding-start-proeftuin"),
-    path("onboarding/reset-proeftuin/", reset_proeftuin, name="onboarding-reset-proeftuin"),
+    # Primary URLs (renamed 2026-05 — sandbox terminology)
+    path("onboarding/start-sandbox/", start_sandbox, name="onboarding-start-sandbox"),
+    path("onboarding/reset-sandbox/", reset_sandbox, name="onboarding-reset-sandbox"),
+    # Legacy aliases — kept so deployed mobile clients calling the old
+    # paths keep working. Safe to remove once telemetry shows 0 hits.
+    path("onboarding/start-proeftuin/", start_sandbox, name="onboarding-start-proeftuin"),
+    path("onboarding/reset-proeftuin/", reset_sandbox, name="onboarding-reset-proeftuin"),
     path("devices/register/", DeviceRegisterView.as_view(), name="device_register"),
     path("login/", MyTokenObtainPairView.as_view(), name="login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

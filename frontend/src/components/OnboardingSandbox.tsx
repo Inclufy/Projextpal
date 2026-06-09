@@ -18,11 +18,11 @@ const LEVELS: { v: string; label: string }[] = [
 ];
 
 /**
- * Proeftuin banner (trial state + limits) + onboarding checklist.
+ * Sandbox banner (trial state + limits) + onboarding checklist.
  * Self-contained: fetches /auth/onboarding/status/, renders nothing until loaded
  * and hides entirely once the checklist is complete and the user is not on trial.
  */
-const OnboardingProeftuin = () => {
+const OnboardingSandbox = () => {
   const [s, setS] = useState<Status | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [seeding, setSeeding] = useState(false);
@@ -40,7 +40,7 @@ const OnboardingProeftuin = () => {
   const seed = async () => {
     setSeeding(true);
     try {
-      await fetch(`/api/v1/auth/onboarding/start-proeftuin/`, {
+      await fetch(`/api/v1/auth/onboarding/start-sandbox/`, {
         method: "POST", headers: { Authorization: `Bearer ${token}` },
       });
       await refresh();
@@ -64,7 +64,7 @@ const OnboardingProeftuin = () => {
     if (!window.confirm("De voorbeeldprojecten verwijderen? Je eigen projecten blijven staan.")) return;
     setSeeding(true);
     try {
-      await fetch(`/api/v1/auth/onboarding/reset-proeftuin/`, {
+      await fetch(`/api/v1/auth/onboarding/reset-sandbox/`, {
         method: "POST", headers: { Authorization: `Bearer ${token}` },
       });
       await refresh();
@@ -80,12 +80,12 @@ const OnboardingProeftuin = () => {
 
   return (
     <div className="mb-6 space-y-4">
-      {/* Proeftuin banner */}
+      {/* Sandbox banner */}
       {s.is_trial && (
         <div className="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-fuchsia-50 px-5 py-4 flex flex-wrap items-center gap-4">
-          <span className="text-[11px] font-extrabold uppercase tracking-wide text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 px-3 py-1.5 rounded-full">Proeftuin</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wide text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 px-3 py-1.5 rounded-full">Sandbox</span>
           <div className="flex-1 min-w-[200px]">
-            <div className="text-sm font-semibold">Welkom in je proeftuin — verken ProjeXtPal vrijblijvend.</div>
+            <div className="text-sm font-semibold">Welkom in je sandbox — verken ProjeXtPal vrijblijvend.</div>
             <div className="flex flex-wrap gap-4 mt-1 text-xs text-muted-foreground">
               {s.days_remaining != null && <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Nog <b className="text-primary">{s.days_remaining} dagen</b></span>}
               <span className="flex items-center gap-1"><Folder className="h-3.5 w-3.5" /> <b className="text-primary">{s.usage.projects}{s.limits.max_projects >= 0 ? ` / ${s.limits.max_projects}` : ""}</b> projecten{s.limits.max_projects < 0 ? " · onbeperkt" : ""}</span>
@@ -175,4 +175,4 @@ const OnboardingProeftuin = () => {
   );
 };
 
-export default OnboardingProeftuin;
+export default OnboardingSandbox;

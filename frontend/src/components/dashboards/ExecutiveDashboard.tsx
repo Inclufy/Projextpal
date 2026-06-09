@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import OnboardingProeftuin from "@/components/OnboardingProeftuin";
+import OnboardingSandbox from "@/components/OnboardingSandbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -376,7 +376,7 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="absolute bottom-0 left-20 w-[28rem] h-[28rem] bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
 
       <div className="relative z-10 p-4 md:p-6 space-y-6 w-full">
-        <OnboardingProeftuin />
+        <OnboardingSandbox />
         <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-purple-100/50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
             <Sparkles className="h-4 w-4" />

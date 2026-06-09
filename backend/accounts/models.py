@@ -29,9 +29,9 @@ class Company(models.Model):
     onboarding_completed = models.BooleanField(default=False)
     onboarding_completed_at = models.DateTimeField(null=True, blank=True)
     onboarding_data = models.JSONField(null=True, blank=True, help_text="Raw onboarding answers for audit/replay.")
-    # Roomy evaluation mode: keeps the proeftuin banner/onboarding (trial) but
+    # Roomy evaluation mode: keeps the sandbox banner/onboarding (trial) but
     # lifts the hard project/user caps — for enterprise pilots (e.g. Yanmar).
-    eval_mode = models.BooleanField(default=False, help_text="Time-limited pilot with the proeftuin layer but no hard caps.")
+    eval_mode = models.BooleanField(default=False, help_text="Time-limited pilot with the sandbox layer but no hard caps.")
 
     # Tenant-wide 2FA enforcement
     # When True, every user in the tenant must enrol 2FA at next login.
@@ -353,7 +353,7 @@ class Registration(models.Model):
         return delta.days
 
 class TrialLimits:
-    """Trial / proeftuin limitations — roomy enough to actually try the product
+    """Trial / sandbox limitations — roomy enough to actually try the product
     (2 example projects + a small team), still clearly capped."""
     MAX_PROGRAMS = 1
     MAX_PROGRAM_METHODOLOGIES = 2

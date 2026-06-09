@@ -1,10 +1,14 @@
 """
-Proeftuin / onboarding status.
+Sandbox / onboarding status.
 
-Drives the proeftuin banner (trial state + limits + usage) and the onboarding
+Drives the sandbox banner (trial state + limits + usage) and the onboarding
 checklist (5 steps, completion derived from real data — no extra table).
 
   GET /api/v1/auth/onboarding/status/
+
+Backwards-compatible aliases: `start_proeftuin` / `reset_proeftuin` point
+to the new `start_sandbox` / `reset_sandbox` so existing imports + URL
+patterns keep working without breaking deployed mobile clients.
 """
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -88,7 +92,7 @@ def onboarding_status(request):
         "academy": {"key": "academy", "title": "Volg één Academy-les",
                     "desc": "Van kennis naar kunde — de cursus bij je methodiek", "url": "/academy", "done": started_academy},
         "team": {"key": "team", "title": "Nodig een teamlid uit",
-                 "desc": "Werk samen in je proeftuin", "url": "/team", "done": invited_team},
+                 "desc": "Werk samen in je sandbox", "url": "/team", "done": invited_team},
     }
 
     # Experience-adaptive: pros get a condensed, skippable flow; beginners the full
@@ -133,7 +137,7 @@ _SAMPLE_KEYS = ["klant", "product"]
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def start_proeftuin(request):
+def start_sandbox(request):
     """Seed 2 fully-shaped example projects into the user's company so the sandbox
     isn't empty. Idempotent: skips if example projects already exist."""
     user = request.user
@@ -190,7 +194,7 @@ def start_proeftuin(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def reset_proeftuin(request):
+def reset_sandbox(request):
     """Remove the seeded example projects so the user can start fresh. Only ever
     touches projects whose name starts with the 'Voorbeeld — ' marker, so real
     work is never deleted."""
@@ -210,3 +214,14 @@ def reset_proeftuin(request):
         return Response({"reset": True, "removed": removed})
     except Exception:
         return Response({"reset": False, "removed": 0})
+
+
+# ----------------------------------------------------------------------
+# Backwards-compatibility aliases — the views were renamed from
+# `start_proeftuin` / `reset_proeftuin` to `start_sandbox` /
+# `reset_sandbox` in 2026-05. Old imports and deployed mobile clients
+# (which call the legacy `start-proeftuin/` URL) keep working.
+# Safe to remove once telemetry shows zero hits on the legacy URLs.
+# ----------------------------------------------------------------------
+start_proeftuin = start_sandbox
+reset_proeftuin = reset_sandbox

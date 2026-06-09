@@ -1,19 +1,19 @@
 """
-Provision a Yanmar evaluation proeftuin (sandbox), idempotent.
+Provision a Yanmar evaluation sandbox (sandbox), idempotent.
 
 What it does:
   1. Ensures the Yanmar demo workspace + data exist (runs seed_yanmar_demo).
-  2. Puts the Yanmar company in roomy EVAL mode (proeftuin banner + onboarding,
+  2. Puts the Yanmar company in roomy EVAL mode (sandbox banner + onboarding,
      but no hard project/user caps).
   3. Ensures the evaluator user exists in that company and gives them a
-     time-limited trial Registration (default 14 days) so the proeftuin layer
+     time-limited trial Registration (default 14 days) so the sandbox layer
      (banner + checklist + days-remaining) switches on.
 
 It NEVER sets a password — send the evaluator a password-reset / invitation
 after running. Safe to run repeatedly.
 
-    python manage.py setup_yanmar_proeftuin --email piet@yanmar.com
-    python manage.py setup_yanmar_proeftuin --email piet@yanmar.com --days 30
+    python manage.py setup_yanmar_sandbox --email piet@yanmar.com
+    python manage.py setup_yanmar_sandbox --email piet@yanmar.com --days 30
 """
 from datetime import timedelta
 
@@ -26,7 +26,7 @@ COMPANY_NAME = "Yanmar Europe (Demo)"
 
 
 class Command(BaseCommand):
-    help = "Set up a time-limited Yanmar evaluation proeftuin (eval mode + trial + demo data)."
+    help = "Set up a time-limited Yanmar evaluation sandbox (eval mode + trial + demo data)."
 
     def add_arguments(self, parser):
         parser.add_argument("--email", required=True, help="Evaluator login email (Yanmar contact).")
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         try:
             call_command("seed_yanmar_demo")
             self.stdout.write(self.style.SUCCESS("✓ seed_yanmar_demo ran"))
-        except Exception as e:  # demo seed is best-effort; the proeftuin still works
+        except Exception as e:  # demo seed is best-effort; the sandbox still works
             self.stdout.write(self.style.WARNING(f"! seed_yanmar_demo skipped/failed: {e}"))
 
         company = Company.objects.filter(name=COMPANY_NAME).first()
@@ -86,11 +86,11 @@ class Command(BaseCommand):
             f"✓ trial active: {days} days, ends {reg.trial_end_date:%Y-%m-%d}"))
 
         self.stdout.write("")
-        self.stdout.write(self.style.MIGRATE_HEADING("Yanmar proeftuin ready."))
+        self.stdout.write(self.style.MIGRATE_HEADING("Yanmar sandbox ready."))
         self.stdout.write(f"  Login email : {email}")
         self.stdout.write(f"  Company     : {company.name} (eval mode, no caps)")
         self.stdout.write(f"  Trial ends  : {reg.trial_end_date:%Y-%m-%d} ({days} days)")
         self.stdout.write("")
         self.stdout.write(self.style.WARNING(
             "Next: send a password-reset / invitation to the evaluator — this command "
-            "never sets a password. They'll see the proeftuin banner + onboarding on login."))
+            "never sets a password. They'll see the sandbox banner + onboarding on login."))
