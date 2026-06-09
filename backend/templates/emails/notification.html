@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);padding:32px 40px;text-align:center;border-radius:16px 16px 0 0;">
+      <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">ProjeXtPal</h1>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">Project Management Excellence</p>
+    </div>
+
+    <!-- Content -->
+    <div style="background:#fff;padding:40px;">
+      {% include "emails/_icon_badge.html" with variant=badge|default:"bell" %}
+
+      <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#111827;text-align:center;">{{ title }}</h2>
+      {% if lead %}<p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;text-align:center;">{{ lead }}</p>{% endif %}
+
+      {% for section in sections %}
+        <div style="margin:0 0 18px;">
+          {% if section.heading %}<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.04em;">{{ section.heading }}</p>{% endif %}
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+            {% for row in section.rows %}
+              <tr>
+                <td style="padding:10px 12px;border:1px solid #F1F1F4;border-radius:10px;font-size:14px;color:#111827;background:#FAFAFB;">
+                  <span style="display:inline-block;">{{ row.text }}</span>
+                  {% if row.tag %}
+                    <span style="display:inline-block;margin-left:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+                      {% if row.danger %}background:#FEE2E2;color:#991B1B;{% else %}background:#EDE9FE;color:#6D28D9;{% endif %}">{{ row.tag }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr><td style="height:6px;line-height:6px;font-size:6px;">&nbsp;</td></tr>
+            {% endfor %}
+          </table>
+        </div>
+      {% endfor %}
+
+      {% if cta_url %}
+      <div style="text-align:center;margin:28px 0 8px;">
+        <a href="{{ cta_url }}" style="display:inline-block;background:linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);color:#fff;text-decoration:none;padding:14px 40px;border-radius:12px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(139,92,246,0.3);">{{ cta_label|default:"Open in ProjeXtPal" }}</a>
+      </div>
+      {% endif %}
+
+      {% if closing %}<p style="margin:24px 0 0;font-size:14px;color:#6B7280;line-height:1.6;text-align:center;">{{ closing }}</p>{% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#F9FAFB;padding:24px 40px;text-align:center;border-radius:0 0 16px 16px;">
+      <p style="margin:0 0 6px;font-size:13px;color:#6B7280;"><strong>ProjeXtPal</strong> — Project Management Excellence</p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;">You receive this because notifications are on for your account. Manage them in Settings → Preferences.</p>
+    </div>
+  </div>
+</body>
+</html>

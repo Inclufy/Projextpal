@@ -91,12 +91,21 @@ class Command(BaseCommand):
                 subject = f"⏰ {len(owner_tasks)} task(s) due in {project.name}"
                 lines = [f"Hi {owner.first_name or owner.email},", "",
                          f"You have {len(owner_tasks)} task(s) due soon in '{project.name}':", ""]
+                rows = []
                 for t in sorted(owner_tasks, key=lambda x: x.due_date):
-                    flag = "OVERDUE" if t.due_date < today else f"due {t.due_date}"
+                    overdue = t.due_date < today
+                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
                     lines.append(f"  • {t.title}  [{flag}]  ({t.status})")
+                    rows.append({"text": t.title, "tag": flag, "danger": overdue})
                 lines += ["", "Please update status or flag blockers so deadlines aren't missed.",
                           "— ProjeXtPal"]
-                if self._send(owner.email, subject, "\n".join(lines), dry):
+                html = self._render_html(
+                    title=f"{len(owner_tasks)} task(s) due in {project.name}",
+                    lead=f"Hi {owner.first_name or ''}, here is what's due soon in '{project.name}'.",
+                    sections=[{"heading": f"Your tasks ({len(owner_tasks)})", "rows": rows}],
+                    closing="Please update status or flag blockers so deadlines aren't missed.",
+                )
+                if self._send(owner.email, subject, "\n".join(lines), dry, html=html):
                     emails_sent += 1
                 if dry:
                     self.stdout.write(f"  [dry] owner {owner.email}: {len(owner_tasks)} task(s)")
@@ -116,28 +125,46 @@ class Command(BaseCommand):
             if recipients:
                 subject = f"⏰ Deadline overview — {project.name} ({len(tasks)} task(s) due)"
                 lines = [f"Deadline overview for '{project.name}' (next {opts['days']} days):", ""]
+                sections = []
                 if tasks:
                     lines.append(f"Tasks ({len(tasks)}):")
+                    trows = []
                     for t in sorted(tasks, key=lambda x: x.due_date):
                         who = (t.assigned_to.first_name or t.assigned_to.email) if t.assigned_to else "unassigned"
-                        flag = "OVERDUE" if t.due_date < today else f"due {t.due_date}"
+                        overdue = t.due_date < today
+                        flag = "OVERDUE" if overdue else f"due {t.due_date}"
                         lines.append(f"  • {t.title} — {who} [{flag}]")
+                        trows.append({"text": f"{t.title} — {who}", "tag": flag, "danger": overdue})
                     lines.append("")
+                    sections.append({"heading": f"Tasks ({len(tasks)})", "rows": trows})
                 if milestones:
                     lines.append(f"Milestones ({len(milestones)}):")
+                    mrows = []
                     for m in sorted(milestones, key=lambda x: x.end_date):
-                        flag = "OVERDUE" if m.end_date < today else f"due {m.end_date}"
+                        overdue = m.end_date < today
+                        flag = "OVERDUE" if overdue else f"due {m.end_date}"
                         lines.append(f"  • {m.name} [{flag}]")
+                        mrows.append({"text": m.name, "tag": flag, "danger": overdue})
                     lines.append("")
+                    sections.append({"heading": f"Milestones ({len(milestones)})", "rows": mrows})
                 if events:
                     lines.append(f"Calendar ({len(events)}):")
+                    erows = []
                     for e in sorted(events, key=lambda x: x.start_date):
                         lines.append(f"  • {e.title} — {e.start_date}")
+                        erows.append({"text": e.title, "tag": str(e.start_date), "danger": False})
                     lines.append("")
+                    sections.append({"heading": f"Calendar ({len(events)})", "rows": erows})
                 lines += ["Keep the team ahead of these deadlines.", "— ProjeXtPal"]
                 body = "\n".join(lines)
+                html = self._render_html(
+                    title=f"Deadline overview — {project.name}",
+                    lead=f"What's due in '{project.name}' over the next {opts['days']} days.",
+                    sections=sections,
+                    closing="Keep the team ahead of these deadlines.",
+                )
                 for addr in recipients:
-                    if self._send(addr, subject, body, dry):
+                    if self._send(addr, subject, body, dry, html=html):
                         emails_sent += 1
                 if dry:
                     self.stdout.write(f"  [dry] PM digest -> {', '.join(recipients)} ({len(tasks)} tasks, {len(milestones)} ms)")
@@ -145,7 +172,7 @@ class Command(BaseCommand):
         verb = "Would send" if dry else "Sent"
         self.stdout.write(self.style.SUCCESS(f"{verb} {emails_sent} reminder email(s)."))
 
-    def _send(self, to_email, subject, body, dry):
+    def _send(self, to_email, subject, body, dry, html=None):
         if dry:
             return True
         try:
@@ -153,8 +180,23 @@ class Command(BaseCommand):
                 subject=subject, body=body,
                 from_email=settings.DEFAULT_FROM_EMAIL, to=[to_email],
             )
+            if html:
+                msg.attach_alternative(html, "text/html")
             msg.send()
             return True
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"  ✗ failed -> {to_email}: {e}"))
             return False
+
+    @staticmethod
+    def _render_html(title, lead, sections, closing):
+        """Branded HTML version of a digest email. Falls back to None (text
+        only) if rendering fails for any reason."""
+        try:
+            from django.template.loader import render_to_string
+            return render_to_string("emails/notification.html", {
+                "title": title, "lead": lead, "sections": sections,
+                "closing": closing, "badge": "bell",
+            })
+        except Exception:
+            return None
