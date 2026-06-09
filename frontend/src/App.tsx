@@ -97,6 +97,7 @@ const FoundationOverview = lazyWithRetry(() => import("./pages/FoundationOvervie
 const FoundationWorkflow = lazyWithRetry(() => import("./pages/FoundationWorkflow"));
 const FoundationCharter = lazyWithRetry(() => import("./pages/FoundationCharter"));
 const ProjectTailoring = lazyWithRetry(() => import("./pages/ProjectTailoring"));
+const ProjectCoach = lazyWithRetry(() => import("./pages/ProjectCoach"));
 const FoundationTeam = lazyWithRetry(() => import("./pages/FoundationTeam"));
 const FoundationBudget = lazyWithRetry(() => import("./pages/FoundationBudget"));
 const FoundationCommunicationPlan = lazyWithRetry(() => import("./pages/FoundationCommunicationPlan"));
@@ -975,6 +976,7 @@ const App = () => (
               <Route path="/projects/:id/foundation/workflow" element={<ProtectedPage><FoundationWorkflow /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/charter" element={<ProtectedPage><FoundationCharter /></ProtectedPage>} />
               <Route path="/projects/:id/tailoring" element={<ProtectedPage><ProjectTailoring /></ProtectedPage>} />
+              <Route path="/projects/:id/coach" element={<ProtectedPage><ProjectCoach /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/team" element={<ProtectedPage><FoundationTeam /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/budget" element={<ProtectedPage><FoundationBudget /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/communication-plan" element={<ProtectedPage><FoundationCommunicationPlan /></ProtectedPage>} />

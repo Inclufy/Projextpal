@@ -1251,6 +1251,7 @@ export function AppSidebar() {
           icon: Settings2,
           items: [
             { title: "Project-tailoring", url: `/projects/${projectId}/tailoring`, icon: Settings2 },
+            { title: "AI Project-coach", url: `/projects/${projectId}/coach`, icon: Sparkles },
           ],
         },
         ...getMethodologyPhases(projectId, methodology),
