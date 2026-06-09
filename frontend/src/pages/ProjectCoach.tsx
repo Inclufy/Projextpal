@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
-import { Loader2, Sparkles, Send, GraduationCap, Bot } from "lucide-react";
+import { Loader2, Sparkles, Send, GraduationCap, Bot, BookOpen, Zap, ArrowRight } from "lucide-react";
 
-type Msg = { role: "user" | "coach"; text: string; source?: string };
+type LinkT = { title: string; url: string };
+type Msg = { role: "user" | "coach"; text: string; source?: string; act?: LinkT[] };
 
 const ProjectCoach = () => {
   const { id } = useParams<{ id: string }>();
-  const [ctx, setCtx] = useState<{ methodology: string; shape?: string; summary: string; focus: string; suggestions: string[] } | null>(null);
+  const [ctx, setCtx] = useState<{ methodology: string; shape?: string; summary: string; focus: string; suggestions: string[]; learn?: LinkT[]; act?: LinkT[] } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ const ProjectCoach = () => {
         method: "POST", headers, body: JSON.stringify({ question }),
       });
       const d = await r.json();
-      setMessages((m) => [...m, { role: "coach", text: d.answer || "—", source: d.source }]);
+      setMessages((m) => [...m, { role: "coach", text: d.answer || "—", source: d.source, act: d.act }]);
     } catch {
       setMessages((m) => [...m, { role: "coach", text: "De coach is even niet bereikbaar. Probeer het zo opnieuw." }]);
     } finally { setLoading(false); }
@@ -78,6 +79,36 @@ const ProjectCoach = () => {
           </Card>
         )}
 
+        {/* The two-way bridge: Leren (kennis) <-> Aan de slag (kunde) */}
+        {ctx && ((ctx.learn?.length || 0) > 0 || (ctx.act?.length || 0) > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold mb-2.5"><BookOpen className="h-4 w-4 text-blue-500" /> Leren <span className="text-xs font-normal text-muted-foreground">— begrijp het</span></div>
+                <div className="space-y-1.5">
+                  {(ctx.learn || []).map((l) => (
+                    <Link key={l.url} to={l.url} className="flex items-center gap-2 text-sm text-foreground hover:text-primary group">
+                      <ArrowRight className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition" />{l.title}
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold mb-2.5"><Zap className="h-4 w-4 text-amber-500" /> Aan de slag <span className="text-xs font-normal text-muted-foreground">— pas het toe</span></div>
+                <div className="space-y-1.5">
+                  {(ctx.act || []).map((a) => (
+                    <Link key={a.url} to={a.url} className="flex items-center gap-2 text-sm text-foreground hover:text-primary group">
+                      <ArrowRight className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition" />{a.title}
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <div className="space-y-3 min-h-[180px]">
           {messages.length === 0 && (
             <div className="text-center text-sm text-muted-foreground py-10">
@@ -92,6 +123,15 @@ const ProjectCoach = () => {
                 {m.text}
                 {m.role === "coach" && m.source === "fallback" && (
                   <Badge variant="outline" className="ml-2 text-[10px] align-middle">basis-advies</Badge>
+                )}
+                {m.role === "coach" && m.act && m.act.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-border/50 flex flex-wrap gap-x-3 gap-y-1">
+                    {m.act.slice(0, 3).map((a) => (
+                      <Link key={a.url} to={a.url} className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                        <Zap className="h-3 w-3" />{a.title}
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

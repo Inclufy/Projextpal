@@ -100,6 +100,44 @@ METHOD_COACH = {
     },
 }
 
+# "Aan de slag" — verified in-project screens per methodology (kunde / doen).
+# Bridges knowledge -> practice: from the coach straight to where you act.
+ACT_LINKS = {
+    "prince2": [("Business Case", "prince2/business-case"), ("Fasepoorten", "prince2/stage-gates"), ("Work Packages", "prince2/work-packages")],
+    "scrum": [("Product Backlog", "scrum/backlog"), ("Definition of Done", "scrum/definition-of-done"), ("Increments", "scrum/increments")],
+    "agile": [("Backlog", "agile/backlog"), ("Iteration Board", "agile/iteration-board"), ("Retrospective", "agile/retrospective")],
+    "kanban": [("Board", "kanban/board"), ("WIP-limieten", "kanban/wip-limits"), ("Flow-metrics", "kanban/metrics")],
+    "waterfall": [("Projectoverzicht", "foundation/overview")],
+    "lean_six_sigma_green": [("DMAIC-fasen", "lss-green/phases"), ("Metingen", "lss-green/measurements"), ("Capability", "lss-green/metrics")],
+    "lean_six_sigma_black": [("DMAIC-fasen", "lss-black/phases"), ("Hypothesetoetsen", "lss-black/hypothesis-tests"), ("DOE", "lss-black/doe")],
+    "hybrid": [("Fasen", "hybrid/phases"), ("Taken", "hybrid/tasks"), ("Artefacten", "hybrid/artifacts")],
+    "inclufy": [("Projectoverzicht", "foundation/overview"), ("Charter", "foundation/charter")],
+}
+
+
+def _learn_links(methodology):
+    """Knowledge -> the Academy course + first lesson for this methodology."""
+    from .tailoring import METHODOLOGY_COURSE
+    slug = METHODOLOGY_COURSE.get(methodology, "pm-fundamentals")
+    title = slug
+    try:
+        from academy.models import Course
+        c = Course.objects.filter(slug=slug).first()
+        if c:
+            title = c.title
+    except Exception:
+        pass
+    return [
+        {"title": f"Cursus: {title}", "url": f"/academy/course/{slug}"},
+        {"title": "Start de eerste les", "url": f"/academy/course/{slug}/learn"},
+    ]
+
+
+def _act_links(methodology, project_id):
+    return [{"title": label, "url": f"/projects/{project_id}/{suffix}"}
+            for label, suffix in ACT_LINKS.get(methodology, ACT_LINKS["inclufy"])]
+
+
 _COMP_TONE = {
     "none": "De gebruiker kent deze methodiek nog niet — leg termen kort uit en wees concreet.",
     "basis": "De gebruiker kent de basis — geef praktische, iets diepere tips.",
@@ -149,13 +187,16 @@ def project_coach(request, pk):
             "summary": summary,
             "focus": coach["focus"],
             "suggestions": coach["suggestions"],
+            "learn": _learn_links(methodology),       # kennis  (Academy)
+            "act": _act_links(methodology, project.id),  # kunde   (project screens)
         })
 
     question = (request.data or {}).get("question", "").strip()
     if not question:
         return Response({"detail": "Stel een vraag."}, status=400)
 
-    answer, source = _answer(project, request.user, methodology, coach, shape, competence, question)
+    context = (request.data or {}).get("context", "").strip()  # e.g. the screen the user is on
+    answer, source = _answer(project, request.user, methodology, coach, shape, competence, question, context)
     # log the consult (reuses the existing audit helper; never fatal)
     try:
         from accounts.models import audit
@@ -164,10 +205,11 @@ def project_coach(request, pk):
               target_type="project", target_id=project.id, request=request)
     except Exception:
         pass
-    return Response({"answer": answer, "source": source, "methodology": methodology})
+    return Response({"answer": answer, "source": source, "methodology": methodology,
+                     "act": _act_links(methodology, project.id)})
 
 
-def _answer(project, user, methodology, coach, shape, competence, question):
+def _answer(project, user, methodology, coach, shape, competence, question, context=""):
     """LLM answer grounded in the methodology + project; deterministic fallback."""
     company = getattr(user, "company", None)
     system = (
@@ -177,6 +219,7 @@ def _answer(project, user, methodology, coach, shape, competence, question):
         f"gekozen methodiek.\n\nMethodiek: {methodology}. {coach['focus']}\n"
         f"Projectvorm: {shape or 'onbepaald'}. Projectstatus: {project.status or 'onbekend'}.\n"
         f"{_COMP_TONE.get(competence, '')}"
+        + (f"\nDe gebruiker is nu op het scherm: {context}." if context else "")
     )
     if company:
         try:
