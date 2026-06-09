@@ -117,11 +117,15 @@ The **MacBook** dev repo has two remotes:
 
 The **Mac Studio** production tree pulls `master` from **GitHub** (`origin` there = GitHub). So a `git push origin master` from the MacBook (→ GitLab) is **invisible** to the Mac Studio — `git pull` there says "Already up to date" and `docker build` rebuilds the **old code** (migrations report "No migrations to apply", new routes 404).
 
-**Rule: after committing, push to BOTH:**
+**Rule: after committing ON THE LAPTOP (dev), push to BOTH:**
 ```bash
-git push origin master && git push github master
+git push origin master && git push github master    # ← laptop only
 ```
 Verify before deploy: `git ls-remote github master` must equal your local `git rev-parse HEAD`.
+
+**The Mac Studio is the deploy target — it ONLY pulls, never pushes.** Running the
+dual-push there gets a harmless `! [rejected] (fetch first)` because the laptop is
+ahead; the fix is just `git pull origin master`. Never `git push` from Mac Studio.
 
 ### 6b. Backend/frontend have NO `build:` in compose — build the image manually
 
