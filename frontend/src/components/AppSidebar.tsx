@@ -1245,6 +1245,14 @@ export function AppSidebar() {
 
   const projectPhases = projectId
     ? [
+        {
+          id: "tailoring",
+          title: "Setup",
+          icon: Settings2,
+          items: [
+            { title: "Project-tailoring", url: `/projects/${projectId}/tailoring`, icon: Settings2 },
+          ],
+        },
         ...getMethodologyPhases(projectId, methodology),
         ...(methodology && DEDICATED_METHODOLOGIES.has(methodology.toLowerCase())
           ? [

@@ -78,9 +78,20 @@ def project_tailoring(request, pk):
         return Response({"detail": "Project not found or not accessible."}, status=404)
 
     tailoring, _ = ProjectTailoring.objects.get_or_create(project=project)
+    methodology = project.methodology or "inclufy"
+
+    def _governance(t):
+        return {
+            "board": t.gov_board,
+            "portfolio": "yes" if t.gov_portfolio else "no",
+            "stakeholder": "matrix" if t.gov_stakeholder_matrix else "light",
+            "cadence": "periodic" if t.gov_periodic_cadence else "adhoc",
+        }
 
     if request.method == "GET":
-        return Response(ProjectTailoringSerializer(tailoring).data)
+        rec = recommend_modules(methodology, tailoring.dimensions, _governance(tailoring))
+        return Response({**ProjectTailoringSerializer(tailoring).data,
+                         "methodology": methodology, "more": rec["more"]})
 
     data = request.data or {}
     # write the editable fields
@@ -93,13 +104,7 @@ def project_tailoring(request, pk):
             setattr(tailoring, f, data[f])
 
     # recompute the outcome from the dimensions + governance
-    governance = {
-        "board": tailoring.gov_board,
-        "portfolio": "yes" if tailoring.gov_portfolio else "no",
-        "stakeholder": "matrix" if tailoring.gov_stakeholder_matrix else "light",
-        "cadence": "periodic" if tailoring.gov_periodic_cadence else "adhoc",
-    }
-    rec = recommend_modules(project.methodology or "inclufy", tailoring.dimensions, governance)
+    rec = recommend_modules(methodology, tailoring.dimensions, _governance(tailoring))
     tailoring.shape = rec["shape"]
     tailoring.score = rec["score"]
     tailoring.recommended_modules = rec["recommended"]
@@ -111,7 +116,8 @@ def project_tailoring(request, pk):
         project.pm_can_authorize = new_pm
         project.save(update_fields=["pm_can_authorize"])
 
-    return Response(ProjectTailoringSerializer(tailoring).data)
+    return Response({**ProjectTailoringSerializer(tailoring).data,
+                     "methodology": methodology, "more": rec["more"]})
 
 
 # --------------------------------------------------------------------------- #
