@@ -21,6 +21,7 @@ const Prince2StageGate = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [canApprove, setCanApprove] = useState(false);
   const [form, setForm] = useState({ stage: "", outcome: "pending", review_date: "", decision_notes: "", stage_performance_summary: "", products_completed: "", products_pending: "", lessons_learned: "" });
 
   const token = localStorage.getItem("access_token");
@@ -40,6 +41,19 @@ const Prince2StageGate = () => {
   };
 
   useEffect(() => { fetchData(); }, [id]);
+
+  // PRINCE2 SoD: only the Project Owner (or PM when the project opted in) may
+  // approve/reject a stage gate. Mirror the brief/business-case authorization.
+  useEffect(() => {
+    if (!id) return;
+    Promise.all([
+      fetch(`/api/v1/projects/${id}/my-role/`, { headers }).then((r) => r.ok ? r.json() : null),
+      fetch(`/api/v1/projects/${id}/`, { headers }).then((r) => r.ok ? r.json() : null),
+    ]).then(([role, proj]) => {
+      const r = role?.role || "";
+      setCanApprove(r === "project_owner" || (r === "project_manager" && !!proj?.pm_can_authorize));
+    }).catch(() => {});
+  }, [id]);
 
   const openCreate = () => { setEditing(null); setForm({ stage: stages[0]?.id?.toString() || "", outcome: "pending", review_date: "", decision_notes: "", stage_performance_summary: "", products_completed: "", products_pending: "", lessons_learned: "" }); setDialogOpen(true); };
   const openEdit = (g: any) => { setEditing(g); setForm({ stage: g.stage?.toString() || "", outcome: g.outcome || "pending", review_date: g.review_date || "", decision_notes: g.decision_notes || "", stage_performance_summary: g.stage_performance_summary || "", products_completed: g.products_completed || "", products_pending: g.products_pending || "", lessons_learned: g.lessons_learned || "" }); setDialogOpen(true); };
@@ -106,11 +120,14 @@ const Prince2StageGate = () => {
                 {g.decision_notes && <p className="text-sm mt-1">{g.decision_notes}</p>}
                 {g.stage_performance_summary && <p className="text-sm text-muted-foreground mt-1">{g.stage_performance_summary}</p>}
               </div>
-              <div className="flex gap-1 ml-4">
-                {g.outcome === "pending" && <>
+              <div className="flex gap-1 ml-4 items-center">
+                {g.outcome === "pending" && canApprove && <>
                   <Button variant="ghost" size="sm" onClick={() => handleAction(g.id, "approve")}><CheckCircle2 className="h-4 w-4 text-green-500" /></Button>
                   <Button variant="ghost" size="sm" onClick={() => handleAction(g.id, "reject")}><XCircle className="h-4 w-4 text-red-500" /></Button>
                 </>}
+                {g.outcome === "pending" && !canApprove && (
+                  <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">{pt("Awaiting Project Owner")}</Badge>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => openEdit(g)}><Pencil className="h-4 w-4" /></Button>
                 <Button variant="ghost" size="sm" onClick={() => handleDelete(g.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>

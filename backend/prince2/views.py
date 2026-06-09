@@ -229,11 +229,20 @@ class ProjectInitiationDocumentViewSet(ProjectFilterMixin, viewsets.ModelViewSet
     @action(detail=True, methods=['post'])
     def baseline(self, request, project_id=None, pk=None):
         pid = self.get_object()
+        project = pid.project
+        # PRINCE2 "Directing a Project" — Authorise the Project. Baselining the
+        # PID is a Project Board decision, so the same separation-of-duties gate
+        # as the initiation products applies (Owner always; PM only when the
+        # project opted in).
+        if not _can_authorize(request.user, project):
+            return Response(
+                {'error': 'Only the Project Owner (Executive) can authorize the project (baseline the PID) — PRINCE2 separation of duties.'},
+                status=403,
+            )
         # PRINCE2 principle: Ensure continued business justification.
         # A PID cannot be baselined without an approved Business Case (and Brief
         # from the Starting-up process). This gate makes the principle behavioural
         # rather than a documented intention.
-        project = pid.project
         if not BusinessCase.objects.filter(project=project, status='approved').exists():
             return Response(
                 {'error': 'Cannot baseline the PID without an approved Business Case (PRINCE2: ensure continued business justification).'},
@@ -247,6 +256,12 @@ class ProjectInitiationDocumentViewSet(ProjectFilterMixin, viewsets.ModelViewSet
         pid.status = 'baselined'
         pid.baseline_date = timezone.now().date()
         pid.save()
+        try:
+            from accounts.models import audit
+            audit(request.user, "prince2.pid_baselined", summary=f"Authorized the project (baselined PID) for project {project.id}",
+                  target_type="project_initiation_document", target_id=pid.id, request=request)
+        except Exception:
+            pass
         return Response(ProjectInitiationDocumentSerializer(pid).data)
 
 
@@ -365,15 +380,34 @@ class StageGateViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, project_id=None, pk=None):
         gate = self.get_object()
+        # PRINCE2 "Directing a Project" — Authorise a Stage or Exception Plan.
+        # A stage-boundary gate is a Project Board decision, so the same SoD gate
+        # applies (Owner always; PM only when the project opted in).
+        if not _can_authorize(request.user, gate.stage.project):
+            return Response(
+                {'error': 'Only the Project Owner (Executive) can approve a stage gate — PRINCE2 separation of duties.'},
+                status=403,
+            )
         gate.outcome = 'approved'
         gate.review_date = timezone.now().date()
         gate.reviewer = request.user
         gate.save()
+        try:
+            from accounts.models import audit
+            audit(request.user, "prince2.stage_gate_approved", summary=f"Approved stage gate for stage {gate.stage_id}",
+                  target_type="stage_gate", target_id=gate.id, request=request)
+        except Exception:
+            pass
         return Response(StageGateSerializer(gate).data)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, project_id=None, pk=None):
         gate = self.get_object()
+        if not _can_authorize(request.user, gate.stage.project):
+            return Response(
+                {'error': 'Only the Project Owner (Executive) can decide a stage gate — PRINCE2 separation of duties.'},
+                status=403,
+            )
         gate.outcome = 'rejected'
         gate.review_date = timezone.now().date()
         gate.reviewer = request.user
