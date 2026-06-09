@@ -20,17 +20,24 @@ const CATEGORIES: { key: string; label: string; desc: string }[] = [
   { key: "programme_update", label: "Programme updates", desc: "Programme-level news and decisions" },
 ];
 
+const DEFAULT_PREFS: Prefs = {
+  email_enabled: true, push_enabled: true, task_assigned: true, mention: true,
+  message: true, approval: true, deadline: true, status_digest: true, programme_update: true,
+};
+
 export default function NotificationPreferences() {
   const { pt } = usePageTranslations();
-  const [prefs, setPrefs] = useState<Prefs | null>(null);
+  // Always render with sensible defaults so the card never disappears if the
+  // preferences endpoint is briefly unavailable; real values load when ready.
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const r = await fetch("/api/v1/notification-preferences/", { headers: authHeaders() });
-        if (r.ok) setPrefs(await r.json());
-      } catch { /* ignore */ }
+        if (r.ok) setPrefs({ ...DEFAULT_PREFS, ...(await r.json()) });
+      } catch { /* keep defaults */ }
     })();
   }, []);
 
@@ -47,8 +54,6 @@ export default function NotificationPreferences() {
     } catch { toast.error(pt("Could not save")); }
     finally { setSaving(false); }
   };
-
-  if (!prefs) return null;
 
   const Row = ({ k, label, desc }: { k: string; label: string; desc: string }) => (
     <div className="flex items-center justify-between gap-4 py-2.5">
