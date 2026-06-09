@@ -332,6 +332,7 @@ const AdminDashboard = lazyWithRetry(() => import('./pages/admin-portal/AdminDas
 const UserManagement = lazyWithRetry(() => import('./pages/admin-portal/UserManagement'));
 const TenantManagement = lazyWithRetry(() => import('./pages/admin-portal/OrganizationManagement'));
 const TenantProvisioning = lazyWithRetry(() => import('./pages/admin-portal/TenantProvisioning'));
+const SandboxInvite = lazyWithRetry(() => import('./pages/admin-portal/SandboxInvite'));
 const TenantEdit = lazyWithRetry(() => import('./pages/admin-portal/TenantEdit'));
 const IntegrationManagement = lazyWithRetry(() => import('./pages/admin-portal/IntegrationManagement'));
 const AutomationRules = lazyWithRetry(() => import('./pages/admin-portal/AutomationRules'));
@@ -670,6 +671,7 @@ const App = () => (
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tenants" element={<TenantManagement />} />
                 <Route path="tenants/new" element={<TenantProvisioning />} />
+                <Route path="sandbox-invite" element={<SandboxInvite />} />
                 <Route path="tenants/:id/edit" element={<TenantEdit />} />
                 <Route path="integrations" element={<IntegrationManagement />} />
                 <Route path="automation-rules" element={<AutomationRules />} />

@@ -2083,3 +2083,40 @@ class TimesheetApiView(APIView):
             'page_size': page_size,
             'results': data,
         })
+
+
+class SandboxInviteView(APIView):
+    """
+    POST /api/v1/admin/sandbox-invite/ — provision a sandbox/proeftuin evaluator
+    and (optionally) email them a branded invitation. Admin/superadmin only.
+
+    body: {email, company_name, days?, inviter_name?, first_name?, last_name?, send_invite?}
+    """
+    permission_classes = [IsAuthenticated, IsAdminOrSuperAdmin]
+
+    def post(self, request):
+        data = request.data or {}
+        email = (data.get("email") or "").strip()
+        if not email:
+            return Response({"detail": "E-mailadres is verplicht."}, status=400)
+        try:
+            from accounts.sandbox_provision import provision_sandbox
+            result = provision_sandbox(
+                email=email,
+                company_name=data.get("company_name") or "Proeftuin",
+                days=data.get("days") or 14,
+                inviter_name=data.get("inviter_name") or "Het ProjeXtPal-team",
+                first_name=data.get("first_name") or "",
+                last_name=data.get("last_name") or "",
+                send_invite=bool(data.get("send_invite", True)),
+            )
+            try:
+                from accounts.models import audit
+                audit(request.user, "admin.sandbox_invite",
+                      summary=f"Sandbox invite for {email} ({result['company']})",
+                      target_type="company", target_id=result["company"], request=request)
+            except Exception:
+                pass
+            return Response(result, status=200)
+        except Exception as exc:
+            return Response({"detail": f"Provisioning mislukt: {exc}"}, status=500)

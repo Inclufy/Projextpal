@@ -13,6 +13,7 @@ from .views import (
     AdminPlanViewSet,
     AuditLogViewSet,
     SystemSettingsView,
+    SandboxInviteView,
     ClientApiKeyListView,
     ClientApiKeyDetailView,
     CloudProviderConfigListView,
@@ -50,6 +51,7 @@ urlpatterns = [
     path('settings/', SystemSettingsView.as_view(), name='admin-settings'),
 
     # Client API keys (per company)
+    path('sandbox-invite/', SandboxInviteView.as_view(), name='admin-sandbox-invite'),
     path('api-keys/', ClientApiKeyListView.as_view(), name='admin-api-keys'),
     path('api-keys/<uuid:pk>/', ClientApiKeyDetailView.as_view(), name='admin-api-key-detail'),
 

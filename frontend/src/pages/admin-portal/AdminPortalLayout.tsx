@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Users,
   Building2,
+  Sparkles,
   Puzzle,
   Zap,
   Settings,
@@ -111,6 +112,12 @@ const navigation: NavSection[] = [
         titleNL: 'Organisaties',
         href: '/admin/tenants',
         icon: Building2,
+      },
+      {
+        title: 'Sandbox invites',
+        titleNL: 'Sandbox-uitnodigingen',
+        href: '/admin/sandbox-invite',
+        icon: Sparkles,
       },
       {
         title: 'Integrations',
