@@ -51,6 +51,7 @@ from accounts.views import save_registration_intent
 
 from .audit_views import AuditLogViewSet
 from .sessions_views import SessionsView, RevokeSessionView
+from .sso_views import sso_config, azure_login, azure_callback
 
 router = DefaultRouter()
 router.register(r"crm-api-keys", CrmApiKeyViewSet, basename="crm-api-key")
@@ -88,6 +89,10 @@ urlpatterns = [
     path('2fa/recovery-codes/', RecoveryCodesView.as_view(), name='2fa-recovery-codes'),
     path('sessions/', SessionsView.as_view(), name='sessions'),
     path('sessions/revoke/', RevokeSessionView.as_view(), name='sessions-revoke'),
+    # Azure / Entra ID SSO (inert unless AZURE_SSO_* env vars are configured)
+    path('sso/config/', sso_config, name='sso-config'),
+    path('sso/azure/login/', azure_login, name='sso-azure-login'),
+    path('sso/azure/callback/', azure_callback, name='sso-azure-callback'),
     # Canonical aliases used by the admin portal & mobile clients
     path('2fa/enable/', Setup2FAView.as_view(), name='2fa-enable'),
     path('2fa/qr/', Setup2FAView.as_view(), name='2fa-qr'),

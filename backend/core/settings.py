@@ -567,3 +567,22 @@ INCLUFY_FINANCE_WEBHOOK_SECRET = os.environ.get("INCLUFY_FINANCE_WEBHOOK_SECRET"
 INCLUFY_FINANCE_PUSH_ENABLED = (
     os.environ.get("INCLUFY_FINANCE_PUSH_ENABLED", "false").lower() == "true"
 )
+
+
+# ---------------------------------------------------------------------------
+# Azure / Entra ID Single Sign-On (OIDC) — OFF unless fully configured.
+# Set all four env vars to enable; the frontend shows the "Sign in with
+# Microsoft" button only when AZURE_SSO_ENABLED is True. Token validation is
+# delegated to the official `msal` library.
+# ---------------------------------------------------------------------------
+AZURE_SSO_CLIENT_ID = decouple.config("AZURE_SSO_CLIENT_ID", default="")
+AZURE_SSO_CLIENT_SECRET = decouple.config("AZURE_SSO_CLIENT_SECRET", default="")
+AZURE_SSO_TENANT_ID = decouple.config("AZURE_SSO_TENANT_ID", default="")
+# Where Azure redirects back to (must match the App Registration redirect URI),
+# e.g. https://api.projextpal.com/api/v1/auth/sso/azure/callback/
+AZURE_SSO_REDIRECT_URI = decouple.config("AZURE_SSO_REDIRECT_URI", default="")
+# Whether SSO logins may auto-create a user (default False = invite-first / B2B safe).
+AZURE_SSO_AUTO_CREATE = decouple.config("AZURE_SSO_AUTO_CREATE", default=False, cast=bool)
+AZURE_SSO_ENABLED = bool(
+    AZURE_SSO_CLIENT_ID and AZURE_SSO_CLIENT_SECRET and AZURE_SSO_TENANT_ID and AZURE_SSO_REDIRECT_URI
+)

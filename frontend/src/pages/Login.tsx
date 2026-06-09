@@ -27,11 +27,20 @@ const Login = () => {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricEmail, setBiometricEmail] = useState<string | null>(null);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+  const [ssoEnabled, setSsoEnabled] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
 
   const isNL = language === 'nl';
+
+  // Is Azure SSO configured on the backend? (button hidden unless enabled)
+  useEffect(() => {
+    fetch('/api/v1/auth/sso/config/')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.azure_enabled) setSsoEnabled(true); })
+      .catch(() => {});
+  }, []);
 
   // Check biometric availability on mount
   useEffect(() => {
@@ -393,6 +402,19 @@ const Login = () => {
             )}
 
             {/* Biometric Login Button */}
+            {ssoEnabled && !requires2FA && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-13 rounded-xl font-semibold text-base gap-3 ring-1 ring-purple-200 dark:ring-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                onClick={() => { window.location.href = '/api/v1/auth/sso/azure/login/'; }}
+                disabled={isLoading}
+              >
+                <svg width="18" height="18" viewBox="0 0 23 23" aria-hidden="true"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>
+                {isNL ? 'Inloggen met Microsoft' : 'Sign in with Microsoft'}
+              </Button>
+            )}
+
             {biometricAvailable && !requires2FA && (
               <>
                 <Button
