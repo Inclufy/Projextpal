@@ -75,6 +75,7 @@ const VerifyEmail = lazyWithRetry(() => import("./pages/VerifyEmail"));
 const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
+const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
 const Settings = lazyWithRetry(() => import("./pages/Settings"));
 const AIAssistant = lazyWithRetry(() => import("./pages/AIAssistant"));
@@ -631,6 +632,8 @@ const App = () => (
               {/* ============================================ */}
               <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              {/* Privacy policy is always public — reachable logged-in or out, no redirect. */}
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} /> 
               <Route path="/trial-pending" element={<PublicRoute><TrialPending /></PublicRoute>} />

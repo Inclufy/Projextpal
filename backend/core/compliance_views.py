@@ -15,7 +15,7 @@ AUDIT_DATE = "2026-06-09"
 
 # status ∈ pass | partial | fail ; kind ∈ engineering | documentation
 GDPR = [
-    {"id": "G1", "control": "Privacy policy + DPO + cookie notice", "status": "partial", "kind": "documentation", "evidence": "docs/compliance/privacy-policy.md (draft); publish on web + add DPO"},
+    {"id": "G1", "control": "Privacy policy + DPO + cookie notice", "status": "partial", "kind": "documentation", "evidence": "public page live at /privacy + footer link; still: fill KvK/address/DPO + cookie notice"},
     {"id": "G2", "control": "Lawful basis & consent capture", "status": "pass", "kind": "engineering", "evidence": "onboarding accept_tos/accept_dpa/accept_gdpr, logged"},
     {"id": "G3", "control": "Art. 15 — data export (reachable in UI)", "status": "pass", "kind": "engineering", "evidence": "Settings → Security → Download my data → /auth/me/export/"},
     {"id": "G4", "control": "Art. 17 — erasure (reachable in UI)", "status": "pass", "kind": "engineering", "evidence": "Settings → Security → Delete my account → /auth/me/delete/ (anonymize + 30d grace)"},
