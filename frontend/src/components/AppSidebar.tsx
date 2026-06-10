@@ -1534,8 +1534,8 @@ export function AppSidebar() {
                             "flex items-center gap-3 rounded-xl",
                             roomyNav && "gap-3.5 px-3 h-11",
                             (navIsActive || isActive)
-                              ? "bg-purple-600 text-white font-semibold shadow-sm"
-                              : "text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20",
+                              ? "bg-purple-600 text-white font-semibold shadow-sm hover:bg-purple-700 hover:text-white"
+                              : "text-purple-700 dark:text-purple-300 hover:bg-purple-50 hover:text-purple-800 dark:hover:bg-purple-900/20",
                             isLocked && "cursor-not-allowed"
                           )
                         }
