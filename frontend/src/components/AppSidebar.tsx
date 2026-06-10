@@ -1479,7 +1479,7 @@ export function AppSidebar() {
                                     className={({ isActive }) =>
                                       cn("rounded-md transition-all duration-150 text-sm",
                                         isActive
-                                          ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
                                           : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
                                       )
                                     }
@@ -1601,13 +1601,20 @@ export function AppSidebar() {
                                   to={item.url}
                                   end
                                   className={({ isActive }) =>
-                                    isActive
-                                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                      : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                                    cn(
+                                      "rounded-lg text-[14px]",
+                                      isActive
+                                        ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                                    )
                                   }
                                 >
-                                  <item.icon className="h-4 w-4" />
-                                  <span>{tm(item.title)}</span>
+                                  {({ isActive }) => (
+                                    <>
+                                      <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500")} />
+                                      <span>{tm(item.title)}</span>
+                                    </>
+                                  )}
                                 </NavLink>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -1663,13 +1670,20 @@ export function AppSidebar() {
                                               to={subItem.url}
                                               end
                                               className={({ isActive }) =>
-                                                isActive
-                                                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                                  : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                                                cn(
+                                                  "rounded-lg text-[14px]",
+                                                  isActive
+                                                    ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                                                )
                                               }
                                             >
-                                              <subItem.icon className="h-4 w-4" />
-                                              <span>{tm(subItem.title)}</span>
+                                              {({ isActive }) => (
+                                                <>
+                                                  <subItem.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500")} />
+                                                  <span>{tm(subItem.title)}</span>
+                                                </>
+                                              )}
                                             </NavLink>
                                           </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
@@ -1685,13 +1699,20 @@ export function AppSidebar() {
                                     to={item.url}
                                     end
                                     className={({ isActive }) =>
-                                      isActive
-                                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                        : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                                      cn(
+                                        "rounded-lg text-[14px]",
+                                        isActive
+                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                                      )
                                     }
                                   >
-                                    <item.icon className="h-4 w-4" />
-                                    <span>{tm(item.title)}</span>
+                                    {({ isActive }) => (
+                                      <>
+                                        <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500")} />
+                                        <span>{tm(item.title)}</span>
+                                      </>
+                                    )}
                                   </NavLink>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
@@ -1761,7 +1782,7 @@ export function AppSidebar() {
                             className={cn(
                               "rounded-md transition-all duration-150 text-sm w-full",
                               isActive
-                                ? "bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
+                                ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
                                 : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
                             )}
                           >
