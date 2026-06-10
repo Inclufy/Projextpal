@@ -1454,17 +1454,17 @@ export function AppSidebar() {
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton size={roomyNav ? "lg" : undefined} className={cn(
-                            "rounded-lg transition-colors duration-150",
-                            roomyNav && "gap-3.5 px-3",
+                            "rounded-xl transition-colors duration-150",
+                            roomyNav && "gap-3.5 px-3 h-11",
                             isGovActive
-                              ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold shadow-sm hover:from-purple-600 hover:to-fuchsia-600 hover:text-white"
+                              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                           )}>
                             <item.icon className={cn(
-                              roomyNav ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
-                              isGovActive ? "text-purple-600 dark:text-purple-300" : "text-gray-400 dark:text-gray-500"
+                              roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
+                              isGovActive ? "text-white" : "text-gray-400 dark:text-gray-500"
                             )} />
-                            <span className={cn("text-sm", roomyNav && "text-[15px]")}>{item.title}</span>
+                            <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]")}>{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -1531,11 +1531,11 @@ export function AppSidebar() {
                         }}
                         className={({ isActive: navIsActive }) =>
                           cn(
-                            "flex items-center gap-3 rounded-lg",
-                            roomyNav && "gap-3.5 px-3",
+                            "flex items-center gap-3 rounded-xl",
+                            roomyNav && "gap-3.5 px-3 h-11",
                             (navIsActive || isActive)
-                              ? "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-medium"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
+                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold shadow-sm"
+                              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
                             isLocked && "cursor-not-allowed"
                           )
                         }
@@ -1545,21 +1545,21 @@ export function AppSidebar() {
                           return (
                             <>
                               <item.icon className={cn(
-                                roomyNav ? "h-5 w-5 shrink-0" : "h-[18px] w-[18px] shrink-0",
+                                roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
                                 isLocked
                                   ? "text-muted-foreground"
                                   : on
-                                    ? "text-purple-600 dark:text-purple-300"
+                                    ? "text-white"
                                     : "text-gray-400 dark:text-gray-500"
                               )} />
                               {!isCollapsed && (
-                                <span className={cn("text-sm", roomyNav && "text-[15px]")}>{item.title}</span>
+                                <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
                               )}
                               {on && !isLocked && !isCollapsed && (
-                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-purple-500" />
+                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />
                               )}
                             </>
                           );
