@@ -56,6 +56,7 @@ import {
   ChevronLeft,
   ChevronRight,
   KeyRound,
+  Sparkles,
   Upload,
   FileSpreadsheet,
   Download,
@@ -361,6 +362,32 @@ export default function UserManagement() {
       }
 
       toast.success(pt("Invite sent"));
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleGrantSandbox = async (user: User) => {
+    if (!window.confirm(
+      `Sandbox-toegang verlenen aan ${user.email}?\n\n` +
+      `De werkruimte gaat in eval-modus (geen caps), de gebruiker krijgt een ` +
+      `14-daagse proefperiode en een gebrande sandbox-uitnodigingsmail.`
+    )) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/sandbox-invite/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          email: user.email,
+          company_name: user.company_name || `${user.email.split('@')[1] || 'Prospect'} (Proeftuin)`,
+          first_name: (user.full_name || '').split(' ')[0] || '',
+          days: 14,
+          send_invite: true,
+        }),
+      });
+      const d = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(d.detail || 'Sandbox-toegang verlenen mislukt');
+      toast.success(d.invited ? `Sandbox-uitnodiging verstuurd naar ${user.email}` : `Sandbox aangemaakt voor ${user.email}`);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -741,6 +768,10 @@ export default function UserManagement() {
                             <DropdownMenuItem onClick={() => handleResendInvite(user)}>
                               <Mail className="mr-2 h-4 w-4" />
                               {pt("Resend Invite")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleGrantSandbox(user)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              {pt("Verleen sandbox-toegang")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                               <KeyRound className="mr-2 h-4 w-4" />
