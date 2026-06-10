@@ -1460,11 +1460,11 @@ export function AppSidebar() {
                               ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold shadow-sm hover:from-purple-600 hover:to-fuchsia-600 hover:text-white"
                               : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                           )}>
-                            <item.icon className={cn(
+                            <item.icon strokeWidth={isGovActive ? 2.4 : 2.2} className={cn(
                               roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
-                              isGovActive ? "text-white" : "text-gray-400 dark:text-gray-500"
+                              isGovActive ? "text-white" : "text-purple-600 dark:text-purple-400"
                             )} />
-                            <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]", isGovActive ? "text-white" : "text-gray-700 dark:text-gray-200")}>{item.title}</span>
+                            <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", isGovActive ? "text-white" : "text-purple-700 dark:text-purple-300")}>{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -1544,16 +1544,16 @@ export function AppSidebar() {
                           const on = navIsActive || isActive;
                           return (
                             <>
-                              <item.icon className={cn(
+                              <item.icon strokeWidth={on ? 2.4 : 2.2} className={cn(
                                 roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
                                 isLocked
                                   ? "text-muted-foreground"
                                   : on
                                     ? "text-white"
-                                    : "text-gray-400 dark:text-gray-500"
+                                    : "text-purple-600 dark:text-purple-400"
                               )} />
                               {!isCollapsed && (
-                                <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]", on ? "text-white" : "text-gray-700 dark:text-gray-200")}>{item.title}</span>
+                                <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", on ? "text-white" : "text-purple-700 dark:text-purple-300")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
@@ -1584,8 +1584,8 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
-                        <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span className="text-gray-700 dark:text-gray-200">{tm(phase.title)}</span>}
+                        <phase.icon strokeWidth={2.2} className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        {!isCollapsed && <span className="font-semibold text-purple-700 dark:text-purple-300">{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
@@ -1640,8 +1640,8 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
-                        <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span className="text-gray-700 dark:text-gray-200">{tm(phase.title)}</span>}
+                        <phase.icon strokeWidth={2.2} className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        {!isCollapsed && <span className="font-semibold text-purple-700 dark:text-purple-300">{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
