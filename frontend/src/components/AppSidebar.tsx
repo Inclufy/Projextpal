@@ -1464,7 +1464,7 @@ export function AppSidebar() {
                               roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
                               isGovActive ? "text-white" : "text-gray-400 dark:text-gray-500"
                             )} />
-                            <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]")}>{item.title}</span>
+                            <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]", isGovActive ? "text-white" : "text-gray-700 dark:text-gray-200")}>{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/governance:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -1553,7 +1553,7 @@ export function AppSidebar() {
                                     : "text-gray-400 dark:text-gray-500"
                               )} />
                               {!isCollapsed && (
-                                <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]")}>{item.title}</span>
+                                <span className={cn("text-sm font-medium", roomyNav && "text-[15.5px]", on ? "text-white" : "text-gray-700 dark:text-gray-200")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
@@ -1585,7 +1585,7 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
                         <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span>{tm(phase.title)}</span>}
+                        {!isCollapsed && <span className="text-gray-700 dark:text-gray-200">{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
@@ -1641,7 +1641,7 @@ export function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton>
                         <phase.icon className="h-4 w-4" />
-                        {!isCollapsed && <span>{tm(phase.title)}</span>}
+                        {!isCollapsed && <span className="text-gray-700 dark:text-gray-200">{tm(phase.title)}</span>}
                         {!isCollapsed && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         )}
