@@ -1457,8 +1457,8 @@ export function AppSidebar() {
                             "rounded-xl transition-colors duration-150",
                             roomyNav && "gap-3.5 px-3 h-11",
                             isGovActive
-                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold shadow-sm hover:from-purple-600 hover:to-fuchsia-600 hover:text-white"
-                              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
+                              ? "bg-purple-600 text-white font-semibold shadow-sm hover:bg-purple-600 hover:text-white"
+                              : "text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                           )}>
                             <item.icon strokeWidth={isGovActive ? 2.4 : 2.2} className={cn(
                               roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
@@ -1534,8 +1534,8 @@ export function AppSidebar() {
                             "flex items-center gap-3 rounded-xl",
                             roomyNav && "gap-3.5 px-3 h-11",
                             (navIsActive || isActive)
-                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold shadow-sm"
-                              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/50",
+                              ? "bg-purple-600 text-white font-semibold shadow-sm"
+                              : "text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20",
                             isLocked && "cursor-not-allowed"
                           )
                         }
