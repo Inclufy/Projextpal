@@ -584,6 +584,51 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return CompanyCreateSerializer
         return CompanyDetailSerializer
+
+    @action(detail=True, methods=['post'], url_path='eval-mode')
+    def eval_mode(self, request, pk=None):
+        """Toggle/set a tenant's sandbox eval mode (banner/onboarding, no caps).
+
+        Body (all optional):
+          { "enabled": true | false }        — explicit set
+          { "enabled": "true" | "false" }    — string form (form-encoded)
+          (empty body)                       — flips the current value
+
+        Returns the new state, the previous state, and whether it changed.
+        """
+        company = self.get_object()
+        prev = company.eval_mode
+        raw = request.data.get('enabled', None)
+        if raw is None:
+            # No body = toggle
+            new_state = not prev
+        elif isinstance(raw, bool):
+            new_state = raw
+        elif isinstance(raw, str):
+            new_state = raw.strip().lower() in ('true', '1', 'yes', 'on')
+        else:
+            # int 0/1, etc.
+            new_state = bool(raw)
+
+        # Skip the save + audit when nothing changes (idempotent toggle)
+        changed = new_state != prev
+        if changed:
+            company.eval_mode = new_state
+            company.save(update_fields=['eval_mode'])
+            try:
+                from accounts.models import audit
+                audit(request.user, "admin.company_eval_mode",
+                      summary=f"Eval mode {'on' if new_state else 'off'} for {company.name}",
+                      target_type="company", target_id=str(company.id), request=request)
+            except Exception:
+                pass
+        return Response({
+            "id": company.id,
+            "name": company.name,
+            "eval_mode": company.eval_mode,
+            "previous_eval_mode": prev,
+            "changed": changed,
+        })
     
     def create(self, request, *args, **kwargs):
         # Create company first

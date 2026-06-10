@@ -212,7 +212,7 @@ class CompanyListSerializer(serializers.ModelSerializer):
             'billing_cycle', 'payment_method', 'owner',
             'logo', 'primary_color', 'custom_domain',
             'industry', 'organization_size', 'timezone', 'locale', 'currency',
-            'onboarding_completed', 'onboarding_completed_at',
+            'onboarding_completed', 'onboarding_completed_at', 'eval_mode',
             'created_at', 'updated_at'
         ]
     
@@ -252,11 +252,11 @@ class CompanyListSerializer(serializers.ModelSerializer):
 
 class CompanyDetailSerializer(serializers.ModelSerializer):
     """Serializer for company detail view"""
-    
+
     users = serializers.SerializerMethodField()
     subscription = serializers.SerializerMethodField()
     usage = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Company
         fields = [
@@ -266,6 +266,10 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
             'industry', 'organization_size', 'timezone', 'locale', 'currency',
             'onboarding_completed', 'onboarding_completed_at', 'onboarding_data',
             'require_2fa',
+            # eval_mode lets the admin UI display the current sandbox-eval
+            # state and PATCH it directly (alternative to the dedicated
+            # POST .../eval-mode/ action, which is also still supported).
+            'eval_mode',
             'created_at', 'updated_at'
         ]
     
@@ -313,15 +317,20 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
 
 class CompanyCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating companies"""
-    
+
     owner_email = serializers.EmailField(write_only=True, required=False)
-    
+
     class Meta:
         model = Company
         fields = [
             'name', 'description', 'owner_email',
             'logo', 'primary_color', 'custom_domain',
             'industry', 'organization_size', 'timezone', 'locale', 'currency',
+            # eval_mode optional on create — defaults to false at the DB
+            # level (migration 0019). Setting true here lets an admin
+            # mint a tenant in sandbox state from day-1 (e.g. when
+            # provisioning a Yanmar-style proeftuin for a pilot).
+            'eval_mode',
         ]
     
     def create(self, validated_data):

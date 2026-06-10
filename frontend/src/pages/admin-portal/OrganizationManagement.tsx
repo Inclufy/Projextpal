@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Building2, Pencil, Search, Users } from "lucide-react";
+import { Loader2, Plus, Building2, Pencil, Search, Users, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 const OrganizationManagement = () => {
   const navigate = useNavigate();
@@ -27,6 +28,21 @@ const OrganizationManagement = () => {
   const openEdit = (o: any) => navigate(`/admin/tenants/${o.id}/edit`);
   const openCreate = () => navigate("/admin/tenants/new");
 
+  const toggleEval = async (o: any) => {
+    const enabled = !o.eval_mode;
+    if (enabled && !window.confirm(`Eval-modus (sandbox) aanzetten voor ${o.name}?\nGeen harde project/team-caps; de proeftuin-banner verschijnt voor gebruikers met een trial.`)) return;
+    try {
+      const r = await fetch(`/api/v1/admin/tenants/${o.id}/eval-mode/`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!r.ok) throw new Error();
+      setOrgs((prev) => prev.map((x) => x.id === o.id ? { ...x, eval_mode: enabled } : x));
+      toast.success(`Eval-modus ${enabled ? "aan" : "uit"} voor ${o.name}`);
+    } catch { toast.error("Eval-modus wijzigen mislukt"); }
+  };
+
   const filtered = search ? orgs.filter(o => o.name?.toLowerCase().includes(search.toLowerCase()) || o.domain?.toLowerCase().includes(search.toLowerCase())) : orgs;
 
   return (
@@ -43,9 +59,15 @@ const OrganizationManagement = () => {
           <Card key={o.id} className="hover:shadow-md transition-shadow"><CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2"><div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center"><Building2 className="h-5 w-5 text-green-600" /></div><div><p className="font-semibold">{o.name}</p>{o.domain && <p className="text-xs text-muted-foreground">{o.domain}</p>}</div></div>
-              <Button variant="ghost" size="sm" onClick={() => openEdit(o)}><Pencil className="h-3.5 w-3.5" /></Button>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" title={o.eval_mode ? "Eval-modus uitzetten" : "Eval-modus (sandbox) aanzetten"} onClick={() => toggleEval(o)}>
+                  <Sparkles className={`h-3.5 w-3.5 ${o.eval_mode ? "text-primary" : "text-muted-foreground"}`} />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => openEdit(o)}><Pencil className="h-3.5 w-3.5" /></Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              {o.eval_mode && <Badge className="text-xs bg-primary/10 text-primary border-primary/20" variant="outline">Sandbox / eval</Badge>}
               {o.plan && <Badge variant="outline" className="text-xs">{typeof o.plan === "object" ? o.plan.name : o.plan}</Badge>}
               {o.users_count != null && <span className="flex items-center gap-1 text-xs text-muted-foreground"><Users className="h-3 w-3" />{o.users_count}</span>}
               {o.is_active !== undefined && <Badge variant={o.is_active ? "default" : "secondary"} className="text-xs">{o.is_active ? "Active" : "Inactive"}</Badge>}
