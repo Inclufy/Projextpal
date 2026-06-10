@@ -1479,7 +1479,7 @@ export function AppSidebar() {
                                     className={({ isActive }) =>
                                       cn("rounded-md transition-all duration-150 text-sm",
                                         isActive
-                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-purple-200"
                                           : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
                                       )
                                     }
@@ -1604,7 +1604,7 @@ export function AppSidebar() {
                                     cn(
                                       "rounded-lg text-[14px]",
                                       isActive
-                                        ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                        ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-purple-200"
                                         : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                                     )
                                   }
@@ -1673,7 +1673,7 @@ export function AppSidebar() {
                                                 cn(
                                                   "rounded-lg text-[14px]",
                                                   isActive
-                                                    ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                                    ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-purple-200"
                                                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                                                 )
                                               }
@@ -1702,7 +1702,7 @@ export function AppSidebar() {
                                       cn(
                                         "rounded-lg text-[14px]",
                                         isActive
-                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                          ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-purple-200"
                                           : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50"
                                       )
                                     }
@@ -1782,7 +1782,7 @@ export function AppSidebar() {
                             className={cn(
                               "rounded-md transition-all duration-150 text-sm w-full",
                               isActive
-                                ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold"
+                                ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-purple-200"
                                 : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
                             )}
                           >
