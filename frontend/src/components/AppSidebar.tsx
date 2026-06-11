@@ -1549,11 +1549,11 @@ export function AppSidebar() {
                                 isLocked
                                   ? "text-muted-foreground"
                                   : on
-                                    ? "text-white"
+                                    ? "!text-white"
                                     : "text-purple-600 dark:text-purple-400"
                               )} />
                               {!isCollapsed && (
-                                <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", on ? "text-white" : "text-purple-700 dark:text-purple-300")}>{item.title}</span>
+                                <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", on ? "!text-white" : "text-purple-700 dark:text-purple-300")}>{item.title}</span>
                               )}
                               {isLocked && !isCollapsed && (
                                 <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
