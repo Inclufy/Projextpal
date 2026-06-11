@@ -66,6 +66,11 @@ frontend/test-results/
 android/
 # ios/  # committed for Xcode Cloud
 
+# Google Play service-account key — NEVER commit
+play-service-account.json
+*-play-service-account.json
+google-play-*.json
+
 # TypeScript
 *.tsbuildinfo
 

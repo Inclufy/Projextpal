@@ -29,6 +29,18 @@
         "appleId": "sami@inclufy.com",
         "ascAppId": "6758148054",
         "appleTeamId": "3238TB3BMF"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./play-service-account.json",
+        "track": "production",
+        "releaseStatus": "draft"
+      }
+    },
+    "alpha": {
+      "android": {
+        "serviceAccountKeyPath": "./play-service-account.json",
+        "track": "alpha",
+        "releaseStatus": "draft"
       }
     }
   }
