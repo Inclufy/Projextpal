@@ -1529,41 +1529,32 @@ export function AppSidebar() {
                             });
                           }
                         }}
-                        className={({ isActive: navIsActive }) =>
-                          cn(
-                            "flex items-center gap-3 rounded-xl",
-                            roomyNav && "gap-3.5 px-3 h-11",
-                            (navIsActive || isActive)
-                              ? "bg-purple-600 text-white font-semibold shadow-sm hover:!bg-purple-700 hover:!text-white"
-                              : "text-purple-700 dark:text-purple-300 hover:!bg-purple-50 hover:!text-purple-800 dark:hover:!bg-purple-900/20",
-                            isLocked && "cursor-not-allowed"
-                          )
-                        }
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl",
+                          roomyNav && "gap-3.5 px-3 h-11",
+                          isActive
+                            ? "bg-purple-600 font-semibold shadow-sm hover:!bg-purple-700"
+                            : "hover:!bg-purple-50 dark:hover:!bg-purple-900/20",
+                          isLocked && "cursor-not-allowed"
+                        )}
                       >
-                        {({ isActive: navIsActive }) => {
-                          const on = navIsActive || isActive;
-                          return (
-                            <>
-                              <item.icon strokeWidth={on ? 2.4 : 2.2} className={cn(
-                                roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
-                                isLocked
-                                  ? "text-muted-foreground"
-                                  : on
-                                    ? "!text-white"
-                                    : "text-purple-600 dark:text-purple-400"
-                              )} />
-                              {!isCollapsed && (
-                                <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", on ? "!text-white" : "text-purple-700 dark:text-purple-300")}>{item.title}</span>
-                              )}
-                              {isLocked && !isCollapsed && (
-                                <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
-                              )}
-                              {on && !isLocked && !isCollapsed && (
-                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />
-                              )}
-                            </>
-                          );
-                        }}
+                        <item.icon strokeWidth={isActive ? 2.4 : 2.2} className={cn(
+                          roomyNav ? "h-[22px] w-[22px] shrink-0" : "h-[18px] w-[18px] shrink-0",
+                          isLocked
+                            ? "text-muted-foreground"
+                            : isActive
+                              ? "!text-white"
+                              : "!text-purple-600 dark:!text-purple-400"
+                        )} />
+                        {!isCollapsed && (
+                          <span className={cn("text-sm font-semibold", roomyNav && "text-[15.5px]", isActive ? "!text-white" : "!text-purple-700 dark:!text-purple-300")}>{item.title}</span>
+                        )}
+                        {isLocked && !isCollapsed && (
+                          <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                        {isActive && !isLocked && !isCollapsed && (
+                          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
