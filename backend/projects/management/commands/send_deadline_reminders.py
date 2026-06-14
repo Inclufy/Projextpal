@@ -152,7 +152,7 @@ class Command(BaseCommand):
                 continue  # nothing relevant for this user → no email
 
             text += ["You can manage email reminders in Settings → Notifications.", "— ProjeXtPal"]
-            subject = f"⏰ Your deadline overview — {total} item(s) due"
+            subject = f"🗓️ Your deadline overview — {total} item(s) due"
             html = self._render_html(
                 title="Your deadline overview",
                 lead=f"Everything due across your projects over the next {opts['days']} days.",
@@ -194,7 +194,7 @@ class Command(BaseCommand):
             from django.template.loader import render_to_string
             return render_to_string("emails/notification.html", {
                 "title": title, "lead": lead, "sections": sections,
-                "closing": closing, "badge": "bell",
+                "closing": closing, "badge": "calendar",
             })
         except Exception:
             return None
