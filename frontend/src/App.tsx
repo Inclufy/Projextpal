@@ -74,6 +74,7 @@ const TrialPending = lazyWithRetry(() => import("./pages/TrialPending"));
 const VerifyEmail = lazyWithRetry(() => import("./pages/VerifyEmail"));
 const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Invite = lazyWithRetry(() => import("./pages/Invite"));
 const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
 const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
 const SecurityPage = lazyWithRetry(() => import("./pages/SecurityPage"));
@@ -653,6 +654,7 @@ const App = () => (
               <Route path="/verify-email/:token" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
               <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
               <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+              <Route path="/invite/:token" element={<Invite />} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />

@@ -14,17 +14,32 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+# Roles allowed to invite teammates (no superadmin dependency). A guest /
+# contributor / reviewer cannot pull new people into the tenant.
+INVITER_ROLES = {'superadmin', 'admin', 'pm', 'program_manager'}
+
+
 class CreateInvitationView(APIView):
     """Create and send team invitation"""
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
+        # Self-service, but scoped: only company admins / (programme) managers
+        # may invite — so it never requires a superadmin, yet a guest can't
+        # invite others.
+        if not request.user.is_superuser and getattr(request.user, 'role', None) not in INVITER_ROLES:
+            return Response(
+                {'error': 'forbidden',
+                 'message': 'Only administrators and (programme) managers can invite team members.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         email = request.data.get('email')
         role = request.data.get('role', 'guest')
         project_id = request.data.get('project_id')
         program_id = request.data.get('program_id')
         message = request.data.get('message', '')
-        
+
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,7 +130,10 @@ class AcceptInvitationView(APIView):
                 'program': invitation.program.name if invitation.program else None,
                 'invited_by': invitation.invited_by.get_full_name() or invitation.invited_by.email,
                 'message': invitation.message,
-                'expires_at': invitation.expires_at
+                'expires_at': invitation.expires_at,
+                # Lets the accept screen show "set a password" (new person) vs a
+                # plain "accept" (the email already has an account).
+                'has_account': User.objects.filter(email__iexact=invitation.email).exists(),
             })
             
         except TeamInvitation.DoesNotExist:
@@ -136,20 +154,87 @@ class AcceptInvitationView(APIView):
             
             if not invitation.can_be_accepted:
                 return Response({'error': 'Invitation cannot be accepted'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Mark as accepted
+
+            email = (invitation.email or '').strip().lower()
+            inviter = invitation.invited_by
+            company = getattr(inviter, 'company', None)
+
+            # Resolve the accepting user — get the existing account or create a
+            # brand-new ACTIVE member in the inviter's company (no superadmin
+            # approval needed). A new person must set a password here.
+            user = User.objects.filter(email__iexact=email).first()
+            created = False
+            if user is None:
+                password = request.data.get('password') or ''
+                if len(password) < 8:
+                    return Response(
+                        {'error': 'password_required',
+                         'message': 'Choose a password of at least 8 characters to create your account.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                role = invitation.role if invitation.role in dict(User.ROLE_CHOICES) else 'guest'
+                user = User.objects.create(
+                    email=email,
+                    username=email,
+                    first_name=(request.data.get('first_name') or '').strip(),
+                    last_name=(request.data.get('last_name') or '').strip(),
+                    company=company,
+                    role=role,
+                    is_active=True,
+                )
+                user.set_password(password)
+                user.save()
+                created = True
+            else:
+                # Existing account: make sure they can log in, and attach to the
+                # inviter's company if they don't have one yet (never override an
+                # existing tenant).
+                changed = []
+                if not user.is_active:
+                    user.is_active = True
+                    changed.append('is_active')
+                if company and getattr(user, 'company_id', None) is None:
+                    user.company = company
+                    changed.append('company')
+                if changed:
+                    user.save(update_fields=changed)
+
+            # Link to the project / programme team (the bit that was a TODO).
+            redirect_to = '/dashboard'
+            if invitation.project_id:
+                from projects.models import ProjectTeam
+                ProjectTeam.objects.get_or_create(
+                    project_id=invitation.project_id, user=user,
+                    defaults={'added_by': inviter, 'is_active': True},
+                )
+                redirect_to = f'/projects/{invitation.project_id}'
+            elif invitation.program_id:
+                from programs.models import ProgramTeam
+                ProgramTeam.objects.get_or_create(
+                    program_id=invitation.program_id, user=user,
+                    defaults={'added_by': inviter, 'role': invitation.role, 'is_active': True},
+                )
+                redirect_to = f'/programs/{invitation.program_id}'
+
+            # Mark accepted.
             invitation.status = 'accepted'
-            invitation.accepted_by = request.user if request.user.is_authenticated else None
+            invitation.accepted_by = user
             invitation.accepted_at = timezone.now()
-            invitation.save()
-            
-            # TODO: Add user to project/program team
-            
+            invitation.save(update_fields=['status', 'accepted_by', 'accepted_at'])
+
+            # Auto-login so the invitee lands straight in the project.
+            from rest_framework_simplejwt.tokens import RefreshToken
+            refresh = RefreshToken.for_user(user)
+
             return Response({
                 'message': 'Invitation accepted successfully',
-                'redirect_to': f'/projects/{invitation.project.id}' if invitation.project else f'/programs/{invitation.program.id}'
+                'created': created,
+                'redirect_to': redirect_to,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {'email': user.email, 'role': user.role},
             })
-            
+
         except TeamInvitation.DoesNotExist:
             return Response({'error': 'Invitation not found'}, status=status.HTTP_404_NOT_FOUND)
 

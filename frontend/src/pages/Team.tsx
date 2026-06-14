@@ -865,25 +865,36 @@ if (!sendInviteEmail) {
 
     try {
       const token = localStorage.getItem("access_token");
-      await fetch(`${API_BASE_URL}/invitations/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          emails,
-          type: inviteType,
-          item_id: parseInt(inviteItemId, 10),
-          role: inviteRole,
-          message: inviteMessage,
-        }),
-      });
+      // Map the UI role to the backend TeamInvitation.ROLE_CHOICES.
+      const roleMap: Record<string, string> = {
+        ADMIN: "admin", PM: "pm", PROGRAM_MANAGER: "program_manager",
+        MEMBER: "guest", REVIEWER: "guest", GUEST: "guest",
+      };
+      const backendRole = roleMap[(inviteRole || "").toUpperCase()] || "guest";
+      const idField = inviteType === "project" ? "project_id" : "program_id";
 
-      // Generate invite link
-      const baseUrl = window.location.origin;
-      const inviteToken = btoa(JSON.stringify({ itemId: inviteItemId, type: inviteType, role: inviteRole }));
-      setGeneratedLink(`${baseUrl}/invite/${inviteToken}`);
+      // One real invitation per email — hits CreateInvitationView, which emails
+      // the invitee and returns the actual signed invite link.
+      let firstLink = "";
+      for (const email of emails) {
+        const res = await fetch(`${API_BASE_URL}/auth/invitations/create/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            email,
+            role: backendRole,
+            [idField]: parseInt(inviteItemId, 10),
+            message: inviteMessage,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'Invite failed');
+        }
+        if (!firstLink && data.invitation_link) firstLink = data.invitation_link;
+      }
+
+      if (firstLink) setGeneratedLink(firstLink);
 
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
 
