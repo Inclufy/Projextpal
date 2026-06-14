@@ -1,11 +1,16 @@
 """
 Deadline reminders — heads-up so deadlines are not missed.
 
-Scheduled (cron) command. For every active project it finds work due *today* or
-*this week* (and overdue), then emails:
-  - each task OWNER (assigned_to) a digest of their own due/overdue tasks
-  - the project PM(s) + creator a project-wide digest (tasks + milestones +
-    meetings + calendar events)
+Scheduled (cron) command. It scans every active project for work due *today* or
+*this week* (and overdue), then sends **one consolidated digest per user** —
+never one email per project. A single recipient gets a single email containing:
+  - "Your tasks": their own due/overdue tasks across all projects (as owner)
+  - one section per project they manage (PM/creator): tasks + milestones +
+    calendar events due in that project
+
+Every recipient is filtered through the user's notification preference
+(Settings → Notifications → email + "deadline"), so anyone can opt out. A
+recipient with nothing due is never emailed (no "0 due" noise).
 
 Methodology-agnostic: tasks/milestones/events hang off the project regardless of
 methodology, so it works for scrum, kanban, waterfall, prince2, agile, lss, hybrid.
@@ -19,6 +24,7 @@ Cron (daily 07:00):
                python manage.py send_deadline_reminders
 """
 
+from collections import defaultdict
 from datetime import timedelta
 
 from django.conf import settings
@@ -31,7 +37,7 @@ INACTIVE = ["closed", "completed", "cancelled", "archived"]
 
 
 class Command(BaseCommand):
-    help = "Email deadline reminders to task owners + PMs for work due this week."
+    help = "Email a single consolidated deadline digest per user for work due this week."
 
     def add_arguments(self, parser):
         parser.add_argument("--days", type=int, default=7, help="Look-ahead window in days (default 7).")
@@ -39,7 +45,7 @@ class Command(BaseCommand):
         parser.add_argument("--dry-run", action="store_true", help="Print what would be sent; send nothing.")
 
     def handle(self, *args, **opts):
-        from projects.models import Task, Milestone, Project, ProjectEvent
+        from projects.models import Task, Milestone, Project, ProjectEvent, ProjectTeam
 
         today = timezone.now().date()
         horizon = today + timedelta(days=opts["days"])
@@ -47,19 +53,20 @@ class Command(BaseCommand):
         include_overdue = not opts["no_overdue"]
 
         def in_window(d):
-            if d is None:
-                return False
-            if d > horizon:
+            if d is None or d > horizon:
                 return False
             if d < today and not include_overdue:
                 return False
             return True
 
-        emails_sent = 0
-        projects = Project.objects.exclude(status__in=INACTIVE)
+        # Accumulate everything per user, then send ONE email each.
+        #   agg[user] = {"own": [(project, task), ...],
+        #                "managed": {project: {"tasks": [...], "milestones": [...], "events": [...]}}}
+        # User model instances hash/equal by pk, so the same person surfaced via
+        # different queries collapses into one bucket.
+        agg = defaultdict(lambda: {"own": [], "managed": {}})
 
-        for project in projects.iterator():
-            # ---- gather due work -------------------------------------------------
+        for project in Project.objects.exclude(status__in=INACTIVE).iterator():
             tasks = [
                 t for t in Task.objects.filter(milestone__project=project)
                 .exclude(status="done").select_related("assigned_to", "milestone")
@@ -74,103 +81,94 @@ class Command(BaseCommand):
             if not (tasks or milestones or events):
                 continue
 
-            # ---- owner digests ---------------------------------------------------
-            by_owner = {}
+            # Task owners → their own-tasks bucket.
             for t in tasks:
                 if t.assigned_to and getattr(t.assigned_to, "email", None):
-                    by_owner.setdefault(t.assigned_to, []).append(t)
+                    agg[t.assigned_to]["own"].append((project, t))
 
-            for owner, owner_tasks in by_owner.items():
-                # Respect the owner's email preference for deadline reminders.
-                try:
-                    from notifications.models import should_email
-                    if not should_email(owner, "deadline"):
-                        continue
-                except Exception:
-                    pass
-                subject = f"⏰ {len(owner_tasks)} task(s) due in {project.name}"
-                lines = [f"Hi {owner.first_name or owner.email},", "",
-                         f"You have {len(owner_tasks)} task(s) due soon in '{project.name}':", ""]
-                rows = []
-                for t in sorted(owner_tasks, key=lambda x: x.due_date):
-                    overdue = t.due_date < today
-                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
-                    lines.append(f"  • {t.title}  [{flag}]  ({t.status})")
-                    rows.append({"text": t.title, "tag": flag, "danger": overdue})
-                lines += ["", "Please update status or flag blockers so deadlines aren't missed.",
-                          "— ProjeXtPal"]
-                html = self._render_html(
-                    title=f"{len(owner_tasks)} task(s) due in {project.name}",
-                    lead=f"Hi {owner.first_name or ''}, here is what's due soon in '{project.name}'.",
-                    sections=[{"heading": f"Your tasks ({len(owner_tasks)})", "rows": rows}],
-                    closing="Please update status or flag blockers so deadlines aren't missed.",
-                )
-                if self._send(owner.email, subject, "\n".join(lines), dry, html=html):
-                    emails_sent += 1
-                if dry:
-                    self.stdout.write(f"  [dry] owner {owner.email}: {len(owner_tasks)} task(s)")
+            # PM-role team members + the project creator → managed-project bucket.
+            managers = {}
+            for tm in ProjectTeam.objects.filter(project=project, is_active=True).select_related("user"):
+                u = tm.user
+                if getattr(u, "role", None) in PM_ROLES and getattr(u, "email", None):
+                    managers[u.pk] = u
+            creator = getattr(project, "created_by", None)
+            if creator and getattr(creator, "email", None):
+                managers[creator.pk] = creator
+            for u in managers.values():
+                agg[u]["managed"][project] = {"tasks": tasks, "milestones": milestones, "events": events}
 
-            # ---- PM / creator project digest ------------------------------------
-            recipients = set()
+        emails_sent = 0
+        for user, data in agg.items():
+            # Respect the recipient's email preference (master switch + "deadline"
+            # category). Applies to EVERY recipient — owners and PMs alike.
             try:
-                from projects.models import ProjectTeam
-                for tm in ProjectTeam.objects.filter(project=project, is_active=True).select_related("user"):
-                    if getattr(tm.user, "role", None) in PM_ROLES and getattr(tm.user, "email", None):
-                        recipients.add(tm.user.email)
+                from notifications.models import should_email
+                if not should_email(user, "deadline"):
+                    continue
             except Exception:
                 pass
-            if getattr(project, "created_by", None) and getattr(project.created_by, "email", None):
-                recipients.add(project.created_by.email)
 
-            if recipients:
-                subject = f"⏰ Deadline overview — {project.name} ({len(tasks)} task(s) due)"
-                lines = [f"Deadline overview for '{project.name}' (next {opts['days']} days):", ""]
-                sections = []
-                if tasks:
-                    lines.append(f"Tasks ({len(tasks)}):")
-                    trows = []
-                    for t in sorted(tasks, key=lambda x: x.due_date):
-                        who = (t.assigned_to.first_name or t.assigned_to.email) if t.assigned_to else "unassigned"
-                        overdue = t.due_date < today
-                        flag = "OVERDUE" if overdue else f"due {t.due_date}"
-                        lines.append(f"  • {t.title} — {who} [{flag}]")
-                        trows.append({"text": f"{t.title} — {who}", "tag": flag, "danger": overdue})
-                    lines.append("")
-                    sections.append({"heading": f"Tasks ({len(tasks)})", "rows": trows})
-                if milestones:
-                    lines.append(f"Milestones ({len(milestones)}):")
-                    mrows = []
-                    for m in sorted(milestones, key=lambda x: x.end_date):
-                        overdue = m.end_date < today
-                        flag = "OVERDUE" if overdue else f"due {m.end_date}"
-                        lines.append(f"  • {m.name} [{flag}]")
-                        mrows.append({"text": m.name, "tag": flag, "danger": overdue})
-                    lines.append("")
-                    sections.append({"heading": f"Milestones ({len(milestones)})", "rows": mrows})
-                if events:
-                    lines.append(f"Calendar ({len(events)}):")
-                    erows = []
-                    for e in sorted(events, key=lambda x: x.start_date):
-                        lines.append(f"  • {e.title} — {e.start_date}")
-                        erows.append({"text": e.title, "tag": str(e.start_date), "danger": False})
-                    lines.append("")
-                    sections.append({"heading": f"Calendar ({len(events)})", "rows": erows})
-                lines += ["Keep the team ahead of these deadlines.", "— ProjeXtPal"]
-                body = "\n".join(lines)
-                html = self._render_html(
-                    title=f"Deadline overview — {project.name}",
-                    lead=f"What's due in '{project.name}' over the next {opts['days']} days.",
-                    sections=sections,
-                    closing="Keep the team ahead of these deadlines.",
+            own = data["own"]
+            managed = data["managed"]
+
+            sections = []
+            text = [f"Hi {user.first_name or user.email},", "",
+                    f"Your deadline overview for the next {opts['days']} days:", ""]
+            total = 0
+
+            if own:
+                rows = []
+                for project, t in sorted(own, key=lambda pt: (pt[1].due_date or today)):
+                    overdue = t.due_date < today
+                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
+                    rows.append({"text": f"{t.title} — {project.name}", "tag": flag, "danger": overdue})
+                    text.append(f"  • {t.title} — {project.name} [{flag}]")
+                sections.append({"heading": f"Your tasks ({len(own)})", "rows": rows})
+                total += len(own)
+                text.append("")
+
+            for project, d in managed.items():
+                rows = []
+                for t in sorted(d["tasks"], key=lambda x: x.due_date):
+                    who = (t.assigned_to.first_name or t.assigned_to.email) if t.assigned_to else "unassigned"
+                    overdue = t.due_date < today
+                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
+                    rows.append({"text": f"{t.title} — {who}", "tag": flag, "danger": overdue})
+                for m in sorted(d["milestones"], key=lambda x: x.end_date):
+                    overdue = m.end_date < today
+                    flag = "OVERDUE" if overdue else f"due {m.end_date}"
+                    rows.append({"text": f"Milestone: {m.name}", "tag": flag, "danger": overdue})
+                for e in sorted(d["events"], key=lambda x: x.start_date):
+                    rows.append({"text": f"Calendar: {e.title}", "tag": str(e.start_date), "danger": False})
+                if rows:
+                    sections.append({"heading": f"{project.name} ({len(rows)})", "rows": rows})
+                    total += len(rows)
+                    text.append(f"{project.name}:")
+                    text += [f"  • {r['text']} [{r['tag']}]" for r in rows]
+                    text.append("")
+
+            if not sections:
+                continue  # nothing relevant for this user → no email
+
+            text += ["You can manage email reminders in Settings → Notifications.", "— ProjeXtPal"]
+            subject = f"⏰ Your deadline overview — {total} item(s) due"
+            html = self._render_html(
+                title="Your deadline overview",
+                lead=f"Everything due across your projects over the next {opts['days']} days.",
+                sections=sections,
+                closing="You can manage email reminders in Settings → Notifications.",
+            )
+            if self._send(user.email, subject, "\n".join(text), dry, html=html):
+                emails_sent += 1
+            if dry:
+                self.stdout.write(
+                    f"  [dry] {user.email}: {total} item(s) "
+                    f"({len(own)} own, {len(managed)} managed project(s))"
                 )
-                for addr in recipients:
-                    if self._send(addr, subject, body, dry, html=html):
-                        emails_sent += 1
-                if dry:
-                    self.stdout.write(f"  [dry] PM digest -> {', '.join(recipients)} ({len(tasks)} tasks, {len(milestones)} ms)")
 
         verb = "Would send" if dry else "Sent"
-        self.stdout.write(self.style.SUCCESS(f"{verb} {emails_sent} reminder email(s)."))
+        self.stdout.write(self.style.SUCCESS(f"{verb} {emails_sent} consolidated reminder email(s)."))
 
     def _send(self, to_email, subject, body, dry, html=None):
         if dry:
