@@ -14,7 +14,9 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Django's own admin lives at /django-admin/ so the React admin portal can
+    # own /admin/* (deep links / refresh would otherwise hit Django and 404).
+    path("django-admin/", admin.site.urls),
     path("health/", include("health.urls")),
     # Mobile / web clients hit /api/v1/health/; keep the legacy /health/
     # mount so ops tooling (load balancers, uptime checks) doesn't break.
