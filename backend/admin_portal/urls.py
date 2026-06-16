@@ -28,6 +28,9 @@ from .views import (
 # Stateless quote (offerte) email endpoint
 from .quote_views import SendQuoteView
 
+# Stateless cross-app finance document push endpoint
+from .finance_push_views import FinancePushView
+
 # Import registration views
 from accounts.views import RegistrationsView
 
@@ -91,6 +94,9 @@ urlpatterns = [
 
     # Quote (offerte) email — stateless, no model
     path('quotes/send/', SendQuoteView.as_view(), name='admin-quotes-send'),
+
+    # Finance cross-app document push — stateless, no model
+    path('finance/push/', FinancePushView.as_view(), name='admin-finance-push'),
 
     # Project import
     path('projects/import/', ProjectImportView.as_view(), name='admin-projects-import'),

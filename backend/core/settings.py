@@ -568,6 +568,14 @@ INCLUFY_FINANCE_PUSH_ENABLED = (
     os.environ.get("INCLUFY_FINANCE_PUSH_ENABLED", "false").lower() == "true"
 )
 
+# Cross-app financial-document push (quotes/invoices/orders/receipts) →
+# Inclufy Finance's generic inbound webhook (cross-app-webhook-receive).
+# See docs/cross-app-financial-documents.md. URL points at the Finance edge
+# function; SECRET must match the projextpal row in Finance webhook_endpoints.
+FINANCE_CROSS_APP_URL = os.environ.get("FINANCE_CROSS_APP_URL", "")
+FINANCE_CROSS_APP_SECRET = os.environ.get("FINANCE_CROSS_APP_SECRET", "")
+FINANCE_ORG_ID = os.environ.get("FINANCE_ORG_ID", "")
+
 
 # ---------------------------------------------------------------------------
 # Azure / Entra ID Single Sign-On (OIDC) — OFF unless fully configured.

@@ -79,6 +79,41 @@ const PricingConfigurator = () => {
     return { lineItems: items, monthly: m, setup: s, yearOne: y1, perUserYear: users > 0 ? (m * 12) / users : 0 };
   }, [tier, users, hosting, addonSkus, qty]);
 
+  const toCents = (n: number) => Math.round(n * 100);
+
+  const buildFinanceDocument = () => ({
+    external_id: `PXP-Q-${Date.now()}`,
+    source: 'projextpal',
+    origin_url: window.location.href,
+    currency: 'EUR',
+    issued_at: new Date().toISOString(),
+    valid_until: null,
+    customer: { name: custCompany || custName, email: custEmail, contact: custName },
+    lines: lineItems.map((l) => ({
+      sku: l.sku, name: l.name, qty: l.qty, unit: l.unit,
+      unit_price_cents: toCents(l.unit_price), line_total_cents: toCents(l.line_total),
+      period: l.period, tax_rate: 21,
+    })),
+    // Year-1 contract value (recurring×12 + one-off), ex/incl 21% btw.
+    totals: { subtotal_cents: toCents(yearOne), tax_cents: toCents(yearOne * 0.21), total_cents: toCents(yearOne * 1.21) },
+    notes,
+  });
+
+  const pushToFinance = async () => {
+    if (!custEmail) { toast.error('Vul een e-mailadres in.'); return; }
+    setSending(true);
+    try {
+      const r: any = await api.post('/admin/finance/push/', { doc_type: 'quote', document: buildFinanceDocument() });
+      if (r?.ok === false) throw new Error(r.error || 'Finance weigerde');
+      toast.success('Offerte doorgezet naar Inclufy Finance');
+      setSendOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message || 'Naar Finance mislukt');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const sendToCustomer = async () => {
     if (!custEmail) { toast.error('Vul een e-mailadres in.'); return; }
     setSending(true);
@@ -196,7 +231,7 @@ const PricingConfigurator = () => {
               <Button className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white" onClick={() => setSendOpen(true)}>
                 <Send className="h-4 w-4 mr-2" />Mail offerte naar klant
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => toast.info('Koppeling met Inclufy Finance / Offertes volgt (Deel B).')}>
+              <Button variant="outline" className="w-full" onClick={() => setSendOpen(true)}>
                 <FileText className="h-4 w-4 mr-2" />Naar Inclufy Finance
               </Button>
             </div>
@@ -216,10 +251,13 @@ const PricingConfigurator = () => {
             <div className="space-y-1"><Label>Bedrijf</Label><Input value={custCompany} onChange={(e) => setCustCompany(e.target.value)} placeholder="Bedrijf BV" /></div>
             <div className="space-y-1"><Label>Notitie (optioneel)</Label><Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Persoonlijk bericht…" /></div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setSendOpen(false)}>Annuleren</Button>
+            <Button variant="outline" onClick={pushToFinance} disabled={sending}>
+              <FileText className="h-4 w-4 mr-2" />Naar Finance
+            </Button>
             <Button onClick={sendToCustomer} disabled={sending} className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white">
-              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}Verstuur offerte
+              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}Mail naar klant
             </Button>
           </DialogFooter>
         </DialogContent>
