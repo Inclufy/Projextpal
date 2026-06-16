@@ -345,6 +345,8 @@ const BiometricAuth = lazyWithRetry(() => import("./pages/settings/BiometricAuth
 const AdminTrainingManagement = lazyWithRetry(() => import('@/pages/admin-portal/AdminTrainingManagement'));
 const InvoiceManagement = lazyWithRetry(() => import('@/pages/admin-portal/InvoiceManagement'));
 const SubscriptionManagement = lazyWithRetry(() => import('@/pages/admin-portal/SubscriptionManagement'));
+const PricingConfigurator = lazyWithRetry(() => import('@/pages/admin-portal/PricingConfigurator'));
+const SubscriptionPlans = lazyWithRetry(() => import('@/pages/admin-portal/SubscriptionPlans'));
 const MonitoringDashboard = lazyWithRetry(() => import('@/pages/admin-portal/MonitoringDashboard'));
 
 // ============================================
@@ -684,6 +686,8 @@ const App = () => (
                 <Route path="training" element={<AdminTrainingManagement />} />
                 <Route path="invoices" element={<InvoiceManagement />} />
                 <Route path="subscriptions" element={<SubscriptionManagement />} />
+                <Route path="pricing-configurator" element={<PricingConfigurator />} />
+                <Route path="subscription-plans" element={<SubscriptionPlans />} />
                 <Route path="demo-requests" element={<DemoRequests />} />
                 <Route path="monitoring" element={<MonitoringDashboard />} />
               </Route>

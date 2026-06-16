@@ -32,6 +32,7 @@ import {
   Layers,
   UserPlus,
   Calendar,
+  Calculator,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -132,12 +133,6 @@ const navigation: NavSection[] = [
         icon: Zap,
       },
       {
-        title: 'Plans & Pricing',
-        titleNL: 'Abonnementen',
-        href: '/admin/subscriptions',
-        icon: CreditCard,
-      },
-      {
         title: 'Demo Requests',
         titleNL: 'Demo Verzoeken',
         href: '/admin/demo-requests',
@@ -154,6 +149,30 @@ const navigation: NavSection[] = [
         titleNL: 'Trainingen',
         href: '/admin/training',
         icon: GraduationCap,
+      },
+    ],
+  },
+  {
+    title: 'Billing',
+    titleNL: 'Facturatie',
+    items: [
+      {
+        title: 'Pricing configurator',
+        titleNL: 'Prijzen configurator',
+        href: '/admin/pricing-configurator',
+        icon: Calculator,
+      },
+      {
+        title: 'Subscription',
+        titleNL: 'Abonnementen',
+        href: '/admin/subscriptions',
+        icon: CreditCard,
+      },
+      {
+        title: 'Subscription plans',
+        titleNL: 'Abonnementsplannen',
+        href: '/admin/subscription-plans',
+        icon: Layers,
       },
       {
         title: 'Invoices',

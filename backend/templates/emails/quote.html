@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Je offerte — ProjeXtPal</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);padding:32px 40px;text-align:center;border-radius:16px 16px 0 0;">
+      <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">ProjeXtPal</h1>
+      <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:14px;">Project Management Excellence</p>
+    </div>
+
+    <!-- Content -->
+    <div style="background:#fff;padding:40px;">
+      {% include "emails/_icon_badge.html" with variant="doc" %}
+
+      <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#111827;text-align:center;">Je offerte — ProjeXtPal</h2>
+      <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;text-align:center;">Een voorstel op maat{% if company_name %} voor {{ company_name }}{% endif %}.</p>
+
+      <p style="margin:0 0 8px;font-size:15px;color:#374151;line-height:1.6;">Beste{% if customer_name %} {{ customer_name }}{% endif %},</p>
+      <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">Hartelijk dank voor je interesse in ProjeXtPal. Hieronder vind je een overzicht van het voorstel{% if company_name %} voor <b>{{ company_name }}</b>{% endif %}. We helpen je graag verder met al je vragen.</p>
+
+      <!-- Line items -->
+      {% if line_items %}
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.04em;">Specificatie</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;border:1px solid #F1F1F4;border-radius:10px;overflow:hidden;margin:0 0 24px;">
+        <tr style="background:#F3F0FF;">
+          <th align="left"  style="padding:10px 12px;font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:0.04em;">Omschrijving</th>
+          <th align="center" style="padding:10px 12px;font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:0.04em;">Aantal</th>
+          <th align="right" style="padding:10px 12px;font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:0.04em;">Stukprijs</th>
+          <th align="right" style="padding:10px 12px;font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:0.04em;">Totaal</th>
+        </tr>
+        {% for item in line_items %}
+        <tr style="background:{% cycle '#FFFFFF' '#FAFAFB' %};">
+          <td align="left" style="padding:12px;border-top:1px solid #F1F1F4;font-size:14px;color:#111827;">
+            <span style="font-weight:600;">{{ item.name }}</span>
+            {% if item.sku %}<br><span style="font-size:11px;color:#9CA3AF;">{{ item.sku }}</span>{% endif %}
+          </td>
+          <td align="center" style="padding:12px;border-top:1px solid #F1F1F4;font-size:14px;color:#4B5563;white-space:nowrap;">{{ item.qty }}{% if item.unit_label %} {{ item.unit_label }}{% endif %}</td>
+          <td align="right" style="padding:12px;border-top:1px solid #F1F1F4;font-size:14px;color:#4B5563;white-space:nowrap;">{{ item.unit_price_fmt }}{% if item.period %}<span style="color:#9CA3AF;">{{ item.period }}</span>{% endif %}</td>
+          <td align="right" style="padding:12px;border-top:1px solid #F1F1F4;font-size:14px;color:#111827;font-weight:700;white-space:nowrap;">{{ item.line_total_fmt }}{% if item.period %}<span style="color:#9CA3AF;font-weight:400;">{{ item.period }}</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+
+      <!-- Totals -->
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.04em;">Totalen</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background:#FAFAFB;border:1px solid #F1F1F4;border-radius:10px;overflow:hidden;margin:0 0 24px;">
+        {% if totals.monthly_recurring_fmt %}
+        <tr>
+          <td style="padding:11px 14px;font-size:14px;color:#4B5563;">Maandfee (terugkerend)</td>
+          <td align="right" style="padding:11px 14px;font-size:14px;color:#111827;font-weight:600;white-space:nowrap;">{{ totals.monthly_recurring_fmt }} <span style="color:#9CA3AF;font-weight:400;">/maand</span></td>
+        </tr>{% endif %}
+        {% if totals.one_time_setup_fmt %}
+        <tr>
+          <td style="padding:11px 14px;border-top:1px solid #F1F1F4;font-size:14px;color:#4B5563;">Eenmalige setup</td>
+          <td align="right" style="padding:11px 14px;border-top:1px solid #F1F1F4;font-size:14px;color:#111827;font-weight:600;white-space:nowrap;">{{ totals.one_time_setup_fmt }}</td>
+        </tr>{% endif %}
+        {% if totals.per_user_year_fmt %}
+        <tr>
+          <td style="padding:11px 14px;border-top:1px solid #F1F1F4;font-size:14px;color:#4B5563;">Per gebruiker / jaar</td>
+          <td align="right" style="padding:11px 14px;border-top:1px solid #F1F1F4;font-size:14px;color:#111827;font-weight:600;white-space:nowrap;">{{ totals.per_user_year_fmt }}</td>
+        </tr>{% endif %}
+        {% if totals.year_one_total_fmt %}
+        <tr style="background:linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);">
+          <td style="padding:14px;font-size:15px;color:#fff;font-weight:700;">Jaar 1 totaal</td>
+          <td align="right" style="padding:14px;font-size:17px;color:#fff;font-weight:800;white-space:nowrap;">{{ totals.year_one_total_fmt }}</td>
+        </tr>{% endif %}
+      </table>
+
+      <!-- Notes -->
+      {% if notes %}
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.04em;">Opmerkingen</p>
+      <div style="margin:0 0 24px;padding:14px 16px;background:#FAFAFB;border:1px solid #F1F1F4;border-radius:10px;font-size:14px;color:#4B5563;line-height:1.6;white-space:pre-line;">{{ notes }}</div>
+      {% endif %}
+
+      <p style="margin:24px 0 0;font-size:14px;color:#6B7280;line-height:1.6;">Heb je vragen of wil je dit voorstel bespreken? Reageer gerust op deze e-mail — we denken graag met je mee.</p>
+      <p style="margin:16px 0 0;font-size:14px;color:#374151;line-height:1.6;">Met vriendelijke groet,<br><b>Het ProjeXtPal-team</b></p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#F9FAFB;padding:24px 40px;text-align:center;border-radius:0 0 16px 16px;">
+      <p style="margin:0 0 6px;font-size:13px;color:#6B7280;"><strong>ProjeXtPal</strong> — Project Management Excellence</p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;">Deze offerte is vrijblijvend. Prijzen zijn exclusief btw, tenzij anders vermeld.</p>
+    </div>
+  </div>
+</body>
+</html>

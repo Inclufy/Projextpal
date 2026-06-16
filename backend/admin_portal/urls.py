@@ -25,6 +25,9 @@ from .views import (
     TimesheetApiView,
 )
 
+# Stateless quote (offerte) email endpoint
+from .quote_views import SendQuoteView
+
 # Import registration views
 from accounts.views import RegistrationsView
 
@@ -85,6 +88,9 @@ urlpatterns = [
 
     # Analytics
     path('training/analytics/', academy_views.admin_get_analytics, name='admin-training-analytics'),
+
+    # Quote (offerte) email — stateless, no model
+    path('quotes/send/', SendQuoteView.as_view(), name='admin-quotes-send'),
 
     # Project import
     path('projects/import/', ProjectImportView.as_view(), name='admin-projects-import'),
