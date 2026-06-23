@@ -35,7 +35,7 @@ langgraph-checkpoint==2.1.1
 langgraph-prebuilt==0.6.4
 langgraph-sdk==0.2.9
 langsmith==0.4.27
-msgpack==1.1.1
+msgpack==1.2.1
 openai==2.1.0
 orjson==3.11.3
 ormsgpack==1.10.0
