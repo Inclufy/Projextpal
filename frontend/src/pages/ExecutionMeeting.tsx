@@ -17,6 +17,12 @@ const MEETING_TYPES: [string, string][] = [["recurring", "Recurring"], ["onetime
 const FREQUENCIES: [string, string][] = [["weekly", "Weekly"], ["biweekly", "Bi-weekly"], ["monthly", "Monthly"]];
 const STATUSES = ["scheduled", "completed", "cancelled"];
 
+// shadcn SelectItem can't have an empty value, so use a sentinel for "unassigned".
+const NONE = "__none__";
+// /api/v1/auth/company-users/members/ returns { id, name, email, ... }.
+type Member = { id: number; name?: string; email?: string };
+const memberLabel = (u: Member) => u.name || u.email || `#${u.id}`;
+
 const emptyForm = {
   name: "", type: "recurring", frequency: "weekly", date: "", time: "09:00", location: "", status: "scheduled",
   customer_supplier: "", yanmar_meeting_room: "", previous_meeting: "",
@@ -34,7 +40,8 @@ const ExecutionMeeting = () => {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [newAtt, setNewAtt] = useState({ name_text: "", presence: "invited" });
-  const [newAct, setNewAct] = useState({ subject: "", pic_text: "", action_due: "" });
+  const [newAct, setNewAct] = useState({ subject: "", pic_user: "", action_due: "" });
+  const [members, setMembers] = useState<Member[]>([]);
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const [importing, setImporting] = useState(false);
@@ -191,13 +198,17 @@ const ExecutionMeeting = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/v1/communication/meetings/?project=${id}`, { headers });
+      const [res, mres] = await Promise.all([
+        fetch(`/api/v1/communication/meetings/?project=${id}`, { headers }),
+        fetch(`/api/v1/auth/company-users/members/`, { headers }),
+      ]);
       if (res.ok) {
         const data = await res.json();
         const list = Array.isArray(data) ? data : data.results || [];
         setMeetings(list);
         setSelected((cur: any) => cur ? list.find((m: any) => String(m.id) === String(cur.id)) || null : null);
       }
+      if (mres.ok) { const d = await mres.json(); setMembers(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -284,11 +295,13 @@ const ExecutionMeeting = () => {
   // MM-02 action items
   const addAction = async () => {
     if (!selected || !newAct.subject.trim()) return;
+    const body: any = { meeting: selected.id, subject: newAct.subject, action_due: newAct.action_due, status: "open" };
+    if (newAct.pic_user) body.pic_user = parseInt(newAct.pic_user);
     const res = await fetch(`/api/v1/communication/meeting-action-items/`, {
       method: "POST", headers: jsonHeaders,
-      body: JSON.stringify({ meeting: selected.id, subject: newAct.subject, pic_text: newAct.pic_text, action_due: newAct.action_due, status: "open" }),
+      body: JSON.stringify(body),
     });
-    if (res.ok) { setNewAct({ subject: "", pic_text: "", action_due: "" }); fetchData(); } else toast.error(pt("Save failed"));
+    if (res.ok) { setNewAct({ subject: "", pic_user: "", action_due: "" }); fetchData(); } else toast.error(pt("Save failed"));
   };
   const toggleAction = async (it: any) => {
     const res = await fetch(`/api/v1/communication/meeting-action-items/${it.id}/`, {
@@ -451,7 +464,13 @@ const ExecutionMeeting = () => {
                   )}
                   <div className="flex gap-2">
                     <Input className="h-8 flex-1" placeholder={pt("Subject")} value={newAct.subject} onChange={(e) => setNewAct({ ...newAct, subject: e.target.value })} />
-                    <Input className="h-8 w-[150px]" placeholder={pt("Person In Charge")} title={pt("PIC = Person In Charge")} value={newAct.pic_text} onChange={(e) => setNewAct({ ...newAct, pic_text: e.target.value })} />
+                    <Select value={newAct.pic_user || NONE} onValueChange={(v) => setNewAct({ ...newAct, pic_user: v === NONE ? "" : v })}>
+                      <SelectTrigger className="h-8 w-[150px]" title={pt("PIC = Person In Charge")}><SelectValue placeholder={pt("Person In Charge")} /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NONE}>{pt("Unassigned")}</SelectItem>
+                        {members.map((u) => <SelectItem key={u.id} value={String(u.id)}>{memberLabel(u)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                     <Input className="h-8 w-[150px]" type="date" title={pt("Due date")} value={newAct.action_due} onChange={(e) => setNewAct({ ...newAct, action_due: e.target.value })} />
                     <Button size="sm" onClick={addAction}><Plus className="h-4 w-4" /></Button>
                   </div>

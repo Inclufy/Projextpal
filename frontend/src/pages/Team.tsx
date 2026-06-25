@@ -451,6 +451,28 @@ export default function Team() {
   const [inviteType, setInviteType] = useState<"project" | "program">("project");
   const [generatedLink, setGeneratedLink] = useState("");
 
+  // Existing-member picker state (add a company member straight onto a team)
+  const [inviteMode, setInviteMode] = useState<"email" | "existing">("email");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
+  const [existingTeamUserIds, setExistingTeamUserIds] = useState<number[]>([]);
+  const [loadingTeam, setLoadingTeam] = useState(false);
+  const [addingMembers, setAddingMembers] = useState(false);
+
+  // Company members (same endpoint PlanningTasks.tsx uses) — id + name + email
+  const { data: companyMembers = [] } = useQuery<{ id: number; name: string; email: string }[]>({
+    queryKey: ['company-members'],
+    queryFn: async () => {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_BASE_URL}/auth/company-users/members/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : data.results || [];
+    },
+  });
+
   // AI-related state
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [isAITeamBuilderOpen, setIsAITeamBuilderOpen] = useState(false);
@@ -911,6 +933,100 @@ if (!sendInviteEmail) {
     }
   };
 
+  // Load the current team of the selected project/programme so we can hide
+  // members that are already on it from the picker.
+  const loadExistingTeam = async (type: "project" | "program", itemId: string) => {
+    if (!itemId) {
+      setExistingTeamUserIds([]);
+      return;
+    }
+    setLoadingTeam(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const base = type === "project" ? "projects" : "programs";
+      const res = await fetch(`${API_BASE_URL}/${base}/${itemId}/team/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : data.results || [];
+        // ProjectTeam/ProgramTeam serializers expose the user id on `user`.
+        setExistingTeamUserIds(rows.map((r: any) => Number(r.user)).filter((n: number) => !Number.isNaN(n)));
+      } else {
+        setExistingTeamUserIds([]);
+      }
+    } catch {
+      setExistingTeamUserIds([]);
+    } finally {
+      setLoadingTeam(false);
+    }
+  };
+
+  // Add the selected existing company members straight onto the chosen team.
+  const handleAddExistingMembers = async () => {
+    if (!inviteItemId) {
+      toast({
+        title: "Selectie verplicht",
+        description: inviteType === "project" ? "Selecteer een project." : "Selecteer een programma.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (selectedMemberIds.length === 0) {
+      toast({
+        title: "Geen leden geselecteerd",
+        description: "Selecteer minstens één teamlid om toe te voegen.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingMembers(true);
+    const token = localStorage.getItem("access_token");
+    const base = inviteType === "project" ? "projects" : "programs";
+    let added = 0;
+    const failed: string[] = [];
+
+    for (const userId of selectedMemberIds) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/${base}/${inviteItemId}/team/add/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ user_id: userId, role: inviteRole || "" }),
+        });
+        if (res.ok) {
+          added += 1;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          failed.push(data.error || data.detail || `ID ${userId}`);
+        }
+      } catch {
+        failed.push(`ID ${userId}`);
+      }
+    }
+
+    setAddingMembers(false);
+
+    // Refetch team members + refresh the picker's exclusion list.
+    queryClient.invalidateQueries({ queryKey: ['team-members'] });
+    await loadExistingTeam(inviteType, inviteItemId);
+    setSelectedMemberIds([]);
+
+    if (added > 0) {
+      toast({
+        title: "Leden toegevoegd",
+        description: `${added} bestaand lid/leden toegevoegd aan het team.`,
+      });
+    }
+    if (failed.length > 0) {
+      toast({
+        title: added > 0 ? "Sommige leden niet toegevoegd" : "Toevoegen mislukt",
+        description: failed.join(", "),
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCopyLink = () => {
     navigator.clipboard.writeText(generatedLink);
     toast({
@@ -925,6 +1041,10 @@ if (!sendInviteEmail) {
     setInviteItemId("");
     setInviteRole("");
     setGeneratedLink("");
+    setInviteMode("email");
+    setMemberSearch("");
+    setSelectedMemberIds([]);
+    setExistingTeamUserIds([]);
   };
 
   // AI Functions (simplified - would call backend AI endpoints in production)
@@ -1747,6 +1867,8 @@ if (!sendInviteEmail) {
               setInviteType(v as "project" | "program");
               setInviteItemId("");
               setInviteRole("");
+              setSelectedMemberIds([]);
+              setExistingTeamUserIds([]);
             }}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="project" className="gap-2">
@@ -1760,13 +1882,33 @@ if (!sendInviteEmail) {
               </TabsList>
             </Tabs>
 
+            {/* Mode: nieuw lid via e-mail uitnodigen vs een bestaand bedrijfslid direct toevoegen */}
+            <Tabs value={inviteMode} onValueChange={(v) => {
+              setInviteMode(v as "email" | "existing");
+              setSelectedMemberIds([]);
+              setGeneratedLink("");
+            }}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="email" className="gap-2">
+                  <Mail className="h-4 w-4" />
+                  Nieuw via e-mail
+                </TabsTrigger>
+                <TabsTrigger value="existing" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  Bestaand lid toevoegen
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
             <div className="space-y-2">
               <Label>{inviteType === "project" ? pt("Project") : pt("Program")} *</Label>
-              <Select 
-                value={inviteItemId} 
+              <Select
+                value={inviteItemId}
                 onValueChange={(value) => {
                   setInviteItemId(value);
                   setInviteRole("");
+                  setSelectedMemberIds([]);
+                  loadExistingTeam(inviteType, value);
                 }}
               >
                 <SelectTrigger>
@@ -1788,7 +1930,7 @@ if (!sendInviteEmail) {
             </div>
 
             <div className="space-y-2">
-              <Label>{pt("Role")} *</Label>
+              <Label>{pt("Role")} {inviteMode === "email" ? "*" : <span className="text-muted-foreground text-xs">(optioneel)</span>}</Label>
               <Select value={inviteRole} onValueChange={setInviteRole} disabled={!inviteItemId}>
                 <SelectTrigger>
                   <SelectValue placeholder={inviteItemId ? pt("Select role...") : pt("Select a project/program first")} />
@@ -1807,28 +1949,117 @@ if (!sendInviteEmail) {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="invite-emails">{pt("Email addresses")} *</Label>
-              <Textarea
-                id="invite-emails"
-                placeholder="jan@company.nl, maria@company.nl, ..."
-                value={inviteEmails}
-                onChange={(e) => setInviteEmails(e.target.value)}
-                rows={2}
-              />
-              <p className="text-xs text-muted-foreground">{pt("Separate multiple email addresses with a comma")}</p>
-            </div>
+            {inviteMode === "email" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-emails">{pt("Email addresses")} *</Label>
+                  <Textarea
+                    id="invite-emails"
+                    placeholder="jan@company.nl, maria@company.nl, ..."
+                    value={inviteEmails}
+                    onChange={(e) => setInviteEmails(e.target.value)}
+                    rows={2}
+                  />
+                  <p className="text-xs text-muted-foreground">{pt("Separate multiple email addresses with a comma")}</p>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="invite-message">{pt("Personal message (optional)")}</Label>
-              <Textarea
-                id="invite-message"
-                placeholder={pt("Add a personal message to the invitation...")}
-                value={inviteMessage}
-                onChange={(e) => setInviteMessage(e.target.value)}
-                rows={4}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-message">{pt("Personal message (optional)")}</Label>
+                  <Textarea
+                    id="invite-message"
+                    placeholder={pt("Add a personal message to the invitation...")}
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </>
+            )}
+
+            {inviteMode === "existing" && (
+              <div className="space-y-2">
+                <Label>Bedrijfsleden</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Zoek op naam of e-mail..."
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                {(() => {
+                  const available = companyMembers.filter(
+                    (m) => !existingTeamUserIds.includes(Number(m.id))
+                  );
+                  const filtered = available.filter((m) => {
+                    const q = memberSearch.toLowerCase();
+                    return (
+                      (m.name?.toLowerCase() || "").includes(q) ||
+                      (m.email?.toLowerCase() || "").includes(q)
+                    );
+                  });
+                  return (
+                    <div className="border rounded-md max-h-56 overflow-y-auto divide-y">
+                      {!inviteItemId ? (
+                        <p className="p-4 text-sm text-muted-foreground text-center">
+                          Selecteer eerst een {inviteType === "project" ? "project" : "programma"}.
+                        </p>
+                      ) : loadingTeam ? (
+                        <p className="p-4 text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Team laden...
+                        </p>
+                      ) : filtered.length === 0 ? (
+                        <p className="p-4 text-sm text-muted-foreground text-center">
+                          {available.length === 0
+                            ? "Alle bedrijfsleden zitten al in dit team."
+                            : "Geen leden gevonden."}
+                        </p>
+                      ) : (
+                        filtered.map((m) => {
+                          const checked = selectedMemberIds.includes(Number(m.id));
+                          return (
+                            <label
+                              key={m.id}
+                              className="flex items-center gap-3 p-2.5 cursor-pointer hover:bg-accent/50 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-border accent-primary"
+                                checked={checked}
+                                onChange={(e) => {
+                                  const idNum = Number(m.id);
+                                  setSelectedMemberIds((prev) =>
+                                    e.target.checked
+                                      ? [...prev, idNum]
+                                      : prev.filter((x) => x !== idNum)
+                                  );
+                                }}
+                              />
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                  {getInitials(m.name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{m.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                              </div>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                  );
+                })()}
+                {selectedMemberIds.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedMemberIds.length} lid/leden geselecteerd
+                  </p>
+                )}
+              </div>
+            )}
 
             {generatedLink && (
               <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
@@ -1855,10 +2086,24 @@ if (!sendInviteEmail) {
             }}>
               {generatedLink ? pt("Close") : pt("Cancel")}
             </Button>
-            {!generatedLink && (
+            {!generatedLink && inviteMode === "email" && (
               <Button onClick={handleSendInvitation} className="gap-2">
                 <Send className="h-4 w-4" />
                 {pt("Send Invitations")}
+              </Button>
+            )}
+            {inviteMode === "existing" && (
+              <Button
+                onClick={handleAddExistingMembers}
+                disabled={addingMembers || selectedMemberIds.length === 0}
+                className="gap-2"
+              >
+                {addingMembers ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserPlus className="h-4 w-4" />
+                )}
+                Lid toevoegen
               </Button>
             )}
           </DialogFooter>
