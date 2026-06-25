@@ -31,7 +31,7 @@ langchain-core==0.3.77
 langchain-openai==0.3.34
 langchain-text-splitters==0.3.11
 langgraph==0.6.8
-langgraph-checkpoint==2.1.1
+langgraph-checkpoint==4.1.1
 langgraph-prebuilt==0.6.4
 langgraph-sdk==0.2.9
 langsmith==0.4.27
