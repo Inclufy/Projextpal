@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "To Do"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
 const PRIORITIES: [string, string][] = [["low", "Low"], ["medium", "Medium"], ["high", "High"], ["urgent", "Urgent"]];
-const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "" };
+const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "", assigned_to: "", work_package: "" };
 
 const PlanningTasks = () => {
   const { pt } = usePageTranslations();
@@ -28,6 +28,8 @@ const PlanningTasks = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [workPackages, setWorkPackages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -42,12 +44,16 @@ const PlanningTasks = () => {
 
   const fetchData = async () => {
     try {
-      const [t, m] = await Promise.all([
+      const [t, m, u, w] = await Promise.all([
         fetch(`/api/v1/projects/tasks/?project=${id}`, { headers }),
         fetch(`/api/v1/projects/milestones/?project=${id}`, { headers }),
+        fetch(`/api/v1/auth/company-users/members/`, { headers }),
+        fetch(`/api/v1/projects/${id}/prince2/work-packages/`, { headers }),
       ]);
       if (t.ok) { const d = await t.json(); setTasks(Array.isArray(d) ? d : d.results || []); }
       if (m.ok) { const d = await m.json(); setMilestones(Array.isArray(d) ? d : d.results || []); }
+      if (u.ok) { const d = await u.json(); setMembers(Array.isArray(d) ? d : d.results || []); }
+      if (w.ok) { const d = await w.json(); setWorkPackages(Array.isArray(d) ? d : d.results || []); }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -63,7 +69,7 @@ const PlanningTasks = () => {
   const openCreate = () => { setEditing(null); setForm({ ...emptyForm, milestone: milestones[0] ? String(milestones[0].id) : "" }); setDialogOpen(true); };
   const openEdit = (t: any) => {
     setEditing(t);
-    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "" });
+    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "", assigned_to: t.assigned_to ? String(t.assigned_to) : "", work_package: t.work_package ? String(t.work_package) : "" });
     setDialogOpen(true);
   };
 
@@ -76,6 +82,8 @@ const PlanningTasks = () => {
         status: form.status, priority: form.priority, progress: parseInt(form.progress || "0", 10) || 0,
       };
       if (form.due_date) body.due_date = form.due_date;
+      body.assigned_to = form.assigned_to ? Number(form.assigned_to) : null;
+      body.work_package = form.work_package ? Number(form.work_package) : null;
       const url = editing ? `/api/v1/projects/tasks/${editing.id}/` : `/api/v1/projects/tasks/`;
       const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) });
       if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); fetchCommentMeta(); }
@@ -269,6 +277,28 @@ const PlanningTasks = () => {
                 <SelectTrigger><SelectValue placeholder={pt("Pick a milestone")} /></SelectTrigger>
                 <SelectContent>{milestones.map((m) => <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>)}</SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2"><Label>{pt("Assignee")}</Label>
+                <Select value={form.assigned_to || "none"} onValueChange={(v) => setForm({ ...form, assigned_to: v === "none" ? "" : v })}>
+                  <SelectTrigger><SelectValue placeholder={pt("Unassigned")} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{pt("Unassigned")}</SelectItem>
+                    {members.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.name || u.email}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              {workPackages.length > 0 && (
+                <div className="space-y-2"><Label>{pt("Work Package")}</Label>
+                  <Select value={form.work_package || "none"} onValueChange={(v) => setForm({ ...form, work_package: v === "none" ? "" : v })}>
+                    <SelectTrigger><SelectValue placeholder={pt("None")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{pt("None")}</SelectItem>
+                      {workPackages.map((w) => <SelectItem key={w.id} value={String(w.id)}>{w.title || w.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <div className="space-y-2"><Label>{pt("Description")}</Label><textarea className="w-full min-h-[50px] px-3 py-2 border rounded-md bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
