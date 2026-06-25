@@ -23,6 +23,7 @@ ENV VITE_APP_VERSION=${VITE_APP_VERSION}
 RUN npm run build
 
 FROM nginx:alpine
+RUN apk --no-cache upgrade
 
 # SPA nginx config with Cache-Control headers — see frontend/nginx-spa.conf
 # for the rationale. Replaces the previous minimal inline `RUN echo` config
