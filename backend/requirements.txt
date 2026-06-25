@@ -77,7 +77,7 @@ djangorestframework-api-key
 pytest==7.4.3
 pytest-django==4.7.0
 pytest-cov==4.1.0
-PyJWT==2.8.0
+PyJWT==2.13.0
 msal==1.31.0
 reportlab==4.0.7
 python-pptx==1.0.2
