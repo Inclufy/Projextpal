@@ -74,3 +74,34 @@ try:
         )
 except Exception:
     pass
+
+
+# --- Meeting action ITEM (communication) PIC assignment --------------------
+try:
+    from communication.models import MeetingActionItem
+
+    @receiver(pre_save, sender=MeetingActionItem, dispatch_uid="notif_mai_pre")
+    def _mai_pre(sender, instance, **kwargs):
+        instance._old_pic = _old_value(sender, instance, "pic_user_id")
+
+    @receiver(post_save, sender=MeetingActionItem, dispatch_uid="notif_mai_post")
+    def _mai_post(sender, instance, created, **kwargs):
+        new = getattr(instance, "pic_user_id", None)
+        if not new:
+            return
+        if not created and getattr(instance, "_old_pic", None) == new:
+            return  # PIC unchanged
+        subject = (getattr(instance, "subject", "") or "").strip() or "New action"
+        url = ""
+        try:
+            url = f"/projects/{instance.meeting.project_id}/execution/communication/meeting"
+        except Exception:
+            pass
+        notify(
+            instance.pic_user, kind="action_assigned",
+            title=f"Action assigned: {subject}",
+            body=f"You were made responsible for the meeting action “{subject}”.",
+            url=url,
+        )
+except Exception:
+    pass

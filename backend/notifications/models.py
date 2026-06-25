@@ -194,6 +194,43 @@ def notify(recipient, *, kind="system", title="", body="", url="", actor=None, c
         # preference (best-effort, never raises).
         if should_push(recipient, kind):
             send_push(recipient, title=title, body=body, url=url, data={"kind": kind})
+        # Email the actionable kinds (assignment / approval / mention) when the
+        # recipient hasn't opted out. Noisy kinds (message/system/status) stay
+        # in-app/push only.
+        if kind in EMAIL_KINDS and should_email(recipient, kind):
+            _send_notification_email(recipient, title=title, body=body, url=url)
         return n
     except Exception:
         return None
+
+
+# Kinds that warrant a direct email (not just in-app/push). Mentions stay
+# in-app/push only — assigning via the Action Tracker also posts a mention
+# comment, so emailing both would double up.
+EMAIL_KINDS = {"task_assigned", "action_assigned", "approval"}
+
+
+def _send_notification_email(recipient, *, title="", body="", url=""):
+    """Best-effort branded notification email. Never raises."""
+    try:
+        from django.conf import settings
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+        to = getattr(recipient, "email", None)
+        if not to:
+            return
+        base = getattr(settings, "FRONTEND_URL", "https://projextpal.com")
+        link = f"{base}{url}" if url else ""
+        html = render_to_string("emails/notification.html", {
+            "title": title, "lead": body, "sections": [],
+            "closing": (f'Open in ProjeXtPal: {link}' if link else "Open ProjeXtPal om te reageren."),
+            "badge": "bell",
+        })
+        msg = EmailMultiAlternatives(
+            subject=title or "ProjeXtPal", body=body or title,
+            from_email=settings.DEFAULT_FROM_EMAIL, to=[to],
+        )
+        msg.attach_alternative(html, "text/html")
+        msg.send()
+    except Exception:
+        pass

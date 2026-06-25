@@ -32,6 +32,7 @@ def _ser_task(t):
         pass
     return {
         "id": t.id,
+        "type": "task",
         "title": t.title,
         "due_date": t.due_date.isoformat() if t.due_date else None,
         "priority": t.priority,
@@ -41,6 +42,31 @@ def _ser_task(t):
         "project_name": getattr(project, "name", None),
         "methodology": getattr(project, "methodology", None),
         "url": _task_url(t),
+    }
+
+
+def _ser_action_item(a):
+    """A meeting action item (communication.MeetingActionItem) where the user
+    is PIC, shaped like a task so My Work can list it alongside tasks."""
+    project = None
+    try:
+        project = a.meeting.project
+    except Exception:
+        pass
+    pid = getattr(project, "id", None)
+    due = getattr(a, "action_due", None)
+    return {
+        "id": f"action-{a.id}",
+        "type": "action",
+        "title": getattr(a, "subject", "") or "Meeting action",
+        "due_date": due.isoformat() if due else None,
+        "priority": "medium",
+        "status": getattr(a, "status", "") or "",
+        "category": "Meeting",
+        "project_id": pid,
+        "project_name": getattr(project, "name", None),
+        "methodology": getattr(project, "methodology", None),
+        "url": f"/projects/{pid}/execution/communication/meeting" if pid else "",
     }
 
 
@@ -72,6 +98,30 @@ def my_work(request):
             buckets["this_week"].append(_ser_task(t))
         else:
             buckets["later"].append(_ser_task(t))
+
+    # Meeting action items where the current user is the PIC (responsible).
+    try:
+        from communication.models import MeetingActionItem
+        ais = (
+            MeetingActionItem.objects.filter(meeting__project_id__in=ids, pic_user=user)
+            .exclude(status__in=["done", "completed", "closed", "resolved", "cancelled"])
+            .select_related("meeting", "meeting__project")
+        )
+        for a in ais:
+            d = getattr(a, "action_due", None)
+            item = _ser_action_item(a)
+            if d is None:
+                buckets["no_date"].append(item)
+            elif d < today:
+                buckets["overdue"].append(item)
+            elif d == today:
+                buckets["today"].append(item)
+            elif d <= week_end:
+                buckets["this_week"].append(item)
+            else:
+                buckets["later"].append(item)
+    except Exception:
+        pass
 
     # Recent @mentions of the current user (project-access-scoped).
     mentions = []
