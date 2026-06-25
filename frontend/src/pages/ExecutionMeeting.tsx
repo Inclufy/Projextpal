@@ -39,7 +39,7 @@ const ExecutionMeeting = () => {
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
-  const [newAtt, setNewAtt] = useState({ name_text: "", presence: "invited" });
+  const [newAtt, setNewAtt] = useState({ name_text: "", presence: "invited", user: "" });
   const [newAct, setNewAct] = useState({ subject: "", pic_user: "", action_due: "" });
   const [members, setMembers] = useState<Member[]>([]);
   const [importOpen, setImportOpen] = useState(false);
@@ -281,12 +281,20 @@ const ExecutionMeeting = () => {
 
   // MM-01 attendees
   const addAttendee = async () => {
-    if (!selected || !newAtt.name_text.trim()) return;
+    // Either pick a project member (sets the user FK) or type a name for an
+    // external guest. Member name is sent as name_text too for legacy display.
+    if (!selected || (!newAtt.user && !newAtt.name_text.trim())) return;
+    const picked = newAtt.user ? members.find((m) => String(m.id) === newAtt.user) : null;
+    const body: any = {
+      meeting: selected.id,
+      name_text: newAtt.name_text.trim() || (picked ? memberLabel(picked) : ""),
+      presence: newAtt.presence,
+    };
+    if (newAtt.user) body.user = Number(newAtt.user);
     const res = await fetch(`/api/v1/communication/meeting-attendees/`, {
-      method: "POST", headers: jsonHeaders,
-      body: JSON.stringify({ meeting: selected.id, name_text: newAtt.name_text, presence: newAtt.presence }),
+      method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
     });
-    if (res.ok) { setNewAtt({ name_text: "", presence: "invited" }); fetchData(); } else toast.error(pt("Save failed"));
+    if (res.ok) { setNewAtt({ name_text: "", presence: "invited", user: "" }); fetchData(); } else toast.error(pt("Save failed"));
   };
   const delAttendee = async (aid: number) => {
     const res = await fetch(`/api/v1/communication/meeting-attendees/${aid}/`, { method: "DELETE", headers });
@@ -432,7 +440,14 @@ const ExecutionMeeting = () => {
                     })}
                   </div>
                   <div className="flex gap-2">
-                    <Input className="h-8" placeholder={pt("Name")} value={newAtt.name_text} onChange={(e) => setNewAtt({ ...newAtt, name_text: e.target.value })} />
+                    <Select value={newAtt.user || NONE} onValueChange={(v) => setNewAtt({ ...newAtt, user: v === NONE ? "" : v, name_text: "" })}>
+                      <SelectTrigger className="h-8 flex-1"><SelectValue placeholder={pt("Project member")} /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NONE}>{pt("External guest…")}</SelectItem>
+                        {members.map((u) => <SelectItem key={u.id} value={String(u.id)}>{memberLabel(u)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {!newAtt.user && <Input className="h-8 flex-1" placeholder={pt("Guest name")} value={newAtt.name_text} onChange={(e) => setNewAtt({ ...newAtt, name_text: e.target.value })} />}
                     <Select value={newAtt.presence} onValueChange={(v) => setNewAtt({ ...newAtt, presence: v })}>
                       <SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger>
                       <SelectContent><SelectItem value="invited">{pt("invited")}</SelectItem><SelectItem value="attended">{pt("attended")}</SelectItem><SelectItem value="absent">{pt("absent")}</SelectItem></SelectContent>
