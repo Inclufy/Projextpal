@@ -13,6 +13,7 @@ ENV VITE_API_URL=/api/v1
 RUN npm run build
 
 FROM nginx:alpine
+RUN apk --no-cache upgrade
 
 RUN echo 'server { \
     listen 80; \
