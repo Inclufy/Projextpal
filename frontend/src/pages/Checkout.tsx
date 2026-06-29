@@ -175,7 +175,7 @@ const Checkout = () => {
         throw new Error('No checkout URL returned');
       }
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Checkout error:', error);
       toast({
         title: language === 'nl' ? 'Checkout mislukt' : 'Checkout failed',
@@ -229,7 +229,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -271,7 +271,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -313,7 +313,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,

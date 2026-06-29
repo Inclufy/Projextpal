@@ -470,7 +470,7 @@ const EnhancedCourseBuilder = () => {
         const errData = await r.json().catch(() => ({}));
         setCourseImportResults({ created: 0, errors: [errData.error || 'Import mislukt'] });
       }
-    } catch (err: any) {
+    } catch (err) {
       setCourseImportResults({ created: 0, errors: [err.message || 'Import mislukt'] });
     } finally {
       setCourseImportLoading(false);

@@ -93,7 +93,7 @@ export default function ProjectImport() {
         const errData = await r.json().catch(() => ({}));
         toast.error(errData.error || (isNL ? 'Import mislukt' : 'Import failed'));
       }
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || (isNL ? 'Import mislukt' : 'Import failed'));
     } finally {
       setImportLoading(false);

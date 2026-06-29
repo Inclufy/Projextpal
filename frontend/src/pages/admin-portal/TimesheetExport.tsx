@@ -112,7 +112,7 @@ export default function TimesheetExport() {
         URL.revokeObjectURL(url);
       }
       toast.success(isNL ? 'Export gedownload' : 'Export downloaded');
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || (isNL ? 'Export mislukt' : 'Export failed'));
     } finally {
       setExportLoading(false);

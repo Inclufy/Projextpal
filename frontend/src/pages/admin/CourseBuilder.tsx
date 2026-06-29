@@ -274,7 +274,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
 
       setAiDialogOpen(false);
       toast({ title: isNL ? 'Module gegenereerd!' : 'Module generated!' });
-    } catch (err: any) {
+    } catch (err) {
       console.error('AI generation error:', err);
       toast({
         title: 'Error',
@@ -393,7 +393,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
       });
 
       setCurrentStep(2);
-    } catch (err: any) {
+    } catch (err) {
       console.error('AI error:', err);
       toast({
         title: 'Error',

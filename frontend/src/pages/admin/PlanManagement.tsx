@@ -154,7 +154,7 @@ export default function PlanManagement() {
   try {
     const data = await api.get<any>('/admin/plans/');
     setPlans(data.results || data);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error fetching plans:', err);
     setError(isNL ? 'Kon abonnementen niet laden' : 'Failed to load plans');
   } finally {
@@ -209,7 +209,7 @@ export default function PlanManagement() {
     setIsCreateDialogOpen(false);
     resetForm();
     fetchPlans();
-  } catch (err: any) {
+  } catch (err) {
     console.error('Create plan error:', err);
     toast.error(err.message);
   }
@@ -244,7 +244,7 @@ export default function PlanManagement() {
     setIsEditDialogOpen(false);
     resetForm();
     fetchPlans();
-  } catch (err: any) {
+  } catch (err) {
     console.error('Update plan error:', err);
     toast.error(err.message);
   }
@@ -259,7 +259,7 @@ export default function PlanManagement() {
     setIsDeleteDialogOpen(false);
     setSelectedPlan(null);
     fetchPlans();
-  } catch (err: any) {
+  } catch (err) {
     toast.error(err.message);
   }
 };
@@ -273,7 +273,7 @@ export default function PlanManagement() {
         : (isNL ? 'Abonnement geactiveerd' : 'Plan activated')
     );
     fetchPlans();
-  } catch (err: any) {
+  } catch (err) {
     toast.error(err.message);
   }
 };
@@ -283,7 +283,7 @@ export default function PlanManagement() {
     await api.post(`/admin/plans/${plan.id}/set_popular/`);
     toast.success(isNL ? 'Gemarkeerd als populair' : 'Marked as popular');
     fetchPlans();
-  } catch (err: any) {
+  } catch (err) {
     toast.error(err.message);
   }
 };

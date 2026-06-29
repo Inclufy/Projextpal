@@ -1096,7 +1096,7 @@ export default function AICopilotSidebar() {
       }
       const aiResponse: Message = { id: (response.ai_response?.id || Date.now() + 1).toString(), role: "assistant", content: response.ai_response?.content || "Sorry, I could not process your request.", timestamp: new Date(), formSchema };
       setMessages((prev) => [...prev, aiResponse]);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "assistant", content: "Sorry, I encountered an error. Please try again.", timestamp: new Date() }]);
     } finally {
