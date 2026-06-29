@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import {
   GraduationCap, Plus, Search, MoreHorizontal, Edit, Trash2, Eye,
@@ -856,7 +857,7 @@ const EnhancedCourseBuilder = () => {
                   renderItem={(module) => (
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+                        <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                           className="flex-1 cursor-pointer"
                           onClick={() => toggleModule(module.id)}
                         >

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { activateOnKey } from "@/lib/a11y";
 import { visualService } from "@/services/visualService";
 import QuizEngine from "@/components/academy/QuizEngine";
 import AiCoachPanel from "@/components/academy/AiCoachPanel";
@@ -1641,7 +1642,7 @@ const markAsComplete = async () => {
                 </div>
               </div>
               {!isPlaying && !isBuffering && (
-                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
+                <div role="button" tabIndex={0} onKeyDown={activateOnKey} className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
                   <div className="w-20 h-20 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30">
                     <Play className="w-10 h-10 text-white ml-1" />
                   </div>

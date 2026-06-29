@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   Clock, BookOpen, Award, Star, Users, ChevronRight, CheckCircle2, 
@@ -999,7 +1000,7 @@ const CourseDetail = () => {
             <div className="sticky top-24">
               <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white dark:bg-gray-900 overflow-hidden">
                 {/* Preview Image */}
-                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
+                <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                   className="aspect-video flex items-center justify-center cursor-pointer group"
                   style={{ background: safeCourse.gradient }}
                   onClick={() => {

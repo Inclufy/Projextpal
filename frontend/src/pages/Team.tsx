@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1312,7 +1313,7 @@ if (!sendInviteEmail) {
               <CardContent className="p-6 relative">
                 {/* Header with Avatar and Actions */}
                 <div className="flex items-start justify-between mb-4">
-                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+                  <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                     className="flex items-center gap-3 cursor-pointer"
                     onClick={() => {
                       setSelectedMember(member);

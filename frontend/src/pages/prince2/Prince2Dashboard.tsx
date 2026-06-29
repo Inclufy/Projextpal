@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useParams, useNavigate } from "react-router-dom";
 import { DemoControls } from "@/components/DemoControls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -478,7 +479,7 @@ const Prince2Dashboard = () => {
               {dashboard?.top_risks?.length > 0 ? (
                 <div className="space-y-1.5">
                   {dashboard.top_risks.map((r: any) => (
-                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} key={r.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/40 cursor-pointer" onClick={() => nav("risks")}>
+                    <div role="button" tabIndex={0} onKeyDown={activateOnKey} key={r.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/40 cursor-pointer" onClick={() => nav("risks")}>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{r.title}</p>
                         {r.mitigation && <p className="text-xs text-muted-foreground truncate">{pt("Response")}: {r.mitigation}</p>}
@@ -589,7 +590,7 @@ const Prince2Dashboard = () => {
               <p className="text-center text-muted-foreground py-4">{pt("No stages defined yet")}</p>
             ) : (
               dashboard?.stages?.map((stage: any) => (
-                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+                <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                   key={stage.id}
                   className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
                     stage.status === "active" ? "border-blue-300 bg-blue-50/50" : ""
@@ -673,7 +674,7 @@ const Prince2Dashboard = () => {
               </div>
             ) : (
               dashboard.recent_highlight_reports.map((report: any) => (
-                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} key={report.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors" onClick={() => nav("highlight-report")}>
+                <div role="button" tabIndex={0} onKeyDown={activateOnKey} key={report.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors" onClick={() => nav("highlight-report")}>
                   <div>
                     <p className="font-medium">{report.title || `Report #${report.id}`}</p>
                     <p className="text-sm text-muted-foreground">{report.report_date}</p>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   ArrowLeft, Building2, Users, Mail, Phone, Send, 
@@ -436,7 +437,7 @@ const RequestQuote = () => {
                         const Icon = c.icon;
                         const isSelected = selectedCourses.includes(c.id);
                         return (
-                          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
+                          <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                             key={c.id}
                             onClick={() => toggleCourse(c.id)}
                             className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { activateOnKey } from "@/lib/a11y";
 import { Plus, Trash2, GripVertical, Save, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -327,7 +328,7 @@ const QuizBuilder: React.FC<QuizBuilderProps> = ({
                 <div className="space-y-4">
                   {/* Question Header */}
                   <div className="flex items-start justify-between">
-                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
+                    <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                       className="flex-1 cursor-pointer"
                       onClick={() => toggleQuestionExpanded(question.id)}
                     >
