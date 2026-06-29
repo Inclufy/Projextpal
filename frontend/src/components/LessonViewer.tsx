@@ -54,7 +54,7 @@ const parseContent = (text: string): React.ReactNode[] => {
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
   let inTable = false;
-  let tableRows: string[][] = [];
+  const tableRows: string[][] = [];
   
   const processLine = (line: string, index: number) => {
     // Headers

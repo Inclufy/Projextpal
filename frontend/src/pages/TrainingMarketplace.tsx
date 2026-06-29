@@ -362,7 +362,7 @@ const TrainingMarketplace = () => {
 
   // UPDATED: Enhanced filter with level, duration, and sorting
   const filteredCourses = useMemo(() => {
-    let result = courses.filter(course => {
+    const result = courses.filter(course => {
       const title = safeString(course.title);
       const titleNL = safeString(course.titleNL);
       const desc = safeString(course.description);

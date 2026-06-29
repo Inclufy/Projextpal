@@ -4,7 +4,7 @@ import {
   Check, X, Sparkles, GraduationCap, BookOpen, Award, Clock, 
   Users, Building2, Zap, Shield, Star, ChevronRight, PlayCircle,
   Globe, Moon, Sun, LogIn, Rocket, Menu, ArrowRight, MessageSquare,
-  Download, Infinity, HeadphonesIcon, FileText, Target, Brain
+  Download, HeadphonesIcon, FileText, Target, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

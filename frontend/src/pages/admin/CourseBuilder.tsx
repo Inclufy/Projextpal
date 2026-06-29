@@ -37,7 +37,6 @@ import {
   type Module, 
   type Lesson,
 } from '../../data/academy';
-import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const academyCourses: Course[] = courses.map(course => {
   let modules: Module[] = [];
@@ -201,7 +200,6 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
   };
 
   const handleImport = () => {
-  const { pt } = usePageTranslations();
   if (!selectedCourseForImport) return;
 
   const courseData = getCourseById(selectedCourseForImport);
