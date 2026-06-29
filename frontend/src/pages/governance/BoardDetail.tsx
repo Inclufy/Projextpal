@@ -220,7 +220,7 @@ const BoardDetail: React.FC = () => {
       if (!res.ok) { const err = await res.json(); throw new Error(JSON.stringify(err)); }
       toast({ title: "Member Added", description: "Board member added successfully." });
       setShowAddMember(false); setSelectedUser(""); setMemberRole("member"); fetchBoard();
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Error", description: e.message || "Failed to add member.", variant: "destructive" });
     } finally { setAddingMember(false); }
   };

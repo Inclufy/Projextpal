@@ -780,7 +780,7 @@ const CourseDetail = () => {
       } else {
         throw new Error('Unexpected response from checkout');
       }
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: isNL ? 'Er ging iets mis' : 'Something went wrong',
         description: err?.message || (isNL ? 'Probeer het later opnieuw.' : 'Please try again later.'),

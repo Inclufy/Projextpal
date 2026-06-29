@@ -272,7 +272,7 @@ export default function UserManagement() {
       setIsCreateDialogOpen(false);
       resetForm();
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -300,7 +300,7 @@ export default function UserManagement() {
       setIsEditDialogOpen(false);
       resetForm();
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -322,7 +322,7 @@ export default function UserManagement() {
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -345,7 +345,7 @@ export default function UserManagement() {
           : pt("User activated")
       );
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -362,7 +362,7 @@ export default function UserManagement() {
       }
 
       toast.success(pt("Invite sent"));
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -388,7 +388,7 @@ export default function UserManagement() {
       const d = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(d.detail || 'Sandbox-toegang verlenen mislukt');
       toast.success(d.invited ? `Sandbox-uitnodiging verstuurd naar ${user.email}` : `Sandbox aangemaakt voor ${user.email}`);
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -405,7 +405,7 @@ export default function UserManagement() {
       }
 
       toast.success(pt("Password reset email sent"));
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -435,7 +435,7 @@ export default function UserManagement() {
       }
       toast.success(`${pt("Password set for")} ${user.email}`);
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };
@@ -486,7 +486,7 @@ export default function UserManagement() {
         const errData = await response.json().catch(() => ({}));
         toast.error(errData.error || pt("Import failed"));
       }
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || pt("Import failed"));
     } finally {
       setImportLoading(false);

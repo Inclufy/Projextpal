@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to fetch user data after login');
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Login error:', error);
       setError(error.message || 'Login failed');
       

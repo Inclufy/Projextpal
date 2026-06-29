@@ -92,7 +92,7 @@ export const AIGenerateButton: React.FC<AIGenerateButtonProps> = ({
       );
 
       onGenerated(response.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('AI generation failed:', err);
       setError(err.response?.data?.detail || 'Generatie mislukt. Probeer opnieuw.');
     } finally {

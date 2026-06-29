@@ -133,7 +133,7 @@ const VisualPreviewModal = ({
     if (response.image_url) {
       setPreviewImageUrl(response.image_url);
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to generate preview:', error);
     const errorMsg = error.response?.data?.error || error.message || 'Unknown error';
     alert(`Failed to generate DALL-E preview: ${errorMsg}`);

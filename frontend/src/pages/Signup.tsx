@@ -144,7 +144,7 @@ const Signup = () => {
         },
       });
 
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: txt.registrationFailed,
         description: error.message || txt.somethingWentWrong,
