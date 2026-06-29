@@ -70,7 +70,7 @@ docker compose -f docker-compose.production.yml up -d frontend
 - `projextpal-postgres-prod` (Postgres 15)
 - `projextpal-redis-prod` (Redis 7)
 
-**Postgres credentials**: see `~/Desktop/ProjextPal/.env` on Mac Studio. Current standardized password: `projextpal_password_2024` (commit `63260ece`). User: `projextpal`. DB: `projextpal`.
+**Postgres credentials**: see `~/Desktop/ProjextPal/.env` on Mac Studio (never commit it). The password is env-based — do NOT hardcode it here or in compose files. User: `projextpal`. DB: `projextpal`. (The old standardized password was rotated to a strong hex secret and the literal scrubbed from the tree.)
 
 **Image source**:
 - Backend: built locally on Mac Studio (`docker build ./backend`). Tagged `registry.gitlab.com/inclufy/projextpal/backend:latest` but never pushed.
