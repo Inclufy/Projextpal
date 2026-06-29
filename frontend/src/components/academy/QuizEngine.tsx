@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { answersMatch } from "@/lib/gradeAnswers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -363,8 +364,7 @@ export default function QuizEngine({
     for (const q of questions) {
       const selected = answers[String(q.id)] || [];
       const correct = SAMPLE_CORRECT[q.id] || [q.answers[1]?.id];
-      const byId = (a: unknown, b: unknown) => String(a).localeCompare(String(b));
-      const isCorrect = JSON.stringify([...selected].sort(byId)) === JSON.stringify([...correct].sort(byId));
+      const isCorrect = answersMatch(selected, correct);
       if (isCorrect) score++;
       questionResults.push({
         question_id: q.id,
