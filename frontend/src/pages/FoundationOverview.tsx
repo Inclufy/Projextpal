@@ -211,7 +211,7 @@ const FoundationOverview = () => {
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/30">
                     <p className="text-sm text-muted-foreground">{pt("Budget")}</p>
-                    <p className="font-medium">${parseFloat(project.budget || 0).toLocaleString()}</p>
+                    <p className="font-medium">${parseFloat(project.budget || '0').toLocaleString()}</p>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/30">
                     <p className="text-sm text-muted-foreground">{pt("Start Date")}</p>
