@@ -144,7 +144,7 @@ export default function UserManagement() {
     last_name: '',
     role: 'pm',
     company: '',
-    password: 'TempPass123!',
+    password: '',
   });
   
   const [sendInviteEmail, setSendInviteEmail] = useState(true);
@@ -447,7 +447,7 @@ export default function UserManagement() {
       last_name: '',
       role: 'pm',
       company: '',
-      password: 'TempPass123!',
+      password: '',
     });
     setSendInviteEmail(true);
     setSelectedUser(null);

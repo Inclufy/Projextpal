@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+import os
 import re
 import psycopg2
 
 conn = psycopg2.connect(
-    host="localhost",
-    port="5432",
-    database="projextpal",
-    user="projextpal",
-    password="projextpal_password_2024"
+    host=os.environ.get("DB_HOST", "localhost"),
+    port=os.environ.get("DB_PORT", "5432"),
+    database=os.environ.get("DB_NAME", "projextpal"),
+    user=os.environ.get("DB_USER", "projextpal"),
+    password=os.environ["DB_PASSWORD"],
 )
 
 def parse_ts_file(filepath):
