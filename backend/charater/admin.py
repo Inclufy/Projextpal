@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from .models import (
     ProgramCharter,
     ScopeCapability,
@@ -81,18 +81,22 @@ class ProgramCharterAdmin(admin.ModelAdmin):
                 "-version"
             )
 
-            links = []
+            parts = []
             for charter in all_versions[:5]:  # Show max 5 versions
-                url = reverse("admin:charater_programcharter_change", args=[charter.pk])
                 if charter.pk == obj.pk:
-                    links.append(f"<strong>v{charter.version}</strong>")
+                    parts.append(format_html("<strong>v{}</strong>", charter.version))
                 else:
-                    links.append(f'<a href="{url}">v{charter.version}</a>')
+                    url = reverse(
+                        "admin:charater_programcharter_change", args=[charter.pk]
+                    )
+                    parts.append(
+                        format_html('<a href="{}">v{}</a>', url, charter.version)
+                    )
 
             if all_versions.count() > 5:
-                links.append("...")
+                parts.append(format_html("..."))
 
-            return mark_safe(" | ".join(links))
+            return format_html_join(" | ", "{}", ((p,) for p in parts))
         return "-"
 
     version_links.short_description = "All Versions"
@@ -100,22 +104,23 @@ class ProgramCharterAdmin(admin.ModelAdmin):
     def version_info(self, obj):
         """Show version information and related stats"""
         if obj.pk:
-            info = [
-                f"<strong>Version:</strong> {obj.version}",
-                f'<strong>Created:</strong> {obj.created_at.strftime("%Y-%m-%d %H:%M")}',
-            ]
-
-            # Count related objects
-            counts = [
-                f"Scopes: {obj.scopes.count()}",
-                f"Risks: {obj.risks.count()}",
-                f"Deliverables: {obj.deliverables.count()}",
-                f"Resources: {obj.resources.count()}",
-                f"Interdependencies: {obj.interdependencies.count()}",
-            ]
-            info.append(f'<strong>Related Objects:</strong> {", ".join(counts)}')
-
-            return mark_safe("<br>".join(info))
+            counts = ", ".join(
+                [
+                    f"Scopes: {obj.scopes.count()}",
+                    f"Risks: {obj.risks.count()}",
+                    f"Deliverables: {obj.deliverables.count()}",
+                    f"Resources: {obj.resources.count()}",
+                    f"Interdependencies: {obj.interdependencies.count()}",
+                ]
+            )
+            return format_html(
+                "<strong>Version:</strong> {}<br>"
+                "<strong>Created:</strong> {}<br>"
+                "<strong>Related Objects:</strong> {}",
+                obj.version,
+                obj.created_at.strftime("%Y-%m-%d %H:%M"),
+                counts,
+            )
         return "Save to see version info"
 
     version_info.short_description = "Version Information"
