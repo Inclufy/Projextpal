@@ -263,7 +263,7 @@ const Prince2StagePlan = () => {
                   ) : (
                     <div className="space-y-2">
                       {stageWps.slice(0, 5).map((wp) => (
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                           key={wp.id}
                           onClick={() => navigate(`/projects/${id}/prince2/work-packages?wp=${wp.id}`)}
                           className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 cursor-pointer text-sm"

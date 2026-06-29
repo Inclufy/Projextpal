@@ -1791,7 +1791,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               ) : (
                 <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto border rounded-lg p-3">
                   {teamMembers.filter(m => m.isActive).map((member) => (
-                    <div
+                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                       key={member.id}
                       onClick={() => toggleRecipient(member.email)}
                       className={cn(

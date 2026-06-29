@@ -436,7 +436,7 @@ const RequestQuote = () => {
                         const Icon = c.icon;
                         const isSelected = selectedCourses.includes(c.id);
                         return (
-                          <div 
+                          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                             key={c.id}
                             onClick={() => toggleCourse(c.id)}
                             className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${

@@ -1312,7 +1312,7 @@ const About = () => {
 
         <div className="grid md:grid-cols-4 gap-6 mb-16">
           {pillars.map((pillar, i) => (
-            <div 
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
               key={i} 
               className={`bg-card rounded-2xl p-6 border text-center hover-lift transition-all duration-300 ${pillar.link ? 'cursor-pointer' : ''}`}
               onClick={() => pillar.link && navigate(pillar.link)}

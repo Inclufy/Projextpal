@@ -509,7 +509,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewMeetings.map((m) => (
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={m.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => board.program && navigate(`/programs/${board.program}/governance`)}
@@ -585,7 +585,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewDecisions.map((d) => (
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={d.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/governance/decisions?board=${id}&highlight=${d.id}`)}

@@ -176,7 +176,7 @@ const ProgramRoadmap = () => {
                 <div className="space-y-4">
                   {projectsWithPosition.map((proj: any) => (
                     <div key={proj.id} className="flex items-center h-12">
-                      <div 
+                      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                         className="w-48 shrink-0 pr-4 cursor-pointer hover:text-indigo-600"
                         onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                       >
@@ -191,7 +191,7 @@ const ProgramRoadmap = () => {
                           />
                         ))}
                         {/* Project Bar */}
-                        <div 
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                           className={`absolute h-8 ${proj.color} rounded-full flex items-center px-3 text-white text-xs font-medium cursor-pointer hover:opacity-80`}
                           style={{
                             left: `${(proj.startMonth / 12) * 100}%`,

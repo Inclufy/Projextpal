@@ -178,7 +178,7 @@ const Prince2HighlightReport = () => {
             {reports.map((r) => (
               <Card key={r.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex-1 cursor-pointer" onClick={() => setViewing(r)}>
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex-1 cursor-pointer" onClick={() => setViewing(r)}>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {(["overall_status", "rag_budget", "rag_planning", "rag_resources"] as const).map((k) => (
                         <Badge key={k} className={`text-xs ${statusColor(r[k])}`}>{({ overall_status: "Overall", rag_budget: "Budget", rag_planning: "Planning", rag_resources: "Resources" }[k])}</Badge>

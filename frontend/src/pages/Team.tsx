@@ -1312,7 +1312,7 @@ if (!sendInviteEmail) {
               <CardContent className="p-6 relative">
                 {/* Header with Avatar and Actions */}
                 <div className="flex items-start justify-between mb-4">
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     className="flex items-center gap-3 cursor-pointer"
                     onClick={() => {
                       setSelectedMember(member);

@@ -999,7 +999,7 @@ const CourseDetail = () => {
             <div className="sticky top-24">
               <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white dark:bg-gray-900 overflow-hidden">
                 {/* Preview Image */}
-                <div 
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                   className="aspect-video flex items-center justify-center cursor-pointer group"
                   style={{ background: safeCourse.gradient }}
                   onClick={() => {

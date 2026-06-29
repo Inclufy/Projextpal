@@ -109,7 +109,7 @@ const AcademyLearningPaths = () => {
             const f = itemForm[p.id] || { item_type: "course", label: "", course: "" };
             return (
               <Card key={p.id} className="overflow-hidden">
-                <div className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-accent/30" onClick={() => setOpen({ ...open, [p.id]: !isOpen })}>
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-accent/30" onClick={() => setOpen({ ...open, [p.id]: !isOpen })}>
                   {isOpen ? <ChevronDown className="h-5 w-5 mt-0.5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 mt-0.5 text-muted-foreground" />}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold">{p.title}</div>

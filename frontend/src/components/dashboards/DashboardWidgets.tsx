@@ -81,7 +81,7 @@ export const MethodologyBreakdown: React.FC<MethodologyBreakdownProps> = ({ proj
           const percentage = projects.length > 0 ? Math.round((data.count / projects.length) * 100) : 0;
 
           return (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               key={key}
               className={`group relative flex items-center gap-4 p-3.5 rounded-xl ${config.bgColor} ring-1 ${config.borderColor} hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/projects?methodology=${key}`)}
@@ -179,7 +179,7 @@ export const CertificationsWidget: React.FC = () => {
         {certs.length > 0 ? (
           <div className="space-y-3">
             {certs.slice(0, 4).map((cert: any, idx: number) => (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={cert.id || idx}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/80 to-orange-50/80 dark:from-amber-900/10 dark:to-orange-900/10 ring-1 ring-amber-200/50 dark:ring-amber-800/30 hover:shadow-md transition-all duration-200 cursor-pointer"
                 onClick={() => navigate(`/academy/course/${cert.course_id || cert.course}/learn?tab=certificate`)}
@@ -341,7 +341,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
         {courseRecommendations.map((course, idx) => {
           const Icon = course.icon;
           return (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               key={idx}
               className={`group flex items-center gap-3 p-3.5 rounded-xl ${course.gradient} ring-1 ring-purple-100/50 dark:ring-purple-800/30 hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/academy/course/${course.slug}`)}

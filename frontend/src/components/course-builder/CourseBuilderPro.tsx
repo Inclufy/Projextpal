@@ -710,7 +710,7 @@ const EnhancedCourseBuilder = () => {
           renderItem={(module) => (
             <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <div 
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                   className="flex-1 cursor-pointer"
                   onClick={() => toggleModule(module.id)}
                 >
