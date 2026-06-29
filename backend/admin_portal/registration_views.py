@@ -8,7 +8,6 @@ from datetime import timedelta
 from accounts.models import Registration
 from admin_portal.serializers import RegistrationSerializer, RegistrationStatsSerializer
 from admin_portal.permissions import IsSuperAdmin
-from .registration_views import RegistrationViewSet
 
 class RegistrationViewSet(viewsets.ReadOnlyModelViewSet):
     """

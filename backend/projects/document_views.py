@@ -83,7 +83,7 @@ class DocumentViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         try:
             upload = Upload.objects.get(id=file_id, company=self.request.user.company)
         except Upload.DoesNotExist:
-            raise ValueError("File not found or access denied")
+            raise ValueError("File not found or access denied") from None
 
         # Save document with the upload reference
         serializer.save(project=project, file=upload)

@@ -200,7 +200,7 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             serializer.save(backlog=backlog, reporter=self.request.user)
         except IntegrityError as e:
             from rest_framework.exceptions import ValidationError
-            raise ValidationError({'detail': f'Could not create backlog item: {str(e)}'})
+            raise ValidationError({'detail': f'Could not create backlog item: {str(e)}'}) from e
 
     @action(detail=True, methods=['post'])
     def assign_to_sprint(self, request, project_id=None, pk=None):

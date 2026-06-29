@@ -191,7 +191,7 @@ class NewsletterViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                                     print(f"  {i}. Project: {project.name} - Execution Stakeholders ({count} stakeholders)")
                                 except ImportError:
                                     print(f"  {i}. Project: {project.name} - Stakeholders (0 stakeholders)")
-                        except:
+                        except Exception:
                             print(f"  {i}. Project ID: {project_id} - {recipient_type} (not found)")
                 
                 print(f"\nTotal Emails to Send: {len(recipient_emails)}")
@@ -627,7 +627,7 @@ class GlobalNewsletterViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet)
                                     print(f"  {i}. Project: {project.name} - Execution Stakeholders ({count} stakeholders)")
                                 except ImportError:
                                     print(f"  {i}. Project: {project.name} - Stakeholders (0 stakeholders)")
-                        except:
+                        except Exception:
                             print(f"  {i}. Project ID: {project_id} - {recipient_type} (not found)")
                 
                 print(f"\nTotal Emails to Send: {len(recipient_emails)}")

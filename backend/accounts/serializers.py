@@ -25,7 +25,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         from accounts.models import Registration
-        from django.utils import timezone
         
         data = super().validate(attrs)
         user = self.user
@@ -159,7 +158,7 @@ class ResetPasswordSerializer(serializers.Serializer):
                 )
             return value
         except PasswordResetToken.DoesNotExist:
-            raise serializers.ValidationError("Invalid token.")
+            raise serializers.ValidationError("Invalid token.") from None
 
     def save(self):
         token = self.validated_data["token"]
@@ -195,7 +194,6 @@ class PublicAdminRegisterSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         from accounts.models import Registration
-        from django.utils import timezone
         
         # Extract registration-specific data
         trial_days = validated_data.pop('trial_days', 0)

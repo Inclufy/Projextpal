@@ -91,7 +91,7 @@ class InvoicePDFGenerator:
         from invoices.models import InvoiceSettings
         try:
             settings = InvoiceSettings.objects.first()
-        except:
+        except Exception:
             settings = None
         
         # Logo and company info table
@@ -102,7 +102,7 @@ class InvoicePDFGenerator:
                 logo = Image(settings.logo.path, width=40*mm, height=15*mm)
                 logo.hAlign = 'LEFT'
                 data.append([logo, ''])
-            except:
+            except Exception:
                 pass
         
         # Header table
@@ -179,7 +179,7 @@ class InvoicePDFGenerator:
         from invoices.models import InvoiceSettings
         try:
             settings = InvoiceSettings.objects.first()
-        except:
+        except Exception:
             settings = None
         
         addr_style = ParagraphStyle(
@@ -311,7 +311,7 @@ class InvoicePDFGenerator:
         from invoices.models import InvoiceSettings
         try:
             settings = InvoiceSettings.objects.first()
-        except:
+        except Exception:
             settings = None
         
         footer_style = ParagraphStyle(

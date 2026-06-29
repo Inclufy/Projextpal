@@ -25,7 +25,7 @@ from .models import (
 # Import existing models - ExamQuestion does not exist (Exam uses JSONField for questions)
 from .models import (
     Skill, SkillCategory, PracticeAssignment, PracticeSubmission,
-    Exam, ExamAttempt, Certificate, LessonSkillMapping
+    Exam, ExamAttempt, LessonSkillMapping
 )
 
 def get_openai_client():
