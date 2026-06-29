@@ -154,7 +154,7 @@ export default function PlanManagement() {
   try {
     const data = await api.get<any>('/admin/plans/');
     setPlans(data.results || data);
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error fetching plans:', err);
     setError(isNL ? 'Kon abonnementen niet laden' : 'Failed to load plans');
   } finally {

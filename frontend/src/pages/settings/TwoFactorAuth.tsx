@@ -74,7 +74,7 @@ const TwoFactorAuth = () => {
       setSecret('');
       setVerificationCode('');
       setRecoveryCodes(res?.recovery_codes || []);
-    } catch (error) {
+    } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Invalid code', variant: 'destructive' });
     } finally {
       setSubmitting(false);
@@ -103,7 +103,7 @@ const TwoFactorAuth = () => {
       toast({ title: 'Success', description: '2FA has been disabled' });
       setHas2FA(false);
       setDisableCode('');
-    } catch (error) {
+    } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Invalid code', variant: 'destructive' });
     } finally {
       setSubmitting(false);
