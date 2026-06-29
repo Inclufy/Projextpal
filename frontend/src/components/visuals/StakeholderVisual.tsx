@@ -19,7 +19,7 @@ const StakeholderVisual: React.FC<VisualTemplateProps> = ({ isNL, visualData }) 
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-6 rounded-2xl shadow-xl">
-        <h3 className="text-2xl font-bold mb-2">{isNL ? '🎯 Stakeholder Matrix' : '🎯 Stakeholder Matrix'}</h3>
+        <h3 className="text-2xl font-bold mb-2">{'🎯 Stakeholder Matrix'}</h3>
         <p className="opacity-90">{isNL ? 'Wie zijn je stakeholders en hoe ga je met ze om?' : 'Who are your stakeholders and how do you manage them?'}</p>
       </div>
 

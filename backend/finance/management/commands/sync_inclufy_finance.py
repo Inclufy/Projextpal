@@ -48,7 +48,7 @@ class Command(BaseCommand):
             try:
                 since = datetime.fromisoformat(opts["since"])
             except ValueError:
-                raise CommandError(f"Invalid --since: {opts['since']!r}")
+                raise CommandError(f"Invalid --since: {opts['since']!r}") from None
         else:
             since = timezone.now() - timedelta(hours=24)
 
@@ -63,7 +63,7 @@ class Command(BaseCommand):
         try:
             client = InclufyFinanceClient()
         except ValueError as e:
-            raise CommandError(str(e))
+            raise CommandError(str(e)) from e
 
         if opts.get("dry_run"):
             self.stdout.write(self.style.WARNING("DRY RUN — fetching only, not persisting."))

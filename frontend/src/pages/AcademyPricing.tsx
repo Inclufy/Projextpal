@@ -4,7 +4,7 @@ import {
   Check, X, Sparkles, GraduationCap, BookOpen, Award, Clock, 
   Users, Building2, Zap, Shield, Star, ChevronRight, PlayCircle,
   Globe, Moon, Sun, LogIn, Rocket, Menu, ArrowRight, MessageSquare,
-  Download, Infinity, HeadphonesIcon, FileText, Target, Brain
+  Download, HeadphonesIcon, FileText, Target, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -140,7 +140,7 @@ const AcademyPricing = () => {
           { text: isNL ? 'Downloadbare resources' : 'Downloadable resources', included: true },
           { text: isNL ? 'Prioriteit support' : 'Priority support', included: true },
           { text: isNL ? 'Voortgang tracking' : 'Progress tracking', included: true },
-          { text: isNL ? 'Team dashboards' : 'Team dashboards', included: false },
+          { text: 'Team dashboards', included: false },
           { text: isNL ? 'Aangepaste leertrajecten' : 'Custom learning paths', included: false },
         ],
       },
@@ -153,11 +153,11 @@ const AcademyPricing = () => {
         cta: isNL ? 'Probeer Team Plan' : 'Try Team Plan',
         features: [
           { text: isNL ? 'Alles van Professional' : 'Everything in Professional', included: true },
-          { text: isNL ? 'Team dashboards' : 'Team dashboards', included: true },
+          { text: 'Team dashboards', included: true },
           { text: isNL ? 'Voortgangsrapporten' : 'Progress reports', included: true },
           { text: isNL ? 'Admin beheer' : 'Admin management', included: true },
           { text: isNL ? 'Bulk uitnodigingen' : 'Bulk invitations', included: true },
-          { text: isNL ? 'Dedicated support' : 'Dedicated support', included: true },
+          { text: 'Dedicated support', included: true },
           { text: isNL ? 'SSO integratie' : 'SSO integration', included: false },
           { text: isNL ? 'Aangepaste content' : 'Custom content', included: false },
         ],
@@ -176,7 +176,7 @@ const AcademyPricing = () => {
           { text: isNL ? 'Aangepaste leertrajecten' : 'Custom learning paths', included: true },
           { text: isNL ? 'White-label opties' : 'White-label options', included: true },
           { text: isNL ? 'API toegang' : 'API access', included: true },
-          { text: isNL ? 'Dedicated success manager' : 'Dedicated success manager', included: true },
+          { text: 'Dedicated success manager', included: true },
           { text: isNL ? 'On-site training opties' : 'On-site training options', included: true },
         ],
       },
@@ -202,11 +202,11 @@ const AcademyPricing = () => {
         { name: isNL ? 'Certificaten' : 'Certificates', free: isNL ? 'Basis' : 'Basic', pro: isNL ? 'Officieel' : 'Official', team: isNL ? 'Officieel' : 'Official', enterprise: isNL ? 'Aangepast' : 'Custom' },
         { name: isNL ? 'AI Assistent' : 'AI Assistant', free: false, pro: true, team: true, enterprise: true },
         { name: isNL ? 'Downloadbare resources' : 'Downloadable resources', free: false, pro: true, team: true, enterprise: true },
-        { name: isNL ? 'Team management' : 'Team management', free: false, pro: false, team: true, enterprise: true },
+        { name: 'Team management', free: false, pro: false, team: true, enterprise: true },
         { name: isNL ? 'Voortgangsrapporten' : 'Progress reports', free: false, pro: true, team: true, enterprise: true },
         { name: isNL ? 'SSO integratie' : 'SSO integration', free: false, pro: false, team: false, enterprise: true },
         { name: isNL ? 'API toegang' : 'API access', free: false, pro: false, team: false, enterprise: true },
-        { name: isNL ? 'Dedicated support' : 'Dedicated support', free: false, pro: false, team: true, enterprise: true },
+        { name: 'Dedicated support', free: false, pro: false, team: true, enterprise: true },
         { name: isNL ? 'Aangepaste content' : 'Custom content', free: false, pro: false, team: false, enterprise: true },
       ],
     },

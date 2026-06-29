@@ -3,8 +3,8 @@
 // ACADEMY USER HOOK - Met Superuser Ondersteuning
 // ============================================
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '@/contexts/AuthContext';
 
 // Superuser emails - volledige toegang tot alle cursussen
 const SUPERUSER_EMAILS = [
@@ -40,9 +40,11 @@ export const useAcademyUser = () => {
   const [user, setUser] = useState<AcademyUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Sync with main auth context
-  let mainUser: any = null;
-  try { mainUser = useAuth(); } catch {}
+  // Sync with main auth context. Read the context directly (unconditional
+  // hook) instead of useAuth(), which throws outside an AuthProvider —
+  // useContext returns undefined there, preserving the defensive behaviour
+  // without violating the Rules of Hooks.
+  const mainUser = useContext(AuthContext);
 
   useEffect(() => {
     loadUser();

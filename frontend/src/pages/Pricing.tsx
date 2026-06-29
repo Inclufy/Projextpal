@@ -225,7 +225,7 @@ const PricingCard = ({ plan, isAnnual }: { plan: Plan; isAnnual: boolean }) => {
               {plan.price === 0 && (
                 <p className="text-sm text-muted-foreground mt-2">7 dagen gratis proberen</p>
               )}
-              {isAnnual && discountedPrice && plan.price > 0 && (
+              {isAnnual && !!discountedPrice && plan.price > 0 && (
                 <div className="mt-2">
                   <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
                     💰 Bespaar €{(plan.price - discountedPrice) * 12}/jaar

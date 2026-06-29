@@ -1362,7 +1362,7 @@ export default function AICopilotSidebar() {
                 <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-600 shadow-lg">
                   <Sparkles className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-sm font-semibold">{isNl ? "AI Setup Copilot" : "AI Setup Copilot"}</h3>
+                <h3 className="text-sm font-semibold">{"AI Setup Copilot"}</h3>
                 <p className="text-[11px] text-muted-foreground mt-1">{isNl ? "Laat AI uw omgeving configureren" : "Let AI configure your environment"}</p>
               </div>
               <div className="space-y-2">
@@ -1371,7 +1371,7 @@ export default function AICopilotSidebar() {
                     <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{isNl ? "Setup Wizard" : "Setup Wizard"}</p>
+                    <p className="text-sm font-medium">{"Setup Wizard"}</p>
                     <p className="text-[11px] text-muted-foreground">{isNl ? "Stap-voor-stap onboarding" : "Step-by-step onboarding"}</p>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-purple-600" />

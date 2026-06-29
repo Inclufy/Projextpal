@@ -37,7 +37,6 @@ import {
   type Module, 
   type Lesson,
 } from '../../data/academy';
-import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const academyCourses: Course[] = courses.map(course => {
   let modules: Module[] = [];
@@ -201,7 +200,6 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
   };
 
   const handleImport = () => {
-  const { pt } = usePageTranslations();
   if (!selectedCourseForImport) return;
 
   const courseData = getCourseById(selectedCourseForImport);
@@ -836,7 +834,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
             checked={formData.bestseller}
             onCheckedChange={(checked) => setFormData(prev => ({ ...prev, bestseller: checked }))}
           />
-          <Label>{isNL ? 'Bestseller' : 'Bestseller'}</Label>
+          <Label>{'Bestseller'}</Label>
         </div>
 
         <div className="flex items-center gap-2">
@@ -1044,7 +1042,7 @@ const CourseBuilder: React.FC<CourseBuilderProps> = ({ onClose, initialCourseId 
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold">{isNL ? 'Cursus Inhoud' : 'Course Content'}</h4>
                 <Badge variant="outline">
-                  {formData.modules.length} {isNL ? 'modules' : 'modules'} · {totalLessons} {isNL ? 'lessen' : 'lessons'}
+                  {formData.modules.length} {'modules'} · {totalLessons} {isNL ? 'lessen' : 'lessons'}
                 </Badge>
               </div>
               <div className="space-y-2">

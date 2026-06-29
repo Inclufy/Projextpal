@@ -44,7 +44,7 @@ const Signup = () => {
     fullAccess: isNL ? 'Volledige toegang tot alle functies. Geen creditcard vereist. Automatisch annuleren na proefperiode.' : 'Full access to all features. No credit card required. Automatically cancels after trial.',
     creating: isNL ? 'Account aanmaken...' : 'Creating account...',
     alreadyHaveAccount: isNL ? 'Heb je al een account?' : 'Already have an account?',
-    logIn: isNL ? 'Log in' : 'Log in',
+    logIn: 'Log in',
     termsRequired: isNL ? 'Algemene voorwaarden vereist' : 'Terms required',
     termsRequiredDesc: isNL ? 'Je moet de algemene voorwaarden accepteren om door te gaan' : 'You must accept the terms and conditions to continue',
     passwordsMismatch: isNL ? 'Wachtwoorden komen niet overeen' : 'Passwords do not match',

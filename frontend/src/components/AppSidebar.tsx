@@ -1184,11 +1184,11 @@ export function AppSidebar() {
   const inLearn = /\/learn(\/|$)/.test(location.pathname);
   const inAcademy = onAcademyAny && !inLearn;
   const academyMenu = [
-    { title: isNL ? 'Dashboard' : 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
+    { title: 'Dashboard', url: '/academy/dashboard', icon: LayoutDashboard },
     { title: isNL ? 'Catalogus' : 'Catalog', url: '/academy', icon: GraduationCap },
     { title: isNL ? 'Leertrajecten' : 'Learning Paths', url: '/academy/learning-paths', icon: Network },
-    { title: isNL ? 'Skills' : 'Skills', url: '/academy/skills', icon: Star },
-    { title: isNL ? 'Skill Intelligence' : 'Skill Intelligence', url: '/academy/skill-intelligence', icon: Brain },
+    { title: 'Skills', url: '/academy/skills', icon: Star },
+    { title: 'Skill Intelligence', url: '/academy/skill-intelligence', icon: Brain },
     { title: isNL ? 'Skill-paspoort' : 'Skill Passport', url: '/academy/skill-passport', icon: Target },
     { title: isNL ? 'Certificaten' : 'Certifications', url: '/academy/certifications', icon: Award },
     ...(['admin', 'superadmin'].includes(userRole)
@@ -1881,7 +1881,7 @@ export function AppSidebar() {
                   <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-gray-100 dark:bg-gray-800")}>
                     <Shield className="h-4 w-4 text-gray-500" />
                   </div>
-                  {!isCollapsed && <span className="text-sm">{isNL ? 'Compliance' : 'Compliance'}</span>}
+                  {!isCollapsed && <span className="text-sm">{'Compliance'}</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

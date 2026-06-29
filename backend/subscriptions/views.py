@@ -111,7 +111,7 @@ def get_or_create_stripe_customer(user):
         return customer
 
     except stripe.error.StripeError as e:
-        raise Exception(f"Stripe customer creation failed: {str(e)}")
+        raise Exception(f"Stripe customer creation failed: {str(e)}") from e
 
 
 @api_view(['POST'])

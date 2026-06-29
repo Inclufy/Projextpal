@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -239,7 +240,7 @@ const PortfolioDetail: React.FC = () => {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2">{pt("Programs")} ({programs.length})</CardTitle></CardHeader>
           <CardContent><div className="space-y-3">{programs.map((p: any) => (
-            <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/programs/${p.id}`)}>
+            <div role="button" tabIndex={0} onKeyDown={activateOnKey} key={p.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/programs/${p.id}`)}>
               <div><h4 className="font-medium">{p.name}</h4><p className="text-sm text-gray-500">{p.status}</p></div>
               <Badge variant="outline">{p.health_status || p.status}</Badge>
             </div>
@@ -252,7 +253,7 @@ const PortfolioDetail: React.FC = () => {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2">{pt("Projects")} ({projects.length})</CardTitle></CardHeader>
           <CardContent><div className="space-y-3">{projects.map((p: any) => (
-            <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/projects/${p.id}`)}>
+            <div role="button" tabIndex={0} onKeyDown={activateOnKey} key={p.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/projects/${p.id}`)}>
               <div><h4 className="font-medium">{p.name}</h4><p className="text-sm text-gray-500">{p.status}</p></div>
               <Badge variant="outline">{p.health_status || p.status}</Badge>
             </div>
@@ -265,7 +266,7 @@ const PortfolioDetail: React.FC = () => {
         <CardContent>
           {boards.length === 0 ? <p className="text-gray-500 text-center py-8">{pt("No governance boards yet.")}</p> : (
             <div className="space-y-3">{boards.map((board) => (
-              <div key={board.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/governance/boards/${board.id}`)}>
+              <div role="button" tabIndex={0} onKeyDown={activateOnKey} key={board.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/governance/boards/${board.id}`)}>
                 <div><h4 className="font-medium">{board.name}</h4><p className="text-sm text-gray-500">{boardTypeLabels[board.board_type] || board.board_type}{board.meeting_frequency && ` \u00b7 ${board.meeting_frequency}`}</p></div>
                 <Badge variant={board.is_active ? "default" : "secondary"}>{board.is_active ? pt("Active") : pt("Inactive")}</Badge>
               </div>

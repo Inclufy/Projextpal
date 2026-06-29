@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   Clock, BookOpen, Award, Star, Users, ChevronRight, CheckCircle2, 
@@ -408,7 +409,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle, isNL }: PreviewMod
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                {isNL ? 'Transcript' : 'Transcript'}
+                {'Transcript'}
               </button>
             )}
             {keyTakeaways.length > 0 && (
@@ -907,7 +908,7 @@ const CourseDetail = () => {
                   {isNL ? 'Cursusinhoud' : 'Course Content'}
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {totals.modules} {isNL ? 'modules' : 'modules'} • {totals.lessons} {isNL ? 'lessen' : 'lessons'} • {totals.duration} {isNL ? 'uur totaal' : 'hours total'}
+                  {totals.modules} {'modules'} • {totals.lessons} {isNL ? 'lessen' : 'lessons'} • {totals.duration} {isNL ? 'uur totaal' : 'hours total'}
                 </span>
               </div>
 
@@ -999,7 +1000,7 @@ const CourseDetail = () => {
             <div className="sticky top-24">
               <Card className="border-0 ring-1 ring-purple-100 dark:ring-purple-900/50 bg-white dark:bg-gray-900 overflow-hidden">
                 {/* Preview Image */}
-                <div 
+                <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                   className="aspect-video flex items-center justify-center cursor-pointer group"
                   style={{ background: safeCourse.gradient }}
                   onClick={() => {

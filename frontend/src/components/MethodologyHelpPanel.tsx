@@ -1,5 +1,6 @@
 // src/components/MethodologyHelpPanel.tsx
 import { useState } from 'react';
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from 'react-router-dom';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -904,7 +905,7 @@ export const MethodologyHelpPanel = ({
         {activeTab === 'resources' && (
           <div className="space-y-3">
             {config.academyTrack && (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                 className={cn("p-3 rounded-lg cursor-pointer hover:opacity-80", config.bgColor)}
                 onClick={() => navigate('/academy/marketplace')}
               >
@@ -919,7 +920,7 @@ export const MethodologyHelpPanel = ({
               </div>
             )}
             {config.resources.map((resource, i) => (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                 key={i}
                 className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
                 onClick={() => navigate(resource.link)}

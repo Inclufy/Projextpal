@@ -83,7 +83,7 @@ class StripeCheckoutSerializer(serializers.Serializer):
             plan = SubscriptionPlan.objects.get(id=value, is_active=True)
             return value
         except SubscriptionPlan.DoesNotExist:
-            raise serializers.ValidationError("Invalid or inactive subscription plan")
+            raise serializers.ValidationError("Invalid or inactive subscription plan") from None
 
 
 class CompanySubscriptionSerializer(serializers.ModelSerializer):
@@ -160,7 +160,7 @@ class SubscriptionUpgradeSerializer(serializers.Serializer):
             plan = SubscriptionPlan.objects.get(id=value, is_active=True)
             return value
         except SubscriptionPlan.DoesNotExist:
-            raise serializers.ValidationError("Invalid or inactive subscription plan")
+            raise serializers.ValidationError("Invalid or inactive subscription plan") from None
 
 
 class SubscriptionCancelSerializer(serializers.Serializer):

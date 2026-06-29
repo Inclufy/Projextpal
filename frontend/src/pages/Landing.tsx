@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -297,7 +298,7 @@ const Navigation = () => {
   // Academy dropdown items
   const academyItems = [
     { 
-      label: isNL ? 'Training Marketplace' : 'Training Marketplace', 
+      label: 'Training Marketplace', 
       url: '/academy/marketplace', 
       icon: BookOpen,
       desc: isNL ? '100+ cursussen & certificaten' : '100+ courses & certificates',
@@ -1312,7 +1313,7 @@ const About = () => {
 
         <div className="grid md:grid-cols-4 gap-6 mb-16">
           {pillars.map((pillar, i) => (
-            <div 
+            <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
               key={i} 
               className={`bg-card rounded-2xl p-6 border text-center hover-lift transition-all duration-300 ${pillar.link ? 'cursor-pointer' : ''}`}
               onClick={() => pillar.link && navigate(pillar.link)}

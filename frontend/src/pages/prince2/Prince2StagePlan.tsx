@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -263,7 +264,7 @@ const Prince2StagePlan = () => {
                   ) : (
                     <div className="space-y-2">
                       {stageWps.slice(0, 5).map((wp) => (
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                           key={wp.id}
                           onClick={() => navigate(`/projects/${id}/prince2/work-packages?wp=${wp.id}`)}
                           className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 cursor-pointer text-sm"

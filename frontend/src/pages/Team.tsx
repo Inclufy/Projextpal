@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -435,7 +436,7 @@ export default function Team() {
   role: "MEMBER" as const,
   department: "",
   enableTimeTracking: true,
-  password: "TempPass123!",  // ADD THIS
+  password: "",
 });
   const [sendInviteEmail, setSendInviteEmail] = useState(true);
 
@@ -569,7 +570,7 @@ export default function Team() {
 
 // Only send password if NOT sending invite email
 if (!sendInviteEmail) {
-  payload.password = memberData.password || "TempPass123!";
+  payload.password = memberData.password;
 }
 
       const response = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
@@ -591,7 +592,7 @@ if (!sendInviteEmail) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      setNewMember({ name: "", email: "", phone: "", role: "MEMBER", department: "", enableTimeTracking: true, password: "TempPass123!" });
+      setNewMember({ name: "", email: "", phone: "", role: "MEMBER", department: "", enableTimeTracking: true, password: "" });
       setSendInviteEmail(true);
       setIsCreateDialogOpen(false);
       toast({
@@ -1312,7 +1313,7 @@ if (!sendInviteEmail) {
               <CardContent className="p-6 relative">
                 {/* Header with Avatar and Actions */}
                 <div className="flex items-start justify-between mb-4">
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                     className="flex items-center gap-3 cursor-pointer"
                     onClick={() => {
                       setSelectedMember(member);

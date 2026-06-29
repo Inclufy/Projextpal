@@ -263,67 +263,6 @@ class NewsletterTemplateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class ProjectForNewsletterSerializer(serializers.ModelSerializer):
-    """Serializer for projects in newsletter context - includes team members and stakeholders"""
-
-    company_name = serializers.CharField(source="company.name", read_only=True)
-    team_members = serializers.SerializerMethodField()
-    stakeholders = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "name",
-            "company_name",
-            "team_members",
-            "stakeholders",
-        ]
-
-    def get_team_members(self, obj):
-        """Get active team members for this project"""
-        team_members = []
-        for team_member in obj.team_members.filter(is_active=True).select_related(
-            "user"
-        ):
-            user = team_member.user
-            name = user.get_full_name() or user.first_name or user.email
-            team_members.append(
-                {
-                    "id": user.id,
-                    "name": name,
-                    "email": user.email,
-                    "role": user.role,
-                }
-            )
-        return team_members
-
-    def get_stakeholders(self, obj):
-        """Get Execution Stakeholders for this project (from execution.models.Stakeholder)"""
-        stakeholders = []
-        try:
-            from execution.models import Stakeholder
-
-            # Get all stakeholders for this project that have email addresses
-            for stakeholder in Stakeholder.objects.filter(
-                project=obj, contact__isnull=False
-            ).exclude(contact=""):
-                stakeholders.append(
-                    {
-                        "id": stakeholder.id,
-                        "name": stakeholder.name,
-                        "email": stakeholder.contact,
-                        "role": stakeholder.role
-                        or stakeholder.governance_type
-                        or "Stakeholder",
-                    }
-                )
-        except ImportError:
-            # If execution app is not available, return empty list
-            pass
-        return stakeholders
-
-
 class NewsletterSendSerializer(serializers.Serializer):
     """Serializer for sending newsletters"""
 
@@ -354,7 +293,7 @@ class NewsletterPreviewSerializer(serializers.Serializer):
                     )
             return value
         except Project.DoesNotExist:
-            raise serializers.ValidationError("Project not found")
+            raise serializers.ValidationError("Project not found") from None
 
 
 class MailingListSerializer(serializers.ModelSerializer):
@@ -416,67 +355,6 @@ class MailingListSerializer(serializers.ModelSerializer):
             validated_data["company"] = request.user.company
             validated_data["created_by"] = request.user
         return super().create(validated_data)
-
-
-class ProjectForNewsletterSerializer(serializers.ModelSerializer):
-    """Serializer for projects in newsletter context - includes team members and stakeholders"""
-
-    company_name = serializers.CharField(source="company.name", read_only=True)
-    team_members = serializers.SerializerMethodField()
-    stakeholders = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "name",
-            "company_name",
-            "team_members",
-            "stakeholders",
-        ]
-
-    def get_team_members(self, obj):
-        """Get active team members for this project"""
-        team_members = []
-        for team_member in obj.team_members.filter(is_active=True).select_related(
-            "user"
-        ):
-            user = team_member.user
-            name = user.get_full_name() or user.first_name or user.email
-            team_members.append(
-                {
-                    "id": user.id,
-                    "name": name,
-                    "email": user.email,
-                    "role": user.role,
-                }
-            )
-        return team_members
-
-    def get_stakeholders(self, obj):
-        """Get Execution Stakeholders for this project (from execution.models.Stakeholder)"""
-        stakeholders = []
-        try:
-            from execution.models import Stakeholder
-
-            # Get all stakeholders for this project that have email addresses
-            for stakeholder in Stakeholder.objects.filter(
-                project=obj, contact__isnull=False
-            ).exclude(contact=""):
-                stakeholders.append(
-                    {
-                        "id": stakeholder.id,
-                        "name": stakeholder.name,
-                        "email": stakeholder.contact,
-                        "role": stakeholder.role
-                        or stakeholder.governance_type
-                        or "Stakeholder",
-                    }
-                )
-        except ImportError:
-            # If execution app is not available, return empty list
-            pass
-        return stakeholders
 
 
 class MailingListMemberSerializer(serializers.ModelSerializer):
@@ -557,67 +435,6 @@ class ExternalSubscriberSerializer(serializers.ModelSerializer):
         if request and request.user:
             validated_data["company"] = request.user.company
         return super().create(validated_data)
-
-
-class ProjectForNewsletterSerializer(serializers.ModelSerializer):
-    """Serializer for projects in newsletter context - includes team members and stakeholders"""
-
-    company_name = serializers.CharField(source="company.name", read_only=True)
-    team_members = serializers.SerializerMethodField()
-    stakeholders = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "name",
-            "company_name",
-            "team_members",
-            "stakeholders",
-        ]
-
-    def get_team_members(self, obj):
-        """Get active team members for this project"""
-        team_members = []
-        for team_member in obj.team_members.filter(is_active=True).select_related(
-            "user"
-        ):
-            user = team_member.user
-            name = user.get_full_name() or user.first_name or user.email
-            team_members.append(
-                {
-                    "id": user.id,
-                    "name": name,
-                    "email": user.email,
-                    "role": user.role,
-                }
-            )
-        return team_members
-
-    def get_stakeholders(self, obj):
-        """Get Execution Stakeholders for this project (from execution.models.Stakeholder)"""
-        stakeholders = []
-        try:
-            from execution.models import Stakeholder
-
-            # Get all stakeholders for this project that have email addresses
-            for stakeholder in Stakeholder.objects.filter(
-                project=obj, contact__isnull=False
-            ).exclude(contact=""):
-                stakeholders.append(
-                    {
-                        "id": stakeholder.id,
-                        "name": stakeholder.name,
-                        "email": stakeholder.contact,
-                        "role": stakeholder.role
-                        or stakeholder.governance_type
-                        or "Stakeholder",
-                    }
-                )
-        except ImportError:
-            # If execution app is not available, return empty list
-            pass
-        return stakeholders
 
 
 class ExternalSubscriberSubscribeSerializer(serializers.Serializer):
@@ -715,62 +532,3 @@ class NewsletterGlobalSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class ProjectForNewsletterSerializer(serializers.ModelSerializer):
-    """Serializer for projects in newsletter context - includes team members and stakeholders"""
-
-    company_name = serializers.CharField(source="company.name", read_only=True)
-    team_members = serializers.SerializerMethodField()
-    stakeholders = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "name",
-            "company_name",
-            "team_members",
-            "stakeholders",
-        ]
-
-    def get_team_members(self, obj):
-        """Get active team members for this project"""
-        team_members = []
-        for team_member in obj.team_members.filter(is_active=True).select_related(
-            "user"
-        ):
-            user = team_member.user
-            name = user.get_full_name() or user.first_name or user.email
-            team_members.append(
-                {
-                    "id": user.id,
-                    "name": name,
-                    "email": user.email,
-                    "role": user.role,
-                }
-            )
-        return team_members
-
-    def get_stakeholders(self, obj):
-        """Get Execution Stakeholders for this project (from execution.models.Stakeholder)"""
-        stakeholders = []
-        try:
-            from execution.models import Stakeholder
-
-            # Get all stakeholders for this project that have email addresses
-            for stakeholder in Stakeholder.objects.filter(
-                project=obj, contact__isnull=False
-            ).exclude(contact=""):
-                stakeholders.append(
-                    {
-                        "id": stakeholder.id,
-                        "name": stakeholder.name,
-                        "email": stakeholder.contact,
-                        "role": stakeholder.role
-                        or stakeholder.governance_type
-                        or "Stakeholder",
-                    }
-                )
-        except ImportError:
-            # If execution app is not available, return empty list
-            pass
-        return stakeholders

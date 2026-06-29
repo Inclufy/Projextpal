@@ -91,7 +91,7 @@ const AcademyCheckoutSuccess = () => {
       startLearning: isNL ? 'Start met Leren' : 'Start Learning',
       downloadReceipt: isNL ? 'Download Bon' : 'Download Receipt',
       backToCourses: isNL ? 'Terug naar Cursussen' : 'Back to Courses',
-      contactSupport: isNL ? 'Contact Support' : 'Contact Support',
+      contactSupport: 'Contact Support',
     },
     nextSteps: {
       title: isNL ? 'Volgende Stappen' : 'Next Steps',

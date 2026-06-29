@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { activateOnKey } from "@/lib/a11y";
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -176,7 +177,7 @@ const ProgramRoadmap = () => {
                 <div className="space-y-4">
                   {projectsWithPosition.map((proj: any) => (
                     <div key={proj.id} className="flex items-center h-12">
-                      <div 
+                      <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                         className="w-48 shrink-0 pr-4 cursor-pointer hover:text-indigo-600"
                         onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                       >
@@ -191,7 +192,7 @@ const ProgramRoadmap = () => {
                           />
                         ))}
                         {/* Project Bar */}
-                        <div 
+                        <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
                           className={`absolute h-8 ${proj.color} rounded-full flex items-center px-3 text-white text-xs font-medium cursor-pointer hover:opacity-80`}
                           style={{
                             left: `${(proj.startMonth / 12) * 100}%`,

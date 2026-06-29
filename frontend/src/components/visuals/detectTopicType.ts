@@ -265,7 +265,7 @@ export const getTopicMeta = (
       };
     case 'stakeholder':
       return {
-        title: isNL ? 'Stakeholder Management' : 'Stakeholder Management',
+        title: 'Stakeholder Management',
         subtitle: isNL ? 'Belanghebbenden in kaart' : 'Mapping stakeholders',
       };
     case 'risk':

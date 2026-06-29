@@ -254,7 +254,7 @@ const AgileIterationBoard = () => {
                                 {task.attachments}
                               </div>
                             )}
-                            {task.daysInColumn && (
+                            {task.daysInColumn > 0 && (
                               <div className="flex items-center gap-1 text-xs">
                                 <Clock className="h-3 w-3" />
                                 {task.daysInColumn}d

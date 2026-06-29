@@ -9,6 +9,8 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
+import os
+import tempfile
 import qrcode
 from io import BytesIO
 
@@ -126,6 +128,6 @@ def generate_certificate_pdf(certificate):
     """Main function to generate certificate PDF"""
     generator = CertificateGenerator(certificate)
     filename = f"certificate_{certificate.certificate_number}.pdf"
-    output_path = f"/tmp/{filename}"
+    output_path = os.path.join(tempfile.gettempdir(), filename)
     generator.generate(output_path)
     return output_path, filename

@@ -88,7 +88,7 @@ class TrainingMaterialViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet)
                     id=file_id, company=self.request.user.company
                 )
             except Upload.DoesNotExist:
-                raise ValueError("File not found or access denied")
+                raise ValueError("File not found or access denied") from None
 
         # Save training material with optional upload reference
         serializer.save(project=project, file=upload)

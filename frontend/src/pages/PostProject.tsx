@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1791,7 +1792,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               ) : (
                 <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto border rounded-lg p-3">
                   {teamMembers.filter(m => m.isActive).map((member) => (
-                    <div
+                    <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                       key={member.id}
                       onClick={() => toggleRecipient(member.email)}
                       className={cn(

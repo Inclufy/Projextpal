@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import {
   GraduationCap, Plus, Search, MoreHorizontal, Edit, Trash2, Eye,
@@ -133,17 +134,17 @@ const EnhancedCourseBuilder = () => {
     }),
 
     async get<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: this.headers(),
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
     },
 
     async post<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'POST',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
@@ -151,9 +152,9 @@ const EnhancedCourseBuilder = () => {
     },
 
     async patch<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'PATCH',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
@@ -161,9 +162,9 @@ const EnhancedCourseBuilder = () => {
     },
 
     async delete<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'DELETE',
-        headers: this.headers(),
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
@@ -856,7 +857,7 @@ const EnhancedCourseBuilder = () => {
                   renderItem={(module) => (
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={activateOnKey}
                           className="flex-1 cursor-pointer"
                           onClick={() => toggleModule(module.id)}
                         >

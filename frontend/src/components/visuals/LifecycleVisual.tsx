@@ -4,7 +4,7 @@ import type { VisualTemplateProps } from './types';
 const LifecycleVisual: React.FC<VisualTemplateProps> = ({ isNL, visualData }) => {
   const phases = visualData?.phases || [
     { name: isNL ? 'Initiatie' : 'Initiation', description: isNL ? 'Project definiëren, business case, stakeholders' : 'Define project, business case, stakeholders', color: 'blue' },
-    { name: isNL ? 'Planning' : 'Planning', description: isNL ? 'Scope, planning, budget, risicoanalyse' : 'Scope, schedule, budget, risk analysis', color: 'purple' },
+    { name: 'Planning', description: isNL ? 'Scope, planning, budget, risicoanalyse' : 'Scope, schedule, budget, risk analysis', color: 'purple' },
     { name: isNL ? 'Uitvoering' : 'Execution', description: isNL ? 'Team aansturen, deliverables opleveren' : 'Lead team, deliver deliverables', color: 'green' },
     { name: isNL ? 'Bewaking' : 'Monitoring', description: isNL ? 'Voortgang meten, bijsturen, rapporteren' : 'Measure progress, adjust, report', color: 'orange' },
     { name: isNL ? 'Afsluiting' : 'Closing', description: isNL ? 'Oplevering, evaluatie, lessons learned' : 'Delivery, evaluation, lessons learned', color: 'red' },

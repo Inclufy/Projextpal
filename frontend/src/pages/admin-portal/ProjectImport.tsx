@@ -151,7 +151,7 @@ export default function ProjectImport() {
               <div>
                 <p className="text-sm font-medium text-blue-900">
                   <FileSpreadsheet className="h-4 w-4 inline mr-1" />
-                  {isNL ? 'CSV Template' : 'CSV Template'}
+                  {'CSV Template'}
                 </p>
                 <p className="text-xs text-blue-700 mt-0.5">
                   name, project_type, methodology, budget, start_date, end_date, status
@@ -208,7 +208,7 @@ export default function ProjectImport() {
                   <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
                 ))}
               </div>
-              <p className="mt-1">{isNL ? 'Types:' : 'Types:'} software, design, research, other</p>
+              <p className="mt-1">{'Types:'} software, design, research, other</p>
               <p>{isNL ? 'Methodologieën:' : 'Methodologies:'} prince2, agile, scrum, kanban, waterfall</p>
             </div>
 

@@ -162,7 +162,7 @@ export default function AICopilot({ isOpen, onClose, initialContext, onContextCo
   // Simple markdown-like rendering
   const renderContent = (content: string) => {
     return content.split('\n').map((line, i) => {
-      let rendered = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      const rendered = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       if (rendered.startsWith('- ')) {
         return <p key={i} className="ml-2 text-[13px]" dangerouslySetInnerHTML={{ __html: rendered }} />;
       }

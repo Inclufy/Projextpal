@@ -54,7 +54,7 @@ const parseContent = (text: string): React.ReactNode[] => {
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
   let inTable = false;
-  let tableRows: string[][] = [];
+  const tableRows: string[][] = [];
   
   const processLine = (line: string, index: number) => {
     // Headers
@@ -212,7 +212,7 @@ const LessonViewer = ({
     next: isNL ? 'Volgende' : 'Next',
     markComplete: isNL ? 'Markeer als voltooid' : 'Mark as complete',
     duration: isNL ? 'Duur' : 'Duration',
-    download: isNL ? 'Download' : 'Download',
+    download: 'Download',
   };
 
   const hasContent = lesson.transcript || lesson.content;
