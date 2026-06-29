@@ -112,7 +112,7 @@ const AdminTrainingContent = () => {
       courses: isNL ? 'Cursussen' : 'Courses',
       enrollments: isNL ? 'Inschrijvingen' : 'Enrollments',
       quotes: isNL ? 'Offertes' : 'Quotes',
-      analytics: isNL ? 'Analytics' : 'Analytics',
+      analytics: 'Analytics',
     },
     stats: {
       totalCourses: isNL ? 'Totaal Cursussen' : 'Total Courses',

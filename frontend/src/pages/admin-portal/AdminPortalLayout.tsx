@@ -415,7 +415,7 @@ const Header: React.FC<HeaderProps> = ({
             
             <DropdownMenuItem onClick={() => window.location.href = 'mailto:support@inclufy.com?subject=ProjeXtPal Admin Portal Support'}>
               <HelpCircle className="mr-2 h-4 w-4" />
-              {isNL ? 'Help' : 'Help'}
+              {'Help'}
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />

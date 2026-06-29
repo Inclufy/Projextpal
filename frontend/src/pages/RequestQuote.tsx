@@ -138,7 +138,7 @@ const RequestQuote = () => {
     phone: isNL ? 'Telefoonnummer' : 'Phone Number',
     jobTitle: isNL ? 'Functie' : 'Job Title',
     country: isNL ? 'Land' : 'Country',
-    trainingDetails: isNL ? 'Training Details' : 'Training Details',
+    trainingDetails: 'Training Details',
     selectCourses: isNL ? 'Selecteer Cursussen' : 'Select Courses',
     teamSize: isNL ? 'Teamgrootte' : 'Team Size',
     preferredDate: isNL ? 'Gewenste Startdatum' : 'Preferred Start Date',

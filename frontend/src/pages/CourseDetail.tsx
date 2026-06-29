@@ -408,7 +408,7 @@ const PreviewModal = ({ isOpen, onClose, lesson, courseTitle, isNL }: PreviewMod
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                {isNL ? 'Transcript' : 'Transcript'}
+                {'Transcript'}
               </button>
             )}
             {keyTakeaways.length > 0 && (
@@ -907,7 +907,7 @@ const CourseDetail = () => {
                   {isNL ? 'Cursusinhoud' : 'Course Content'}
                 </h2>
                 <span className="text-sm text-gray-500">
-                  {totals.modules} {isNL ? 'modules' : 'modules'} • {totals.lessons} {isNL ? 'lessen' : 'lessons'} • {totals.duration} {isNL ? 'uur totaal' : 'hours total'}
+                  {totals.modules} {'modules'} • {totals.lessons} {isNL ? 'lessen' : 'lessons'} • {totals.duration} {isNL ? 'uur totaal' : 'hours total'}
                 </span>
               </div>
 

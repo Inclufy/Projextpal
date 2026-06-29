@@ -5,9 +5,9 @@ const ComparisonVisual: React.FC<VisualTemplateProps> = ({ isNL, visualData }) =
   const items = visualData?.items || [
     { label: isNL ? 'Duur' : 'Duration', project: isNL ? 'Tijdelijk (begin & einde)' : 'Temporary (start & end)', operation: isNL ? 'Doorlopend' : 'Ongoing' },
     { label: isNL ? 'Doel' : 'Goal', project: isNL ? 'Uniek resultaat' : 'Unique result', operation: isNL ? 'Herhaalbaar proces' : 'Repeatable process' },
-    { label: isNL ? 'Team' : 'Team', project: isNL ? 'Wisselend, multidisciplinair' : 'Changing, multidisciplinary', operation: isNL ? 'Vast team' : 'Fixed team' },
+    { label: 'Team', project: isNL ? 'Wisselend, multidisciplinair' : 'Changing, multidisciplinary', operation: isNL ? 'Vast team' : 'Fixed team' },
     { label: isNL ? 'Risico' : 'Risk', project: isNL ? 'Hoog (onzekerheid)' : 'High (uncertainty)', operation: isNL ? 'Laag (voorspelbaar)' : 'Low (predictable)' },
-    { label: isNL ? 'Budget' : 'Budget', project: isNL ? 'Vast budget, eenmalig' : 'Fixed budget, one-time', operation: isNL ? 'Terugkerend budget' : 'Recurring budget' },
+    { label: 'Budget', project: isNL ? 'Vast budget, eenmalig' : 'Fixed budget, one-time', operation: isNL ? 'Terugkerend budget' : 'Recurring budget' },
   ];
 
   return (
@@ -27,7 +27,7 @@ const ComparisonVisual: React.FC<VisualTemplateProps> = ({ isNL, visualData }) =
               <th className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 text-center text-white font-bold w-2/5">
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-xl">🎯</span>
-                  <span>{isNL ? 'PROJECT' : 'PROJECT'}</span>
+                  <span>{'PROJECT'}</span>
                 </div>
               </th>
               <th className="bg-gradient-to-r from-gray-500 to-gray-600 p-4 text-center text-white font-bold w-2/5">

@@ -86,7 +86,7 @@ const Login = () => {
     authSuccess: isNL ? 'Authenticatie geslaagd' : 'Authentication successful',
     redirecting: isNL ? 'Doorsturen naar checkout...' : 'Redirecting to checkout...',
     settingUpPlan: isNL ? 'Instellen van' : 'Setting up',
-    plan: isNL ? 'plan' : 'plan',
+    plan: 'plan',
     copyright: isNL ? 'Enterprise Projectmanagement Platform.' : 'Enterprise Project Management Platform.',
     biometricLogin: isNL ? 'Inloggen met Face ID / Vingerafdruk' : 'Sign in with Face ID / Fingerprint',
     biometricLoading: isNL ? 'Biometrische verificatie...' : 'Biometric verification...',

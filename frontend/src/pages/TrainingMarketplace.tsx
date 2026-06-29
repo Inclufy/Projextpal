@@ -287,9 +287,9 @@ const TrainingMarketplace = () => {
       startFree: isNL ? 'Start Gratis' : 'Start Free',
     },
     hero: {
-      badge: isNL ? '🎓 ProjectPal Learning Academy' : '🎓 ProjectPal Learning Academy',
+      badge: '🎓 ProjectPal Learning Academy',
       title1: isNL ? 'Word Een Expert In' : 'Become An Expert In',
-      title2: isNL ? 'Project Management' : 'Project Management',
+      title2: 'Project Management',
       subtitle: isNL 
         ? 'Ontdek professionele cursussen van industrie-experts. Van beginner tot expert met praktische opdrachten, quizzes en officiële certificaten.'
         : 'Discover professional courses from industry experts. From beginner to expert with hands-on assignments, quizzes and official certificates.',
@@ -298,7 +298,7 @@ const TrainingMarketplace = () => {
     },
     // UPDATED: Dynamic stats from getCourseStats()
     stats: [
-      { value: academyStats.totalModules.toString(), label: isNL ? 'Modules' : 'Modules', icon: BookOpen },
+      { value: academyStats.totalModules.toString(), label: 'Modules', icon: BookOpen },
       { value: academyStats.totalLessons.toString(), label: isNL ? 'Lessen' : 'Lessons', icon: PlayCircle },
       { value: `${Math.round(academyStats.totalHours)}+`, label: isNL ? 'Uur Video' : 'Hours Video', icon: Clock },
       { value: academyStats.totalCourses.toString(), label: isNL ? 'Certificaten' : 'Certificates', icon: Award },
@@ -311,16 +311,16 @@ const TrainingMarketplace = () => {
       methodologies: isNL ? 'Per Methodologie' : 'By Methodology',
     },
     labels: {
-      levels: isNL ? 'Levels' : 'Levels',
-      modules: isNL ? 'Modules' : 'Modules',
+      levels: 'Levels',
+      modules: 'Modules',
       lessons: isNL ? 'Lessen' : 'Lessons',
       hours: isNL ? 'uur' : 'hours',
       students: isNL ? 'studenten' : 'students',
-      startTraining: isNL ? 'Start Training' : 'Start Training',
+      startTraining: 'Start Training',
       viewCourse: isNL ? 'Bekijk Cursus' : 'View Course',
       certificate: isNL ? 'Certificaat inbegrepen' : 'Certificate included',
       new: isNL ? 'Nieuw' : 'New',
-      bestseller: isNL ? 'Bestseller' : 'Bestseller',
+      bestseller: 'Bestseller',
       conceptsOnly: isNL ? 'Alleen concepten' : 'Concepts only',
       free: isNL ? 'Gratis' : 'Free',
       freeForCustomers: isNL ? 'Gratis voor klanten' : 'Free for customers',
@@ -951,7 +951,7 @@ const TrainingMarketplace = () => {
               className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium"
             >
               <option value="all">{isNL ? 'Alle Niveaus' : 'All Levels'}</option>
-              <option value="beginner">{isNL ? 'Beginner' : 'Beginner'}</option>
+              <option value="beginner">{'Beginner'}</option>
               <option value="intermediate">{isNL ? 'Gemiddeld' : 'Intermediate'}</option>
               <option value="advanced">{isNL ? 'Gevorderd' : 'Advanced'}</option>
             </select>

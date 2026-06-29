@@ -727,7 +727,7 @@ function PlanForm({ formData, setFormData, isNL, isEdit }: PlanFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>{isNL ? 'Type' : 'Type'}</Label>
+          <Label>{'Type'}</Label>
           <Select 
             value={formData.plan_type} 
             onValueChange={(v) => setFormData({ ...formData, plan_type: v })}
@@ -810,7 +810,7 @@ function PlanForm({ formData, setFormData, isNL, isEdit }: PlanFormProps) {
       </div>
 
       <div className="space-y-4 pt-4">
-        <Label className="text-base font-semibold">{isNL ? 'Features' : 'Features'}</Label>
+        <Label className="text-base font-semibold">{'Features'}</Label>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center justify-between">
             <Label>{isNL ? 'Actief' : 'Active'}</Label>
@@ -827,7 +827,7 @@ function PlanForm({ formData, setFormData, isNL, isEdit }: PlanFormProps) {
             />
           </div>
           <div className="flex items-center justify-between">
-            <Label>{isNL ? 'Priority Support' : 'Priority Support'}</Label>
+            <Label>{'Priority Support'}</Label>
             <Switch
               checked={formData.priority_support}
               onCheckedChange={(v) => setFormData({ ...formData, priority_support: v })}

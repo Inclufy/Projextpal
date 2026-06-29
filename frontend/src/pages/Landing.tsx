@@ -297,7 +297,7 @@ const Navigation = () => {
   // Academy dropdown items
   const academyItems = [
     { 
-      label: isNL ? 'Training Marketplace' : 'Training Marketplace', 
+      label: 'Training Marketplace', 
       url: '/academy/marketplace', 
       icon: BookOpen,
       desc: isNL ? '100+ cursussen & certificaten' : '100+ courses & certificates',

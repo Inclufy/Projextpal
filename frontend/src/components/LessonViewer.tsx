@@ -212,7 +212,7 @@ const LessonViewer = ({
     next: isNL ? 'Volgende' : 'Next',
     markComplete: isNL ? 'Markeer als voltooid' : 'Mark as complete',
     duration: isNL ? 'Duur' : 'Duration',
-    download: isNL ? 'Download' : 'Download',
+    download: 'Download',
   };
 
   const hasContent = lesson.transcript || lesson.content;

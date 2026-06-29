@@ -464,7 +464,7 @@ export default function ExamEngine({
             </h2>
             <div className="text-4xl font-bold my-4">{results.percentage}%</div>
             <p className="text-muted-foreground mb-2">
-              {results.score} / {results.max_score} {isNL ? "correct" : "correct"}
+              {results.score} / {results.max_score} {"correct"}
             </p>
             <Progress value={results.percentage} className="h-3 my-4" />
             <Badge variant={results.passed ? "default" : "destructive"} className="text-sm">

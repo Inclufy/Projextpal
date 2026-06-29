@@ -230,7 +230,7 @@ export default function TimesheetExport() {
             </Button>
             <Button onClick={() => setIsApiDialogOpen(true)} variant="outline" size="sm" className="gap-2 ml-auto">
               <Key className="h-4 w-4" />
-              {isNL ? 'API Endpoint' : 'API Endpoint'}
+              {'API Endpoint'}
             </Button>
           </div>
 
@@ -243,7 +243,7 @@ export default function TimesheetExport() {
                     <TableHead>{isNL ? 'Datum' : 'Date'}</TableHead>
                     <TableHead>{isNL ? 'Uren' : 'Hours'}</TableHead>
                     <TableHead>{isNL ? 'Gebruiker' : 'User'}</TableHead>
-                    <TableHead>{isNL ? 'Project' : 'Project'}</TableHead>
+                    <TableHead>{'Project'}</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>{isNL ? 'Kosten' : 'Cost'}</TableHead>
                   </TableRow>
@@ -292,7 +292,7 @@ export default function TimesheetExport() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>{isNL ? 'API Endpoint' : 'API Endpoint'}</Label>
+              <Label>{'API Endpoint'}</Label>
               <div className="flex items-center gap-2">
                 <code className="flex-1 p-2.5 bg-slate-100 rounded-md text-xs font-mono break-all">
                   GET /api/v1/admin/timesheets/api/
@@ -314,7 +314,7 @@ export default function TimesheetExport() {
             </div>
 
             <div className="space-y-2">
-              <Label>{isNL ? 'Query Parameters' : 'Query Parameters'}</Label>
+              <Label>{'Query Parameters'}</Label>
               <div className="p-3 bg-slate-50 border rounded-lg text-xs space-y-1">
                 {[
                   { param: 'project_id', desc: isNL ? 'Filter op project' : 'Filter by project' },

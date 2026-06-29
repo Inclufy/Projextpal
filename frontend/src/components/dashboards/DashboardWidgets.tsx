@@ -277,13 +277,13 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
 
     const courseMap: Record<string, { title: string; subtitle: string; slug: string }> = {
       'prince2': { title: 'PRINCE2 Foundation & Practitioner', subtitle: isNL ? 'Gestructureerd projectmanagement' : 'Structured project management', slug: 'prince2-foundation' },
-      'scrum': { title: 'Professional Scrum Master', subtitle: isNL ? 'Agile team management' : 'Agile team management', slug: 'scrum-master' },
+      'scrum': { title: 'Professional Scrum Master', subtitle: 'Agile team management', slug: 'scrum-master' },
       'kanban': { title: 'Kanban System Design', subtitle: isNL ? 'Flow-gebaseerd werken' : 'Flow-based work management', slug: 'kanban-practitioner' },
       'agile': { title: 'Agile Project Management', subtitle: isNL ? 'Iteratief projectbeheer' : 'Iterative project delivery', slug: 'agile-fundamentals' },
       'waterfall': { title: 'Waterfall Planning Mastery', subtitle: isNL ? 'Planmatig projectbeheer' : 'Sequential project planning', slug: 'waterfall-pm' },
       'lean_six_sigma_green': { title: 'Lean Six Sigma Green Belt', subtitle: isNL ? 'Procesverbetering' : 'Process improvement', slug: 'lean-six-sigma' },
       'lean_six_sigma_black': { title: 'Lean Six Sigma Black Belt', subtitle: isNL ? 'Geavanceerde procesverbetering' : 'Advanced process improvement', slug: 'lean-six-sigma' },
-      'safe': { title: 'SAFe Agilist', subtitle: isNL ? 'Enterprise agility' : 'Enterprise agility', slug: 'safe-scaling-agile' },
+      'safe': { title: 'SAFe Agilist', subtitle: 'Enterprise agility', slug: 'safe-scaling-agile' },
       'msp': { title: 'MSP Programme Management', subtitle: isNL ? 'Programmabeheer' : 'Programme management', slug: 'program-management-pro' },
       'pmi': { title: 'PMP Certification Prep', subtitle: isNL ? 'PMI standaarden' : 'PMI standards', slug: 'pm-fundamentals' },
       'hybrid': { title: 'Hybrid Project Management', subtitle: isNL ? 'Beste van beide werelden' : 'Best of both worlds', slug: 'pm-fundamentals' },

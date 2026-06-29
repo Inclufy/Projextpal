@@ -447,7 +447,7 @@ const CourseLearningPlayer = () => {
     },
     {
       id: 'perfect-score',
-      title: language === 'nl' ? '💯 Perfect Score' : '💯 Perfect Score',
+      title: '💯 Perfect Score',
       description: language === 'nl' ? '3 simulaties perfect beantwoord' : '3 simulations answered perfectly',
       icon: Trophy,
       color: 'from-yellow-500 to-orange-500',
@@ -457,7 +457,7 @@ const CourseLearningPlayer = () => {
     },
     {
       id: 'practice-master',
-      title: language === 'nl' ? '📝 Practice Master' : '📝 Practice Master',
+      title: '📝 Practice Master',
       description: language === 'nl' ? '5 praktijkopdrachten ingediend' : '5 practice assignments submitted',
       icon: Award,
       color: 'from-purple-500 to-pink-500',
@@ -467,7 +467,7 @@ const CourseLearningPlayer = () => {
     },
     {
       id: 'speed-learner',
-      title: language === 'nl' ? '⚡ Speed Learner' : '⚡ Speed Learner',
+      title: '⚡ Speed Learner',
       description: language === 'nl' ? 'Voltooi 5 lessen in één dag' : 'Complete 5 lessons in one day',
       icon: Zap,
       color: 'from-green-500 to-emerald-500',
@@ -477,7 +477,7 @@ const CourseLearningPlayer = () => {
     },
     {
       id: 'streak-week',
-      title: language === 'nl' ? '🔥 Week Streak' : '🔥 Week Streak',
+      title: '🔥 Week Streak',
       description: language === 'nl' ? '7 dagen achtereen geleerd' : 'Learned 7 days in a row',
       icon: Flame,
       color: 'from-red-500 to-orange-500',
@@ -745,7 +745,7 @@ const renderTripleConstraintVisual = (content: string, isNL: boolean) => `
               <svg class="w-10 h-10 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span class="text-white font-bold text-sm">${isNL ? 'BUDGET' : 'BUDGET'}</span>
+              <span class="text-white font-bold text-sm">${'BUDGET'}</span>
             </div>
             <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-32 opacity-0 group-hover:opacity-100 transition-opacity">
               <div class="bg-green-600 text-white text-xs p-2 rounded-lg text-center shadow-lg">
@@ -762,7 +762,7 @@ const renderTripleConstraintVisual = (content: string, isNL: boolean) => `
               <svg class="w-10 h-10 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span class="text-white font-bold text-sm text-center px-1">${isNL ? 'SCOPE' : 'SCOPE'}</span>
+              <span class="text-white font-bold text-sm text-center px-1">${'SCOPE'}</span>
             </div>
             <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-32 opacity-0 group-hover:opacity-100 transition-opacity">
               <div class="bg-purple-600 text-white text-xs p-2 rounded-lg text-center shadow-lg">
@@ -840,7 +840,7 @@ const renderTripleConstraintVisual = (content: string, isNL: boolean) => `
           </div>
           <div>
             <h5 class="text-2xl font-bold">${isNL ? '🏢 Echte Business Case' : '🏢 Real Business Case'}</h5>
-            <p class="opacity-90">${isNL ? 'Website Redesign Project' : 'Website Redesign Project'}</p>
+            <p class="opacity-90">${'Website Redesign Project'}</p>
           </div>
         </div>
         
@@ -883,7 +883,7 @@ const renderTripleConstraintVisual = (content: string, isNL: boolean) => `
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-green-300">B.</span>
-                <span>${isNL ? '€100k (2x budget)' : '€100k (2x budget)'}</span>
+                <span>${'€100k (2x budget)'}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-green-300">C.</span>
@@ -1116,7 +1116,7 @@ const contentSections = useMemo(() => {
       
       // Confetti effect would go here
       toast({
-        title: isNL ? '🏆 Achievement Unlocked!' : '🏆 Achievement Unlocked!',
+        title: '🏆 Achievement Unlocked!',
         description: newlyUnlocked.title,
       });
     }
@@ -1167,7 +1167,7 @@ const handleSimulationAnswer = async (answerIndex: number, correctIndex: number)
     checkAndUnlockAchievements('simulation-correct');
 
     toast({
-      title: isNL ? '🎯 Correct!' : '🎯 Correct!',
+      title: '🎯 Correct!',
       description: isNL ? 'Je hebt extra skill punten verdiend!' : 'You earned bonus skill points!',
     });
   }
@@ -1298,7 +1298,7 @@ Realistic examples and scenarios
       getCertificate: isNL ? 'Download Certificaat' : 'Get Certificate',
       continueToNext: isNL ? 'Naar volgende les' : 'Continue to next lesson',
       notes: isNL ? 'Notities' : 'Notes',
-      resources: isNL ? 'Resources' : 'Resources',
+      resources: 'Resources',
       saveNotes: isNL ? 'Notities Opslaan' : 'Save Notes',
       notesPlaceholder: isNL ? 'Schrijf hier je notities...' : 'Write your notes here...',
     },
@@ -2808,7 +2808,7 @@ return (
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setCertificateDialogOpen(false)}>
-              {isNL ? 'Later' : 'Later'}
+              {'Later'}
             </Button>
             <Button className="bg-gradient-to-r from-orange-600 to-pink-600 text-white">
               <Download className="w-4 h-4 mr-2" />
@@ -2887,7 +2887,7 @@ return (
               {currentSimulationAnswer === currentScenario?.simulation.correctAnswer ? (
                 <>
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  {isNL ? 'Correct!' : 'Correct!'}
+                  {'Correct!'}
                 </>
               ) : (
                 <>
@@ -2924,7 +2924,7 @@ return (
           </div>
           <DialogFooter>
             <Button onClick={() => setShowScoreDialog(false)}>
-              {isNL ? 'OK' : 'OK'}
+              {'OK'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2993,7 +2993,7 @@ return (
               ) : (
                 <>
                   <Sparkle className="w-4 h-4 mr-2" />
-                  {isNL ? 'AI Feedback' : 'AI Feedback'}
+                  {'AI Feedback'}
                 </>
               )}
             </Button>
@@ -3023,7 +3023,7 @@ return (
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-purple-600" />
-              {isNL ? '🤖 AI Feedback' : '🤖 AI Feedback'}
+              {'🤖 AI Feedback'}
             </DialogTitle>
             <DialogDescription>
               {isNL ? 'Automatische analyse van je opdracht' : 'Automated analysis of your assignment'}
