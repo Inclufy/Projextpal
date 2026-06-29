@@ -333,7 +333,8 @@ export default function ExamEngine({
     for (const q of questions) {
       const selected = answers[String(q.id)] || [];
       const correct = SAMPLE_CORRECT[q.id] || [q.answers[1]?.id];
-      const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
+      const byId = (a: unknown, b: unknown) => String(a).localeCompare(String(b));
+      const isCorrect = JSON.stringify([...selected].sort(byId)) === JSON.stringify([...correct].sort(byId));
       if (isCorrect) score++;
       questionResults.push({
         question_id: q.id,

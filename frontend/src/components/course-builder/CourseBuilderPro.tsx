@@ -127,34 +127,34 @@ const EnhancedCourseBuilder = () => {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
     }),
     async get<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: this.headers(),
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
     },
     async post<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'POST',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
     },
     async patch<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'PATCH',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
     },
     async delete<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'DELETE',
-        headers: this.headers(),
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
