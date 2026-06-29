@@ -89,7 +89,7 @@ const Demo = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,

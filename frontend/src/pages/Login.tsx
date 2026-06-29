@@ -170,7 +170,7 @@ const Login = () => {
         // Normal login - go to dashboard
         window.location.href = '/dashboard';
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: txt.authFailed,
         description: error.message || txt.invalidCreds,
@@ -214,7 +214,7 @@ const Login = () => {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: txt.biometricFailed,
         description: error.message,

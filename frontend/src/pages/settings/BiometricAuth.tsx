@@ -135,7 +135,7 @@ export default function BiometricAuth() {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: txt.error,
         description: error.message,
@@ -157,7 +157,7 @@ export default function BiometricAuth() {
       if (updatedCreds.length === 0) {
         removeSavedBiometricEmail();
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: txt.error,
         description: error.message,

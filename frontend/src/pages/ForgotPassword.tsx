@@ -70,7 +70,7 @@ export default function ForgotPassword() {
 
       setEmailSent(true);
       toast.success(txt.successSent);
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || txt.errorGeneric);
     } finally {
       setIsSubmitting(false);

@@ -116,7 +116,7 @@ export default function OrganizationManagement() {
       const params = searchQuery ? { search: searchQuery } : {};
       const data = await api.get<any>('/admin/tenants/', params);
       setOrganizations(data.results || data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching organizations:', err);
       setError(isNL ? 'Kon organisaties niet laden' : 'Failed to load organizations');
     } finally {
@@ -166,7 +166,7 @@ export default function OrganizationManagement() {
       setIsCreateDialogOpen(false);
       resetForm();
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsCreating(false);
@@ -193,7 +193,7 @@ export default function OrganizationManagement() {
       setIsEditDialogOpen(false);
       resetForm();
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsUpdating(false);
@@ -210,7 +210,7 @@ export default function OrganizationManagement() {
       setIsDeleteDialogOpen(false);
       setSelectedOrg(null);
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsDeleting(false);

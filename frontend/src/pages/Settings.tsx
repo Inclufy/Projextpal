@@ -99,7 +99,7 @@ function ApiKeysSection({ pt }: { pt: (key: string) => string }) {
       else setAnthropicKey('');
 
       fetchKeys();
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: pt('Error'),
         description: err.message || pt('Failed to save API key'),
@@ -346,7 +346,7 @@ export default function Settings() {
         title: 'Success',
         description: 'Profile updated successfully'
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update profile',
@@ -393,7 +393,7 @@ export default function Settings() {
         new_password: '',
         confirm_password: ''
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to change password',

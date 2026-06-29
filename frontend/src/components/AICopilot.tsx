@@ -133,7 +133,7 @@ export default function AICopilot({ isOpen, onClose, initialContext, onContextCo
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (err: any) {
+    } catch (err) {
       console.error('[AICopilot] Error:', err);
       const fallbackMessage: Message = {
         id: generateId(),

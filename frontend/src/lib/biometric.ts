@@ -126,7 +126,7 @@ export const registerBiometric = async (deviceName?: string): Promise<{ success:
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Biometric registration error:', error);
     return {
       success: false,
@@ -203,7 +203,7 @@ export const authenticateBiometric = async (email: string): Promise<{
 
     const data = await completeRes.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Biometric authentication error:', error);
     return {
       success: false,

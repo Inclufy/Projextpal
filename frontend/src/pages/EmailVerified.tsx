@@ -35,7 +35,7 @@ export default function EmailVerified() {
           setStatus('error');
           setMessage(data.error || pt('Verification failed. Link may be expired or invalid.'));
         }
-      } catch (error: any) {
+      } catch (error) {
         setStatus('error');
         setMessage(pt('Verification failed. Please try again.'));
       }
