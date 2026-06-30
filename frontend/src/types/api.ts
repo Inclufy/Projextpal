@@ -81,7 +81,7 @@ export interface Expense {
   description: string | null;
   category: string | null;
   date: string | null;
-  amount: number;
+  amount: string; // DecimalField → string
   status: string;
   created_by: number | null;
   created_at: string;
@@ -97,7 +97,8 @@ export interface Project {
   name: string;
   project_type: string | null;
   methodology: string | null;
-  budget: number | null;
+  // DecimalField → serialized as a string by DRF (e.g. "1000.00")
+  budget: string | null;
   currency: string | null;
   start_date: string | null;
   target_implementation_date: string | null;
@@ -108,8 +109,9 @@ export interface Project {
   scope_out: string | null;
   problem_impact: string | null;
   proposed_solution: string | null;
-  roi_target_pct: number | null;
-  roi_realized_pct: number | null;
+  // DecimalField → string
+  roi_target_pct: string | null;
+  roi_realized_pct: string | null;
   status: string;
   progress: number;
   pm_can_authorize: boolean;
@@ -134,11 +136,11 @@ export interface TimeEntry {
   milestone: number | null;
   milestone_name: string | null;
   date: string;
-  hours: number;
+  hours: string; // DecimalField → string
   description: string | null;
   status: string;
-  hourly_rate_snapshot: number | null;
-  labor_cost: number | null;
+  hourly_rate_snapshot: string | null; // DecimalField → string
+  labor_cost: string | null; // DecimalField → string
   billable: boolean;
   approved_by: number | null;
   approved_by_name: string | null;
