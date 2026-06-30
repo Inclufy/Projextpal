@@ -4,8 +4,13 @@
  * stable string comparator so numeric and string ids compare consistently.
  * Shared by QuizEngine and ExamEngine. See SonarQube S2871.
  */
-export function answersMatch(selected: unknown[], correct: unknown[]): boolean {
-  const byId = (a: unknown, b: unknown) => String(a).localeCompare(String(b));
+type AnswerId = string | number;
+
+export function answersMatch(
+  selected: ReadonlyArray<AnswerId>,
+  correct: ReadonlyArray<AnswerId>,
+): boolean {
+  const byId = (a: AnswerId, b: AnswerId) => String(a).localeCompare(String(b));
   return (
     JSON.stringify([...selected].sort(byId)) ===
     JSON.stringify([...correct].sort(byId))

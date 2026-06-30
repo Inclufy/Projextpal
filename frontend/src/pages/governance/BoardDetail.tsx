@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { activateOnKey } from "@/lib/a11y";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -510,7 +509,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewMeetings.map((m) => (
-                <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+                <button type="button"
                   key={m.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => board.program && navigate(`/programs/${board.program}/governance`)}
@@ -528,7 +527,7 @@ const BoardDetail: React.FC = () => {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
               {meetings.length > previewMeetings.length && (
                 <button
@@ -586,7 +585,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewDecisions.map((d) => (
-                <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+                <button type="button"
                   key={d.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/governance/decisions?board=${id}&highlight=${d.id}`)}
@@ -602,7 +601,7 @@ const BoardDetail: React.FC = () => {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
               {decisions.length > previewDecisions.length && (
                 <button
