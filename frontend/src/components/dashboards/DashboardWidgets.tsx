@@ -1,5 +1,4 @@
 import React from "react";
-import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +81,7 @@ export const MethodologyBreakdown: React.FC<MethodologyBreakdownProps> = ({ proj
           const percentage = projects.length > 0 ? Math.round((data.count / projects.length) * 100) : 0;
 
           return (
-            <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+            <button type="button"
               key={key}
               className={`group relative flex items-center gap-4 p-3.5 rounded-xl ${config.bgColor} ring-1 ${config.borderColor} hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/projects?methodology=${key}`)}
@@ -115,7 +114,7 @@ export const MethodologyBreakdown: React.FC<MethodologyBreakdownProps> = ({ proj
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 dark:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
-            </div>
+            </button>
           );
         })}
       </CardContent>
@@ -180,7 +179,7 @@ export const CertificationsWidget: React.FC = () => {
         {certs.length > 0 ? (
           <div className="space-y-3">
             {certs.slice(0, 4).map((cert: any, idx: number) => (
-              <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+              <button type="button"
                 key={cert.id || idx}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/80 to-orange-50/80 dark:from-amber-900/10 dark:to-orange-900/10 ring-1 ring-amber-200/50 dark:ring-amber-800/30 hover:shadow-md transition-all duration-200 cursor-pointer"
                 onClick={() => navigate(`/academy/course/${cert.course_id || cert.course}/learn?tab=certificate`)}
@@ -207,7 +206,7 @@ export const CertificationsWidget: React.FC = () => {
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   {isNL ? "Behaald" : "Achieved"}
                 </Badge>
-              </div>
+              </button>
             ))}
             {certs.length > 4 && (
               <Button
@@ -342,7 +341,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
         {courseRecommendations.map((course, idx) => {
           const Icon = course.icon;
           return (
-            <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+            <button type="button"
               key={idx}
               className={`group flex items-center gap-3 p-3.5 rounded-xl ${course.gradient} ring-1 ring-purple-100/50 dark:ring-purple-800/30 hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/academy/course/${course.slug}`)}
@@ -359,7 +358,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
                 </p>
               </div>
               <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-purple-500 dark:text-gray-600 dark:group-hover:text-purple-400 transition-colors" />
-            </div>
+            </button>
           );
         })}
       </CardContent>

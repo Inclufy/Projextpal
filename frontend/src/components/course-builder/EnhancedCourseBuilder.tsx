@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import {
   GraduationCap, Plus, Search, MoreHorizontal, Edit, Trash2, Eye,
@@ -857,7 +856,7 @@ const EnhancedCourseBuilder = () => {
                   renderItem={(module) => (
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <div role="button" tabIndex={0} onKeyDown={activateOnKey}
+                        <button type="button"
                           className="flex-1 cursor-pointer"
                           onClick={() => toggleModule(module.id)}
                         >
@@ -873,7 +872,7 @@ const EnhancedCourseBuilder = () => {
                           {module.description && (
                             <p className="text-sm text-muted-foreground mt-1 ml-7">{module.description}</p>
                           )}
-                        </div>
+                        </button>
                         <div className="flex gap-2">
                           <Button
                             size="sm"

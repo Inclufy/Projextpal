@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { activateOnKey } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1313,7 +1312,7 @@ const About = () => {
 
         <div className="grid md:grid-cols-4 gap-6 mb-16">
           {pillars.map((pillar, i) => (
-            <div role="button" tabIndex={0} onKeyDown={activateOnKey} 
+            <button type="button" 
               key={i} 
               className={`bg-card rounded-2xl p-6 border text-center hover-lift transition-all duration-300 ${pillar.link ? 'cursor-pointer' : ''}`}
               onClick={() => pillar.link && navigate(pillar.link)}
@@ -1327,7 +1326,7 @@ const About = () => {
               </div>
               <h3 className="font-bold text-lg mb-2">{pillar.title}</h3>
               <p className="text-muted-foreground text-sm">{pillar.desc}</p>
-            </div>
+            </button>
           ))}
         </div>
 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { activateOnKey } from "@/lib/a11y";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,7 +178,7 @@ const Prince2HighlightReport = () => {
             {reports.map((r) => (
               <Card key={r.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div role="button" tabIndex={0} onKeyDown={activateOnKey} className="flex-1 cursor-pointer" onClick={() => setViewing(r)}>
+                  <button type="button" className="flex-1 cursor-pointer" onClick={() => setViewing(r)}>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {(["overall_status", "rag_budget", "rag_planning", "rag_resources"] as const).map((k) => (
                         <Badge key={k} className={`text-xs ${statusColor(r[k])}`}>{({ overall_status: "Overall", rag_budget: "Budget", rag_planning: "Planning", rag_resources: "Resources" }[k])}</Badge>
@@ -202,7 +201,7 @@ const Prince2HighlightReport = () => {
                         ))}
                       </div>
                     )}
-                  </div>
+                  </button>
                   <div className="flex gap-1 ml-4">
                     <Button variant="ghost" size="sm" title={pt("View")} onClick={() => setViewing(r)}><Eye className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="sm" title={pt("Download PPTX")} onClick={() => downloadPptx(r.id)}><Download className="h-4 w-4" /></Button>
