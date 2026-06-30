@@ -182,12 +182,6 @@ class Newsletter(models.Model):
             # Get recipients from selected mailing lists
             recipient_ids = []
             for mailing_list in self.mailing_lists.all():
-                # Get external subscribers
-                external_ids = mailing_list.members.filter(
-                    external_subscriber__isnull=False,
-                    external_subscriber__is_subscribed=True
-                ).values_list('external_subscriber__id', flat=True)
-                
                 # Get users
                 user_ids = mailing_list.members.filter(
                     user__isnull=False

@@ -124,7 +124,7 @@ def create_checkout_session(request):
         # Free course - direct enrollment
         if course['price'] == 0:
             # Create enrollment directly
-            enrollment = create_enrollment(
+            create_enrollment(
                 email=email,
                 first_name=first_name,
                 last_name=last_name,

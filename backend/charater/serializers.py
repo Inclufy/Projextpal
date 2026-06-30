@@ -55,7 +55,7 @@ class ProgramCharterSerializer(serializers.ModelSerializer):
         Override create method to handle create_new_version field properly
         """
         # Remove create_new_version from validated_data as it's not a model field
-        create_new_version = validated_data.pop('create_new_version', True)
+        validated_data.pop('create_new_version', True)
         
         # Create the charter instance normally
         charter = ProgramCharter.objects.create(**validated_data)
