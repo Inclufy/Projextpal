@@ -1030,7 +1030,7 @@ class SixSigmaDashboardView(APIView):
         phase_progress = {}
         current_phase = 'define'
         
-        for phase, _display in TollgateReview.PHASE_CHOICES:
+        for phase, display in TollgateReview.PHASE_CHOICES:
             tollgate = tollgates.filter(phase=phase).first()
             if tollgate:
                 phase_progress[phase] = {

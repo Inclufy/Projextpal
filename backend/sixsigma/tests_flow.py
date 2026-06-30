@@ -251,7 +251,7 @@ class SavingsValidationGateTests(TestCase):
         self.assertEqual(rec.recognized_amount, 0)
 
     def test_cross_tenant_savings_hidden(self):
-        self._create()
+        sid = self._create()
         other_co = Company.objects.create(name="OtherCo")
         User = get_user_model()
         intruder = User.objects.create_user(

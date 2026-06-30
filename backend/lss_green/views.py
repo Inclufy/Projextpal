@@ -159,7 +159,7 @@ class LSSGreenSeedDemoView(viewsets.ViewSet):
                     ('control', 'Sustain improvements via control plan.', 'not_started', 45),
                 ]
                 from django.utils import timezone as tz
-                for order, (phase, obj, status, _off) in enumerate(phases_seed):
+                for order, (phase, obj, status, off) in enumerate(phases_seed):
                     DMAICPhase.objects.create(
                         project=project, phase=phase, objective=obj, status=status, order=order,
                         started_at=tz.now() if status != 'not_started' else None,

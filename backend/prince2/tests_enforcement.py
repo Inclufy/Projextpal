@@ -145,7 +145,7 @@ class Prince2EnforcementTests(TestCase):
 
     # ---- #5 Controlled closure (Closing a Project) ----------------------
     def test_closure_blocked_until_products_lessons_and_benefits(self):
-        ProjectInitiationDocument.objects.create(project=self.project, status="baselined")
+        pid = ProjectInitiationDocument.objects.create(project=self.project, status="baselined")
         report = EndProjectReport.objects.create(project=self.project, status="draft")
         Product.objects.create(project=self.project, title="System", status="in_progress")
         url = f"/api/v1/projects/{self.project.id}/prince2/end-project-report/{report.id}/approve/"

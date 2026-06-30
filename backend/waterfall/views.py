@@ -877,7 +877,7 @@ class WaterfallBudgetViewSet(viewsets.ViewSet):
         current reporting period when persist=true is passed."""
         project = _gated_project_lookup(request.user, project_id)
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
-        budget.recompute_evm(commit=True)
+        metrics = budget.recompute_evm(commit=True)
         if str(request.data.get('snapshot', '')).lower() in ('1', 'true', 'yes'):
             today = timezone.now().date()
             EarnedValueRecord.objects.update_or_create(

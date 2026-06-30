@@ -406,7 +406,7 @@ def calculate_performance_metrics(
         days_elapsed = (
             (today - project.start_date).days if today >= project.start_date else 0
         )
-        (
+        days_remaining = (
             (project.end_date - today).days if today <= project.end_date else 0
         )
 
@@ -779,7 +779,7 @@ def calculate_health_colors(analysis_data: Dict[str, Any]) -> Dict[str, str]:
     # Risk Health - Based on open risks and unmitigated risks
     risks_data = performance.get("risks", {})
     high_priority_risks = risks_data.get("high_priority", 0)
-    risks_data.get("open", 0)
+    open_risks = risks_data.get("open", 0)
     unmitigated = len(blockers.get("unmitigated_risks", []))
 
     if high_priority_risks == 0 and unmitigated == 0:

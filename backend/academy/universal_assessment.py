@@ -12,7 +12,7 @@ generator = AIContentGenerator()
 def generate_quiz_for_lesson(lesson):
     """Generate quiz questions for any lesson"""
     content = f"{lesson.title} {lesson.content or ''}"
-    generator.extract_keywords(content)
+    keywords = generator.extract_keywords(content)
     skills = generator.detect_skills(content)
     
     quiz = {

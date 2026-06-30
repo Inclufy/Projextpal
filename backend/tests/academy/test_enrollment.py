@@ -99,7 +99,7 @@ class TestEnrollment:
 
     def test_enrollment_statuses(self, db, course):
         statuses = ["pending", "active", "completed", "expired", "refunded"]
-        for _i, status in enumerate(statuses):
+        for i, status in enumerate(statuses):
             e = Enrollment.objects.create(
                 course=course,
                 email=f"{status}@test.com",

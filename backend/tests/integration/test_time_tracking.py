@@ -29,7 +29,7 @@ class TestTimeTracking:
         
     def test_total_time_per_project(self, user, company):
         """Test calculating total time per project"""
-        Project.objects.create(
+        project = Project.objects.create(
             name='Project A',
             company=company,
             methodology='kanban'

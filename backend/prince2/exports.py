@@ -102,9 +102,7 @@ def _add_text(slide, x, y, w, h, text, *, bold=False, size=10,
     return box
 
 
-def _add_rag_dot(slide, x, y, status, *, size=None):
-    if size is None:
-        size = Inches(0.25)
+def _add_rag_dot(slide, x, y, status, *, size=Inches(0.25)):
     shape = slide.shapes.add_shape(MSO_SHAPE.OVAL, x, y, size, size)
     shape.fill.solid()
     shape.fill.fore_color.rgb = RAG_COLORS.get(status, RAG_COLORS["green"])
