@@ -38,6 +38,8 @@ def check_ssl_certificate(app_config):
 
     try:
         context = ssl.create_default_context()
+        # Refuse anything below TLS 1.2 (S4423) — older protocols are broken.
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
         with socket.create_connection((hostname, 443), timeout=10) as sock:
             with context.wrap_socket(sock, server_hostname=hostname) as ssock:
                 cert = ssock.getpeercert()

@@ -1546,15 +1546,18 @@ class CloudProviderTestConnectionView(APIView):
         try:
             if provider == 'aws':
                 import boto3
-                s3 = boto3.client(
-                    's3',
+                session = boto3.session.Session(
                     aws_access_key_id=creds.get('access_key_id', ''),
                     aws_secret_access_key=creds.get('secret_access_key', ''),
                     region_name=storage.get('region', 'eu-west-1'),
                 )
                 bucket = storage.get('bucket_name', '')
                 if bucket:
-                    s3.head_bucket(Bucket=bucket)
+                    # Pin the bucket to the account that owns these credentials so a
+                    # mistyped/hijacked bucket name can't be probed (S7608). The
+                    # owner is the caller's own account (STS needs no extra perms).
+                    owner = creds.get('account_id') or session.client('sts').get_caller_identity()['Account']
+                    session.client('s3').head_bucket(Bucket=bucket, ExpectedBucketOwner=owner)
                 return {'status': 'ok', 'message': f'Connected to S3 bucket: {bucket}'}
 
             elif provider == 'azure':
@@ -1575,7 +1578,14 @@ class CloudProviderTestConnectionView(APIView):
                 )
                 bucket = storage.get('bucket_name', '')
                 if bucket:
-                    s3.head_bucket(Bucket=bucket)
+                    # DigitalOcean Spaces is S3-compatible but has no AWS account
+                    # model, so the expected owner can only come from config; pin
+                    # it when provided (S7608), otherwise fall back to a plain check.
+                    owner = creds.get('account_id') or storage.get('account_id')
+                    head_kwargs = {'Bucket': bucket}
+                    if owner:
+                        head_kwargs['ExpectedBucketOwner'] = owner
+                    s3.head_bucket(**head_kwargs)
                 return {'status': 'ok', 'message': f'Connected to Spaces: {bucket}'}
 
         except ImportError:
