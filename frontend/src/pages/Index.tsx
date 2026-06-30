@@ -1,21 +1,13 @@
-import AnalyticsDashboard from "./reports/AnalyticsDashboard";
 import ExecutiveDashboard from "@/components/dashboards/ExecutiveDashboard";
 import ProgramManagerDashboard from "@/components/dashboards/ProgramManagerDashboard";
 import ProjectManagerDashboard from "@/components/dashboards/ProjectManagerDashboard";
 import TeamMemberDashboard from "@/components/dashboards/TeamMemberDashboard";
 
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Building2, 
-  FolderKanban, 
-  TrendingUp, 
-  AlertTriangle, 
-  Euro, 
+import {
+  TrendingUp,
   Sparkles,
-  ArrowRight,
   Target,
-  Activity,
   Crown,
   Zap,
   Trello,
@@ -25,19 +17,12 @@ import {
   BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { AISummaryModal } from "@/components/AISummaryModal";
-import AICommander from "@/components/AICommander";
-import { formatBudget, getCurrencyFromLanguage } from "@/lib/currencies";
 import { CreditCard, ArrowUpRight, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
-import OnboardingChecklist from '@/components/OnboardingChecklist';
 
 const fetchProjects = async () => {
   const token = localStorage.getItem("access_token");
