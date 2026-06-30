@@ -150,7 +150,7 @@ class PILoopTests(TestCase):
 
     def test_cross_tenant_isolation(self):
         other_co = Company.objects.create(name="Globex")
-        other_user = User.objects.create_user(
+        User.objects.create_user(
             email="x@globex.test", password="x", username="x@globex.test",
             company=other_co, role="admin",
         )
