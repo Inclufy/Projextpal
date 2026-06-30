@@ -201,7 +201,7 @@ class FishboneDiagramSerializer(serializers.ModelSerializer):
 
     def get_causes_by_category(self, obj):
         result = {}
-        for category, display in FishboneCause.CATEGORY_CHOICES:
+        for category, _display in FishboneCause.CATEGORY_CHOICES:
             causes = obj.causes.filter(category=category)
             result[category] = FishboneCauseSerializer(causes, many=True).data
         return result

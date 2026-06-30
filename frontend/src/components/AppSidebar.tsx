@@ -758,7 +758,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
       ];
 
     case 'lean_six_sigma_green':
-    case 'lean_six_sigma_black':
+    case 'lean_six_sigma_black': {
       const isBlackBelt = methodology?.toLowerCase() === 'lean_six_sigma_black';
       const lssBase = isBlackBelt ? 'lss-black' : 'lss-green';
       return [
@@ -844,6 +844,7 @@ const getMethodologyPhases = (projectId: string, methodology: string | null) => 
         },
       ];
 
+    }
     case 'agile':
       return [
         {

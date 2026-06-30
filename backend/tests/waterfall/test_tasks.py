@@ -49,7 +49,7 @@ class TestWaterfallTasks:
         }
         task1 = authenticated_client.post(url, task1_data)
         assert task1.status_code == 201
-        task1_id = task1.data['id']
+        task1.data['id']
         
         # Create dependent task
         data = {

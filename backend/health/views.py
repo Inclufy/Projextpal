@@ -102,7 +102,7 @@ def health_check(request):
         health_status["checks"]["db_connections"] = {"status": "error", "error": str(e)}
 
     # Determine overall status
-    for check_name, check_data in health_status["checks"].items():
+    for _check_name, check_data in health_status["checks"].items():
         if check_data.get("status") == "unhealthy":
             health_status["status"] = "unhealthy"
             break

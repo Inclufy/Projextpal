@@ -103,7 +103,7 @@ class AIContentGenerator:
         keywords = []
         
         # Extract from skill patterns
-        for skill_id, skill_data in self.SKILL_PATTERNS.items():
+        for _skill_id, skill_data in self.SKILL_PATTERNS.items():
             for keyword in skill_data['keywords']:
                 if keyword in text_lower:
                     keywords.append(keyword)

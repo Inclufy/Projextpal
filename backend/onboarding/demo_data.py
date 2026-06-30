@@ -338,7 +338,7 @@ def generate_demo_projects(company, user, industry, methodology='agile'):
             )
 
         # Create tasks
-        for task_name, phase, priority, hours in template['tasks']:
+        for task_name, _phase, priority, hours in template['tasks']:
             Task.objects.create(
                 project=project,
                 name=task_name,

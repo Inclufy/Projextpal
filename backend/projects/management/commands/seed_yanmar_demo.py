@@ -200,7 +200,7 @@ class Command(BaseCommand):
 
         # Milestones + tasks (Milestone uses start_date/end_date, not due_date)
         Milestone.objects.filter(project=project).delete()
-        m_prep = Milestone.objects.create(
+        Milestone.objects.create(
             project=project, name="Permits & demolition",
             description="All required permits + demolition complete",
             status="completed",

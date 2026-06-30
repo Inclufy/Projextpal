@@ -251,7 +251,7 @@ def users_list_create(request):
     payload = request.data.copy()
     # If company id provided, attach company on instance creation
     company_id = payload.get("company_id")
-    role = payload.get("role")
+    payload.get("role")
 
     serializer = AdminCreateUserSerializer(data=payload, context={"request": request})
     if serializer.is_valid():

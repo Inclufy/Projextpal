@@ -62,7 +62,7 @@ def _call_openai_predictions(
 
     history_payload = [
         {"month": month_key(month), "amount": round(value, 2)}
-        for month, value in zip(history_months, history_values)
+        for month, value in zip(history_months, history_values, strict=False)
     ]
 
     prompt = (
@@ -171,7 +171,7 @@ def _linear_regression(values: Sequence[float]) -> Tuple[float, float]:
 
     sum_x = sum(xs)
     sum_y = sum(ys)
-    sum_xy = sum(x * y for x, y in zip(xs, ys))
+    sum_xy = sum(x * y for x, y in zip(xs, ys, strict=False))
     sum_x2 = sum(x * x for x in xs)
 
     denominator = n * sum_x2 - sum_x * sum_x
@@ -196,7 +196,7 @@ def _build_series(
             "label": month_label(month),
             "amount": _round_amount(val),
         }
-        for month, val in zip(months, values)
+        for month, val in zip(months, values, strict=False)
     ]
 
 

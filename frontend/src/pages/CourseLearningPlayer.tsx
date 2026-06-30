@@ -1737,7 +1737,7 @@ console.log('🚨🚨🚨 SEARCH PARAMS:', searchParams.toString());
 console.log('🚨🚨🚨 ENTERING SWITCH');
 switch (activeTab) {
                     
-                    case 'content':
+                    case 'content': {
                       // ============================================
                       // MULTI-LAYER CONTEXT-AWARE KEYWORD MATCHING
                       // ============================================
@@ -2298,6 +2298,7 @@ return (
   </>
 );
                     
+                    }
                     case 'notes':
                       return (
                         <Card>

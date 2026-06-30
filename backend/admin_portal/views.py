@@ -67,7 +67,7 @@ class DashboardStatsView(APIView):
     def get(self, request):
         now = timezone.now()
         last_month = now - timedelta(days=30)
-        two_months_ago = now - timedelta(days=60)
+        now - timedelta(days=60)
         
         # Current stats
         total_users = User.objects.count()
