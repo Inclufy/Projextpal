@@ -10,7 +10,10 @@
     <meta name="author" content="ProjectPal" />
 
     <!-- Google Analytics 4 (Consent Mode v2 — analytics pas ná cookie-toestemming, AVG-conform) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NKN8VD4B0"></script>
+    <!-- SRI note: a static integrity hash is intentionally omitted — Google ships
+         a rolling, frequently-updated gtag.js, so any pinned hash would break GA
+         within days. crossorigin is set so the loader still runs under CORS. -->
+    <script async crossorigin="anonymous" src="https://www.googletagmanager.com/gtag/js?id=G-2NKN8VD4B0"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
