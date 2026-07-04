@@ -109,7 +109,10 @@ def health_check(request):
         if check_data.get("status") == "degraded" and health_status["status"] == "healthy":
             health_status["status"] = "degraded"
 
-    status_code = 200 if health_status["status"] == "healthy" else 503
+    # Degraded (e.g. Redis/cache down) means reduced capability, not an outage:
+    # the app still serves requests, so a monitor probe must see 200. Only a
+    # hard-unhealthy component (e.g. the primary database) warrants 503.
+    status_code = 503 if health_status["status"] == "unhealthy" else 200
     return JsonResponse(health_status, status=status_code)
 
 
