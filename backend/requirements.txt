@@ -40,7 +40,7 @@ openai==2.1.0
 orjson==3.11.3
 ormsgpack==1.10.0
 packaging==25.0
-pillow==11.3.0
+pillow==12.2.0
 pydantic==2.11.7
 pydantic_core==2.33.2
 pyotp==2.9.0
@@ -58,7 +58,7 @@ sentry-sdk[django]==2.18.0
 rpds-py==0.27.1
 sniffio==1.3.1
 SQLAlchemy==2.0.43
-sqlparse==0.5.3
+sqlparse==0.5.4
 stripe==12.5.1
 tenacity==9.1.2
 tiktoken==0.11.0
@@ -71,16 +71,20 @@ urllib3==2.7.0
 xxhash==3.6.0
 zstandard==0.24.0
 python-dateutil
-gunicorn==21.2.0
+gunicorn==22.0.0
 psycopg2-binary>=2.9.9
 djangorestframework-api-key
 pytest==7.4.3
 pytest-django==4.7.0
 pytest-cov==4.1.0
+<<<<<<< HEAD
 PyJWT==2.13.0
+=======
+PyJWT==2.12.0
+>>>>>>> 9c09ad5a (security(python): bump 9 CVE-affected packages to pip-audit fix versions)
 msal==1.31.0
 reportlab==4.0.7
 python-pptx==1.0.2
 python-docx==1.2.0
 anthropic==0.42.0
-cryptography>=42.0,<46.0
+cryptography>=46.0.6,<47.0
