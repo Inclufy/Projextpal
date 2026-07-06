@@ -14,10 +14,24 @@ def health_check(request):
     Comprehensive health check endpoint that verifies all application components.
     Returns status of database, cache, channels, and external services.
     """
+    import os as _os, platform as _platform, django as _django
+
+    # Backend & Tech contract (Control Tower Health ▸ Backend & Tech): report the
+    # ACTUAL database backend (connection.vendor) next to the EXPECTED one, so the
+    # tower flags any drift — the class of bug behind IQ-HELIX-3 (a backend silently
+    # running SQLite instead of Postgres). Declared value lives in the tower's fleet.yml.
+    _db_backend = connection.vendor  # 'postgresql' | 'sqlite' | …
+    _db_expected = _os.environ.get("EXPECTED_DB_BACKEND") or None
     health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0",
+        "git_sha": _os.environ.get("GIT_SHA", "unknown"),
+        "framework": f"django/{_django.get_version()}",
+        "runtime": f"python/{_platform.python_version()}",
+        "db_backend": _db_backend,
+        "db_expected": _db_expected,
+        "environment": _os.environ.get("ENVIRONMENT", "unknown"),
         "checks": {},
     }
 

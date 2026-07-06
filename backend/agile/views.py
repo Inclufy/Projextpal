@@ -570,9 +570,17 @@ class AgileDailyUpdateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
+        # P0 cross-tenant fix — gate the project_id before returning rows (was
+        # unfiltered by tenant, leaking daily standup text across companies).
         project_id = self.kwargs.get('project_id')
+        if not project_id:
+            return AgileDailyUpdate.objects.none()
+        try:
+            _gated_project_lookup(self.request.user, project_id)
+        except Exception:
+            return AgileDailyUpdate.objects.none()
         queryset = AgileDailyUpdate.objects.filter(project_id=project_id)
-        
+
         # Filter by date
         date_filter = self.request.query_params.get('date')
         if date_filter:
@@ -610,7 +618,14 @@ class AgileRetrospectiveViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
     def get_queryset(self):
+        # P0 cross-tenant fix — gate the project_id before returning rows.
         project_id = self.kwargs.get('project_id')
+        if not project_id:
+            return AgileRetrospective.objects.none()
+        try:
+            _gated_project_lookup(self.request.user, project_id)
+        except Exception:
+            return AgileRetrospective.objects.none()
         return AgileRetrospective.objects.filter(iteration__project_id=project_id)
     
     @action(detail=True, methods=['post'])
@@ -654,7 +669,23 @@ class AgileRetroItemViewSet(viewsets.ModelViewSet):
     queryset = AgileRetroItem.objects.all()
     serializer_class = AgileRetroItemSerializer
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
-    
+
+    def get_queryset(self):
+        # P0 cross-tenant IDOR fix — this route is /agile/retro-items/<pk>/ with NO
+        # project_id in the URL, so MethodologyMatchesProjectPermission no-ops and the
+        # unfiltered queryset let any logged-in user read/update/delete/vote another
+        # tenant's retro items by enumerating the integer PK. Scope to the caller's
+        # accessible projects (same gate the rest of the app uses).
+        from projects.views import accessible_project_ids
+        user = self.request.user
+        if not user.is_authenticated:
+            return AgileRetroItem.objects.none()
+        if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
+            return AgileRetroItem.objects.all()
+        return AgileRetroItem.objects.filter(
+            retrospective__iteration__project_id__in=accessible_project_ids(user)
+        )
+
     @action(detail=True, methods=['post'])
     def vote(self, request, pk=None):
         """Vote for item"""
@@ -676,7 +707,14 @@ class StakeholderFeedbackViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        # P0 cross-tenant fix — gate the project_id before returning rows.
         project_id = self.kwargs.get('project_id')
+        if not project_id:
+            return StakeholderFeedback.objects.none()
+        try:
+            _gated_project_lookup(self.request.user, project_id)
+        except Exception:
+            return StakeholderFeedback.objects.none()
         qs = StakeholderFeedback.objects.filter(
             iteration__project_id=project_id
         ).select_related('iteration', 'backlog_item', 'created_by')
