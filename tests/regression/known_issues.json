@@ -2259,6 +2259,40 @@
       "last_test_status": "pass",
       "last_test_response_status": null,
       "notes": "2026-06-05: Content-authoring ticket — no backend gate, no behavioural endpoint, no migration, so no production data-guardian gate (frontend-only addition). Verified with npx tsc --noEmit (clean) — all lessons use interface-valid Lesson types (video/quiz/exam/reading/certificate) and QuizQuestion shape (question/options/correctAnswer index/explanation + NL companions). The new course registers in all four index.ts touchpoints (import, re-export, coursesWithContent, courseModulesMap) so getCourseById/getModulesByCourseId/getCourseStats pick it up. 5 modules, 17 lessons (4 quizzes + 1 10-question final exam). No regression to the 13 existing courses. Final ticket of the BACKLOG-2026-06-04 P0/P1/P2/T sweep."
+    },
+    {
+      "id": "BUG-065",
+      "title": "S4502 CSRF-exempt on subscriptions Stripe webhook — BY DESIGN",
+      "severity": "info",
+      "area": "subscriptions",
+      "file": "backend/subscriptions/webhooks.py",
+      "line": 15,
+      "rule": "python:S4502",
+      "expected_behavior": "@csrf_exempt on stripe_webhook is REQUIRED: Stripe posts server-to-server with no CSRF token; the request is authenticated by stripe.Webhook.construct_event() signature verification against STRIPE_WEBHOOK_SECRET (returns 400 on ValueError / SignatureVerificationError). Removing csrf_exempt would break payment webhooks.",
+      "root_cause": "SonarQube/Control-Tower AI triage flags every csrf_exempt as S4502 without recognising the signed-webhook pattern.",
+      "status": "wontfix",
+      "found": "2026-07-06",
+      "found_by": "control-tower security triage",
+      "last_tested": "2026-07-06",
+      "last_test_status": "reviewed",
+      "notes": "2026-07-06: verified by reading the handler — signature-verified Stripe webhook. False positive; csrf_exempt is correct and required. Do NOT remove."
+    },
+    {
+      "id": "BUG-066",
+      "title": "S4502 CSRF-exempt on academy Stripe webhook — BY DESIGN",
+      "severity": "info",
+      "area": "academy",
+      "file": "backend/academy/views.py",
+      "line": 215,
+      "rule": "python:S4502",
+      "expected_behavior": "@csrf_exempt on academy.stripe_webhook is REQUIRED for the same reason as BUG-065: Stripe signed webhook, authenticated via stripe.Webhook.construct_event(). The only two csrf_exempt in the whole backend are these two Stripe webhooks.",
+      "root_cause": "Same AI-triage over-flag as BUG-065.",
+      "status": "wontfix",
+      "found": "2026-07-06",
+      "found_by": "control-tower security triage",
+      "last_tested": "2026-07-06",
+      "last_test_status": "reviewed",
+      "notes": "2026-07-06: verified — signature-verified Stripe webhook (construct_event). False positive; leave as-is. Sonar reported line 210 (drifted); the decorator is at line 215."
     }
   ]
 }
