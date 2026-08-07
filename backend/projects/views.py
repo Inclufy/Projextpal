@@ -15,6 +15,7 @@ from django.db import models
 from django.db.models import Sum, F
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from .filters import ModifiedSinceFilterBackend
 from .models import (
     Project,
     Milestone,
@@ -220,6 +221,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         .prefetch_related("team_members")
     )
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -1447,6 +1449,7 @@ class MilestoneViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = Milestone.objects.all().select_related("project", "project__company")
     serializer_class = MilestoneSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -1476,6 +1479,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     )
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -1864,6 +1868,7 @@ class ExpenseViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     )
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -2218,6 +2223,7 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     )
     serializer_class = RiskSerializer
     permission_classes = [IsAuthenticated, IsAdminOrPM]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_throttles(self):
         # Throttle only the AI-calling actions (create triggers AI mitigation,
@@ -2439,6 +2445,7 @@ class IssueViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     serializer_class = _IssueSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_queryset(self):
         qs = (
@@ -2775,6 +2782,7 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     )
     serializer_class = TimeEntrySerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "summary", "my_entries"]:
@@ -3120,6 +3128,7 @@ class BudgetCategoryViewSet(viewsets.ModelViewSet):
     """ViewSet for budget categories"""
     serializer_class = BudgetCategorySerializer
     permission_classes = [IsAuthenticated, IsAdminOrPM]  # Yanmar SC-05
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_queryset(self):
         return BudgetCategory.objects.filter(company=self.request.user.company)
@@ -3129,6 +3138,7 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
     """ViewSet for budget items (P1 fix — membership-scoped)."""
     serializer_class = BudgetItemSerializer
     permission_classes = [IsAuthenticated, IsAdminOrPM]  # Yanmar SC-05
+    filter_backends = [ModifiedSinceFilterBackend]
 
     def get_queryset(self):
         user = self.request.user
