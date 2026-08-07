@@ -8,7 +8,7 @@ channels_redis==4.3.0
 charset-normalizer==3.4.3
 colorama==0.4.6
 distro==1.9.0
-Django==4.2.30
+Django==5.2.16
 django-cors-headers==4.8.0
 django-filter==25.1
 django-otp==1.6.3
