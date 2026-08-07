@@ -478,7 +478,7 @@ const Prince2Dashboard = () => {
               {dashboard?.top_risks?.length > 0 ? (
                 <div className="space-y-1.5">
                   {dashboard.top_risks.map((r: any) => (
-                    <div key={r.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/40 cursor-pointer" onClick={() => nav("risks")}>
+                    <button type="button" key={r.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/40 cursor-pointer" onClick={() => nav("risks")}>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{r.title}</p>
                         {r.mitigation && <p className="text-xs text-muted-foreground truncate">{pt("Response")}: {r.mitigation}</p>}
@@ -487,7 +487,7 @@ const Prince2Dashboard = () => {
                         <Badge className={`text-[10px] ${riskBadge[r.impact] || ""}`}>{pt("I")}:{r.impact}</Badge>
                         <Badge className={`text-[10px] ${riskBadge[r.probability] || ""}`}>{pt("P")}:{r.probability}</Badge>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -589,7 +589,7 @@ const Prince2Dashboard = () => {
               <p className="text-center text-muted-foreground py-4">{pt("No stages defined yet")}</p>
             ) : (
               dashboard?.stages?.map((stage: any) => (
-                <div
+                <button type="button"
                   key={stage.id}
                   className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
                     stage.status === "active" ? "border-blue-300 bg-blue-50/50" : ""
@@ -620,7 +620,7 @@ const Prince2Dashboard = () => {
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                </div>
+                </button>
               ))
             )}
           </CardContent>
@@ -673,7 +673,7 @@ const Prince2Dashboard = () => {
               </div>
             ) : (
               dashboard.recent_highlight_reports.map((report: any) => (
-                <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors" onClick={() => nav("highlight-report")}>
+                <button type="button" key={report.id} className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors" onClick={() => nav("highlight-report")}>
                   <div>
                     <p className="font-medium">{report.title || `Report #${report.id}`}</p>
                     <p className="text-sm text-muted-foreground">{report.report_date}</p>
@@ -681,7 +681,7 @@ const Prince2Dashboard = () => {
                   <Badge variant={report.overall_status === "green" ? "default" : "destructive"}>
                     {report.overall_status}
                   </Badge>
-                </div>
+                </button>
               ))
             )}
           </CardContent>

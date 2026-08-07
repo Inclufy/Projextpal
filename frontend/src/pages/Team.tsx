@@ -435,7 +435,7 @@ export default function Team() {
   role: "MEMBER" as const,
   department: "",
   enableTimeTracking: true,
-  password: "TempPass123!",  // ADD THIS
+  password: "",
 });
   const [sendInviteEmail, setSendInviteEmail] = useState(true);
 
@@ -569,7 +569,7 @@ export default function Team() {
 
 // Only send password if NOT sending invite email
 if (!sendInviteEmail) {
-  payload.password = memberData.password || "TempPass123!";
+  payload.password = memberData.password;
 }
 
       const response = await fetch(`${API_BASE_URL}/auth/admin/create-user/`, {
@@ -591,7 +591,7 @@ if (!sendInviteEmail) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      setNewMember({ name: "", email: "", phone: "", role: "MEMBER", department: "", enableTimeTracking: true, password: "TempPass123!" });
+      setNewMember({ name: "", email: "", phone: "", role: "MEMBER", department: "", enableTimeTracking: true, password: "" });
       setSendInviteEmail(true);
       setIsCreateDialogOpen(false);
       toast({
@@ -1312,7 +1312,7 @@ if (!sendInviteEmail) {
               <CardContent className="p-6 relative">
                 {/* Header with Avatar and Actions */}
                 <div className="flex items-start justify-between mb-4">
-                  <div
+                  <button type="button"
                     className="flex items-center gap-3 cursor-pointer"
                     onClick={() => {
                       setSelectedMember(member);
@@ -1332,7 +1332,7 @@ if (!sendInviteEmail) {
                         {member.role}
                       </Badge>
                     </div>
-                  </div>
+                  </button>
 
                   {/* Action menu */}
                   <DropdownMenu>

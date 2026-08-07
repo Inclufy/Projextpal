@@ -248,7 +248,7 @@ export default function InvoiceManagement() {
       
       setIsGenerateDialogOpen(false);
       fetchInvoices();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsGenerating(false);
@@ -277,7 +277,7 @@ export default function InvoiceManagement() {
       setIsSendDialogOpen(false);
       setSendForm({ email: '', subject: '', message: '' });
       fetchInvoices();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsSending(false);
@@ -306,7 +306,7 @@ export default function InvoiceManagement() {
       setIsMarkPaidDialogOpen(false);
       setPaidForm({ payment_method: '', payment_reference: '' });
       fetchInvoices();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsMarkingPaid(false);
@@ -349,7 +349,7 @@ export default function InvoiceManagement() {
       }
       
       fetchInvoices();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     }
   };

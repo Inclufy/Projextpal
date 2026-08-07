@@ -904,7 +904,7 @@ export const MethodologyHelpPanel = ({
         {activeTab === 'resources' && (
           <div className="space-y-3">
             {config.academyTrack && (
-              <div
+              <button type="button"
                 className={cn("p-3 rounded-lg cursor-pointer hover:opacity-80", config.bgColor)}
                 onClick={() => navigate('/academy/marketplace')}
               >
@@ -916,10 +916,10 @@ export const MethodologyHelpPanel = ({
                   </div>
                   <ExternalLink className="h-4 w-4 ml-auto" />
                 </div>
-              </div>
+              </button>
             )}
             {config.resources.map((resource, i) => (
-              <div
+              <button type="button"
                 key={i}
                 className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
                 onClick={() => navigate(resource.link)}
@@ -937,7 +937,7 @@ export const MethodologyHelpPanel = ({
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
+              </button>
             ))}
           </div>
         )}

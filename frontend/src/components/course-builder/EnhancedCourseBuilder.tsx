@@ -133,17 +133,17 @@ const EnhancedCourseBuilder = () => {
     }),
 
     async get<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: this.headers(),
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
     },
 
     async post<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'POST',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
@@ -151,9 +151,9 @@ const EnhancedCourseBuilder = () => {
     },
 
     async patch<T>(endpoint: string, data: any): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'PATCH',
-        headers: this.headers(),
+        headers: api.headers(),
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
@@ -161,9 +161,9 @@ const EnhancedCourseBuilder = () => {
     },
 
     async delete<T>(endpoint: string): Promise<T> {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${api.baseUrl}${endpoint}`, {
         method: 'DELETE',
-        headers: this.headers(),
+        headers: api.headers(),
       });
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
       return response.json();
@@ -469,7 +469,7 @@ const EnhancedCourseBuilder = () => {
         const errData = await r.json().catch(() => ({}));
         setCourseImportResults({ created: 0, errors: [errData.error || 'Import mislukt'] });
       }
-    } catch (err: any) {
+    } catch (err) {
       setCourseImportResults({ created: 0, errors: [err.message || 'Import mislukt'] });
     } finally {
       setCourseImportLoading(false);
@@ -856,7 +856,7 @@ const EnhancedCourseBuilder = () => {
                   renderItem={(module) => (
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <div
+                        <button type="button"
                           className="flex-1 cursor-pointer"
                           onClick={() => toggleModule(module.id)}
                         >
@@ -872,7 +872,7 @@ const EnhancedCourseBuilder = () => {
                           {module.description && (
                             <p className="text-sm text-muted-foreground mt-1 ml-7">{module.description}</p>
                           )}
-                        </div>
+                        </button>
                         <div className="flex gap-2">
                           <Button
                             size="sm"

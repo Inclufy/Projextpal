@@ -96,7 +96,7 @@ export default function Stakeholders() {
       toast({ title: pt("Updated"), description: pt("Stakeholder updated successfully.") });
       setEditModalOpen(false);
       fetchStakeholders();
-    } catch (error: any) {
+    } catch (error) {
       toast({ title: pt("Error"), description: error?.message || pt("Failed to update."), variant: "destructive" });
     }
   };

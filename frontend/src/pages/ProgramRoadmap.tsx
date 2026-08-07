@@ -176,12 +176,12 @@ const ProgramRoadmap = () => {
                 <div className="space-y-4">
                   {projectsWithPosition.map((proj: any) => (
                     <div key={proj.id} className="flex items-center h-12">
-                      <div 
+                      <button type="button" 
                         className="w-48 shrink-0 pr-4 cursor-pointer hover:text-indigo-600"
                         onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                       >
                         <p className="font-medium text-sm truncate">{proj.name}</p>
-                      </div>
+                      </button>
                       <div className="flex-1 flex relative">
                         {/* Grid lines */}
                         {months.map((_, i) => (
@@ -191,7 +191,7 @@ const ProgramRoadmap = () => {
                           />
                         ))}
                         {/* Project Bar */}
-                        <div 
+                        <button type="button" 
                           className={`absolute h-8 ${proj.color} rounded-full flex items-center px-3 text-white text-xs font-medium cursor-pointer hover:opacity-80`}
                           style={{
                             left: `${(proj.startMonth / 12) * 100}%`,
@@ -201,7 +201,7 @@ const ProgramRoadmap = () => {
                           onClick={() => navigate(methodologyOverviewPath(proj.id, proj.methodology))}
                         >
                           <span className="truncate">{proj.progress || 0}%</span>
-                        </div>
+                        </button>
                       </div>
                     </div>
                   ))}

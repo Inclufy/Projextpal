@@ -108,7 +108,7 @@ export default function CommentThread({ projectId, taskId, targetType, targetId,
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{c.author_name || c.author_email || pt("User")}</span>
                   <span className="text-[11px] text-muted-foreground">{rel(c.created_at)}</span>
-                  {currentUserId && c.author === currentUserId && (
+                  {!!currentUserId && c.author === currentUserId && (
                     <button onClick={() => remove(c.id)} className="ml-auto text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
                   )}
                 </div>

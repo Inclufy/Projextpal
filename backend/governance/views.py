@@ -134,7 +134,6 @@ class GovernanceStakeholderViewSet(viewsets.ModelViewSet):
 # AI Report Generation
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework import status as http_status
 
 @api_view(['POST'])
@@ -163,14 +162,14 @@ def generate_ai_report(request):
         projects = Project.objects.filter(company=company) if company else Project.objects.none()
         project_count = projects.count()
         active_projects = projects.filter(status='active').count()
-    except:
+    except Exception:
         project_count = 0
         active_projects = 0
     
     try:
         from programs.models import Program
         program_count = Program.objects.filter(company=company).count() if company else 0
-    except:
+    except Exception:
         program_count = 0
     
     board_count = GovernanceBoard.objects.filter(portfolio__company=company).count() if company else 0

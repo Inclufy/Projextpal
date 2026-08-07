@@ -265,7 +265,7 @@ export default function AIAssistant() {
             : conv
         )
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error sending message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

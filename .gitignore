@@ -1,3 +1,10 @@
+# Secrets / private keys — never commit (see SonarQube P0)
+*.key
+*.pem
+*.p12
+*.pfx
+ssl/
+
 # Python
 venv/
 __pycache__/
@@ -16,6 +23,9 @@ build/
 .env.*
 **/.env
 **/.env.*
+# ...but keep the committed example templates
+!.env.example
+!**/.env.example
 
 # IDE
 .vscode/
@@ -87,3 +97,8 @@ web/.next/
 # Recovery backup files from apply-to-main.sh
 **/*.bak.*
 backend/local_dev.sqlite3
+
+# Geen TLS-keys/certs in git
+*.key
+*.pem
+ssl/*.crt

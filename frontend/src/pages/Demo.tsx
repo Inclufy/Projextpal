@@ -89,7 +89,7 @@ const Demo = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -375,7 +375,7 @@ const Demo = () => {
                       {language === 'nl' ? '30 minuten demo' : '30 minute demo'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {language === 'nl' ? 'Live product walkthrough' : 'Live product walkthrough'}
+                      {'Live product walkthrough'}
                     </p>
                   </div>
                 </div>

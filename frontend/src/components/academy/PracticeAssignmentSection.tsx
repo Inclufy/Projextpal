@@ -182,7 +182,7 @@ const PracticeAssignmentSection = ({
           <div className="bg-orange-50 dark:bg-orange-950/20 rounded-lg p-4">
             <h4 className="font-semibold mb-2 flex items-center gap-2">
               <Lightbulb className="w-4 h-4 text-orange-600" />
-              {isNL ? 'Scenario' : 'Scenario'}
+              {'Scenario'}
             </h4>
             <p className="text-sm">{assignment.scenario}</p>
           </div>
@@ -250,7 +250,7 @@ const PracticeAssignmentSection = ({
             <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
               <h4 className="font-semibold mb-2 flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-blue-600" />
-                {isNL ? 'Tips' : 'Tips'}
+                {'Tips'}
               </h4>
               <ul className="space-y-1">
                 {assignment.tips.map((tip, i) => (

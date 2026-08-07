@@ -116,7 +116,7 @@ export default function OrganizationManagement() {
       const params = searchQuery ? { search: searchQuery } : {};
       const data = await api.get<any>('/admin/tenants/', params);
       setOrganizations(data.results || data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching organizations:', err);
       setError(isNL ? 'Kon organisaties niet laden' : 'Failed to load organizations');
     } finally {
@@ -166,7 +166,7 @@ export default function OrganizationManagement() {
       setIsCreateDialogOpen(false);
       resetForm();
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsCreating(false);
@@ -193,7 +193,7 @@ export default function OrganizationManagement() {
       setIsEditDialogOpen(false);
       resetForm();
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsUpdating(false);
@@ -210,7 +210,7 @@ export default function OrganizationManagement() {
       setIsDeleteDialogOpen(false);
       setSelectedOrg(null);
       fetchOrganizations();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message);
     } finally {
       setIsDeleting(false);
@@ -335,7 +335,7 @@ export default function OrganizationManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              {isNL ? 'Trial Accounts' : 'Trial Accounts'}
+              {'Trial Accounts'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -488,7 +488,7 @@ export default function OrganizationManagement() {
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <ExternalLink className="mr-2 h-4 w-4" />
-                              {isNL ? 'Details' : 'Details'}
+                              {'Details'}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {
@@ -567,7 +567,7 @@ export default function OrganizationManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{isNL ? 'Status' : 'Status'}</Label>
+                  <Label>{'Status'}</Label>
                   <Select 
                     value={formData.subscription_status} 
                     onValueChange={(v) => setFormData({ ...formData, subscription_status: v })}
@@ -708,7 +708,7 @@ export default function OrganizationManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{isNL ? 'Status' : 'Status'}</Label>
+                  <Label>{'Status'}</Label>
                   <Select 
                     value={formData.subscription_status} 
                     onValueChange={(v) => setFormData({ ...formData, subscription_status: v })}

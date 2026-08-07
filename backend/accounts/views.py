@@ -35,11 +35,6 @@ from accounts.models import VerificationToken, CrmApiKey
 from accounts.permissions import HasRole
 from django.contrib.auth import get_user_model
 from accounts.models import CustomUser
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 from django.conf import settings
 import os
 
@@ -141,7 +136,7 @@ def save_registration_intent(request):
             registration.intent = intent
             registration.save()
             return Response({'success': True})
-    except Exception as e:
+    except Exception:
         pass
     
     return Response({'success': True}, status=status.HTTP_200_OK)
@@ -931,7 +926,7 @@ class CompanyListView(APIView):
                     # FIXED: Get billing_cycle and payment_method from subscription
                     billing_cycle = getattr(subscription, 'billing_cycle', None)
                     payment_method = getattr(subscription, 'payment_method', None)
-            except:
+            except Exception:
                 pass
             
             data.append({
@@ -1200,7 +1195,7 @@ class AdminStatsView(APIView):
             active_subscriptions = CompanySubscription.objects.filter(
                 status__in=['active', 'trialing']
             ).count()
-        except:
+        except Exception:
             active_subscriptions = 0
         
         # ============================================================
@@ -1307,7 +1302,7 @@ class AdminStatsView(APIView):
                 subscriptions_growth = ((current_subs - last_month_subs) / last_month_subs) * 100
             elif current_subs > 0:
                 subscriptions_growth = 100
-        except:
+        except Exception:
             subscriptions_growth = 0
         
         # ============================================================
@@ -1364,7 +1359,7 @@ class AdminStatsView(APIView):
                     'plan': item['plan__name'] or 'Unknown',
                     'count': item['count'],
                 })
-        except:
+        except Exception:
             pass
         
         # ============================================================
@@ -1875,13 +1870,10 @@ class UserFeaturesView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
 from datetime import timedelta
-from accounts.models import UserSubscription, CustomUser
+from accounts.models import UserSubscription
 from accounts.permissions import IsSuperAdmin
 
 

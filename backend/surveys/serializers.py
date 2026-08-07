@@ -237,7 +237,7 @@ class SurveyAnswerSerializer(serializers.ModelSerializer):
         try:
             question = Question.objects.get(id=question_id)
         except Question.DoesNotExist:
-            raise serializers.ValidationError("Invalid question ID")
+            raise serializers.ValidationError("Invalid question ID") from None
 
         question_type = question.question_type
 

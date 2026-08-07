@@ -184,7 +184,7 @@ def transcript_to_minutes(
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as e:
-        raise RuntimeError(f"Claude did not return valid JSON: {e}\nRaw: {raw[:300]}")
+        raise RuntimeError(f"Claude did not return valid JSON: {e}\nRaw: {raw[:300]}") from e
 
     md = payload.get("meeting_date")
     meeting_date = None

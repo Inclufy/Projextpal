@@ -263,7 +263,7 @@ const Prince2StagePlan = () => {
                   ) : (
                     <div className="space-y-2">
                       {stageWps.slice(0, 5).map((wp) => (
-                        <div
+                        <button type="button"
                           key={wp.id}
                           onClick={() => navigate(`/projects/${id}/prince2/work-packages?wp=${wp.id}`)}
                           className="flex items-center justify-between p-2 border rounded-md hover:bg-muted/50 cursor-pointer text-sm"
@@ -278,7 +278,7 @@ const Prince2StagePlan = () => {
                             <Progress value={wp.progress_percentage || 0} className="h-1.5 w-16" />
                             <span className="text-xs text-muted-foreground w-8 text-right">{wp.progress_percentage || 0}%</span>
                           </div>
-                        </div>
+                        </button>
                       ))}
                       {stageWps.length > 5 && (
                         <p className="text-xs text-muted-foreground text-center">

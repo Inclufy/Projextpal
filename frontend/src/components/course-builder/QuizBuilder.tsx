@@ -327,7 +327,7 @@ const QuizBuilder: React.FC<QuizBuilderProps> = ({
                 <div className="space-y-4">
                   {/* Question Header */}
                   <div className="flex items-start justify-between">
-                    <div 
+                    <button type="button" 
                       className="flex-1 cursor-pointer"
                       onClick={() => toggleQuestionExpanded(question.id)}
                     >
@@ -345,7 +345,7 @@ const QuizBuilder: React.FC<QuizBuilderProps> = ({
                           {question.points} {question.points === 1 ? 'punt' : 'punten'}
                         </Badge>
                       </div>
-                    </div>
+                    </button>
                     <Button
                       variant="ghost"
                       size="icon"

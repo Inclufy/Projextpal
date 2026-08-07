@@ -15,7 +15,7 @@ const jsonHeaders = () => ({ ...authHeaders(), "Content-Type": "application/json
 /** Minimal RFC-4180-ish CSV/TSV parser (handles quoted fields, escaped quotes,
  *  embedded commas + newlines). Delimiter auto-detected from the header line. */
 function parseDelimited(text: string): { headers: string[]; rows: string[][] } {
-  text = text.replace(/^﻿/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  text = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const firstLine = text.slice(0, text.indexOf("\n") < 0 ? text.length : text.indexOf("\n"));
   const counts = { ",": (firstLine.match(/,/g) || []).length, ";": (firstLine.match(/;/g) || []).length, "\t": (firstLine.match(/\t/g) || []).length };
   const delim = (Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]) as string;

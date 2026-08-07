@@ -1,3 +1,5 @@
+import type { Project, Program, TimeEntry } from '@/types/api';
+
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
 class ApiClient {
@@ -146,22 +148,23 @@ export const authApi = {
 };
 
 export const projectsApi = {
-  getAll: (params?: Record<string, string | number | boolean>) => api.get<any[]>('/projects/', params),
-  getById: (id: string | number) => api.get<any>(`/projects/${id}/`),
-  create: (data: any) => api.post<any>('/projects/', data),
-  update: (id: string | number, data: any) => api.patch<any>(`/projects/${id}/`, data),
+  getAll: (params?: Record<string, string | number | boolean>) => api.get<Project[]>('/projects/', params),
+  getById: (id: string | number) => api.get<Project>(`/projects/${id}/`),
+  create: (data: Partial<Project>) => api.post<Project>('/projects/', data),
+  update: (id: string | number, data: Partial<Project>) => api.patch<Project>(`/projects/${id}/`, data),
   delete: (id: string | number) => api.delete(`/projects/${id}/`),
 };
 
 export const timeEntriesApi = {
-  getAll: (params?: Record<string, string | number | boolean>) => api.get<any[]>('/projects/time-entries/', params),
-  getMine: (params?: Record<string, string | number | boolean>) => api.get<any[]>('/projects/time-entries/my_entries/', params),
+  getAll: (params?: Record<string, string | number | boolean>) => api.get<TimeEntry[]>('/projects/time-entries/', params),
+  getMine: (params?: Record<string, string | number | boolean>) => api.get<TimeEntry[]>('/projects/time-entries/my_entries/', params),
   getSummary: (projectId?: string | number) => {
     const params = projectId ? { project: projectId } : {};
-    return api.get<any>('/projects/time-entries/summary/', params);
+    // Aggregate summary endpoint — distinct shape, typed in a later phase.
+    return api.get<Record<string, unknown>>('/projects/time-entries/summary/', params);
   },
-  create: (data: any) => api.post<any>('/projects/time-entries/', data),
-  update: (id: string | number, data: any) => api.patch<any>(`/projects/time-entries/${id}/`, data),
+  create: (data: Partial<TimeEntry>) => api.post<TimeEntry>('/projects/time-entries/', data),
+  update: (id: string | number, data: Partial<TimeEntry>) => api.patch<TimeEntry>(`/projects/time-entries/${id}/`, data),
   delete: (id: string | number) => api.delete(`/projects/time-entries/${id}/`),
 };
 
@@ -171,14 +174,14 @@ export const teamApi = {
 
 // Programs API
 export const programsApi = {
-  getAll: (params?: Record<string, string | number | boolean>) => api.get<any[]>('/programs/', params),
-  getById: (id: string | number) => api.get<any>(`/programs/${id}/`),
-  create: (data: any) => api.post<any>('/programs/', data),
-  update: (id: string | number, data: any) => api.patch<any>(`/programs/${id}/`, data),
+  getAll: (params?: Record<string, string | number | boolean>) => api.get<Program[]>('/programs/', params),
+  getById: (id: string | number) => api.get<Program>(`/programs/${id}/`),
+  create: (data: Partial<Program>) => api.post<Program>('/programs/', data),
+  update: (id: string | number, data: Partial<Program>) => api.patch<Program>(`/programs/${id}/`, data),
   delete: (id: string | number) => api.delete(`/programs/${id}/`),
-  
+
   // Program-specific endpoints
-  getProjects: (programId: string | number) => api.get<any[]>(`/programs/${programId}/projects/`),
+  getProjects: (programId: string | number) => api.get<Project[]>(`/programs/${programId}/projects/`),
   addProject: (programId: string | number, projectId: string | number) =>
     api.post(`/programs/${programId}/add_project/`, { project_id: projectId }),
   removeProject: (programId: string | number, projectId: string | number) =>

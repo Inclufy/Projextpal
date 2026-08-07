@@ -77,7 +77,7 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || txt.errorGeneric);
     } finally {
       setIsSubmitting(false);

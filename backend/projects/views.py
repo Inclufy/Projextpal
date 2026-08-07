@@ -774,7 +774,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                     Stakeholder.objects.filter(project=project).delete()
                     Governance.objects.filter(project=project).delete()
                     ChangeRequest.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass  # Continue even if some deletions fail
 
                 try:
@@ -782,14 +782,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
                     Survey.objects.filter(project=project).delete()
                     ArchivedLesson.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 try:
                     from deploment.models import DeploymentPlan
 
                     DeploymentPlan.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 try:
@@ -797,28 +797,28 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
                     Dependency.objects.filter(project=project).delete()
                     ProgramCharter.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 try:
                     from newsletters.models import Newsletter
 
                     Newsletter.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 try:
                     from communication.models import Meeting
 
                     Meeting.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 try:
                     from workflow.models import WorkflowDiagram
 
                     WorkflowDiagram.objects.filter(project=project).delete()
-                except Exception as e:
+                except Exception:
                     pass
 
                 # Delete from projects app
@@ -2258,7 +2258,7 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 )
                 serializer.save(project=project)
             except Project.DoesNotExist:
-                raise serializers.ValidationError("Project not found or access denied")
+                raise serializers.ValidationError("Project not found or access denied") from None
         else:
             serializer.save()
 
@@ -2462,7 +2462,7 @@ class IssueViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                     id=project_id, company=self.request.user.company
                 )
             except Project.DoesNotExist:
-                raise serializers.ValidationError("Project not found or access denied")
+                raise serializers.ValidationError("Project not found or access denied") from None
         serializer.save(**kwargs)
 
 
@@ -2502,7 +2502,7 @@ class AssumptionViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                     id=project_id, company=self.request.user.company
                 )
             except Project.DoesNotExist:
-                raise serializers.ValidationError("Project not found or access denied")
+                raise serializers.ValidationError("Project not found or access denied") from None
         serializer.save(**kwargs)
 
 
@@ -2540,7 +2540,7 @@ class LessonLearnedViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                     id=project_id, company=self.request.user.company
                 )
             except Project.DoesNotExist:
-                raise serializers.ValidationError("Project not found or access denied")
+                raise serializers.ValidationError("Project not found or access denied") from None
         serializer.save(**kwargs)
 
 
@@ -2641,7 +2641,7 @@ class ManualMitigationViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet)
                 )
                 serializer.save(risk=risk)
             except Risk.DoesNotExist:
-                raise serializers.ValidationError("Risk not found or access denied")
+                raise serializers.ValidationError("Risk not found or access denied") from None
         else:
             serializer.save()
 
@@ -3105,8 +3105,6 @@ class ProjectTeamRateViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(team_member)
         return Response(serializer.data)
 
-from .methodology_service import apply_methodology_template
-from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
 from .models import BudgetCategory, BudgetItem, ProjectBudget
 from .serializers import (
     BudgetCategorySerializer,

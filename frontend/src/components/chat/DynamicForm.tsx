@@ -127,7 +127,7 @@ export default function DynamicForm({ schema, onSubmit, onCancel }: DynamicFormP
       });
       
       onSubmit(response);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Form submission error:", error);
       setErrors({ _form: error.message || "Failed to submit form" });
     } finally {

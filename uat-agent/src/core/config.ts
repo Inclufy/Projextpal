@@ -11,7 +11,7 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
     apiUrl: process.env.PROJECTPAL_API_URL || 'http://localhost:8083',
     credentials: {
       email: process.env.PROJECTPAL_TEST_EMAIL || 'test@example.com',
-      password: process.env.PROJECTPAL_TEST_PASSWORD || 'password123',
+      password: process.env.PROJECTPAL_TEST_PASSWORD || '',
     },
   }),
   finance: () => ({
@@ -20,7 +20,7 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
     apiUrl: process.env.FINANCE_API_URL || 'http://localhost:8000',
     credentials: {
       email: process.env.FINANCE_TEST_EMAIL || 'test@example.com',
-      password: process.env.FINANCE_TEST_PASSWORD || 'password123',
+      password: process.env.FINANCE_TEST_PASSWORD || '',
     },
   }),
   marketing: () => ({
@@ -29,7 +29,7 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
     apiUrl: process.env.MARKETING_API_URL || 'http://localhost:8001',
     credentials: {
       email: process.env.MARKETING_TEST_EMAIL || 'test@example.com',
-      password: process.env.MARKETING_TEST_PASSWORD || 'password123',
+      password: process.env.MARKETING_TEST_PASSWORD || '',
     },
   }),
   generic: () => ({
@@ -38,7 +38,7 @@ const APP_CONFIGS: Record<string, () => AppConfig> = {
     apiUrl: process.env.APP_API_URL || 'http://localhost:8000',
     credentials: {
       email: process.env.APP_TEST_EMAIL || 'test@example.com',
-      password: process.env.APP_TEST_PASSWORD || 'password123',
+      password: process.env.APP_TEST_PASSWORD || '',
     },
   }),
 };

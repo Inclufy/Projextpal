@@ -559,7 +559,7 @@ class SubscriptionTier:
                 
                 if subscription and hasattr(subscription.plan, "plan_level"):
                     return subscription.plan.plan_level
-            except:
+            except Exception:
                 pass
         
         # Default to starter
@@ -612,8 +612,6 @@ class SubscriptionTier:
 # LOCATION: After the SubscriptionTier class
 # ============================================
 
-from django.utils import timezone
-from datetime import timedelta
 
 class UserSubscription(models.Model):
     """
@@ -755,9 +753,7 @@ def get_subscription_status(self):
     return 'pending'
 from django.db import models
 from django.conf import settings
-from django.utils import timezone
 import uuid
-from datetime import timedelta
 
 
 class TeamInvitation(models.Model):

@@ -189,13 +189,13 @@ class WaterfallPhaseViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
         # already exists (e.g. after initialize/ seeded defaults).
         try:
             serializer.save(project=project, order=max_order + 1)
-        except IntegrityError as e:
+        except IntegrityError:
             from rest_framework.exceptions import ValidationError
             raise ValidationError({
                 'phase_type': [
                     f"A phase of this type already exists for this project."
                 ]
-            })
+            }) from None
 
     @action(detail=True, methods=['post'])
     def start(self, request, pk=None, project_id=None):
@@ -429,7 +429,7 @@ class WaterfallRequirementViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
         if last_req:
             try:
                 num = int(last_req.requirement_id.split('-')[1]) + 1
-            except:
+            except Exception:
                 num = 1
         else:
             num = 1
@@ -537,7 +537,7 @@ class WaterfallTestCaseViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
         if last_tc:
             try:
                 num = int(last_tc.test_id.split('-')[1]) + 1
-            except:
+            except Exception:
                 num = 1
         else:
             num = 1
@@ -724,7 +724,7 @@ class WaterfallChangeRequestViewSet(WaterfallProjectMixin, viewsets.ModelViewSet
         if last_cr:
             try:
                 num = int(last_cr.change_id.split('-')[1]) + 1
-            except:
+            except Exception:
                 num = 1
         else:
             num = 1

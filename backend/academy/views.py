@@ -5,15 +5,13 @@ Handles course purchases, enrollments, and quote requests
 
 import stripe
 import json
-from decimal import Decimal
 from django.conf import settings
-from django.http import JsonResponse, HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.db import models
-from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from admin_portal.permissions import IsSuperAdmin
@@ -36,10 +34,7 @@ from .serializers import (
     SkillCategorySerializer, SkillSerializer, UserSkillSerializer,
     SkillGoalSerializer, SkillActivitySerializer
 )
-from rest_framework.decorators import api_view
 from openai import OpenAI
-from django.conf import settings
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -225,9 +220,9 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except ValueError as e:
+    except ValueError:
         return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
 
     # Handle the event
@@ -1148,59 +1143,29 @@ def api_content_course_structure(request, course_id):
 @api_view(['POST'])
 @permission_classes([IsSuperAdmin])
 def upload_lesson_content(request, lesson_id):
-    """Upload content file for a lesson"""
-    from .models import CourseLesson  # LessonContent removed
-    
-    try:
-        lesson = CourseLesson.objects.get(id=lesson_id)
-        
-        file = request.FILES.get('file')
-        content_type = request.POST.get('content_type', 'file')
-        title = request.POST.get('title', file.name if file else 'Untitled')
-        
-        if not file:
-            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Get max order
-        max_order = LessonContent.objects.filter(lesson=lesson).aggregate(
-            models.Max('order')
-        )['order__max'] or 0
-        
-        content = LessonContent.objects.create(
-            lesson=lesson,
-            content_type=content_type,
-            title=title,
-            file=file,
-            file_size=file.size,
-            order=max_order + 1
-        )
-        
-        return Response({
-            'success': True,
-            'content': {
-                'id': content.id,
-                'title': content.title,
-                'content_type': content.content_type,
-                'file_url': content.file.url if content.file else None,
-                'file_size': content.file_size,
-            }
-        })
-    except CourseLesson.DoesNotExist:
-        return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
+    """Upload content file for a lesson.
+
+    The standalone LessonContent model was removed; this endpoint is retired.
+    Returns 410 Gone instead of crashing on the now-undefined model.
+    """
+    return Response(
+        {'error': 'Lesson content blocks are no longer supported.'},
+        status=status.HTTP_410_GONE,
+    )
 
 
 @api_view(['DELETE'])
 @permission_classes([IsSuperAdmin])
 def delete_lesson_content(request, content_id):
-    """Delete a content block"""
-    # # from .models import LessonContent
-    
-    try:
-        content = LessonContent.objects.get(id=content_id)
-        content.delete()
-        return Response({'success': True, 'message': 'Content deleted'})
-    except LessonContent.DoesNotExist:
-        return Response({'error': 'Content not found'}, status=status.HTTP_404_NOT_FOUND)
+    """Delete a content block.
+
+    The standalone LessonContent model was removed; this endpoint is retired.
+    Returns 410 Gone instead of crashing on the now-undefined model.
+    """
+    return Response(
+        {'error': 'Lesson content blocks are no longer supported.'},
+        status=status.HTTP_410_GONE,
+    )
 
 # ============================================
 # ADMIN - CREATE & DELETE COURSES
@@ -1267,26 +1232,13 @@ def admin_delete_course(request, course_id):
 @api_view(['GET'])
 @permission_classes([IsSuperAdmin])
 def get_lesson_content(request, lesson_id):
-    """Get all content blocks for a lesson"""
-    # # from .models import LessonContent
-    
-    try:
-        contents = LessonContent.objects.filter(lesson_id=lesson_id).order_by('order')
-        contents_list = []
-        
-        for content in contents:
-            contents_list.append({
-                'id': content.id,
-                'title': content.title,
-                'content_type': content.content_type,
-                'file_url': content.file.url if content.file else None,
-                'file_size': content.file_size,
-                'order': content.order,
-            })
-        
-        return Response(contents_list)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    """Get all content blocks for a lesson.
+
+    The standalone LessonContent model was removed; this endpoint is retired.
+    Returns an empty list so existing callers degrade gracefully instead of
+    crashing on the now-undefined model.
+    """
+    return Response([])
 
 
 # ============================================
@@ -1403,7 +1355,6 @@ def get_lesson_resources(request, lesson_id):
     except CourseLesson.DoesNotExist:
         return Response({'error': 'Lesson not found'}, status=404)
     
-    from .models import LessonResource
     resources = LessonResource.objects.filter(lesson=lesson)
     data = [
         {
@@ -1422,7 +1373,6 @@ def get_lesson_resources(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def download_resource(request, resource_id):
     """Download a lesson resource file"""
-    from .models import LessonResource
     try:
         resource = LessonResource.objects.get(id=resource_id)
     except LessonResource.DoesNotExist:

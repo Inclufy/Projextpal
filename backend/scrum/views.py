@@ -200,7 +200,7 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             serializer.save(backlog=backlog, reporter=self.request.user)
         except IntegrityError as e:
             from rest_framework.exceptions import ValidationError
-            raise ValidationError({'detail': f'Could not create backlog item: {str(e)}'})
+            raise ValidationError({'detail': f'Could not create backlog item: {str(e)}'}) from e
 
     @action(detail=True, methods=['post'])
     def assign_to_sprint(self, request, project_id=None, pk=None):
@@ -304,93 +304,6 @@ class BacklogItemViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                 reporter=request.user,
                 backlog=parent_item.backlog
             )
-            return Response(
-                self.get_serializer(subtask).data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-   
-   
-        """Create a subtask for this backlog item"""
-        parent_item = self.get_object()
-        
-        data = request.data.copy()
-        data['parent'] = parent_item.id
-        data['backlog'] = parent_item.backlog.id
-        data['sprint'] = parent_item.sprint.id if parent_item.sprint else None
-        data['item_type'] = 'task'
-        
-        if not data.get('title'):
-            subtask_count = parent_item.children.count() + 1
-            data['title'] = f"Subtask {subtask_count} for {parent_item.title}"
-        
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            subtask = serializer.save(reporter=request.user)
-            return Response(
-                self.get_serializer(subtask).data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        """Create a subtask for this backlog item"""
-        parent_item = self.get_object()
-        
-        data = request.data.copy()
-        data['parent'] = parent_item.id
-        data['backlog'] = parent_item.backlog.id
-        data['sprint'] = parent_item.sprint.id if parent_item.sprint else None
-        data['item_type'] = 'task'
-        
-        if not data.get('title'):
-            subtask_count = parent_item.children.count() + 1
-            data['title'] = f"Subtask {subtask_count} for {parent_item.title}"
-        
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            subtask = serializer.save(reporter=request.user)
-            return Response(
-                self.get_serializer(subtask).data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        """Create a subtask for this backlog item"""
-        parent_item = self.get_object()
-        
-        data = request.data.copy()
-        data['parent'] = parent_item.id
-        data['backlog'] = parent_item.backlog.id
-        data['sprint'] = parent_item.sprint.id if parent_item.sprint else None
-        data['item_type'] = 'task'
-        
-        if not data.get('title'):
-            subtask_count = parent_item.children.count() + 1
-            data['title'] = f"Subtask {subtask_count} for {parent_item.title}"
-        
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            subtask = serializer.save(reporter=request.user)
-            return Response(
-                self.get_serializer(subtask).data,
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        """Create a subtask for this backlog item"""
-        parent_item = self.get_object()
-        
-        data = request.data.copy()
-        data['parent'] = parent_item.id
-        data['backlog'] = parent_item.backlog.id
-        data['sprint'] = parent_item.sprint.id if parent_item.sprint else None
-        data['item_type'] = 'task'  # Subtasks are always tasks
-        
-        # Auto-generate title if not provided
-        if not data.get('title'):
-            subtask_count = parent_item.children.count() + 1
-            data['title'] = f"Subtask {subtask_count} for {parent_item.title}"
-        
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            subtask = serializer.save(reporter=request.user)
             return Response(
                 self.get_serializer(subtask).data,
                 status=status.HTTP_201_CREATED

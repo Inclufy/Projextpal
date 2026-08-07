@@ -297,7 +297,7 @@ const Navigation = () => {
   // Academy dropdown items
   const academyItems = [
     { 
-      label: isNL ? 'Training Marketplace' : 'Training Marketplace', 
+      label: 'Training Marketplace', 
       url: '/academy/marketplace', 
       icon: BookOpen,
       desc: isNL ? '100+ cursussen & certificaten' : '100+ courses & certificates',
@@ -1312,7 +1312,7 @@ const About = () => {
 
         <div className="grid md:grid-cols-4 gap-6 mb-16">
           {pillars.map((pillar, i) => (
-            <div 
+            <button type="button" 
               key={i} 
               className={`bg-card rounded-2xl p-6 border text-center hover-lift transition-all duration-300 ${pillar.link ? 'cursor-pointer' : ''}`}
               onClick={() => pillar.link && navigate(pillar.link)}
@@ -1326,7 +1326,7 @@ const About = () => {
               </div>
               <h3 className="font-bold text-lg mb-2">{pillar.title}</h3>
               <p className="text-muted-foreground text-sm">{pillar.desc}</p>
-            </div>
+            </button>
           ))}
         </div>
 

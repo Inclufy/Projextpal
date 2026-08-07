@@ -4,8 +4,8 @@ import type { VisualTemplateProps } from './types';
 const TripleConstraintVisual: React.FC<VisualTemplateProps> = ({ isNL, visualData }) => {
   const nodes = visualData?.nodes || [
     { label: isNL ? 'TIJD' : 'TIME', tooltip: isNL ? 'Hoelang duurt het?' : 'How long?' },
-    { label: isNL ? 'BUDGET' : 'BUDGET', tooltip: isNL ? 'Hoeveel mag het kosten?' : 'How much?' },
-    { label: isNL ? 'SCOPE' : 'SCOPE', tooltip: isNL ? 'Wat moet het opleveren?' : 'What to deliver?' },
+    { label: 'BUDGET', tooltip: isNL ? 'Hoeveel mag het kosten?' : 'How much?' },
+    { label: 'SCOPE', tooltip: isNL ? 'Wat moet het opleveren?' : 'What to deliver?' },
   ];
 
   const scenarios = visualData?.scenarios || [
@@ -196,7 +196,7 @@ const TripleConstraintVisual: React.FC<VisualTemplateProps> = ({ isNL, visualDat
               <div className="text-sm font-semibold mb-3">{isNL ? '✅ OPTIES' : '✅ OPTIONS'}</div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2"><span className="text-green-300">A.</span><span>{isNL ? '6 maanden (2x tijd)' : '6 months (2x time)'}</span></div>
-                <div className="flex items-center gap-2"><span className="text-green-300">B.</span><span>{isNL ? '€100k (2x budget)' : '€100k (2x budget)'}</span></div>
+                <div className="flex items-center gap-2"><span className="text-green-300">B.</span><span>{'€100k (2x budget)'}</span></div>
                 <div className="flex items-center gap-2"><span className="text-green-300">C.</span><span>{isNL ? "30 pagina's (compromis)" : '30 pages (compromise)'}</span></div>
               </div>
             </div>

@@ -1791,7 +1791,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
               ) : (
                 <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto border rounded-lg p-3">
                   {teamMembers.filter(m => m.isActive).map((member) => (
-                    <div
+                    <button type="button"
                       key={member.id}
                       onClick={() => toggleRecipient(member.email)}
                       className={cn(
@@ -1820,7 +1820,7 @@ Make questions specific, actionable, and relevant to post-project evaluation.`;
                           <Check className="h-4 w-4 text-primary" />
                         )}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

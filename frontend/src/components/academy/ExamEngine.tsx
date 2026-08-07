@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { answersMatch } from "@/lib/gradeAnswers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -333,7 +334,7 @@ export default function ExamEngine({
     for (const q of questions) {
       const selected = answers[String(q.id)] || [];
       const correct = SAMPLE_CORRECT[q.id] || [q.answers[1]?.id];
-      const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
+      const isCorrect = answersMatch(selected, correct);
       if (isCorrect) score++;
       questionResults.push({
         question_id: q.id,
@@ -463,7 +464,7 @@ export default function ExamEngine({
             </h2>
             <div className="text-4xl font-bold my-4">{results.percentage}%</div>
             <p className="text-muted-foreground mb-2">
-              {results.score} / {results.max_score} {isNL ? "correct" : "correct"}
+              {results.score} / {results.max_score} {"correct"}
             </p>
             <Progress value={results.percentage} className="h-3 my-4" />
             <Badge variant={results.passed ? "default" : "destructive"} className="text-sm">

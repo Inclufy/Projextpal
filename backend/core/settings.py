@@ -226,7 +226,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": decouple.config("POSTGRES_DB", default="projextpal"),
         "USER": decouple.config("POSTGRES_USER", default="projextpal"),
-        "PASSWORD": decouple.config("POSTGRES_PASSWORD", default="projextpal_password_2024"),
+        "PASSWORD": decouple.config("POSTGRES_PASSWORD"),
         "HOST": decouple.config("POSTGRES_HOST", default="localhost"),
         "PORT": decouple.config("POSTGRES_PORT", default="5432"),
     }

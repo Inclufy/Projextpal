@@ -640,7 +640,7 @@ function drawSystemChart(data){
       const y = padT + cH - (Math.min(values[i],100)/100)*cH;
       ctx.lineTo(x, y);
     }
-    ctx.lineTo(padL + (values.length-1)/(values.length-1)*cW, padT+cH);
+    ctx.lineTo(padL + cW, padT+cH);
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();

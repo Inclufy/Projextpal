@@ -212,7 +212,7 @@ export const SkillsTab: React.FC<SkillsTabProps> = ({ isNL }) => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium">{isNL ? 'Skill' : 'Skill'}</label>
+              <label className="text-sm font-medium">{'Skill'}</label>
               <p className="text-lg">{selectedSkill && (isNL ? selectedSkill.name_nl : selectedSkill.name)}</p>
             </div>
             <div>

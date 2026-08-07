@@ -99,7 +99,7 @@ export default function VerifyEmail() {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || 'Er is iets misgegaan');
     } finally {
       setIsSubmitting(false);

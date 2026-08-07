@@ -138,7 +138,7 @@ const RequestQuote = () => {
     phone: isNL ? 'Telefoonnummer' : 'Phone Number',
     jobTitle: isNL ? 'Functie' : 'Job Title',
     country: isNL ? 'Land' : 'Country',
-    trainingDetails: isNL ? 'Training Details' : 'Training Details',
+    trainingDetails: 'Training Details',
     selectCourses: isNL ? 'Selecteer Cursussen' : 'Select Courses',
     teamSize: isNL ? 'Teamgrootte' : 'Team Size',
     preferredDate: isNL ? 'Gewenste Startdatum' : 'Preferred Start Date',
@@ -436,7 +436,7 @@ const RequestQuote = () => {
                         const Icon = c.icon;
                         const isSelected = selectedCourses.includes(c.id);
                         return (
-                          <div 
+                          <button type="button" 
                             key={c.id}
                             onClick={() => toggleCourse(c.id)}
                             className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
@@ -461,7 +461,7 @@ const RequestQuote = () => {
                               <Icon className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-sm font-medium flex-1">{c.title}</span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>

@@ -174,7 +174,7 @@ const Checkout = () => {
         throw new Error('No checkout URL returned');
       }
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Checkout error:', error);
       toast({
         title: language === 'nl' ? 'Checkout mislukt' : 'Checkout failed',
@@ -228,7 +228,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -270,7 +270,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -312,7 +312,7 @@ const Checkout = () => {
       } else {
         throw new Error(data.error || 'Request failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: language === 'nl' ? 'Fout' : 'Error',
         description: error.message,
@@ -487,7 +487,7 @@ const Checkout = () => {
               <CardContent>
                 <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
                   <div className="space-y-3">
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    <button type="button" className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       paymentMethod === 'stripe' ? 'border-primary bg-primary/5' : 'border-border'
                     }`} onClick={() => setPaymentMethod('stripe')}>
                       <RadioGroupItem value="stripe" id="stripe" />
@@ -504,9 +504,9 @@ const Checkout = () => {
                             : 'Secure online payment with credit card or iDEAL'}
                         </p>
                       </div>
-                    </div>
+                    </button>
 
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    <button type="button" className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       paymentMethod === 'invoice' ? 'border-primary bg-primary/5' : 'border-border'
                     }`} onClick={() => setPaymentMethod('invoice')}>
                       <RadioGroupItem value="invoice" id="invoice" />
@@ -523,9 +523,9 @@ const Checkout = () => {
                             : 'Receive monthly or yearly invoices (admin approval required)'}
                         </p>
                       </div>
-                    </div>
+                    </button>
 
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    <button type="button" className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       paymentMethod === 'quote' ? 'border-primary bg-primary/5' : 'border-border'
                     }`} onClick={() => setPaymentMethod('quote')}>
                       <RadioGroupItem value="quote" id="quote" />
@@ -542,9 +542,9 @@ const Checkout = () => {
                             : 'Request a custom quote for your organization'}
                         </p>
                       </div>
-                    </div>
+                    </button>
 
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    <button type="button" className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       paymentMethod === 'demo' ? 'border-primary bg-primary/5' : 'border-border'
                     }`} onClick={() => setPaymentMethod('demo')}>
                       <RadioGroupItem value="demo" id="demo" />
@@ -561,7 +561,7 @@ const Checkout = () => {
                             : 'Schedule a personal demo with our product specialist'}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   </div>
                 </RadioGroup>
               </CardContent>

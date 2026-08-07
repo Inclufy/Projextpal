@@ -26,7 +26,7 @@ interface AuthContextType {
   error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API Base URL
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to fetch user data after login');
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Login error:', error);
       setError(error.message || 'Login failed');
       

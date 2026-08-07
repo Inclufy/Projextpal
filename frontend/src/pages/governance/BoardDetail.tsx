@@ -219,7 +219,7 @@ const BoardDetail: React.FC = () => {
       if (!res.ok) { const err = await res.json(); throw new Error(JSON.stringify(err)); }
       toast({ title: "Member Added", description: "Board member added successfully." });
       setShowAddMember(false); setSelectedUser(""); setMemberRole("member"); fetchBoard();
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Error", description: e.message || "Failed to add member.", variant: "destructive" });
     } finally { setAddingMember(false); }
   };
@@ -509,7 +509,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewMeetings.map((m) => (
-                <div
+                <button type="button"
                   key={m.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => board.program && navigate(`/programs/${board.program}/governance`)}
@@ -527,7 +527,7 @@ const BoardDetail: React.FC = () => {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
               {meetings.length > previewMeetings.length && (
                 <button
@@ -585,7 +585,7 @@ const BoardDetail: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {previewDecisions.map((d) => (
-                <div
+                <button type="button"
                   key={d.id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/governance/decisions?board=${id}&highlight=${d.id}`)}
@@ -601,7 +601,7 @@ const BoardDetail: React.FC = () => {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
               {decisions.length > previewDecisions.length && (
                 <button

@@ -81,7 +81,7 @@ export const MethodologyBreakdown: React.FC<MethodologyBreakdownProps> = ({ proj
           const percentage = projects.length > 0 ? Math.round((data.count / projects.length) * 100) : 0;
 
           return (
-            <div
+            <button type="button"
               key={key}
               className={`group relative flex items-center gap-4 p-3.5 rounded-xl ${config.bgColor} ring-1 ${config.borderColor} hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/projects?methodology=${key}`)}
@@ -114,7 +114,7 @@ export const MethodologyBreakdown: React.FC<MethodologyBreakdownProps> = ({ proj
                 </div>
               </div>
               <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 dark:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
-            </div>
+            </button>
           );
         })}
       </CardContent>
@@ -179,7 +179,7 @@ export const CertificationsWidget: React.FC = () => {
         {certs.length > 0 ? (
           <div className="space-y-3">
             {certs.slice(0, 4).map((cert: any, idx: number) => (
-              <div
+              <button type="button"
                 key={cert.id || idx}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/80 to-orange-50/80 dark:from-amber-900/10 dark:to-orange-900/10 ring-1 ring-amber-200/50 dark:ring-amber-800/30 hover:shadow-md transition-all duration-200 cursor-pointer"
                 onClick={() => navigate(`/academy/course/${cert.course_id || cert.course}/learn?tab=certificate`)}
@@ -206,7 +206,7 @@ export const CertificationsWidget: React.FC = () => {
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   {isNL ? "Behaald" : "Achieved"}
                 </Badge>
-              </div>
+              </button>
             ))}
             {certs.length > 4 && (
               <Button
@@ -277,13 +277,13 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
 
     const courseMap: Record<string, { title: string; subtitle: string; slug: string }> = {
       'prince2': { title: 'PRINCE2 Foundation & Practitioner', subtitle: isNL ? 'Gestructureerd projectmanagement' : 'Structured project management', slug: 'prince2-foundation' },
-      'scrum': { title: 'Professional Scrum Master', subtitle: isNL ? 'Agile team management' : 'Agile team management', slug: 'scrum-master' },
+      'scrum': { title: 'Professional Scrum Master', subtitle: 'Agile team management', slug: 'scrum-master' },
       'kanban': { title: 'Kanban System Design', subtitle: isNL ? 'Flow-gebaseerd werken' : 'Flow-based work management', slug: 'kanban-practitioner' },
       'agile': { title: 'Agile Project Management', subtitle: isNL ? 'Iteratief projectbeheer' : 'Iterative project delivery', slug: 'agile-fundamentals' },
       'waterfall': { title: 'Waterfall Planning Mastery', subtitle: isNL ? 'Planmatig projectbeheer' : 'Sequential project planning', slug: 'waterfall-pm' },
       'lean_six_sigma_green': { title: 'Lean Six Sigma Green Belt', subtitle: isNL ? 'Procesverbetering' : 'Process improvement', slug: 'lean-six-sigma' },
       'lean_six_sigma_black': { title: 'Lean Six Sigma Black Belt', subtitle: isNL ? 'Geavanceerde procesverbetering' : 'Advanced process improvement', slug: 'lean-six-sigma' },
-      'safe': { title: 'SAFe Agilist', subtitle: isNL ? 'Enterprise agility' : 'Enterprise agility', slug: 'safe-scaling-agile' },
+      'safe': { title: 'SAFe Agilist', subtitle: 'Enterprise agility', slug: 'safe-scaling-agile' },
       'msp': { title: 'MSP Programme Management', subtitle: isNL ? 'Programmabeheer' : 'Programme management', slug: 'program-management-pro' },
       'pmi': { title: 'PMP Certification Prep', subtitle: isNL ? 'PMI standaarden' : 'PMI standards', slug: 'pm-fundamentals' },
       'hybrid': { title: 'Hybrid Project Management', subtitle: isNL ? 'Beste van beide werelden' : 'Best of both worlds', slug: 'pm-fundamentals' },
@@ -341,7 +341,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
         {courseRecommendations.map((course, idx) => {
           const Icon = course.icon;
           return (
-            <div
+            <button type="button"
               key={idx}
               className={`group flex items-center gap-3 p-3.5 rounded-xl ${course.gradient} ring-1 ring-purple-100/50 dark:ring-purple-800/30 hover:shadow-md transition-all duration-200 cursor-pointer`}
               onClick={() => navigate(`/academy/course/${course.slug}`)}
@@ -358,7 +358,7 @@ export const RecommendedCourses: React.FC<RecommendedCoursesProps> = ({ projects
                 </p>
               </div>
               <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-purple-500 dark:text-gray-600 dark:group-hover:text-purple-400 transition-colors" />
-            </div>
+            </button>
           );
         })}
       </CardContent>

@@ -107,7 +107,7 @@ const PricingConfigurator = () => {
       if (r?.ok === false) throw new Error(r.error || 'Finance weigerde');
       toast.success('Offerte doorgezet naar Inclufy Finance');
       setSendOpen(false);
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message || 'Naar Finance mislukt');
     } finally {
       setSending(false);
@@ -128,7 +128,7 @@ const PricingConfigurator = () => {
       });
       toast.success(`Offerte verzonden naar ${custEmail}`);
       setSendOpen(false);
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message || 'Versturen mislukt');
     } finally {
       setSending(false);
