@@ -45,7 +45,7 @@ pydantic==2.11.7
 pydantic_core==2.33.2
 pyotp==2.9.0
 python-decouple==3.8
-python-dotenv==1.1.1
+python-dotenv==1.2.2
 PyYAML==6.0.2
 qrcode==8.2
 reportlab==4.0.7
