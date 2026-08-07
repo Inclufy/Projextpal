@@ -289,24 +289,93 @@ class ProgramViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def resources(self, request, pk=None):
-        """Get program resource allocation across projects."""
+        """Program resource allocation across linked projects.
+
+        API contract (consumed by frontend/src/pages/ProgramResources.tsx):
+            [{"id", "name", "role", "allocation", "projects"}]
+        one row per person, aggregated over all projects in the programme.
+
+        ``allocation`` is a percentage of one FTE's capacity, summed across
+        the programme's projects. Per (user, project) it uses, in order:
+        1. the planned ``WaterfallTeamMember.allocation_percentage`` when set;
+        2. otherwise actual submitted/approved ``TimeEntry`` hours over the
+           last 28 days against a 40h/week (160h) capacity;
+        3. otherwise 0 (member without planning or time data yet).
+
+        Fixes the previous implementation, which returned per-membership rows
+        with ``user_name``/``project_name`` keys the frontend never read and
+        referenced a non-existent ``ProjectTeam.role`` attribute — the
+        resulting AttributeError was swallowed by a bare ``except``, so the
+        endpoint silently returned ``[]`` and every allocation counter
+        rendered as 0.
+        """
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from projects.models import ProjectTeam, TimeEntry
+        from waterfall.models import WaterfallTeamMember
+
         program = self.get_object()
-        resources = []
-        for project in program.projects.all():
-            try:
-                from projects.models import ProjectTeam
-                team_members = ProjectTeam.objects.filter(project=project)
-                for member in team_members:
-                    resources.append({
-                        'user_id': member.user.id,
-                        'user_name': member.user.get_full_name() or member.user.email,
-                        'project_id': project.id,
-                        'project_name': project.name,
-                        'role': member.role,
-                    })
-            except Exception:
-                pass
-        return Response(resources)
+        project_ids = list(program.projects.values_list('id', flat=True))
+
+        team_rows = list(
+            ProjectTeam.objects.filter(project_id__in=project_ids, is_active=True)
+            .select_related('user', 'project')
+        )
+        waterfall_rows = list(
+            WaterfallTeamMember.objects.filter(project_id__in=project_ids)
+            .select_related('user', 'project')
+        )
+
+        planned = {
+            (w.user_id, w.project_id): w.allocation_percentage or 0
+            for w in waterfall_rows
+        }
+
+        window_start = timezone.localdate() - timedelta(days=28)
+        capacity_hours = 160  # 4 weeks x 40h = one FTE over the window
+        actuals = {
+            (row['user_id'], row['project_id']): row['total'] or 0
+            for row in TimeEntry.objects.filter(
+                project_id__in=project_ids,
+                date__gte=window_start,
+                status__in=['submitted', 'approved'],
+            )
+            .values('user_id', 'project_id')
+            .annotate(total=Sum('hours'))
+        }
+
+        # Union of both membership sources, deduplicated per (user, project).
+        pairs = {}
+        for m in team_rows:
+            pairs[(m.user_id, m.project_id)] = (m.user, m.project)
+        for w in waterfall_rows:
+            pairs.setdefault((w.user_id, w.project_id), (w.user, w.project))
+
+        by_user = {}
+        for (user_id, project_id), (member, project) in sorted(
+            pairs.items(), key=lambda item: (item[1][1].name or '', item[0])
+        ):
+            entry = by_user.setdefault(user_id, {
+                'id': user_id,
+                'name': member.get_full_name() or member.email,
+                'role': member.get_role_display() if hasattr(member, 'get_role_display') else '',
+                'allocation': 0,
+                'projects': [],
+            })
+            pct = planned.get((user_id, project_id)) or 0
+            if not pct:
+                hours = actuals.get((user_id, project_id))
+                if hours:
+                    pct = int(round(float(hours) / capacity_hours * 100))
+            entry['allocation'] += pct
+            entry['projects'].append(project.name)
+
+        return Response(sorted(
+            by_user.values(),
+            key=lambda r: (-r['allocation'], r['name'].lower()),
+        ))
 
     @action(detail=True, methods=['get'], url_path='team')
     def get_team(self, request, pk=None):
