@@ -194,7 +194,11 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # Drop-in JWTAuthentication subclass: normal JWTs are unchanged;
+        # long-lived BI service tokens (scope "bi:read", minted via
+        # `manage.py create_service_token`) are forced read-only at the
+        # authentication layer (403 on POST/PUT/PATCH/DELETE).
+        "accounts.authentication.ServiceScopedJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -204,6 +208,9 @@ REST_FRAMEWORK = {
     # Per-view throttling (e.g. forgot-password) uses ScopedRateThrottle.
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
+        # Read-only BI service tokens (scope "bi:read") get their own rate
+        # bucket; a no-op for interactive users (get_cache_key -> None).
+        "accounts.throttling.ServiceTokenRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
         # DRF's parse_rate only accepts single-letter periods (s/m/h/d),
@@ -217,6 +224,10 @@ REST_FRAMEWORK = {
         # Caps OpenAI/Anthropic spend per user so a stolen JWT can't drain the
         # AI budget. Generous enough for real interactive use.
         "ai": "60/hour",
+        # Machine/BI access via read-only service tokens (Power BI etc.).
+        # Generous enough for full incremental refreshes across all
+        # entities, but bounded so a leaked token can't hammer the API.
+        "service_token": "1000/hour",
     },
 }
 
@@ -307,7 +318,19 @@ FIELD_ENCRYPTION_KEYS = decouple.config("FIELD_ENCRYPTION_KEYS", default="")
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ProjExpal API',
-    'DESCRIPTION': 'Project Management API',
+    'DESCRIPTION': (
+        'Project Management API.\n\n'
+        '**Data portability / BI access:** list endpoints of the core '
+        'entities (projects, milestones, tasks, time entries, expenses, '
+        'risks, issues, budget categories/items) support the '
+        '`?modified_since=<ISO8601>` query parameter for incremental/delta '
+        'exports (filters on `updated_at >= value`; invalid values return '
+        'HTTP 400). For non-interactive BI tools (e.g. Power BI) a '
+        'long-lived read-only service token can be issued via '
+        '`manage.py create_service_token` and passed as '
+        '`Authorization: Bearer <token>`; such tokens only permit '
+        'GET/HEAD/OPTIONS and are rate-limited.'
+    ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
@@ -370,6 +393,13 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': ':memory:',
+        }
+    }
+    # Tests must not depend on a running Redis (throttling/cache lookups
+    # would otherwise try to reach the docker-only "redis" hostname).
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         }
     }
 # Opt-in file-based SQLite for running the app locally without Docker/Postgres.
