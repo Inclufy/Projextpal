@@ -12,41 +12,56 @@ def noop(apps, schema_editor):
     pass
 
 
+# Idempotent column adds: this environment has shown migration-state drift
+# (columns present while the migration record is missing). PostgreSQL uses
+# ADD COLUMN IF NOT EXISTS; other backends (SQLite in tests/CI) add only when
+# introspection shows the column missing — same pattern as 0029/0031.
+def add_cols(apps, schema_editor):
+    conn = schema_editor.connection
+    if conn.vendor == "postgresql":
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard "
+            "ADD COLUMN IF NOT EXISTS description text NOT NULL DEFAULT '';"
+        )
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard "
+            "ADD COLUMN IF NOT EXISTS audience varchar(16) NOT NULL DEFAULT 'private';"
+        )
+        return
+    # Bewust géén schema_editor.add_field: op SQLite herbouwt die de tabel
+    # vanuit het historische model, waardoor de tweede add_field de eerste
+    # (nog niet in de modelstate bekende) kolom weer laat vervallen.
+    # Plain ADD COLUMN met default is op alle backends geldig.
+    with conn.cursor() as c:
+        cols = [col.name for col in conn.introspection.get_table_description(
+            c, "projects_savedanalyticsdashboard")]
+    if "description" not in cols:
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard "
+            "ADD COLUMN description text NOT NULL DEFAULT '';")
+    if "audience" not in cols:
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard "
+            "ADD COLUMN audience varchar(16) NOT NULL DEFAULT 'private';")
+
+
+def drop_cols(apps, schema_editor):
+    if schema_editor.connection.vendor == "postgresql":
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard DROP COLUMN IF EXISTS description;")
+        schema_editor.execute(
+            "ALTER TABLE projects_savedanalyticsdashboard DROP COLUMN IF EXISTS audience;")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
         ("projects", "0026_savedanalyticsdashboard"),
     ]
 
-    # Idempotent column adds: this environment has shown migration-state drift
-    # (columns present while the migration record is missing). Using
-    # SeparateDatabaseAndState with ADD COLUMN IF NOT EXISTS keeps the schema
-    # in sync without crashing when a column already exists, while Django's
-    # model state still learns about the new fields.
     operations = [
         migrations.SeparateDatabaseAndState(
-            database_operations=[
-                migrations.RunSQL(
-                    sql=(
-                        "ALTER TABLE projects_savedanalyticsdashboard "
-                        "ADD COLUMN IF NOT EXISTS description text NOT NULL DEFAULT '';"
-                    ),
-                    reverse_sql=(
-                        "ALTER TABLE projects_savedanalyticsdashboard "
-                        "DROP COLUMN IF EXISTS description;"
-                    ),
-                ),
-                migrations.RunSQL(
-                    sql=(
-                        "ALTER TABLE projects_savedanalyticsdashboard "
-                        "ADD COLUMN IF NOT EXISTS audience varchar(16) NOT NULL DEFAULT 'private';"
-                    ),
-                    reverse_sql=(
-                        "ALTER TABLE projects_savedanalyticsdashboard "
-                        "DROP COLUMN IF EXISTS audience;"
-                    ),
-                ),
-            ],
+            database_operations=[migrations.RunPython(add_cols, drop_cols)],
             state_operations=[
                 migrations.AddField(
                     model_name="savedanalyticsdashboard",
