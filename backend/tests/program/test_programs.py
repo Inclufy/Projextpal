@@ -31,7 +31,7 @@ class TestPrograms:
             start_date='2024-01-01'
         )
         
-        url = f'/api/v1/programs/programs/{program.id}/benefits/'
+        url = f'/api/v1/programs/{program.id}/benefits/'
         data = {
             'name': 'Increased Revenue',
             'description': '20% revenue increase',
@@ -52,7 +52,7 @@ class TestPrograms:
             start_date='2024-01-01'
         )
         
-        url = f'/api/v1/programs/programs/{program.id}/risks/'
+        url = f'/api/v1/programs/{program.id}/risks/'
         data = {
             'name': 'Resource Shortage',
             'description': 'Potential lack of skilled resources',
@@ -73,7 +73,7 @@ class TestPrograms:
             start_date='2024-01-01'
         )
         
-        url = f'/api/v1/programs/programs/{program.id}/milestones/'
+        url = f'/api/v1/programs/{program.id}/milestones/'
         data = {
             'name': 'Phase 1 Complete',
             'description': 'First phase completion',

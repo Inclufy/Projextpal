@@ -345,9 +345,10 @@ class TestPortfolioCompanyFiltering:
         portfolio,
         other_company_portfolio,
     ):
-        """A superadmin user should see all portfolios across companies."""
+        """A superadmin sees all portfolios across companies via ?all_tenants=1
+        (since 22922c3b superadmins default to their own company's scope)."""
         url = reverse("portfolio-list")
-        response = authenticated_superadmin_client.get(url)
+        response = authenticated_superadmin_client.get(url, {"all_tenants": "1"})
         assert response.status_code == status.HTTP_200_OK
         portfolio_ids = [p["id"] for p in response.data]
         assert str(portfolio.pk) in portfolio_ids

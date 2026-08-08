@@ -456,13 +456,16 @@ class TestAcceptInvitationAPI:
         assert response.data["role"] == "guest"
 
     def test_accept_invitation_via_post(
-        self, authenticated_client, admin_user, waterfall_project
+        self, api_client, admin_user, waterfall_project
     ):
-        """POST with a valid token marks the invitation as accepted."""
+        """POST with a valid token (+ password for a new account) marks the
+        invitation as accepted — self-service accept flow, no login needed."""
         invitation, token = self._create_invitation_with_token(
             admin_user, waterfall_project
         )
-        response = authenticated_client.post(_accept_url(token))
+        response = api_client.post(
+            _accept_url(token), {"password": "newpass1234"}
+        )
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["message"] == "Invitation accepted successfully"
@@ -472,16 +475,22 @@ class TestAcceptInvitationAPI:
         assert invitation.accepted_at is not None
 
     def test_accept_invitation_sets_accepted_by(
-        self, authenticated_client, user, admin_user, waterfall_project
+        self, api_client, admin_user, waterfall_project
     ):
-        """The user who POSTs is recorded as accepted_by."""
+        """The account belonging to the invited email is recorded as
+        accepted_by (existing-account path: no password needed)."""
+        invited_user = User.objects.create_user(
+            username="accept@example.com",
+            email="accept@example.com",
+            password="pass1234",
+        )
         invitation, token = self._create_invitation_with_token(
             admin_user, waterfall_project
         )
-        authenticated_client.post(_accept_url(token))
+        api_client.post(_accept_url(token))
 
         invitation.refresh_from_db()
-        assert invitation.accepted_by == user
+        assert invitation.accepted_by == invited_user
 
     def test_accept_expired_invitation_fails(
         self, authenticated_client, admin_user, waterfall_project
@@ -521,13 +530,15 @@ class TestAcceptInvitationAPI:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_accept_invitation_redirect_contains_project_id(
-        self, authenticated_client, admin_user, waterfall_project
+        self, api_client, admin_user, waterfall_project
     ):
         """The response after acceptance includes a redirect path with the project id."""
         invitation, token = self._create_invitation_with_token(
             admin_user, waterfall_project, email="redirect@example.com"
         )
-        response = authenticated_client.post(_accept_url(token))
+        response = api_client.post(
+            _accept_url(token), {"password": "newpass1234"}
+        )
         assert response.status_code == status.HTTP_200_OK
         assert str(waterfall_project.id) in response.data.get("redirect_to", "")
 

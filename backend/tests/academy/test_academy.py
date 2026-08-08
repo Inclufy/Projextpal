@@ -674,7 +674,7 @@ class TestCourseLessonCRUD:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["title"] == lesson_video.title
 
-    def test_create_lesson(self, api_client, course_module):
+    def test_create_lesson(self, authenticated_admin_client, course_module):
         """Create a new lesson via POST."""
         url = reverse("lesson-list")
         data = {
@@ -688,12 +688,12 @@ class TestCourseLessonCRUD:
             "content": "Some content here.",
             "content_nl": "Wat inhoud hier.",
         }
-        response = api_client.post(url, data, format="json")
+        response = authenticated_admin_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "New Lesson"
         assert CourseLesson.objects.filter(title="New Lesson").exists()
 
-    def test_update_lesson(self, api_client, lesson_video):
+    def test_update_lesson(self, authenticated_admin_client, lesson_video):
         """Full update (PUT) a lesson."""
         url = reverse("lesson-detail", kwargs={"pk": lesson_video.pk})
         data = {
@@ -707,33 +707,33 @@ class TestCourseLessonCRUD:
             "content": lesson_video.content,
             "content_nl": lesson_video.content_nl,
         }
-        response = api_client.put(url, data, format="json")
+        response = authenticated_admin_client.put(url, data, format="json")
         assert response.status_code == status.HTTP_200_OK
         lesson_video.refresh_from_db()
         assert lesson_video.title == "Updated Title"
         assert lesson_video.duration_minutes == 25
 
-    def test_partial_update_lesson(self, api_client, lesson_video):
+    def test_partial_update_lesson(self, authenticated_admin_client, lesson_video):
         """Partial update (PATCH) a lesson."""
         url = reverse("lesson-detail", kwargs={"pk": lesson_video.pk})
-        response = api_client.patch(
+        response = authenticated_admin_client.patch(
             url, {"duration_minutes": 30}, format="json"
         )
         assert response.status_code == status.HTTP_200_OK
         lesson_video.refresh_from_db()
         assert lesson_video.duration_minutes == 30
 
-    def test_delete_lesson(self, api_client, lesson_video):
+    def test_delete_lesson(self, authenticated_admin_client, lesson_video):
         """Delete a lesson."""
         url = reverse("lesson-detail", kwargs={"pk": lesson_video.pk})
-        response = api_client.delete(url)
+        response = authenticated_admin_client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not CourseLesson.objects.filter(pk=lesson_video.pk).exists()
 
-    def test_create_lesson_missing_required_fields(self, api_client):
+    def test_create_lesson_missing_required_fields(self, authenticated_admin_client):
         """Creating a lesson without required fields should fail."""
         url = reverse("lesson-list")
-        response = api_client.post(url, {}, format="json")
+        response = authenticated_admin_client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_lessons_ordered_by_order_field(

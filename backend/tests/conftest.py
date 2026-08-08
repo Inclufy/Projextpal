@@ -457,7 +457,7 @@ def scrum_project(db, user, company):
     return Project.objects.create(
         name='Test Scrum Project',
         description='Scrum methodology test project',
-        methodology='agile',
+        methodology='scrum',
         created_by=user,
         company=company,
         start_date=datetime.now().date()
