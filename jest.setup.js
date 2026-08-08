@@ -26,6 +26,9 @@ jest.mock("expo-image-picker", () => ({
   requestCameraPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
 }));
 
+// expo-notifications is verwijderd (push nooit aangesloten; entitlement brak
+// de App Store-export). pushService.ts lazy-required de module en werkt zonder.
+// `virtual: true` houdt de mock geldig of de module nu bestaat of niet.
 jest.mock("expo-notifications", () => ({
   getPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
   requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
@@ -34,7 +37,7 @@ jest.mock("expo-notifications", () => ({
   addNotificationReceivedListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
   addNotificationResponseReceivedListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
   scheduleNotificationAsync: jest.fn().mockResolvedValue("notif-id"),
-}));
+}), { virtual: true });
 
 jest.mock("expo-linking", () => ({
   createURL: jest.fn((path, opts) => {
