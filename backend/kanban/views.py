@@ -37,6 +37,11 @@ class ProjectFilterMixin:
         project_id = self.kwargs.get('project_id')
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             return get_object_or_404(Project, id=project_id)
+        # P1 fix — company-wide roles (admin/pm/program_manager) see every
+        # project in their own company (mirrors projects.views rule).
+        if getattr(user, 'role', None) in ("admin", "pm", "program_manager") and getattr(user, 'company_id', None):
+            return get_object_or_404(
+                Project.objects.filter(company_id=user.company_id), id=project_id)
         return get_object_or_404(
             Project.objects.filter(
                 Q(team_members__user=user, team_members__is_active=True)

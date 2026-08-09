@@ -28,13 +28,17 @@ from .serializers import (
 
 
 def _user_can_access_project(user, project_id):
-    """P2 visibility — superadmin / team_member / creator may access."""
+    """P2 visibility — superadmin / team_member / creator may access.
+    P1 fix — company-wide roles (admin/pm/program_manager) may access any
+    project in their own company (mirrors projects.views rule)."""
     from django.db.models import Q
     from projects.models import Project
     if not user.is_authenticated:
         return False
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return Project.objects.filter(id=project_id).exists()
+    if getattr(user, 'role', None) in ("admin", "pm", "program_manager") and getattr(user, 'company_id', None):
+        return Project.objects.filter(id=project_id, company_id=user.company_id).exists()
     return Project.objects.filter(
         Q(id=project_id) & (
             Q(team_members__user=user, team_members__is_active=True)
@@ -53,6 +57,9 @@ class ProjectFilterMixin:
         project_id = self.kwargs.get('project_id')
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             return model.objects.filter(project_id=project_id)
+        # P1 fix — company-wide roles see every project in their own company.
+        if getattr(user, 'role', None) in ("admin", "pm", "program_manager") and getattr(user, 'company_id', None):
+            return model.objects.filter(project_id=project_id, project__company_id=user.company_id)
         return model.objects.filter(
             project_id=project_id,
             project__in=Project.objects.filter(
@@ -68,6 +75,10 @@ class ProjectFilterMixin:
         project_id = self.kwargs.get('project_id')
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             return get_object_or_404(Project, id=project_id)
+        # P1 fix — company-wide roles see every project in their own company.
+        if getattr(user, 'role', None) in ("admin", "pm", "program_manager") and getattr(user, 'company_id', None):
+            return get_object_or_404(
+                Project.objects.filter(company_id=user.company_id), id=project_id)
         return get_object_or_404(
             Project.objects.filter(
                 Q(team_members__user=user, team_members__is_active=True)

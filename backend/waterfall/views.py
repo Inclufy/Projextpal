@@ -35,6 +35,10 @@ from .serializers import (
 
 User = get_user_model()
 
+# Company-wide roles see every project in their own company (mirrors
+# projects.views.accessible_project_ids / COMPANY_WIDE_ROLES).
+COMPANY_WIDE_ROLES = frozenset({"admin", "pm", "program_manager"})
+
 
 def _gated_project_lookup(user, project_id):
     """Look up a Project gated by membership / creator / superadmin.
@@ -42,6 +46,8 @@ def _gated_project_lookup(user, project_id):
     P0 fix — previously the call was an unfiltered Project lookup which
     allowed cross-tenant data access. Now:
     - superadmin sees everything
+    - company-wide roles (admin/pm/program_manager) see every project in
+      their own company (P1 fix — matches the canonical projects.views rule)
     - other users only see projects where they are an active team_member
       or the creator
     """
@@ -50,6 +56,9 @@ def _gated_project_lookup(user, project_id):
         raise NotAuthenticated()
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return get_object_or_404(Project, id=project_id)
+    if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
+        return get_object_or_404(
+            Project.objects.filter(company_id=user.company_id), id=project_id)
     return get_object_or_404(
         Project.objects.filter(
             Q(team_members__user=user, team_members__is_active=True)

@@ -35,14 +35,23 @@ from .serializers import (
 
 User = get_user_model()
 
+# Company-wide roles see every project in their own company (mirrors
+# projects.views.accessible_project_ids / COMPANY_WIDE_ROLES).
+COMPANY_WIDE_ROLES = frozenset({"admin", "pm", "program_manager"})
+
 
 def _gated_project_lookup(user, project_id):
-    """P0 fix — Project lookup gated by membership / creator / superadmin."""
+    """P0 fix — Project lookup gated by membership / creator / superadmin.
+    P1 fix — company-wide roles (admin/pm/program_manager) may reach any
+    project in their own company, matching the canonical projects.views rule."""
     if not user.is_authenticated:
         from rest_framework.exceptions import NotAuthenticated
         raise NotAuthenticated()
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return get_object_or_404(Project, id=project_id)
+    if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
+        return get_object_or_404(
+            Project.objects.filter(company_id=user.company_id), id=project_id)
     return get_object_or_404(
         Project.objects.filter(
             _DjangoQ(team_members__user=user, team_members__is_active=True)

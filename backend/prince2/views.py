@@ -77,6 +77,10 @@ class ProjectFilterMixin:
         user = self.request.user
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             return Project.objects.all()
+        # P1 fix — company-wide roles (admin/pm/program_manager) see every
+        # project in their own company (mirrors projects.views rule).
+        if getattr(user, 'role', None) in ("admin", "pm", "program_manager") and getattr(user, 'company_id', None):
+            return Project.objects.filter(company_id=user.company_id)
         return Project.objects.filter(
             Q(team_members__user=user, team_members__is_active=True)
             | Q(created_by=user)
