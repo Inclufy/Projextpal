@@ -73,7 +73,7 @@ build:backend:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
     - docker build -t $CI_REGISTRY_IMAGE/backend:latest -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA ./backend
     - docker push $CI_REGISTRY_IMAGE/backend:latest
@@ -91,7 +91,7 @@ build:frontend:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
     - docker build -t $CI_REGISTRY_IMAGE/frontend:latest -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA ./frontend
     - docker push $CI_REGISTRY_IMAGE/frontend:latest
