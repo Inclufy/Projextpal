@@ -124,15 +124,16 @@
         "email": "test+invite@example.com",
         "role": "contributor"
       },
-      "root_cause": "TeamInvitation.token has unique=True; the view passed token='' on create, so the second invite ever raised IntegrityError. Email subject also crashed when neither project nor program was set (NoneType.name).",
-      "fix_location": "backend/accounts/invitation_views.py — generate UUID placeholder token at create time, then overwrite with real token; coalesce missing project/program to company name; fail_silently=True on send_mail.",
+      "root_cause": "TWO lives. Life 1 (fixed May): TeamInvitation.token unique=True + token='' on create -> IntegrityError on 2nd invite. Life 2 (found 2026-08-13 via prod traceback): the real token is a JWT embedding the invitee's email; for emails > ~27 chars it exceeds the varchar(255) token column -> psycopg2 StringDataRightTruncation on invitation.save() -> 500. Local pytest runs SQLite (ignores max_length), so tests passed while Postgres prod 500'd.",
+      "fix_location": "backend/accounts/models.py — TeamInvitation.token widened CharField(255)->TextField(unique=True); migration accounts/0020_alter_teaminvitation_token.py; regression tests in backend/accounts/test_invitations.py (incl. column-capacity test that fails on the old model even under SQLite).",
       "found": "2026-04-29",
       "found_by": "admin-portal-tester",
       "status": "fix_pending_deploy",
-      "last_tested": "2026-05-22",
-      "last_test_status": "auth_deferred",
-      "last_test_response_status": 401,
-      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred."
+      "last_tested": "2026-08-13",
+      "last_test_status": "still_broken",
+      "last_test_response_status": 500,
+      "notes": "2026-05-22: unauth probe returned 401 (not 500). Auth gate OK. Full test deferred. | 2026-08-13: authenticated POST /api/v1/auth/invitations/create/ {email,role:'contributor'} -> 500 (reproduced twice with different unique emails). This matches the ORIGINAL previous_status=500 exactly -- the fix does NOT appear to be live despite fix_pending_deploy status. Status unchanged (still fix_pending_deploy). STILL BROKEN -- needs re-investigation, not just a redeploy-and-forget. | 2026-08-13 (re-investigation): recorded May fix IS in deployed adda328a — 500 had a NEW cause. Prod backend log traceback: psycopg2.errors.StringDataRightTruncation 'value too long for type character varying(255)' at invitation.save() — the JWT token (embeds invitee email) overflows the varchar(255) token column whenever the email is longer than ~27 chars (the sweep's fresh long emails all tripped it; short emails would have worked). Prod schema itself verified OK (table matches model). Fix on branch claude/sharp-matsumoto-07f873: token -> TextField + migration 0020_alter_teaminvitation_token (validated against real Postgres locally; 300-char token saves). NOT deployed yet — deploy must run `manage.py migrate accounts`. Status remains fix_pending_deploy; after deploy expect 201.",
+      "last_test_response_excerpt": "Server Error (500), generic Django error page, no traceback (DEBUG=False)"
     },
     {
       "id": "BUG-006",
