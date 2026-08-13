@@ -165,15 +165,6 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  first_name?: string;
-  last_name?: string;
-}
-
 export interface AuthTokens {
   access: string;
   refresh: string;

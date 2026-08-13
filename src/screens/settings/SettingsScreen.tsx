@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { COLORS } from '../../constants/colors';
+import { APP_CONFIG } from '../../services/api';
 
 interface SettingItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -94,7 +95,7 @@ export const SettingsScreen: React.FC = () => {
   const handleAboutPress = () => {
     Alert.alert(
       'ProjeXtPal',
-      `${t.version}: 1.0.0\n\n© 2024 Inclufy\nAll rights reserved.`,
+      `${t.version}: ${APP_CONFIG.VERSION}\n\n© 2026 Inclufy\nAll rights reserved.`,
       [{ text: 'OK' }]
     );
   };
@@ -177,7 +178,7 @@ export const SettingsScreen: React.FC = () => {
             <SettingItem
               icon="shield-checkmark"
               label={language === 'nl' ? 'Privacy' : 'Privacy'}
-              onPress={() => {}}
+              onPress={() => navigation.navigate('Privacy' as never)}
               iconColor={COLORS.teal}
             />
             <View style={styles.divider} />
@@ -186,6 +187,13 @@ export const SettingsScreen: React.FC = () => {
               label={language === 'nl' ? 'Wachtwoord wijzigen' : 'Change Password'}
               onPress={() => {}}
               iconColor={COLORS.orange}
+            />
+            <View style={styles.divider} />
+            <SettingItem
+              icon="trash"
+              label={language === 'nl' ? 'Account verwijderen' : 'Delete Account'}
+              onPress={() => navigation.navigate('DeleteAccount' as never)}
+              iconColor={COLORS.red}
             />
           </View>
         </View>
@@ -221,8 +229,8 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Version Info */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>ProjeXtPal v1.0.0</Text>
-          <Text style={styles.copyrightText}>© 2024 Inclufy</Text>
+          <Text style={styles.versionText}>ProjeXtPal v{APP_CONFIG.VERSION}</Text>
+          <Text style={styles.copyrightText}>© 2026 Inclufy</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -328,12 +336,12 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 14,
-    color: COLORS.gray[400],
+    color: COLORS.gray[500],
     marginBottom: 4,
   },
   copyrightText: {
     fontSize: 12,
-    color: COLORS.gray[400],
+    color: COLORS.gray[500],
   },
 });
 

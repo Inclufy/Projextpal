@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   
   projectSelector: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#E5E7EB', gap: 12 },
   projectSelectorText: { flex: 1, fontSize: 16, color: '#1F2937' },
-  placeholderText: { color: '#9CA3AF' },
+  placeholderText: { color: '#6B7280' },
   
   projectDropdown: { backgroundColor: 'white', borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E5E7EB', maxHeight: 200, overflow: 'hidden' },
   projectList: { maxHeight: 200 },
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   entryDuration: { fontSize: 16, fontWeight: 'bold', color: '#F59E0B' },
   entryTask: { fontSize: 14, color: '#6B7280', marginBottom: 8, lineHeight: 20 },
   entryFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  entryDate: { fontSize: 12, color: '#9CA3AF' },
+  entryDate: { fontSize: 12, color: '#6B7280' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
-  statusText: { fontSize: 11, fontWeight: '600' },
+  statusText: { fontSize: 12, fontWeight: '600' },
 });

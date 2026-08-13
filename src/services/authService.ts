@@ -6,15 +6,6 @@ interface LoginCredentials {
   password: string;
 }
 
-interface RegisterData {
-  email: string;
-  first_name: string;
-  last_name?: string;
-  company_name: string;
-  password: string;
-  subscription_tier?: string;
-}
-
 /**
  * Legacy auth service. Token storage is delegated to `apiService` (SecureStore).
  *
@@ -66,30 +57,6 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
-    }
-  }
-
-  async register(data: RegisterData) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}${API_CONFIG.ENDPOINTS.REGISTER}`,
-        {
-          method: 'POST',
-          headers: await this.getHeaders(),
-          body: JSON.stringify(data),
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Registration failed');
-      }
-
-      return responseData;
-    } catch (error) {
-      console.error('Registration error:', error);
       throw error;
     }
   }

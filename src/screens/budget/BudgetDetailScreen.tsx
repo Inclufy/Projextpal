@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   lastUpdated: {
     textAlign: 'center',
     fontSize: 12,
-    color: COLORS.gray[400],
+    color: COLORS.gray[500],
     marginTop: 24,
     marginBottom: 32,
   },

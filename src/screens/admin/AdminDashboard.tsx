@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
 
   activityPreview: { backgroundColor: 'white', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 },
   emptyActivity: { alignItems: 'center', paddingVertical: 24 },
-  emptyActivityText: { marginTop: 8, fontSize: 13, color: '#9CA3AF' },
+  emptyActivityText: { marginTop: 8, fontSize: 13, color: '#6B7280' },
   activityPreviewItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   activityIconSmall: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   activityPreviewContent: { flex: 1 },

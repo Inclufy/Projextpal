@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   tabBar: { flexDirection: 'row', backgroundColor: 'white', paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
   tab: { flex: 1, paddingVertical: 14, alignItems: 'center', position: 'relative' },
   tabActive: {},
-  tabText: { fontSize: 13, fontWeight: '600', color: '#9CA3AF' },
+  tabText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
   tabTextActive: { color: '#3B82F6' },
   tabIndicator: { position: 'absolute', bottom: 0, height: 2, width: '60%', backgroundColor: '#3B82F6', borderRadius: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -147,13 +147,13 @@ const styles = StyleSheet.create({
   taskLeft: { marginRight: 12 },
   taskContent: { flex: 1 },
   taskTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
-  taskDone: { textDecorationLine: 'line-through', color: '#9CA3AF' },
+  taskDone: { textDecorationLine: 'line-through', color: '#6B7280' },
   taskProject: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
   taskMeta: { flexDirection: 'row', alignItems: 'center' },
   priorityDot: { width: 6, height: 6, borderRadius: 3, marginRight: 4 },
-  taskMetaText: { fontSize: 11, color: '#9CA3AF', marginLeft: 2 },
+  taskMetaText: { fontSize: 12, color: '#6B7280', marginLeft: 2 },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 12 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 12 },
 });
 
 export default TasksScreen;

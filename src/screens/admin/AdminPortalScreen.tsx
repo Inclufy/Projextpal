@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
   backButton: { padding: 8, marginRight: 12 },
   headerInfo: { flex: 1 },
   title: { fontSize: 22, fontWeight: 'bold', color: 'white' },
-  subtitle: { fontSize: 13, color: '#9CA3AF', marginTop: 2 },
+  subtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   adminBadge: { padding: 8 },
 
   tabsBar: { flexDirection: 'row', backgroundColor: 'white', paddingHorizontal: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#E5E7EB', gap: 4 },
   tabButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: '#F9FAFB', gap: 4 },
   tabButtonActive: { backgroundColor: '#1F2937' },
-  tabButtonText: { fontSize: 11, fontWeight: '500', color: '#6B7280' },
+  tabButtonText: { fontSize: 12, fontWeight: '500', color: '#6B7280' },
   tabButtonTextActive: { color: 'white', fontWeight: '700' },
 
   scrollContent: { flex: 1 },
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   statGradient: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   statNumber: { fontSize: 26, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 },
   statLabel: { fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  statChange: { fontSize: 11, color: '#10B981', fontWeight: '600' },
+  statChange: { fontSize: 12, color: '#10B981', fontWeight: '600' },
 
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F2937', marginTop: 24, marginBottom: 16 },
 
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   userStatusPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
   statusActive: { backgroundColor: '#DCFCE7' },
   statusInactive: { backgroundColor: '#FEE2E2' },
-  statusPillText: { fontSize: 11, fontWeight: '700', color: '#1F2937' },
+  statusPillText: { fontSize: 12, fontWeight: '700', color: '#1F2937' },
   userCardActions: { flexDirection: 'row', gap: 12 },
   userActionButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB', paddingVertical: 10, borderRadius: 10, gap: 6 },
   userActionText: { fontSize: 13, fontWeight: '600', color: '#1F2937' },
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   timelineAction: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 8 },
   timelineMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   timelineUser: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
-  timelineTime: { fontSize: 12, color: '#9CA3AF' },
+  timelineTime: { fontSize: 12, color: '#6B7280' },
 
   systemHealthBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#DCFCE7', borderRadius: 16, padding: 20, marginBottom: 24, gap: 16 },
   systemHealthText: { flex: 1 },

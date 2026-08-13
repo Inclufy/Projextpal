@@ -80,7 +80,6 @@ export function detectProjeXtPalMobileModule(routeName: string | null): string |
     TimeTracking: 'time-tracking',
     Settings: 'settings',
     Login: 'auth',
-    Register: 'auth',
   };
   return map[routeName] ?? routeName.toLowerCase();
 }

@@ -120,5 +120,5 @@ const styles = StyleSheet.create({
   budgetLabel: { fontSize: 14, color: '#6B7280' },
   budgetValue: { fontSize: 14, fontWeight: '600', color: '#1F2937' },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 16 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 16 },
 });

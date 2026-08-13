@@ -25,11 +25,15 @@ export const API_CONFIG = {
       : androidDev
     : 'https://projextpal.com',
   ENDPOINTS: {
-    // Auth
+    // Auth — no REGISTER endpoint: accounts are provisioned by organizations
+    // outside the app (App Review Guideline 3.1.3(c), org-only login).
     LOGIN: '/api/v1/auth/login/',
-    REGISTER: '/api/v1/auth/register/',
     PROFILE: '/api/v1/auth/user/',
     REFRESH: '/api/v1/auth/token/refresh/',
+
+    // GDPR (backend/accounts/gdpr.py — mounted under /api/v1/auth/)
+    DATA_EXPORT: '/api/v1/auth/me/export/',   // GET, Art. 15
+    DELETE_ACCOUNT: '/api/v1/auth/me/delete/', // DELETE, Art. 17
     
     // Project Management
     PROGRAMS: '/api/v1/programs/',
@@ -83,6 +87,6 @@ export const API_CONFIG = {
 
 export const APP_CONFIG = {
   NAME: 'ProjeXtPal',
-  VERSION: '1.0.0',
+  VERSION: '1.2.1',
   BUNDLE_ID: 'com.inclufy.projextpal',
 };

@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.white,
     opacity: 0.9,
   },
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   axisText: {
-    fontSize: 10,
+    fontSize: 11,
     color: COLORS.textSecondary,
   },
   gridCells: {
@@ -534,12 +534,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   riskCountText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
     color: COLORS.white,
   },
   cellScore: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   xAxisLabels: {
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   legendText: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.textSecondary,
   },
   listContainer: {
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   scoreText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   statusBadge: {
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   riskDescription: {
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   metricLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray[100],
   },
   metricValueText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textPrimary,
     textAlign: 'center',

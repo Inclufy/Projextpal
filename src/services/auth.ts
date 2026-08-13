@@ -2,7 +2,6 @@ import { apiService } from './apiService';
 import { API_CONFIG } from '../constants/config';
 import {
   LoginCredentials,
-  RegisterData,
   AuthResponse,
   User,
 } from '../types';
@@ -41,20 +40,6 @@ class AuthService {
     await apiService.setTokens(authResponse.tokens.access, authResponse.tokens.refresh);
 
     return authResponse;
-  }
-
-  async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiService.post<any>(
-      API_CONFIG.ENDPOINTS.REGISTER,
-      {
-        email: data.email,
-        password: data.password,
-        first_name: data.firstName || '',
-        company_name: data.firstName + ' ' + (data.lastName || '') + ' Company',
-      }
-    );
-
-    throw new Error('Account created! Please check your email to verify your account.');
   }
 
   async logout(): Promise<void> {

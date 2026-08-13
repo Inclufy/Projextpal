@@ -43,7 +43,7 @@ import { SupportScreen } from '../screens/profile/SupportScreen';
 import { AboutScreen } from '../screens/profile/AboutScreen';
 import { NewProjectScreen, AddProjectScreen } from '../screens/projects/NewProjectScreen';
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
-import PricingScreen from '../screens/app/PricingScreen';
+import { DeleteAccountScreen } from '../screens/profile/DeleteAccountScreen';
 
 // Academy/Courses screens
 import { LessonDetailScreen } from '../screens/lessons/LessonDetailScreen';
@@ -87,7 +87,7 @@ const MainTabNavigator = () => {
           return <TabBarIcon name={iconName} focused={focused} color={color} />;
         },
         tabBarActiveTintColor: COLORS.purple,
-        tabBarInactiveTintColor: COLORS.gray[400],
+        tabBarInactiveTintColor: COLORS.gray[500],
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 88 : 65,
           paddingBottom: Platform.OS === 'ios' ? 28 : 10,
@@ -100,7 +100,7 @@ const MainTabNavigator = () => {
           shadowRadius: 12,
           elevation: 10,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 4 },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4 },
       })}
     >
       <Tab.Screen name="Home" component={DashboardScreen} options={{ tabBarLabel: t.home }} />
@@ -185,22 +185,19 @@ const MainStackNavigator = () => {
         component={SupportScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="About" 
+      <Stack.Screen
+        name="About"
         component={AboutScreen}
         options={{ headerShown: false }}
       />
-        <Stack.Screen 
-  name="Pricing" 
-  component={PricingScreen}
-  options={{ 
-    headerShown: false,
-    presentation: 'modal'  // Optioneel: opent als modal
-  }}
-/>
-          </Stack.Navigator>
-        );
-      };
+      <Stack.Screen
+        name="DeleteAccount"
+        component={DeleteAccountScreen}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
 
 // ==================== MAIN APP NAVIGATOR WITH AUTH CHECK ====================
 export const AppNavigator = () => {
@@ -231,7 +228,7 @@ export const AppNavigator = () => {
     );
   }
 
-  // Show Auth screens (Login/Register) if not authenticated
+  // Show Auth screens (login-only) if not authenticated
   if (!isAuthenticated) {
     console.log('⚠️ Not authenticated - showing Login screen');
     return <AuthNavigator />;

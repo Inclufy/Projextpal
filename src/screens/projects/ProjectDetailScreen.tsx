@@ -638,11 +638,11 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
   tabTextActive: { color: '#8B5CF6', fontWeight: '600' },
   badge: { backgroundColor: '#EF4444', borderRadius: 10, minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center', marginLeft: 6 },
-  badgeText: { color: 'white', fontSize: 11, fontWeight: 'bold' },
+  badgeText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
   
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 16 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 16 },
   content: { flex: 1, paddingHorizontal: 20 },
   
   statusCard: { backgroundColor: 'white', borderRadius: 16, padding: 20, marginTop: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   timeEntryCard: { backgroundColor: 'white', borderRadius: 12, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
   timeEntryHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   timeEntryUser: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
-  timeEntryDate: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  timeEntryDate: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   timeEntryHours: { backgroundColor: '#F5F3FF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
   timeEntryHoursText: { fontSize: 16, fontWeight: 'bold', color: '#8B5CF6' },
   timeEntryDescription: { fontSize: 14, color: '#6B7280', marginBottom: 12 },
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
   activityContent: { flex: 1 },
   activityTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 4 },
   activityDescription: { fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  activityTime: { fontSize: 12, color: '#9CA3AF' },
+  activityTime: { fontSize: 12, color: '#6B7280' },
   
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '80%' },

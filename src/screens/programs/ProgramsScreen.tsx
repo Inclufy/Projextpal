@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   statsBar: { flexDirection: 'row', backgroundColor: 'white', marginHorizontal: 20, marginTop: -10, borderRadius: 12, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   statsItem: { flex: 1, alignItems: 'center' },
   statsNumber: { fontSize: 24, fontWeight: 'bold', color: '#1F2937' },
-  statsLabel: { fontSize: 11, color: '#6B7280', marginTop: 4 },
+  statsLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
   statsDivider: { width: 1, backgroundColor: '#E5E7EB' },
   
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   quickStatText: { fontSize: 12, color: '#6B7280' },
   
   emptyContainer: { justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 16, marginBottom: 16 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 16, marginBottom: 16 },
   emptyButton: { backgroundColor: '#EFF6FF', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },
   emptyButtonText: { fontSize: 14, fontWeight: '600', color: '#3B82F6' },
   

@@ -165,21 +165,10 @@ export const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               </LinearGradient>
             </TouchableOpacity>
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>of</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>Nog geen account? </Text>
-              <TouchableOpacity 
-  disabled={loading}
-  onPress={() => navigation.navigate('Register')}
->
-  <Text style={styles.registerLink}>Registreren</Text>
-</TouchableOpacity>
-            </View>
+            <Text style={styles.orgAccessNote}>
+              Accounts worden aangemaakt door je organisatie.{'\n'}
+              Neem contact op met je beheerder voor toegang.
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -219,6 +208,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 32,
+    // Keep the form a readable width on tablets (iPad Air 11") instead of
+    // stretching edge-to-edge.
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 28,
@@ -297,33 +291,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.gray[300],
-  },
-  dividerText: {
-    marginHorizontal: 16,
+  orgAccessNote: {
+    textAlign: 'center',
     color: COLORS.textSecondary,
     fontSize: 14,
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  registerText: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-  },
-  registerLink: {
-    color: COLORS.purple,
-    fontSize: 14,
-    fontWeight: '600',
+    lineHeight: 21,
   },
 });

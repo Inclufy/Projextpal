@@ -410,6 +410,6 @@ const styles = StyleSheet.create({
     borderTopColor: '#F3F4F6',
   },
   dateItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dateText: { fontSize: 12, color: '#9CA3AF' },
+  dateText: { fontSize: 12, color: '#6B7280' },
   dateSeparator: { fontSize: 12, color: '#D1D5DB', marginHorizontal: 8 },
 });

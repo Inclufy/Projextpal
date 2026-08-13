@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  moduleBadgeText: { fontSize: 10, color: '#7c3aed', fontWeight: '600' },
+  moduleBadgeText: { fontSize: 11, color: '#7c3aed', fontWeight: '600' },
   body: { marginTop: 12 },
   label: { fontSize: 12, fontWeight: '600', color: '#475569', marginBottom: 6 },
   input: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   attachmentName: { flex: 1, fontSize: 12, color: '#1a1a2e' },
-  attachmentSize: { fontSize: 10, color: '#64748b' },
+  attachmentSize: { fontSize: 11, color: '#64748b' },
   envInfoBox: {
     marginTop: 16,
     backgroundColor: '#faf5ff',
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
-  envInfoText: { fontSize: 11, color: '#475569', lineHeight: 16 },
+  envInfoText: { fontSize: 12, color: '#475569', lineHeight: 16 },
   submit: {
     marginTop: 18,
     backgroundColor: '#7c3aed',

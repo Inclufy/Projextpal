@@ -113,5 +113,5 @@ const styles = StyleSheet.create({
   riskMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   metaText: { fontSize: 12, color: '#6B7280', fontWeight: '500', textTransform: 'capitalize' },
   emptyContainer: { justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 16 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 16 },
 });

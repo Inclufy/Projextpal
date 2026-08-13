@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'r
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { APP_CONFIG } from '../../services/api';
 
 export const AboutScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export const AboutScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Ionicons name="rocket" size={64} color="#8B5CF6" />
           <Text style={styles.appName}>ProjeXtPal</Text>
           <Text style={styles.tagline}>Project Management Excellence</Text>
-          <Text style={styles.version}>Versie 1.0.0</Text>
+          <Text style={styles.version}>Versie {APP_CONFIG.VERSION}</Text>
         </View>
 
         <View style={styles.infoCard}>
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   },
   version: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginTop: 12,
   },
   

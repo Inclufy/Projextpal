@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
   docName: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 4 },
   docMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   docProject: { fontSize: 12, color: '#8B5CF6', fontWeight: '500' },
-  docSize: { fontSize: 12, color: '#9CA3AF' },
-  docDate: { fontSize: 12, color: '#9CA3AF' },
+  docSize: { fontSize: 12, color: '#6B7280' },
+  docDate: { fontSize: 12, color: '#6B7280' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 12 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 12 },
 });
 
 export default DocumentsScreen;

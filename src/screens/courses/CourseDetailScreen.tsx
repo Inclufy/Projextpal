@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: COLORS.white,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   courseTitle: {
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   instructorLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.gray[500],
     marginBottom: 2,
   },

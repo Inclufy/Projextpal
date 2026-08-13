@@ -166,6 +166,6 @@ const styles = StyleSheet.create({
   statusPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
   statusActive: { backgroundColor: '#DCFCE7' },
   statusInactive: { backgroundColor: '#FEE2E2' },
-  statusText: { fontSize: 11, fontWeight: '700', color: '#1F2937' },
+  statusText: { fontSize: 12, fontWeight: '700', color: '#1F2937' },
   lastLogin: { fontSize: 12, color: '#6B7280', marginTop: 8 },
 });

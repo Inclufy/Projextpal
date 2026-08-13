@@ -21,6 +21,7 @@ import { coursesService } from '../../services/coursesService';
 import { projectsService } from '../../services/projectsService';
 import { timeTrackingService } from '../../services/timeTrackingService';
 import { CommonActions } from '@react-navigation/native';
+import { APP_CONFIG } from '../../services/api';
 import * as ImagePicker from 'expo-image-picker';
 
 interface UserStats {
@@ -173,12 +174,6 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       label: isNL ? 'Persoonlijke gegevens' : 'Personal Information',
       onPress: () => navigation.navigate('EditProfile'),
       color: '#8B5CF6',
-    },
-    {
-    icon: 'diamond-outline',  // 💎 Diamond icon
-    label: isNL ? 'Abonnement Upgraden' : 'Upgrade Subscription',
-    onPress: () => navigation.navigate('Pricing'),
-    color: '#F59E0B',  // Oranje kleur
     },
     {
       icon: 'briefcase-outline',
@@ -391,7 +386,7 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       </TouchableOpacity>
 
       {/* Version */}
-      <Text style={styles.version}>ProjeXtPal v1.0.0</Text>
+      <Text style={styles.version}>ProjeXtPal v{APP_CONFIG.VERSION}</Text>
     </ScrollView>
   );
 };
@@ -440,7 +435,7 @@ const styles = StyleSheet.create({
   logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', marginHorizontal: 16, paddingVertical: 16, borderRadius: 12, marginBottom: 16 },
   logoutButtonText: { fontSize: 16, fontWeight: '600', color: '#EF4444', marginLeft: 8 },
 
-  version: { textAlign: 'center', fontSize: 12, color: '#9CA3AF', marginBottom: 32 },
+  version: { textAlign: 'center', fontSize: 12, color: '#6B7280', marginBottom: 32 },
 });
 
 export default ProfileScreen;

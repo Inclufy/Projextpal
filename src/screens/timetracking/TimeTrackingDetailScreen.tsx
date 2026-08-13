@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
     color: COLORS.white,
   },
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   entryDescription: {

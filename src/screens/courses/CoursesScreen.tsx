@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   courseHeader: { flexDirection: 'row', marginBottom: 12, flexWrap: 'wrap', gap: 6 },
   courseBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  courseBadgeText: { color: 'white', fontSize: 10, fontWeight: '600' },
+  courseBadgeText: { color: 'white', fontSize: 11, fontWeight: '600' },
   courseTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F2937', marginBottom: 6 },
   courseSubtitle: { fontSize: 14, color: '#6B7280', marginBottom: 16, lineHeight: 20 },
   courseDetails: { flexDirection: 'row', marginBottom: 16, flexWrap: 'wrap', gap: 12 },
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   enrollButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, backgroundColor: `${COLORS.purple}10`, borderRadius: 8 },
   enrollButtonText: { fontSize: 13, fontWeight: '600', color: COLORS.purple, marginRight: 4 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 64 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 16 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 16 },
 });
 
 export default CoursesScreen;

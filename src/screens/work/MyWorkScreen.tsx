@@ -14,7 +14,7 @@ const BUCKETS: { key: keyof MyWorkData['buckets']; en: string; nl: string; color
   { key: 'today', en: 'Today', nl: 'Vandaag', color: '#7c3aed' },
   { key: 'this_week', en: 'This week', nl: 'Deze week', color: '#2563eb' },
   { key: 'later', en: 'Later', nl: 'Later', color: '#6b7280' },
-  { key: 'no_date', en: 'No date', nl: 'Geen datum', color: '#9ca3af' },
+  { key: 'no_date', en: 'No date', nl: 'Geen datum', color: '#6B7280' },
 ];
 
 export const MyWorkScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#374151', flex: 1 },
-  sectionCount: { fontSize: 12, fontWeight: '700', color: '#9ca3af' },
+  sectionCount: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14,
     padding: 12, marginBottom: 8, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6,

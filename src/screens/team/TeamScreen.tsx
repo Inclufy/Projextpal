@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
   memberInfo: { flex: 1 },
   memberName: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
   memberRole: { fontSize: 13, color: '#6B7280', marginTop: 2 },
-  memberEmail: { fontSize: 12, color: '#9CA3AF', marginTop: 1 },
+  memberEmail: { fontSize: 12, color: '#6B7280', marginTop: 1 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 4 },
-  statusText: { fontSize: 11, fontWeight: '600' },
+  statusText: { fontSize: 12, fontWeight: '600' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-  emptyText: { fontSize: 16, color: '#9CA3AF', marginTop: 12 },
+  emptyText: { fontSize: 16, color: '#6B7280', marginTop: 12 },
 });
 
 export default TeamScreen;

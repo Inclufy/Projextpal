@@ -182,5 +182,5 @@ const styles = StyleSheet.create({
   activityAction: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 8 },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   activityUser: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
-  activityTime: { fontSize: 12, color: '#9CA3AF' },
+  activityTime: { fontSize: 12, color: '#6B7280' },
 });

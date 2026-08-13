@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   monthNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16 },
   monthLabel: { fontSize: 18, fontWeight: 'bold', color: '#1F2937' },
   dayHeaders: { flexDirection: 'row', paddingHorizontal: 16 },
-  dayHeader: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#9CA3AF', paddingBottom: 8 },
+  dayHeader: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#6B7280', paddingBottom: 8 },
   loadingContainer: { padding: 40, alignItems: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16 },
   cell: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', position: 'relative' },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   eventTitle: { fontSize: 14, fontWeight: '600', color: '#1F2937' },
   eventProject: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   eventTypeBadge: { backgroundColor: '#F3E8FF', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  eventTypeText: { fontSize: 10, color: '#7C3AED', fontWeight: '600' },
+  eventTypeText: { fontSize: 11, color: '#7C3AED', fontWeight: '600' },
 });
 
 export default CalendarScreen;
