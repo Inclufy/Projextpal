@@ -39,6 +39,7 @@ const DEFAULT_USER: AcademyUser = {
 export const useAcademyUser = () => {
   const [user, setUser] = useState<AcademyUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [serverProgressLoaded, setServerProgressLoaded] = useState(false);
 
   // Sync with main auth context. Read the context directly (unconditional
   // hook) instead of useAuth(), which throws outside an AuthProvider —
@@ -49,6 +50,47 @@ export const useAcademyUser = () => {
   useEffect(() => {
     loadUser();
   }, []);
+
+  // Hydrate completed lessons from the backend so progress survives
+  // devices/browsers. localStorage stays the fast local cache; the server
+  // list is merged in (union) once per mount after login.
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token || serverProgressLoaded || loading) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/academy/enrollments/', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const enrollments = await res.json();
+        const rows: Array<{ course_slug?: string; completed_lesson_ids?: string[] }> =
+          Array.isArray(enrollments) ? enrollments : enrollments?.results || [];
+        if (cancelled || rows.length === 0) return;
+        setUser(prev => {
+          if (!prev) return prev;
+          const merged: Record<string, string[]> = { ...prev.completedLessons };
+          for (const row of rows) {
+            if (!row.course_slug || !row.completed_lesson_ids?.length) continue;
+            merged[row.course_slug] = Array.from(
+              new Set([...(merged[row.course_slug] || []), ...row.completed_lesson_ids])
+            );
+          }
+          const next = { ...prev, completedLessons: merged };
+          localStorage.setItem('academy_user', JSON.stringify(next));
+          return next;
+        });
+      } catch {
+        // Offline or backend unreachable — local progress remains usable.
+      } finally {
+        if (!cancelled) setServerProgressLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, serverProgressLoaded]);
 
   // Auto-login academy user from main auth
   useEffect(() => {
@@ -220,6 +262,7 @@ export const useAcademyUser = () => {
     getCourseProgress,
     saveNotes,
     getNotes,
+    serverProgressLoaded,
     isSuperuser: user?.isSuperuser || false,
   };
 };

@@ -351,16 +351,27 @@ Return JSON:
 # ---------------------------------------------------------------------------
 class EnrollmentSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
+    course_slug = serializers.CharField(source='course.slug', read_only=True)
+    completed_lesson_ids = serializers.SerializerMethodField()
 
     class Meta:
         model = Enrollment
         fields = [
-            'id', 'user', 'course', 'course_title',
+            'id', 'user', 'course', 'course_title', 'course_slug',
             'email', 'first_name', 'last_name', 'company',
-            'status', 'progress', 'amount_paid',
+            'status', 'progress', 'amount_paid', 'completed_lesson_ids',
             'enrolled_at', 'started_at', 'completed_at', 'expires_at',
         ]
         read_only_fields = ['id', 'enrolled_at']
+
+    def get_completed_lesson_ids(self, obj):
+        # Frontend lesson ids (CourseLesson.external_id, e.g. 'p2-l5') so the
+        # SPA player can hydrate its local progress; DB id as fallback for
+        # lessons created directly in the admin without an external_id.
+        return [
+            lesson.external_id or str(lesson.id)
+            for lesson in obj.completed_lessons.all()
+        ]
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
@@ -370,7 +381,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Enrollment.objects.select_related('course').all()
+        qs = Enrollment.objects.select_related('course').prefetch_related('completed_lessons').all()
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             return qs
         # Match by user FK or by email (legacy non-registered enrollments)

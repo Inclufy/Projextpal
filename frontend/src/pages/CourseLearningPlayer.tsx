@@ -384,6 +384,7 @@ const CourseLearningPlayer = () => {
     getCourseProgress,
     saveNotes: saveUserNotes,
     getNotes: getUserNotes,
+    serverProgressLoaded,
     isSuperuser,
   } = useAcademyUser();
   
@@ -520,6 +521,24 @@ const CourseLearningPlayer = () => {
       setCurrentLessonId(lessonParam);
     }
   }, [searchParams]);
+
+  // Resume where the learner left off: once server progress is hydrated and
+  // no explicit ?lesson= is in the URL, jump to the first incomplete lesson.
+  const hasAutoResumed = useRef(false);
+  useEffect(() => {
+    if (hasAutoResumed.current || !serverProgressLoaded) return;
+    if (searchParams.get('lesson')) {
+      hasAutoResumed.current = true;
+      return;
+    }
+    const completed = user?.completedLessons?.[course.id] || [];
+    if (completed.length === 0) return;
+    const firstIncomplete = allLessons.find(l => !completed.includes(l.id));
+    hasAutoResumed.current = true;
+    if (firstIncomplete && firstIncomplete.id !== currentLessonId) {
+      setCurrentLessonId(firstIncomplete.id);
+    }
+  }, [serverProgressLoaded, user?.completedLessons, course.id, allLessons, searchParams, currentLessonId]);
 
   // Reset slide index when lesson changes
   useEffect(() => {

@@ -262,3 +262,37 @@ class TestCourseReview:
         CourseReview.objects.create(course=c2, enrollment=e2, rating=5, text="Second")
         reviews = list(CourseReview.objects.all())
         assert reviews[0].created_at >= reviews[1].created_at
+
+
+class TestEnrollmentProgressAPI:
+    """The enrollments API exposes completed lesson ids (frontend external_id)
+    so the SPA can restore 'resume where you left off' across devices."""
+
+    def test_completed_lesson_ids_in_response(self, user, enrollment, lesson1, lesson2):
+        from rest_framework.test import APIClient
+        lesson1.external_id = "pm-l1"
+        lesson1.save(update_fields=["external_id"])
+        enrollment.completed_lessons.add(lesson1)
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get("/api/v1/academy/enrollments/")
+        assert response.status_code == 200
+        rows = response.json()
+        rows = rows if isinstance(rows, list) else rows.get("results", [])
+        row = next(r for r in rows if str(r["id"]) == str(enrollment.id))
+        assert row["course_slug"] == "pm-course"
+        # external_id preferred; lesson2 not completed so absent
+        assert row["completed_lesson_ids"] == ["pm-l1"]
+
+    def test_completed_lesson_ids_falls_back_to_db_id(self, user, enrollment, lesson2):
+        from rest_framework.test import APIClient
+        enrollment.completed_lessons.add(lesson2)  # no external_id set
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get("/api/v1/academy/enrollments/")
+        rows = response.json()
+        rows = rows if isinstance(rows, list) else rows.get("results", [])
+        row = next(r for r in rows if str(r["id"]) == str(enrollment.id))
+        assert row["completed_lesson_ids"] == [str(lesson2.id)]
