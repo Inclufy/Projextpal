@@ -152,7 +152,15 @@ const callAI = async (prompt: string): Promise<string> => {
 
 // Methodology configurations for Programs - Now with translation keys
 const getMethodologyConfig = (t: any) => ({
-  safe: { 
+  inclufy: {
+    icon: Sparkles,
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-50',
+    borderColor: 'border-indigo-200',
+    label: t.programs.methodologies.inclufy,
+    description: t.programs.methodologies.inclufyDesc
+  },
+  safe: {
     icon: Zap, 
     color: 'text-blue-600', 
     bgColor: 'bg-blue-50', 
@@ -337,11 +345,11 @@ const ProgramsOverview = () => {
 
 Program Idea: "${programIdea}"
 
-Choose from: SAFe (safe), MSP (msp), PMI Standard (pmi), PRINCE2 for Programmes (prince2_programme), or Hybrid (hybrid).
+Choose from: Inclufy Best Practice (inclufy), SAFe (safe), MSP (msp), PMI Standard (pmi), PRINCE2 for Programmes (prince2_programme), or Hybrid (hybrid). Inclufy Best Practice is the curated best-of-breed default — prefer it unless the idea clearly calls for a specific framework.
 
 Respond in this EXACT JSON format only, no other text:
 {
-  "methodology": "safe|msp|pmi|prince2_programme|hybrid",
+  "methodology": "inclufy|safe|msp|pmi|prince2_programme|hybrid",
   "reasoning": "2-3 sentences explaining why this methodology is the best fit for this strategic initiative",
   "confidence": 85,
   "suggestedName": "A clear, professional program name",
@@ -1071,6 +1079,7 @@ Respond in this EXACT JSON format only, no other text:
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t.programs.allMethods}</SelectItem>
+            <SelectItem value="inclufy">Best Practice</SelectItem>
             <SelectItem value="safe">SAFe</SelectItem>
             <SelectItem value="msp">MSP</SelectItem>
             <SelectItem value="pmi">PMI</SelectItem>

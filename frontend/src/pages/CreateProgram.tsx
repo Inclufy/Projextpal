@@ -350,13 +350,13 @@ const CreateProgram = () => {
 
     setAiLoading(true);
     try {
-      const prompt = `You are a program management expert. Based on the following program description, recommend the best methodology from: SAFe, MSP, PMI, PRINCE2, or Hybrid.
+      const prompt = `You are a program management expert. Based on the following program description, recommend the best methodology from: Inclufy Best Practice (inclufy), SAFe, MSP, PMI, PRINCE2, or Hybrid. Inclufy Best Practice is the curated best-of-breed default — prefer it unless the description clearly calls for a specific framework.
 
 Program Description: ${aiPrompt}
 
 Analyze and respond in this exact JSON format:
 {
-  "methodology": "safe|msp|pmi|prince2_programme|hybrid",
+  "methodology": "inclufy|safe|msp|pmi|prince2_programme|hybrid",
   "reasoning": "2-3 sentences explaining why this methodology fits best",
   "confidence": 85
 }
@@ -381,7 +381,7 @@ Consider:
         });
       } else {
         // Fallback: try to extract methodology from text
-        const methodologies = ['safe', 'msp', 'pmi', 'prince2_programme', 'hybrid'];
+        const methodologies = ['inclufy', 'safe', 'msp', 'pmi', 'prince2_programme', 'hybrid'];
         const found = methodologies.find(m => response.toLowerCase().includes(m));
         setAiRecommendation({
           methodology: (found as ProgramMethodology) || 'hybrid',
@@ -422,7 +422,7 @@ Respond in this exact JSON format:
   "name": "Program name (concise, professional)",
   "description": "2-3 sentence description of the program scope and purpose",
   "strategicObjective": "The main strategic business objective",
-  "methodology": "safe|msp|pmi|prince2_programme|hybrid",
+  "methodology": "inclufy|safe|msp|pmi|prince2_programme|hybrid",
   "durationMonths": 12,
   "estimatedBudget": 500000
 }

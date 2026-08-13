@@ -24,6 +24,7 @@ import {
   BarChart3,
   Crown,
   GitMerge,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -134,6 +135,7 @@ const updateProgram = async ({ id, data }: { id: string; data: any }) => {
 };
 
 const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
+  inclufy: { icon: Sparkles, color: 'text-indigo-600', bgColor: 'bg-indigo-500', label: 'Best Practice' },
   safe: { icon: Zap, color: 'text-blue-600', bgColor: 'bg-blue-500', label: 'SAFe' },
   msp: { icon: Target, color: 'text-purple-600', bgColor: 'bg-purple-500', label: 'MSP' },
   pmi: { icon: BarChart3, color: 'text-green-600', bgColor: 'bg-green-500', label: 'PMI' },

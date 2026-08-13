@@ -39,6 +39,7 @@ import {
   Clock,
   Gauge,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -659,6 +660,96 @@ const BILINGUAL_CONFIG: Record<string, BilingualOnboardingConfig> = {
   // ============================================
   // HYBRID
   // ============================================
+  // ============================================
+  // Inclufy Best Practice - Programs (curated
+  // best-of-breed: MSP Blueprint + Benefits,
+  // PMI governance + roadmap, structured delivery)
+  // ============================================
+  inclufy: {
+    name: 'Inclufy Best Practice',
+    icon: Sparkles,
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-50',
+    tagline: t('The curated best-of-breed programme method — recommended for most programmes', 'De samengestelde best-of-breed programmamethode — aanbevolen voor de meeste programma\'s'),
+    overview: t('Inclufy Best Practice combines the strongest elements of the leading programme frameworks in one opinionated flow: a Blueprint and Benefits Map from MSP, governance and roadmap discipline from PMI, and structured delivery with clear stage boundaries. You get best practice out of the box — without having to pick a framework first.', 'Inclufy Best Practice combineert de sterkste elementen van de toonaangevende programmaframeworks in één doordachte flow: een Blueprint en Benefits Map uit MSP, governance- en roadmapdiscipline uit PMI, en gestructureerde delivery met duidelijke fasegrenzen. Je krijgt best practice out-of-the-box — zonder eerst een framework te hoeven kiezen.'),
+    whenToUse: [
+      t('Most programmes — start here if unsure', 'De meeste programma\'s — begin hier bij twijfel'),
+      t('Teams that want best practice without picking a framework', 'Teams die best practice willen zonder een framework te kiezen'),
+      t('Benefits- and outcome-driven initiatives', 'Benefits- en resultaatgedreven initiatieven'),
+      t('Cross-project coordination with clear governance', 'Coördinatie over projecten heen met duidelijke governance'),
+    ],
+    keyRoles: [
+      { name: 'Programme Manager', description: t('Leads day-to-day programme delivery and coordination', 'Leidt de dagelijkse programma-uitvoering en coördinatie') },
+      { name: 'Programme Board', description: t('Owns direction, funding and go/no-go decisions', 'Eigenaar van richting, funding en go/no-go beslissingen') },
+      { name: 'Business Change Manager', description: t('Embeds change and realizes benefits in the organization', 'Borgt verandering en realiseert benefits in de organisatie') },
+    ],
+    keyArtifacts: [
+      { name: 'Blueprint / Vision', description: t('The target operating model the programme delivers', 'Het doel-operatiemodel dat het programma oplevert') },
+      { name: 'Benefits Map & Realization Plan', description: t('Benefits traced from projects to strategic objectives', 'Benefits herleid van projecten naar strategische doelen') },
+      { name: 'Programme Roadmap', description: t('Milestones and dependencies across all projects', 'Milestones en afhankelijkheden over alle projecten') },
+    ],
+    steps: [
+      {
+        title: t('Define', 'Define'),
+        description: t('Set vision, blueprint and benefits', 'Bepaal visie, blueprint en benefits'),
+        icon: Target,
+        details: [
+          t('Write the programme vision and strategic objective', 'Schrijf de programmavisie en strategische doelstelling'),
+          t('Design the Blueprint (target operating model)', 'Ontwerp de Blueprint (doel-operatiemodel)'),
+          t('Map benefits with owners and baselines', 'Breng benefits in kaart met eigenaren en baselines'),
+          t('Install the programme board', 'Richt de programme board in'),
+        ],
+        tip: t('A measurable benefit has an owner, a baseline and a target', 'Een meetbare benefit heeft een eigenaar, een baseline en een target'),
+      },
+      {
+        title: t('Plan', 'Plan'),
+        description: t('Build the roadmap and governance', 'Bouw de roadmap en governance'),
+        icon: Calendar,
+        details: [
+          t('Create the cross-project roadmap with milestones', 'Maak de projectoverstijgende roadmap met milestones'),
+          t('Map dependencies between projects', 'Breng afhankelijkheden tussen projecten in kaart'),
+          t('Agree governance cadence and tolerances', 'Spreek governance-cadans en toleranties af'),
+          t('Plan stakeholder engagement and communication', 'Plan stakeholderbetrokkenheid en communicatie'),
+        ],
+        tip: t('Dependencies between projects are the #1 programme risk — make them explicit', 'Afhankelijkheden tussen projecten zijn hét programmarisico — maak ze expliciet'),
+      },
+      {
+        title: t('Deliver', 'Deliver'),
+        description: t('Run projects under programme governance', 'Voer projecten uit onder programma-governance'),
+        icon: Zap,
+        details: [
+          t('Authorize and track constituent projects', 'Autoriseer en volg de deelprojecten'),
+          t('Review progress against roadmap and tolerances', 'Toets voortgang aan roadmap en toleranties'),
+          t('Manage risks and escalations at programme level', 'Beheer risico\'s en escalaties op programmaniveau'),
+        ],
+        tip: t('Escalate on tolerance breach — not when it\'s already too late', 'Escaleer bij overschrijding van toleranties — niet als het al te laat is'),
+      },
+      {
+        title: t('Realize', 'Realize'),
+        description: t('Transition change and measure benefits', 'Borg verandering en meet benefits'),
+        icon: TrendingUp,
+        details: [
+          t('Transition project outputs into the organization', 'Laat projectresultaten landen in de organisatie'),
+          t('Measure benefits against baselines', 'Meet benefits ten opzichte van baselines'),
+          t('Adjust the blueprint and roadmap where needed', 'Stel blueprint en roadmap bij waar nodig'),
+        ],
+        tip: t('Benefits are realized in the line organization, not in the programme', 'Benefits worden gerealiseerd in de lijnorganisatie, niet in het programma'),
+      },
+      {
+        title: t('Close', 'Close'),
+        description: t('Close the programme and secure benefits', 'Sluit het programma af en borg de benefits'),
+        icon: Award,
+        details: [
+          t('Confirm benefits delivery with the board', 'Bevestig gerealiseerde benefits met de board'),
+          t('Hand over remaining benefits tracking to the line', 'Draag resterende benefit-tracking over aan de lijn'),
+          t('Document lessons learned', 'Documenteer lessons learned'),
+        ],
+        tip: t('Plan post-programme benefit reviews before closing', 'Plan benefit-reviews ná het programma vóór je afsluit'),
+      },
+    ],
+    academyCourse: { title: 'Program Management Professional', link: '/academy/course/program-management-pro' },
+  },
+
   hybrid: {
     name: 'Hybrid',
     icon: GitMerge,

@@ -307,6 +307,8 @@ const translations = {
       generateWithAI: 'Generate with AI',
       review: 'Review',
       methodologies: {
+        inclufy: 'Best Practice',
+        inclufyDesc: 'Inclufy Best Practice — curated best-of-breed programme method (recommended)',
         safe: 'SAFe',
         safeDesc: 'Scaled Agile Framework for enterprise-wide agile transformation',
         msp: 'MSP',
@@ -954,6 +956,8 @@ const translations = {
       generateWithAI: 'Genereren met AI',
       review: 'Beoordelen',
       methodologies: {
+        inclufy: 'Best Practice',
+        inclufyDesc: 'Inclufy Best Practice — samengestelde best-of-breed programmamethode (aanbevolen)',
         safe: 'SAFe',
         safeDesc: 'Scaled Agile Framework voor bedrijfsbrede agile transformatie',
         msp: 'MSP',
@@ -1601,6 +1605,8 @@ const translations = {
       generateWithAI: 'Générer avec l\'IA',
       review: 'Examiner',
       methodologies: {
+        inclufy: 'Best Practice',
+        inclufyDesc: 'Inclufy Best Practice — méthode programme best-of-breed sélectionnée (recommandée)',
         safe: 'SAFe',
         safeDesc: 'Scaled Agile Framework pour la transformation agile à l\'échelle de l\'entreprise',
         msp: 'MSP',
