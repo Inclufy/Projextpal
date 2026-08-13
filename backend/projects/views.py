@@ -627,9 +627,6 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         next_week_end = next_week_start + timedelta(days=6)
         tomorrow = today + timedelta(days=1)
 
-        tasks = (
-            project.milestones.values_list("id", flat=True)
-        )
         from .models import Task
         qs = Task.objects.filter(milestone__project=project).annotate(
             eff_due=Coalesce("revised_due_date", "due_date"),
@@ -2328,7 +2325,7 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 )
 
             # Create empty manual mitigation
-            manual = ManualMitigation.objects.create(risk=risk, created_by=request.user)
+            ManualMitigation.objects.create(risk=risk, created_by=request.user)
 
             # Log activity
             try:

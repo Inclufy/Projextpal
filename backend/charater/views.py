@@ -60,7 +60,7 @@ class ProgramCharterViewSet(viewsets.ModelViewSet):
         """
         Override update to create new version instead of updating existing one
         """
-        partial = kwargs.pop("partial", False)
+        kwargs.pop("partial", False)
         instance = self.get_object()
 
         # Check if client wants to create new version (default behavior)
