@@ -85,6 +85,13 @@ class VendorViewSet(viewsets.ModelViewSet):
             qs = qs.filter(is_active=str(active).lower() in ("1", "true", "yes"))
         return qs
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        # Atomic so a crash after the INSERT (e.g. response serialization)
+        # rolls the row back — a 500 must never leave a vendor behind, or
+        # clients that retry on 500 create duplicates (FEAT-001 regression).
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(company=_user_company(user), created_by=user)

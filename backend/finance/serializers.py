@@ -35,7 +35,7 @@ class VendorSerializer(serializers.ModelSerializer):
         read_only_fields = ["company", "created_by", "created_at", "updated_at", "invoice_count"]
 
     def get_invoice_count(self, obj):
-        return obj.invoices.count()
+        return obj.vendor_invoices.count()
 
 
 # ---------- Line items / payments ----------
