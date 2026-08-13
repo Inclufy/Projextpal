@@ -1,6 +1,30 @@
 from rest_framework import serializers
+from projects.models import Project
 from .models import HybridArtifact, HybridConfiguration, PhaseMethodology, HybridTask
 from .constants import HYBRID_METHODOLOGIES, HYBRID_METHODOLOGY_SET
+
+
+# 'project' must be optional-but-writable, not read-only: the project-scoped
+# routes inject it from the URL (so the body may omit it — BUG-038), while the
+# flat /hybrid/<resource>/ routes take it from the body (read-only there meant
+# it was silently dropped and the NOT NULL insert 500'd — BUG-038 follow-up).
+# Presence and access are enforced in the views' perform_create.
+def _optional_project_field():
+    return serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(), required=False
+    )
+
+
+class ProjectImmutableMixin:
+    """Once created, an object stays on its project — a PATCH can't move it
+    (and thereby escape the tenant/access checks done at create time)."""
+
+    def validate_project(self, value):
+        if self.instance is not None and self.instance.project_id != value.id:
+            raise serializers.ValidationError(
+                "project cannot be changed after creation."
+            )
+        return value
 
 
 def _validate_methodology(value):
@@ -16,21 +40,25 @@ def _validate_methodology(value):
     return value
 
 
-class HybridArtifactSerializer(serializers.ModelSerializer):
+class HybridArtifactSerializer(ProjectImmutableMixin, serializers.ModelSerializer):
+    project = _optional_project_field()
+
     class Meta:
         model = HybridArtifact
         fields = '__all__'
-        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_source_methodology(self, value):
         return _validate_methodology(value)
 
 
-class HybridConfigurationSerializer(serializers.ModelSerializer):
+class HybridConfigurationSerializer(ProjectImmutableMixin, serializers.ModelSerializer):
+    project = _optional_project_field()
+
     class Meta:
         model = HybridConfiguration
         fields = '__all__'
-        read_only_fields = ['id', 'project', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_primary_methodology(self, value):
         return _validate_methodology(value)
@@ -41,8 +69,9 @@ class HybridConfigurationSerializer(serializers.ModelSerializer):
         return value
 
 
-class PhaseMethodologySerializer(serializers.ModelSerializer):
+class PhaseMethodologySerializer(ProjectImmutableMixin, serializers.ModelSerializer):
     strategy = serializers.CharField(read_only=True)
+    project = _optional_project_field()
 
     class Meta:
         model = PhaseMethodology
@@ -51,7 +80,7 @@ class PhaseMethodologySerializer(serializers.ModelSerializer):
         # and complete actions — never a raw write — so the methodology strategy
         # is actually enforced (a phase can't be "completed" by a PATCH).
         read_only_fields = [
-            'id', 'project', 'gate_status', 'signed_off_by', 'signed_off_at',
+            'id', 'gate_status', 'signed_off_by', 'signed_off_at',
             'completed_at', 'created_at', 'updated_at',
         ]
 

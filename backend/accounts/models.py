@@ -804,8 +804,10 @@ class TeamInvitation(models.Model):
         related_name='invitations'
     )
     
-    # Invitation details
-    token = models.CharField(max_length=255, unique=True)
+    # Invitation details. TextField, not CharField(255): the token is a JWT
+    # that embeds the invitee's email — for long emails it exceeds 255 chars
+    # and Postgres then rejects the INSERT (BUG-005's second life).
+    token = models.TextField(unique=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     message = models.TextField(blank=True, help_text="Personal message from inviter")
     

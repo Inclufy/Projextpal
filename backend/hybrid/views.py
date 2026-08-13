@@ -1,6 +1,6 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -67,6 +67,25 @@ def _verify_project_access(user, project_id):
         raise PermissionDenied("You do not have access to this project.")
 
 
+def _create_with_project(view, serializer):
+    """Shared perform_create: project comes from the URL on the project-scoped
+    routes (overriding any body value), and from the body on the flat
+    /hybrid/<resource>/ routes — where it is required and access-checked.
+
+    BUG-038 follow-up: the flat routes used to save with project_id=NULL
+    (body 'project' was read-only, URL had none), turning every valid create
+    into an IntegrityError 500.
+    """
+    project_id = view.kwargs.get('project_id')
+    if not project_id:
+        project = serializer.validated_data.get('project')
+        if project is None:
+            raise ValidationError({'project': ['This field is required.']})
+        project_id = project.id
+    _verify_project_access(view.request.user, project_id)
+    return serializer.save(project_id=project_id)
+
+
 class HybridArtifactViewSet(viewsets.ModelViewSet):
     serializer_class = HybridArtifactSerializer
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
@@ -85,12 +104,7 @@ class HybridArtifactViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        project_id = self.kwargs.get('project_id')
-        if project_id:
-            _verify_project_access(self.request.user, project_id)
-            serializer.save(project_id=project_id)
-        else:
-            serializer.save()
+        _create_with_project(self, serializer)
 
 
 class HybridConfigurationViewSet(viewsets.ModelViewSet):
@@ -110,12 +124,7 @@ class HybridConfigurationViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        project_id = self.kwargs.get('project_id')
-        if project_id:
-            _verify_project_access(self.request.user, project_id)
-            serializer.save(project_id=project_id)
-        else:
-            serializer.save()
+        _create_with_project(self, serializer)
 
 
 class HybridDashboardView(APIView):
@@ -174,12 +183,7 @@ class PhaseMethodologyViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        project_id = self.kwargs.get('project_id')
-        if project_id:
-            _verify_project_access(self.request.user, project_id)
-            serializer.save(project_id=project_id)
-        else:
-            serializer.save()
+        _create_with_project(self, serializer)
 
     # ---- Mixed-governance gates (backlog #38) -------------------------------
     # A phase completes under the governance STRATEGY its methodology maps to
