@@ -545,6 +545,15 @@ const CourseLearningPlayer = () => {
     setContentSlide(0);
   }, [currentLessonId]);
 
+  // Normalize the placeholder initial id ('l1') to the course's real first
+  // lesson id (e.g. 'pm-l1') so navigation, completion and progress all key
+  // on ids that actually exist in this course.
+  useEffect(() => {
+    if (allLessons.length && !allLessons.some(l => l.id === currentLessonId)) {
+      setCurrentLessonId(allLessons[0].id);
+    }
+  }, [allLessons, currentLessonId]);
+
   // Find current lesson
   const currentLesson = allLessons.find(l => l.id === currentLessonId) || allLessons[0];
   const currentLessonIndex = allLessons.findIndex(l => l.id === currentLessonId);
@@ -1466,10 +1475,16 @@ useEffect(() => {
   };
   // Mark as complete with achievement check + skill points
 const markAsComplete = async () => {
-  // Award skill points FIRST
-  await awardSkillPoints(currentLessonId, 'lesson_complete');
+  // Use the RESOLVED lesson id (currentLesson falls back to allLessons[0]
+  // when the state still holds the 'l1' placeholder) — the raw state id
+  // doesn't exist in courses whose TS ids are prefixed (e.g. 'pm-l1'), so
+  // both localStorage and the backend would record a phantom lesson.
+  const lessonKey = currentLesson?.id || currentLessonId;
 
-  const newProgress = completeLesson(course.id, currentLessonId, allLessons.length);
+  // Award skill points FIRST
+  await awardSkillPoints(lessonKey, 'lesson_complete');
+
+  const newProgress = completeLesson(course.id, lessonKey, allLessons.length);
 
   checkAndUnlockAchievements('lesson-complete');
 
@@ -1484,7 +1499,7 @@ const markAsComplete = async () => {
     const token = localStorage.getItem('access_token');
     if (token) {
       const apiBase = import.meta.env.VITE_BACKEND_URL || '/api/v1';
-      fetch(`${apiBase}/academy/lessons/${currentLessonId}/complete/`, {
+      fetch(`${apiBase}/academy/lessons/${lessonKey}/complete/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
