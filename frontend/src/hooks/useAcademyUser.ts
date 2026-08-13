@@ -65,19 +65,26 @@ export const useAcademyUser = () => {
         });
         if (!res.ok) return;
         const enrollments = await res.json();
-        const rows: Array<{ course_slug?: string; completed_lesson_ids?: string[] }> =
+        const rows: Array<{ course_slug?: string; completed_lesson_ids?: string[]; progress?: number | string }> =
           Array.isArray(enrollments) ? enrollments : enrollments?.results || [];
         if (cancelled || rows.length === 0) return;
         setUser(prev => {
           if (!prev) return prev;
           const merged: Record<string, string[]> = { ...prev.completedLessons };
+          const progressMerged: Record<string, number> = { ...prev.courseProgress };
           for (const row of rows) {
-            if (!row.course_slug || !row.completed_lesson_ids?.length) continue;
-            merged[row.course_slug] = Array.from(
-              new Set([...(merged[row.course_slug] || []), ...row.completed_lesson_ids])
-            );
+            if (!row.course_slug) continue;
+            if (row.completed_lesson_ids?.length) {
+              merged[row.course_slug] = Array.from(
+                new Set([...(merged[row.course_slug] || []), ...row.completed_lesson_ids])
+              );
+            }
+            const serverPct = Number(row.progress) || 0;
+            if (serverPct > (progressMerged[row.course_slug] || 0)) {
+              progressMerged[row.course_slug] = serverPct;
+            }
           }
-          const next = { ...prev, completedLessons: merged };
+          const next = { ...prev, completedLessons: merged, courseProgress: progressMerged };
           localStorage.setItem('academy_user', JSON.stringify(next));
           return next;
         });
