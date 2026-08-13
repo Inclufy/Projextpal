@@ -39,6 +39,13 @@ import {
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import {
+  NO_TASK,
+  type TimeEntryFormErrors,
+  buildTimeEntryPayload,
+  getTotalMinutes,
+  validateTimeEntryForm,
+} from "@/lib/timeEntryForm";
 
 // Use relative path - proxy handles the rest
 const API_BASE_URL = '/api/v1';
@@ -242,7 +249,9 @@ const TimeTracking = () => {
     clearAllFilters: 'Clear all filters',
     logTimeEntry: 'Log Time Entry',
     selectProject: 'Select project',
-    selectTask: 'Select task',
+    selectTask: 'Select task (optional)',
+    taskOptional: 'Task (optional)',
+    noTask: 'No task',
     date: 'Date',
     hours: 'Hours',
     minutes: 'Minutes',
@@ -293,9 +302,9 @@ const TimeTracking = () => {
       const project = projects.find((p: Project) => p.id === entry.projectId);
       const projectName = entry.projectName || project?.name || 'Unknown Project';
       
-      // Find task name
+      // Find task name (task is optional on a time entry)
       const task = project?.tasks.find((t: { id: string; title: string }) => t.id === entry.taskId);
-      const taskName = entry.taskName || task?.title || 'Unknown Task';
+      const taskName = entry.taskName || task?.title || (entry.taskId ? 'Unknown Task' : 'No task');
       
       return {
         ...entry,
@@ -312,6 +321,7 @@ const TimeTracking = () => {
   const [minutes, setMinutes] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [formErrors, setFormErrors] = useState<TimeEntryFormErrors>({});
   const [reportPeriod, setReportPeriod] = useState<"weekly" | "monthly">("weekly");
   
   // Timer state
@@ -348,24 +358,21 @@ const TimeTracking = () => {
   const createEntryMutation = useMutation({
     mutationFn: async (entryData: {
       project_id: string;
-      task_id: string;
+      task_id?: string | null;
       date: string;
       duration_minutes: number;
       description?: string;
     }) => {
       const token = localStorage.getItem("access_token");
-      
-      // Convert minutes to hours (decimal)
-      const hours = entryData.duration_minutes / 60;
-      
-      // Backend expects 'project' and 'hours' fields
-      const payload: Record<string, any> = {
-        project: parseInt(entryData.project_id, 10),
-        task: parseInt(entryData.task_id, 10),
+
+      // Backend expects 'project' and 'hours' fields; task is optional (null when unset)
+      const payload = buildTimeEntryPayload({
+        projectId: entryData.project_id,
+        taskId: entryData.task_id,
         date: entryData.date,
-        hours: hours,
-        description: entryData.description || '',
-      };
+        durationMinutes: entryData.duration_minutes,
+        description: entryData.description,
+      });
       
       const response = await fetch(`${API_BASE_URL}/projects/time-entries/`, {
         method: 'POST',
@@ -539,23 +546,24 @@ const TimeTracking = () => {
     return Math.round((enrichedTimeEntries.reduce((sum, e) => sum + e.durationMinutes, 0) / 60) * 10) / 10;
   }, [enrichedTimeEntries]);
 
+  // Task is optional — the backend stores time entries with task = null.
   const handleAddEntry = () => {
-    if (!selectedProject || !selectedTask) {
-      toast.error(pt("Please select a project and task"));
-      return;
-    }
-
-    const totalMinutes = (parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0);
-    if (totalMinutes === 0) {
-      toast.error(pt("Please enter a duration"));
+    const errors = validateTimeEntryForm({
+      projectId: selectedProject,
+      hours,
+      minutes,
+    });
+    setFormErrors(errors);
+    if (errors.project || errors.duration) {
+      toast.error(pt(errors.project || errors.duration));
       return;
     }
 
     createEntryMutation.mutate({
       project_id: selectedProject,
-      task_id: selectedTask,
+      task_id: selectedTask || null,
       date: date,
-      duration_minutes: totalMinutes,
+      duration_minutes: getTotalMinutes(hours, minutes),
       description: description || undefined,
     });
 
@@ -570,23 +578,24 @@ const TimeTracking = () => {
     setMinutes("");
     setDescription("");
     setDate(new Date().toISOString().split("T")[0]);
+    setFormErrors({});
   };
 
   const handleStartTimer = () => {
-    if (!timerProject || !timerTask) {
-      toast.error(pt("Please select a project and task"));
+    if (!timerProject) {
+      toast.error(pt("Please select a project"));
       return;
     }
     setIsTimerRunning(true);
   };
 
   const handleStopTimer = () => {
-    if (timerSeconds > 0 && timerProject && timerTask) {
+    if (timerSeconds > 0 && timerProject) {
       const totalMinutes = Math.ceil(timerSeconds / 60);
-      
+
       createEntryMutation.mutate({
         project_id: timerProject,
-        task_id: timerTask,
+        task_id: timerTask || null,
         date: new Date().toISOString().split("T")[0],
         duration_minutes: totalMinutes,
       });
@@ -1063,7 +1072,10 @@ Respond in JSON format only, no other text:
           </Dialog>
 
           {/* New Time Entry Button */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setFormErrors({});
+          }}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4 mr-2" />
@@ -1080,6 +1092,7 @@ Respond in JSON format only, no other text:
                   <Select value={selectedProject} onValueChange={(value) => {
                     setSelectedProject(value);
                     setSelectedTask("");
+                    setFormErrors((prev) => ({ ...prev, project: undefined }));
                   }}>
                     <SelectTrigger>
                       <SelectValue placeholder={tt.selectProject} />
@@ -1092,11 +1105,14 @@ Respond in JSON format only, no other text:
                       ))}
                     </SelectContent>
                   </Select>
+                  {formErrors.project && (
+                    <p className="text-sm text-destructive">{formErrors.project}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="task">{tt.task}</Label>
-                  <Select 
-                    value={selectedTask} 
+                  <Label htmlFor="task">{tt.taskOptional || 'Task (optional)'}</Label>
+                  <Select
+                    value={selectedTask}
                     onValueChange={setSelectedTask}
                     disabled={!selectedProject}
                   >
@@ -1104,6 +1120,7 @@ Respond in JSON format only, no other text:
                       <SelectValue placeholder={tt.selectTask} />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value={NO_TASK}>{tt.noTask || 'No task'}</SelectItem>
                       {availableTasks.map((task: { id: string; title: string }) => (
                         <SelectItem key={task.id} value={task.id}>
                           {task.title}
@@ -1131,7 +1148,10 @@ Respond in JSON format only, no other text:
                       max="24"
                       placeholder="0"
                       value={hours}
-                      onChange={(e) => setHours(e.target.value)}
+                      onChange={(e) => {
+                        setHours(e.target.value);
+                        setFormErrors((prev) => ({ ...prev, duration: undefined }));
+                      }}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -1143,10 +1163,16 @@ Respond in JSON format only, no other text:
                       max="59"
                       placeholder="0"
                       value={minutes}
-                      onChange={(e) => setMinutes(e.target.value)}
+                      onChange={(e) => {
+                        setMinutes(e.target.value);
+                        setFormErrors((prev) => ({ ...prev, duration: undefined }));
+                      }}
                     />
                   </div>
                 </div>
+                {formErrors.duration && (
+                  <p className="text-sm text-destructive -mt-2">{formErrors.duration}</p>
+                )}
                 <div className="grid gap-2">
                   <Label htmlFor="description">{tt.description}</Label>
                   <Textarea
@@ -1234,9 +1260,10 @@ Respond in JSON format only, no other text:
                   disabled={!timerProject}
                 >
                   <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder={tt.task} />
+                    <SelectValue placeholder={tt.taskOptional || 'Task (optional)'} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value={NO_TASK}>{tt.noTask || 'No task'}</SelectItem>
                     {timerAvailableTasks.map((task: { id: string; title: string }) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}
@@ -1247,14 +1274,18 @@ Respond in JSON format only, no other text:
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
-                {projects.find((p: Project) => p.id === timerProject)?.name} - {timerAvailableTasks.find((t: { id: string; title: string }) => t.id === timerTask)?.title}
+                {projects.find((p: Project) => p.id === timerProject)?.name}
+                {(() => {
+                  const title = timerAvailableTasks.find((t: { id: string; title: string }) => t.id === timerTask)?.title;
+                  return title ? ` - ${title}` : "";
+                })()}
               </p>
             )}
             <Button 
               size="sm" 
               variant={isTimerRunning ? "destructive" : "default"}
               onClick={isTimerRunning ? handleStopTimer : handleStartTimer}
-              disabled={!timerProject || !timerTask}
+              disabled={!timerProject}
               className={!isTimerRunning ? "bg-success hover:bg-success/90" : ""}
             >
               {isTimerRunning ? (

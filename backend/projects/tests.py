@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from accounts.models import Company
 from .forecasting import forecast_for_active_projects, forecast_project_budget
-from .models import Expense, Project
+from .models import Expense, Milestone, Project, Task, TimeEntry
 
 
 @override_settings(OPENAI_API_KEY="")
@@ -111,3 +111,91 @@ class ForecastingTests(TestCase):
         self.assertIn(self.project.id, returned_ids)
         self.assertIn(self.pending_project.id, returned_ids)
         self.assertEqual(data["count"], len(data["results"]))
+
+
+class TimeEntryTaskOptionalTests(TestCase):
+    """Task is optional on a time entry (TimeEntry.task is null/blank).
+
+    Guards the contract behind the Time Tracking dialog: the frontend sends
+    task: null when no task is selected and the API must accept it.
+    """
+
+    def setUp(self):
+        self.company = Company.objects.create(name="TimeCo")
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="tracker@example.com",
+            password="testpass123",
+            username="tracker",
+            company=self.company,
+            role="admin",
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        self.project = Project.objects.create(
+            name="Tracked Project",
+            company=self.company,
+            status="in_progress",
+        )
+        milestone = Milestone.objects.create(project=self.project, name="M1")
+        self.task = Task.objects.create(milestone=milestone, title="Build feature")
+        self.url = reverse("time-entry-list")
+
+    def test_create_without_task_returns_201(self):
+        response = self.client.post(
+            self.url,
+            {
+                "project": self.project.id,
+                "task": None,
+                "date": "2026-08-13",
+                "hours": 2.5,
+                "description": "Work without a linked task",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.json()["task"])
+        entry = TimeEntry.objects.get(id=response.json()["id"])
+        self.assertIsNone(entry.task)
+
+    def test_create_with_task_omitted_returns_201(self):
+        response = self.client.post(
+            self.url,
+            {
+                "project": self.project.id,
+                "date": "2026-08-13",
+                "hours": 1,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.json()["task"])
+
+    def test_create_with_task_returns_201(self):
+        response = self.client.post(
+            self.url,
+            {
+                "project": self.project.id,
+                "task": self.task.id,
+                "date": "2026-08-13",
+                "hours": 2.5,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["task"], self.task.id)
+
+    def test_list_serializes_entries_without_task(self):
+        TimeEntry.objects.create(
+            project=self.project,
+            user=self.user,
+            task=None,
+            date=date(2026, 8, 13),
+            hours=Decimal("2.50"),
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        results = data["results"] if isinstance(data, dict) else data
+        self.assertTrue(any(item["task"] is None for item in results))
