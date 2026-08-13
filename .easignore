@@ -12,3 +12,16 @@ Dockerfile*
 Caddyfile
 *.md
 app-store-screenshots/
+
+# Local build state. NOTE: when .easignore exists, EAS uses it INSTEAD of
+# .gitignore, so these must be repeated here or the builder receives this
+# machine's CocoaPods/Gradle output. Uploading ios/Pods/ bakes local absolute
+# paths (HERMES_CLI_PATH=/Users/<me>/...) into the build and makes pod install
+# skip re-downloading the RN prebuilt release artifacts.
+node_modules/
+ios/Pods/
+ios/build/
+android/build/
+android/.gradle/
+android/app/build/
+tmp/
