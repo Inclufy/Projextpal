@@ -26,7 +26,14 @@ const fetchProjectTasks = async (projectId: string) => {
   });
   if (!response.ok) return [];
   const data = await response.json();
-  return Array.isArray(data) ? data : data.results || [];
+  const rows = Array.isArray(data) ? data : data.results || [];
+  // De API levert `title` en `assigned_to_name`; normaliseer naar de veldnamen
+  // die deze view rendert, zodat taaknaam en assignee niet leeg blijven.
+  return rows.map((t: Record<string, unknown>) => ({
+    ...t,
+    name: (t.name ?? t.title ?? '') as string,
+    assignee_name: (t.assignee_name ?? t.assigned_to_name ?? '') as string,
+  }));
 };
 
 export function ProjectTimeline() {
