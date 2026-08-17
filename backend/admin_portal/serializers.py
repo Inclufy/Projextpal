@@ -337,13 +337,15 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
         owner_email = validated_data.pop('owner_email', None)
         company = Company.objects.create(**validated_data)
         
-        # Create owner user if email provided
+        # Create owner user if email provided. Owner of a tenant is 'admin',
+        # never 'superadmin' — superadmin is platform-wide (CompanyScoped-
+        # QuerysetMixin geeft die rol toegang tot ÁLLE tenants).
         if owner_email:
             User.objects.create(
                 email=owner_email,
                 username=owner_email.split('@')[0],
                 company=company,
-                role='superadmin',
+                role='admin',
                 is_active=False  # Will need to verify email
             )
         

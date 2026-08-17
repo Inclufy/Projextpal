@@ -952,15 +952,21 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
 
         # 4) Additional invites — create inactive users + send each their own
         # verification email so they can pick a password.
+        allowed_invite_roles = {'admin', 'pm', 'program_manager', 'contibuter', 'reviewer', 'guest'}
         for inv in (data.get('additional_invites') or []):
             email = (inv.get('email') or '').strip().lower()
             if not email or User.objects.filter(email=email).exists():
                 continue
+            role = inv.get('role')
+            if role == 'contributor':  # UI stuurt de correcte spelling; model-choice is 'contibuter'
+                role = 'contibuter'
+            if role not in allowed_invite_roles:
+                role = 'guest'
             invitee = User.objects.create(
                 email=email,
                 username=email.split('@')[0],
                 company=company,
-                role=inv.get('role') or 'guest',
+                role=role,
                 is_active=False,
             )
             if send_emails:
