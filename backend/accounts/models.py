@@ -68,7 +68,11 @@ class CustomUser(AbstractUser):
         ("reviewer", "Reviewer"),
         ("guest", "Guest"),
     ]
-    role = models.CharField(max_length=100, choices=ROLE_CHOICES, default="superadmin")
+    # Least-privilege default. Was "superadmin" (tenant-brede toegang!), waardoor
+    # elk codepad dat geen expliciete rol zet een alziend account opleverde —
+    # 17-08-2026 in de praktijk misgegaan met extern aangemaakte klantaccounts.
+    # Zelfregistratie zet zelf role="admin" (bedrijfseigenaar) en blijft werken.
+    role = models.CharField(max_length=100, choices=ROLE_CHOICES, default="guest")
     THEME_CHOICES = [
         ("light", "Light"),
         ("dark", "Dark"),
