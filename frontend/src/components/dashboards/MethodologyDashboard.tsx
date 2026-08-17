@@ -29,6 +29,10 @@ const MethodologyDashboard = ({ project }: MethodologyDashboardProps) => {
       return <Prince2Dashboard project={project} />; // Waterfall uses similar stage-gate view
     case 'hybrid':
       return <ScrumDashboard project={project} />; // Hybrid defaults to Scrum-like view
+    case 'inclufy':
+      // Inclufy Best Practice leent zijn governance van PRINCE2 (charter,
+      // stage-gates, closure) — het stage-gate-dashboard past daar het best bij.
+      return <Prince2Dashboard project={project} />;
     default:
       return (
         <Card>
