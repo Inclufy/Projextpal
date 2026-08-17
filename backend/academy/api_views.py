@@ -115,6 +115,11 @@ class CourseLessonViewSet(viewsets.ModelViewSet):
         # (course catalog browsing); writes require admin/superadmin.
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
+        # Quiz-inhoud is leesdata voor cursisten. Deze override won van de
+        # permission_classes op de @action zelf, waardoor alleen admins quizzen
+        # konden ophalen — gemaskeerd zolang iedereen per ongeluk superadmin was.
+        if self.action == 'quiz':
+            return [IsAuthenticated()]
         return [IsAuthenticated(), IsAcademyEditor()]
 
     def get_queryset(self):

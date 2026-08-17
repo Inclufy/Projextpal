@@ -100,10 +100,14 @@ def user(db, company):
     )
     user.first_name = 'Test'
     user.last_name = 'User'
-    
+    # Expliciete rol: deze fixture leunde op de model-default, die vóór de
+    # least-privilege-fix 'superadmin' was (nu 'guest'). 'pm' = de normale
+    # bevoegde gebruiker die deze tests bedoelen (IsAdminOrPM-mutaties).
+    user.role = 'pm'
+
     if hasattr(user, 'company'):
         user.company = company
-    
+
     user.save()
     return user
 

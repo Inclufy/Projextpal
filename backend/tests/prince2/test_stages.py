@@ -20,8 +20,16 @@ class TestPRINCE2Stages:
         response = authenticated_client.post(url, data)
         assert response.status_code == 201
     
-    def test_stage_gate(self, authenticated_client, prince2_project):
+    def test_stage_gate(self, authenticated_client, user, prince2_project):
         """Test stage gate review"""
+        # Gate-approval is een Project Board-besluit (PRINCE2 separation of
+        # duties): alleen de Project Owner mag goedkeuren. Vroeger slaagde dit
+        # doordat de fixture-user impliciet superadmin was; nu expliciet als
+        # Owner van dit project.
+        from projects.models import ProjectMembership
+        ProjectMembership.objects.create(
+            project=prince2_project, user=user, role='project_owner',
+        )
         # Create stage
         stage_url = reverse('prince2:prince2-stages-list', kwargs={'project_id': prince2_project.id})
         stage = authenticated_client.post(stage_url, {'name': 'Test Stage'})
