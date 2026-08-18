@@ -3,9 +3,11 @@ import { useParams } from "react-router-dom";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, GanttChartSquare, AlertTriangle, Flag } from "lucide-react";
+import { Loader2, GanttChartSquare, AlertTriangle, Flag, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { Button } from "@/components/ui/button";
+import AiPlanDialog from "@/components/AiPlanDialog";
 
 interface GTask {
   id: number; title: string; milestone_name: string | null; assigned_to_name: string | null;
@@ -30,16 +32,16 @@ export default function ProjectGantt() {
   const [data, setData] = useState<GData | null>(null);
   const [loading, setLoading] = useState(true);
   const [onlyCritical, setOnlyCritical] = useState(false);
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const r = await fetch(`/api/v1/projects/${id}/gantt/`, { headers: authHeaders() });
-        if (r.ok) setData(await r.json());
-      } finally { setLoading(false); }
-    })();
-  }, [id]);
+  const loadGantt = async (initial = false) => {
+    if (initial) setLoading(true);
+    try {
+      const r = await fetch(`/api/v1/projects/${id}/gantt/`, { headers: authHeaders() });
+      if (r.ok) setData(await r.json());
+    } finally { if (initial) setLoading(false); }
+  };
+  useEffect(() => { loadGantt(true); }, [id]);
 
   const { rows, minT, totalDays } = useMemo(() => {
     if (!data) return { rows: [] as GTask[], minT: 0, totalDays: 1 };
@@ -92,7 +94,11 @@ export default function ProjectGantt() {
         <div className="flex items-center gap-2">
           <GanttChartSquare className="h-5 w-5 text-purple-600" />
           <h1 className="text-xl font-bold">{pt("Timeline & Critical Path")}</h1>
+          <Button variant="outline" size="sm" className="gap-1.5 ml-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}>
+            <Sparkles className="h-4 w-4" />{pt("Plan with AI")}
+          </Button>
         </div>
+        <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => loadGantt()} />
         {data && (
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{data.counts.dated} {pt("scheduled")}</span>

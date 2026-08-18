@@ -43,6 +43,19 @@ class PlannerEngineTests(TestCase):
         self.assertEqual(plan["milestones"][0]["start_date"], p.start_date.isoformat())
         self.assertEqual(plan["milestones"][-1]["end_date"], p.end_date.isoformat())
 
+    def test_context_includes_project_charter_fields(self):
+        p = _project(
+            self.company,
+            problem_impact="Handmatige rapportage kost te veel tijd",
+            proposed_solution="IQ Helix implementeren",
+            scope_in="Academy + assessments",
+        )
+        from projects.ai_planner import _project_context
+        ctx = _project_context(p)
+        self.assertEqual(ctx["charter_problem"], "Handmatige rapportage kost te veel tijd")
+        self.assertEqual(ctx["charter_solution"], "IQ Helix implementeren")
+        self.assertEqual(ctx["charter_scope"], "Academy + assessments")
+
     def test_plan_chat_without_key_returns_proposal(self):
         p = _project(self.company)
         result = plan_chat(p, self.user, [{"role": "user", "content": "Maak een plan"}])

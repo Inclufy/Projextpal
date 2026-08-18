@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Clock, Loader2, Plus } from "lucide-react";
+import { CheckCircle, Circle, Clock, Loader2, Plus, Sparkles } from "lucide-react";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AiPlanDialog from "@/components/AiPlanDialog";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -24,11 +26,12 @@ const ProjectMilestones = () => {
   const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();
 
-  const { data: milestones = [], isLoading } = useQuery({
+  const { data: milestones = [], isLoading, refetch } = useQuery({
     queryKey: ['project-milestones', id],
     queryFn: () => fetchProjectMilestones(id!),
     enabled: !!id,
   });
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
@@ -86,11 +89,18 @@ const ProjectMilestones = () => {
             <h1 className="text-2xl font-bold text-foreground mb-2">Project Milestones</h1>
             <p className="text-muted-foreground">Track key project milestones and achievements</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Milestone
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}>
+              <Sparkles className="h-4 w-4" />{pt("Plan with AI")}
+            </Button>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Milestone
+            </Button>
+          </div>
         </div>
+
+        <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => refetch()} />
 
         {milestones.length === 0 ? (
           <Card className="p-8 text-center">
@@ -99,10 +109,15 @@ const ProjectMilestones = () => {
             <p className="text-muted-foreground mb-4">
               Add milestones to track key achievements
             </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add First Milestone
-            </Button>
+            <div className="flex justify-center gap-2">
+              <Button variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}>
+                <Sparkles className="h-4 w-4" />{pt("Plan with AI")}
+              </Button>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Milestone
+              </Button>
+            </div>
           </Card>
         ) : (
           <div className="space-y-4">

@@ -2,8 +2,10 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Sparkles } from "lucide-react";
 import { useState, useMemo } from "react";
+import AiPlanDialog from "@/components/AiPlanDialog";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -37,11 +39,13 @@ const fetchProjectTasks = async (projectId: string) => {
 };
 
 export function ProjectTimeline() {
+  const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentQuarter, setCurrentQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
 
-  const { data: tasks = [], isLoading } = useQuery({
+  const { data: tasks = [], isLoading, refetch } = useQuery({
     queryKey: ['project-tasks-timeline', id],
     queryFn: () => fetchProjectTasks(id!),
     enabled: !!id,
@@ -132,9 +136,17 @@ export function ProjectTimeline() {
         <h2 className="text-lg font-semibold">Project Timeline</h2>
         <p className="text-sm opacity-90">Track project progress, milestones, and deliverables</p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="secondary" 
-            size="sm" 
+          <Button
+            variant="secondary"
+            size="sm"
+            className="gap-1.5 bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground border-0"
+            onClick={() => setAiPlanOpen(true)}
+          >
+            <Sparkles className="h-4 w-4" />{pt("Plan with AI")}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             className="bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground border-0"
           >
             {currentYear}
@@ -242,6 +254,8 @@ export function ProjectTimeline() {
       <div className="px-4 py-2 text-xs opacity-75 border-t border-primary-foreground/20">
         Showing Q{currentQuarter} {currentYear} • {tasks.length} tasks
       </div>
+
+      <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => refetch()} />
     </Card>
   );
 }

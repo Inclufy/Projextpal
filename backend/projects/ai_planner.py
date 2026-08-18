@@ -38,6 +38,55 @@ _HML = {"High", "Medium", "Low"}
 # Context + prompt
 # --------------------------------------------------------------------------
 
+def _charter_context(project) -> dict:
+    """Best-effort charteruitlezing — de rijkste bron om een plan in te
+    gronden (doel, scope, deliverables mét datums, bekende risico's)."""
+    ctx: dict = {}
+    # Charter-velden op het Project zelf (Foundation Charter-pagina).
+    for field, key in (
+        ("problem_impact", "charter_problem"),
+        ("proposed_solution", "charter_solution"),
+        ("scope_in", "charter_scope"),
+        ("scope_out", "charter_out_of_scope"),
+    ):
+        val = getattr(project, field, None)
+        if val:
+            ctx[key] = str(val)[:1500]
+    tid = getattr(project, "target_implementation_date", None)
+    if tid:
+        ctx["charter_target_date"] = tid.isoformat()
+    try:
+        from charater.models import ProgramCharter
+        ch = (ProgramCharter.objects.filter(project=project)
+              .order_by("-version").first())
+        if ch:
+            ctx["charter_goal"] = (ch.goal_objective or "")[:1500]
+            ctx["charter_description"] = (ch.description or "")[:1500]
+            ctx["charter_deliverables"] = [
+                {"deliverable": (d.deliverable or d.description or "")[:200],
+                 "date": d.date.isoformat() if d.date else None}
+                for d in ch.deliverables.all()[:15]
+            ]
+            ctx["charter_known_risks"] = [
+                (r.risk or r.description or "")[:200] for r in ch.risks.all()[:10]
+            ]
+            ctx["charter_scope"] = ctx.get("charter_scope") or [
+                (s.capabilities or s.description or "")[:200] for s in ch.scopes.all()[:10]
+            ]
+    except Exception:
+        pass
+    try:
+        from sixsigma.models import ProjectCharter as SixSigmaCharter
+        ssc = SixSigmaCharter.objects.filter(project=project).first()
+        if ssc:
+            ctx["charter_problem"] = ctx.get("charter_problem") or (ssc.problem_statement or "")[:1000]
+            ctx["charter_goal"] = ctx.get("charter_goal") or (ssc.goal_statement or "")[:1000]
+            ctx["charter_scope"] = ctx.get("charter_scope") or (ssc.project_scope or "")[:1000]
+    except Exception:
+        pass
+    return {k: v for k, v in ctx.items() if v}
+
+
 def _project_context(project) -> dict:
     """Compacte, feitelijke projectcontext waarin het plan gegrond wordt."""
     milestones = list(
@@ -49,7 +98,7 @@ def _project_context(project) -> dict:
         task_count = Task.objects.filter(milestone__project=project).count()
     except Exception:
         pass
-    return {
+    ctx = {
         "project_name": project.name,
         "description": (project.description or "")[:2000],
         "methodology": project.methodology or "",
@@ -60,6 +109,8 @@ def _project_context(project) -> dict:
         "existing_task_count": task_count,
         "today": date.today().isoformat(),
     }
+    ctx.update(_charter_context(project))
+    return ctx
 
 
 def _system_prompt(ctx: dict) -> str:

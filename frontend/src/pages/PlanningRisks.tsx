@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { AlertTriangle, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { AlertTriangle, Plus, Pencil, Trash2, Loader2, Sparkles } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import CommentThread from "@/components/CommentThread";
 import { toast } from "sonner";
+import AiPlanDialog from "@/components/AiPlanDialog";
 
 const CATEGORIES = ["Technical", "Schedule", "Financial", "Operational", "Strategic", "Compliance"];
 const LEVELS = ["High", "Medium", "Low"];
@@ -39,6 +40,7 @@ const PlanningRisks = () => {
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
@@ -117,9 +119,12 @@ const PlanningRisks = () => {
           </div>
           <div className="flex gap-2">
             {risks.length > 0 && <ReportExportMenu title="Risks" sections={exportSections} />}
+            <Button variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}><Sparkles className="h-4 w-4" />{pt("Plan with AI")}</Button>
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Risk")}</Button>
           </div>
         </div>
+
+        <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => fetchData()} />
 
         {risks.length === 0 ? (
           <Card className="p-8 text-center">

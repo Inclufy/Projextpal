@@ -8,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Loader2, ScrollText, Euro, Calendar, Users, Target, FileText, ArrowRight, Pencil, Save, X, Download } from "lucide-react";
+import { Loader2, ScrollText, Euro, Calendar, Users, Target, FileText, ArrowRight, Pencil, Save, X, Download, Sparkles } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
+import AiPlanDialog from "@/components/AiPlanDialog";
 
 const FoundationCharter = () => {
   const { pt } = usePageTranslations();
@@ -22,6 +23,7 @@ const FoundationCharter = () => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({});
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -149,11 +151,14 @@ const FoundationCharter = () => {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}><Sparkles className="h-4 w-4" />{pt("Plan with AI")}</Button>
             <Button variant="outline" size="sm" className="gap-2" onClick={downloadPdf}><Download className="h-4 w-4" />{pt("Download PDF")}</Button>
             <Button variant="outline" size="sm" className="gap-2" onClick={downloadDocx}><FileText className="h-4 w-4" />{pt("Project Plan (.docx)")}</Button>
             <ReportExportMenu title={`Charter — ${project?.name || ""}`} sections={exportSections} />
           </div>
         </div>
+
+        <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => { /* planning leeft op de plannings-tabs; hier volstaat de toast */ }} />
 
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4" />{pt("Project Definition")}</CardTitle></CardHeader>
