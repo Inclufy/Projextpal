@@ -113,34 +113,34 @@ class Command(BaseCommand):
             managed = data["managed"]
 
             sections = []
-            text = [f"Hi {user.first_name or user.email},", "",
-                    f"Your deadline overview for the next {opts['days']} days:", ""]
+            text = [f"Hoi {user.first_name or user.email},", "",
+                    f"Je deadline-overzicht voor de komende {opts['days']} dagen:", ""]
             total = 0
 
             if own:
                 rows = []
                 for project, t in sorted(own, key=lambda pt: (pt[1].due_date or today)):
                     overdue = t.due_date < today
-                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
+                    flag = "VERLOPEN" if overdue else f"vervalt {t.due_date}"
                     rows.append({"text": f"{t.title} — {project.name}", "tag": flag, "danger": overdue})
                     text.append(f"  • {t.title} — {project.name} [{flag}]")
-                sections.append({"heading": f"Your tasks ({len(own)})", "rows": rows})
+                sections.append({"heading": f"Jouw taken ({len(own)})", "rows": rows})
                 total += len(own)
                 text.append("")
 
             for project, d in managed.items():
                 rows = []
                 for t in sorted(d["tasks"], key=lambda x: x.due_date):
-                    who = (t.assigned_to.first_name or t.assigned_to.email) if t.assigned_to else "unassigned"
+                    who = (t.assigned_to.first_name or t.assigned_to.email) if t.assigned_to else "niet toegewezen"
                     overdue = t.due_date < today
-                    flag = "OVERDUE" if overdue else f"due {t.due_date}"
+                    flag = "VERLOPEN" if overdue else f"vervalt {t.due_date}"
                     rows.append({"text": f"{t.title} — {who}", "tag": flag, "danger": overdue})
                 for m in sorted(d["milestones"], key=lambda x: x.end_date):
                     overdue = m.end_date < today
-                    flag = "OVERDUE" if overdue else f"due {m.end_date}"
-                    rows.append({"text": f"Milestone: {m.name}", "tag": flag, "danger": overdue})
+                    flag = "VERLOPEN" if overdue else f"vervalt {m.end_date}"
+                    rows.append({"text": f"Mijlpaal: {m.name}", "tag": flag, "danger": overdue})
                 for e in sorted(d["events"], key=lambda x: x.start_date):
-                    rows.append({"text": f"Calendar: {e.title}", "tag": str(e.start_date), "danger": False})
+                    rows.append({"text": f"Agenda: {e.title}", "tag": str(e.start_date), "danger": False})
                 if rows:
                     sections.append({"heading": f"{project.name} ({len(rows)})", "rows": rows})
                     total += len(rows)
@@ -151,13 +151,13 @@ class Command(BaseCommand):
             if not sections:
                 continue  # nothing relevant for this user → no email
 
-            text += ["You can manage email reminders in Settings → Notifications.", "— ProjeXtPal"]
-            subject = f"🗓️ Your deadline overview — {total} item(s) due"
+            text += ["Je kunt e-mailherinneringen beheren via Instellingen → Notificaties.", "— ProjeXtPal"]
+            subject = f"🗓️ Je deadline-overzicht — {total} item(s)"
             html = self._render_html(
-                title="Your deadline overview",
-                lead=f"Everything due across your projects over the next {opts['days']} days.",
+                title="Je deadline-overzicht",
+                lead=f"Alles wat de komende {opts['days']} dagen vervalt in jouw projecten.",
                 sections=sections,
-                closing="You can manage email reminders in Settings → Notifications.",
+                closing="Je kunt e-mailherinneringen beheren via Instellingen → Notificaties.",
             )
             if self._send(user.email, subject, "\n".join(text), dry, html=html):
                 emails_sent += 1

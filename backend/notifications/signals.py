@@ -34,15 +34,20 @@ try:
             return
         if not created and getattr(instance, "_old_assignee", None) == new:
             return  # assignee unchanged
+        if getattr(instance, "status", "") == "done":
+            return  # afgeronde taak: een "toegewezen"-mail is dan verwarrend
         url = ""
+        project_name = ""
         try:
             url = f"/projects/{instance.milestone.project_id}/planning/tasks"
+            project_name = instance.milestone.project.name
         except Exception:
             pass
+        in_project = f" in project “{project_name}”" if project_name else ""
         notify(
             instance.assigned_to, kind="task_assigned",
-            title=f"Task assigned: {instance.title}",
-            body=f"You were assigned the task “{instance.title}”.",
+            title=f"Taak toegewezen: {instance.title}",
+            body=f"Je bent toegewezen aan de taak “{instance.title}”{in_project}.",
             url=url,
         )
 except Exception:
@@ -65,11 +70,11 @@ try:
         if not created and getattr(instance, "_old_assignee", None) == new:
             return
         desc = (getattr(instance, "description", "") or "").strip()
-        label = (desc[:80] + "…") if len(desc) > 80 else (desc or "New action")
+        label = (desc[:80] + "…") if len(desc) > 80 else (desc or "Nieuwe actie")
         notify(
             instance.owner, kind="action_assigned",
-            title=f"Action assigned: {label}",
-            body="You were assigned a meeting action item.",
+            title=f"Actie toegewezen: {label}",
+            body="Je bent toegewezen aan een actiepunt uit een vergadering.",
             url="",
         )
 except Exception:
@@ -91,7 +96,7 @@ try:
             return
         if not created and getattr(instance, "_old_pic", None) == new:
             return  # PIC unchanged
-        subject = (getattr(instance, "subject", "") or "").strip() or "New action"
+        subject = (getattr(instance, "subject", "") or "").strip() or "Nieuwe actie"
         url = ""
         try:
             url = f"/projects/{instance.meeting.project_id}/execution/communication/meeting"
@@ -99,8 +104,8 @@ try:
             pass
         notify(
             instance.pic_user, kind="action_assigned",
-            title=f"Action assigned: {subject}",
-            body=f"You were made responsible for the meeting action “{subject}”.",
+            title=f"Actie toegewezen: {subject}",
+            body=f"Je bent verantwoordelijk gemaakt voor de vergaderactie “{subject}”.",
             url=url,
         )
 except Exception:

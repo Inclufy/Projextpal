@@ -223,7 +223,8 @@ def _send_notification_email(recipient, *, title="", body="", url=""):
         link = f"{base}{url}" if url else ""
         html = render_to_string("emails/notification.html", {
             "title": title, "lead": body, "sections": [],
-            "closing": (f'Open in ProjeXtPal: {link}' if link else "Open ProjeXtPal om te reageren."),
+            "cta_url": link, "cta_label": "Open in ProjeXtPal",
+            "closing": "" if link else "Open ProjeXtPal om te reageren.",
             "badge": "bell",
         })
         msg = EmailMultiAlternatives(
