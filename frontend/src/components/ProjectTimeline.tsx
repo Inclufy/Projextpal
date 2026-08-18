@@ -165,7 +165,7 @@ export function ProjectTimeline() {
         <div className="min-w-[1200px]">
           {/* Header Row */}
           <div className="flex border-b border-primary-foreground/20 bg-primary-hover">
-            <div className="w-48 px-4 py-2 text-sm font-medium border-r border-primary-foreground/20">
+            <div className="w-80 px-4 py-2 text-sm font-medium border-r border-primary-foreground/20">
               Task
             </div>
             <div className="w-24 px-4 py-2 text-sm font-medium border-r border-primary-foreground/20">
@@ -198,7 +198,9 @@ export function ProjectTimeline() {
               const position = getTaskPosition(task);
               return (
                 <div key={task.id} className="flex border-b border-primary-foreground/10 hover:bg-primary-hover/50">
-                  <div className="w-48 px-4 py-3 text-sm border-r border-primary-foreground/10 truncate">
+                  {/* Volledige taaknaam zichtbaar: bredere kolom + afbreken
+                      over meerdere regels in plaats van truncate. */}
+                  <div className="w-80 px-4 py-3 text-sm border-r border-primary-foreground/10 whitespace-normal break-words">
                     {task.name}
                   </div>
                   <div className="w-24 px-4 py-3 text-sm border-r border-primary-foreground/10 capitalize">
