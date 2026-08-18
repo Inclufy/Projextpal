@@ -37,6 +37,10 @@ const PlanningTasks = () => {
   const [form, setForm] = useState({ ...emptyForm });
   const [groupBy, setGroupBy] = useState<"category" | "milestone" | "type" | "owner" | "status">("category");
   const [search, setSearch] = useState("");
+  // Inline voortgang bewerken: klik op de balk/het percentage in de lijst,
+  // typ het nieuwe percentage, Enter of wegklikken slaat direct op (naast de
+  // bestaande route via de Edit-dialoog).
+  const [progressEdit, setProgressEdit] = useState<{ id: any; value: string } | null>(null);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -96,6 +100,20 @@ const PlanningTasks = () => {
     if (!confirm(pt("Are you sure you want to delete this?"))) return;
     const r = await fetch(`/api/v1/projects/tasks/${tid}/`, { method: "DELETE", headers });
     if (r.ok || r.status === 204) { toast.success(pt("Deleted")); fetchData(); }
+  };
+
+  const saveProgressInline = async () => {
+    if (!progressEdit) return;
+    const pct = Math.max(0, Math.min(100, parseInt(progressEdit.value || "0", 10) || 0));
+    const tid = progressEdit.id;
+    setProgressEdit(null);
+    const huidige = tasks.find((t) => t.id === tid);
+    if (huidige && Number(huidige.progress) === pct) return;
+    const r = await fetch(`/api/v1/projects/tasks/${tid}/`, {
+      method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ progress: pct }),
+    });
+    if (r.ok) { toast.success(pt("Saved")); fetchData(); }
+    else toast.error(pt("Save failed"));
   };
 
   const statusColor = (s: string) => ({ todo: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", done: "bg-green-100 text-green-700", blocked: "bg-red-100 text-red-700" }[s] || "bg-gray-100");
@@ -220,7 +238,11 @@ const PlanningTasks = () => {
                     </thead>
                     <tbody>
                       {items.map((t, idx) => {
-                        const overdue = t.due_date && t.due_date < today && t.status !== "done";
+                        // Effectieve vervaldatum: een verschuiving wordt (Yanmar-
+                        // regel) als revised_due_date vastgelegd met de originele
+                        // datum als baseline — toon dus de herziene datum als die er is.
+                        const effDue = t.revised_due_date || t.due_date;
+                        const overdue = effDue && effDue < today && t.status !== "done";
                         const ty = taskType(t);
                         const stage = stageOf(t);
                         return (
@@ -239,9 +261,35 @@ const PlanningTasks = () => {
                             {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" className="text-[10px] font-normal cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{stage}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
                             {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>}
-                            <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>{t.due_date || "—"}</td>
+                            <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                              {effDue || "—"}
+                              {t.revised_due_date && (
+                                <span className="ml-1 text-[10px] bg-amber-100 text-amber-700 rounded px-1" title={`${pt("Original")}: ${t.due_date}`}>{pt("revised")}</span>
+                              )}
+                            </td>
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${statusColor(t.status)}`}>{label(STATUSES, t.status)}</Badge></td>
-                            <td className="px-3 py-2.5"><div className="flex items-center gap-1.5"><Progress value={t.progress} className="h-1.5 w-16" /><span className="text-xs text-muted-foreground">{t.progress}%</span></div></td>
+                            <td className="px-3 py-2.5">
+                              {progressEdit?.id === t.id ? (
+                                <Input
+                                  autoFocus type="number" min={0} max={100}
+                                  className="h-7 w-20 text-xs"
+                                  value={progressEdit.value}
+                                  onChange={(e) => setProgressEdit({ id: t.id, value: e.target.value })}
+                                  onBlur={saveProgressInline}
+                                  onKeyDown={(e) => { if (e.key === "Enter") saveProgressInline(); if (e.key === "Escape") setProgressEdit(null); }}
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="flex items-center gap-1.5 cursor-pointer rounded px-1 -mx-1 hover:bg-accent"
+                                  title={pt("Click to edit progress")}
+                                  onClick={() => setProgressEdit({ id: t.id, value: String(t.progress ?? 0) })}
+                                >
+                                  <Progress value={t.progress} className="h-1.5 w-16" />
+                                  <span className="text-xs text-muted-foreground">{t.progress}%</span>
+                                </button>
+                              )}
+                            </td>
                             <td className="px-3 py-2.5">
                               <button onClick={() => openEdit(t)} className="inline-flex items-center gap-1.5 hover:underline">
                                 <span className="inline-flex items-center gap-0.5 text-muted-foreground"><MessageSquare className="h-3.5 w-3.5" />{commentMeta.counts[t.id] || 0}</span>
@@ -318,7 +366,15 @@ const PlanningTasks = () => {
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2 col-span-1"><Label>{pt("Category")}</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
               <div className="space-y-2"><Label>{pt("Progress")} %</Label><Input type="number" min={0} max={100} value={form.progress} onChange={(e) => setForm({ ...form, progress: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{pt("Due Date")}</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
+              <div className="space-y-2">
+                <Label>{pt("Due Date")}</Label>
+                <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                {editing?.revised_due_date && (
+                  <p className="text-[11px] text-amber-700">
+                    {pt("Revised due date")}: {editing.revised_due_date} ({pt("original")}: {editing.due_date}). {pt("A second push-back needs project-owner approval.")}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
