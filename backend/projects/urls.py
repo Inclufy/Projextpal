@@ -42,6 +42,7 @@ from .my_work_views import my_work
 from .gantt_views import project_gantt
 from .tailoring_views import intake_analyze, intake_scenarios, project_tailoring, methodology_profile, methodology_course
 from .coach_views import project_coach
+from .ai_plan_views import project_ai_plan, project_ai_plan_apply
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -101,6 +102,8 @@ urlpatterns = [
     path("methodology-course/", methodology_course, name="methodology-course"),
     path("<int:pk>/tailoring/", project_tailoring, name="project-tailoring"),
     path("<int:pk>/coach/", project_coach, name="project-coach"),
+    path("<int:pk>/ai-plan/", project_ai_plan, name="project-ai-plan"),
+    path("<int:pk>/ai-plan/apply/", project_ai_plan_apply, name="project-ai-plan-apply"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),

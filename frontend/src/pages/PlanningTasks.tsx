@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, GanttChartSquare, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, GanttChartSquare, MessageSquare, Sparkles } from "lucide-react";
+import AiPlanDialog from "@/components/AiPlanDialog";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentThread from "@/components/CommentThread";
@@ -41,6 +42,7 @@ const PlanningTasks = () => {
   // typ het nieuwe percentage, Enter of wegklikken slaat direct op (naast de
   // bestaande route via de Edit-dialoog).
   const [progressEdit, setProgressEdit] = useState<{ id: any; value: string } | null>(null);
+  const [aiPlanOpen, setAiPlanOpen] = useState(false);
 
   const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
@@ -165,6 +167,7 @@ const PlanningTasks = () => {
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/action-tracker`)}><ClipboardCheck className="h-4 w-4" />{pt("Action Tracker")}</Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/projects/${id}/gantt`)}><GanttChartSquare className="h-4 w-4" />{pt("Timeline")}</Button>
             {tasks.length > 0 && <ReportExportMenu title="Tasks" sections={exportSections} />}
+            <Button variant="outline" size="sm" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}><Sparkles className="h-4 w-4" />{pt("Plan with AI")}</Button>
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />{pt("Add Task")}</Button>
           </div>
         </div>
@@ -314,6 +317,8 @@ const PlanningTasks = () => {
           </div>
         )}
       </div>
+
+      <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => { fetchData(); fetchCommentMeta(); }} />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
