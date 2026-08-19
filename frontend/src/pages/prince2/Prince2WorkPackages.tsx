@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import AiPlanButton from "@/components/AiPlanButton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -308,7 +309,10 @@ const Prince2WorkPackages = () => {
             <h1 className="text-2xl font-bold">{pt("Work Packages")}</h1>
             <Badge variant="outline">{visibleWorkPackages.length}{stageFilter ? ` / ${workPackages.length}` : ""}</Badge>
           </div>
-          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create")}</Button>
+          <div className="flex items-center gap-2">
+            <AiPlanButton projectId={id!} onApplied={() => fetchData()} />
+            <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Create")}</Button>
+          </div>
         </div>
 
         {stageFilter && (

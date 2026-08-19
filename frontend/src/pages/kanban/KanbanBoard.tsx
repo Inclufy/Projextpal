@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import AiPlanButton from "@/components/AiPlanButton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, Layout, ChevronLeft, ChevronRight, Ban, Clock, AlertTriangle, Zap, FileText } from "lucide-react";
 import { toast } from "sonner";
@@ -56,7 +57,10 @@ const KanbanBoard = () => {
   return (
     <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-4">
-        <div className="flex items-center gap-3"><Layout className="h-6 w-6 text-violet-500" /><h1 className="text-2xl font-bold">Kanban Board</h1></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3"><Layout className="h-6 w-6 text-violet-500" /><h1 className="text-2xl font-bold">Kanban Board</h1></div>
+          <AiPlanButton projectId={id!} onApplied={() => fetchData()} />
+        </div>
         {columns.length === 0 ? <Card className="p-8 text-center"><Layout className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No board configured yet</h3><p className="text-muted-foreground">Initialize from dashboard or configure columns</p></Card> : (
           <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: "400px" }}>
             {columns.map((col, ci) => {

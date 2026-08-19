@@ -103,6 +103,85 @@ class PlannerEngineTests(TestCase):
         self.assertEqual(Milestone.objects.get(project=p, name="Nieuw").order_index, 6)
 
 
+class MethodologyPlannerTests(TestCase):
+    """Methodiek-specifieke uitbreiding: fallback + apply per methodiek."""
+
+    def setUp(self):
+        self.company = Company.objects.create(name="Acme")
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username="pm2", email="pm2@acme.test", password="x",
+            company=self.company, role="pm",
+        )
+
+    def _plan(self, methodology):
+        p = _project(self.company, methodology=methodology)
+        result = plan_chat(p, self.user, [{"role": "user", "content": "Maak een plan"}])
+        return p, result["proposal"]
+
+    def test_scrum_fallback_and_apply(self):
+        p, proposal = self._plan("scrum")
+        self.assertEqual(proposal["methodology_plan"]["type"], "scrum")
+        created = apply_plan(p, self.user, proposal)
+        self.assertGreaterEqual(created["sprints"], 2)
+        self.assertGreaterEqual(created["backlog_items"], 3)
+        from scrum.models import BacklogItem, Sprint
+        self.assertTrue(Sprint.objects.filter(project=p, status="planning").exists())
+        # Item 1 is aan sprint 1 gekoppeld
+        eerste = Sprint.objects.filter(project=p).order_by("number").first()
+        self.assertTrue(BacklogItem.objects.filter(sprint=eerste).exists())
+
+    def test_kanban_fallback_and_apply_idempotent_columns(self):
+        p, proposal = self._plan("kanban")
+        created = apply_plan(p, self.user, proposal)
+        self.assertEqual(created["kanban_columns"], 5)
+        self.assertGreaterEqual(created["kanban_cards"], 2)
+        # Nogmaals toepassen: kolommen met dezelfde naam worden hergebruikt
+        created2 = apply_plan(p, self.user, proposal)
+        self.assertEqual(created2["kanban_columns"], 0)
+
+    def test_prince2_fallback_and_apply(self):
+        p, proposal = self._plan("prince2")
+        created = apply_plan(p, self.user, proposal)
+        self.assertEqual(created["work_packages"], 3)
+        self.assertEqual(created["products"], 3)
+        from prince2.models import Product
+        self.assertTrue(Product.objects.filter(project=p, work_package__isnull=False).exists())
+
+    def test_lss_green_fallback_and_apply(self):
+        p, proposal = self._plan("lean_six_sigma_green")
+        created = apply_plan(p, self.user, proposal)
+        self.assertEqual(created["dmaic_phases"], 5)
+        self.assertEqual(created["lss_tasks"], 5)
+        from lss_green.models import DMAICPhase, LSSGreenTask
+        self.assertEqual(DMAICPhase.objects.filter(project=p).count(), 5)
+        self.assertTrue(LSSGreenTask.objects.filter(project=p, phase__phase="control").exists())
+
+    def test_lss_black_uses_black_tasks(self):
+        p, proposal = self._plan("lean_six_sigma_black")
+        apply_plan(p, self.user, proposal)
+        from lss_black.models import LSSBlackTask
+        self.assertTrue(LSSBlackTask.objects.filter(project=p).exists())
+
+    def test_waterfall_fallback_and_apply(self):
+        p, proposal = self._plan("waterfall")
+        created = apply_plan(p, self.user, proposal)
+        self.assertEqual(created["waterfall_phases"], 5)
+        from waterfall.models import WaterfallPhase
+        self.assertTrue(WaterfallPhase.objects.filter(project=p, phase_type="testing").exists())
+
+    def test_hybrid_fallback_and_apply(self):
+        p, proposal = self._plan("hybrid")
+        created = apply_plan(p, self.user, proposal)
+        self.assertEqual(created["hybrid_phases"], 3)
+        from hybrid.models import PhaseMethodology
+        self.assertTrue(PhaseMethodology.objects.filter(project=p, methodology="scrum").exists())
+
+    def test_generic_methodology_has_no_extension(self):
+        p, proposal = self._plan("inclufy")
+        self.assertNotIn("methodology_plan", proposal)
+
+
 class PlannerApiTests(TestCase):
     def setUp(self):
         self.company = Company.objects.create(name="Acme")

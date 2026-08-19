@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import AiPlanButton from "@/components/AiPlanButton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -118,7 +119,10 @@ const ScrumBacklog = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><ListChecks className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Product Backlog")}</h1><Badge variant="outline">{items.length} items</Badge></div>
-          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button>
+          <div className="flex items-center gap-2">
+            <AiPlanButton projectId={id!} onApplied={() => fetchData()} />
+            <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button>
+          </div>
         </div>
 
         {/* Backlog items */}

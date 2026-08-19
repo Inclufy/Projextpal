@@ -20,7 +20,25 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 type PropTask = { title: string; description?: string; priority?: string; start_date?: string | null; due_date?: string | null; _include: boolean };
 type PropMilestone = { name: string; description?: string; start_date?: string | null; end_date?: string | null; tasks: PropTask[]; _include: boolean };
 type PropRisk = { name: string; description?: string; category?: string; impact?: string; probability?: number; level?: string; mitigation?: string; _include: boolean };
-type Proposal = { summary?: string; milestones: PropMilestone[]; risks: PropRisk[] };
+// Methodiek-specifieke artefacten (sprints, kolommen, werkpakketten, DMAIC-fasen, …):
+// generiek gerenderd — per groep een lijst met vinkje + bewerkbaar label.
+type MethodologyItem = Record<string, any> & { _include: boolean };
+type MethodologyPlan = { type: string; [group: string]: any };
+type Proposal = { summary?: string; milestones: PropMilestone[]; risks: PropRisk[]; methodology_plan?: MethodologyPlan | null };
+
+const METHOD_GROUP_LABELS: Record<string, string> = {
+  sprints: "Sprints",
+  backlog_items: "Backlog-items",
+  columns: "Kanban-kolommen",
+  cards: "Kanban-kaarten",
+  work_packages: "Werkpakketten",
+  products: "Producten",
+  phases: "Fasen",
+  lss_tasks: "DMAIC-taken",
+};
+
+const itemLabelKey = (item: Record<string, any>): string =>
+  "title" in item ? "title" : "name" in item ? "name" : "phase" in item ? "phase" : "title";
 
 const PRIORITIES: [string, string][] = [["low", "Low"], ["medium", "Medium"], ["high", "High"], ["urgent", "Urgent"]];
 
@@ -69,6 +87,12 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
       })),
     })),
     risks: (p?.risks || []).map((r: any) => ({ ...r, name: r?.name || "", _include: true })),
+    methodology_plan: p?.methodology_plan
+      ? Object.fromEntries(
+          Object.entries(p.methodology_plan).map(([k, v]) =>
+            Array.isArray(v) ? [k, v.map((it: any) => ({ ...it, _include: true }))] : [k, v]),
+        ) as MethodologyPlan
+      : null,
   });
 
   const send = async (text?: string) => {
@@ -118,6 +142,14 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
             })),
           })),
           risks: proposal.risks.filter((r) => r._include && r.name.trim()).map(({ _include, ...r }) => r),
+          methodology_plan: proposal.methodology_plan
+            ? Object.fromEntries(
+                Object.entries(proposal.methodology_plan).map(([k, v]) =>
+                  Array.isArray(v)
+                    ? [k, v.filter((it: MethodologyItem) => it._include).map(({ _include, ...it }: MethodologyItem) => it)]
+                    : [k, v]),
+              )
+            : undefined,
         },
       };
       const r = await fetch(`/api/v1/projects/${projectId}/ai-plan/apply/`, {
@@ -147,6 +179,15 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     }));
   const patchRisk = (ri: number, patch: Partial<PropRisk>) =>
     setProposal((p) => p && ({ ...p, risks: p.risks.map((r, i) => (i === ri ? { ...r, ...patch } : r)) }));
+  const patchMethodItem = (group: string, idx: number, patch: Record<string, any>) =>
+    setProposal((p) => p && p.methodology_plan && ({
+      ...p,
+      methodology_plan: {
+        ...p.methodology_plan,
+        [group]: (p.methodology_plan[group] as MethodologyItem[]).map((it, i) =>
+          i === idx ? { ...it, ...patch } : it),
+      },
+    }));
 
   const counts = includedCounts();
 
@@ -209,6 +250,30 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
                   </div>
                 </div>
               ))}
+              {proposal.methodology_plan && Object.entries(proposal.methodology_plan)
+                .filter(([k, v]) => k !== "type" && Array.isArray(v) && v.length > 0)
+                .map(([group, items]) => (
+                  <div key={group} className="space-y-1.5">
+                    <p className="text-xs font-bold uppercase tracking-wide text-indigo-500">
+                      {METHOD_GROUP_LABELS[group] || group}
+                    </p>
+                    {(items as MethodologyItem[]).map((it, idx) => {
+                      const lk = itemLabelKey(it);
+                      const sub = [it.goal, it.objective, it.methodology, it.item_type,
+                                   it.wip_limit != null ? `WIP ${it.wip_limit}` : null,
+                                   it.story_points != null ? `${it.story_points} pts` : null]
+                        .filter(Boolean).join(" · ");
+                      return (
+                        <div key={idx} className={`flex items-center gap-2 ${it._include ? "" : "opacity-50"}`}>
+                          <Checkbox checked={it._include} onCheckedChange={(v) => patchMethodItem(group, idx, { _include: !!v })} />
+                          <Input value={it[lk] || ""} onChange={(e) => patchMethodItem(group, idx, { [lk]: e.target.value })} className="h-8 text-sm" />
+                          {sub && <span className="text-xs text-muted-foreground shrink-0 max-w-40 truncate">{sub}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+
               {proposal.risks.length > 0 && (
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{pt("Risks")}</p>

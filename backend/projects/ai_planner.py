@@ -21,6 +21,8 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 
+from . import ai_planner_methodology as methodology_ext
+
 ANTHROPIC_MODEL = "claude-opus-5"
 OPENAI_MODEL = "gpt-4o-mini"
 
@@ -148,6 +150,7 @@ def _system_prompt(ctx: dict) -> str:
         "  }\n"
         "}\n\n"
         f"Projectcontext (feiten, niet verzinnen):\n{json.dumps(ctx, ensure_ascii=False)}"
+        + methodology_ext.prompt_extension(ctx.get("methodology") or "")
     )
 
 
@@ -174,11 +177,18 @@ def _parse_reply(raw: str) -> dict | None:
         return None
     if data["action"] == "propose" and not isinstance(data.get("proposal"), dict):
         return None
-    return {
+    result = {
         "action": data["action"],
         "message": str(data.get("message") or ""),
         "proposal": data.get("proposal") if data["action"] == "propose" else None,
     }
+    # Methodiek-uitbreiding: de AI mag "methodology_plan" naast of ín het
+    # voorstel plaatsen; normaliseer naar proposal.methodology_plan.
+    if result["proposal"] is not None:
+        mplan = data.get("methodology_plan") or result["proposal"].get("methodology_plan")
+        if isinstance(mplan, dict):
+            result["proposal"]["methodology_plan"] = mplan
+    return result
 
 
 def _chat_anthropic(company, system: str, messages: list) -> dict | None:
@@ -269,11 +279,15 @@ def _fallback_plan(project) -> dict:
          "category": "Strategic", "impact": "High", "probability": 35, "level": "Medium",
          "mitigation": "Wijzigingen via een kort change-proces laten lopen."},
     ]
-    return {
+    plan = {
         "summary": f"Standaard vierfasenplan voor “{project.name}” van {start.isoformat()} tot {end.isoformat()}.",
         "milestones": milestones,
         "risks": risks,
     }
+    mplan = methodology_ext.fallback_plan(project.methodology or "", start, end)
+    if mplan:
+        plan["methodology_plan"] = mplan
+    return plan
 
 
 def plan_chat(project, user, messages: list) -> dict:
@@ -392,5 +406,10 @@ def apply_plan(project, user, proposal: dict) -> dict:
             created_by=user,
         )
         created["risks"] += 1
+
+    # Methodiek-specifieke artefacten (sprints, kolommen, werkpakketten, …)
+    mplan = proposal.get("methodology_plan")
+    if isinstance(mplan, dict):
+        created.update(methodology_ext.apply_plan(project, user, mplan))
 
     return created

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import AiPlanButton from "@/components/AiPlanButton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -105,6 +106,7 @@ const LSSGreenPhases = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><Target className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("DMAIC Phases")}</h1><Badge variant="outline">{phases.length}</Badge></div>
+          <AiPlanButton projectId={id!} onApplied={() => { phasesQ.refetch(); tasksQ.refetch(); }} />
         </div>
 
         {phases.length === 0 ? <Card className="p-8 text-center"><Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No phases yet")}</h3></Card> : (

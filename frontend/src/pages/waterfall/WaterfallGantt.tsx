@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import AiPlanButton from "@/components/AiPlanButton";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ const WaterfallGantt = () => {
   if (loading) return (<div className="min-h-full bg-background"><ProjectHeader /><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div></div>);
   return (
     <div className="min-h-full bg-background"><ProjectHeader /><div className="p-6 space-y-6">
-      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><BarChart3 className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Gantt Chart")}</h1><Badge variant="outline">{tasks.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div>
+      <div className="flex items-center justify-between"><div className="flex items-center gap-3"><BarChart3 className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Gantt Chart")}</h1><Badge variant="outline">{tasks.length}</Badge></div><div className="flex items-center gap-2"><AiPlanButton projectId={id!} onApplied={() => fetchData()} /><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add")}</Button></div></div>
       {tasks.length === 0 ? <Card className="p-8 text-center"><BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">No Gantt tasks yet</h3></Card> : (
         <div className="space-y-2">{tasks.map(t => (<Card key={t.id}><CardContent className="p-4 flex items-center gap-4"><div className="flex-1"><div className="flex items-center gap-2 mb-1"><span className="font-medium">{t.name}</span><span className="text-xs text-muted-foreground">{t.start_date} → {t.end_date}</span></div><Progress value={t.progress || 0} className="h-2" /></div><span className="text-sm font-medium w-12 text-right">{t.progress || 0}%</span><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>))}</div>
       )}
