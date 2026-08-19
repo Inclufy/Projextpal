@@ -96,7 +96,8 @@ op de Studio is het canonieke recept (zie memory `project_hub_deploy_topology`).
 
 ## Post-deploy smoke-test (productie)
 
-1. `curl -s https://projextpal.inclufy.com/api/v1/health/` → 200.
+1. `curl -s https://projextpal.com/api/v1/health/` → 200 (LET OP: prod-domein is
+   `projextpal.com`, niet `*.inclufy.com` — ALLOWED_HOSTS wijst dat af met 400).
 2. Rooktest engine in de draaiende container (scrum-testproject, daarna opruimen):
    `plan_chat` → proposal bevat `methodology_plan.type == "scrum"`;
    `apply_plan` → sprints + backlog-items aangemaakt.
@@ -115,3 +116,21 @@ op de Studio is het canonieke recept (zie memory `project_hub_deploy_topology`).
 | Alleen planner kapot | feature is additief (aparte endpoints `/ai-plan/`); geen dataverlies-risico, apply maakt hooguit rijen aan die handmatig verwijderd kunnen worden |
 
 Geen migraties → rollback is alleen image-wissel, geen DB-actie.
+
+---
+
+## Uitvoering 2026-08-19 ✅
+
+| Stap | Resultaat |
+|---|---|
+| 1. tsc | 0 errors |
+| 2. Planner-suite (prod-image `6bea6bfa`) | 18/18 OK (1,4 s — geen echte AI-calls meer) |
+| 3. Regressie 7 methodiek-apps | 71/71 OK (met `SECURE_SSL_REDIRECT=0`) |
+| 4. makemigrations --check | No changes detected |
+| Deploy backend | `up -d backend` + nginx-restart; health 200 op projextpal.com |
+| Deploy web | ghcr `6bea6bfa…` → latest → `up -d frontend`; AiPlanDialog/AiPlanButton-chunks in image bevestigd |
+| Smoke engine (prod) | scrum-fallback → 3 sprints + 4 backlog-items aangemaakt én opgeruimd |
+| Smoke UI (prod) | Demo — Scrum (App Review Demo): knop → dialoog → AI-voorstel met SPRINTS- + BACKLOG-ITEMS-sectie; niet toegepast (demo-data ongemoeid) |
+
+Bekende cosmetische verbeterkans: de "Toepassen (N taken)"-teller telt alleen
+generieke taken, niet de methodiek-items.
