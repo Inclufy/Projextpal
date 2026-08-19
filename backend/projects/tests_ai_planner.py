@@ -9,8 +9,12 @@ deterministische sjabloonplan):
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
+
+# Poolkeys leeg → plan_chat degradeert gegarandeerd naar het deterministische
+# sjabloonplan, ook in een (prod-)container waar echte keys gezet zijn.
+no_llm_keys = override_settings(OPENAI_API_KEY="", ANTHROPIC_API_KEY="")
 
 from accounts.models import Company
 from projects.models import Project, Milestone, Task, Risk
@@ -25,6 +29,7 @@ def _project(company, **kw):
     return Project.objects.create(**defaults)
 
 
+@no_llm_keys
 class PlannerEngineTests(TestCase):
     def setUp(self):
         self.company = Company.objects.create(name="Acme")
@@ -103,6 +108,7 @@ class PlannerEngineTests(TestCase):
         self.assertEqual(Milestone.objects.get(project=p, name="Nieuw").order_index, 6)
 
 
+@no_llm_keys
 class MethodologyPlannerTests(TestCase):
     """Methodiek-specifieke uitbreiding: fallback + apply per methodiek."""
 
@@ -182,6 +188,7 @@ class MethodologyPlannerTests(TestCase):
         self.assertNotIn("methodology_plan", proposal)
 
 
+@no_llm_keys
 class PlannerApiTests(TestCase):
     def setUp(self):
         self.company = Company.objects.create(name="Acme")
@@ -198,7 +205,7 @@ class PlannerApiTests(TestCase):
         r = self.client.post(
             f"/api/v1/projects/{self.project.id}/ai-plan/",
             {"messages": [{"role": "user", "content": "Maak een conceptplanning"}]},
-            format="json",
+            format="json", secure=True,
         )
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data["action"], "propose")
@@ -208,7 +215,7 @@ class PlannerApiTests(TestCase):
         r = self.client.post(
             f"/api/v1/projects/{self.project.id}/ai-plan/apply/",
             {"proposal": {"milestones": [{"name": "Fase 1", "tasks": [{"title": "Taak A"}]}]}},
-            format="json",
+            format="json", secure=True,
         )
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data["created"]["milestones"], 1)
@@ -219,18 +226,18 @@ class PlannerApiTests(TestCase):
         other = Company.objects.create(name="Other")
         foreign = _project(other)
         r = self.client.post(
-            f"/api/v1/projects/{foreign.id}/ai-plan/", {"messages": []}, format="json",
+            f"/api/v1/projects/{foreign.id}/ai-plan/", {"messages": []}, format="json", secure=True,
         )
         self.assertEqual(r.status_code, 404)
 
     def test_apply_requires_proposal(self):
         r = self.client.post(
-            f"/api/v1/projects/{self.project.id}/ai-plan/apply/", {}, format="json",
+            f"/api/v1/projects/{self.project.id}/ai-plan/apply/", {}, format="json", secure=True,
         )
         self.assertEqual(r.status_code, 400)
 
     def test_anonymous_is_rejected(self):
         r = APIClient().post(
-            f"/api/v1/projects/{self.project.id}/ai-plan/", {"messages": []}, format="json",
+            f"/api/v1/projects/{self.project.id}/ai-plan/", {"messages": []}, format="json", secure=True,
         )
         self.assertIn(r.status_code, (401, 403))
