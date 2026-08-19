@@ -118,12 +118,19 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
   };
 
   const includedCounts = () => {
-    if (!proposal) return { milestones: 0, tasks: 0, risks: 0 };
+    if (!proposal) return { milestones: 0, tasks: 0, risks: 0, methodItems: 0 };
     const ms = proposal.milestones.filter((m) => m._include);
+    const mp = proposal.methodology_plan;
     return {
       milestones: ms.length,
       tasks: ms.reduce((n, m) => n + m.tasks.filter((t) => t._include && t.title.trim()).length, 0),
       risks: proposal.risks.filter((r) => r._include && r.name.trim()).length,
+      methodItems: mp
+        ? Object.values(mp).reduce<number>((n, v) =>
+            Array.isArray(v)
+              ? n + (v as MethodologyItem[]).filter((it) => it._include && String(it[itemLabelKey(it)] ?? "").trim()).length
+              : n, 0)
+        : 0,
     };
   };
 
@@ -158,7 +165,10 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { toast.error(d.detail || pt("Save failed")); return; }
       const c = d.created || {};
-      toast.success(`${pt("Plan applied")}: ${c.milestones ?? 0} ${pt("milestones")}, ${c.tasks ?? 0} ${pt("tasks")}, ${c.risks ?? 0} ${pt("risks")}`);
+      const methodCreated = Object.entries(c)
+        .filter(([k, v]) => !["milestones", "tasks", "risks", "skipped"].includes(k) && typeof v === "number")
+        .reduce((n, [, v]) => n + (v as number), 0);
+      toast.success(`${pt("Plan applied")}: ${c.milestones ?? 0} ${pt("milestones")}, ${c.tasks ?? 0} ${pt("tasks")}, ${c.risks ?? 0} ${pt("risks")}${methodCreated > 0 ? `, ${methodCreated} ${pt("method items")}` : ""}`);
       onApplied();
       onOpenChange(false);
       reset();
@@ -300,9 +310,9 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
             />
             <Button variant="outline" size="icon" onClick={() => send()} disabled={busy || !input.trim()}><Send className="h-4 w-4" /></Button>
             {proposal && (
-              <Button onClick={apply} disabled={applying || counts.milestones === 0} className="gap-2 shrink-0">
+              <Button onClick={apply} disabled={applying || (counts.milestones === 0 && counts.methodItems === 0)} className="gap-2 shrink-0">
                 {applying && <Loader2 className="h-4 w-4 animate-spin" />}
-                {pt("Apply")} ({counts.tasks} {pt("tasks")})
+                {pt("Apply")} ({counts.tasks} {pt("tasks")}{counts.methodItems > 0 ? ` + ${counts.methodItems} ${pt("method items")}` : ""})
               </Button>
             )}
           </div>

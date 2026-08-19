@@ -1620,6 +1620,7 @@ const translations: Record<string, Record<string, string>> = {
     "milestones": "mijlpalen",
     "tasks": "taken",
     "risks": "risico's",
+    "method items": "methodiek-items",
     "Clear": "Wissen",
     "Copy": "Kopiëren",
     "Move": "Verplaatsen",

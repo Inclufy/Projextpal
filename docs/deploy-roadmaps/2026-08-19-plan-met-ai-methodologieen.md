@@ -132,5 +132,8 @@ Geen migraties → rollback is alleen image-wissel, geen DB-actie.
 | Smoke engine (prod) | scrum-fallback → 3 sprints + 4 backlog-items aangemaakt én opgeruimd |
 | Smoke UI (prod) | Demo — Scrum (App Review Demo): knop → dialoog → AI-voorstel met SPRINTS- + BACKLOG-ITEMS-sectie; niet toegepast (demo-data ongemoeid) |
 
-Bekende cosmetische verbeterkans: de "Toepassen (N taken)"-teller telt alleen
-generieke taken, niet de methodiek-items.
+~~Bekende cosmetische verbeterkans: de "Toepassen (N taken)"-teller telt alleen
+generieke taken, niet de methodiek-items.~~ **Opgelost in follow-up** (frontend-only):
+teller toont nu "N taken + M methodiek-items", de succes-toast telt de aangemaakte
+methodiek-rijen mee, en Toepassen blijft bruikbaar als een voorstel alleen
+methodiek-items bevat. Teststraat: tsc + web-deploy + UI-smoke (geen backend-wijziging).
