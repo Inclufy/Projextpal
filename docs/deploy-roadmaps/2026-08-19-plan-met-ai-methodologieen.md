@@ -60,11 +60,16 @@ methodiek (7 methodologieën + inclufy-zonder-extensie), API (auth/tenant/thrott
 
 ### 3. Regressie aangrenzende apps (zelfde image)
 ```bash
-docker compose -f docker-compose.production.yml run --rm --no-deps backend \
-  python manage.py test scrum kanban prince2 waterfall lss_green lss_black hybrid --parallel 2>&1 | tail -3
+docker compose -f docker-compose.production.yml run --rm --no-deps \
+  -e SECURE_SSL_REDIRECT=0 backend \
+  python manage.py test scrum kanban prince2 waterfall lss_green lss_black hybrid 2>&1 | tail -3
 ```
 **Pass-criterium**: geen nieuwe failures t.o.v. baseline (de planner schrijft
 alleen via bestaande model-API's; deze suite bewaakt dat niets stukgemaakt is).
+
+> `-e SECURE_SSL_REDIRECT=0` is nodig: deze oudere suites posten zonder
+> `secure=True` en zien anders alleen 301-redirects (prod-settings). De
+> planner-suite (stap 2) draait bewust WEL met redirect aan.
 
 ### 4. Migratie-check
 ```bash
