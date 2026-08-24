@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Inbox, AlertTriangle, CalendarDays, CalendarRange, Clock, CircleDashed, AtSign, RefreshCw, FolderKanban } from "lucide-react";
+import { Loader2, Inbox, AlertTriangle, CalendarDays, CalendarRange, Clock, CircleDashed, AtSign, RefreshCw, FolderKanban, UserPlus } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 
-interface T { id: number; title: string; due_date: string | null; priority: string; status: string; project_id: number; project_name: string; methodology?: string; url: string }
+interface T { id: number; title: string; due_date: string | null; priority: string; status: string; project_id: number; project_name: string; methodology?: string; url: string; delegated_to?: string | null }
 interface Mention { id: number; body: string; author?: string; project_name?: string; where?: string; url: string; created_at: string }
-interface Data { buckets: Record<string, T[]>; counts: Record<string, number>; mentions: Mention[] }
+interface Data { buckets: Record<string, T[]>; counts: Record<string, number>; mentions: Mention[]; delegated?: T[] }
 
 const PRIO: Record<string, string> = { urgent: "bg-red-100 text-red-700", high: "bg-amber-100 text-amber-700", medium: "bg-blue-100 text-blue-700", low: "bg-gray-100 text-gray-600" };
 const BUCKETS: { key: string; label: string; icon: any; tone: string }[] = [
@@ -91,8 +91,25 @@ export default function MyWork() {
           )}
         </div>
 
-        {/* Mentions */}
-        <div>
+        {/* Mentions + door mij gedelegeerd */}
+        <div className="space-y-5">
+          {(data?.delegated || []).length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-sm font-semibold text-indigo-700"><UserPlus className="h-4 w-4" />{pt("Delegated by me")} <span className="text-muted-foreground font-normal">· {data!.delegated!.length}</span></div>
+              <Card className="divide-y">
+                {data!.delegated!.map((t) => (
+                  <button key={t.id} onClick={() => navigate(t.url)} className="w-full text-left px-4 py-2.5 hover:bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-1 min-w-0 truncate text-sm">{t.title}</span>
+                      {t.due_date && <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">{t.due_date}</span>}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{t.delegated_to ? `→ ${t.delegated_to} · ` : ""}{t.project_name}</div>
+                  </button>
+                ))}
+              </Card>
+            </div>
+          )}
+          <div>
           <div className="flex items-center gap-2 mb-2 text-sm font-semibold text-purple-700"><AtSign className="h-4 w-4" />{pt("You were mentioned")}</div>
           {(data?.mentions || []).length === 0 ? (
             <Card className="p-5 text-sm text-muted-foreground text-center">{pt("No recent mentions.")}</Card>
@@ -106,6 +123,7 @@ export default function MyWork() {
               ))}
             </Card>
           )}
+          </div>
         </div>
       </div>
     </div>

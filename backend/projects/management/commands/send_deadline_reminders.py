@@ -70,6 +70,7 @@ class Command(BaseCommand):
             tasks = [
                 t for t in Task.objects.filter(milestone__project=project)
                 .exclude(status="done").select_related("assigned_to", "milestone")
+                .prefetch_related("assignees")
                 if in_window(t.due_date)
             ]
             milestones = [
@@ -81,10 +82,15 @@ class Command(BaseCommand):
             if not (tasks or milestones or events):
                 continue
 
-            # Task owners → their own-tasks bucket.
+            # Task owners → their own-tasks bucket. Alle assignees tellen mee
+            # (multi-assignee); de set ontdubbelt primaire eigenaar + co's.
             for t in tasks:
-                if t.assigned_to and getattr(t.assigned_to, "email", None):
-                    agg[t.assigned_to]["own"].append((project, t))
+                owners = set(t.assignees.all())
+                if t.assigned_to:
+                    owners.add(t.assigned_to)
+                for owner in owners:
+                    if getattr(owner, "email", None):
+                        agg[owner]["own"].append((project, t))
 
             # PM-role team members + the project creator → managed-project bucket.
             managers = {}

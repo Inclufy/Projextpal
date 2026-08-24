@@ -1471,9 +1471,10 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         "milestone__project",
         "milestone__project__company",
         "assigned_to",
+        "delegated_by",
         "work_package",
         "product",
-    )
+    ).prefetch_related("assignees")
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [ModifiedSinceFilterBackend]
@@ -1481,7 +1482,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [IsAuthenticated()]
-        if self.action in ["create", "update", "partial_update", "bulk_update", "import_tasks"]:
+        if self.action in ["create", "update", "partial_update", "bulk_update", "import_tasks", "delegate"]:
             return [IsAuthenticated(), IsAdminOrPMOrContributor()]
         return [IsAuthenticated(), IsAdminOrPM()]
 
@@ -1521,6 +1522,70 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         except Exception:
             pass
         return Response({"ok": True, "updated": n})
+
+    @action(detail=True, methods=["post"], url_path="delegate",
+            permission_classes=[IsAuthenticated])
+    def delegate(self, request, pk=None):
+        """Draag de taak over aan een ander teamlid (delegatie met spoor).
+
+        Body: {user_id: <id>, note?: str}. Effect: de ontvanger wordt de
+        primaire eigenaar (en assignee); de delegeerder wordt vastgelegd als
+        delegated_by, verdwijnt uit assignees, komt in raci_informed (blijft
+        updates zien) en krijgt een melding zodra de taak op done gaat.
+        """
+        from django.contrib.auth import get_user_model
+
+        task = self.get_object()
+        if task.status == "done":
+            return Response({"detail": "Taak is al afgerond."}, status=400)
+
+        target_id = request.data.get("user_id")
+        if not target_id:
+            return Response({"detail": "user_id required"}, status=400)
+        User = get_user_model()
+        target = User.objects.filter(
+            pk=target_id, company=request.user.company, is_active=True
+        ).first()
+        if not target:
+            return Response({"detail": "Onbekend teamlid."}, status=400)
+        if target.pk == request.user.pk:
+            return Response({"detail": "Je kunt niet aan jezelf delegeren."}, status=400)
+
+        note = str(request.data.get("note") or "").strip()[:2000]
+        task.delegated_by = request.user
+        task.delegated_at = timezone.now()
+        task.delegation_note = note
+        task.assigned_to = target
+        # De algemene "toegewezen"-mail overslaan: de ontvanger krijgt de
+        # rijkere delegatie-melding hieronder.
+        task._skip_assign_notify = True
+        task.save()
+        task.assignees.remove(request.user.pk)
+        task.assignees.add(target.pk)
+        task.raci_informed.add(request.user.pk)
+
+        try:
+            from notifications.models import notify
+            who = request.user.first_name or request.user.email
+            body = f"{who} heeft de taak “{task.title}” aan je gedelegeerd."
+            if note:
+                body += f" Notitie: {note}"
+            notify(
+                target, kind="task_delegated",
+                title=f"Taak gedelegeerd: {task.title}",
+                body=body,
+                url=f"/projects/{task.milestone.project_id}/planning/tasks",
+            )
+        except Exception:
+            pass
+        try:
+            from accounts.models import audit
+            audit(request.user, "task.delegate",
+                  summary=f"Delegated task “{task.title}” to {target.email}",
+                  target_type="task", request=request, task_id=task.id)
+        except Exception:
+            pass
+        return Response(self.get_serializer(task).data)
 
     @action(detail=False, methods=["post"], url_path="import")
     def import_tasks(self, request):

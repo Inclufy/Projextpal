@@ -10,6 +10,8 @@ from django.db import models
 class Notification(models.Model):
     KIND_CHOICES = [
         ("task_assigned", "Task assigned"),
+        ("task_delegated", "Task delegated"),
+        ("task_delegated_done", "Delegated task completed"),
         ("action_assigned", "Action assigned"),
         ("mention", "Mention"),
         ("message", "Message"),
@@ -54,6 +56,8 @@ class Notification(models.Model):
 NOTIF_CATEGORIES = ["task_assigned", "mention", "message", "approval", "deadline", "status_digest", "programme_update"]
 _KIND_TO_CATEGORY = {
     "task_assigned": "task_assigned",
+    "task_delegated": "task_assigned",
+    "task_delegated_done": "task_assigned",
     "action_assigned": "task_assigned",
     "mention": "mention",
     "message": "message",

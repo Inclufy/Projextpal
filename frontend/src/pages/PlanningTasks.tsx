@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ReportExportMenu } from "@/components/ReportExportMenu";
-import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, GanttChartSquare, MessageSquare, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ListTodo, CalendarRange, Package, Boxes, ClipboardCheck, Users, CircleDot, Info, GanttChartSquare, MessageSquare, Sparkles, UserPlus, ChevronDown } from "lucide-react";
 import AiPlanDialog from "@/components/AiPlanDialog";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +22,7 @@ import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "To Do"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
 const PRIORITIES: [string, string][] = [["low", "Low"], ["medium", "Medium"], ["high", "High"], ["urgent", "Urgent"]];
-const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "", assigned_to: "", work_package: "" };
+const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "", assignees: [] as string[], work_package: "" };
 
 const PlanningTasks = () => {
   const { pt } = usePageTranslations();
@@ -75,7 +77,10 @@ const PlanningTasks = () => {
   const openCreate = () => { setEditing(null); setForm({ ...emptyForm, milestone: milestones[0] ? String(milestones[0].id) : "" }); setDialogOpen(true); };
   const openEdit = (t: any) => {
     setEditing(t);
-    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "", assigned_to: t.assigned_to ? String(t.assigned_to) : "", work_package: t.work_package ? String(t.work_package) : "" });
+    const assigneeIds: string[] = Array.isArray(t.assignees) && t.assignees.length
+      ? t.assignees.map(String)
+      : (t.assigned_to ? [String(t.assigned_to)] : []);
+    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "", assignees: assigneeIds, work_package: t.work_package ? String(t.work_package) : "" });
     setDialogOpen(true);
   };
 
@@ -88,7 +93,7 @@ const PlanningTasks = () => {
         status: form.status, priority: form.priority, progress: parseInt(form.progress || "0", 10) || 0,
       };
       if (form.due_date) body.due_date = form.due_date;
-      body.assigned_to = form.assigned_to ? Number(form.assigned_to) : null;
+      body.assignees = form.assignees.map(Number);
       body.work_package = form.work_package ? Number(form.work_package) : null;
       const url = editing ? `/api/v1/projects/tasks/${editing.id}/` : `/api/v1/projects/tasks/`;
       const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) });
@@ -118,6 +123,32 @@ const PlanningTasks = () => {
     else toast.error(pt("Save failed"));
   };
 
+  // Multi-assignee weergave: alle namen; valt terug op de primaire eigenaar.
+  const ownerNames = (t: any): string =>
+    Array.isArray(t.assignee_names) && t.assignee_names.length
+      ? t.assignee_names.map((a: any) => a.name).join(", ")
+      : (t.assigned_to_name || "");
+
+  // Delegeren: mini-dialoog (persoon + notitie) → POST /tasks/{id}/delegate/.
+  const [delegateTask, setDelegateTask] = useState<any>(null);
+  const [delegateUser, setDelegateUser] = useState("");
+  const [delegateNote, setDelegateNote] = useState("");
+  const [delegating, setDelegating] = useState(false);
+  const openDelegate = (t: any) => { setDelegateTask(t); setDelegateUser(""); setDelegateNote(""); };
+  const handleDelegate = async () => {
+    if (!delegateTask || !delegateUser) { toast.error(pt("Pick a team member first")); return; }
+    setDelegating(true);
+    try {
+      const r = await fetch(`/api/v1/projects/tasks/${delegateTask.id}/delegate/`, {
+        method: "POST", headers: jsonHeaders,
+        body: JSON.stringify({ user_id: Number(delegateUser), note: delegateNote }),
+      });
+      if (r.ok) { toast.success(pt("Task delegated")); setDelegateTask(null); fetchData(); }
+      else { const d = await r.json().catch(() => ({})); toast.error(d.detail || pt("Save failed")); }
+    } catch { toast.error(pt("Save failed")); }
+    finally { setDelegating(false); }
+  };
+
   const statusColor = (s: string) => ({ todo: "bg-gray-100 text-gray-600", in_progress: "bg-blue-100 text-blue-700", done: "bg-green-100 text-green-700", blocked: "bg-red-100 text-red-700" }[s] || "bg-gray-100");
   const prioColor = (p: string) => ({ low: "bg-gray-100 text-gray-600", medium: "bg-blue-100 text-blue-700", high: "bg-amber-100 text-amber-700", urgent: "bg-red-100 text-red-700" }[p] || "bg-gray-100");
   const typeColor = (ty: string) => ({ Meeting: "bg-purple-100 text-purple-700", Deliverable: "bg-teal-100 text-teal-700", "Work Package": "bg-sky-100 text-sky-700", General: "bg-gray-100 text-gray-600" }[ty] || "bg-gray-100 text-gray-600");
@@ -140,7 +171,7 @@ const PlanningTasks = () => {
   };
   const q = search.trim().toLowerCase();
   const visibleTasks = q
-    ? tasks.filter((t) => (`${t.title} ${t.category || ""} ${t.assigned_to_name || ""}`).toLowerCase().includes(q))
+    ? tasks.filter((t) => (`${t.title} ${t.category || ""} ${ownerNames(t)}`).toLowerCase().includes(q))
     : tasks;
   const groups: [string, any[]][] = (() => {
     const map: Record<string, any[]> = {};
@@ -263,7 +294,10 @@ const PlanningTasks = () => {
                             {groupBy !== "type" && <td className="px-3 py-2.5"><Badge className={`text-[10px] font-normal inline-flex items-center gap-1 ${typeColor(ty)}`}>{typeIcon(ty)}{pt(ty)}</Badge></td>}
                             {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" className="text-[10px] font-normal cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{stage}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
-                            {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">{t.assigned_to_name || <span className="italic">{pt("Unassigned")}</span>}</td>}
+                            {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">
+                              {ownerNames(t) || <span className="italic">{pt("Unassigned")}</span>}
+                              {t.delegated_by_name && <span className="ml-1 text-[10px] bg-indigo-100 text-indigo-700 rounded px-1" title={t.delegation_note || undefined}>{pt("delegated by")} {t.delegated_by_name}</span>}
+                            </td>}
                             <td className={`px-3 py-2.5 whitespace-nowrap ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                               {effDue || "—"}
                               {t.revised_due_date && (
@@ -302,6 +336,7 @@ const PlanningTasks = () => {
                             <td className="px-2 py-2.5">
                               <div className="flex gap-0.5">
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                {t.status !== "done" && <Button variant="ghost" size="icon" className="h-7 w-7" title={pt("Delegate")} onClick={() => openDelegate(t)}><UserPlus className="h-3.5 w-3.5 text-indigo-600" /></Button>}
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(t.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                               </div>
                             </td>
@@ -320,6 +355,33 @@ const PlanningTasks = () => {
 
       <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => { fetchData(); fetchCommentMeta(); }} />
 
+      <Dialog open={!!delegateTask} onOpenChange={(o) => { if (!o) setDelegateTask(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><UserPlus className="h-4 w-4 text-indigo-600" />{pt("Delegate task")}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground truncate">{delegateTask?.title}</p>
+            <div className="space-y-2"><Label>{pt("Delegate to")}</Label>
+              <Select value={delegateUser || "none"} onValueChange={(v) => setDelegateUser(v === "none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder={pt("Pick a team member")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{pt("Pick a team member")}</SelectItem>
+                  {members.filter((u) => String(u.id) !== String(user?.id ?? "")).map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.name || u.email}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><Label>{pt("Note (optional)")}</Label>
+              <Input value={delegateNote} onChange={(e) => setDelegateNote(e.target.value)} placeholder={pt("e.g. please pick this up this week")} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDelegateTask(null)}>{pt("Cancel")}</Button>
+              <Button onClick={handleDelegate} disabled={delegating || !delegateUser} className="gap-2">
+                {delegating && <Loader2 className="h-4 w-4 animate-spin" />}{pt("Delegate")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? pt("Edit Task") : pt("Add Task")}</DialogTitle></DialogHeader>
@@ -332,14 +394,37 @@ const PlanningTasks = () => {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2"><Label>{pt("Assignee")}</Label>
-                <Select value={form.assigned_to || "none"} onValueChange={(v) => setForm({ ...form, assigned_to: v === "none" ? "" : v })}>
-                  <SelectTrigger><SelectValue placeholder={pt("Unassigned")} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{pt("Unassigned")}</SelectItem>
-                    {members.map((u) => <SelectItem key={u.id} value={String(u.id)}>{u.name || u.email}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-2"><Label>{pt("Assignees")}</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between font-normal">
+                      <span className="truncate">
+                        {form.assignees.length
+                          ? members.filter((u) => form.assignees.includes(String(u.id))).map((u) => u.name || u.email).join(", ")
+                          : pt("Unassigned")}
+                      </span>
+                      <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2 max-h-64 overflow-y-auto" align="start">
+                    {members.map((u) => {
+                      const sid = String(u.id);
+                      const checked = form.assignees.includes(sid);
+                      return (
+                        <label key={u.id} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(c) => setForm({
+                              ...form,
+                              assignees: c ? [...form.assignees, sid] : form.assignees.filter((x) => x !== sid),
+                            })}
+                          />
+                          <span className="truncate">{u.name || u.email}</span>
+                        </label>
+                      );
+                    })}
+                  </PopoverContent>
+                </Popover>
               </div>
               {workPackages.length > 0 && (
                 <div className="space-y-2"><Label>{pt("Work Package")}</Label>

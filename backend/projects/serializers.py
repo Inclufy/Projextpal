@@ -44,6 +44,14 @@ class TaskSerializer(serializers.ModelSerializer):
     assigned_to_email = serializers.ReadOnlyField(source="assigned_to.email")
     assigned_to_name = serializers.SerializerMethodField()
     assigned_to_role = serializers.ReadOnlyField(source="assigned_to.role")
+    # Multi-assignee: `assignees` is leidend wanneer meegestuurd (assigned_to
+    # wordt dan de eerste van de lijst); stuurt een legacy-client alleen
+    # assigned_to, dan wordt die aan assignees toegevoegd zonder te wissen.
+    assignees = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=User.objects.all(), required=False
+    )
+    assignee_names = serializers.SerializerMethodField()
+    delegated_by_name = serializers.SerializerMethodField()
     raci_responsible_email = serializers.ReadOnlyField(source="raci_responsible.email")
     raci_accountable_email = serializers.ReadOnlyField(source="raci_accountable.email")
     raci_consulted_ids = serializers.PrimaryKeyRelatedField(
@@ -80,6 +88,12 @@ class TaskSerializer(serializers.ModelSerializer):
             "assigned_to_email",
             "assigned_to_name",
             "assigned_to_role",
+            "assignees",
+            "assignee_names",
+            "delegated_by",
+            "delegated_by_name",
+            "delegated_at",
+            "delegation_note",
             "start_date",
             "due_date",
             "revised_due_date",
@@ -102,7 +116,11 @@ class TaskSerializer(serializers.ModelSerializer):
             "updated_at",
             "project_id",
         ]
-        read_only_fields = ["created_at", "updated_at", "project_id"]
+        read_only_fields = [
+            "created_at", "updated_at", "project_id",
+            # Delegatiespoor wordt uitsluitend via de delegate-actie gezet.
+            "delegated_by", "delegated_at", "delegation_note",
+        ]
 
     def get_depends_on_titles(self, obj):
         return [{"id": t.id, "title": t.title, "status": t.status} for t in obj.depends_on.all()]
@@ -112,6 +130,48 @@ class TaskSerializer(serializers.ModelSerializer):
         if not user:
             return None
         return getattr(user, "first_name", None) or getattr(user, "email", None)
+
+    @staticmethod
+    def _display_name(user):
+        return getattr(user, "first_name", None) or getattr(user, "email", None)
+
+    def get_assignee_names(self, obj):
+        return [
+            {"id": u.id, "name": self._display_name(u)}
+            for u in obj.assignees.all()
+        ]
+
+    def get_delegated_by_name(self, obj):
+        user = getattr(obj, "delegated_by", None)
+        return self._display_name(user) if user else None
+
+    # ------------------------------------------------------------------
+    # Multi-assignee ↔ assigned_to synchronisatie
+    # ------------------------------------------------------------------
+    def _sync_assignment(self, instance, assignees, assignees_given):
+        """Houd assigned_to (primaire eigenaar) en assignees consistent.
+
+        - assignees meegestuurd → leidend: M2M wordt die lijst; assigned_to
+          blijft staan als hij in de lijst zit, anders wordt hij de eerste
+          van de lijst (of None bij een lege lijst).
+        - alleen assigned_to meegestuurd (legacy-client) → toevoegen aan
+          assignees zonder bestaande co-assignees te wissen.
+        """
+        if assignees_given:
+            instance.assignees.set(assignees)
+            current_ids = {u.pk for u in assignees}
+            if instance.assigned_to_id not in current_ids:
+                instance.assigned_to = assignees[0] if assignees else None
+                instance.save(update_fields=["assigned_to"])
+        elif instance.assigned_to_id:
+            instance.assignees.add(instance.assigned_to_id)
+
+    def create(self, validated_data):
+        assignees_given = "assignees" in validated_data
+        assignees = validated_data.pop("assignees", [])
+        instance = super().create(validated_data)
+        self._sync_assignment(instance, assignees, assignees_given)
+        return instance
 
     def get_subtasks(self, obj):
         return [
@@ -144,6 +204,9 @@ class TaskSerializer(serializers.ModelSerializer):
         from datetime import date as _date
         from .models import TaskDueDateChangeRequest
 
+        assignees_given = "assignees" in validated_data
+        assignees = validated_data.pop("assignees", [])
+
         new_due = validated_data.get("due_date", instance.due_date)
         if new_due and instance.due_date and new_due != instance.due_date:
             delta = (new_due - instance.due_date).days
@@ -169,12 +232,16 @@ class TaskSerializer(serializers.ModelSerializer):
                     # Strip the due_date from validated_data so the parent
                     # update() doesn't apply it.
                     validated_data.pop("due_date", None)
-                    return super().update(instance, validated_data)
+                    instance = super().update(instance, validated_data)
+                    self._sync_assignment(instance, assignees, assignees_given)
+                    return instance
                 # Within policy: 1st push-back, <=14 days. Record revision.
                 validated_data["revised_due_date"] = new_due
                 validated_data["revision_count"] = instance.revision_count + 1
                 validated_data.pop("due_date", None)
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        self._sync_assignment(instance, assignees, assignees_given)
+        return instance
 
 
 class TaskDueDateChangeRequestSerializer(serializers.ModelSerializer):

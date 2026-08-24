@@ -78,11 +78,15 @@ def my_work(request):
     today = timezone.now().date()
     week_end = today + timedelta(days=7)
 
+    from django.db.models import Q
+
     tasks = list(
-        Task.objects.filter(milestone__project_id__in=ids, assigned_to=user)
+        Task.objects.filter(milestone__project_id__in=ids)
+        .filter(Q(assigned_to=user) | Q(assignees=user))
         .exclude(status="done")
         .select_related("milestone", "milestone__project")
         .order_by("due_date")
+        .distinct()
     )
 
     buckets = {"overdue": [], "today": [], "this_week": [], "later": [], "no_date": []}
@@ -154,11 +158,33 @@ def my_work(request):
     except Exception:
         pass
 
+    # Door mij gedelegeerde taken die nog openstaan — zo houd je zicht op
+    # wat je hebt uitgezet (delegatie optie A).
+    delegated = []
+    try:
+        dq = (
+            Task.objects.filter(milestone__project_id__in=ids, delegated_by=user)
+            .exclude(status="done")
+            .exclude(assigned_to=user)
+            .select_related("milestone", "milestone__project", "assigned_to")
+            .order_by("due_date")
+        )
+        for t in dq:
+            item = _ser_task(t)
+            item["delegated_to"] = (
+                getattr(t.assigned_to, "first_name", None)
+                or getattr(t.assigned_to, "email", None)
+            ) if t.assigned_to else None
+            delegated.append(item)
+    except Exception:
+        pass
+
     overdue_n = len(buckets["overdue"])
     open_n = sum(len(v) for v in buckets.values())
     return Response({
         "buckets": buckets,
-        "counts": {"open": open_n, "overdue": overdue_n, "today": len(buckets["today"]), "mentions": len(mentions)},
+        "counts": {"open": open_n, "overdue": overdue_n, "today": len(buckets["today"]), "mentions": len(mentions), "delegated": len(delegated)},
         "mentions": mentions,
+        "delegated": delegated,
         "generated_at": timezone.now().isoformat(),
     })

@@ -268,6 +268,28 @@ class Task(models.Model):
         blank=True,
         related_name="tasks",
     )
+    # Multi-assignee: een taak kan aan meerdere teamleden tegelijk toegewezen
+    # zijn. `assigned_to` blijft de primaire eigenaar zodat bestaande queries,
+    # rapportages en clients blijven werken; de serializer houdt beide in sync
+    # (assignees is leidend als het meegestuurd wordt).
+    assignees = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="tasks_assigned",
+    )
+    # Delegatie (optie A — overdragen met spoor): wie de taak heeft
+    # overgedragen, wanneer, en met welke notitie. De delegeerder komt bij
+    # het delegeren in raci_informed en krijgt een melding als de taak op
+    # done gaat. Gezet via de delegate-actie, niet rechtstreeks schrijfbaar.
+    delegated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks_delegated",
+    )
+    delegated_at = models.DateTimeField(null=True, blank=True)
+    delegation_note = models.TextField(blank=True, default="")
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
     revised_due_date = models.DateField(null=True, blank=True)
