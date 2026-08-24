@@ -78,3 +78,38 @@ Migraties zijn additief (nieuwe tabel + 3 nullable kolommen + choices-state).
 Rollback: vorige image-tag terugzetten; migraties kunnen blijven staan (oude
 code negeert de nieuwe kolommen). Volledige terugdraai: `migrate projects 0032`
 + `migrate notifications 0003` (verwijdert alleen de nieuwe structuren).
+
+---
+
+## Uitvoering 2026-08-24 ✅ (met infra-incident)
+
+| Stap | Resultaat |
+|---|---|
+| tsc | 0 errors |
+| Feature-suites (image `8db103f6`) | 31/31 OK — eerste run ving 2 echte bugs (dubbele toewijzings-mail; Mijn werk miste co-assignees buiten het projectteam), gefixt in `8db103f6` |
+| Regressie projects+notifications | 54/54 OK |
+| makemigrations --check | schoon |
+| pg_dump-backup | `~/backups-projextpal-20260824-150227.sql.gz` (geverifieerd) |
+| Migraties | projects.0033 + notifications.0004 toegepast |
+| Deploy | backend `8db103f6` + web `ba9a02d5` live; smoke (serializer + UI) geslaagd |
+
+**INCIDENT tijdens deploy — iCloud-map wedged → compose kapot → prod ~35 min down:**
+`~/Desktop/ProjextPal` gaf permanent "Interrupted system call" (iCloud file
+provider). Gevolgen: elke `docker compose`-aanroep hing (cron-jobs stapelden
+al 3 dagen!), nginx (config-bind uit die map) kon na een restart niet meer
+starten, en uiteindelijk wedgede de Docker-daemon. Herstel (user-akkoord):
+Docker Desktop-herstart + **compose-loze werkelijkheid**:
+- nginx = **`projextpal-nginx-prod2`**, config uit
+  `/Users/sami/deploys/projextpal-runtime/nginx/conf.d/` (kopie uit de repo).
+- backend/frontend handmatig hercreëerd met `docker run` (netwerk-aliassen
+  `backend`/`frontend`, restart unless-stopped); env-file:
+  `/Users/sami/deploys/projextpal-runtime/backend.env`.
+- Oude containers (`projextpal-nginx-prod`, `-backend-prod-old`,
+  `-frontend-prod-old`) staan op `--restart=no` als rollback.
+- Crons omgezet van `compose exec` naar `docker exec` (backup:
+  `/Users/sami/crontab-backup-20260824.txt`).
+
+**Open follow-ups**: ProjextPal-runtime definitief uit iCloud halen (map naar
+`/Users/sami/deploys/` verplaatsen) en de containers weer onder compose-beheer
+brengen vanaf dat pad; LaunchAgent/bron van `publish_integration_outbound`
+nalopen (hing 3 dagen, geen crontab-regel).
