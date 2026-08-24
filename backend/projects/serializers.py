@@ -158,11 +158,14 @@ class TaskSerializer(serializers.ModelSerializer):
           assignees zonder bestaande co-assignees te wissen.
         """
         if assignees_given:
-            instance.assignees.set(assignees)
+            # Eerst de primaire eigenaar zetten, dán de M2M: het m2m-signaal
+            # sluit assigned_to uit, dus deze volgorde voorkomt dubbele
+            # "toegewezen"-notificaties aan de primaire eigenaar.
             current_ids = {u.pk for u in assignees}
             if instance.assigned_to_id not in current_ids:
                 instance.assigned_to = assignees[0] if assignees else None
                 instance.save(update_fields=["assigned_to"])
+            instance.assignees.set(assignees)
         elif instance.assigned_to_id:
             instance.assignees.add(instance.assigned_to_id)
 

@@ -80,8 +80,11 @@ def my_work(request):
 
     from django.db.models import Q
 
+    # Eigen taken zijn altijd zichtbaar binnen je eigen bedrijf — de UI laat
+    # bedrijfsbreed toewijzen, dus formeel projectteamlidmaatschap is geen
+    # voorwaarde. De company blijft de harde tenant-grens.
     tasks = list(
-        Task.objects.filter(milestone__project_id__in=ids)
+        Task.objects.filter(milestone__project__company=user.company)
         .filter(Q(assigned_to=user) | Q(assignees=user))
         .exclude(status="done")
         .select_related("milestone", "milestone__project")
@@ -163,7 +166,7 @@ def my_work(request):
     delegated = []
     try:
         dq = (
-            Task.objects.filter(milestone__project_id__in=ids, delegated_by=user)
+            Task.objects.filter(milestone__project__company=user.company, delegated_by=user)
             .exclude(status="done")
             .exclude(assigned_to=user)
             .select_related("milestone", "milestone__project", "assigned_to")
