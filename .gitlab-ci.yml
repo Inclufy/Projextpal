@@ -110,6 +110,7 @@ build:frontend:
       -f frontend/Dockerfile.prod
       --build-arg VITE_SENTRY_DSN="$VITE_SENTRY_DSN"
       --build-arg VITE_APP_VERSION="$CI_COMMIT_SHA"
+      --build-arg SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN"
       -t $CI_REGISTRY_IMAGE/frontend:latest
       -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
       ./frontend
