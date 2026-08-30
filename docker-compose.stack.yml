@@ -1,0 +1,184 @@
+# ProjeXtPal, één omgeving. Dit bestand draait drie keer, met een eigen
+# ENV_NAME per keer:
+#
+#   productie  op Hetzner    (amd64, eigen certificaten via Caddy)
+#   staging    op de Studio  (dezelfde amd64-images, achter de Cloudflare-tunnel)
+#   test       op de Studio  (idem)
+#
+# De projectnaam scheidt de volumes, ENV_NAME scheidt de containernamen. Elke
+# omgeving heeft een eigen database; er is geen pad waarlangs test bij
+# productiegegevens kan.
+#
+# Dit bestand publiceert zelf geen poorten. Wat de buitenwereld bereikt, staat
+# in een overlay per host:
+#
+#   Hetzner    -f docker-compose.stack.yml -f deploy/hetzner/ports.yml
+#   Studio     -f docker-compose.stack.yml -f deploy/studio/ports.yml
+#
+# Starten, bijvoorbeeld test op de Studio:
+#
+#   ENV_NAME=test PXP_TAG=<sha> docker compose -p projextpal-test \
+#     -f docker-compose.stack.yml -f deploy/studio/ports.yml up -d
+#
+# Secrets: .env.<omgeving> naast dit bestand, zie deploy/hetzner/env.example.
+
+services:
+  postgres:
+    # Limiet zodat één omgeving de machine niet kan opeten. Nodig zodra
+    # staging en productie op dezelfde machine staan: gemeten 30 MB in rust; de rest is cache en werkgeheugen voor query's.
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_POSTGRES:-1g}
+    image: postgres:15-alpine
+    container_name: projextpal-${ENV_NAME:?ENV_NAME ontbreekt}-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-projextpal}
+      POSTGRES_USER: ${POSTGRES_USER:-projextpal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD ontbreekt}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups/${ENV_NAME}:/backups
+    networks: [intern]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-projextpal}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    # Limiet zodat één omgeving de machine niet kan opeten. Nodig zodra
+    # staging en productie op dezelfde machine staan: gemeten 39 MB.
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_REDIS:-512m}
+    image: redis:7-alpine
+    container_name: projextpal-${ENV_NAME}-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD ontbreekt}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks: [intern]
+    # Met requirepass antwoordt een kale `redis-cli ping` met NOAUTH en faalt de
+    # check. Het wachtwoord moet dus mee.
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    # Limiet zodat één omgeving de machine niet kan opeten. Nodig zodra
+    # staging en productie op dezelfde machine staan: gemeten 952 MB met vier gunicorn-werkers.
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_BACKEND:-2g}
+    image: registry.gitlab.com/inclufy/projextpal/backend:${PXP_TAG:?PXP_TAG ontbreekt, zet de commit-sha die je uitrolt}
+    container_name: projextpal-${ENV_NAME}-backend
+    restart: unless-stopped
+    env_file: [".env.${ENV_NAME}"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      # Deze drie vullen het /health/-rapport waar Control Tower op leest.
+      # Zonder deze antwoordt de backend `git_sha: unknown` en kan de tower
+      # niet zien welke commit ergens draait. Dat was tot 30 augustus 2026 de
+      # situatie in productie.
+      GIT_SHA: ${PXP_TAG}
+      ENVIRONMENT: ${ENV_NAME}
+      # De tower vergelijkt db_backend met db_expected en noemt elk verschil een
+      # incident. Zie fleet.yml in inclufy-control-tower, en incident IQ-HELIX-3:
+      # een backend die stilletjes op SQLite draaide in plaats van Postgres.
+      EXPECTED_DB_BACKEND: postgresql
+    volumes:
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+      # Het regressie-overzicht staat in de repo-root, buiten de COPY-context
+      # van backend/Dockerfile, dus het wordt hier gemount.
+      - ./tests/regression/known_issues.json:/app/tests/regression/known_issues.json:ro
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [intern]
+    command: >
+      sh -c "python3 manage.py migrate --noinput &&
+             python3 manage.py collectstatic --noinput &&
+             gunicorn core.wsgi:application --bind 0.0.0.0:8001 --workers ${GUNICORN_WORKERS:-4} --timeout 120"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health/simple/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  frontend:
+    # Limiet zodat één omgeving de machine niet kan opeten. Nodig zodra
+    # staging en productie op dezelfde machine staan: gemeten 63 MB, het is een nginx met statische bestanden.
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_FRONTEND:-256m}
+    image: registry.gitlab.com/inclufy/projextpal/frontend:${PXP_TAG}
+    container_name: projextpal-${ENV_NAME}-frontend
+    restart: unless-stopped
+    networks: [intern]
+
+  # Zet frontend en backend achter één adres. Zonder poorten hier: die staan in
+  # de overlay per host, omdat Hetzner 80 en 443 pakt en de Studio een lokale
+  # poort achter de Cloudflare-tunnel.
+  proxy:
+    # Limiet zodat één omgeving de machine niet kan opeten. Nodig zodra
+    # staging en productie op dezelfde machine staan: gemeten 20 MB voor de nginx die hij vervangt.
+    deploy:
+      resources:
+        limits:
+          memory: ${MEM_PROXY:-256m}
+    image: caddy:2-alpine
+    container_name: projextpal-${ENV_NAME}-proxy
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS ontbreekt, bv. projextpal.com of :80}
+      # Moet een waarde hebben, ook waar Caddy geen certificaten aanvraagt:
+      # een lege waarde maakt van de regel `email` in de Caddyfile een regel
+      # zonder argument, en dan weigert Caddy te starten. Op test en staging is
+      # de waarde verder ongebruikt.
+      ACME_EMAIL: ${ACME_EMAIL:-ongebruikt@localhost}
+      API_ADDRESS: ${API_ADDRESS:-:8081}
+      # Standaard geen indexering. Alleen productie zet dit op "all".
+      ROBOTS_TAG: ${ROBOTS_TAG:-noindex, nofollow}
+    volumes:
+      - ${CADDYFILE:-./deploy/caddy/Caddyfile}:/etc/caddy/Caddyfile:ro
+      - static_files:/app/staticfiles:ro
+      - media_files:/app/media:ro
+      # Hierin bewaart Caddy de certificaten. Raakt dit volume weg, dan vraagt
+      # hij alles opnieuw aan en loop je tegen de limiet van Let's Encrypt aan.
+      # Neem het mee in de back-up van de productiemachine.
+      - caddy_data:/data
+    depends_on: [backend, frontend]
+    networks: [intern]
+
+networks:
+  # Alleen tussen de containers van deze omgeving. Er is geen netwerk dat twee
+  # omgevingen verbindt, dus test kan de database van productie niet zien.
+  intern:
+    driver: bridge
+
+volumes:
+  # Expliciete namen, zodat de edge dezelfde volumes kan aanspreken zonder van
+  # de compose-projectnaam af te hangen.
+  postgres_data:
+    name: projextpal-${ENV_NAME}-postgres-data
+  redis_data:
+    name: projextpal-${ENV_NAME}-redis-data
+  static_files:
+    name: projextpal-${ENV_NAME}-static
+  media_files:
+    name: projextpal-${ENV_NAME}-media
+  caddy_data:
+    name: projextpal-${ENV_NAME}-caddy-data

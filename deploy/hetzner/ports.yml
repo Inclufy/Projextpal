@@ -1,0 +1,13 @@
+# Overlay voor de productiemachine bij Hetzner.
+#
+# Caddy pakt hier 80 en 443 zelf en haalt de certificaten bij Let's Encrypt.
+# Poort 80 moet open zijn: Caddy bewijst het domein via een verbinding daarop.
+#
+#   ENV_NAME=production PXP_TAG=<sha> docker compose -p projextpal-production \
+#     -f docker-compose.stack.yml -f deploy/hetzner/ports.yml up -d
+services:
+  proxy:
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"

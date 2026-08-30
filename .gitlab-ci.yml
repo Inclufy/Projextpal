@@ -119,7 +119,12 @@ build:frontend:
 # draaide was met de hand op de Mac Studio gebouwd, arm64, en bestond in geen enkele
 # registry. Een build die een knop nodig heeft, is een build die niet gebeurt.
 # ============================================================================
-# Uitrollen naar een Hetzner-machine.
+# Uitrollen. Drie omgevingen, één sjabloon.
+#
+#   test        elke commit op master, automatisch
+#   staging     met de hand vrijgeven. Klanten richten hier in en trainen hier
+#               voor de livegang, dus dit is geen wegwerp-omgeving.
+#   production  met de hand vrijgeven, na staging.
 #
 # De vorige versie van deze job heeft precies één keer echt gedraaid, op
 # 9 augustus 2026, en faalde op de eerste regel van het before_script:
@@ -129,27 +134,25 @@ build:frontend:
 # GitLab mangelt de regeleindes van een meerregelige variabele, waardoor de
 # PEM-sleutel onbruikbaar aankomt. Op branch `main` was dat op 28 juli al
 # opgelost door de sleutel als base64 op te slaan; master heeft die fix nooit
-# gekregen. Hier staat hij alsnog, met twee toevoegingen:
+# gekregen, en omdat alle deploy-jobs op manual stonden is het nooit opgevallen.
 #
-#   - `ssh-keygen -y` controleert de sleutel vóór de eerste verbinding, zodat
-#     een kapotte sleutel meteen een leesbare fout geeft in plaats van een
-#     mislukte ssh verderop.
-#   - De deploy zet de images vast op de commit-sha. Terugdraaien is daardoor
-#     dezelfde job met een oudere PXP_TAG, geen handwerk op de server.
+# Variabelen per omgeving zet je in GitLab met een environment-scope
+# (Settings, CI/CD, Variables, kolom Environments). Zo wijst DEPLOY_HOST bij
+# `production` naar Hetzner en bij `test` naar de Studio, zonder dat er drie
+# bijna gelijke jobs met andere namen ontstaan.
 #
-# De server heeft geen kopie van de repo nodig: de runner heeft de juiste
-# commit al uitgechecked en stuurt de drie bestanden die de compose mount mee.
-# Dat scheelt een tweede sleutel (een deploy key) op de machine.
+#   SSH_PRIVATE_KEY_B64  base64 van de private deploy-sleutel   (protected, masked)
+#   SSH_KNOWN_HOSTS      uitvoer van ssh-keyscan op de doelmachine
+#   DEPLOY_USER          gebruiker op de doelmachine
+#   DEPLOY_HOST          hostnaam of IP
+#   DEPLOY_PATH          map op de doelmachine, bv. /srv/projextpal
+#   HEALTH_URL           volledig adres van /health/simple/ voor de controle
 #
-# Benodigde CI-variabelen, zie deploy/hetzner/README.md:
-#   SSH_PRIVATE_KEY_B64   base64 van de private deploy-sleutel  (protected, masked)
-#   SSH_KNOWN_HOSTS       uitvoer van ssh-keyscan op de server  (protected)
-#   DEPLOY_USER           gebruiker op de Hetzner-machine
-#   DEPLOY_HOST           hostnaam of IP
-#   DEPLOY_PATH           map op de server, bv. /srv/projextpal
-#   SITE_DOMAIN           domein, voor de controle na afloop
+# Het adres, de poort en de robots-instelling staan niet hier maar in
+# .env.<omgeving> op de doelmachine zelf, naast de secrets. Zie
+# deploy/hetzner/env.example.
 # ============================================================================
-.deploy_hetzner:
+.deploy:
   stage: deploy
   image: alpine:latest
   variables:
@@ -166,7 +169,8 @@ build:frontend:
         echo "Geen SSH_PRIVATE_KEY_B64 en geen SSH_PRIVATE_KEY ingesteld."; exit 1
       fi
     - chmod 600 ~/.ssh/id_deploy
-    # Hier faalde 9 augustus. Nu met een eigen foutmelding.
+    # Hier faalde 9 augustus. Nu met een eigen foutmelding, vóór de eerste
+    # verbinding, zodat je ziet wat er mis is en niet alleen dat er iets mis is.
     - |
       if ! ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null 2>&1; then
         echo "De deploy-sleutel is onleesbaar. Vrijwel altijd zijn de regeleindes"
@@ -182,45 +186,92 @@ build:frontend:
     - printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - echo "Uitrollen van $CI_COMMIT_SHORT_SHA naar $DEPLOY_HOST:$DEPLOY_PATH"
-    - ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH/deploy/hetzner' '$DEPLOY_PATH/tests/regression' '$DEPLOY_PATH/backups'"
-    # De compose mount deze drie paden, dus ze moeten naast het compose-bestand
-    # staan en bij deze commit horen.
-    - scp $SSH_OPTS docker-compose.hetzner.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
-    - scp $SSH_OPTS deploy/hetzner/Caddyfile "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/hetzner/"
+    - echo "Uitrollen van $CI_COMMIT_SHORT_SHA naar $ENV_NAME op $DEPLOY_HOST:$DEPLOY_PATH"
+    - ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH/deploy/caddy' '$DEPLOY_PATH/deploy/hetzner' '$DEPLOY_PATH/deploy/studio' '$DEPLOY_PATH/tests/regression' '$DEPLOY_PATH/backups/$ENV_NAME'"
+    # De compose mount deze paden, dus ze moeten naast het compose-bestand staan
+    # en bij deze commit horen. De runner heeft de juiste commit al uitgechecked,
+    # dus de server heeft geen kopie van de repo nodig en dus ook geen deploy key.
+    - scp $SSH_OPTS docker-compose.stack.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+    - scp $SSH_OPTS deploy/caddy/Caddyfile "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/caddy/"
+    - scp $SSH_OPTS "$COMPOSE_OVERLAY" "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/$COMPOSE_OVERLAY"
     - scp $SSH_OPTS tests/regression/known_issues.json "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/tests/regression/"
     - |
       ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "
         set -e
         cd '$DEPLOY_PATH'
-        test -f .env || { echo 'Er staat geen .env op de server. Zie deploy/hetzner/env.example.'; exit 1; }
+        test -f '.env.$ENV_NAME' || { echo \"Er staat geen .env.$ENV_NAME op de server. Zie deploy/hetzner/env.example.\"; exit 1; }
+        # Eigen dockerconfig, buiten de sleutelhanger van de ingelogde gebruiker
+        # om. Op macOS schrijft Docker Desktop de inloggegevens van de registry
+        # naar de login-keychain, en een ssh-sessie kan daar niet bij:
+        #   'keychain cannot be accessed because the current session does not
+        #    allow user interaction'
+        # Met een eigen DOCKER_CONFIG staan ze in een bestand en werkt het wel.
+        export DOCKER_CONFIG='$DEPLOY_PATH/.docker'
+        export ENV_NAME='$ENV_NAME'
         export PXP_TAG='$CI_COMMIT_SHORT_SHA'
-        docker compose -f docker-compose.hetzner.yml pull
-        docker compose -f docker-compose.hetzner.yml up -d --remove-orphans
+        docker compose -p 'projextpal-$ENV_NAME' --env-file '.env.$ENV_NAME' \
+          -f docker-compose.stack.yml -f '$COMPOSE_OVERLAY' pull
+        docker compose -p 'projextpal-$ENV_NAME' --env-file '.env.$ENV_NAME' \
+          -f docker-compose.stack.yml -f '$COMPOSE_OVERLAY' up -d --remove-orphans
         docker image prune -f
       "
-    # Een groene deploy die een stukke site achterlaat is geen groene deploy.
+    # Een groene deploy die een stukke omgeving achterlaat is geen groene deploy.
     - |
-      echo "Controleren of $SITE_DOMAIN antwoordt"
-      for poging in 1 2 3 4 5 6 7 8 9 10; do
-        if curl -fsS --max-time 10 "https://$SITE_DOMAIN/health/simple/" > /dev/null; then
-          echo "De site antwoordt."
+      echo "Controleren of $HEALTH_URL antwoordt"
+      for poging in $(seq 1 10); do
+        antwoord=$(curl -fsS --max-time 10 "$HEALTH_URL" 2>/dev/null || true)
+        if [ -n "$antwoord" ]; then
+          echo "$antwoord"
+          echo "$ENV_NAME antwoordt."
           exit 0
         fi
         echo "  poging $poging van 10, nog geen antwoord"
         sleep 15
       done
-      echo "De containers draaien, maar https://$SITE_DOMAIN/health/simple/ antwoordt niet."
-      echo "Kijk op de server met: docker compose -f docker-compose.hetzner.yml logs --tail 50"
+      echo "De containers draaien, maar $HEALTH_URL antwoordt niet."
+      echo "Kijk op de doelmachine met:"
+      echo "  docker compose -p projextpal-$ENV_NAME -f docker-compose.stack.yml -f $COMPOSE_OVERLAY logs --tail 50"
       exit 1
 
-deploy:production:
-  extends: .deploy_hetzner
+# Elke commit op master. Draait op de eigen runner, want de Studio staat niet
+# open naar internet.
+deploy:test:
+  extends: .deploy
+  tags: [inclufy]
+  variables:
+    ENV_NAME: test
+    COMPOSE_OVERLAY: deploy/studio/ports.yml
   environment:
-    name: production
-    url: https://$SITE_DOMAIN
+    name: test
+    url: https://test.projextpal.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: on_success
+
+# Vrijgeven met de hand. Klanten richten hier in en trainen hier, dus deze
+# omgeving hoort niet bij elke commit om te vallen.
+deploy:staging:
+  extends: .deploy
+  variables:
+    ENV_NAME: staging
+    COMPOSE_OVERLAY: deploy/hetzner/ports.yml
+  environment:
+    name: staging
+    url: https://staging.projextpal.com
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
       when: manual
-  # Een mislukte deploy mag de pipeline niet groen laten.
-  allow_failure: false
+      allow_failure: false
+
+deploy:production:
+  extends: .deploy
+  variables:
+    ENV_NAME: production
+    COMPOSE_OVERLAY: deploy/hetzner/ports.yml
+  environment:
+    name: production
+    url: https://projextpal.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: manual
+      allow_failure: false

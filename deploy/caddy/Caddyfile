@@ -1,0 +1,105 @@
+# Eén Caddyfile voor alle drie de omgevingen. Wat verschilt is het adres:
+#
+#   productie (Hetzner)   SITE_ADDRESS = "projextpal.com, www.projextpal.com"
+#                         API_ADDRESS  = "api.projextpal.com"
+#                         Caddy haalt en verlengt de certificaten zelf.
+#
+#   test/staging (Studio) SITE_ADDRESS = ":80"
+#                         API_ADDRESS  = ":8081"   (niet gepubliceerd, dus onbereikbaar)
+#                         Bij een adres zonder domeinnaam zet Caddy uit zichzelf
+#                         geen certificaten aan. De Cloudflare-tunnel doet daar
+#                         de TLS.
+#
+# De routes komen één op één uit de nginx-config die tot 30 augustus 2026 in
+# productie draaide op de Mac Studio.
+#
+# Wat daar wél stond en hier niet: een `map`-blok dat X-Forwarded-Proto naar
+# https forceerde. cloudflared gaf die header niet betrouwbaar door, waardoor
+# Django's SECURE_SSL_REDIRECT eindeloos bleef redirecten. Caddy zet de header
+# zelf goed, dus dat blok is niet meer nodig.
+
+{
+	email {$ACME_EMAIL}
+}
+
+(app) {
+	encode zstd gzip
+
+	# Test en staging mogen niet in zoekmachines komen. Staging is een
+	# klantomgeving voor inrichting en trainingen, met echte namen erin, en een
+	# trainingsomgeving die productie verdringt in de zoekresultaten is een
+	# ongeluk dat je pas maanden later merkt. Productie zet ROBOTS_TAG op "all".
+	header X-Robots-Tag "{$ROBOTS_TAG:noindex, nofollow}"
+
+	# AI-visuals duren tot enkele minuten. Deze route moet vóór /api/ staan,
+	# anders vangt die hem af met de standaard timeout.
+	handle /api/v1/academy/visuals/* {
+		reverse_proxy backend:8001 {
+			transport http {
+				dial_timeout 300s
+				response_header_timeout 300s
+				read_timeout 300s
+			}
+		}
+	}
+
+	# CORS komt van Django's corsheaders. Hier geen CORS-headers toevoegen:
+	# dubbele headers breken de browser.
+	handle /api/* {
+		reverse_proxy backend:8001
+	}
+
+	# Django's eigen admin staat op /django-admin/ zodat het React-adminportaal
+	# /admin/* houdt. Zonder die scheiding gaf een refresh op /admin/... een
+	# Django-404 in plaats van de SPA.
+	handle /django-admin/* {
+		reverse_proxy backend:8001
+	}
+
+	handle_path /static/* {
+		root * /app/staticfiles
+		file_server
+	}
+
+	handle_path /media/* {
+		root * /app/media
+		file_server
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}
+
+{$SITE_ADDRESS} {
+	import app
+}
+
+# Schone API-host. Alles naar de backend, op de statische bestanden na.
+{$API_ADDRESS} {
+	encode zstd gzip
+
+	handle /api/v1/academy/visuals/* {
+		reverse_proxy backend:8001 {
+			transport http {
+				dial_timeout 300s
+				response_header_timeout 300s
+				read_timeout 300s
+			}
+		}
+	}
+
+	handle_path /static/* {
+		root * /app/staticfiles
+		file_server
+	}
+
+	handle_path /media/* {
+		root * /app/media
+		file_server
+	}
+
+	handle {
+		reverse_proxy backend:8001
+	}
+}

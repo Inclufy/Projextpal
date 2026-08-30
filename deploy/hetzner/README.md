@@ -1,10 +1,50 @@
-# ProjeXtPal naar Hetzner
+# ProjeXtPal: drie omgevingen
 
-Draaiboek van een lege machine naar een draaiende productie. Geschreven op
-30 augustus 2026, toen de stack nog op de Mac Studio stond.
+Draaiboek van een lege machine naar een draaiende productie, plus de test- en
+stagingomgeving ernaast. Geschreven op 30 augustus 2026, toen alles nog met de
+hand op de Mac Studio draaide.
 
 Alles hier is gemeten, niet geschat. Waar een getal staat, komt het uit de
 draaiende productie van die dag.
+
+## De drie omgevingen
+
+| | test | staging | productie |
+|---|---|---|---|
+| waarvoor | werkt het überhaupt | klanten richten in en trainen voor de livegang | de echte klanten |
+| draait op | Mac Studio | Hetzner | Hetzner |
+| uitrollen | elke commit op `master`, vanzelf | met de hand vrijgeven | met de hand vrijgeven |
+| adres | `test.projextpal.com` via de Cloudflare-tunnel | `staging.projextpal.com` | `projextpal.com` |
+| certificaat | tunnel | Caddy, eigen Let's Encrypt | Caddy, eigen Let's Encrypt |
+| zoekmachines | niet indexeren | niet indexeren | indexeren |
+| gegevens | wegwerp | echte klantgegevens, dus back-up en AVG | echte klantgegevens |
+
+Alle drie draaien op hetzelfde `docker-compose.stack.yml`, met een andere
+`ENV_NAME` en een overlay per host:
+
+```bash
+# op Hetzner
+ENV_NAME=production PXP_TAG=<sha> docker compose -p projextpal-production \
+  --env-file .env.production \
+  -f docker-compose.stack.yml -f deploy/hetzner/ports.yml up -d
+
+# op de Studio
+ENV_NAME=test PXP_TAG=<sha> docker compose -p projextpal-test \
+  --env-file .env.test \
+  -f docker-compose.stack.yml -f deploy/studio/ports.yml up -d
+```
+
+De compose-projectnaam scheidt de volumes, `ENV_NAME` de containernamen. Er is
+geen netwerk dat twee omgevingen verbindt, dus test kan niet bij de database van
+productie.
+
+**Test draait op de Studio, en die start na een herstart niets tot je inlogt.**
+Dat is voor test acceptabel. Het is de reden dat staging er níet staat: een klant
+die om negen uur een training begint, vindt dan een dode omgeving.
+
+**De Studio is arm64 en draait de amd64-images onder emulatie.** Getest en het
+werkt, een amd64-image meldt zich daar netjes als `x86_64`. Wel langzamer, dus
+oordeel er niet over snelheid.
 
 ---
 
@@ -19,7 +59,7 @@ Wat er verandert:
 
 | | Mac Studio | Hetzner |
 |---|---|---|
-| starten | vijf `docker run` met de hand | `docker-compose.hetzner.yml` |
+| starten | vijf `docker run` met de hand | `docker-compose.stack.yml` |
 | proxy | nginx, certificaat via Cloudflare-tunnel | Caddy, eigen Let's Encrypt |
 | frontend-image | `ghcr.io/inclufy/projextpal-web` | `registry.gitlab.com/inclufy/projextpal/frontend` |
 | image-versie | `latest`, of met de hand gebouwd | vastgezet op de commit-sha |
@@ -39,13 +79,27 @@ totaal    ~1,1 GB
 
 ## 1. De machine
 
-Op basis van die meting is ProjeXtPal alleen genoeg aan een kleine machine.
-Reken op ongeveer het dubbele zodra er een staging naast staat, en tel op wat
-IQ Helix erbij nodig heeft als die meeverhuist.
+Staging en productie komen allebei bij Hetzner, **op twee aparte machines**.
 
-- **Genoeg voor ProjeXtPal plus staging**: een CPX-machine met 8 vCPU en 16 GB.
-- **Als het hele ecosysteem meekomt**: een AX-machine uit de dedicated lijn,
-  met flink meer geheugen en eigen schijven.
+Qua ruimte hoeft dat niet: een hele omgeving is gemeten ongeveer 1,1 GB geheugen
+en 150 MB schijf, dus samen passen ze moeiteloos op één machine. En bij Hetzner
+betaal je per machine, niet per container, dus samen zou goedkoper zijn.
+
+De reden om ze te scheiden is gedeeld lot. Gaat één machine om, dan valt de
+training van je klant tegelijk met productie om. Bij een staging waar klanten
+inrichten en trainen voor de livegang is dat het zwaarste argument, en twee
+kleinere machines kosten samen meestal ongeveer evenveel als één grote.
+
+- **Productie**: de zwaarste van de twee, met ruimte voor IQ Helix erbij.
+- **Staging**: mag kleiner, er zitten geen echte gebruikers op de hele dag.
+
+Wat het kost is dubbel onderhoud: twee keer Docker, twee keer een firewall, twee
+keer back-ups. Loop de hoofdstukken hieronder dus twee keer door, één keer per
+machine.
+
+De geheugenlimieten in `docker-compose.stack.yml` blijven staan. Ze zijn minder
+kritiek op aparte machines, maar ze vangen nog steeds een lek in één dienst op
+voordat die de hele machine meeneemt.
 
 Controleer de actuele prijzen zelf, die veranderen. Neem Debian 12 of
 Ubuntu 24.04, en zet bij het bestellen meteen je publieke sleutel klaar zodat
@@ -127,8 +181,14 @@ beschermde variabelen worden aan die pipelines doorgegeven.
 | `DEPLOY_USER` | `deploy` | nee |
 | `DEPLOY_HOST` | het IP of de hostnaam | nee |
 | `DEPLOY_PATH` | `/srv/projextpal` | nee |
-| `SITE_DOMAIN` | `projextpal.com` | nee |
+| `HEALTH_URL` | `https://<adres>/health/simple/` | nee |
 | `VITE_SENTRY_DSN` | de Sentry-DSN van de frontend | ja |
+
+`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`, `SSH_KNOWN_HOSTS` en `HEALTH_URL`
+verschillen per omgeving. Zet ze niet drie keer met een andere naam, maar geef ze
+een **environment-scope** in de kolom Environments: dezelfde variabelenaam, een
+andere waarde voor `test`, `staging` en `production`. De jobs pakken dan vanzelf
+de juiste.
 
 De sleutel als base64, en waarom:
 
@@ -145,8 +205,9 @@ iets probeert, dus als dit misgaat zie je meteen waarom.
 ## 6. Het env-bestand
 
 ```bash
-scp deploy/hetzner/env.example deploy@<ip>:/srv/projextpal/.env
-ssh deploy@<ip> chmod 600 /srv/projextpal/.env
+# per omgeving één bestand, op de machine waar die omgeving draait
+scp deploy/hetzner/env.example deploy@<ip>:/srv/projextpal/.env.production
+ssh deploy@<ip> chmod 600 /srv/projextpal/.env.production
 ```
 
 Vul hem daarna **op de server** in. Nooit via chat, nooit via een ticket, nooit
@@ -187,7 +248,9 @@ Naar de server, en erin:
 scp pxp-verhuizing.dump deploy@<ip>:/srv/projextpal/backups/
 ssh deploy@<ip>
 cd /srv/projextpal
-docker compose -f docker-compose.hetzner.yml up -d postgres
+ENV_NAME=production docker compose -p projextpal-production \
+  --env-file .env.production -f docker-compose.stack.yml -f deploy/hetzner/ports.yml \
+  up -d postgres
 docker exec -i projextpal-postgres-prod \
   pg_restore -U projextpal -d projextpal --no-owner --clean --if-exists \
   /backups/pxp-verhuizing.dump
@@ -226,7 +289,9 @@ sha. Op de server:
 
 ```bash
 cd /srv/projextpal
-PXP_TAG=<oudere-sha> docker compose -f docker-compose.hetzner.yml up -d
+ENV_NAME=production PXP_TAG=<oudere-sha> docker compose -p projextpal-production \
+  --env-file .env.production -f docker-compose.stack.yml -f deploy/hetzner/ports.yml \
+  up -d
 ```
 
 De tags staan in GitLab onder Deploy, Container Registry. Draai daarna wel de
