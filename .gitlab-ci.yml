@@ -81,7 +81,6 @@ build:backend:
   only:
     - master
     - main
-  when: manual
 
 build:frontend:
   stage: build
@@ -99,8 +98,12 @@ build:frontend:
   only:
     - master
     - main
-  when: manual
 
+# deploy blijft handmatig. Elke commit hoort een image op te leveren, maar niet elke
+# commit hoort productie te vervangen. De twee builds hierboven stonden tot 30 augustus
+# 2026 ook op handmatig en zijn daardoor nooit gedraaid: het image dat toen in productie
+# draaide was met de hand op de Mac Studio gebouwd, arm64, en bestond in geen enkele
+# registry. Een build die een knop nodig heeft, is een build die niet gebeurt.
 deploy:production:
   stage: deploy
   image: alpine:latest
