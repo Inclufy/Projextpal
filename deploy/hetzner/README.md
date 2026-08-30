@@ -121,6 +121,19 @@ chown -R deploy:deploy /home/deploy/.ssh
 Docker volgens de officiële handleiding van Docker zelf, niet uit de
 distributie-pakketbron, anders krijg je een oude compose-versie.
 
+Daarna, en dit is het hele verschil met de Mac Studio:
+
+```bash
+systemctl enable --now docker
+systemctl is-enabled docker      # moet "enabled" zeggen
+```
+
+Op macOS is Docker een programma van een ingelogde gebruiker, dus na een
+stroomonderbreking draait er niets tot iemand achter het scherm gaat zitten. Op
+Linux is het een systeemdienst die bij het opstarten begint. Samen met
+`restart: unless-stopped` in de compose komt de hele stack daardoor vanzelf
+terug na een herstart. Controleer dat ook echt, zie hoofdstuk 8.
+
 Firewall: alleen 22, 80 en 443 open.
 
 ```bash
@@ -281,6 +294,23 @@ groen zijn, en druk dan pas op `deploy:production`. De job:
 
 Stap vijf is er omdat een groene deploy die een stukke site achterlaat geen
 groene deploy is.
+
+### Herstart de machine één keer voordat je live gaat
+
+Dit is de test die je niet wilt overslaan, want hij bewijst het enige wat op de
+Mac Studio structureel misging.
+
+```bash
+sudo reboot
+# wacht een minuut of twee
+ssh deploy@<ip> 'docker ps --format "{{.Names}}\t{{.Status}}"'
+curl -fsS https://<adres>/health/simple/
+```
+
+Alles moet vanzelf terug zijn, zonder dat je iets start. Is dat niet zo, dan is
+`systemctl enable docker` niet gelukt of staat er ergens `restart: no`. Los dat
+op vóór de livegang, niet erna: dit soort fouten meldt zich pas bij de eerste
+onverwachte herstart, en dat is per definitie een slecht moment.
 
 ## 9. Terugdraaien
 
