@@ -92,7 +92,21 @@ build:frontend:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY_IMAGE/frontend:latest -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA ./frontend
+    # Dockerfile.prod, niet de standaard Dockerfile. Die laatste is de
+    # ontwikkelvariant: hij zet VITE_BACKEND_URL op een relatief pad, kent
+    # geen Sentry, en schrijft een inline nginx-config zonder Cache-Control.
+    # Dat laatste is BUG-034: de browser cachet index.html, die verwijst na een
+    # redeploy naar bundle-hashes die niet meer bestaan, en de gebruiker krijgt
+    # een witte pagina. frontend/nginx-spa.conf lost dat op en zit alleen in
+    # Dockerfile.prod. Zie de toelichting in dat bestand zelf.
+    - >
+      docker build
+      -f frontend/Dockerfile.prod
+      --build-arg VITE_SENTRY_DSN="$VITE_SENTRY_DSN"
+      --build-arg VITE_APP_VERSION="$CI_COMMIT_SHA"
+      -t $CI_REGISTRY_IMAGE/frontend:latest
+      -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+      ./frontend
     - docker push $CI_REGISTRY_IMAGE/frontend:latest
     - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
   only:
@@ -104,20 +118,109 @@ build:frontend:
 # 2026 ook op handmatig en zijn daardoor nooit gedraaid: het image dat toen in productie
 # draaide was met de hand op de Mac Studio gebouwd, arm64, en bestond in geen enkele
 # registry. Een build die een knop nodig heeft, is een build die niet gebeurt.
-deploy:production:
+# ============================================================================
+# Uitrollen naar een Hetzner-machine.
+#
+# De vorige versie van deze job heeft precies één keer echt gedraaid, op
+# 9 augustus 2026, en faalde op de eerste regel van het before_script:
+#
+#     Error loading key "(stdin)": error in libcrypto: unsupported
+#
+# GitLab mangelt de regeleindes van een meerregelige variabele, waardoor de
+# PEM-sleutel onbruikbaar aankomt. Op branch `main` was dat op 28 juli al
+# opgelost door de sleutel als base64 op te slaan; master heeft die fix nooit
+# gekregen. Hier staat hij alsnog, met twee toevoegingen:
+#
+#   - `ssh-keygen -y` controleert de sleutel vóór de eerste verbinding, zodat
+#     een kapotte sleutel meteen een leesbare fout geeft in plaats van een
+#     mislukte ssh verderop.
+#   - De deploy zet de images vast op de commit-sha. Terugdraaien is daardoor
+#     dezelfde job met een oudere PXP_TAG, geen handwerk op de server.
+#
+# De server heeft geen kopie van de repo nodig: de runner heeft de juiste
+# commit al uitgechecked en stuurt de drie bestanden die de compose mount mee.
+# Dat scheelt een tweede sleutel (een deploy key) op de machine.
+#
+# Benodigde CI-variabelen, zie deploy/hetzner/README.md:
+#   SSH_PRIVATE_KEY_B64   base64 van de private deploy-sleutel  (protected, masked)
+#   SSH_KNOWN_HOSTS       uitvoer van ssh-keyscan op de server  (protected)
+#   DEPLOY_USER           gebruiker op de Hetzner-machine
+#   DEPLOY_HOST           hostnaam of IP
+#   DEPLOY_PATH           map op de server, bv. /srv/projextpal
+#   SITE_DOMAIN           domein, voor de controle na afloop
+# ============================================================================
+.deploy_hetzner:
   stage: deploy
   image: alpine:latest
+  variables:
+    SSH_OPTS: "-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -i /root/.ssh/id_deploy"
   before_script:
-    - apk add --no-cache openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | ssh-add -
-    - mkdir -p ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - apk add --no-cache openssh-client curl
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - |
+      if [ -n "${SSH_PRIVATE_KEY_B64:-}" ]; then
+        echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_deploy
+      elif [ -n "${SSH_PRIVATE_KEY:-}" ]; then
+        printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+      else
+        echo "Geen SSH_PRIVATE_KEY_B64 en geen SSH_PRIVATE_KEY ingesteld."; exit 1
+      fi
+    - chmod 600 ~/.ssh/id_deploy
+    # Hier faalde 9 augustus. Nu met een eigen foutmelding.
+    - |
+      if ! ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null 2>&1; then
+        echo "De deploy-sleutel is onleesbaar. Vrijwel altijd zijn de regeleindes"
+        echo "gesneuveld: sla hem op als base64 in SSH_PRIVATE_KEY_B64."
+        echo "  base64 -i ~/.ssh/id_deploy | tr -d '\n' | pbcopy"
+        exit 1
+      fi
+    - |
+      if [ -z "${SSH_KNOWN_HOSTS:-}" ]; then
+        echo "SSH_KNOWN_HOSTS is leeg. Vul hem met: ssh-keyscan -H $DEPLOY_HOST"
+        exit 1
+      fi
+    - printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && docker compose pull backend frontend && docker compose up -d --no-deps backend frontend && docker image prune -f"
-  only:
-    - master
-    - main
-  when: manual
+    - echo "Uitrollen van $CI_COMMIT_SHORT_SHA naar $DEPLOY_HOST:$DEPLOY_PATH"
+    - ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH/deploy/hetzner' '$DEPLOY_PATH/tests/regression' '$DEPLOY_PATH/backups'"
+    # De compose mount deze drie paden, dus ze moeten naast het compose-bestand
+    # staan en bij deze commit horen.
+    - scp $SSH_OPTS docker-compose.hetzner.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+    - scp $SSH_OPTS deploy/hetzner/Caddyfile "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/hetzner/"
+    - scp $SSH_OPTS tests/regression/known_issues.json "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/tests/regression/"
+    - |
+      ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "
+        set -e
+        cd '$DEPLOY_PATH'
+        test -f .env || { echo 'Er staat geen .env op de server. Zie deploy/hetzner/env.example.'; exit 1; }
+        export PXP_TAG='$CI_COMMIT_SHORT_SHA'
+        docker compose -f docker-compose.hetzner.yml pull
+        docker compose -f docker-compose.hetzner.yml up -d --remove-orphans
+        docker image prune -f
+      "
+    # Een groene deploy die een stukke site achterlaat is geen groene deploy.
+    - |
+      echo "Controleren of $SITE_DOMAIN antwoordt"
+      for poging in 1 2 3 4 5 6 7 8 9 10; do
+        if curl -fsS --max-time 10 "https://$SITE_DOMAIN/health/simple/" > /dev/null; then
+          echo "De site antwoordt."
+          exit 0
+        fi
+        echo "  poging $poging van 10, nog geen antwoord"
+        sleep 15
+      done
+      echo "De containers draaien, maar https://$SITE_DOMAIN/health/simple/ antwoordt niet."
+      echo "Kijk op de server met: docker compose -f docker-compose.hetzner.yml logs --tail 50"
+      exit 1
+
+deploy:production:
+  extends: .deploy_hetzner
   environment:
     name: production
+    url: https://$SITE_DOMAIN
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: manual
+  # Een mislukte deploy mag de pipeline niet groen laten.
+  allow_failure: false
