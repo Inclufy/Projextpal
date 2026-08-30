@@ -92,7 +92,27 @@ build:frontend:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY_IMAGE/frontend:latest -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA ./frontend
+    # Dockerfile.prod, niet de standaard Dockerfile. Die laatste is de
+    # ontwikkelvariant: hij zet VITE_BACKEND_URL op een relatief pad, kent geen
+    # Sentry, en schrijft er inline een nginx-config zonder Cache-Control.
+    #
+    # Dat laatste is BUG-034, en de reden staat uitgeschreven in Dockerfile.prod
+    # zelf: zonder Cache-Control cachet de browser index.html, die verwijst na een
+    # redeploy naar bundle-hashes die niet meer bestaan, nginx valt via try_files
+    # terug op index.html, en de browser blokkeert dat op een MIME-mismatch. De
+    # gebruiker ziet een witte pagina. frontend/nginx-spa.conf lost dat op en zit
+    # alleen in Dockerfile.prod.
+    #
+    # De GitHub-workflow bouwde al zo; deze pipeline niet, waardoor het image in
+    # de GitLab-registry sinds 30 augustus 2026 die bug weer bevatte.
+    - >
+      docker build
+      -f frontend/Dockerfile.prod
+      --build-arg VITE_SENTRY_DSN="$VITE_SENTRY_DSN"
+      --build-arg VITE_APP_VERSION="$CI_COMMIT_SHA"
+      -t $CI_REGISTRY_IMAGE/frontend:latest
+      -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+      ./frontend
     - docker push $CI_REGISTRY_IMAGE/frontend:latest
     - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
   only:
