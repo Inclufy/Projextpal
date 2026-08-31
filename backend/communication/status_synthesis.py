@@ -250,9 +250,13 @@ _SYSTEM_PROMPT = (
 )
 
 
+# RAG display labels for the Dutch narrative (stored values stay green/amber/red).
+_RAG_NL = {"green": "groen", "amber": "amber", "red": "rood"}
+
+
 def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
     """Template narrative used when no LLM is available — fully usable."""
-    name = metrics.get("project_name", "The project")
+    name = metrics.get("project_name", "Het project")
     comp = metrics.get("completion_pct", 0)
     total = metrics.get("tasks_total", 0)
     done = metrics.get("tasks_done", 0)
@@ -260,23 +264,23 @@ def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
     blocked = metrics.get("tasks_blocked", 0)
     open_risks = metrics.get("open_risks_total", 0)
     high = metrics.get("open_risks_by_level", {}).get("High", 0)
-    overall = rag["overall_rag"].upper()
+    overall = _RAG_NL.get(rag["overall_rag"], rag["overall_rag"]).upper()
 
     summary = (
-        f"{name} is at {comp}% task completion ({done} of {total} tasks done) "
-        f"with an overall health of {overall}. "
+        f"{name} staat op {comp}% taakvoltooiing ({done} van {total} taken "
+        f"afgerond) met als algehele status {overall}. "
     )
     if blocked or overdue:
         summary += (
-            f"There are {blocked} blocked and {overdue} overdue tasks requiring "
-            f"attention. "
+            f"Er zijn {blocked} geblokkeerde en {overdue} achterstallige taken "
+            f"die aandacht vragen. "
         )
     else:
-        summary += "No tasks are currently blocked or overdue. "
+        summary += "Er zijn momenteel geen geblokkeerde of achterstallige taken. "
     if open_risks:
-        summary += f"{open_risks} risk(s) are open ({high} high-severity)."
+        summary += f"Er staan {open_risks} risico('s) open ({high} met hoge ernst)."
     else:
-        summary += "No open risks are recorded."
+        summary += "Er zijn geen openstaande risico's geregistreerd."
 
     # Cross-module facts
     crit_issues = metrics.get("critical_issues", 0)
@@ -288,52 +292,67 @@ def _deterministic_narrative(metrics: dict, rag: dict) -> dict:
     compound = metrics.get("compound_signals", 0)
 
     if open_issues:
-        summary += f" {open_issues} issue(s) are open ({crit_issues} critical)."
+        summary += f" Er staan {open_issues} issue(s) open ({crit_issues} kritiek)."
     if compound:
-        summary += f" AI detected {compound} compound cross-module signal(s)."
+        summary += (
+            f" AI detecteerde {compound} samengesteld(e) signa(a)l(en) "
+            f"over modules heen."
+        )
 
-    highlights = [f"{done}/{total} tasks complete ({comp}%)"]
+    highlights = [f"{done}/{total} taken afgerond ({comp}%)"]
     m_total = metrics.get("milestones_total", 0)
     if m_total:
         highlights.append(
-            f"{metrics.get('milestones_done', 0)}/{m_total} milestones reached"
+            f"{metrics.get('milestones_done', 0)}/{m_total} mijlpalen bereikt"
         )
     if sh_total:
-        highlights.append(f"{sh_total} stakeholder(s) engaged")
+        highlights.append(f"{sh_total} stakeholder(s) betrokken")
     if comms_planned:
-        highlights.append(f"{comms_planned} communication event(s) planned")
+        highlights.append(f"{comms_planned} communicatie-activiteit(en) gepland")
     if lessons:
-        highlights.append(f"{lessons} lesson(s) captured")
+        highlights.append(f"{lessons} geleerde les(sen) vastgelegd")
     if gov:
-        highlights.append("Governance approach defined")
+        highlights.append("Governance-aanpak vastgelegd")
 
     blockers = []
     if blocked:
-        blockers.append(f"{blocked} blocked task(s) halting flow")
+        blockers.append(f"{blocked} geblokkeerde ta(a)k(en) remmen de voortgang")
     if overdue:
-        blockers.append(f"{overdue} task(s) past their due date")
+        blockers.append(f"{overdue} ta(a)k(en) over de opleverdatum heen")
     if high:
-        blockers.append(f"{high} high-severity risk(s) open")
+        blockers.append(f"{high} openstaand(e) risico('s) met hoge ernst")
     if crit_issues:
-        blockers.append(f"{crit_issues} critical issue(s) unresolved")
+        blockers.append(f"{crit_issues} kritieke issue(s) onopgelost")
     if compound:
-        blockers.append(f"{compound} AI compound signal(s) flagged")
+        blockers.append(f"{compound} samengesteld(e) AI-signa(a)l(en) gemarkeerd")
 
     next_steps = []
     if rag["rag_schedule"] != "green":
-        next_steps.append("Re-baseline schedule or add capacity to recover slip")
+        next_steps.append(
+            "Herijk de planning (re-baseline) of voeg capaciteit toe "
+            "om de achterstand in te lopen"
+        )
     if rag["rag_risk"] != "green":
-        next_steps.append("Review mitigation plans for open high/medium risks")
+        next_steps.append(
+            "Beoordeel de beheersmaatregelen voor openstaande "
+            "hoge/middelhoge risico's"
+        )
     if blocked:
-        next_steps.append("Escalate and clear blocked tasks")
+        next_steps.append("Escaleer geblokkeerde taken en hef de blokkades op")
     if crit_issues:
-        next_steps.append("Drive critical issues to resolution before the next gate")
+        next_steps.append("Los kritieke issues op vóór de volgende faseovergang")
     if not gov:
-        next_steps.append("Define the governance approach (board, cadence, decisions)")
+        next_steps.append(
+            "Leg de governance-aanpak vast (stuurgroep, cadans, besluitvorming)"
+        )
     if not comms_planned and sh_total:
-        next_steps.append("Set up a communication plan for engaged stakeholders")
+        next_steps.append(
+            "Stel een communicatieplan op voor de betrokken stakeholders"
+        )
     if not next_steps:
-        next_steps.append("Maintain current pace; no corrective action needed")
+        next_steps.append(
+            "Houd het huidige tempo vast; geen corrigerende maatregelen nodig"
+        )
 
     return {
         "executive_summary": summary,
