@@ -253,3 +253,80 @@ class AutomationRun(models.Model):
 
     def __str__(self):
         return f'{self.rule.name} · {self.status} · {self.created_at:%Y-%m-%d %H:%M}'
+
+
+# ============================================================
+# FINANCE INTEGRATION API (Inclufy Finance ↔ ProjeXtPal)
+#
+# Inclufy Finance is de CLIENT van dit contract: de Supabase edge
+# function `projextpal-sync` pull't documenten (time-expense,
+# project-actuals, milestone-progress) en push't masterdata
+# (cost-centers, budgets). Authenticatie via Bearer pxp_live_…
+# sleutels; alleen de sha256-hash wordt opgeslagen.
+# ============================================================
+
+
+class FinanceIntegrationApiKey(models.Model):
+    """API-sleutel (pxp_live_…) voor de Inclufy Finance-integratie."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'accounts.Company',
+        on_delete=models.CASCADE,
+        related_name='finance_api_keys',
+    )
+    name = models.CharField(
+        max_length=200, default='Inclufy Finance',
+        help_text='Waar deze sleutel voor wordt gebruikt.'
+    )
+    key_prefix = models.CharField(
+        max_length=20,
+        help_text='Eerste tekens van de sleutel, voor herkenning in de UI.'
+    )
+    key_hash = models.CharField(
+        max_length=64, unique=True, db_index=True,
+        help_text='sha256-hex van de volledige sleutel; de sleutel zelf wordt nooit opgeslagen.'
+    )
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_finance_api_keys',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.key_prefix}…, {self.company.name})"
+
+
+class FinanceInboundDocument(models.Model):
+    """Door Inclufy Finance gepushte masterdata (cost-centers / budgets)."""
+
+    ENTITY_TYPES = [
+        ('cost-centers', 'Cost centers'),
+        ('budgets', 'Budgets'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'accounts.Company',
+        on_delete=models.CASCADE,
+        related_name='finance_inbound_documents',
+    )
+    entity_type = models.CharField(max_length=30, choices=ENTITY_TYPES)
+    external_id = models.CharField(max_length=200)
+    external_name = models.CharField(max_length=255, blank=True, default='')
+    payload = models.JSONField(default=dict, blank=True)
+    received_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['company', 'entity_type', 'external_id']
+        ordering = ['-received_at']
+
+    def __str__(self):
+        return f"{self.entity_type}/{self.external_id} ({self.company.name})"
