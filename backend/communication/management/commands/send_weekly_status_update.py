@@ -46,8 +46,12 @@ class Command(BaseCommand):
     help = "Genereer per actief project een statusrapport en mail de projectleiding (weekly update)."
 
     def add_arguments(self, parser):
-        parser.add_argument("--project", type=int, default=None,
-                            help="Alleen dit project-id.")
+        parser.add_argument("--project", type=str, default=None,
+                            help="Alleen deze project-id's (komma-gescheiden, bv. 104,106).")
+        parser.add_argument("--to", type=str, default=None,
+                            help="Vaste ontvanger(s) (komma-gescheiden e-mails) i.p.v. de "
+                                 "projectleiding — bv. voor klantprojecten waar de update "
+                                 "intern moet blijven.")
         parser.add_argument("--no-llm", action="store_true",
                             help="Alleen deterministische samenvatting (geen LLM-call).")
         parser.add_argument("--dry-run", action="store_true",
@@ -61,11 +65,22 @@ class Command(BaseCommand):
         inactive = ["closed", "completed", "cancelled", "archived"]
         qs = Project.objects.exclude(status__in=inactive)
         if opts.get("project"):
-            qs = qs.filter(id=opts["project"])
+            ids = [int(x) for x in str(opts["project"]).split(",") if x.strip()]
+            qs = qs.filter(id__in=ids)
+
+        vaste_ontvangers = None
+        if opts.get("to"):
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            emails = [e.strip() for e in opts["to"].split(",") if e.strip()]
+            vaste_ontvangers = list(User.objects.filter(email__in=emails, is_active=True))
+            onbekend = set(emails) - {u.email for u in vaste_ontvangers}
+            if onbekend:
+                self.stdout.write(self.style.WARNING(f"Onbekende --to-adressen genegeerd: {onbekend}"))
 
         verzonden = 0
         for project in qs.iterator():
-            ontvangers = _recipients(project)
+            ontvangers = vaste_ontvangers if vaste_ontvangers is not None else _recipients(project)
             if opts.get("dry_run"):
                 self.stdout.write(
                     f"  [dry-run] {project.id} — {project.name} → "
