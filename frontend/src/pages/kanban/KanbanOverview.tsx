@@ -11,15 +11,22 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, FileText, Users, Euro, TrendingUp, Zap, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
+import type { KanbanColumn } from "@/lib/kanbanApi";
 
 const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
 
 // Board pipeline built from real columns. Progress per column = WIP
-// utilisation (card_count / wip_limit) where a limit is set, else the
+// utilisation (cards_count / wip_limit) where a limit is set, else the
 // column's share of all cards on the board.
-const buildKanbanSteps = (columns: any[], totalCards: number): FlowStep[] =>
+//
+// The count field is `cards_count` (plural) — that is what KanbanColumnSerializer
+// emits. This read `card_count` until 1 September 2026; that name only exists on
+// CumulativeFlowData, so it resolved to undefined and every column rendered as
+// "0 cards" at 0% while the board actually held ten. Typing the parameter as
+// KanbanColumn[] instead of any[] is the half that keeps it from coming back.
+const buildKanbanSteps = (columns: KanbanColumn[], totalCards: number): FlowStep[] =>
   [...columns].sort((a, b) => (a.order || 0) - (b.order || 0)).map((c) => {
-    const count = c.card_count || 0;
+    const count = c.cards_count || 0;
     const status: FlowStep["status"] =
       c.is_done_column || c.column_type === "done" ? "done"
       : c.column_type === "in_progress" || c.column_type === "review" ? "active" : "todo";
