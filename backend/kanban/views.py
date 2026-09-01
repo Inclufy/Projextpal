@@ -237,7 +237,23 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
             project=project,
             defaults={'name': f'{project.name} Board'}
         )
-        serializer.save(board=board, reporter=self.request.user)
+        # Val terug op de standaardbaan als er geen swimlane is meegegeven.
+        #
+        # KanbanCard.swimlane is null=True, dus de API accepteerde een kaart zonder baan
+        # met een 201 en een id. Het bord groepeert kaarten per baan, dus zo'n kaart telde
+        # wél mee in Total Cards maar verscheen in geen enkele kolom. Op 1 september 2026
+        # leverde dat negen kaarten op die volgens de teller bestonden en volgens het bord
+        # nergens stonden — 201 Created en toch onzichtbaar.
+        #
+        # Dat is de vervelendste soort fout: hij meldt succes. Elke integratie die kaarten
+        # aanmaakt liep hierop stuk zonder dat iets rood werd.
+        extra = {}
+        if not serializer.validated_data.get('swimlane'):
+            lane = (board.swimlanes.filter(is_default=True).order_by('order', 'id').first()
+                    or board.swimlanes.order_by('order', 'id').first())
+            if lane:
+                extra['swimlane'] = lane
+        serializer.save(board=board, reporter=self.request.user, **extra)
 
     @staticmethod
     def _is_expedite_lane(swimlane):
