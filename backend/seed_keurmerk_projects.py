@@ -139,39 +139,58 @@ PROJECTS = [
 STAGE_STATUS = {"completed": "completed", "in_progress": "active", "pending": "planned", "on_hold": "planned"}
 # milestone-status -> task-status. task-progress komt uit de spec-pct.
 TASK_STATUS = {"completed": "done", "in_progress": "in_progress", "pending": "todo", "on_hold": "todo"}
+KM_CODES = [s["code"] for s in PROJECTS]
 
 
 def run():
     owner = User.objects.filter(email__iexact=OWNER_EMAIL).first()
-    company = (Company.objects.filter(name__iexact="Inclufy").first()
-               or Company.objects.filter(name__icontains="Inclufy").first())
-
-    if not company:
-        print("FOUT: geen Company met naam 'Inclufy' gevonden. Beschikbare companies:")
-        for cid, cname in Company.objects.values_list("id", "name"):
-            print(f"   - id={cid}  name={cname!r}")
-        return
     if not owner:
         print(f"FOUT: gebruiker {OWNER_EMAIL} niet gevonden.")
         return
 
+    # De keurmerk-projecten horen bij de EIGEN company van de eigenaar (sami) — dat is
+    # wat de site toont. Een naam-lookup is fout gebleken: 'Inclufy' matcht ook
+    # 'Inclufy (retired - merged into Business Solutions)' -> projecten in de verkeerde tenant.
+    company = None
+    if getattr(owner, "company_id", None):
+        company = Company.objects.filter(id=owner.company_id).first()
+    if not company:
+        company = (Company.objects.filter(name__iexact="Inclufy").first()
+                   or Company.objects.filter(name__icontains="Inclufy").first())
+    if not company:
+        print("FOUT: geen company voor de eigenaar gevonden. Beschikbare companies:")
+        for cid, cname in Company.objects.values_list("id", "name"):
+            print(f"   - id={cid}  name={cname!r}")
+        return
+
     print(f"Company: {company.name} (id={company.id}) · eigenaar: {owner.email} (id={owner.id})\n")
 
+    # Ruim eerdere mis-seeds op: KM-gecodeerde duplicaten in ANDERE companies.
+    # Best-effort: een ProjectActivity-signal bij delete kan een FK-fout geven; die
+    # duplicaten staan in een retired company (onzichtbaar), dus overslaan mag.
+    from django.db import transaction as _txn
+    for sp in list(Project.objects.filter(project_code__in=KM_CODES).exclude(company=company)):
+        sid, sname, scomp = sp.id, sp.name, sp.company_id
+        try:
+            with _txn.atomic():
+                sp.activities.all().delete()  # dependent activity-rows eerst (FK zonder cascade)
+        except Exception:
+            pass
+        try:
+            with _txn.atomic():
+                sp.delete()
+            print(f"  ✗ duplicaat verwijderd: proj {sid} {sname!r} (company {scomp})")
+        except Exception as e:
+            print(f"  ⚠ duplicaat {sid} ({sname!r}) niet verwijderd — laat staan (onzichtbaar): {e.__class__.__name__}")
+
     for spec in PROJECTS:
-        proj, created = Project.objects.get_or_create(
-            company=company, project_code=spec["code"],
-            defaults=dict(
-                name=spec["name"], methodology="prince2", status=spec["status"],
-                budget=spec["budget"], currency="EUR",
-                description=spec["description"], project_goal=spec["goal"],
-                scope_in=spec.get("scope_in", ""),
-                start_date=spec["start"], end_date=spec.get("end"),
-                created_by=owner,
-                health_scope=spec["health"], health_time=spec["health"], health_cost=spec["health"],
-                health_cash_flow=spec["health"], health_safety=spec["health"], health_risk=spec["health"],
-                health_quality=spec["health"],
-            ),
-        )
+        # match binnen de eigen company op code OF naam (bestaande rijen hebben soms lege code)
+        proj = (Project.objects.filter(company=company, project_code=spec["code"]).first()
+                or Project.objects.filter(company=company, name=spec["name"]).first())
+        created = proj is None
+        if proj is None:
+            proj = Project(company=company, project_code=spec["code"], created_by=owner)
+        proj.project_code = spec["code"]
         # idempotente refresh van de kernvelden
         proj.name = spec["name"]; proj.methodology = "prince2"; proj.status = spec["status"]
         proj.budget = spec["budget"]; proj.currency = "EUR"
