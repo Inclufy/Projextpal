@@ -273,8 +273,12 @@ deploy:staging:
 deploy:production:
   extends: .deploy
   variables:
-    ENV_NAME: production
+    # De draaiende stack op de server heet 'projextpal-productie' en leest
+    # .env.productie — ENV_NAME moet daarop aansluiten, anders start compose
+    # een tweede stack naast de bestaande.
+    ENV_NAME: productie
     COMPOSE_OVERLAY: deploy/hetzner/ports.yml
+    HEALTH_URL: https://projextpal.com/api/v1/health/
   environment:
     name: production
     url: https://projextpal.com
