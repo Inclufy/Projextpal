@@ -2,10 +2,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
+
+// Sourcemaps naar Sentry. Zonder upload wijst elke stacktrace naar een regel in
+// een geminificeerde bundel: je ziet dát er iets stuk is, niet waar.
+//
+// De upload draait alleen met SENTRY_AUTH_TOKEN. Zonder token wordt er ook geen
+// sourcemap aangemaakt, en dat is bewust: de plug-in ruimt ze na de upload op,
+// en slaat hij over, dan slaat het opruimen ook over. Dan zouden de kaarten mee
+// het image in gaan en publiek downloadbaar zijn, wat je hele broncode weggeeft.
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 
 export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
+    // Alleen aanmaken als er ook geüpload wordt, zie de toelichting hierboven.
+    sourcemap: !!sentryAuthToken,
     // Bump warning limit; the actual budget is enforced in CI by the
     // bundle-size guard in .github/workflows/ci.yml.
     chunkSizeWarningLimit: 1000,
@@ -34,6 +46,8 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     esbuildOptions: {
       target: "es2020",
+    // Alleen aanmaken als er ook geüpload wordt, zie de toelichting hierboven.
+    sourcemap: !!sentryAuthToken,
     },
   },
   server: {
@@ -48,7 +62,22 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    // Moet als laatste: de plug-in leest de uitvoer van de build. De release is
+    // VITE_APP_VERSION, dezelfde waarde die de SDK meestuurt; zonder die match
+    // kan Sentry de kaarten niet aan de meldingen koppelen.
+    sentryVitePlugin({
+      org: "inclufy",
+      project: "projextpal-frontend",
+      authToken: sentryAuthToken,
+      disable: !sentryAuthToken,
+      telemetry: false,
+      release: process.env.VITE_APP_VERSION ? { name: process.env.VITE_APP_VERSION } : undefined,
+      sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
