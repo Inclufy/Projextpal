@@ -98,7 +98,8 @@ class PhaseMethodologySerializer(ProjectImmutableMixin, serializers.ModelSeriali
         return value
 
 
-class HybridTaskSerializer(serializers.ModelSerializer):
+class HybridTaskSerializer(ProjectImmutableMixin, serializers.ModelSerializer):
+    project = _optional_project_field()
     assignee_name = serializers.SerializerMethodField()
 
     class Meta:

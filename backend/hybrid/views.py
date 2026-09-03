@@ -335,12 +335,17 @@ class HybridTaskViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
+        # Scoped route: URL project wins. Flat route: body project is
+        # required and access-checked (FEAT-003 regression + the flat-route
+        # gap: creates used to skip the access check entirely).
         project_id = self.kwargs.get('project_id')
-        if project_id:
-            _verify_project_access(self.request.user, project_id)
-            serializer.save(project_id=project_id, created_by=self.request.user)
-        else:
-            serializer.save(created_by=self.request.user)
+        if not project_id:
+            project = serializer.validated_data.get('project')
+            if project is None:
+                raise ValidationError({'project': ['This field is required.']})
+            project_id = project.id
+        _verify_project_access(self.request.user, project_id)
+        serializer.save(project_id=project_id, created_by=self.request.user)
 
 
 class HybridSeedDemoView(viewsets.ViewSet):

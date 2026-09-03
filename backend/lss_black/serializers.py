@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from projects.models import Project
 from .models import HypothesisTest, DesignOfExperiment, ControlPlan, SPCChart, LSSBlackTask
 
 
@@ -31,6 +33,15 @@ class SPCChartSerializer(serializers.ModelSerializer):
 
 
 class LSSBlackTaskSerializer(serializers.ModelSerializer):
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(), required=False
+    )
+
+    def validate_project(self, value):
+        # Immutable after create: a task cannot move to another project.
+        if self.instance is not None and value != self.instance.project:
+            raise serializers.ValidationError('project cannot be changed after creation.')
+        return value
     assignee_name = serializers.SerializerMethodField()
 
     class Meta:
