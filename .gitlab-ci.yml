@@ -277,7 +277,9 @@ deploy:production:
     # .env.productie — ENV_NAME moet daarop aansluiten, anders start compose
     # een tweede stack naast de bestaande.
     ENV_NAME: productie
-    COMPOSE_OVERLAY: deploy/hetzner/ports.yml
+    # De centrale Caddy op de server bezit 80/443 (gedeeld met iq-helix);
+    # deze overlay laat de stack-proxy meedraaien zonder die poorten te claimen.
+    COMPOSE_OVERLAY: deploy/hetzner/achter-centrale-caddy.yml
     HEALTH_URL: https://projextpal.com/api/v1/health/
   environment:
     name: production

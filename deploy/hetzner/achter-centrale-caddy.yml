@@ -1,0 +1,8 @@
+# Overlay voor een Hetzner-machine waar een CENTRALE Caddy (bv. /opt/caddy,
+# gedeeld met andere apps) al 80/443 bezit en naar de app-containers routeert.
+# De stack-eigen proxy publiceert dan geen host-poorten: hij draait mee (zodat
+# de stack compleet is en SITE_ADDRESS=:80 intern werkt) maar de bestaande
+# routering blijft onaangeroerd. Tegenhanger van ports.yml, dat 80/443 claimt.
+services:
+  proxy:
+    ports: !override []
