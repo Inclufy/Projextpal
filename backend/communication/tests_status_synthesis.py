@@ -98,7 +98,7 @@ class SynthesisEngineTests(TestCase):
         self.assertEqual(out["model_used"], "deterministic")
         self.assertTrue(out["executive_summary"])
         self.assertIsInstance(out["highlights"], list)
-        self.assertTrue(any("blocked" in b.lower() for b in out["blockers"]))
+        self.assertTrue(any("geblokkeerd" in b.lower() for b in out["blockers"]))
         self.assertEqual(out["original_ai_response"], "")
 
 

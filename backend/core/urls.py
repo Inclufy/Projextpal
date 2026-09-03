@@ -40,6 +40,8 @@ urlpatterns = [
     path("api/v1/", include("notifications.urls")),  # /notifications/ + unread_count + mark_read
     path("api/v1/", include("collaboration.urls")),  # /comments/ + /messages/ (DM)
     path("api/v1/finance/", include("finance.urls")),
+    # Inclufy Finance pull/push-contract (Bearer pxp_live_… sleutels)
+    path("api/v1/integration/", include("integrations.integration_api_urls")),
     path("api/v1/governance/", include("governance.urls")),
     path("api/v1/execution/", include("execution.urls")),
     path("api/v1/", include("sixsigma.urls")),
