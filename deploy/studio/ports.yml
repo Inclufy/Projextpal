@@ -1,0 +1,17 @@
+# Overlay voor test en staging op de Mac Studio.
+#
+# Hier termineert de Cloudflare-tunnel de TLS, dus Caddy hoeft alleen http op
+# een lokale poort te doen. Zet SITE_ADDRESS op `:80`; Caddy zet dan uit zichzelf
+# geen certificaten aan, omdat er geen domeinnaam in het adres staat.
+#
+# De tunnel moet de hostnaam naar deze poort sturen:
+#   test.projextpal.com    -> http://localhost:8110
+#   staging.projextpal.com -> http://localhost:8120
+#
+#   ENV_NAME=test HOST_PORT=8110 SITE_ADDRESS=:80 PXP_TAG=<sha> \
+#     docker compose -p projextpal-test \
+#     -f docker-compose.stack.yml -f deploy/studio/ports.yml up -d
+services:
+  proxy:
+    ports:
+      - "${HOST_PORT:?HOST_PORT ontbreekt, bv. 8110 voor test of 8120 voor staging}:80"
