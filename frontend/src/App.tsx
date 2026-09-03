@@ -204,6 +204,8 @@ const SixSigmaSPC = lazyWithRetry(() => import("./pages/sixsigma/SixSigmaSPC"));
 const SixSigmaMonitoring = lazyWithRetry(() => import("./pages/sixsigma/SixSigmaMonitoring"));
 
 // PRINCE2 Methodology Page Imports
+import MethodologyGate from "./components/MethodologyGate";
+
 const Prince2Dashboard = lazyWithRetry(() => import("./pages/prince2/Prince2Dashboard"));
 const Prince2ProjectBoard = lazyWithRetry(() => import("./pages/prince2/Prince2ProjectBoard"));
 const Prince2StageGate = lazyWithRetry(() => import("./pages/prince2/Prince2StageGate"));
@@ -1070,149 +1072,149 @@ const App = () => (
               {/* PRINCE2 Methodology Routes                   */}
               {/* ============================================ */}
               <Route path="/projects/:id/prince2" element={<ProtectedPage><Prince2Dashboard /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/dashboard" element={<ProtectedPage><Prince2Dashboard /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/overview" element={<ProtectedPage><Prince2Dashboard /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/project-brief" element={<ProtectedPage><Prince2ProjectBrief /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/business-case" element={<ProtectedPage><Prince2BusinessCase /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/dashboard" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Dashboard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/overview" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Dashboard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/project-brief" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProjectBrief /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/business-case" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2BusinessCase /></MethodologyGate></ProtectedPage>} />
               {/* Generic alias so non-PRINCE2 methodologies get a (light) Business Case */}
               <Route path="/projects/:id/foundation/business-case" element={<ProtectedPage><Prince2BusinessCase /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/stage-plan" element={<ProtectedPage><Prince2StagePlan /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/stage-gate" element={<ProtectedPage><Prince2StageGate /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/stage-gates" element={<ProtectedPage><Prince2StageGate /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/work-packages" element={<ProtectedPage><Prince2WorkPackages /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/risks" element={<ProtectedPage><Prince2Risks /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/issues" element={<ProtectedPage><Prince2Issues /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/exception-reports" element={<ProtectedPage><Prince2ExceptionReports /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/exception-plan" element={<ProtectedPage><Prince2ExceptionPlan /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/quality-register" element={<ProtectedPage><Prince2QualityRegister /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/daily-log" element={<ProtectedPage><Prince2DailyLog /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/management-approaches" element={<ProtectedPage><Prince2ManagementApproaches /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/product-status" element={<ProtectedPage><Prince2ProductStatus /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/planning" element={<ProtectedPage><Prince2Planning /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/tolerances" element={<ProtectedPage><Prince2Tolerances /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/project-board" element={<ProtectedPage><Prince2ProjectBoard /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/governance" element={<ProtectedPage><Prince2Governance /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/highlight-report" element={<ProtectedPage><Prince2HighlightReport /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/stage-plan" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2StagePlan /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/stage-gate" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2StageGate /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/stage-gates" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2StageGate /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/work-packages" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2WorkPackages /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/risks" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Risks /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/issues" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Issues /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/exception-reports" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ExceptionReports /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/exception-plan" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ExceptionPlan /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/quality-register" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2QualityRegister /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/daily-log" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2DailyLog /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/management-approaches" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ManagementApproaches /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/product-status" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProductStatus /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/planning" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Planning /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/tolerances" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Tolerances /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/project-board" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProjectBoard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/governance" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2Governance /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/highlight-report" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2HighlightReport /></MethodologyGate></ProtectedPage>} />
               {/* Default closure landing keeps existing URL working — it now shows the End Project Report. */}
-              <Route path="/projects/:id/prince2/closure" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/project-closure" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/closure" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProjectClosure /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/project-closure" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProjectClosure /></MethodologyGate></ProtectedPage>} />
               {/* Each closure sub-tab now renders its own page (issue #14). */}
-              <Route path="/projects/:id/prince2/closure-checklist" element={<ProtectedPage><Prince2ClosureChecklist /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/end-project-report" element={<ProtectedPage><Prince2ProjectClosure /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/lessons-log" element={<ProtectedPage><Prince2LessonsLog /></ProtectedPage>} />
-              <Route path="/projects/:id/prince2/benefits-review" element={<ProtectedPage><Prince2BenefitsReview /></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/closure-checklist" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ClosureChecklist /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/end-project-report" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2ProjectClosure /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/lessons-log" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2LessonsLog /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/prince2/benefits-review" element={<ProtectedPage><MethodologyGate expected={["prince2"]}><Prince2BenefitsReview /></MethodologyGate></ProtectedPage>} />
               
               {/* ============================================ */}
               {/* Scrum Methodology Routes                     */}
               {/* ============================================ */}
-              <Route path="/projects/:id/scrum/overview" element={<ProtectedPage><ScrumOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/team" element={<ProtectedPage><ScrumTeam /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/budget" element={<ProtectedPage><ScrumBudget /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/backlog" element={<ProtectedPage><ScrumBacklog /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/sprint-board" element={<ProtectedPage><ScrumSprintBoard /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/velocity" element={<ProtectedPage><ScrumVelocity /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><ScrumDailyStandup /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><ScrumRetrospective /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/reports" element={<ProtectedPage><ScrumSprintReport /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><ScrumDefinitionOfDone /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><ScrumSprintPlanning /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><ScrumSprintReview /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/increments" element={<ProtectedPage><ScrumIncrements /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/product-goals" element={<ProtectedPage><ScrumProductGoals /></ProtectedPage>} />
-              <Route path="/projects/:id/scrum/retro-actions" element={<ProtectedPage><ScrumRetroActions /></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/overview" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/team" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumTeam /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/budget" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumBudget /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/backlog" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumBacklog /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-board" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumSprintBoard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/velocity" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumVelocity /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/daily-standup" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumDailyStandup /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/retrospective" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumRetrospective /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/reports" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumSprintReport /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/definition-of-done" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumDefinitionOfDone /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-planning" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumSprintPlanning /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/sprint-review" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumSprintReview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/increments" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumIncrements /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/product-goals" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumProductGoals /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/scrum/retro-actions" element={<ProtectedPage><MethodologyGate expected={["scrum"]}><ScrumRetroActions /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Kanban Methodology Routes                    */}
               {/* ============================================ */}
-              <Route path="/projects/:id/kanban/overview" element={<ProtectedPage><KanbanOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/team" element={<ProtectedPage><KanbanTeam /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/budget" element={<ProtectedPage><KanbanBudget /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/board-configuration" element={<ProtectedPage><KanbanBoardConfiguration /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/wip-limits" element={<ProtectedPage><KanbanWIPLimits /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/board" element={<ProtectedPage><KanbanBoard /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/metrics" element={<ProtectedPage><KanbanFlowMetrics /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/cfd" element={<ProtectedPage><KanbanCFD /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/improvement" element={<ProtectedPage><KanbanContinuousImprovement /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/work-items" element={<ProtectedPage><KanbanWorkItems /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/blocked" element={<ProtectedPage><KanbanBlockedItems /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/work-policies" element={<ProtectedPage><KanbanWorkPolicies /></ProtectedPage>} />
-              <Route path="/projects/:id/kanban/reports" element={<ProtectedPage><KanbanServiceReview /></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/overview" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/team" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanTeam /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/budget" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanBudget /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/board-configuration" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanBoardConfiguration /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/wip-limits" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanWIPLimits /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/board" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanBoard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/metrics" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanFlowMetrics /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/cfd" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanCFD /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/improvement" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanContinuousImprovement /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/work-items" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanWorkItems /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/blocked" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanBlockedItems /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/work-policies" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanWorkPolicies /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/kanban/reports" element={<ProtectedPage><MethodologyGate expected={["kanban"]}><KanbanServiceReview /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Agile Routes                                 */}
               {/* ============================================ */}
-              <Route path="/projects/:id/agile/overview" element={<ProtectedPage><AgileOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/team" element={<ProtectedPage><AgileTeam /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/budget" element={<ProtectedPage><AgileBudget /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/vision" element={<ProtectedPage><AgileProductVision /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/personas" element={<ProtectedPage><AgileUserPersonas /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/backlog" element={<ProtectedPage><AgileBacklog /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/epics" element={<ProtectedPage><AgileEpics /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/iteration-board" element={<ProtectedPage><AgileIterationBoard /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/release-planning" element={<ProtectedPage><AgileReleasePlanning /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><AgileDailyProgress /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><AgileRetrospective /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/stakeholder-feedback" element={<ProtectedPage><AgileStakeholderFeedback /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><AgileVelocity /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/definition-of-done" element={<ProtectedPage><AgileDefinitionOfDone /></ProtectedPage>} />
-              <Route path="/projects/:id/agile/reports" element={<ProtectedPage><AgileIterationReport /></ProtectedPage>} />
+              <Route path="/projects/:id/agile/overview" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/team" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileTeam /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/budget" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileBudget /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/vision" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileProductVision /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/personas" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileUserPersonas /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/backlog" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileBacklog /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/epics" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileEpics /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/iteration-board" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileIterationBoard /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/release-planning" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileReleasePlanning /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/daily-progress" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileDailyProgress /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/retrospective" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileRetrospective /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/stakeholder-feedback" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileStakeholderFeedback /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/velocity" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileVelocity /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/definition-of-done" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileDefinitionOfDone /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/agile/reports" element={<ProtectedPage><MethodologyGate expected={["agile"]}><AgileIterationReport /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Waterfall Routes                             */}
               {/* ============================================ */}
-              <Route path="/projects/:id/waterfall/overview" element={<ProtectedPage><WaterfallOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/team" element={<ProtectedPage><WaterfallTeam /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/budget" element={<ProtectedPage><WaterfallBudget /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/requirements" element={<ProtectedPage><WaterfallRequirements /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/design" element={<ProtectedPage><WaterfallDesign /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/development" element={<ProtectedPage><WaterfallDevelopment /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/testing" element={<ProtectedPage><WaterfallTesting /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/deployment" element={<ProtectedPage><WaterfallDeployment /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/maintenance" element={<ProtectedPage><WaterfallMaintenance /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/gantt" element={<ProtectedPage><WaterfallGantt /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><WaterfallMilestones /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><WaterfallChangeRequests /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/phase-gate" element={<ProtectedPage><WaterfallPhaseGate /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/risks" element={<ProtectedPage><WaterfallRisks /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><WaterfallIssues /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><WaterfallDeliverables /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><WaterfallBaselines /></ProtectedPage>} />
-              <Route path="/projects/:id/waterfall/reports" element={<ProtectedPage><WaterfallPhaseGateReport /></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/overview" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/team" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallTeam /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/budget" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallBudget /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/requirements" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallRequirements /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/design" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallDesign /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/development" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallDevelopment /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/testing" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallTesting /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/deployment" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallDeployment /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/maintenance" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallMaintenance /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/gantt" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallGantt /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/milestones" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallMilestones /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/change-requests" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallChangeRequests /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/phase-gate" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallPhaseGate /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/risks" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallRisks /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/issues" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallIssues /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/deliverables" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallDeliverables /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/baselines" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallBaselines /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/waterfall/reports" element={<ProtectedPage><MethodologyGate expected={["waterfall"]}><WaterfallPhaseGateReport /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* LSS Green Routes                             */}
               {/* ============================================ */}
-              <Route path="/projects/:id/lss-green/overview" element={<ProtectedPage><LSSGreenOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/phases" element={<ProtectedPage><LSSGreenPhases /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/tasks" element={<ProtectedPage><LSSGreenTasks /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/timeline" element={<ProtectedPage><LSSGreenTimeline /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/metrics" element={<ProtectedPage><LSSGreenMetrics /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/measurements" element={<ProtectedPage><LSSGreenMeasurements /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-green/reports" element={<ProtectedPage><LSSGreenTollgateReport /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/overview" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/phases" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenPhases /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/tasks" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenTasks /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/timeline" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenTimeline /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/metrics" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenMetrics /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/measurements" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenMeasurements /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-green/reports" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_green"]}><LSSGreenTollgateReport /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* LSS Black Routes                             */}
               {/* ============================================ */}
-              <Route path="/projects/:id/lss-black/overview" element={<ProtectedPage><LSSBlackOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/phases" element={<ProtectedPage><LSSBlackPhases /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/tasks" element={<ProtectedPage><LSSBlackTasks /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/timeline" element={<ProtectedPage><LSSBlackTimeline /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/hypothesis-tests" element={<ProtectedPage><LSSBlackHypothesisTests /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/doe" element={<ProtectedPage><LSSBlackDOE /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/control-plans" element={<ProtectedPage><LSSBlackControlPlans /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/spc-charts" element={<ProtectedPage><LSSBlackSPCCharts /></ProtectedPage>} />
-              <Route path="/projects/:id/lss-black/reports" element={<ProtectedPage><LSSBlackTollgateReport /></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/overview" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/phases" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackPhases /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/tasks" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackTasks /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/timeline" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackTimeline /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/hypothesis-tests" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackHypothesisTests /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/doe" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackDOE /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/control-plans" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackControlPlans /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/spc-charts" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackSPCCharts /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/lss-black/reports" element={<ProtectedPage><MethodologyGate expected={["lean_six_sigma_black"]}><LSSBlackTollgateReport /></MethodologyGate></ProtectedPage>} />
 
               {/* ============================================ */}
               {/* Hybrid Routes                                */}
               {/* ============================================ */}
-              <Route path="/projects/:id/hybrid/overview" element={<ProtectedPage><HybridOverview /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/phases" element={<ProtectedPage><HybridPhases /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/tasks" element={<ProtectedPage><HybridTasks /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/timeline" element={<ProtectedPage><HybridTimeline /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/artifacts" element={<ProtectedPage><HybridArtifacts /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/configuration" element={<ProtectedPage><HybridConfiguration /></ProtectedPage>} />
-              <Route path="/projects/:id/hybrid/reports" element={<ProtectedPage><HybridPhaseReport /></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/overview" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridOverview /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/phases" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridPhases /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/tasks" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridTasks /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/timeline" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridTimeline /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/artifacts" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridArtifacts /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/configuration" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridConfiguration /></MethodologyGate></ProtectedPage>} />
+              <Route path="/projects/:id/hybrid/reports" element={<ProtectedPage><MethodologyGate expected={["hybrid"]}><HybridPhaseReport /></MethodologyGate></ProtectedPage>} />
 
                             {/* Academy Routes */}
               <Route path="/academy" element={<ProtectedPage><TrainingMarketplace /></ProtectedPage>} />
