@@ -20,6 +20,7 @@ import Prince2MethodologyOverview from "./Prince2MethodologyOverview";
 import { TaskKpiTiles } from "@/components/TaskKpiTiles";
 import { TaskCategorySubtotals } from "@/components/TaskCategorySubtotals";
 import { DueDateChangeRequestQueue } from "@/components/DueDateChangeRequestQueue";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const riskBadge: Record<string, string> = { high: "bg-red-100 text-red-700", medium: "bg-amber-100 text-amber-700", low: "bg-blue-100 text-blue-700" };
 
@@ -27,6 +28,7 @@ const approvalIcon: Record<string, any> = { stage_gate: Gavel, stage_plan: FileT
 const approvalTint: Record<string, string> = { stage_gate: "text-purple-600", stage_plan: "text-blue-600", exception_plan: "text-rose-600" };
 
 const Prince2Dashboard = () => {
+  useMethodologyGuard(["prince2"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

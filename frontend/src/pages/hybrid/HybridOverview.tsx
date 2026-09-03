@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies";
 import { Loader2, Target, Users, ListChecks, Euro, Calendar, GitMerge, FileText, Settings as SettingsIcon, Workflow } from "lucide-react";
 import MethodologyFlow, { FlowStep, FlowStatus } from "@/components/MethodologyFlow";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const fetchJson = async (url: string) => {
   const token = localStorage.getItem("access_token");
@@ -35,6 +36,7 @@ const buildHybridSteps = (phases: any[]): FlowStep[] =>
   }));
 
 const HybridOverview = () => {
+  useMethodologyGuard(["hybrid"]);
   const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();

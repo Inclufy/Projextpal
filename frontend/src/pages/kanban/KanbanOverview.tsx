@@ -12,6 +12,7 @@ import { Loader2, RefreshCw, Layout, Plus, Columns, ListChecks, BarChart3, Ban, 
 import { toast } from "sonner";
 import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
 import type { KanbanColumn } from "@/lib/kanbanApi";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
 
@@ -45,6 +46,7 @@ const buildKanbanSteps = (columns: KanbanColumn[], totalCards: number): FlowStep
   });
 
 const KanbanOverview = () => {
+  useMethodologyGuard(["kanban"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

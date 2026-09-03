@@ -11,6 +11,7 @@ import { Loader2, RefreshCw, Waves, Plus, ListChecks, FileText, TestTube, Milest
 import { toast } from "sonner";
 import { DemoControls } from "@/components/DemoControls";
 import MethodologyFlow, { FlowStep, FlowStatus } from "@/components/MethodologyFlow";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 // Static metadata per Waterfall phase: short code, purpose, and the tabs it drives.
 const WF_PHASES: Record<string, { code: string; purpose: string; links: { label: string; slug: string }[] }> = {
@@ -41,6 +42,7 @@ const buildWaterfallSteps = (phases: any[]): FlowStep[] =>
   });
 
 const WaterfallOverview = () => {
+  useMethodologyGuard(["waterfall"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

@@ -12,6 +12,7 @@ import { formatBudgetDetailed, getCurrencyFromLanguage } from "@/lib/currencies"
 import { Loader2, Target, Users, ListChecks, Workflow, BarChart3, Euro, Calendar, FlaskConical, Gauge, GraduationCap } from "lucide-react";
 import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
 import { buildDmaicSteps } from "@/components/dmaicFlow";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const fetchJson = async (url: string) => {
   const token = localStorage.getItem("access_token");
@@ -22,6 +23,7 @@ const fetchJson = async (url: string) => {
 const toArr = (d: any) => (Array.isArray(d) ? d : d?.results || []);
 
 const LSSGreenOverview = () => {
+  useMethodologyGuard(["lean_six_sigma_green"]);
   const { pt } = usePageTranslations();
   const { language } = useLanguage();
   const { id } = useParams<{ id: string }>();

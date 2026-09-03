@@ -11,6 +11,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, ChevronRight, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const DEMO_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
 
@@ -31,6 +32,7 @@ const buildSprintSteps = (items: any[]): FlowStep[] => {
 };
 
 const ScrumOverview = () => {
+  useMethodologyGuard(["scrum"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

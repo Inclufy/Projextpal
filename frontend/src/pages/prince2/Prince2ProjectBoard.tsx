@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Users, Trash2, Crown, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const Prince2ProjectBoard = () => {
+  useMethodologyGuard(["prince2"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [board, setBoard] = useState<any>(null);

@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, AlertTriangle, Pencil, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const Prince2Tolerances = () => {
+  useMethodologyGuard(["prince2"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const [tolerances, setTolerances] = useState<any[]>([]);

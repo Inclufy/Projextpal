@@ -11,6 +11,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { Loader2, RefreshCw, Zap, Target, Users, BarChart3, ListChecks, Eye, RotateCcw, Rocket, Plus, Sparkles, Trash2, Workflow, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import MethodologyFlow, { FlowStep } from "@/components/MethodologyFlow";
+import useMethodologyGuard from "@/hooks/useMethodologyGuard";
 
 const AGILE_ADMIN_ROLES = ["superadmin", "admin", "pm", "program_manager"];
 
@@ -46,6 +47,7 @@ const buildAgileSteps = (flow: any): FlowStep[] => {
 };
 
 const AgileOverview = () => {
+  useMethodologyGuard(["agile"]);
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
