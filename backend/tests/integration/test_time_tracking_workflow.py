@@ -59,6 +59,20 @@ def _reject_url(pk):
     return f"{BASE_URL}/{pk}/reject/"
 
 
+def _client_for(user_obj):
+    """Eigen APIClient voor één gebruiker.
+
+    Nodig sinds het vier-ogenprincipe: indiener en goedkeurder moeten twee
+    verschillende gebruikers zijn. De authenticated_*_client-fixtures delen
+    allemaal dezelfde `api_client`-instantie en authenticeren die opnieuw, dus
+    twee van die fixtures in één test leveren stilzwijgend dezelfde (laatst
+    ingelogde) client op.
+    """
+    client = APIClient()
+    client.force_authenticate(user=user_obj)
+    return client
+
+
 # ============================================================
 # Create time entry (draft)
 # ============================================================
@@ -222,7 +236,11 @@ class TestApproveTimeEntry:
     """POST /api/v1/projects/time-entries/{id}/approve/"""
 
     def _create_and_submit(self, client, project):
-        """Helper: create a draft, submit it, return its id."""
+        """Helper: create a draft, submit it, return its id.
+
+        `client` is de INDIENER, niet de goedkeurder: sinds het vier-ogen-
+        principe moeten dat twee verschillende gebruikers zijn.
+        """
         data = {
             "project": project.id,
             "date": str(date.today()),
@@ -235,12 +253,10 @@ class TestApproveTimeEntry:
         return entry_id
 
     def test_approve_submitted_entry(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
-        """Admin/PM can approve a submitted entry."""
-        entry_id = self._create_and_submit(
-            authenticated_admin_client, waterfall_project
-        )
+        """Admin/PM can approve someone else's submitted entry."""
+        entry_id = self._create_and_submit(_client_for(user), waterfall_project)
         response = authenticated_admin_client.post(_approve_url(entry_id))
 
         assert response.status_code == status.HTTP_200_OK
@@ -249,7 +265,7 @@ class TestApproveTimeEntry:
         assert response.data["approved_at"] is not None
 
     def test_approve_draft_entry_directly(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
         """Draft entries can also be approved directly (per current view logic)."""
         data = {
@@ -258,7 +274,7 @@ class TestApproveTimeEntry:
             "hours": "2.00",
             "description": "Direct approve",
         }
-        resp = authenticated_admin_client.post(LIST_URL, data, format="json")
+        resp = _client_for(user).post(LIST_URL, data, format="json")
         entry_id = resp.data["id"]
 
         response = authenticated_admin_client.post(_approve_url(entry_id))
@@ -266,16 +282,60 @@ class TestApproveTimeEntry:
         assert response.data["status"] == "approved"
 
     def test_approve_already_approved_fails(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
         """Cannot approve an entry that is already approved."""
-        entry_id = self._create_and_submit(
-            authenticated_admin_client, waterfall_project
-        )
+        entry_id = self._create_and_submit(_client_for(user), waterfall_project)
         authenticated_admin_client.post(_approve_url(entry_id))
         # Second approve
         response = authenticated_admin_client.post(_approve_url(entry_id))
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_cannot_approve_own_entry(
+        self, authenticated_admin_client, waterfall_project
+    ):
+        """Vier-ogenprincipe: ook een admin keurt zijn eigen uren niet goed."""
+        entry_id = self._create_and_submit(
+            authenticated_admin_client, waterfall_project
+        )
+        response = authenticated_admin_client.post(_approve_url(entry_id))
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        check = authenticated_admin_client.get(f"{BASE_URL}/{entry_id}/")
+        assert check.data["status"] == "submitted"
+        assert check.data["approved_by"] is None
+
+    def test_cannot_self_approve_via_patch(
+        self, authenticated_admin_client, waterfall_project
+    ):
+        """De PATCH-omweg naar status=approved is dicht; 'status' is een
+        schrijfbaar serializerveld en update vroeg alleen IsAuthenticated."""
+        entry_id = self._create_and_submit(
+            authenticated_admin_client, waterfall_project
+        )
+        response = authenticated_admin_client.patch(
+            f"{BASE_URL}/{entry_id}/", {"status": "approved"}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        check = authenticated_admin_client.get(f"{BASE_URL}/{entry_id}/")
+        assert check.data["status"] == "submitted"
+
+    def test_patch_of_other_fields_still_works(
+        self, authenticated_admin_client, waterfall_project
+    ):
+        """De blokkade raakt alleen de beslisstatussen, niet gewone bewerkingen."""
+        entry_id = self._create_and_submit(
+            authenticated_admin_client, waterfall_project
+        )
+        response = authenticated_admin_client.patch(
+            f"{BASE_URL}/{entry_id}/", {"description": "Bijgewerkt"}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["description"] == "Bijgewerkt"
 
 
 # ============================================================
@@ -299,40 +359,45 @@ class TestRejectTimeEntry:
         return entry_id
 
     def test_reject_submitted_entry(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
-        """Admin/PM can reject a submitted entry."""
-        entry_id = self._create_and_submit(
-            authenticated_admin_client, waterfall_project
-        )
+        """Admin/PM can reject someone else's submitted entry."""
+        entry_id = self._create_and_submit(_client_for(user), waterfall_project)
         response = authenticated_admin_client.post(_reject_url(entry_id))
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "rejected"
 
     def test_reject_already_rejected_fails(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
         """Cannot reject an entry that is already rejected."""
-        entry_id = self._create_and_submit(
-            authenticated_admin_client, waterfall_project
-        )
+        entry_id = self._create_and_submit(_client_for(user), waterfall_project)
         authenticated_admin_client.post(_reject_url(entry_id))
 
         response = authenticated_admin_client.post(_reject_url(entry_id))
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_reject_already_approved_fails(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
         """Cannot reject an entry that has already been approved."""
-        entry_id = self._create_and_submit(
-            authenticated_admin_client, waterfall_project
-        )
+        entry_id = self._create_and_submit(_client_for(user), waterfall_project)
         authenticated_admin_client.post(_approve_url(entry_id))
 
         response = authenticated_admin_client.post(_reject_url(entry_id))
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_cannot_reject_own_entry(
+        self, authenticated_admin_client, waterfall_project
+    ):
+        """Vier-ogenprincipe geldt ook voor afkeuren."""
+        entry_id = self._create_and_submit(
+            authenticated_admin_client, waterfall_project
+        )
+        response = authenticated_admin_client.post(_reject_url(entry_id))
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 # ============================================================
@@ -668,11 +733,16 @@ class TestTimeEntryFullLifecycle:
     """End-to-end: create -> submit -> approve, and create -> submit -> reject."""
 
     def test_full_approve_lifecycle(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
-        """Create -> submit -> approve flows through all statuses."""
+        """Create -> submit -> approve flows through all statuses.
+
+        Indiener en goedkeurder zijn twee personen (vier-ogenprincipe).
+        """
+        submitter = _client_for(user)
+
         # Create
-        resp = authenticated_admin_client.post(
+        resp = submitter.post(
             LIST_URL,
             {
                 "project": waterfall_project.id,
@@ -686,18 +756,20 @@ class TestTimeEntryFullLifecycle:
         entry_id = resp.data["id"]
 
         # Submit
-        resp = authenticated_admin_client.post(_submit_url(entry_id))
+        resp = submitter.post(_submit_url(entry_id))
         assert resp.data["status"] == "submitted"
 
-        # Approve
+        # Approve door iemand anders
         resp = authenticated_admin_client.post(_approve_url(entry_id))
         assert resp.data["status"] == "approved"
 
     def test_full_reject_lifecycle(
-        self, authenticated_admin_client, waterfall_project
+        self, user, authenticated_admin_client, waterfall_project
     ):
         """Create -> submit -> reject flows through all statuses."""
-        resp = authenticated_admin_client.post(
+        submitter = _client_for(user)
+
+        resp = submitter.post(
             LIST_URL,
             {
                 "project": waterfall_project.id,
@@ -709,7 +781,7 @@ class TestTimeEntryFullLifecycle:
         )
         entry_id = resp.data["id"]
 
-        authenticated_admin_client.post(_submit_url(entry_id))
+        submitter.post(_submit_url(entry_id))
         resp = authenticated_admin_client.post(_reject_url(entry_id))
         assert resp.data["status"] == "rejected"
 

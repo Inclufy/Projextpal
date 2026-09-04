@@ -3532,17 +3532,57 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         
         return Response(summary_data)
 
+    # Statussen die een goedkeuringsbeslissing vastleggen. Alleen bereikbaar via
+    # de approve/reject-acties, nooit via een gewone PATCH.
+    DECISION_STATUSES = ["approved", "rejected"]
+
+    def _self_decision_blocked(self, entry, request):
+        """Vier-ogenprincipe: niemand beslist over zijn eigen urenboeking, ook
+        een superadmin niet. Zonder deze check is het uren-auditspoor van
+        subsidieprojecten (o.a. MIT-28436) waardeloos: IsAdminOrPM laat de
+        indiener zijn eigen uren goedkeuren zodra hij admin/pm/superadmin is."""
+        if entry.user_id == request.user.id:
+            return Response(
+                {"detail": "You cannot approve or reject your own time entries "
+                           "(four-eyes principle). Ask another approver."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
+    def _decision_via_patch_blocked(self, request):
+        """De rol- en vier-ogencheck hangen aan de approve/reject-acties, maar
+        'status' is een schrijfbaar serializerveld en update/partial_update
+        vragen alleen IsAuthenticated — een directe PATCH omzeilde dus beide."""
+        if request.data.get("status") in self.DECISION_STATUSES:
+            return Response(
+                {"detail": "Use the approve/reject actions to change approval status."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
+    def update(self, request, *args, **kwargs):
+        return (self._decision_via_patch_blocked(request)
+                or super().update(request, *args, **kwargs))
+
+    def partial_update(self, request, *args, **kwargs):
+        return (self._decision_via_patch_blocked(request)
+                or super().partial_update(request, *args, **kwargs))
+
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         """Approve a time entry"""
         entry = self.get_object()
-        
+
+        blocked = self._self_decision_blocked(entry, request)
+        if blocked:
+            return blocked
+
         if entry.status not in ["draft", "submitted"]:
             return Response(
                 {"detail": "Only draft or submitted entries can be approved"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         entry.status = "approved"
         entry.approved_by = request.user
         entry.approved_at = timezone.now()
@@ -3566,13 +3606,17 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def reject(self, request, pk=None):
         """Reject a time entry"""
         entry = self.get_object()
-        
+
+        blocked = self._self_decision_blocked(entry, request)
+        if blocked:
+            return blocked
+
         if entry.status not in ["draft", "submitted"]:
             return Response(
                 {"detail": "Only draft or submitted entries can be rejected"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         entry.status = "rejected"
         entry.save()
         
