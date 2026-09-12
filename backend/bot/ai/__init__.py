@@ -2,8 +2,9 @@ from django.conf import settings
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
-from langchain.agents import AgentExecutor
-from langchain.agents.openai_functions_agent.base import create_openai_functions_agent
+from langchain.agents import create_agent
+
+from bot.agent_antwoord import _naar_berichten, _antwoord_uit_result
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 from typing import List, Dict, Any, TypedDict, Annotated, Sequence
@@ -122,65 +123,21 @@ class ERPAIAgent:
         if not self.tools:
             logger.warning("No tools provided to AIAgent")
 
-        self.agent = create_openai_functions_agent(
-            llm=self.llm,
+        # Zie bot/agent.py: langchain 1.x kent AgentExecutor en
+        # create_openai_functions_agent niet meer. create_agent levert een LangGraph-agent.
+        self.agent_executor = create_agent(
+            model=self.llm,
             tools=self.tools,
-            prompt=ChatPromptTemplate.from_messages(
-                [
-                    SystemMessage(content=SYSTEM_PROMPT),
-                    ("human", "{input}"),
-                    ("ai", "I'll help you with that."),
-                    ("human", "{chat_history}"),
-                    ("ai", "{agent_scratchpad}"),
-                ]
-            ),
-        )
-
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            handle_parsing_errors=True,
-            return_intermediate_steps=True,
-            max_iterations=5,
+            system_prompt=SYSTEM_PROMPT,
         )
 
     def process_message(self, message: str, chat_history: List[Dict] = None) -> str:
         try:
-            chat_history_str = ""
-            if chat_history:
-                for msg in chat_history[-10:]:
-                    role = msg.get("role", "user")
-                    content = msg.get("content", "")
-                    chat_history_str += f"{role}: {content}\n"
-
-            result = self.agent_executor.invoke(
-                {"input": message, "chat_history": chat_history_str}
-            )
-
-            output = result.get("output", "")
-
-            if not output and result.get("intermediate_steps"):
-                last_step = result["intermediate_steps"][-1]
-                if len(last_step) > 1:
-                    tool_output = last_step[1]
-                    if isinstance(tool_output, dict):
-                        if "form_type" in tool_output:
-                            return json.dumps(tool_output)
-                        elif "error" in tool_output:
-                            return tool_output["error"]
-                        elif "message" in tool_output:
-                            return tool_output["message"]
-                        elif "success" in tool_output:
-                            return json.dumps(tool_output)
-                    return str(tool_output)
-
-            if isinstance(output, dict):
-                if "form_type" in output:
-                    return json.dumps(output)
-                return json.dumps(output)
-
-            return output
+            # langchain 1.x: berichten in, berichten uit. Zelfde contract naar de UI,
+            # andere plek waar de tool-uitvoer vandaan komt -- zie bot/agent_antwoord.py.
+            berichten = _naar_berichten(chat_history, message)
+            result = self.agent_executor.invoke({"messages": berichten})
+            return _antwoord_uit_result(result)
 
         except Exception as e:
             logger.error(f"Error processing message: {str(e)}", exc_info=True)

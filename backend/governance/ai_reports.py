@@ -4,7 +4,7 @@ AI-powered report generation using OpenAI GPT.
 import json
 import logging
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from django.conf import settings
 
 from core.llm_keys import get_langchain_openai_kwargs
