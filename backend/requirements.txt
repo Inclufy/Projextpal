@@ -26,15 +26,17 @@ jsonpatch==1.33
 jsonpointer==3.0.0
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
-langchain==0.3.27
-langchain-core==0.3.77
-langchain-openai==0.3.34
-langchain-text-splitters==0.3.11
-langgraph==0.6.8
-langgraph-checkpoint==2.1.1
-langgraph-prebuilt==0.6.4
-langgraph-sdk==0.2.9
-langsmith==0.8.18
+langchain==1.2.18
+langchain-core==1.6.3
+langchain-openai==1.1.9
+langchain-protocol==0.0.19          # nieuw in langchain 1.x
+# langchain-text-splitters: verwijderd -- langchain 1.x hangt er niet meer aan
+# en de code gebruikt geen enkele text-splitter (nagekeken met grep op backend/).
+langgraph==1.1.10
+langgraph-checkpoint==3.0.0
+langgraph-prebuilt==1.0.13
+langgraph-sdk==0.3.6
+langsmith==0.12.4
 msgpack==1.2.1
 openai==2.1.0
 orjson==3.11.3

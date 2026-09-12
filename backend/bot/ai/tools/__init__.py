@@ -1,4 +1,4 @@
-from langchain.tools import Tool, StructuredTool
+from langchain_core.tools import Tool, StructuredTool
 from typing import List, Dict, Callable
 from functools import wraps
 from pydantic import BaseModel, create_model
