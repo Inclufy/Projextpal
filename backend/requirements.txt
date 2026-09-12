@@ -40,7 +40,7 @@ openai==2.1.0
 orjson==3.11.3
 ormsgpack==1.10.0
 packaging==25.0
-pillow==12.2.0
+pillow==12.3.0
 pydantic==2.11.7
 pydantic_core==2.33.2
 pyotp==2.9.0
