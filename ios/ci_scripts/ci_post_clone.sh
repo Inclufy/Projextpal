@@ -1,68 +1,14 @@
 #!/bin/sh
+# =============================================================================
+# Forwarder — the real hook lives in ci_scripts/ci_post_clone.sh at the repo root.
+# -----------------------------------------------------------------------------
+# Xcode Cloud looks for ci_scripts/ next to the path configured as the workflow's
+# primary workspace. Today that is the repo root; if it is ever repointed at
+# ios/ProjeXtPal.xcworkspace, Xcode Cloud finds this file and still ends up
+# running the same logic.
+#
+# Until 14 September 2026 this held a second, full copy that had drifted from the
+# first. One place with the logic, one forwarder.
+# =============================================================================
 set -e
-# `set -x` echoes every command before running it — invaluable when the build
-# log gives generic "exited with code 1" without telling you which line.
-set -x
-
-phase() {
-  set +x
-  echo ""
-  echo "::group::$1"
-  echo "=== [Phase] $1 ==="
-  set -x
-}
-
-phase "ci_post_clone start (ProjeXtPal)"
-date
-sw_vers || true
-xcodebuild -version || true
-
-# Navigate to project root
-cd "$CI_PRIMARY_REPOSITORY_PATH"
-echo "Working directory: $(pwd)"
-ls -la
-
-phase "Node + npm setup"
-if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-  echo "Node already installed: $(node --version) | npm: $(npm --version)"
-else
-  echo "Installing Node.js via Homebrew"
-  brew install node || { echo "brew install node failed"; exit 1; }
-  echo "Node: $(node --version) | npm: $(npm --version)"
-fi
-
-phase "npm dependencies"
-if ! CI=1 npm ci; then
-  echo "WARN: npm ci failed (likely lockfile drift) — falling back to npm install"
-  CI=1 npm install
-fi
-
-# Sentry source-map upload defense — without org/token configured,
-# sentry-cli fails the build with "An organization ID or slug is required".
-if [ -z "${SENTRY_ORG:-}" ] || [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
-  export SENTRY_DISABLE_AUTO_UPLOAD=true
-  export SENTRY_ALLOW_FAILURE=true
-  echo "Sentry source-map upload disabled (no SENTRY_ORG / SENTRY_AUTH_TOKEN)"
-fi
-
-phase "Expo prebuild (preserve committed ios/)"
-npx expo prebuild --platform ios --no-install
-
-phase "CocoaPods install"
-cd ios
-echo "react-native version in package.json:"
-grep '"react-native"' "$CI_PRIMARY_REPOSITORY_PATH/package.json" || true
-echo "First few RN-pinned pods in Podfile.lock:"
-grep -E "FBLazyVector|RCTDeprecation|React-Core-prebuilt" Podfile.lock | head -5 || true
-pod install
-
-# Workspace-path bridge: the App Store Connect Xcode Cloud workflow has its
-# primary workspace path set to "ProjeXtPal.xcworkspace" (repo root), but the
-# Expo project nests it at ios/ProjeXtPal.xcworkspace. Without this symlink
-# xcodebuild fails with "Workspace ProjeXtPal.xcworkspace does not exist".
-# `ln -sfn` is idempotent so re-runs are safe.
-cd "$CI_PRIMARY_REPOSITORY_PATH"
-ln -sfn ios/ProjeXtPal.xcworkspace ProjeXtPal.xcworkspace
-echo "=== Workspace symlink: $(readlink ProjeXtPal.xcworkspace) ==="
-
-echo "=== ci_post_clone.sh complete ==="
+exec "${CI_PRIMARY_REPOSITORY_PATH}/ci_scripts/ci_post_clone.sh" "$@"

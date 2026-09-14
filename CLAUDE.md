@@ -146,8 +146,17 @@ The SPA calls `/api/v1` relative (→ `projextpal.com/api` → nginx → backend
 ## 7. Mobile (iOS + Android)
 
 - ProjeXtPal mobile is **on the App Store** (live).
-- Apple Team ID, ASC App ID, EAS Build configs: see `mobile/eas.json` + `mobile/app.json`.
-- Xcode Cloud workflow: `mobile/ci_post_clone.sh`.
+- Apple Team ID, ASC App ID, EAS Build configs: see `eas.json` + `app.json` (repo root — there is no `mobile/` directory).
+- Xcode Cloud hook: `ci_scripts/ci_post_clone.sh` at the repo root — **this is the only
+  script**. `ios/ci_scripts/ci_post_clone.sh` is a one-line forwarder to it and holds no
+  logic of its own. Xcode Cloud looks for `ci_scripts/` next to the path configured as the
+  workflow's primary workspace; that is the repo root, where the script creates a symlink to
+  `ios/ProjeXtPal.xcworkspace` during the build.
+- There is **deliberately no opt-in gate** here, unlike Inclufy Finance. That project skips
+  builds with `exit 1`, which is the only signal Xcode Cloud has — so a skip is reported and
+  mailed as a *failed build*. If you don't want a build on every push, set that in the
+  workflow's Start Conditions (Tag Changes, or a Files-and-Folders condition), not in this
+  script.
 - Deploy: use `mobile-deploy-engineer` agent for releases.
 
 ---
