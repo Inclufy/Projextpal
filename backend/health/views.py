@@ -2,13 +2,23 @@ from django.http import JsonResponse
 from django.db import connection
 from django.core.cache import cache
 from django.conf import settings
+from django.views.decorators.http import require_http_methods
 import time
 import logging
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+# Health endpoints are read-only probes: the Control Tower, the GitLab deploy
+# gate, the compose healthchecks and the load balancer all poll them with GET
+# (a load balancer may use HEAD). Any other verb has no meaning here, so it is
+# rejected at the door instead of reaching the view body — sonar python:S3752
+# flags an endpoint without an explicit method allowlist, because it silently
+# accepts POST/PUT/PATCH/DELETE too.
+READ_ONLY_METHODS = ["GET", "HEAD"]
 
+
+@require_http_methods(READ_ONLY_METHODS)
 def health_check(request):
     """
     Comprehensive health check endpoint that verifies all application components.
@@ -127,6 +137,7 @@ def health_check(request):
     return JsonResponse(health_status, status=status_code)
 
 
+@require_http_methods(READ_ONLY_METHODS)
 def simple_health_check(request):
     """
     Simple health check endpoint for load balancers and basic monitoring.
