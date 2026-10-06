@@ -5,6 +5,7 @@ import re
 from bot.ai.utils.session_context import (
     clear_user_session,
     get_user_session,
+    set_active_project,
     set_user_session,
 )
 from rest_framework import status, viewsets
@@ -168,6 +169,10 @@ class ChatViewSet(viewsets.ModelViewSet):
             set_user_session(token, user_details)
         else:
             clear_user_session()
+
+        # Scope this turn to the project the copilot was opened from (if any), so
+        # project tools default to it ("close this project", "add an action", …).
+        set_active_project(request.data.get("project_id"))
 
         try:
             # Save user message (original, without language instruction)

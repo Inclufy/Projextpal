@@ -981,7 +981,7 @@ const quickActionsData = {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function AICopilotSidebar() {
-  const { isOpen, close, requestedTab } = useCopilot();
+  const { isOpen, close, requestedTab, activeProject, pendingMessage, consumePendingMessage } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
   const { user } = useAuth();
@@ -1071,6 +1071,21 @@ export default function AICopilotSidebar() {
     if (isOpen && activeTab === "chat") setTimeout(() => inputRef.current?.focus(), 300);
   }, [isOpen, activeTab]);
 
+  // A pending message queued by a "pick up with AI" action: switch to chat and
+  // either auto-send it (AI does it) or prefill the input (AI guidance).
+  useEffect(() => {
+    if (!isOpen || !pendingMessage) return;
+    setActiveTab("chat");
+    const m = consumePendingMessage();
+    if (!m) return;
+    if (m.autoSend) {
+      setTimeout(() => handleSendMessage(m.text), 350);
+    } else {
+      setInputValue(m.text);
+      setTimeout(() => inputRef.current?.focus(), 350);
+    }
+  }, [isOpen, pendingMessage]);
+
   const handleSendMessage = async (customMessage?: string) => {
     const messageContent = customMessage || inputValue;
     if (!messageContent.trim() || isSending) return;
@@ -1086,7 +1101,13 @@ export default function AICopilotSidebar() {
         chatId = newChat.id.toString();
         setCurrentChatId(chatId);
       }
-      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, { message: messageContent, language });
+      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
+        message: messageContent,
+        language,
+        // Scope the turn to the project the copilot was opened from, so tools
+        // like "close this project" / "add an action" act on it without an id.
+        ...(activeProject?.id != null ? { project_id: String(activeProject.id) } : {}),
+      });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {
         try {

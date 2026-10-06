@@ -95,6 +95,7 @@ from . import (
     task_tools,
     milestone_tools,
     project_task_tools,
+    project_lifecycle_tools,
     timeline_adjustment_tools,
     project_analysis_tools,
     program_tools,
