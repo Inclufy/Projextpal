@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 from bot.ai.tools import ToolRegistry
 from bot.ai.utils.permissions import require_permission
 from bot.ai.utils.session_context import get_active_project, get_user_session
-from projects.models import Milestone, Project, Task
+from projects.models import Issue, Milestone, Project, Risk, Task
 
 # Status values a project can be moved to (projects.models.Project.STATUS_CHOICES).
 PROJECT_STATUSES = {
@@ -161,3 +161,65 @@ def add_project_activity(
         "title": task.title,
         "priority": task.priority,
     }
+
+
+def _user_company():
+    s = get_user_session()
+    user = s.get("user") if s else None
+    return user, getattr(user, "company", None)
+
+
+@ToolRegistry.register_tool(return_direct=False)
+def complete_activity(activity_id: str) -> Dict[str, Any]:
+    """Mark a single activity/action (task) as done (100%). ACTIVITY_ID is
+    required. Use this to pick up and finish a specific action."""
+    err = require_permission(return_dict=True)
+    if err:
+        return err
+    if not str(activity_id).isdigit():
+        return {"error": "Invalid activity id."}
+    user, company = _user_company()
+    task = Task.objects.filter(id=int(activity_id), milestone__project__company=company).first()
+    if not task:
+        return {"error": f"Activity {activity_id} not found or no access."}
+    task.status = "done"
+    task.progress = 100
+    task.save(update_fields=["status", "progress"])
+    return {"success": True, "activity_id": task.id, "title": task.title, "status": task.status}
+
+
+@ToolRegistry.register_tool(return_direct=False)
+def resolve_issue(issue_id: str, resolution: str = "") -> Dict[str, Any]:
+    """Resolve a project issue (status -> Resolved). ISSUE_ID is required.
+    RESOLUTION is an optional note describing how it was resolved."""
+    err = require_permission(return_dict=True)
+    if err:
+        return err
+    if not str(issue_id).isdigit():
+        return {"error": "Invalid issue id."}
+    user, company = _user_company()
+    issue = Issue.objects.filter(id=int(issue_id), project__company=company).first()
+    if not issue:
+        return {"error": f"Issue {issue_id} not found or no access."}
+    issue.status = "Resolved"
+    if resolution:
+        issue.resolution = resolution
+    issue.save(update_fields=["status", "resolution"])
+    return {"success": True, "issue_id": issue.id, "name": issue.name, "status": issue.status}
+
+
+@ToolRegistry.register_tool(return_direct=False)
+def mitigate_risk(risk_id: str) -> Dict[str, Any]:
+    """Mark a project risk as mitigated (status -> Mitigated). RISK_ID is required."""
+    err = require_permission(return_dict=True)
+    if err:
+        return err
+    if not str(risk_id).isdigit():
+        return {"error": "Invalid risk id."}
+    user, company = _user_company()
+    risk = Risk.objects.filter(id=int(risk_id), project__company=company).first()
+    if not risk:
+        return {"error": f"Risk {risk_id} not found or no access."}
+    risk.status = "Mitigated"
+    risk.save(update_fields=["status"])
+    return {"success": True, "risk_id": risk.id, "name": risk.name, "status": risk.status}

@@ -981,7 +981,7 @@ const quickActionsData = {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function AICopilotSidebar() {
-  const { isOpen, close, requestedTab, activeProject } = useCopilot();
+  const { isOpen, close, requestedTab, activeProject, pendingMessage, consumePendingMessage } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
   const { user } = useAuth();
@@ -1070,6 +1070,21 @@ export default function AICopilotSidebar() {
   useEffect(() => {
     if (isOpen && activeTab === "chat") setTimeout(() => inputRef.current?.focus(), 300);
   }, [isOpen, activeTab]);
+
+  // A pending message queued by a "pick up with AI" action: switch to chat and
+  // either auto-send it (AI does it) or prefill the input (AI guidance).
+  useEffect(() => {
+    if (!isOpen || !pendingMessage) return;
+    setActiveTab("chat");
+    const m = consumePendingMessage();
+    if (!m) return;
+    if (m.autoSend) {
+      setTimeout(() => handleSendMessage(m.text), 350);
+    } else {
+      setInputValue(m.text);
+      setTimeout(() => inputRef.current?.focus(), 350);
+    }
+  }, [isOpen, pendingMessage]);
 
   const handleSendMessage = async (customMessage?: string) => {
     const messageContent = customMessage || inputValue;

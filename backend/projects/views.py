@@ -231,7 +231,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in [
             "list", "retrieve", "summary", "timeline", "team",
-            "export_project_plan", "task_kpi", "health",
+            "export_project_plan", "task_kpi", "health", "attention",
         ]:
             return [IsAuthenticated()]
         if self.action == "closing_sign_off":
@@ -419,6 +419,49 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "critical_issues": critical_issues,
             "open_risks": open_risks,
         })
+
+    @action(detail=True, methods=["get"], url_path="attention")
+    def attention(self, request, pk=None):
+        """Items that need attention on this project — open actions (with an
+        overdue flag), open issues and open risks — so the dashboard can list
+        them and let the user pick them up. Methodology-agnostic."""
+        from django.utils import timezone
+        from .models import Task
+
+        project = self.get_object()
+        today = timezone.localdate()
+
+        actions = []
+        task_qs = (
+            Task.objects.filter(milestone__project=project)
+            .exclude(status="done")
+            .select_related("assigned_to")
+            .order_by("due_date", "-priority")[:100]
+        )
+        for tk in task_qs:
+            actions.append({
+                "id": tk.id,
+                "title": tk.title,
+                "status": tk.status,
+                "priority": tk.priority,
+                "due_date": tk.due_date,
+                "overdue": bool(tk.due_date and tk.due_date < today and tk.status != "done"),
+                "assigned_to": getattr(tk.assigned_to, "id", None),
+            })
+
+        issues = [
+            {"id": i.id, "name": i.name, "severity": i.severity, "status": i.status,
+             "owner": getattr(i.owner, "id", None)}
+            for i in project.issues.exclude(status__in=["Resolved", "Closed"])
+            .select_related("owner").order_by("-severity")[:100]
+        ]
+        risks = [
+            {"id": r.id, "name": r.name, "level": r.level, "status": r.status,
+             "owner": getattr(r.owner, "id", None)}
+            for r in project.risks.filter(status="Open")
+            .select_related("owner").order_by("-level")[:100]
+        ]
+        return Response({"actions": actions, "issues": issues, "risks": risks})
 
     @action(detail=True, methods=["get"], url_path="governance/decisions")
     def governance_decisions(self, request, pk=None):

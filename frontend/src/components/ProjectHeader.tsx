@@ -10,7 +10,8 @@ import {
   PauseCircle,
   RotateCcw,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
 import {
   Dialog,
   DialogContent,
@@ -103,6 +104,10 @@ const RAG_DOT: Record<string, string> = {
 export const ProjectHeader = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
+  // The attention panel belongs on the project dashboard/overview — which every
+  // methodology renders through this shared header — so it shows for all types.
+  const isOverview = /\/(overview|dashboard)(\/|$)/.test(location.pathname);
   const { user } = useAuth();
   const isPMPlus = PM_PLUS.includes(user?.role || '') || (user as any)?.isSuperAdmin === true;
   const queryClient = useQueryClient();
@@ -218,9 +223,7 @@ export const ProjectHeader = () => {
             <Button
               variant="outline"
               className="gap-2"
-              onClick={() =>
-                openForProject({ id: id!, name: project?.name }, "chat")
-              }
+              onClick={() => openForProject({ id: id!, name: project?.name })}
             >
               <Bot className="h-4 w-4" />
               {pt("Ask Co-pilot")}
@@ -276,6 +279,12 @@ export const ProjectHeader = () => {
           </div>
         </div>
       </div>
+
+      {isOverview && id && (
+        <div className="px-6 pt-4">
+          <ProjectAttentionPanel />
+        </div>
+      )}
 
       {/* Confirm close (cascades to all activities) */}
       <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
