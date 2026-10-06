@@ -981,7 +981,7 @@ const quickActionsData = {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function AICopilotSidebar() {
-  const { isOpen, close, requestedTab } = useCopilot();
+  const { isOpen, close, requestedTab, activeProject } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
   const { user } = useAuth();
@@ -1086,7 +1086,13 @@ export default function AICopilotSidebar() {
         chatId = newChat.id.toString();
         setCurrentChatId(chatId);
       }
-      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, { message: messageContent, language });
+      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
+        message: messageContent,
+        language,
+        // Scope the turn to the project the copilot was opened from, so tools
+        // like "close this project" / "add an action" act on it without an id.
+        ...(activeProject?.id != null ? { project_id: String(activeProject.id) } : {}),
+      });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {
         try {

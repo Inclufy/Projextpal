@@ -231,7 +231,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in [
             "list", "retrieve", "summary", "timeline", "team",
-            "export_project_plan", "task_kpi",
+            "export_project_plan", "task_kpi", "health",
         ]:
             return [IsAuthenticated()]
         if self.action == "closing_sign_off":
@@ -325,6 +325,100 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             ),
             "is_valid": so.is_valid,
         }, status=200 if not _created else 201)
+
+    @action(detail=True, methods=["post"], url_path="close")
+    def close(self, request, pk=None):
+        """Close the project: set status to 'completed' and (by default) complete
+        every activity under it. Methodology-agnostic — it only touches the
+        universal Project.status + the Task cascade (milestone__project), so it
+        works for every project type and methodology.
+
+        Body (optional): {"complete_activities": true|false} (default true).
+        """
+        from .models import Task
+
+        project = self.get_object()
+        complete_activities = request.data.get("complete_activities", True)
+        completed = 0
+        if complete_activities:
+            completed = (
+                Task.objects.filter(milestone__project=project)
+                .exclude(status="done")
+                .update(status="done", progress=100)
+            )
+        project.status = "completed"
+        project.save(update_fields=["status", "updated_at"])  # fires status_changed signal
+        return Response({
+            "id": project.id,
+            "status": project.status,
+            "activities_completed": completed,
+        })
+
+    @action(detail=True, methods=["post"], url_path="hold")
+    def hold(self, request, pk=None):
+        """Put the project on hold (status 'on_hold'). Activities are left as-is."""
+        project = self.get_object()
+        project.status = "on_hold"
+        project.save(update_fields=["status", "updated_at"])
+        return Response({"id": project.id, "status": project.status})
+
+    @action(detail=True, methods=["post"], url_path="reopen")
+    def reopen(self, request, pk=None):
+        """Reopen a closed/held project (status 'in_progress'). Activity statuses
+        are left untouched. Any closing sign-off is revoked (is_valid=False)."""
+        from .models import ProjectSignOff
+
+        project = self.get_object()
+        project.status = "in_progress"
+        project.save(update_fields=["status", "updated_at"])
+        ProjectSignOff.objects.filter(project=project).update(is_valid=False)
+        return Response({"id": project.id, "status": project.status})
+
+    @action(detail=True, methods=["get"], url_path="health")
+    def health(self, request, pk=None):
+        """RAG health signal for a project from the universal work signals:
+        open actions, overdue actions, open issues and open risks. Methodology-
+        agnostic (counts Tasks via milestone__project + the project's issues/risks),
+        so it works for every project type.
+
+        red   = something needs attention now (overdue actions, or a
+                blocker/critical open issue).
+        amber = open work/issues/risks but nothing overdue/critical.
+        green = nothing open.
+        """
+        from django.utils import timezone
+        from .models import Task
+
+        project = self.get_object()
+        today = timezone.localdate()
+        task_qs = Task.objects.filter(milestone__project=project)
+        open_actions = task_qs.exclude(status="done").count()
+        overdue_actions = (
+            task_qs.exclude(status="done")
+            .filter(due_date__isnull=False, due_date__lt=today)
+            .count()
+        )
+        issues_qs = project.issues.exclude(status__in=["Resolved", "Closed"])
+        open_issues = issues_qs.count()
+        critical_issues = issues_qs.filter(severity__in=["Blocker", "Critical"]).count()
+        open_risks = project.risks.filter(status="Open").count()
+
+        if overdue_actions or critical_issues:
+            rag = "red"
+        elif open_issues or open_risks or open_actions:
+            rag = "amber"
+        else:
+            rag = "green"
+
+        return Response({
+            "id": project.id,
+            "rag": rag,
+            "open_actions": open_actions,
+            "overdue_actions": overdue_actions,
+            "open_issues": open_issues,
+            "critical_issues": critical_issues,
+            "open_risks": open_risks,
+        })
 
     @action(detail=True, methods=["get"], url_path="governance/decisions")
     def governance_decisions(self, request, pk=None):
