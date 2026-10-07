@@ -64,16 +64,25 @@ def _budget_pressure(project):
     return budget, spent, pct
 
 
-def compute_compound_signals(project):
-    """Return a list of compound-signal dicts for one project."""
+def compute_compound_signals(project, user=None):
+    """Return a list of compound-signal dicts for one project.
+
+    ``user`` (optional) scopes task-bearing signals: internal-only tasks are
+    withheld from external cross-tenant collaborators (their titles would
+    otherwise surface in S3 bottleneck signal titles/detail/evidence). When
+    omitted (internal callers that only read the count) nothing is excluded.
+    """
     from .models import Milestone, Task, Risk, Issue
+    from .permissions import exclude_internal_for_external
 
     today = _today()
     signals = []
 
     milestones = list(Milestone.objects.filter(project=project))
     tasks = list(
-        Task.objects.filter(milestone__project=project).prefetch_related("depends_on")
+        exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), user
+        ).prefetch_related("depends_on")
     )
     risks = list(
         Risk.objects.filter(project=project).select_related("affected_milestone")

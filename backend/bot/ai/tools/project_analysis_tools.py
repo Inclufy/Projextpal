@@ -1109,7 +1109,7 @@ def analyze_cross_module_intelligence(project_id: str) -> Dict[str, Any]:
 
     try:
         from projects.compound_signals import compute_compound_signals
-        sig = compute_compound_signals(project)
+        sig = compute_compound_signals(project, user=user)
     except Exception:
         sig = {"signals": [], "count": 0}
     try:

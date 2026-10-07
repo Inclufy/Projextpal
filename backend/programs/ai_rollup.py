@@ -68,7 +68,7 @@ def program_compound_signals(program, user=None):
     out = []
     for p in program.projects.all():
         try:
-            res = compute_compound_signals(p)
+            res = compute_compound_signals(p, user=user)
         except Exception:
             continue
         # Cost signals embed the absolute project budget + spend % in their

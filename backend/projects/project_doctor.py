@@ -61,7 +61,7 @@ def diagnose(project, user=None):
     show_costs = can_view_costs_for(user, project)
 
     # 1) Compound signals (deterministic cross-module detection)
-    cs = compute_compound_signals(project)
+    cs = compute_compound_signals(project, user=user)
     for i, s in enumerate(cs.get("signals", [])):
         if not show_costs and "cost" in s.get("areas", []):
             continue
@@ -76,8 +76,14 @@ def diagnose(project, user=None):
             "proposed_actions": _proposals_for(s["type"], s.get("evidence", [])),
         })
 
-    # 2) Direct single-dimension checks (always actionable)
-    tasks = list(Task.objects.filter(milestone__project=project))
+    # 2) Direct single-dimension checks (always actionable). Withhold internal
+    #    tasks from external cross-tenant members (their titles feed evidence).
+    from .permissions import exclude_internal_for_external
+    tasks = list(
+        exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), user
+        )
+    )
     overdue = [t for t in tasks if t.due_date and t.due_date < today and t.status != "done"]
     if overdue:
         problems.append({

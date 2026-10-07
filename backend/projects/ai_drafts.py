@@ -83,7 +83,7 @@ def draft_meeting_agenda(project, user=None):
     # 3) Top compound signals — cost signals embed spend %; hide from viewers
     #    not allowed to see this project's costs (external or restricted).
     try:
-        sig = compute_compound_signals(project)
+        sig = compute_compound_signals(project, user=user)
         show_costs = can_view_costs_for(user, project)
         sigs = [
             s for s in sig.get("signals", [])

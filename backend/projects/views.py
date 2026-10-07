@@ -642,7 +642,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         from .permissions import can_view_costs
 
         project = self.get_object()
-        result = compute_compound_signals(project)
+        result = compute_compound_signals(project, user=request.user)
 
         from .permissions import can_view_costs_for
         if not can_view_costs_for(request.user, project):
