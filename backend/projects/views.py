@@ -114,8 +114,17 @@ def accessible_project_ids(user):
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return Project.objects.all().values_list('id', flat=True)
     if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
-        return Project.objects.filter(company_id=user.company_id)\
-            .values_list('id', flat=True)
+        # Company-wide roles see every project in their own company, PLUS any
+        # project they were explicitly added to (active team member) or created,
+        # which may live in another company — so a cross-tenant project shared
+        # with e.g. a partner's PM/admin is visible, not hidden by the
+        # own-company shortcut. Membership is explicit, so this never broadens
+        # access beyond what was deliberately granted.
+        return Project.objects.filter(
+            Q(company_id=user.company_id)
+            | Q(team_members__user=user, team_members__is_active=True)
+            | Q(created_by=user)
+        ).values_list('id', flat=True).distinct()
     return Project.objects.filter(
         Q(team_members__user=user, team_members__is_active=True)
         | Q(created_by=user)
@@ -1359,18 +1368,40 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         url_path="team/remove/(?P<team_member_id>[^/.]+)",
     )
     def remove_team_member(self, request, pk=None, team_member_id=None):
-        """Remove a team member from the project"""
+        """Remove a team member from the project.
+
+        The owning company (project.company) keeps full control; a cross-tenant
+        collaborator may only remove members from their own company or members
+        they added themselves — so a partner PM on a shared project cannot
+        deactivate the host company's own people.
+        """
         project = self.get_object()
 
         try:
             team_member = project.team_members.get(id=team_member_id)
-            team_member.is_active = False
-            team_member.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except ProjectTeam.DoesNotExist:
             return Response(
                 {"error": "Team member not found"}, status=status.HTTP_404_NOT_FOUND
             )
+
+        req_company_id = getattr(request.user, "company_id", None)
+        is_owner_company = (
+            req_company_id is not None and req_company_id == project.company_id
+        )
+        target_company_id = getattr(getattr(team_member, "user", None), "company_id", None)
+        if not (
+            is_owner_company
+            or (req_company_id is not None and target_company_id == req_company_id)
+            or team_member.added_by_id == request.user.id
+        ):
+            return Response(
+                {"error": "You can only remove members from your own company or ones you added."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        team_member.is_active = False
+        team_member.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"], url_path="company-dashboard")
     def company_dashboard(self, request):

@@ -1299,11 +1299,21 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
         return None
 
     def to_representation(self, instance):
-        # Yanmar SC-05 — hide hourly rate from non-finance roles.
+        # Hide the hourly rate from non-finance roles (Yanmar SC-05) AND from a
+        # viewer in a different company than the rated member — a cross-tenant
+        # collaborator on a shared project must never see another company's
+        # internal rates (per-field privacy, not row-level).
         data = super().to_representation(instance)
         from .permissions import can_view_costs
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        viewer = getattr(request, "user", None)
+        member_company_id = getattr(getattr(instance, "user", None), "company_id", None)
+        same_company = (
+            viewer is not None
+            and getattr(viewer, "company_id", None) is not None
+            and member_company_id == viewer.company_id
+        )
+        if not can_view_costs(viewer) or not same_company:
             data.pop("hourly_rate", None)
         return data
 # ========================================
