@@ -498,15 +498,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         ]
 
         # Governance flag: financial disclosure to cost-viewing members, for the
-        # PM to accept. Only surfaced to an owning-company cost-viewer (the one
-        # who could accept it); hidden from external collaborators entirely.
-        from .permissions import can_view_costs, financial_disclosure_state
+        # PM to accept. Surfaced only to someone who can actually see THIS
+        # project's costs (can_view_costs_for → excludes external collaborators
+        # AND per-member-restricted members), so the governance metadata follows
+        # the same per-member boundary as the figures themselves.
+        from .permissions import can_view_costs_for, financial_disclosure_state
         financial_disclosure = None
-        own_company = (
-            getattr(request.user, "company_id", None) is not None
-            and request.user.company_id == project.company_id
-        )
-        if own_company and can_view_costs(request.user):
+        if can_view_costs_for(request.user, project):
             financial_disclosure = financial_disclosure_state(project, request.user)
 
         return Response({
@@ -1464,19 +1462,12 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def _is_owning_cost_manager(self, request, project):
         """True when the requester may govern cost visibility on this project:
-        an owning-company manager who can themselves see costs (or superuser).
-        You cannot grant/revoke cost visibility you don't hold yourself."""
-        from .permissions import can_view_costs
-        if request.user.is_superuser:
-            return True
-        own_company = (
-            getattr(request.user, "company_id", None) is not None
-            and request.user.company_id == project.company_id
-        )
-        is_manager = getattr(request.user, "role", None) in (
-            "superadmin", "admin", "pm", "program_manager"
-        )
-        return bool(own_company and is_manager and can_view_costs(request.user))
+        someone who can actually see THIS project's costs (or superuser). Using
+        can_view_costs_for means an external collaborator OR a per-member-
+        restricted member is refused — you cannot grant/revoke cost visibility
+        you don't hold yourself."""
+        from .permissions import can_view_costs_for
+        return bool(request.user.is_superuser or can_view_costs_for(request.user, project))
 
     @action(
         detail=True,
