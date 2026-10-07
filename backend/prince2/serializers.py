@@ -262,9 +262,9 @@ class HighlightReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide money figures from non-finance roles.
         data = super().to_representation(instance)
-        from projects.permissions import can_view_costs
+        from projects.permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
             data.pop("budget_spent", None)
             data.pop("budget_forecast", None)
         return data

@@ -900,6 +900,12 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         from projects.export_templates import pick_template
 
         report = self.get_object()
+        from projects.permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, report.project):
+            return Response(
+                {"detail": "You do not have permission to export project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         company = getattr(report.project, "company", None)
         template_name = request.query_params.get("template", "")
         renderer = pick_template(company, template_name, kind="highlight_pptx")
