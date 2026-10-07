@@ -136,7 +136,14 @@ export const ProjectHeader = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "", budget: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    budget: "",
+    start_date: "",
+    end_date: "",
+  });
+  const [dateError, setDateError] = useState<string | null>(null);
   // In-project invite (cross-tenant collaborator) — pre-linked to THIS project.
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -205,18 +212,32 @@ export const ProjectHeader = () => {
         name: project.name || "",
         description: project.description || "",
         budget: project.budget?.toString() || "",
+        start_date: project.start_date || "",
+        end_date: project.end_date || "",
       });
     }
+    setDateError(null);
     setEditOpen(true);
   };
 
   const handleSave = () => {
+    // Client-side guard that mirrors ProjectSerializer.validate_end_date
+    // (end_date must not be before start_date). Prevents the known bad-data
+    // case where end precedes start — the server would also reject it, but
+    // we want fast, inline feedback.
+    if (formData.start_date && formData.end_date && formData.end_date < formData.start_date) {
+      setDateError(pt("End date cannot be before start date"));
+      return;
+    }
+    setDateError(null);
     updateMutation.mutate({
       id: id!,
       data: {
         name: formData.name,
         description: formData.description,
         budget: parseFloat(formData.budget) || 0,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
       },
     });
   };
@@ -474,6 +495,35 @@ export const ProjectHeader = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_date">{pt("Start Date")}</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={formData.start_date || ""}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, start_date: e.target.value }));
+                    setDateError(null);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_date">{pt("End Date")}</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={formData.end_date || ""}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, end_date: e.target.value }));
+                    setDateError(null);
+                  }}
+                />
+              </div>
+            </div>
+            {dateError && (
+              <p className="text-sm text-red-500" role="alert">{dateError}</p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditOpen(false)}>
