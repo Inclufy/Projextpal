@@ -473,6 +473,17 @@ class ExpenseSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_by", "created_at", "updated_at"]
 
+    def to_representation(self, instance):
+        # Expense amounts are cost-confidential: hidden from non-finance roles
+        # (SC-05), external cross-tenant collaborators, and per-member-restricted
+        # users on this project.
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            data.pop("amount", None)
+        return data
+
 
 class ProjectActivitySerializer(serializers.ModelSerializer):
     project_name = serializers.ReadOnlyField(source="project.name")

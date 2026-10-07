@@ -1601,7 +1601,8 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             data.pop("cash_flow", None)
             for row in data.get("projects", []):
                 if isinstance(row, dict):
-                    for k in ("budget", "paid", "spent", "remaining"):
+                    for k in ("budget", "paid", "spent", "remaining",
+                              "total_paid", "payment_progress", "variance"):
                         row.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
 
@@ -2359,6 +2360,16 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
             company=request.user.company,
         )
         payload = [asdict(result) for result in forecasts]
+        # Per-member cost confidentiality: drop forecasts for projects this
+        # member is restricted from seeing costs on.
+        from .models import ProjectTeam
+        restricted = set(
+            ProjectTeam.objects.filter(
+                user=request.user, can_view_costs=False
+            ).values_list("project_id", flat=True)
+        )
+        if restricted:
+            payload = [p for p in payload if p.get("project_id") not in restricted]
         return Response(
             {"count": len(payload), "results": payload}, status=status.HTTP_200_OK
         )
@@ -3488,6 +3499,12 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
         project_id = self.request.query_params.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+            # Per-member cost confidentiality: a member restricted on this
+            # project may not read its budget line items.
+            from .permissions import can_view_costs_for
+            proj = Project.objects.filter(id=project_id).first()
+            if proj is not None and not can_view_costs_for(user, proj):
+                return BudgetItem.objects.none()
 
         category_id = self.request.query_params.get('category_id')
         if category_id:
