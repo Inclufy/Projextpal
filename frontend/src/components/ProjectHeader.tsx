@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   PauseCircle,
   RotateCcw,
+  ArrowLeft,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
@@ -188,34 +189,51 @@ export const ProjectHeader = () => {
     <>
       <div className="border-b border-border bg-card">
         <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-          {/* Left: project title + status + health */}
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-lg font-semibold text-foreground truncate max-w-[42ch]">
-              {project?.name || pt("Project")}
-            </h1>
-            {project?.status && (
-              <Badge variant="outline" className={cn("font-medium", statusMeta.className)}>
-                {pt(statusMeta.key)}
-              </Badge>
-            )}
-            {health?.rag && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                    <span className={cn("h-2.5 w-2.5 rounded-full", RAG_DOT[health.rag])} />
-                    {pt("Health")}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="text-xs">
-                  <div className="space-y-0.5">
-                    <div>{pt("Open actions")}: {health.open_actions}</div>
-                    <div>{pt("Overdue")}: {health.overdue_actions}</div>
-                    <div>{pt("Open issues")}: {health.open_issues}</div>
-                    <div>{pt("Open risks")}: {health.open_risks}</div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            )}
+          {/* Left: back + project title + status + health + subtitle */}
+          <div className="flex items-start gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label={pt("Back")}
+              className="mt-1.5 shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold text-foreground truncate max-w-[42ch]">
+                  {project?.name || pt("Project")}
+                </h1>
+                {project?.status && (
+                  <Badge variant="outline" className={cn("font-medium", statusMeta.className)}>
+                    {pt(statusMeta.key)}
+                  </Badge>
+                )}
+                {health?.rag && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className={cn("h-2.5 w-2.5 rounded-full", RAG_DOT[health.rag])} />
+                        {pt("Health")}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs">
+                      <div className="space-y-0.5">
+                        <div>{pt("Open actions")}: {health.open_actions}</div>
+                        <div>{pt("Overdue")}: {health.overdue_actions}</div>
+                        <div>{pt("Open issues")}: {health.open_issues}</div>
+                        <div>{pt("Open risks")}: {health.open_risks}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              {project?.description && (
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2 max-w-[70ch]">
+                  {project.description}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Right: actions */}
