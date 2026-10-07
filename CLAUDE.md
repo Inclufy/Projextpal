@@ -40,7 +40,30 @@ Not Supabase-based. Has its own Postgres on Mac Studio.
 
 ## 3. ⚠️ Production deploy — CRITICAL gotcha
 
-Production runs on **Mac Studio** (`sami@MacStudovanSami`), accessed via Cloudflare Tunnel (no public IP).
+Production runs on **Hetzner** (`46.224.177.72`, host `ubuntu-4gb-nbg1-1`, public IP; serves `projextpal.com` + `api.projextpal.com`). **Mac Studio is STAGING only** (`staging-projextpal.inclufy.com`) — the Mac-Studio paths, compose files, and Cloudflare-Tunnel topology in the rest of this section and §4 describe the STAGING procedure, not production.
+
+### Hetzner production deploy (canonical)
+
+- Host working dir `/opt/projextpal/`. **No git repo on the host** — place source by streaming a `git archive <sha>` from the laptop (do NOT rely on `git pull` there).
+- Both images are **hand-built on the host** from a commit SHA and retagged per short-SHA: `registry.gitlab.com/inclufy/projextpal/{backend,frontend}:<shortsha>` (backend `backend/Dockerfile.prod`, frontend `frontend/Dockerfile.prod`). The GitLab deploy token in `/opt/projextpal/.docker` is **read-only** (push fails `insufficient_scope`); GitHub CI (`docker-web`) builds only the frontend→ghcr and only on a master push, so it is not the prod path.
+- Deploy — **never `down -v`**:
+  ```bash
+  cd /opt/projextpal && set -a && . ./.env.productie && set +a && \
+  ENV_NAME=productie PXP_TAG=<shortsha> DOCKER_CONFIG=/opt/projextpal/.docker \
+  docker compose -p projextpal-productie --env-file .env.productie \
+    -f docker-compose.stack.yml -f deploy/hetzner/achter-centrale-caddy.yml \
+    up -d --pull never
+  ```
+- **DB dump before ANY migration:** `/opt/projextpal/backup-projextpal.sh` → `/opt/projextpal/backups/productie/…sql.gz` (verify non-empty + `gzip -t`). Migrations apply automatically via the backend container's `migrate --noinput` on `up`.
+- Container names must stay identical — the central Caddy (`/opt/caddy/Caddyfile`) routes **by container name**: `projextpal-productie-backend` (Django :8001), `projextpal-productie-frontend` (nginx :80); shared `postgres`/`redis`/proxy run separately (do not recreate).
+- **Verify what actually runs**, not a green pipeline: backend `GIT_SHA` env **and** `/health/` `git_sha` must equal the deployed SHA; `projextpal.com` still serves "ProjectPal" and the IQ-Helix hosts are unchanged; existing endpoints return 401 (not 500); `docker ps` shows no restart loop. Docker "unhealthy" can be a **false alarm** (the image lacks `curl`; the app answers 200) — meet via `/health/`, not docker-health.
+- Rollback: redeploy with `PXP_TAG=<previous-shortsha>` (the prior image stays on the host). Additive-with-default migrations (e.g. `is_internal`, `can_view_costs`) are tolerated by the older image, so an app-only rollback is safe without a DB restore.
+
+---
+
+### STAGING (Mac Studio) — everything below is STAGING, not production
+
+Staging runs on **Mac Studio** (`sami@MacStudovanSami`), accessed via Cloudflare Tunnel (no public IP).
 
 **Mac Studio canonical paths:**
 - ✅ Working tree: `/Users/sami/Desktop/ProjextPal/` ← deploy commands run here
