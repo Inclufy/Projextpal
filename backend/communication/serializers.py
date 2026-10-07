@@ -27,6 +27,27 @@ class MethodologyReportSerializer(serializers.ModelSerializer):
             "original_ai_response",
         ]
 
+    def to_representation(self, instance):
+        # Hide cost figures (metrics CPI/budget + cost RAG, and the CPI mention
+        # in the executive summary) from external and per-member-restricted viewers.
+        data = super().to_representation(instance)
+        from projects.permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            m = data.get("metrics")
+            if isinstance(m, dict):
+                for k in ("cpi", "budget", "budget_total", "spent", "cost",
+                          "ev", "ac", "pv", "cv", "budget_utilization"):
+                    m.pop(k, None)
+            data.pop("rag_cost", None)
+            es = data.get("executive_summary")
+            if isinstance(es, str) and es:
+                import re
+                data["executive_summary"] = re.sub(
+                    r"\s*CPI[\s:]*[0-9]+(?:\.[0-9]+)?", "", es
+                ).strip()
+        return data
+
 
 class GeneratedStatusReportSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source="project.name", read_only=True)
@@ -42,6 +63,20 @@ class GeneratedStatusReportSerializer(serializers.ModelSerializer):
             "created_by", "created_by_name", "created_at",
         ]
         read_only_fields = fields
+
+    def to_representation(self, instance):
+        # Hide cost figures (metrics.budget + cost RAG) from external and
+        # per-member-restricted viewers.
+        data = super().to_representation(instance)
+        from projects.permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            m = data.get("metrics")
+            if isinstance(m, dict):
+                for k in ("budget", "budget_total", "spent", "cost", "cpi", "budget_utilization"):
+                    m.pop(k, None)
+            data.pop("rag_cost", None)
+        return data
 
 class StatusReportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)  # String ID to match frontend
