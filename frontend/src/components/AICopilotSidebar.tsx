@@ -981,7 +981,7 @@ const quickActionsData = {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function AICopilotSidebar() {
-  const { isOpen, close, requestedTab, activeProject, pendingMessage, consumePendingMessage } = useCopilot();
+  const { isOpen, close, requestedTab, activeProject, activeProgram, pendingMessage, consumePendingMessage } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
   const { user } = useAuth();
@@ -1108,10 +1108,16 @@ export default function AICopilotSidebar() {
       // context however it was opened while inside a project.
       const urlProjectId = window.location.pathname.match(/\/projects\/(\d+)/)?.[1];
       const projectId = activeProject?.id != null ? String(activeProject.id) : urlProjectId;
+      // Same for the programme: prefer an explicitly set active programme
+      // (opened via "Ask Co-pilot" or a pick-up on a programme), else fall back
+      // to the programme in the current URL (/programs/:id).
+      const urlProgramId = window.location.pathname.match(/\/programs\/(\d+)/)?.[1];
+      const programId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramId;
       const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
         message: messageContent,
         language,
         ...(projectId ? { project_id: projectId } : {}),
+        ...(programId ? { program_id: programId } : {}),
       });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {

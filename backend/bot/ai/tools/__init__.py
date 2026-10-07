@@ -99,6 +99,7 @@ from . import (
     timeline_adjustment_tools,
     project_analysis_tools,
     program_tools,
+    program_lifecycle_tools,
 )
 
 import os

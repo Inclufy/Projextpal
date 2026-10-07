@@ -10,9 +10,11 @@ import {
   PauseCircle,
   RotateCcw,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
+import { ProjectKpiStrip } from "./ProjectKpiStrip";
 import {
   Dialog,
   DialogContent,
@@ -86,6 +88,15 @@ const postLifecycle = async ({ id, action }: { id: string; action: "close" | "ho
   return response.json();
 };
 
+const deleteProject = async (id: string) => {
+  const response = await fetch(`/api/v1/projects/${id}/`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to delete project");
+  return true;
+};
+
 /** status value -> badge label key + tailwind classes. */
 const STATUS_META: Record<string, { key: string; className: string }> = {
   planning: { key: "Planning", className: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -115,6 +126,7 @@ export const ProjectHeader = () => {
   const { openForProject } = useCopilot();
   const [editOpen, setEditOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", budget: "" });
   const { pt } = usePageTranslations();
 
@@ -159,6 +171,16 @@ export const ProjectHeader = () => {
       toast.success(msg);
     },
     onError: () => toast.error(pt("Could not update project status")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProject(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success(pt("Project deleted successfully"));
+      navigate("/projects");
+    },
+    onError: () => toast.error(pt("Failed to delete project")),
   });
 
   const handleEditClick = () => {
@@ -294,12 +316,20 @@ export const ProjectHeader = () => {
                 {pt("Analyze with AI")}
               </Button>
             )}
+
+            {isPMPlus && (
+              <Button variant="destructive" className="gap-2" onClick={() => setConfirmDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" />
+                {pt("Delete")}
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {isOverview && id && (
-        <div className="px-6 pt-4">
+        <div className="px-6 pt-4 space-y-4">
+          <ProjectKpiStrip />
           <ProjectAttentionPanel />
         </div>
       )}
@@ -319,6 +349,27 @@ export const ProjectHeader = () => {
               onClick={() => lifecycleMutation.mutate({ id: id!, action: "close" })}
             >
               {pt("Close project")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pt("Delete Project")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pt("Are you sure you want to delete this project? This action cannot be undone.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {pt("Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
