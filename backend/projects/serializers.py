@@ -834,6 +834,7 @@ class ProjectTeamSerializer(serializers.ModelSerializer):
             "added_by_name",
             "added_at",
             "is_active",
+            "can_view_costs",
         ]
         read_only_fields = ["id", "added_at", "added_by"]
 
@@ -1305,7 +1306,7 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
         # collaborator on a shared project must never see another company's
         # internal rates (per-field privacy, not row-level).
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
         viewer = getattr(request, "user", None)
         member_company_id = getattr(getattr(instance, "user", None), "company_id", None)
@@ -1314,7 +1315,10 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
             and getattr(viewer, "company_id", None) is not None
             and member_company_id == viewer.company_id
         )
-        if not can_view_costs(viewer) or not same_company:
+        # Mask unless the viewer may see costs on this project (role + not
+        # external + not per-member-restricted) AND the rated member is in the
+        # viewer's own company (never expose another company's internal rates).
+        if not can_view_costs_for(viewer, getattr(instance, "project", None)) or not same_company:
             data.pop("hourly_rate", None)
         return data
 # ========================================

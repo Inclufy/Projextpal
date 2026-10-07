@@ -30,14 +30,27 @@ def can_view_costs(user) -> bool:
 
 
 def can_view_costs_for(user, project) -> bool:
-    """Costs are visible only to a role that may see costs AND who is NOT an
-    external (cross-tenant) collaborator on this project. `can_view_costs` is
-    role-only; since cross-tenant collaboration lets a partner PM/admin reach a
-    shared project, the role gate alone would leak the host company's financials
-    — so an external member never sees costs, regardless of role."""
+    """Costs (budgets/expenses/rates) are visible only when ALL hold:
+      1. the user's role may see costs (`can_view_costs`), AND
+      2. the user is NOT an external (cross-tenant) collaborator on this project
+         (role gate alone would leak host financials to a partner PM/admin), AND
+      3. the user is NOT a project member explicitly restricted on THIS project
+         (per-member `ProjectTeam.can_view_costs=False`) — so costs can be masked
+         for specific people even inside the owning company.
+    Superadmin always sees costs."""
     if getattr(user, "is_superuser", False):
         return True
-    return can_view_costs(user) and not is_external_member(user, project)
+    if not can_view_costs(user) or is_external_member(user, project):
+        return False
+    # Per-member confidentiality: only query when costs would otherwise show.
+    if project is not None and getattr(user, "id", None):
+        from .models import ProjectTeam
+        restricted = ProjectTeam.objects.filter(
+            project=project, user=user, can_view_costs=False
+        ).exists()
+        if restricted:
+            return False
+    return True
 
 
 class CanViewCosts(BasePermission):

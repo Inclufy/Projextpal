@@ -1381,16 +1381,24 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Per-member cost visibility (default True; mask budgets/rates for this
+        # person on this project when set to False).
+        can_view_costs_flag = request.data.get("can_view_costs", True)
+        if isinstance(can_view_costs_flag, str):
+            can_view_costs_flag = can_view_costs_flag.lower() not in ("false", "0", "no")
+
         # Check if an inactive team member record exists and reactivate it
         try:
             team_member = project.team_members.get(user=user, is_active=False)
             team_member.is_active = True
             team_member.added_by = request.user
+            team_member.can_view_costs = bool(can_view_costs_flag)
             team_member.save()
         except ProjectTeam.DoesNotExist:
             # Create new team member if no inactive record exists
             team_member = ProjectTeam.objects.create(
-                project=project, user=user, added_by=request.user
+                project=project, user=user, added_by=request.user,
+                can_view_costs=bool(can_view_costs_flag),
             )
 
         serializer = ProjectTeamSerializer(team_member)
@@ -3171,8 +3179,13 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 {"detail": "Project ID is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # Yanmar SC-05 — labour-cost summary is finance-roles only.
-        if not can_view_costs(request.user):
+        # Labour-cost summary is finance-roles only AND never for an external
+        # (cross-tenant) collaborator or a per-member-restricted user on this
+        # project (the totals are built manually, so guard with the same
+        # external-aware check the list endpoint/serializer use).
+        from .permissions import can_view_costs_for
+        _project = Project.objects.filter(id=project_id).first()
+        if not can_view_costs_for(request.user, _project):
             return Response(
                 {"detail": "You do not have permission to view labour costs."},
                 status=status.HTTP_403_FORBIDDEN,
