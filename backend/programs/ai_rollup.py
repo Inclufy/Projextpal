@@ -61,8 +61,9 @@ def program_progress(program):
     }
 
 
-def program_compound_signals(program):
+def program_compound_signals(program, user=None):
     from projects.compound_signals import compute_compound_signals
+    from projects.permissions import can_view_costs_for
 
     out = []
     for p in program.projects.all():
@@ -70,7 +71,14 @@ def program_compound_signals(program):
             res = compute_compound_signals(p)
         except Exception:
             continue
+        # Cost signals embed the absolute project budget + spend % in their
+        # detail/title strings; hide them per constituent project from viewers
+        # not allowed to see that project's costs (external or per-member
+        # restricted). Mirrors ProjectViewSet.compound_signals masking.
+        hide_cost = not can_view_costs_for(user, p)
         for s in res.get("signals", []):
+            if hide_cost and "cost" in s.get("areas", []):
+                continue
             out.append({**s, "project_id": p.id, "project_name": p.name})
 
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
@@ -83,9 +91,9 @@ def program_compound_signals(program):
     }
 
 
-def program_status_narrative(program):
+def program_status_narrative(program, user=None):
     prog = program_progress(program)
-    sig = program_compound_signals(program)
+    sig = program_compound_signals(program, user=user)
     name = program.name
 
     summary = (

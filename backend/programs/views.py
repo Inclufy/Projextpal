@@ -263,13 +263,13 @@ class ProgramViewSet(viewsets.ModelViewSet):
     def ai_compound_signals(self, request, pk=None):
         """Programme cross-project compound signals (aggregated over projects)."""
         from .ai_rollup import program_compound_signals
-        return Response(program_compound_signals(self.get_object()))
+        return Response(program_compound_signals(self.get_object(), user=request.user))
 
     @action(detail=True, methods=['get'], url_path='ai/status-report')
     def ai_status_report(self, request, pk=None):
         """Programme AI status report — RAG + narrative rolled up from projects."""
         from .ai_rollup import program_status_narrative
-        return Response(program_status_narrative(self.get_object()))
+        return Response(program_status_narrative(self.get_object(), user=request.user))
 
     @action(detail=True, methods=['get'], url_path='progress')
     def progress(self, request, pk=None):

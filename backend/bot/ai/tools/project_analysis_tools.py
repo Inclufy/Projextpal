@@ -1119,6 +1119,12 @@ def analyze_cross_module_intelligence(project_id: str) -> Dict[str, Any]:
         m = {}
 
     signals = sig.get("signals", [])
+    # Cost signals embed the absolute budget + spend % in their detail/title;
+    # hide them from viewers not allowed to see this project's costs (external
+    # or per-member restricted). Mirrors ProjectViewSet.compound_signals.
+    from projects.permissions import can_view_costs_for
+    if not can_view_costs_for(user, project):
+        signals = [s for s in signals if "cost" not in s.get("areas", [])]
     md = f"# 🧠 Cross-module intelligence — {project.name}\n\n"
     md += (
         f"- Tasks: {m.get('tasks_done', 0)}/{m.get('tasks_total', 0)} done, "
