@@ -214,8 +214,30 @@ class ChatViewSet(viewsets.ModelViewSet):
 
             user_ai_agent = ERPAIAgent(tools=tools, user=user_for_context)
 
+            # Tell the model which project the user is working in, so "this
+            # project" / unspecified actions resolve to it and it never asks for
+            # the id (the tools default to this project via the session context).
+            project_context = ""
+            pid = request.data.get("project_id")
+            if pid and str(pid).isdigit():
+                from projects.models import Project
+                comp = getattr(user_for_context, "company", None)
+                proj = (
+                    Project.objects.filter(id=int(pid), company=comp).first()
+                    if comp else None
+                )
+                if proj:
+                    project_context = (
+                        f"[Context: the user is currently working in project "
+                        f"#{proj.id} \"{proj.name}\". When they say 'this project', "
+                        f"'the project', or refer to actions/tasks/issues/risks "
+                        f"without naming a project, act on project #{proj.id} and "
+                        f"call project tools without a project_id (they default to "
+                        f"this project). Do not ask for the project id.]\n"
+                    )
+
             # Add language instruction to the message for AI processing
-            message_with_language = f"{language_instruction}{message}"
+            message_with_language = f"{language_instruction}{project_context}{message}"
             
             # Get AI response with language-aware message
             ai_response = user_ai_agent.process_message(message_with_language, chat_history)

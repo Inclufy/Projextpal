@@ -1101,12 +1101,17 @@ export default function AICopilotSidebar() {
         chatId = newChat.id.toString();
         setCurrentChatId(chatId);
       }
+      // Scope the turn to the current project so tools like "close this project"
+      // / "complete all tasks" / "add an action" act on it without an id. Prefer
+      // an explicitly set active project (opened via "Ask Co-pilot" or a pick-up);
+      // otherwise fall back to the project in the current URL, so the copilot has
+      // context however it was opened while inside a project.
+      const urlProjectId = window.location.pathname.match(/\/projects\/(\d+)/)?.[1];
+      const projectId = activeProject?.id != null ? String(activeProject.id) : urlProjectId;
       const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
         message: messageContent,
         language,
-        // Scope the turn to the project the copilot was opened from, so tools
-        // like "close this project" / "add an action" act on it without an id.
-        ...(activeProject?.id != null ? { project_id: String(activeProject.id) } : {}),
+        ...(projectId ? { project_id: projectId } : {}),
       });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {
