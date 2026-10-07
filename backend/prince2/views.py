@@ -1179,9 +1179,15 @@ class ProjectToleranceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         closing the *Manage by Exception* loop automatically.
         """
         from projects.models import BudgetItem
+        from projects.permissions import can_view_costs_for
         from datetime import date as _date
 
         project = self.get_project()
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {'detail': 'You do not have permission to view project costs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         active = Stage.objects.filter(project=project, status='active').order_by('order').first()
         if not active:
             return Response(
@@ -1461,6 +1467,25 @@ class Prince2DashboardView(APIView):
             'stages': stage_budgets,
             'active_cost_breach': active_cost_breach,
         }
+
+        # Cross-tenant / per-member confidentiality: hide all cost figures
+        # (total + per-stage planned/actual/remaining/variance) from viewers
+        # who may not see this project's costs.
+        from projects.permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            budget_governance = {
+                'currency': currency,
+                'total_planned': 0,
+                'total_actual': 0,
+                'total_remaining': 0,
+                'variance': 0,
+                'variance_pct': None,
+                'over_budget': False,
+                'has_budget_data': False,
+                'stages': [],
+                'active_cost_breach': None,
+                'restricted': True,
+            }
 
         # ------------------------------------------------------------------
         # Board approvals inbox — items awaiting Project Board sign-off.

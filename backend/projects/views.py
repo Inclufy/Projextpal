@@ -257,8 +257,8 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
         template_name = request.query_params.get("template", "")
         renderer = pick_template(project.company, template_name, kind="project_plan_docx")
-        from .permissions import can_view_costs
-        docx_bytes = renderer(project, show_costs=can_view_costs(request.user))
+        from .permissions import can_view_costs_for
+        docx_bytes = renderer(project, show_costs=can_view_costs_for(request.user, project))
         filename = f"{slugify(project.name) or 'project'}-project-plan.docx"
         response = HttpResponse(
             docx_bytes,
@@ -2197,6 +2197,15 @@ class ExpenseViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         if not (getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)):
             company = getattr(user, "company", None)
             qs = qs.filter(project__company=company) if company is not None else qs.none()
+            # Per-member confidentiality: hide expense METADATA (description/
+            # category/date) of projects where this user is restricted
+            # (ProjectTeam.can_view_costs=False) — the amount is already masked
+            # by the serializer, but the rows themselves must be withheld too.
+            qs = qs.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
