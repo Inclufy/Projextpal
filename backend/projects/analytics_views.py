@@ -102,7 +102,20 @@ def analytics_overview(request):
     ms_total = milestones.count()
     ms_done = milestones.filter(status="completed").count()
 
-    budget = projects.aggregate(s=Sum("budget"))["s"] or 0
+    # Budget is cost-confidential: only sum budgets of projects in the user's
+    # OWN company (never cross-tenant projects they collaborate on) and only for
+    # a cost-viewing role — otherwise 0, so an external collaborator or a
+    # non-finance role never gets host budget figures here.
+    from .permissions import can_view_costs
+    _user_company_id = getattr(request.user, "company_id", None)
+    if can_view_costs(request.user) and _user_company_id is not None:
+        budget = (
+            projects.filter(company_id=_user_company_id).aggregate(s=Sum("budget"))["s"] or 0
+        )
+    elif getattr(request.user, "is_superuser", False):
+        budget = projects.aggregate(s=Sum("budget"))["s"] or 0
+    else:
+        budget = 0
     completion_pct = _completion(tasks_total, tasks_done)
 
     # --- extra composable metrics (for custom dashboards) -------------------
@@ -173,7 +186,9 @@ def analytics_overview(request):
     top_projects = []
     if scope != "project":
         task_rows = (
-            Task.objects.filter(milestone__project_id__in=proj_ids)
+            exclude_internal_for_external(
+                Task.objects.filter(milestone__project_id__in=proj_ids), request.user
+            )
             .values("milestone__project_id")
             .annotate(total=Count("id"), done=Count("id", filter=Q(status="done")))
         )

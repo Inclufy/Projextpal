@@ -2147,10 +2147,17 @@ class ExpenseViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Expenses are host-company-confidential financial data: an external
+        # (cross-tenant) collaborator on a shared project must not read host
+        # expense amounts. Scope non-superadmin to their OWN company.
+        user = self.request.user
+        if not (getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)):
+            company = getattr(user, "company", None)
+            qs = qs.filter(project__company=company) if company is not None else qs.none()
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-        
+
         program_id = self.request.query_params.get("program")
         if program_id:
             qs = qs.filter(project__program_id=program_id)
