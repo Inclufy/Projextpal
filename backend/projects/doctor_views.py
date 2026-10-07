@@ -28,7 +28,7 @@ def project_diagnose(request, pk):
     project = _get_project(request, pk)
     if not project:
         return Response({"detail": "Project not found or not accessible."}, status=404)
-    return Response(diagnose(project))
+    return Response(diagnose(project, user=request.user))
 
 
 @api_view(["POST"])

@@ -47,17 +47,24 @@ def _proposals_for(stype, evidence):
     return [{"title": t, "priority": p, "due_in_days": d} for (t, p, d) in items]
 
 
-def diagnose(project):
+def diagnose(project, user=None):
     """Detect project problems and attach proposed corrective actions."""
     from .compound_signals import compute_compound_signals
+    from .permissions import can_view_costs_for
     from .models import Task
 
     today = timezone.now().date()
     problems = []
+    # Cost signals + the budget-overrun check embed the absolute budget / spend;
+    # hide them from viewers not allowed to see this project's costs (external
+    # cross-tenant members and per-member-restricted members).
+    show_costs = can_view_costs_for(user, project)
 
     # 1) Compound signals (deterministic cross-module detection)
     cs = compute_compound_signals(project)
     for i, s in enumerate(cs.get("signals", [])):
+        if not show_costs and "cost" in s.get("areas", []):
+            continue
         problems.append({
             "id": f"cs-{i}",
             "severity": s["severity"],
@@ -98,7 +105,7 @@ def diagnose(project):
     try:
         budget = float(project.budget or 0)
         spent = float(getattr(project, "spent", 0) or 0)
-        if budget and spent > budget:
+        if show_costs and budget and spent > budget:
             problems.append({
                 "id": "budget", "severity": "high", "type": "budget_overrun",
                 "title": "Budget overrun",

@@ -621,7 +621,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """AI auto-draft a meeting agenda from open actions, issues, signals, milestones."""
         from .ai_drafts import draft_meeting_agenda
 
-        return Response(draft_meeting_agenda(self.get_object()))
+        return Response(draft_meeting_agenda(self.get_object(), user=request.user))
 
     @action(detail=True, methods=["get"], url_path="ai/draft-comms")
     def ai_draft_comms(self, request, pk=None):

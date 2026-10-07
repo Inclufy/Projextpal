@@ -57,9 +57,10 @@ def draft_lessons(project):
 # ---------------------------------------------------------------------------
 # Meeting agenda — drafted from open prior actions + issues + compound signals
 # ---------------------------------------------------------------------------
-def draft_meeting_agenda(project):
+def draft_meeting_agenda(project, user=None):
     from .models import Milestone, Issue
     from .compound_signals import compute_compound_signals
+    from .permissions import can_view_costs_for
     from communication.models import Meeting
 
     today = timezone.now().date()
@@ -79,10 +80,16 @@ def draft_meeting_agenda(project):
     for i in Issue.objects.filter(project=project, status__in=["Open", "In Progress"], severity__in=["Blocker", "Critical"])[:5]:
         agenda.append(f"Resolve {i.severity.lower()} issue: {i.name}")
 
-    # 3) Top compound signals
+    # 3) Top compound signals — cost signals embed spend %; hide from viewers
+    #    not allowed to see this project's costs (external or restricted).
     try:
         sig = compute_compound_signals(project)
-        for s in sig.get("signals", [])[:3]:
+        show_costs = can_view_costs_for(user, project)
+        sigs = [
+            s for s in sig.get("signals", [])
+            if show_costs or "cost" not in s.get("areas", [])
+        ]
+        for s in sigs[:3]:
             agenda.append(f"Address ({s['severity']}): {s['title']}")
     except Exception:
         pass
