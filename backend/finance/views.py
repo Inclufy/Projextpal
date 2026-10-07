@@ -564,6 +564,7 @@ def _internal_cost_for_project(project):
 def project_cost_summary(request, project_id):
     """Cost summary for a single project."""
     from projects.models import Project, BudgetItem
+    from projects.permissions import can_view_costs_for
 
     user = request.user
     project = get_object_or_404(Project, pk=project_id)
@@ -571,6 +572,15 @@ def project_cost_summary(request, project_id):
         company = _user_company(user)
         if not company or project.company_id != company.id:
             return Response({"detail": "Not found."}, status=404)
+
+    # Purely-financial endpoint: deny when the viewer may not see this
+    # project's costs (non-finance role, external cross-tenant member, or a
+    # per-member ProjectTeam.can_view_costs=False restriction).
+    if not can_view_costs_for(user, project):
+        return Response(
+            {"detail": "You do not have permission to view project costs."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     # Budget figures
     budget_total = float(project.budget or 0)

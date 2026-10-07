@@ -107,10 +107,18 @@ def analytics_overview(request):
     # a cost-viewing role — otherwise 0, so an external collaborator or a
     # non-finance role never gets host budget figures here.
     from .permissions import can_view_costs
+    from .models import ProjectTeam
+    # Per-member confidentiality: also drop projects where THIS user is a
+    # restricted member (ProjectTeam.can_view_costs=False) from the budget sum.
+    _restricted_project_ids = ProjectTeam.objects.filter(
+        user=request.user, can_view_costs=False
+    ).values("project_id")
     _user_company_id = getattr(request.user, "company_id", None)
     if can_view_costs(request.user) and _user_company_id is not None:
         budget = (
-            projects.filter(company_id=_user_company_id).aggregate(s=Sum("budget"))["s"] or 0
+            projects.filter(company_id=_user_company_id)
+            .exclude(id__in=_restricted_project_ids)
+            .aggregate(s=Sum("budget"))["s"] or 0
         )
     elif getattr(request.user, "is_superuser", False):
         budget = projects.aggregate(s=Sum("budget"))["s"] or 0

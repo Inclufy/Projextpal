@@ -366,13 +366,27 @@ class ProgramViewSet(viewsets.ModelViewSet):
         
         projects = program.projects.all()
         total_projects = projects.count()
-        
+
         # Calculate project status distribution
         status_distribution = projects.values('status').annotate(count=Count('id'))
-        
-        # Calculate total budget from projects
-        project_budget = projects.aggregate(total=Sum('budget'))['total'] or 0
-        
+
+        # Budget figures are cost-confidential: only a cost-viewing role sees
+        # them (role gate), and projects where THIS user is restricted
+        # (ProjectTeam.can_view_costs=False) are excluded from the aggregate
+        # (per-member gate). External tenants are already excluded because the
+        # program is company-scoped in get_queryset.
+        from projects.permissions import can_view_costs
+        from projects.models import ProjectTeam
+        can_see_costs = can_view_costs(request.user)
+        if can_see_costs:
+            project_budget = projects.exclude(
+                id__in=ProjectTeam.objects.filter(
+                    user=request.user, can_view_costs=False
+                ).values("project_id")
+            ).aggregate(total=Sum('budget'))['total'] or 0
+        else:
+            project_budget = 0
+
         # Benefits metrics
         benefits = program.benefits.all()
         total_benefits = benefits.count()
@@ -386,8 +400,8 @@ class ProgramViewSet(viewsets.ModelViewSet):
         return Response({
             'total_projects': total_projects,
             'status_distribution': list(status_distribution),
-            'program_budget': float(program.total_budget),
-            'spent_budget': float(program.spent_budget),
+            'program_budget': float(program.total_budget) if can_see_costs else 0,
+            'spent_budget': float(program.spent_budget) if can_see_costs else 0,
             'project_budget_total': float(project_budget),
             'progress': program.progress,
             'total_benefits': total_benefits,
@@ -681,6 +695,13 @@ class ProgramBudgetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Role gate: only cost-viewing roles may read program budgets. Company
+        # scoping below already keeps external tenants out; per-member cost
+        # restriction is per-project, so the role gate is the relevant check
+        # for the program-level budget object.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudget.objects.none()
         return ProgramBudget.objects.filter(
             program__company=self.request.user.company
         )
