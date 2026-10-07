@@ -73,7 +73,7 @@ def compute_compound_signals(project, user=None):
     omitted (internal callers that only read the count) nothing is excluded.
     """
     from .models import Milestone, Task, Risk, Issue
-    from .permissions import exclude_internal_for_external
+    from .permissions import exclude_internal_for_external, can_view_costs_for
 
     today = _today()
     signals = []
@@ -231,6 +231,18 @@ def compute_compound_signals(project, user=None):
 
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     signals.sort(key=lambda s: order.get(s["severity"], 9))
+
+    # Safe-by-default cost confidentiality: when a `user` is supplied who may not
+    # see this project's costs (external cross-tenant, or per-member restricted),
+    # drop cost-area signals (S2/S6 embed the absolute budget / spend %) and the
+    # budget-spent %. `user=None` = trusted internal caller (e.g. the count-only
+    # status-synthesis path) → no filtering. Callers also mask post-call (defence
+    # in depth); this keeps the engine safe even for a future caller that forgets.
+    budget_pct = pct
+    if user is not None and not can_view_costs_for(user, project):
+        signals = [s for s in signals if "cost" not in s.get("areas", [])]
+        budget_pct = None
+
     return {
         "generated_at": timezone.now().isoformat(),
         "count": len(signals),
@@ -240,6 +252,6 @@ def compute_compound_signals(project, user=None):
             "tasks": len(tasks),
             "open_risks": len(open_risks),
             "open_issues": len(open_issues),
-            "budget_pct": pct,
+            "budget_pct": budget_pct,
         },
     }
