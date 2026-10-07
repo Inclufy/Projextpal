@@ -887,6 +887,13 @@ class ProjectTeam(models.Model):
     )
     added_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # Per-member financial confidentiality: when False, this member does not see
+    # budgets/expenses/hourly rates on this project, even if their role normally
+    # could. Default True so existing members are unaffected.
+    can_view_costs = models.BooleanField(
+        default=True,
+        help_text="Allow this member to see budgets/rates on this project.",
+    )
     hourly_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=0,
         help_text="Hourly rate for this team member on this project"
