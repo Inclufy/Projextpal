@@ -2079,6 +2079,13 @@ class TaskDueDateChangeRequestViewSet(CompanyScopedQuerysetMixin, viewsets.Model
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Withhold change requests on internal-only tasks from external
+        # cross-tenant members (the serializer exposes task_title).
+        from .permissions import exclude_internal_for_external
+        from .models import Task
+        qs = qs.filter(
+            task__in=exclude_internal_for_external(Task.objects.all(), self.request.user)
+        )
         status_f = self.request.query_params.get("status")
         if status_f:
             qs = qs.filter(status=status_f)
