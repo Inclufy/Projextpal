@@ -28,24 +28,38 @@ class MethodologyReportSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        # Hide cost figures (metrics CPI/budget + cost RAG, and the CPI mention
-        # in the executive summary) from external and per-member-restricted viewers.
+        # Hide cost/EVM figures (metrics CPI+SPI/budget + cost RAG, and any
+        # CPI/SPI/EVM mention in the executive summary and highlights) from
+        # external and per-member-restricted viewers.
         data = super().to_representation(instance)
         from projects.permissions import can_view_costs_for
         request = self.context.get("request")
         if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
             m = data.get("metrics")
             if isinstance(m, dict):
-                for k in ("cpi", "budget", "budget_total", "spent", "cost",
+                for k in ("cpi", "spi", "budget", "budget_total", "spent", "cost",
                           "ev", "ac", "pv", "cv", "budget_utilization"):
                     m.pop(k, None)
             data.pop("rag_cost", None)
-            es = data.get("executive_summary")
-            if isinstance(es, str) and es:
-                import re
-                data["executive_summary"] = re.sub(
-                    r"\s*CPI[\s:]*[0-9]+(?:\.[0-9]+)?", "", es
-                ).strip()
+            import re
+            # Strip the whole "EVM shows CPI x.xx / SPI x.xx." clause, then any
+            # residual standalone CPI/SPI token, then collapse stray whitespace.
+            def _scrub(text):
+                if not isinstance(text, str) or not text:
+                    return text
+                text = re.sub(
+                    r"EVM shows\s*CPI[\s:]*[0-9.]+\s*/\s*SPI[\s:]*[0-9.]+\.?\s*",
+                    "", text,
+                )
+                text = re.sub(r"\s*(?:CPI|SPI)[\s:]*[0-9]+(?:\.[0-9]+)?", "", text)
+                return re.sub(r"\s{2,}", " ", text).strip()
+            data["executive_summary"] = _scrub(data.get("executive_summary"))
+            hl = data.get("highlights")
+            if isinstance(hl, list):
+                data["highlights"] = [
+                    h for h in hl
+                    if not (isinstance(h, str) and re.search(r"\b(?:CPI|SPI|EVM)\b", h, re.I))
+                ]
         return data
 
 
