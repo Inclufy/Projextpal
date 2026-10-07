@@ -305,6 +305,13 @@ class Task(models.Model):
     )
     progress = models.PositiveIntegerField(default=0)
     order_index = models.PositiveIntegerField(default=0)
+    # Confidentiality: an internal/technical task is hidden from cross-tenant
+    # (external-company) collaborators on a shared project. Visible as normal to
+    # the owning company. Default False so nothing changes for existing tasks.
+    is_internal = models.BooleanField(
+        default=False,
+        help_text="Hide this task from external (cross-tenant) collaborators.",
+    )
     # RACI fields
     raci_responsible = models.ForeignKey(
         settings.AUTH_USER_MODEL,
