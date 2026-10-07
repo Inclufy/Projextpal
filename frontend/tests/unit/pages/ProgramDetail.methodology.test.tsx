@@ -8,6 +8,13 @@ vi.mock('@/components/DemoControls', () => ({
   DemoControls: () => null,
 }))
 
+// ProgramDetail now reads useAuth (for the PM+-gated lifecycle/co-pilot
+// controls); this test renders it without the real AuthProvider, so stub it.
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { role: 'admin' } }),
+  AuthProvider: ({ children }: { children: any }) => children,
+}))
+
 const mockProgram = (methodology: string) => ({
   id: 80,
   name: 'Digital Transformation 2026',
