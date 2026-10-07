@@ -14,11 +14,24 @@ from .serializers import (
     ProgramMilestoneSerializer,
     ProgramTeamSerializer,
 )
+from accounts.permissions import HasRole
+
+# Mirrors projects.views.IsAdminOrPM — lifecycle writes (close/hold/reopen) are
+# restricted to these operational roles; read signals stay IsAuthenticated.
+IsAdminOrPM = HasRole("admin", "pm", "program_manager", "superadmin")
 
 
 class ProgramViewSet(viewsets.ModelViewSet):
     """ViewSet for Program CRUD operations."""
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # Mirror ProjectViewSet.get_permissions: lifecycle writes are PM+;
+        # everything else (incl. the health/attention read signals) stays
+        # IsAuthenticated.
+        if self.action in ["close", "hold", "reopen"]:
+            return [IsAuthenticated(), IsAdminOrPM()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         """Filter programs by membership.
@@ -95,6 +108,156 @@ class ProgramViewSet(viewsets.ModelViewSet):
             company=user.company,
             created_by=user
         )
+
+    @action(detail=True, methods=["post"], url_path="close")
+    def close(self, request, pk=None):
+        """Close the programme: set status to 'completed' and (by default)
+        complete every linked project + all their activities. Mirrors
+        ProjectViewSet.close at programme scale — it touches only the universal
+        Program.status, the linked projects' status and the Task cascade
+        (milestone__project__program), so it works for every programme type and
+        methodology.
+
+        Body (optional): {"complete_projects": true|false} (default true).
+        """
+        from projects.models import Task
+
+        program = self.get_object()
+        complete_projects = request.data.get("complete_projects", True)
+        projects_completed = 0
+        activities_completed = 0
+        if complete_projects:
+            projects_completed = (
+                program.linked_projects.exclude(status="completed")
+                .update(status="completed")
+            )
+            activities_completed = (
+                Task.objects.filter(milestone__project__program=program)
+                .exclude(status="done")
+                .update(status="done", progress=100)
+            )
+        program.status = "completed"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({
+            "id": program.id,
+            "status": program.status,
+            "projects_completed": projects_completed,
+            "activities_completed": activities_completed,
+        })
+
+    @action(detail=True, methods=["post"], url_path="hold")
+    def hold(self, request, pk=None):
+        """Put the programme on hold (status 'on_hold'). Projects/activities are
+        left as-is. Mirrors ProjectViewSet.hold."""
+        program = self.get_object()
+        program.status = "on_hold"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({"id": program.id, "status": program.status})
+
+    @action(detail=True, methods=["post"], url_path="reopen")
+    def reopen(self, request, pk=None):
+        """Reopen a closed/held programme (status 'active'). Project/activity
+        statuses are left untouched. Mirrors ProjectViewSet.reopen (which uses
+        'in_progress'; Program has no such state, so it reopens to 'active')."""
+        program = self.get_object()
+        program.status = "active"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({"id": program.id, "status": program.status})
+
+    @action(detail=True, methods=["get"], url_path="health")
+    def health(self, request, pk=None):
+        """RAG health signal for a programme from the universal work signals,
+        rolled up over its linked projects: open programme risks, open issues of
+        the linked projects and overdue actions of the linked projects. Mirrors
+        ProjectViewSet.health.
+
+        red   = something needs attention now (overdue actions).
+        amber = open work/issues/risks but nothing overdue.
+        green = nothing open.
+        """
+        from django.utils import timezone
+        from projects.models import Task, Issue
+
+        program = self.get_object()
+        today = timezone.localdate()
+        project_ids = list(program.linked_projects.values_list("id", flat=True))
+
+        task_qs = Task.objects.filter(milestone__project_id__in=project_ids)
+        open_actions = task_qs.exclude(status="done").count()
+        overdue_actions = (
+            task_qs.exclude(status="done")
+            .filter(due_date__isnull=False, due_date__lt=today)
+            .count()
+        )
+        open_issues = (
+            Issue.objects.filter(project_id__in=project_ids)
+            .exclude(status__in=["Resolved", "Closed"])
+            .count()
+        )
+        open_risks = program.risks.filter(status__in=["open", "mitigating"]).count()
+
+        if overdue_actions:
+            rag = "red"
+        elif open_issues or open_risks or open_actions:
+            rag = "amber"
+        else:
+            rag = "green"
+
+        return Response({
+            "id": program.id,
+            "rag": rag,
+            "open_actions": open_actions,
+            "overdue_actions": overdue_actions,
+            "open_issues": open_issues,
+            "open_risks": open_risks,
+        })
+
+    @action(detail=True, methods=["get"], url_path="attention")
+    def attention(self, request, pk=None):
+        """Items that need attention on this programme — open programme risks,
+        linked projects that are overdue or on hold, and open issues across the
+        linked projects — so the dashboard can list them and let the user pick
+        them up. Mirrors ProjectViewSet.attention (which returns
+        actions/issues/risks); at programme scale the 'actions' become the
+        linked 'projects'."""
+        from django.utils import timezone
+        from projects.models import Issue
+
+        program = self.get_object()
+        today = timezone.localdate()
+        project_ids = list(program.linked_projects.values_list("id", flat=True))
+
+        risks = [
+            {"id": r.id, "name": r.name, "level": r.impact, "status": r.status,
+             "owner": getattr(r.owner, "id", None)}
+            for r in program.risks.filter(status__in=["open", "mitigating"])
+            .select_related("owner").order_by("-impact")[:100]
+        ]
+
+        projects = []
+        for p in program.linked_projects.all().order_by("end_date", "name")[:100]:
+            overdue = bool(
+                p.end_date and p.end_date < today and p.status != "completed"
+            )
+            if overdue or p.status == "on_hold":
+                projects.append({
+                    "id": p.id,
+                    "name": p.name,
+                    "status": p.status,
+                    "progress": p.compute_progress_from_work(),
+                    "end_date": p.end_date,
+                    "overdue": overdue,
+                    "methodology": p.methodology,
+                })
+
+        issues = [
+            {"id": i.id, "name": i.name, "severity": i.severity, "status": i.status,
+             "owner": getattr(i.owner, "id", None)}
+            for i in Issue.objects.filter(project_id__in=project_ids)
+            .exclude(status__in=["Resolved", "Closed"])
+            .select_related("owner").order_by("-severity")[:100]
+        ]
+        return Response({"risks": risks, "projects": projects, "issues": issues})
 
     @action(detail=True, methods=['get'], url_path='ai/compound-signals')
     def ai_compound_signals(self, request, pk=None):

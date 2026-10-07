@@ -9,9 +9,12 @@ import {
   CheckCircle2,
   PauseCircle,
   RotateCcw,
+  ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
+import { ProjectKpiStrip } from "./ProjectKpiStrip";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +88,15 @@ const postLifecycle = async ({ id, action }: { id: string; action: "close" | "ho
   return response.json();
 };
 
+const deleteProject = async (id: string) => {
+  const response = await fetch(`/api/v1/projects/${id}/`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!response.ok) throw new Error("Failed to delete project");
+  return true;
+};
+
 /** status value -> badge label key + tailwind classes. */
 const STATUS_META: Record<string, { key: string; className: string }> = {
   planning: { key: "Planning", className: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -114,6 +126,7 @@ export const ProjectHeader = () => {
   const { openForProject } = useCopilot();
   const [editOpen, setEditOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", budget: "" });
   const { pt } = usePageTranslations();
 
@@ -160,6 +173,16 @@ export const ProjectHeader = () => {
     onError: () => toast.error(pt("Could not update project status")),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProject(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success(pt("Project deleted successfully"));
+      navigate("/projects");
+    },
+    onError: () => toast.error(pt("Failed to delete project")),
+  });
+
   const handleEditClick = () => {
     if (project) {
       setFormData({
@@ -188,34 +211,51 @@ export const ProjectHeader = () => {
     <>
       <div className="border-b border-border bg-card">
         <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-          {/* Left: project title + status + health */}
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-lg font-semibold text-foreground truncate max-w-[42ch]">
-              {project?.name || pt("Project")}
-            </h1>
-            {project?.status && (
-              <Badge variant="outline" className={cn("font-medium", statusMeta.className)}>
-                {pt(statusMeta.key)}
-              </Badge>
-            )}
-            {health?.rag && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                    <span className={cn("h-2.5 w-2.5 rounded-full", RAG_DOT[health.rag])} />
-                    {pt("Health")}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="text-xs">
-                  <div className="space-y-0.5">
-                    <div>{pt("Open actions")}: {health.open_actions}</div>
-                    <div>{pt("Overdue")}: {health.overdue_actions}</div>
-                    <div>{pt("Open issues")}: {health.open_issues}</div>
-                    <div>{pt("Open risks")}: {health.open_risks}</div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            )}
+          {/* Left: back + project title + status + health + subtitle */}
+          <div className="flex items-start gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label={pt("Back")}
+              className="mt-1.5 shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold text-foreground truncate max-w-[42ch]">
+                  {project?.name || pt("Project")}
+                </h1>
+                {project?.status && (
+                  <Badge variant="outline" className={cn("font-medium", statusMeta.className)}>
+                    {pt(statusMeta.key)}
+                  </Badge>
+                )}
+                {health?.rag && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className={cn("h-2.5 w-2.5 rounded-full", RAG_DOT[health.rag])} />
+                        {pt("Health")}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs">
+                      <div className="space-y-0.5">
+                        <div>{pt("Open actions")}: {health.open_actions}</div>
+                        <div>{pt("Overdue")}: {health.overdue_actions}</div>
+                        <div>{pt("Open issues")}: {health.open_issues}</div>
+                        <div>{pt("Open risks")}: {health.open_risks}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              {project?.description && (
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2 max-w-[70ch]">
+                  {project.description}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Right: actions */}
@@ -276,12 +316,20 @@ export const ProjectHeader = () => {
                 {pt("Analyze with AI")}
               </Button>
             )}
+
+            {isPMPlus && (
+              <Button variant="destructive" className="gap-2" onClick={() => setConfirmDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" />
+                {pt("Delete")}
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {isOverview && id && (
-        <div className="px-6 pt-4">
+        <div className="px-6 pt-4 space-y-4">
+          <ProjectKpiStrip />
           <ProjectAttentionPanel />
         </div>
       )}
@@ -301,6 +349,27 @@ export const ProjectHeader = () => {
               onClick={() => lifecycleMutation.mutate({ id: id!, action: "close" })}
             >
               {pt("Close project")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pt("Delete Project")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pt("Are you sure you want to delete this project? This action cannot be undone.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {pt("Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
