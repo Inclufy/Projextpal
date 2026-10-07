@@ -116,10 +116,38 @@ const Prince2BusinessCase = () => {
     } catch { toast.error(pt("Action failed")); }
   };
 
-  const addBenefit = async () => {
-    if (!bc || !benefitForm.description) return;
+  /**
+   * Ensure a BusinessCase row exists before we add a child benefit/risk.
+   * Fixes the UX bug where the Add buttons were a no-op on fresh projects:
+   * users saw a disabled control with no hint that the parent BC had to be
+   * saved first. Now the Add flow auto-creates the parent BC (POST with the
+   * current form state, which may be empty) and returns the live object.
+   */
+  const ensureBusinessCase = async (): Promise<any | null> => {
+    if (bc) return bc;
     try {
-      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_benefit/`, {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify(form),
+      });
+      if (response.ok) {
+        const created = await response.json();
+        setBc(created);
+        return created;
+      }
+      toast.error(pt("Create failed"));
+      return null;
+    } catch {
+      toast.error(pt("Create failed"));
+      return null;
+    }
+  };
+
+  const addBenefit = async () => {
+    if (!benefitForm.description) return;
+    const parent = await ensureBusinessCase();
+    if (!parent) return;
+    try {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${parent.id}/add_benefit/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(benefitForm),
       });
       if (response.ok) { toast.success(pt("Created")); setBenefitDialog(false); setBenefitForm({ description: "", benefit_type: "financial", value: "", timing: "" }); fetchBC(); }
@@ -128,9 +156,11 @@ const Prince2BusinessCase = () => {
   };
 
   const addRisk = async () => {
-    if (!bc || !riskForm.description) return;
+    if (!riskForm.description) return;
+    const parent = await ensureBusinessCase();
+    if (!parent) return;
     try {
-      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_risk/`, {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${parent.id}/add_risk/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(riskForm),
       });
       if (response.ok) { toast.success(pt("Created")); setRiskDialog(false); setRiskForm({ description: "", probability: "medium", impact: "medium", mitigation: "" }); fetchBC(); }
@@ -196,7 +226,7 @@ const Prince2BusinessCase = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Euro className="h-5 w-5 text-green-500" /> {pt("Benefits")} ({bc?.benefits?.length || 0})</CardTitle>
-            <Button size="sm" onClick={() => setBenefitDialog(true)} disabled={!bc}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
+            <Button size="sm" onClick={() => setBenefitDialog(true)}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
           </CardHeader>
           <CardContent>
             {(!bc?.benefits || bc.benefits.length === 0) ? <p className="text-muted-foreground text-center py-4">{pt("No benefits added yet")}</p> : (
@@ -214,7 +244,7 @@ const Prince2BusinessCase = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> {pt("Risks")} ({bc?.risks?.length || 0})</CardTitle>
-            <Button size="sm" onClick={() => setRiskDialog(true)} disabled={!bc}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
+            <Button size="sm" onClick={() => setRiskDialog(true)}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
           </CardHeader>
           <CardContent>
             {(!bc?.risks || bc.risks.length === 0) ? <p className="text-muted-foreground text-center py-4">{pt("No risks added yet")}</p> : (
