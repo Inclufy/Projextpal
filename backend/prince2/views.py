@@ -870,7 +870,9 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         """Re-synthesise content for an existing highlight report from live signals."""
         report = self.get_object()
         report.auto_draft_content(save=True)
-        return Response(HighlightReportSerializer(report).data)
+        return Response(
+            HighlightReportSerializer(report, context={"request": request}).data
+        )
 
     @action(detail=False, methods=['post'])
     def auto_draft(self, request, project_id=None):
@@ -886,7 +888,7 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         )
         report.auto_draft_content(save=True)
         return Response(
-            HighlightReportSerializer(report).data,
+            HighlightReportSerializer(report, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -1555,7 +1557,9 @@ class Prince2DashboardView(APIView):
             'top_risks': Prince2RiskSerializer(top_risks, many=True).data,
             'open_issues_total': open_issues.count(),
             'stages': StageSerializer(stages, many=True).data,
-            'recent_highlight_reports': HighlightReportSerializer(recent_reports, many=True).data,
+            'recent_highlight_reports': HighlightReportSerializer(
+                recent_reports, many=True, context={"request": request}
+            ).data,
         }
 
         return Response(dashboard_data)

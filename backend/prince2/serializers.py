@@ -262,11 +262,19 @@ class HighlightReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide money figures from non-finance roles.
         data = super().to_representation(instance)
-        from projects.permissions import can_view_costs_for
+        from projects.permissions import can_view_costs_for, is_external_member
         request = self.context.get("request")
-        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+        user = getattr(request, "user", None)
+        project = getattr(instance, "project", None)
+        if not can_view_costs_for(user, project):
             data.pop("budget_spent", None)
             data.pop("budget_forecast", None)
+        # work_completed / issues_summary auto-draft from the host's task titles
+        # (completed + blocked tasks); redact them for external cross-tenant
+        # members so internal-only task titles are not disclosed.
+        if is_external_member(user, project):
+            data["work_completed"] = "— withheld —"
+            data["issues_summary"] = "— withheld —"
         return data
 
 
