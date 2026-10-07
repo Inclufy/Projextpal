@@ -713,6 +713,10 @@ class ProgramBudgetCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Program budget categories are cost data — finance-roles only.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudgetCategory.objects.none()
         queryset = ProgramBudgetCategory.objects.filter(
             program__company=self.request.user.company
         )
@@ -742,10 +746,14 @@ class ProgramBudgetItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Program budget items are cost data — finance-roles only.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudgetItem.objects.none()
         queryset = ProgramBudgetItem.objects.filter(
             program__company=self.request.user.company
         )
-        
+
         # Filter by program
         program_id = self.request.query_params.get('program_id')
         if program_id:
@@ -806,13 +814,35 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 id=pk,
                 company=request.user.company
             )
-            
+
+            # Cost confidentiality: finance-roles only (program-level).
+            from projects.permissions import can_view_costs
+            from projects.models import ProjectTeam
+            if not can_view_costs(request.user):
+                return Response(
+                    {"detail": "You do not have permission to view costs."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
             # Get or create budget
             budget, created = ProgramBudget.objects.get_or_create(
                 program=program,
                 defaults={'total_budget': 0, 'currency': 'EUR'}
             )
-            
+
+            # Per-member: drop linked projects this member is restricted from
+            # when rolling up the projects_budget figure.
+            _restricted = set(
+                ProjectTeam.objects.filter(
+                    user=request.user, can_view_costs=False
+                ).values_list("project_id", flat=True)
+            )
+            projects_budget = float(sum(
+                (p.budget or 0)
+                for p in program.projects.all()
+                if p.id not in _restricted
+            ))
+
             # Get categories
             categories = ProgramBudgetCategory.objects.filter(program=program)
             
@@ -827,7 +857,7 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 'total_budget': budget.total_budget,
                 'total_spent': budget.total_spent,
                 'total_remaining': budget.total_remaining,
-                'projects_budget': budget.projects_budget,
+                'projects_budget': projects_budget,
                 'currency': budget.currency,
                 'categories': ProgramBudgetCategorySerializer(categories, many=True).data
             }

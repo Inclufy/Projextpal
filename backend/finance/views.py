@@ -119,6 +119,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not _is_superadmin(user):
             company = _user_company(user)
             qs = qs.filter(company=company) if company else qs.none()
+            # Per-member cost confidentiality: hide invoices of projects this
+            # member is restricted from (vendor-invoice amounts are project costs).
+            from projects.models import ProjectTeam
+            qs = qs.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
 
         params = self.request.query_params
         if params.get("vendor"):
@@ -635,7 +643,23 @@ def program_cost_summary(request, program_id):
         if not company or program.company_id != company.id:
             return Response({"detail": "Not found."}, status=404)
 
-    linked_projects = list(program.projects.all())
+    # Cost confidentiality: finance-roles only, and never for an external
+    # collaborator or a per-member-restricted member — and drop any linked
+    # project the member is restricted from so its costs don't roll up here.
+    from projects.permissions import can_view_costs
+    from projects.models import ProjectTeam
+    if not can_view_costs(request.user):
+        return Response(
+            {"detail": "You do not have permission to view costs."}, status=403
+        )
+    _restricted = set(
+        ProjectTeam.objects.filter(
+            user=request.user, can_view_costs=False
+        ).values_list("project_id", flat=True)
+    )
+    linked_projects = [
+        p for p in program.projects.all() if p.id not in _restricted
+    ]
     project_ids = [p.id for p in linked_projects]
 
     # Budgets/spend across projects
