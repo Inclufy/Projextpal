@@ -160,6 +160,14 @@ const PlanningTasks = () => {
   const typeColor = (ty: string) => ({ Meeting: "bg-purple-100 text-purple-700", Deliverable: "bg-teal-100 text-teal-700", "Work Package": "bg-sky-100 text-sky-700", General: "bg-gray-100 text-gray-600" }[ty] || "bg-gray-100 text-gray-600");
   const typeIcon = (ty: string) => { const cls = "h-2.5 w-2.5"; return ty === "Meeting" ? <Users className={cls} /> : ty === "Deliverable" ? <Package className={cls} /> : ty === "Work Package" ? <Boxes className={cls} /> : <CircleDot className={cls} />; };
   const stageOf = (t: any): string => t.milestone_name || msName(t.milestone) || t.category || "";
+  // Korte Fase-label voor de smalle "Stage"-kolom: knip op em-dash of " - "
+  // (bv. "Fase 1 Verankeren opgeleverd — 3 productieve users" → "Fase 1 Verankeren opgeleverd").
+  // De volledige naam blijft bereikbaar via het title-attribuut op hover.
+  const shortStage = (s: string): string => {
+    if (!s) return "";
+    const first = s.split(/\s*(?:—|–| - )\s*/)[0];
+    return (first || s).trim();
+  };
   const label = (arr: [string, string][], v: string) => arr.find(([k]) => k === v)?.[1] || v;
   const msName = (mid: any) => milestones.find((m) => m.id === mid)?.name || "";
   const today = new Date().toISOString().split("T")[0];
@@ -301,7 +309,7 @@ const PlanningTasks = () => {
                               )}
                             </td>
                             {groupBy !== "type" && <td className="px-3 py-2.5"><Badge className={`text-[10px] font-normal inline-flex items-center gap-1 ${typeColor(ty)}`}>{typeIcon(ty)}{pt(ty)}</Badge></td>}
-                            {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" className="text-[10px] font-normal cursor-pointer" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{stage}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
+                            {groupBy !== "milestone" && <td className="px-3 py-2.5">{stage ? <Badge variant="outline" title={stage} className="text-[10px] font-normal cursor-pointer whitespace-nowrap max-w-[11rem] truncate inline-block" onClick={() => navigate(`/projects/${id}/planning/milestones`)}>{shortStage(stage)}</Badge> : <span className="text-muted-foreground">—</span>}</td>}
                             <td className="px-3 py-2.5"><Badge className={`text-[10px] ${prioColor(t.priority)}`}>{label(PRIORITIES, t.priority)}</Badge></td>
                             {groupBy !== "owner" && <td className="px-3 py-2.5 text-muted-foreground">
                               {ownerNames(t) || <span className="italic">{pt("Unassigned")}</span>}
