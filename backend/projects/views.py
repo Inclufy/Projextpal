@@ -1463,6 +1463,15 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         projects = Project.objects.filter(company=user.company).select_related(
             "company"
         )
+        # Per-member cost confidentiality: drop projects this member is
+        # restricted from (can_view_costs=False) so none of their budgets/
+        # expenses/cash-flow surface anywhere on this financial dashboard.
+        _restricted_ids = set(
+            ProjectTeam.objects.filter(user=user, can_view_costs=False)
+            .values_list("project_id", flat=True)
+        )
+        if _restricted_ids:
+            projects = projects.exclude(id__in=_restricted_ids)
 
         total_projects = projects.count()
         program_budget = float(sum([p.budget or 0 for p in projects]))
@@ -2354,6 +2363,9 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if getattr(request.user, "company", None) is None:
+            # company=None would forecast across ALL tenants — never do that.
+            return Response({"count": 0, "results": []}, status=status.HTTP_200_OK)
         forecasts = forecast_for_active_projects(
             window_months=window_months,
             horizon_months=horizon_months,
@@ -3494,6 +3506,13 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
             if company is None:
                 return BudgetItem.objects.none()
             queryset = BudgetItem.objects.filter(project__company=company)
+            # Per-member confidentiality: hide budget items of projects this
+            # member is restricted from, for any query (with or without project_id).
+            queryset = queryset.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
 
         # Filters
         project_id = self.request.query_params.get('project_id')
