@@ -496,7 +496,23 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             for r in project.risks.filter(status="Open")
             .select_related("owner").order_by("-level")[:100]
         ]
-        return Response({"actions": actions, "issues": issues, "risks": risks})
+
+        # Governance flag: financial disclosure to cost-viewing members, for the
+        # PM to accept. Only surfaced to an owning-company cost-viewer (the one
+        # who could accept it); hidden from external collaborators entirely.
+        from .permissions import can_view_costs, financial_disclosure_state
+        financial_disclosure = None
+        own_company = (
+            getattr(request.user, "company_id", None) is not None
+            and request.user.company_id == project.company_id
+        )
+        if own_company and can_view_costs(request.user):
+            financial_disclosure = financial_disclosure_state(project, request.user)
+
+        return Response({
+            "actions": actions, "issues": issues, "risks": risks,
+            "financial_disclosure": financial_disclosure,
+        })
 
     @action(detail=True, methods=["get"], url_path="governance/decisions")
     def governance_decisions(self, request, pk=None):
@@ -1445,6 +1461,74 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         team_member.is_active = False
         team_member.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _is_owning_cost_manager(self, request, project):
+        """True when the requester may govern cost visibility on this project:
+        an owning-company manager who can themselves see costs (or superuser).
+        You cannot grant/revoke cost visibility you don't hold yourself."""
+        from .permissions import can_view_costs
+        if request.user.is_superuser:
+            return True
+        own_company = (
+            getattr(request.user, "company_id", None) is not None
+            and request.user.company_id == project.company_id
+        )
+        is_manager = getattr(request.user, "role", None) in (
+            "superadmin", "admin", "pm", "program_manager"
+        )
+        return bool(own_company and is_manager and can_view_costs(request.user))
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="team/(?P<team_member_id>[^/.]+)/cost-visibility",
+    )
+    def set_cost_visibility(self, request, pk=None, team_member_id=None):
+        """Toggle a team member's per-project cost visibility (budgets / hourly
+        rates / EVM). Owning-company cost-viewing managers only."""
+        project = self.get_object()
+        if not self._is_owning_cost_manager(request, project):
+            return Response(
+                {"detail": "Only an owning-company manager who can view costs may change cost visibility."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            team_member = project.team_members.get(id=team_member_id, is_active=True)
+        except ProjectTeam.DoesNotExist:
+            return Response(
+                {"error": "Team member not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        val = request.data.get("can_view_costs")
+        if isinstance(val, str):
+            val = val.lower() not in ("false", "0", "no")
+        team_member.can_view_costs = bool(val)
+        team_member.save(update_fields=["can_view_costs"])
+        return Response(ProjectTeamSerializer(team_member).data)
+
+    @action(detail=True, methods=["get", "post"], url_path="financial-disclosure")
+    def financial_disclosure(self, request, pk=None):
+        """GET: the financial-disclosure governance flag (who this project's
+        financials are disclosed to + acknowledgement state). POST: the PM
+        accepts the CURRENT disclosed-member set; the flag re-raises later if
+        that set changes. Owning-company cost-viewing managers only."""
+        project = self.get_object()
+        from .permissions import financial_disclosure_state
+        if not self._is_owning_cost_manager(request, project):
+            return Response(
+                {"detail": "Only an owning-company manager who can view costs may view or accept this."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if request.method == "POST":
+            from django.utils import timezone
+            from governance.models import FinancialDisclosureAck
+            state = financial_disclosure_state(project, request.user)
+            ack, _ = FinancialDisclosureAck.objects.get_or_create(project=project)
+            ack.acknowledged_by = request.user
+            ack.acknowledged_at = timezone.now()
+            ack.signature = state["signature"]
+            ack.save()
+            project = Project.objects.get(pk=project.pk)  # fresh reverse relation
+        return Response(financial_disclosure_state(project, request.user))
 
     @action(detail=False, methods=["get"], url_path="company-dashboard")
     def company_dashboard(self, request):

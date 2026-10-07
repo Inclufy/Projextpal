@@ -8,14 +8,17 @@ import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Loader2, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { UserPlus, Loader2, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TeamMember {
   id: number;
   user_name: string;
   user_email: string;
   role: string;
+  can_view_costs?: boolean;
 }
 
 interface CompanyUser {
@@ -29,6 +32,10 @@ interface CompanyUser {
 const FoundationTeam = () => {
   const { pt } = usePageTranslations();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const canManageCosts = ["superadmin", "admin", "pm", "program_manager"].includes(
+    (user as any)?.role,
+  );
   const { id: projectId } = useParams<{ id: string }>();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +95,34 @@ const FoundationTeam = () => {
       }
     } catch {
       toast.error(t.common.addFailed);
+    }
+  };
+
+  const handleToggleCostVisibility = async (teamMemberId: number, next: boolean) => {
+    // Optimistic flip; revert on failure.
+    setMembers((prev) =>
+      prev.map((m) => (m.id === teamMemberId ? { ...m, can_view_costs: next } : m)),
+    );
+    try {
+      const response = await fetch(
+        `/api/v1/projects/${projectId}/team/${teamMemberId}/cost-visibility/`,
+        {
+          method: "PATCH",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({ can_view_costs: next }),
+        },
+      );
+      if (!response.ok) throw new Error();
+      toast.success(
+        next
+          ? pt("Costs are now visible to this member")
+          : pt("Costs are now hidden from this member"),
+      );
+    } catch {
+      setMembers((prev) =>
+        prev.map((m) => (m.id === teamMemberId ? { ...m, can_view_costs: !next } : m)),
+      );
+      toast.error(pt("Could not change cost visibility"));
     }
   };
 
@@ -190,6 +225,23 @@ const FoundationTeam = () => {
                   <Badge variant="secondary" className="text-xs">
                     {pt(getMemberRole(member))}
                   </Badge>
+                  {canManageCosts && (
+                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {member.can_view_costs === false ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                        {pt("Can view costs")}
+                      </span>
+                      <Switch
+                        checked={member.can_view_costs !== false}
+                        onCheckedChange={(v) => handleToggleCostVisibility(member.id, v)}
+                        title={pt("Toggle whether this member can see budgets, rates and EVM")}
+                      />
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>

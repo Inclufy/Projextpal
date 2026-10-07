@@ -114,6 +114,60 @@ def exclude_internal_for_external(task_qs, user):
     )
 
 
+def financial_disclosure_state(project, viewer=None):
+    """Governance flag: is this project's financial data (budget / hourly rates
+    / EVM) deliberately disclosed to its cost-viewing members, and has the PM
+    acknowledged it?
+
+    "Disclosed" = active team members who can actually see this project's costs
+    (role-allowed, not external, not per-member restricted). Returns the set, a
+    stable ``signature`` of it, and whether a PM acknowledged the *current* set.
+    When the set changes the stored signature no longer matches → ``stale`` →
+    the flag re-raises so the PM re-confirms. ``viewer`` is accepted for symmetry
+    but does not change the computation — callers gate who may see this block.
+    """
+    import hashlib
+
+    members = project.team_members.filter(is_active=True).select_related("user")
+    disclosed = [
+        m for m in members if can_view_costs_for(getattr(m, "user", None), project)
+    ]
+    ids = sorted({m.user_id for m in disclosed if m.user_id})
+    signature = (
+        hashlib.sha256(",".join(str(i) for i in ids).encode()).hexdigest()[:40]
+        if ids else ""
+    )
+
+    ack = getattr(project, "financial_disclosure_ack", None)
+    ack_at = getattr(ack, "acknowledged_at", None)
+    ack_sig = getattr(ack, "signature", "") or ""
+    acknowledged = bool(ids and ack_at and ack_sig == signature)
+    stale = bool(ids and ack_at and ack_sig != signature)
+    ack_by = getattr(ack, "acknowledged_by", None)
+
+    def _name(u):
+        if not u:
+            return None
+        return (
+            (getattr(u, "get_full_name", lambda: "")() or "").strip()
+            or getattr(u, "username", "") or getattr(u, "email", "")
+        )
+
+    return {
+        "disclosed_count": len(ids),
+        "disclosed_members": [
+            {"id": m.user_id, "name": _name(m.user)} for m in disclosed if m.user_id
+        ],
+        "signature": signature,
+        "acknowledged": acknowledged,
+        "stale": stale,
+        "needs_ack": bool(ids) and not acknowledged,
+        "acknowledged_by": getattr(ack_by, "id", None),
+        "acknowledged_by_name": _name(ack_by),
+        "acknowledged_at": ack_at,
+    }
+
+
 # URL methodology slugs that participate in isolation enforcement.
 # Anything not in this set is treated as a non-methodology URL and skipped.
 _METHODOLOGY_SLUGS = {

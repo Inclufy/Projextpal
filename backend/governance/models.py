@@ -652,3 +652,36 @@ class DecisionEvent(models.Model):
 
     def __str__(self):
         return f"{self.event_type} on {self.decision_id} @ {self.created_at:%Y-%m-%d}"
+
+
+class FinancialDisclosureAck(models.Model):
+    """PM acknowledgement that financial data (budget / hourly rates / EVM) on a
+    project is deliberately disclosed to its cost-viewing members.
+
+    Lives in the governance app (not projects) so it adds no field to the
+    projects.Project model. The ``signature`` is a hash of the current set of
+    member ids who can actually see this project's costs; when that set changes
+    (a member gains/loses cost visibility) the stored signature no longer
+    matches and the acknowledgement is treated as STALE — the flag re-raises so
+    the PM re-confirms. One row per project.
+    """
+
+    project = models.OneToOneField(
+        'projects.Project', on_delete=models.CASCADE,
+        related_name='financial_disclosure_ack',
+    )
+    acknowledged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='financial_disclosure_acks',
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+    # Hash of the sorted disclosed-member-id set at the moment of acknowledgement.
+    signature = models.CharField(max_length=64, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Financial Disclosure Acknowledgement'
+
+    def __str__(self):
+        return f"FinancialDisclosureAck(project={self.project_id}, by={self.acknowledged_by_id})"
