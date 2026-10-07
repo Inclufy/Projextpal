@@ -124,7 +124,15 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
 
     def get_depends_on_titles(self, obj):
-        return [{"id": t.id, "title": t.title, "status": t.status} for t in obj.depends_on.all()]
+        # Withhold internal dependency titles from external cross-tenant members
+        # (a visible non-internal task must not leak the titles of internal
+        # tasks it depends on).
+        from .permissions import exclude_internal_for_external
+        request = self.context.get("request")
+        deps = exclude_internal_for_external(
+            obj.depends_on.all(), getattr(request, "user", None)
+        )
+        return [{"id": t.id, "title": t.title, "status": t.status} for t in deps]
 
     def get_assigned_to_name(self, obj):
         user = getattr(obj, "assigned_to", None)
@@ -280,7 +288,16 @@ class SubtaskSerializer(serializers.ModelSerializer):
 
 
 class MilestoneSerializer(serializers.ModelSerializer):
-    tasks = TaskSerializer(many=True, read_only=True)
+    tasks = serializers.SerializerMethodField()
+
+    def get_tasks(self, obj):
+        # Withhold internal-only tasks from external cross-tenant members. This
+        # nested list (also reached via ProjectSerializer.milestones) otherwise
+        # bypasses the TaskViewSet's exclude_internal_for_external guard.
+        from .permissions import exclude_internal_for_external
+        request = self.context.get("request")
+        qs = exclude_internal_for_external(obj.tasks.all(), getattr(request, "user", None))
+        return TaskSerializer(qs, many=True, read_only=True, context=self.context).data
 
     class Meta:
         model = Milestone
@@ -1249,11 +1266,19 @@ class TimeEntrySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide rates/costs from non-finance roles.
         data = super().to_representation(instance)
-        from .permissions import can_view_costs_for
+        from .permissions import can_view_costs_for, is_external_member
         request = self.context.get("request")
-        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+        user = getattr(request, "user", None)
+        project = getattr(instance, "project", None)
+        if not can_view_costs_for(user, project):
             data.pop("hourly_rate_snapshot", None)
             data.pop("labor_cost", None)
+        # Withhold the title of an internal task from external cross-tenant
+        # members (time may be logged against an internal-only task).
+        task = getattr(instance, "task", None)
+        if (task is not None and getattr(task, "is_internal", False)
+                and is_external_member(user, project)):
+            data["task_title"] = None
         return data
 
 

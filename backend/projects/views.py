@@ -2146,6 +2146,12 @@ class SubtaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Hide subtasks of internal-only tasks from external cross-tenant members.
+        from .permissions import exclude_internal_for_external
+        from .models import Task
+        qs = qs.filter(
+            task__in=exclude_internal_for_external(Task.objects.all(), self.request.user)
+        )
         task_id = self.request.query_params.get("task")
         if task_id:
             qs = qs.filter(task_id=task_id)
@@ -2236,10 +2242,38 @@ class ProjectActivityViewSet(CompanyScopedQuerysetMixin, viewsets.ReadOnlyModelV
 
     def get_queryset(self):
         qs = super().get_queryset()
+
+        # Hide activity rows whose target is an internal-only task/subtask from
+        # external cross-tenant members — the `message` embeds the task title.
+        # Only suppressed for projects the viewer is EXTERNAL to (company !=
+        # project.company); same-company members and superadmins see everything.
+        user = self.request.user
+        is_super = (getattr(user, "role", None) == "superadmin"
+                    or getattr(user, "is_superuser", False))
+        if not is_super:
+            from django.contrib.contenttypes.models import ContentType
+            from django.db.models import Q
+            from .models import Task, Subtask
+            own_company_id = getattr(user, "company_id", None)
+            task_ct = ContentType.objects.get_for_model(Task)
+            subtask_ct = ContentType.objects.get_for_model(Subtask)
+            internal_task_ids = Task.objects.filter(is_internal=True).values_list("id", flat=True)
+            internal_subtask_ids = Subtask.objects.filter(
+                task__is_internal=True
+            ).values_list("id", flat=True)
+            qs = qs.exclude(
+                Q(project__company_id__isnull=False)
+                & ~Q(project__company_id=own_company_id)
+                & (
+                    Q(target_content_type=task_ct, target_object_id__in=internal_task_ids)
+                    | Q(target_content_type=subtask_ct, target_object_id__in=internal_subtask_ids)
+                )
+            )
+
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-        
+
         program_id = self.request.query_params.get("program")
         if program_id:
             qs = qs.filter(project__program_id=program_id)
