@@ -644,7 +644,8 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
         result = compute_compound_signals(project)
 
-        if not can_view_costs(request.user):
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
             result["signals"] = [
                 s for s in result["signals"] if "cost" not in s.get("areas", [])
             ]
@@ -686,10 +687,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         from decimal import Decimal
         from django.db.models import F, Sum, Value, DecimalField
         from django.db.models.functions import Coalesce
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
 
-        # Yanmar SC-05 — cost/rate roll-up is finance-roles only.
-        if not can_view_costs(request.user):
+        # Finance-roles only AND not external / per-member-restricted on this project.
+        if not can_view_costs_for(request.user, self.get_object()):
             return Response(
                 {"detail": "You do not have permission to view project costs."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1588,6 +1589,20 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "budget_vs_paid": budget_vs_paid,
             "cash_flow": cash_flow,
         }
+        # SC-05 — strip all financial figures for roles that may not view costs
+        # (company-wide aggregate, so the role gate is the right granularity).
+        from .permissions import can_view_costs
+        if not can_view_costs(request.user):
+            pm = data.get("program_metrics", {})
+            for k in ("program_budget", "committed_to_date", "final_forecast_cost",
+                      "variance_to_budget", "paid_to_date"):
+                pm.pop(k, None)
+            data.pop("budget_vs_paid", None)
+            data.pop("cash_flow", None)
+            for row in data.get("projects", []):
+                if isinstance(row, dict):
+                    for k in ("budget", "paid", "spent", "remaining"):
+                        row.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -1599,8 +1614,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
 
         # Get metrics. project.budget is a Decimal — multiplying by a float
-        # raises TypeError, so coerce to Decimal throughout.
-        budget = project.budget or Decimal('0')
+        # raises TypeError, so coerce to Decimal throughout. Budget-derived
+        # insights (risk/forecast) are financial: hidden from external
+        # collaborators and per-member-restricted users (zero out so nothing
+        # leaks into the forecast, and strip the budget sections below).
+        from .permissions import can_view_costs_for
+        show_costs = can_view_costs_for(request.user, project)
+        budget = (project.budget or Decimal('0')) if show_costs else Decimal('0')
         # For now, assume 50% spent if in progress (we can enhance this later)
         spent = budget * Decimal('0.5') if project.status == 'in_progress' else Decimal('0')
         allocated = budget
@@ -1639,16 +1659,21 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 'reason': timeline_risk['message']
             })
         
+        analysis = {
+            'timeline_risk': timeline_risk,
+            'health_score': health_score,
+        }
+        if show_costs:
+            analysis['budget_risk'] = budget_risk
+            analysis['budget_forecast'] = budget_forecast
+        recs = recommendations if show_costs else [
+            r for r in recommendations if r.get('category') != 'budget'
+        ]
         return Response({
             'project_id': project.id,
             'project_name': project.name,
-            'analysis': {
-                'budget_risk': budget_risk,
-                'timeline_risk': timeline_risk,
-                'budget_forecast': budget_forecast,
-                'health_score': health_score
-            },
-            'recommendations': recommendations,
+            'analysis': analysis,
+            'recommendations': recs,
             'generated_at': datetime.now().isoformat()
         })
 
@@ -2221,6 +2246,13 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
         except Project.DoesNotExist:
             return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {"detail": "You do not have permission to view project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Monthly totals for the project's expenses
         expenses_qs = Expense.objects.filter(project=project)
         monthly = (
@@ -2261,6 +2293,13 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
             project = Project.objects.get(id=pk, company=request.user.company)
         except Project.DoesNotExist:
             return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {"detail": "You do not have permission to view project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         try:
             window_months = int(request.query_params.get("window_months", 4))
