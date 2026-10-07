@@ -84,6 +84,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "category",
+            "is_internal",
             "assigned_to",
             "assigned_to_email",
             "assigned_to_name",

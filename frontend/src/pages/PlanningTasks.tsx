@@ -22,12 +22,16 @@ import { toast } from "sonner";
 
 const STATUSES: [string, string][] = [["todo", "To Do"], ["in_progress", "In Progress"], ["done", "Done"], ["blocked", "Blocked"]];
 const PRIORITIES: [string, string][] = [["low", "Low"], ["medium", "Medium"], ["high", "High"], ["urgent", "Urgent"]];
-const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "", assignees: [] as string[], work_package: "" };
+const emptyForm = { milestone: "", title: "", description: "", category: "", status: "todo", priority: "medium", progress: "0", due_date: "", assignees: [] as string[], work_package: "", is_internal: false };
+
+// PM+ roles may flag a task internal (hidden from external collaborators).
+const PM_PLUS = ["pm", "program_manager", "admin", "superadmin"];
 
 const PlanningTasks = () => {
   const { pt } = usePageTranslations();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const isPMPlus = PM_PLUS.includes(user?.role || "") || (user as any)?.isSuperAdmin === true;
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
@@ -80,7 +84,7 @@ const PlanningTasks = () => {
     const assigneeIds: string[] = Array.isArray(t.assignees) && t.assignees.length
       ? t.assignees.map(String)
       : (t.assigned_to ? [String(t.assigned_to)] : []);
-    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "", assignees: assigneeIds, work_package: t.work_package ? String(t.work_package) : "" });
+    setForm({ milestone: t.milestone ? String(t.milestone) : "", title: t.title || "", description: t.description || "", category: t.category || "", status: t.status || "todo", priority: t.priority || "medium", progress: String(t.progress ?? 0), due_date: t.due_date?.split("T")[0] || "", assignees: assigneeIds, work_package: t.work_package ? String(t.work_package) : "", is_internal: !!t.is_internal });
     setDialogOpen(true);
   };
 
@@ -95,6 +99,8 @@ const PlanningTasks = () => {
       if (form.due_date) body.due_date = form.due_date;
       body.assignees = form.assignees.map(Number);
       body.work_package = form.work_package ? Number(form.work_package) : null;
+      // Only PM+ may set the internal-confidentiality flag.
+      if (isPMPlus) body.is_internal = !!form.is_internal;
       const url = editing ? `/api/v1/projects/tasks/${editing.id}/` : `/api/v1/projects/tasks/`;
       const r = await fetch(url, { method: editing ? "PATCH" : "POST", headers: jsonHeaders, body: JSON.stringify(body) });
       if (r.ok) { toast.success(pt("Saved")); setDialogOpen(false); fetchData(); fetchCommentMeta(); }
@@ -283,7 +289,10 @@ const PlanningTasks = () => {
                           <tr key={t.id} className="border-b last:border-0 hover:bg-accent/40 align-top">
                             <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{idx + 1}</td>
                             <td className="px-3 py-2.5">
-                              <div className="font-medium">{t.title}</div>
+                              <div className="font-medium flex items-center gap-1.5">
+                                {t.title}
+                                {t.is_internal && <Badge className="text-[10px] bg-slate-200 text-slate-700" title={pt("Hidden from external collaborators")}>{pt("Internal")}</Badge>}
+                              </div>
                               {(t.product_title || t.work_package_title) && (
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                   {t.product_title && <Badge className="text-[10px] bg-teal-100 text-teal-700 inline-flex items-center gap-1"><Package className="h-2.5 w-2.5" />{t.product_title}</Badge>}
@@ -466,6 +475,18 @@ const PlanningTasks = () => {
                 )}
               </div>
             </div>
+            {isPMPlus && (
+              <label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer">
+                <Checkbox
+                  checked={form.is_internal}
+                  onCheckedChange={(c) => setForm({ ...form, is_internal: c === true })}
+                />
+                <span className="text-sm">
+                  <span className="font-medium">{pt("Internal")}</span>
+                  <span className="block text-xs text-muted-foreground">{pt("Hidden from external collaborators")}</span>
+                </span>
+              </label>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{pt("Cancel")}</Button>
               <Button onClick={handleSave} disabled={submitting || !form.title || !form.milestone}>{submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{pt("Save")}</Button>

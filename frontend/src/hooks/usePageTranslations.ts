@@ -1631,6 +1631,17 @@ const translations: Record<string, Record<string, string>> = {
     "What are the steps?": "Wat zijn de stappen?",
     // === Common UI ===
     "Cancel": "Annuleren",
+    // === Cross-tenant confidentiality + in-project invite ===
+    "Internal": "Intern",
+    "Hidden from external collaborators": "Verborgen voor externe samenwerkers",
+    "Invite (email)": "Uitnodigen (e-mail)",
+    "Invite someone by email to collaborate on this project.": "Nodig iemand per e-mail uit om samen te werken aan dit project.",
+    "Invite link": "Uitnodigingslink",
+    "Invitation sent": "Uitnodiging verzonden",
+    "Could not send invitation": "Kon uitnodiging niet versturen",
+    "Email is required": "E-mailadres is verplicht",
+    "Copied": "Gekopieerd",
+    "Send invitation": "Uitnodiging versturen",
     "Save": "Opslaan",
     "Delete": "Verwijderen",
     "Edit": "Bewerken",

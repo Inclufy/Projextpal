@@ -397,10 +397,15 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """
         from django.utils import timezone
         from .models import Task
+        from .permissions import exclude_internal_for_external
 
         project = self.get_object()
         today = timezone.localdate()
-        task_qs = Task.objects.filter(milestone__project=project)
+        # Internal-task confidentiality: counts must not leak internal tasks to
+        # external (cross-tenant) collaborators.
+        task_qs = exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), request.user
+        )
         open_actions = task_qs.exclude(status="done").count()
         overdue_actions = (
             task_qs.exclude(status="done")
@@ -436,13 +441,16 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         them and let the user pick them up. Methodology-agnostic."""
         from django.utils import timezone
         from .models import Task
+        from .permissions import exclude_internal_for_external
 
         project = self.get_object()
         today = timezone.localdate()
 
         actions = []
         task_qs = (
-            Task.objects.filter(milestone__project=project)
+            exclude_internal_for_external(
+                Task.objects.filter(milestone__project=project), request.user
+            )
             .exclude(status="done")
             .select_related("assigned_to")
             .order_by("due_date", "-priority")[:100]
@@ -774,7 +782,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         tomorrow = today + timedelta(days=1)
 
         from .models import Task
-        qs = Task.objects.filter(milestone__project=project).annotate(
+        from .permissions import exclude_internal_for_external
+        qs = exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), self.request.user
+        ).annotate(
             eff_due=Coalesce("revised_due_date", "due_date"),
         )
 
@@ -1873,6 +1884,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         })
 
     def get_queryset(self):
+        from .permissions import exclude_internal_for_external
         qs = super().get_queryset()
         project_id = self.request.query_params.get("project")
         if project_id:
@@ -1889,6 +1901,9 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         category = self.request.query_params.get("category")
         if category:
             qs = qs.filter(category=category)
+        # Cross-tenant confidentiality: external collaborators never see the
+        # host company's internal-only tasks. No-op for same-company/superadmin.
+        qs = exclude_internal_for_external(qs, self.request.user)
         return qs
 
     def update(self, request, *args, **kwargs):
@@ -2915,14 +2930,18 @@ class ProjectEventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter events by user's company and optionally by project."""
+        """Filter events by project membership (opens shared-project events to
+        external collaborators) and optionally by project.
+
+        Was ``project__company=user.company``, which hid a shared project's
+        calendar from legitimate cross-tenant members. Events carry no financial
+        data, so they are safe to open to the same membership set projects use.
+        """
         user = self.request.user
         if not user.is_authenticated:
             return ProjectEvent.objects.none()
-        if not getattr(user, "company", None):
-            return ProjectEvent.objects.none()
 
-        qs = self.queryset.filter(project__company=user.company)
+        qs = self.queryset.filter(project_id__in=accessible_project_ids(user))
 
         # Filter by project if provided
         project_id = self.request.query_params.get("project")

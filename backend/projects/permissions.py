@@ -38,6 +38,58 @@ class CanViewCosts(BasePermission):
         return can_view_costs(request.user)
 
 
+# ── Cross-tenant CONFIDENTIALITY layer ───────────────────────────────────
+# A collaborator from another company (added to a shared project via explicit
+# membership) may collaborate on the board/events/execution, but must NEVER see
+# the host company's internal financials, hourly rates, or internal tasks.
+
+
+def is_external_member(user, project) -> bool:
+    """True when `user` is an EXTERNAL (cross-tenant) collaborator on `project`.
+
+    External member = authenticated, NOT superadmin, has a company, and belongs
+    to a different company than the project's host company
+    (``user.company_id != project.company_id``). Such a user can only be here
+    through explicit project membership, so they collaborate on the shared
+    project but internal/confidential data must be withheld from them.
+
+    Same-company users and superadmins are never "external".
+    """
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return False
+    company_id = getattr(user, "company_id", None)
+    if not company_id:
+        return False
+    project_company_id = getattr(project, "company_id", None)
+    if project_company_id is None:
+        return False
+    return company_id != project_company_id
+
+
+def exclude_internal_for_external(task_qs, user):
+    """Remove internal-only tasks a user isn't allowed to see from a Task qs.
+
+    A task flagged ``is_internal=True`` stays visible to the task's host company
+    (``milestone.project.company_id == user.company_id``) and to superadmins;
+    for everyone else (external cross-tenant members, or a user with no company)
+    it is excluded. Non-internal tasks are never touched.
+
+    The FK path follows the real relation Task → milestone → project → company.
+    """
+    from django.db.models import Q
+    if user is None or not getattr(user, "is_authenticated", False):
+        return task_qs
+    # Superadmin / is_superuser keep seeing everything.
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return task_qs
+    own_company_id = getattr(user, "company_id", None)
+    return task_qs.exclude(
+        Q(is_internal=True) & ~Q(milestone__project__company_id=own_company_id)
+    )
+
+
 # URL methodology slugs that participate in isolation enforcement.
 # Anything not in this set is treated as a non-methodology URL and skipped.
 _METHODOLOGY_SLUGS = {

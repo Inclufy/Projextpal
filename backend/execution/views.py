@@ -19,21 +19,44 @@ IsAdminOrPMOrContributor = HasRole("admin", "pm", "contibuter")
 
 
 class CompanyScopedQuerysetMixin:
+    """Project-membership-scoped for collaboration resources; Governance stays
+    company-scoped (governance/decision confidentiality — not opened to
+    cross-tenant collaborators).
+
+    Stakeholder, ChangeRequest and TimeEntry are project collaboration data, so
+    they follow the SAME accessible-project membership set that projects.views
+    uses — a legitimate external member on a shared project sees them, every
+    other project stays invisible. TimeEntry additionally always returns the
+    user's own rows (contractors keep their historical timesheets).
+    """
+
     def get_queryset(self):
+        from django.db.models import Q
+        from projects.views import accessible_project_ids
         base_qs = super().get_queryset()
         user = self.request.user
         if not user.is_authenticated:
             return base_qs.none()
-        if getattr(user, "company", None) is None:
-            return base_qs.none()
-        if base_qs.model is Stakeholder:
-            return base_qs.filter(company=user.company)
+
+        # Superadmin sees everything (tenant-spanning operational role).
+        if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+            return base_qs
+
+        # Governance: confidential — keep company-scoped (needs a company).
         if base_qs.model is Governance:
+            if getattr(user, "company", None) is None:
+                return base_qs.none()
             return base_qs.filter(project__company=user.company)
+
+        accessible_ids = accessible_project_ids(user)
+        if base_qs.model is Stakeholder:
+            return base_qs.filter(project_id__in=accessible_ids)
         if base_qs.model is ChangeRequest:
-            return base_qs.filter(project__company=user.company)
+            return base_qs.filter(project_id__in=accessible_ids)
         if base_qs.model is TimeEntry:
-            return base_qs.filter(project__company=user.company)
+            return base_qs.filter(
+                Q(project_id__in=accessible_ids) | Q(user=user)
+            ).distinct()
         return base_qs
 
 
