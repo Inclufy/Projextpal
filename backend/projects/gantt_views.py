@@ -54,8 +54,11 @@ def project_gantt(request, project_id):
     except Project.DoesNotExist:
         return Response({"detail": "Project not found."}, status=404)
 
+    from .permissions import exclude_internal_for_external
     tasks = list(
-        Task.objects.filter(milestone__project_id=project_id)
+        exclude_internal_for_external(
+            Task.objects.filter(milestone__project_id=project_id), request.user
+        )
         .select_related("assigned_to", "milestone")
         .prefetch_related("depends_on")
     )

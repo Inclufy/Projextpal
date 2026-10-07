@@ -29,6 +29,17 @@ def can_view_costs(user) -> bool:
     return getattr(user, "role", None) in COST_VIEWER_ROLES
 
 
+def can_view_costs_for(user, project) -> bool:
+    """Costs are visible only to a role that may see costs AND who is NOT an
+    external (cross-tenant) collaborator on this project. `can_view_costs` is
+    role-only; since cross-tenant collaboration lets a partner PM/admin reach a
+    shared project, the role gate alone would leak the host company's financials
+    — so an external member never sees costs, regardless of role."""
+    if getattr(user, "is_superuser", False):
+        return True
+    return can_view_costs(user) and not is_external_member(user, project)
+
+
 class CanViewCosts(BasePermission):
     """DRF permission — only finance/management roles may access cost-bearing
     endpoints (budget categories/items/overview). Yanmar SC-05."""

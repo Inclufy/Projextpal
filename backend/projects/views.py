@@ -345,8 +345,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         Body (optional): {"complete_activities": true|false} (default true).
         """
         from .models import Task
+        from .permissions import is_external_member
 
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         complete_activities = request.data.get("complete_activities", True)
         completed = 0
         if complete_activities:
@@ -366,7 +372,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="hold")
     def hold(self, request, pk=None):
         """Put the project on hold (status 'on_hold'). Activities are left as-is."""
+        from .permissions import is_external_member
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         project.status = "on_hold"
         project.save(update_fields=["status", "updated_at"])
         return Response({"id": project.id, "status": project.status})
@@ -376,8 +388,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """Reopen a closed/held project (status 'in_progress'). Activity statuses
         are left untouched. Any closing sign-off is revoked (is_valid=False)."""
         from .models import ProjectSignOff
+        from .permissions import is_external_member
 
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         project.status = "in_progress"
         project.save(update_fields=["status", "updated_at"])
         ProjectSignOff.objects.filter(project=project).update(is_valid=False)
@@ -1146,9 +1164,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 "is_overdue": is_overdue,
             },
         }
-        # Yanmar SC-05 — hide budget figures from non-finance roles.
-        from .permissions import can_view_costs
-        if not can_view_costs(request.user):
+        # Hide budget figures from non-finance roles AND from external
+        # (cross-tenant) collaborators on this project.
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
             for k in ("budget_total", "spent", "percent_used"):
                 data.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
@@ -1264,8 +1283,12 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 }
             )
 
-            # Tasks as timeline bars under the milestone
-            for t in m.tasks.all().order_by("order_index", "id"):
+            # Tasks as timeline bars under the milestone (internal tasks hidden
+            # from external cross-tenant collaborators).
+            from .permissions import exclude_internal_for_external
+            for t in exclude_internal_for_external(
+                m.tasks.all(), request.user
+            ).order_by("order_index", "id"):
                 owner_user = (
                     t.assigned_to or t.raci_responsible or t.raci_accountable or None
                 )
@@ -3394,7 +3417,13 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             queryset = BudgetItem.objects.all()
         else:
-            queryset = BudgetItem.objects.filter(project_id__in=accessible_project_ids(user))
+            # Budget line items are host-company-confidential: scope strictly to
+            # the user's OWN company (never via cross-tenant membership), so an
+            # external collaborator on a shared project cannot read host budgets.
+            company = getattr(user, 'company', None)
+            if company is None:
+                return BudgetItem.objects.none()
+            queryset = BudgetItem.objects.filter(project__company=company)
 
         # Filters
         project_id = self.request.query_params.get('project_id')

@@ -67,7 +67,10 @@ def analytics_overview(request):
     proj_ids = list(projects.values_list("id", flat=True))
     today = timezone.now().date()
 
-    tasks = Task.objects.filter(milestone__project_id__in=proj_ids)
+    from .permissions import exclude_internal_for_external
+    tasks = exclude_internal_for_external(
+        Task.objects.filter(milestone__project_id__in=proj_ids), request.user
+    )
     tasks_total = tasks.count()
     tasks_done = tasks.filter(status="done").count()
     overdue = tasks.exclude(status="done").filter(

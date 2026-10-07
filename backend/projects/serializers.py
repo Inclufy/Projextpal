@@ -394,9 +394,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Yanmar SC-05 — hide budget/expenses from non-finance roles (ROI %
         # stays — it's part of the visible business case, PP-03).
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), instance):
             for k in ("budget", "expenses_total", "expenses"):
                 data.pop(k, None)
         return data
@@ -445,9 +445,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide budget/expenses from non-finance roles.
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), instance):
             data.pop("budget", None)
             data.pop("expenses_total", None)
         return data
@@ -1237,9 +1237,9 @@ class TimeEntrySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide rates/costs from non-finance roles.
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
             data.pop("hourly_rate_snapshot", None)
             data.pop("labor_cost", None)
         return data
