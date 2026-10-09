@@ -5,6 +5,8 @@ import re
 from bot.ai.utils.session_context import (
     clear_user_session,
     get_user_session,
+    set_active_project,
+    set_active_program,
     set_user_session,
 )
 from rest_framework import status, viewsets
@@ -169,6 +171,13 @@ class ChatViewSet(viewsets.ModelViewSet):
         else:
             clear_user_session()
 
+        # Scope this turn to the project the copilot was opened from (if any), so
+        # project tools default to it ("close this project", "add an action", …).
+        set_active_project(request.data.get("project_id"))
+        # Same for a programme the copilot was opened from, so programme tools
+        # default to it ("close this programme", "complete all projects", …).
+        set_active_program(request.data.get("program_id"))
+
         try:
             # Save user message (original, without language instruction)
             user_message = ChatMessage.objects.create(
@@ -209,8 +218,53 @@ class ChatViewSet(viewsets.ModelViewSet):
 
             user_ai_agent = ERPAIAgent(tools=tools, user=user_for_context)
 
+            # Tell the model which project the user is working in, so "this
+            # project" / unspecified actions resolve to it and it never asks for
+            # the id (the tools default to this project via the session context).
+            project_context = ""
+            pid = request.data.get("project_id")
+            if pid and str(pid).isdigit():
+                from projects.models import Project
+                comp = getattr(user_for_context, "company", None)
+                proj = (
+                    Project.objects.filter(id=int(pid), company=comp).first()
+                    if comp else None
+                )
+                if proj:
+                    project_context = (
+                        f"[Context: the user is currently working in project "
+                        f"#{proj.id} \"{proj.name}\". When they say 'this project', "
+                        f"'the project', or refer to actions/tasks/issues/risks "
+                        f"without naming a project, act on project #{proj.id} and "
+                        f"call project tools without a project_id (they default to "
+                        f"this project). Do not ask for the project id.]\n"
+                    )
+
+            # Tell the model which programme the user is working in, so "this
+            # programme" / unspecified actions resolve to it and it never asks
+            # for the id (the programme tools default to it via the session
+            # context).
+            program_context = ""
+            prog_id = request.data.get("program_id")
+            if prog_id and str(prog_id).isdigit():
+                from programs.models import Program
+                comp = getattr(user_for_context, "company", None)
+                prog = (
+                    Program.objects.filter(id=int(prog_id), company=comp).first()
+                    if comp else None
+                )
+                if prog:
+                    program_context = (
+                        f"[Context: the user is currently working in programme "
+                        f"#{prog.id} \"{prog.name}\". When they say 'this programme', "
+                        f"'the program', or refer to the programme's projects/risks "
+                        f"without naming a programme, act on programme #{prog.id} and "
+                        f"call programme tools without a program_id (they default to "
+                        f"this programme). Do not ask for the programme id.]\n"
+                    )
+
             # Add language instruction to the message for AI processing
-            message_with_language = f"{language_instruction}{message}"
+            message_with_language = f"{language_instruction}{project_context}{program_context}{message}"
             
             # Get AI response with language-aware message
             ai_response = user_ai_agent.process_message(message_with_language, chat_history)
