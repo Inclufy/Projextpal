@@ -3,6 +3,11 @@ from rest_framework.routers import DefaultRouter
 from projects.role_views import my_program_role
 from .tailoring_views import program_intake_scenarios, program_intake_analyze, program_tailoring
 from .ai_context_views import program_ai_context
+# Sprint 7 — timesheet policy + begrote uren views.
+from .budget_views import (
+    set_program_team_member_budget,
+    program_time_vs_budget,
+)
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -77,6 +82,19 @@ urlpatterns = [
     path('<int:program_pk>/milestones/<int:pk>/',
          ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-milestones-detail'),
+
+    # Sprint 7 — per-member timesheet policy + begrote uren.
+    path(
+        '<int:pk>/team/<int:team_member_id>/budget/',
+        set_program_team_member_budget,
+        name='program-team-member-budget',
+    ),
+    # Sprint 7 — Uren vs budget widget data source.
+    path(
+        '<int:pk>/time-vs-budget/',
+        program_time_vs_budget,
+        name='program-time-vs-budget',
+    ),
 
     # Router include LAST so explicit paths above take priority
     path('', include(router.urls)),

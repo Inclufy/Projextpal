@@ -65,6 +65,12 @@ from .sprint5_views import (
     dashboard_narrative,
     meeting_agenda_auto_draft,
 )
+# Sprint 7 — timesheet policy + budgeted-hours views (standalone file so
+# the parallel cross-tenant rework in views.py doesn't race with us).
+from .budget_views import (
+    set_team_member_budget as project_set_team_member_budget,
+    project_time_vs_budget,
+)
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -178,4 +184,17 @@ urlpatterns = [
          name="project-dashboard-narrative"),
     path("<int:pk>/meetings/auto-draft-agenda/", meeting_agenda_auto_draft,
          name="project-meeting-agenda-auto-draft"),
+
+    # Sprint 7 — per-member timesheet policy + begrote uren.
+    path(
+        "<int:pk>/team/<int:team_member_id>/budget/",
+        project_set_team_member_budget,
+        name="project-team-member-budget",
+    ),
+    # Sprint 7 — Uren vs budget reports widget data source.
+    path(
+        "<int:pk>/time-vs-budget/",
+        project_time_vs_budget,
+        name="project-time-vs-budget",
+    ),
 ]
