@@ -100,7 +100,6 @@ def create_task(data, user):
         start_date=data.get('start_date'),
         due_date=data['due_date'],
         status='todo',
-        created_by=user
     )
     
     if data.get('assigned_to'):
