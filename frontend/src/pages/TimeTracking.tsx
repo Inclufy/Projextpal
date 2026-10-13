@@ -399,9 +399,31 @@ const TimeTracking = () => {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
       toast.success(pt("Created"));
+      // Sprint 7 S7-04 — non-blocking budget warning. Backend adds this key
+      // on the create response when the saving user is over their
+      // ProjectTeam.budgeted_hours. Shape: { budgeted_hours, actual_hours_
+      // after_save, pct }. We render a human-friendly toast; the entry
+      // itself is already saved.
+      const warn = data?.budget_warning;
+      if (warn && typeof warn === 'object') {
+        const budget = Number(warn.budgeted_hours) || 0;
+        const actual = Number(warn.actual_hours_after_save) || 0;
+        const over = Math.max(0, actual - budget);
+        const pct = Number(warn.pct) || 0;
+        const lang = (() => {
+          try { return localStorage.getItem('preferred_language') === 'en' ? 'en' : 'nl'; }
+          catch { return 'nl'; }
+        })();
+        const msg = lang === 'en'
+          ? `You are now ${over.toFixed(2)}h over your ${budget.toFixed(0)}h budget (${pct.toFixed(1)}%). Check in with your PM.`
+          : `Je bent nu ${over.toFixed(2).replace('.', ',')}u over je begroting van ${budget.toFixed(0)}u (${pct.toFixed(1).replace('.', ',')}%). Overleg met je PM.`;
+        // Prepend a warning glyph in the string so the base toast layer
+        // keeps working even when it does not expose an "icon" slot.
+        toast(`⚠️ ${msg}`, { duration: 8000 });
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || pt("Create failed"));

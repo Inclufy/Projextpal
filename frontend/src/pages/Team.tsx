@@ -466,6 +466,14 @@ export default function Team() {
   const [cascadeProjectIds, setCascadeProjectIds] = useState<number[]>([]);
   const [cascadeEnabled, setCascadeEnabled] = useState(true);
 
+  // Sprint 7 — per-member timesheet policy + begrote uren. These apply to the
+  // CURRENT add-user flow (both the assignment dialog and the invite dialog's
+  // existing-member picker). On submit the UI calls the budget endpoint
+  // immediately after a successful team/add/ to persist the two fields.
+  // Non-blocking: a failure on the budget call does not abort the add.
+  const [timesheetRequired, setTimesheetRequired] = useState<boolean>(true);
+  const [budgetedHours, setBudgetedHours] = useState<string>("");  // "" = NULL
+
   // Company members (same endpoint PlanningTasks.tsx uses) — id + name + email
   const { data: companyMembers = [] } = useQuery<{ id: number; name: string; email: string }[]>({
     queryKey: ['company-members'],
@@ -857,6 +865,23 @@ if (!sendInviteEmail) {
         throw new Error('Assignment failed');
       }
 
+      // Sprint 7 — persist timesheet policy + begrote uren on the row we
+      // just created. Non-fatal: a failure here keeps the assignment but
+      // the budget just stays at its default.
+      try {
+        const row = await response.clone().json().catch(() => null);
+        const teamMemberId = row?.id;
+        if (teamMemberId) {
+          await persistTeamBudget(
+            assignmentType === "project" ? "projects" : "programs",
+            selectedItemId,
+            teamMemberId,
+          );
+        }
+      } catch (_e) {
+        // non-fatal
+      }
+
       // S4-11 — mirror this user onto the program's constituent projects when
       // the admin selected the "also add to underlying projects" option on
       // a program assignment. Response body contains the new ProgramTeam id.
@@ -889,6 +914,8 @@ if (!sendInviteEmail) {
       setSelectedRole("");
       setProgramProjects([]);
       setCascadeProjectIds([]);
+      setTimesheetRequired(true);
+      setBudgetedHours("");
       setIsAssignDialogOpen(false);
 
       toast({
@@ -1001,6 +1028,52 @@ if (!sendInviteEmail) {
     }
   };
 
+  // Sprint 7 — persist timesheet policy + begrote uren immediately after a
+  // ``POST .../team/add/`` succeeded. Separate PATCH endpoint so the cross-
+  // tenant rewrite happening in ProjectViewSet.add_team_member does not
+  // race with our two fields. Silent fallback: a failure here does not
+  // abort the add.
+  const persistTeamBudget = async (
+    base: "projects" | "programs",
+    itemId: string | number,
+    teamMemberId: number | string,
+    overrides?: { timesheet_required?: boolean; budgeted_hours?: number | null },
+  ): Promise<boolean> => {
+    // Only call when the admin actually asked for anything non-default.
+    const tsReq =
+      overrides?.timesheet_required !== undefined
+        ? overrides.timesheet_required
+        : timesheetRequired;
+    const bh =
+      overrides?.budgeted_hours !== undefined
+        ? overrides.budgeted_hours
+        : budgetedHours.trim() === ""
+          ? null
+          : Number(budgetedHours);
+    // Skip the call when nothing changed from defaults.
+    if (tsReq === true && (bh === null || Number.isNaN(bh))) return true;
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(
+        `${API_BASE_URL}/${base}/${itemId}/team/${teamMemberId}/budget/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            timesheet_required: tsReq,
+            budgeted_hours: bh === null || Number.isNaN(bh) ? null : bh,
+          }),
+        },
+      );
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
   // S4-11 — fire the backend cascade endpoint for a freshly-added
   // ProgramTeam row. Silent fallback: a 403/500 does not fail the whole
   // flow, we just report the cascade separately.
@@ -1098,6 +1171,22 @@ if (!sendInviteEmail) {
         });
         if (res.ok) {
           added += 1;
+          // Sprint 7 — persist timesheet policy + begrote uren for THIS user.
+          // Non-fatal: a failure keeps the row but the two fields stay at
+          // their defaults.
+          try {
+            const row = await res.clone().json().catch(() => null);
+            const teamMemberId = row?.id;
+            if (teamMemberId) {
+              await persistTeamBudget(
+                inviteType === "project" ? "projects" : "programs",
+                inviteItemId,
+                teamMemberId,
+              );
+            }
+          } catch (_e) {
+            // non-fatal
+          }
           // S4-11 — cascade the new program-team row down to the ticked projects.
           if (shouldCascade) {
             try {
@@ -1173,6 +1262,8 @@ if (!sendInviteEmail) {
     setProgramProjects([]);
     setCascadeProjectIds([]);
     setCascadeEnabled(true);
+    setTimesheetRequired(true);
+    setBudgetedHours("");
   };
 
   // AI Functions (simplified - would call backend AI endpoints in production)
@@ -1972,6 +2063,45 @@ if (!sendInviteEmail) {
               </Select>
             </div>
 
+            {/* Sprint 7 — timesheet policy + begrote uren */}
+            {selectedItemId && (
+              <div className="space-y-3 rounded-md border p-3 bg-muted/20">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {pt("Timesheet required")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pt("Whether this person must log hours.")}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={timesheetRequired}
+                    onCheckedChange={setTimesheetRequired}
+                    aria-label={pt("Timesheet required")}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">
+                    <Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                    {pt("Budgeted hours")}
+                  </Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.25"
+                    placeholder={pt("optional, e.g. 40")}
+                    value={budgetedHours}
+                    onChange={(e) => setBudgetedHours(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {pt("Overrun shows a warning on time entry, not a block.")}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* S4-11 — cascade panel: only when assigning to a PROGRAM */}
             {assignmentType === "program" && selectedItemId && programProjects.length > 0 && (
               <div className="space-y-2 rounded-md border p-3 bg-muted/30">
@@ -2154,6 +2284,45 @@ if (!sendInviteEmail) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Sprint 7 — timesheet policy + begrote uren (invite / existing-member path) */}
+            {inviteItemId && inviteMode === "existing" && (
+              <div className="space-y-3 rounded-md border p-3 bg-muted/20">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {pt("Timesheet required")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pt("Whether these persons must log hours.")}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={timesheetRequired}
+                    onCheckedChange={setTimesheetRequired}
+                    aria-label={pt("Timesheet required")}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">
+                    <Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                    {pt("Budgeted hours (per person)")}
+                  </Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.25"
+                    placeholder={pt("optional, e.g. 40")}
+                    value={budgetedHours}
+                    onChange={(e) => setBudgetedHours(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {pt("Overrun shows a warning on time entry, not a block.")}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* S4-11 — cascade panel: only when inviting into a PROGRAM */}
             {inviteType === "program" && inviteItemId && programProjects.length > 0 && (
