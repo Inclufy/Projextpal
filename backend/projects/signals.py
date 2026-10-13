@@ -10,6 +10,7 @@ from .models import (
     ProjectTeam,
     ApprovalStage,
     Risk,
+    ProjectAIContext,
 )
 
 
@@ -259,3 +260,28 @@ def regen_status_on_high_risk(sender, instance, created, raw=False, **kwargs):
     # Only a newly-raised high-level risk is significant enough to refresh.
     if created and getattr(instance, "level", None) == "High":
         _maybe_regen_status(getattr(instance, "project", None))
+
+
+# ---------------------------------------------------------------------------
+# Sprint 5 S5-01 — compliance keyword scan on ProjectAIContext save.
+# Deterministic (regex) scan; cheap enough to run inline. Updates the
+# Project.compliance_flags JSON list in-place so the UI can show an amber
+# banner. Swallow-all so a scan failure never breaks a context upload.
+# ---------------------------------------------------------------------------
+@receiver(post_save, sender=ProjectAIContext)
+def rescan_compliance_flags(sender, instance, created, raw=False, **kwargs):
+    if raw:
+        return
+    try:
+        from .compliance_scan import scan_text
+        text = instance.extracted_text if instance.enabled else ""
+        flags = scan_text(text or "")
+        project = instance.project
+        if list(project.compliance_flags or []) != flags:
+            project.compliance_flags = flags
+            # update_fields keeps this surgical — no risk of overwriting
+            # a concurrent field change on Project.
+            project.save(update_fields=["compliance_flags", "updated_at"])
+    except Exception:
+        pass
+

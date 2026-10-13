@@ -26,7 +26,9 @@ from .views import (
     BudgetCategoryViewSet,
     BudgetItemViewSet,
     BudgetOverviewViewSet,
-    # Status-report auto-draft
+    # Status-report auto-draft (Sprint-3 deterministic version — still
+    # importable for anyone who wants the pre-LLM baseline; the HTTP
+    # route is now served by Sprint 5's status_report_ai_draft).
     status_report_auto_draft,
 )
 
@@ -52,6 +54,16 @@ from .methodology_autodraft_views import (
     kanban_suggest_swimlanes,
     lss_define_auto_draft,
     waterfall_suggest_phases,
+)
+from .sprint5_views import (
+    compliance_rescan,
+    project_auto_tag,
+    status_report_ai_draft,
+    risk_sniff,
+    team_match,
+    onboarding_tour,
+    dashboard_narrative,
+    meeting_agenda_auto_draft,
 )
 
 router = DefaultRouter()
@@ -142,10 +154,28 @@ urlpatterns = [
     path('methodologies/<str:code>/', MethodologyDetailView.as_view(), name='methodology-detail'),
     path('methodologies-templates/', MethodologyTemplateView.as_view(), name='methodology-templates'),
 
-    # Status-report auto-draft (returns a fresh draft, NOT persisted)
+    # Status-report auto-draft (Sprint 5 S5-03 — now AI-powered via
+    # status_report_ai_draft, with the Sprint-3 deterministic version as
+    # the fallback inside the view). Returns a fresh draft, NOT persisted.
     path(
-        '<int:project_id>/status-reports/auto-draft/',
-        status_report_auto_draft,
+        '<int:pk>/status-reports/auto-draft/',
+        status_report_ai_draft,
         name='status-report-auto-draft',
     ),
+
+    # Sprint 5 — proactive AI (S5-01, S5-02, S5-04, S5-06..S5-09).
+    path("<int:pk>/compliance/rescan/", compliance_rescan,
+         name="project-compliance-rescan"),
+    path("<int:pk>/auto-tag/", project_auto_tag,
+         name="project-auto-tag"),
+    path("<int:pk>/risk-sniff/", risk_sniff,
+         name="project-risk-sniff"),
+    path("<int:pk>/team-match/", team_match,
+         name="project-team-match"),
+    path("<int:pk>/team/<int:user_id>/onboarding-tour/", onboarding_tour,
+         name="project-onboarding-tour"),
+    path("<int:pk>/dashboard/narrative/", dashboard_narrative,
+         name="project-dashboard-narrative"),
+    path("<int:pk>/meetings/auto-draft-agenda/", meeting_agenda_auto_draft,
+         name="project-meeting-agenda-auto-draft"),
 ]

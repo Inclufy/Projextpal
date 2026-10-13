@@ -1053,6 +1053,69 @@ export default function AICopilotSidebar() {
   const suggestions = language === "nl" ? suggestionsData.nl : suggestionsData.en;
   const quickActions = language === "nl" ? quickActionsData.nl : quickActionsData.en;
 
+  // Sprint 5 S5-05 — "Wat zegt de tender over X?" preset questions.
+  // Only shown while viewing a project page AND when that project has an
+  // enabled ProjectAIContext. The questions are routed through the
+  // normal chat-send flow so the backend's X-UI-Language / co-pilot
+  // handling stays unchanged.
+  const projectIdForPresets = methodologyMatch?.[1] || null;
+  const [tenderContextEnabled, setTenderContextEnabled] = useState<boolean>(false);
+  useEffect(() => {
+    if (!projectIdForPresets) {
+      setTenderContextEnabled(false);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const r = await fetch(`/api/v1/projects/${projectIdForPresets}/ai-context/`, {
+          method: "GET",
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (!r.ok) {
+          if (!cancel) setTenderContextEnabled(false);
+          return;
+        }
+        const payload = await r.json();
+        if (!cancel) setTenderContextEnabled(!!payload?.enabled);
+      } catch {
+        if (!cancel) setTenderContextEnabled(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [projectIdForPresets]);
+
+  const tenderPresets = (() => {
+    if (language === "en") {
+      return [
+        "What are the key requirements the tender lists?",
+        "Which deadlines are mentioned in the documents?",
+        "Which risks do the documents call out?",
+        "Which stakeholders are mentioned?",
+        "Which KPIs or measurable goals are stated?",
+      ];
+    }
+    if (language === "fr") {
+      return [
+        "Quelles sont les exigences principales ?",
+        "Quelles échéances sont mentionnées ?",
+        "Quels risques les documents soulèvent-ils ?",
+        "Quels parties prenantes sont nommés ?",
+        "Quels KPI ou objectifs mesurables sont cités ?",
+      ];
+    }
+    return [
+      "Wat zijn de belangrijkste eisen?",
+      "Welke deadlines noemen de documenten?",
+      "Welke risico's noemen de documenten?",
+      "Welke stakeholders worden genoemd?",
+      "Welke KPI's / meetbare doelen staan er?",
+    ];
+  })();
+
   // Sync with requested tab from context
   useEffect(() => {
     if (requestedTab) setActiveTab(requestedTab);
@@ -1439,6 +1502,30 @@ export default function AICopilotSidebar() {
                       <h3 className="text-base font-semibold text-foreground mb-1">{isNl ? "Hallo! Ik ben uw AI Copilot" : "Hello! I'm your AI Copilot"}</h3>
                       <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">{isNl ? "Ik help u met overzicht van uw projecten en programma's" : "I help you with insights on your projects and programs"}</p>
                     </div>
+                    {projectIdForPresets && tenderContextEnabled && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          {isNl ? "Wat zeggen de documenten?" : language === "fr" ? "Que disent les documents ?" : "What do the documents say?"}
+                        </p>
+                        <div className="space-y-1.5">
+                          {tenderPresets.map((q, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleSendMessage(q)}
+                              className="w-full flex items-start gap-3 p-2.5 rounded-lg border border-purple-200 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-all text-left group"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-foreground">{q}</p>
+                              </div>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-purple-600 transition-colors mt-1 flex-shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isNl ? "Suggesties" : "Suggestions"}</p>
                       <div className="space-y-2">

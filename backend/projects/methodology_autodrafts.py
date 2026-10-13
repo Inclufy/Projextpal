@@ -33,119 +33,26 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
+# Sprint 5 — the LLM ladder, JSON parser and DraftResult envelope were
+# refactored into ai_draft_shared so proactive-AI endpoints can reuse
+# them without duplicating code. We keep the private aliases for the
+# existing Sprint 4 helpers below.
+from .ai_draft_shared import (
+    MAX_TOKENS_LARGE as _MAX_TOKENS_LARGE,
+    MAX_TOKENS_SMALL as _MAX_TOKENS_SMALL,
+    DraftResult,
+    call_anthropic as _call_anthropic,
+    call_openai as _call_openai,
+    run_llm as _run_llm,
+    parse_json as _parse_json,
+    strip_fences as _strip_fences,
+    wrap_prompt as _wrap,
+)
+
 logger = logging.getLogger(__name__)
-
-ANTHROPIC_MODEL = "claude-opus-4-7"
-OPENAI_MODEL = "gpt-4o-mini"
-
-_MAX_TOKENS_LARGE = 4000  # Scrum vision + 20 backlog items
-_MAX_TOKENS_SMALL = 2000
-
-
-# =========================================================================
-# Shared internals
-# =========================================================================
-
-def _strip_fences(raw: str) -> str:
-    cleaned = (raw or "").strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.split("```", 2)[1]
-        if cleaned.lower().startswith("json"):
-            cleaned = cleaned[4:]
-        cleaned = cleaned.strip()
-    return cleaned
-
-
-def _parse_json(raw: str) -> Optional[dict]:
-    try:
-        data = json.loads(_strip_fences(raw))
-    except Exception:
-        return None
-    if not isinstance(data, dict):
-        return None
-    return data
-
-
-def _call_anthropic(company, system: str, user_prompt: str,
-                    max_tokens: int = _MAX_TOKENS_SMALL) -> Optional[dict]:
-    try:
-        from core.llm_keys import get_anthropic_client
-        from core import ai_usage
-        client = get_anthropic_client(company)
-        if client is None:
-            return None
-        resp = client.messages.create(
-            model=ANTHROPIC_MODEL, max_tokens=max_tokens, system=system,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        ai_usage.record(getattr(company, "id", None),
-                        ai_usage.tokens_from_anthropic(resp), provider="anthropic")
-        raw = "".join(
-            b.text for b in resp.content if getattr(b, "type", "") == "text"
-        )
-        return _parse_json(raw)
-    except Exception as e:
-        logger.info("methodology_autodrafts anthropic failed: %s", e)
-        return None
-
-
-def _call_openai(company, system: str, user_prompt: str,
-                 max_tokens: int = _MAX_TOKENS_SMALL) -> Optional[dict]:
-    try:
-        from core.llm_keys import get_openai_client
-        from core import ai_usage
-        client = get_openai_client(company)
-        if client is None:
-            return None
-        resp = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.3,
-            max_tokens=max_tokens,
-            response_format={"type": "json_object"},
-        )
-        try:
-            usage = getattr(resp, "usage", None)
-            total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
-            from core import ai_usage
-            ai_usage.record(getattr(company, "id", None), total, provider="openai")
-        except Exception:
-            pass
-        return _parse_json(resp.choices[0].message.content or "")
-    except Exception as e:
-        logger.info("methodology_autodrafts openai failed: %s", e)
-        return None
-
-
-def _run_llm(user, system: str, user_prompt: str,
-             max_tokens: int = _MAX_TOKENS_SMALL) -> Optional[dict]:
-    """Anthropic → OpenAI ladder. Returns parsed dict or None."""
-    company = getattr(user, "company", None)
-    parsed = _call_anthropic(company, system, user_prompt, max_tokens)
-    if parsed is not None:
-        return parsed
-    return _call_openai(company, system, user_prompt, max_tokens)
-
-
-@dataclass
-class DraftResult:
-    suggested: Dict[str, Any]
-    source: str  # "ai" | "fallback"
-    warnings: List[str] = field(default_factory=list)
-
-    def as_dict(self) -> Dict[str, Any]:
-        return {
-            "suggested": self.suggested,
-            "source": self.source,
-            "warnings": self.warnings,
-        }
 
 
 def _project_meta(project) -> dict:
@@ -247,18 +154,6 @@ def _lang_meta(language: str) -> dict:
         "waterfall_test_accept": "Test & acceptatie",
         "waterfall_go_live": "Livegang & overdracht",
     }
-
-
-def _wrap(doc_prefix: str, meta: dict, instructions: str) -> str:
-    """Assemble the user-prompt body: project meta + optional document
-    prefix + instructions. The document prefix (already carrying its own
-    [PROJECT_DOCUMENTEN]/[PROJECT_DOCUMENTS] header) stays verbatim."""
-    body = (
-        f"Project metadata:\n{json.dumps(meta, ensure_ascii=False)}\n\n"
-    )
-    if doc_prefix:
-        body = f"{doc_prefix}{body}"
-    return f"{body}{instructions}"
 
 
 def _finalize(parsed: Optional[dict], fallback: dict,

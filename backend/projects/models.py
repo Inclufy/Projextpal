@@ -145,6 +145,17 @@ class Project(models.Model):
     health_quality = models.CharField(max_length=7, default='#808080', blank=True)
     last_analysis_date = models.DateTimeField(null=True, blank=True)
 
+    # Sprint 5 S5-01 — compliance regimes auto-detected from
+    # ProjectAIContext.extracted_text. Canonical slugs only
+    # (e.g. "avg_gdpr", "iso_27001"); the frontend turns the slug into a
+    # chip label via the shared compliance_scan.chip_label() table.
+    compliance_flags = models.JSONField(default=list, blank=True)
+
+    # Sprint 5 S5-02 — AI-suggested project tags, generated from the
+    # ProjectAIContext text at project-create time. List of short strings
+    # (max ~5). Users may edit freely.
+    ai_suggested_tags = models.JSONField(default=list, blank=True)
+
     class Meta:
         ordering = ["-created_at"]
 
