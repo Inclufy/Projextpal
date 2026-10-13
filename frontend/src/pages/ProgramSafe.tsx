@@ -309,12 +309,12 @@ const PIPlanningView = ({ programId, pis, currentPi, onChange }: any) => {
 // ---------------------------------------------------------------------------
 // PI Objectives + BV roll-up
 // ---------------------------------------------------------------------------
-const ObjectivesView = ({ currentPi, onChange }: any) => {
+const ObjectivesView = ({ programId, currentPi, onChange }: any) => {
   const piId = currentPi?.id;
   const { data, isLoading } = useQuery({
-    queryKey: ['safe-objectives', piId],
-    queryFn: () => apiGet(`/safe/pis/${piId}/objectives/`),
-    enabled: !!piId,
+    queryKey: ['safe-objectives', programId, piId],
+    queryFn: () => apiGet(`/safe/programs/${programId}/pis/${piId}/objectives/`),
+    enabled: !!piId && !!programId,
   });
   const objectives = asList(data);
   const [open, setOpen] = useState(false);
@@ -323,7 +323,7 @@ const ObjectivesView = ({ currentPi, onChange }: any) => {
 
   const create = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/safe/pis/${piId}/objectives/`, {
+      const res = await fetch(`${API_BASE_URL}/safe/programs/${programId}/pis/${piId}/objectives/`, {
         method: 'POST', headers: authHeaders(), body: JSON.stringify(form),
       });
       if (!res.ok) throw await res.json().catch(() => ({}));
@@ -333,7 +333,7 @@ const ObjectivesView = ({ currentPi, onChange }: any) => {
       toast.success('PI Objective added');
       setOpen(false);
       setForm({ description: '', business_value: 5, actual_value: 0, committed: true });
-      queryClient.invalidateQueries({ queryKey: ['safe-objectives', piId] });
+      queryClient.invalidateQueries({ queryKey: ['safe-objectives', programId, piId] });
       onChange();
     },
     onError: () => toast.error('Could not add objective'),
