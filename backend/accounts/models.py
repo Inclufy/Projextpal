@@ -65,6 +65,18 @@ class Company(models.Model):
         ),
     )
 
+    # S7-06: default hourly rate for this tenant. When a ProjectTeam row has
+    # ``hourly_rate=0`` (the "no override" signal), the cost dashboards and
+    # budget calculators fall back to this company-level default. Set 0 for
+    # tenants that always want an explicit per-member override.
+    default_hourly_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text=(
+            "Fallback hourly rate when a ProjectTeam/ProgramTeam row has "
+            "no override (hourly_rate = 0)."
+        ),
+    )
+
     def __str__(self):
         return self.name
 
