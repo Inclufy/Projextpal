@@ -155,6 +155,30 @@ class ProgramTeam(models.Model):
     )
     added_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # Sprint 7 — per-member timesheet policy op het programma. Bij cascade
+    # erft het ProjectTeam deze waarde. Default True (iedereen die aan het
+    # programma hangt wordt verwacht uren te loggen op de projecten
+    # eronder).
+    timesheet_required = models.BooleanField(
+        default=True,
+        help_text=(
+            "Whether this member is expected to log hours on projects under "
+            "this program. Cascades to ProjectTeam.timesheet_required when a "
+            "program membership fans out to constituent projects."
+        ),
+    )
+    # Sprint 7 — begrote uren voor deze persoon op het programma als geheel.
+    # Deze waarde cascadeert bewust NIET naar ProjectTeam.budgeted_hours
+    # (projecten krijgen NULL = unset) — de admin bepaalt per project of
+    # er een eigen budget wordt gezet.
+    budgeted_hours = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        null=True, blank=True,
+        help_text=(
+            "Begrote uren voor deze persoon op het programma. "
+            "Overschrijding = warning, niet blocking."
+        ),
+    )
 
     class Meta:
         unique_together = ["program", "user"]
@@ -244,6 +268,12 @@ class ProgramTeam(models.Model):
                 is_active=True,
                 can_view_costs=True,
                 hourly_rate=0,
+                # Sprint 7 — timesheet_required erft van de ProgramTeam-waarde
+                # zodat admin's beleid op programma-niveau door-cascadeert.
+                # budgeted_hours blijft NULL op elk ProjectTeam — program-
+                # begroting wordt niet automatisch verdeeld.
+                timesheet_required=self.timesheet_required,
+                budgeted_hours=None,
             )
             created.append(pt)
         return created, skipped
