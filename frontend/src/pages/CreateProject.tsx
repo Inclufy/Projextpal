@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectsApi } from "@/lib/api";
 import MultiFileDropzone from "@/components/MultiFileDropzone";
@@ -187,7 +187,23 @@ const CreateProject = () => {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Entry point via "Generate with AI" / "AI Assistant" buttons on the
+  // Projects overview: /projects/new?ai=1 auto-opens the AI Methodology
+  // Advisor so the two flows (modal + wizard) are a single UX.
+  useEffect(() => {
+    if (searchParams.get("ai") === "1") {
+      setAiAdvisorOpen(true);
+      // Strip the param so a refresh doesn't re-open the dialog on top of
+      // existing state.
+      const next = new URLSearchParams(searchParams);
+      next.delete("ai");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // AI States
   const [aiAdvisorOpen, setAiAdvisorOpen] = useState(false);
