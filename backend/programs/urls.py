@@ -3,6 +3,8 @@ from rest_framework.routers import DefaultRouter
 from projects.role_views import my_program_role
 from .tailoring_views import program_intake_scenarios, program_intake_analyze, program_tailoring
 from .ai_context_views import program_ai_context
+# Sprint 7 — program-level cost roll-up (view lives in execution app).
+from execution.s7_cost_planner_views import program_time_vs_budget_cost
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -77,6 +79,13 @@ urlpatterns = [
     path('<int:program_pk>/milestones/<int:pk>/',
          ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-milestones-detail'),
+
+    # Sprint 7 — program cost roll-up (budgeted vs actual €, per team-member)
+    path(
+        '<int:pk>/time-vs-budget-cost/',
+        program_time_vs_budget_cost,
+        name='program-time-vs-budget-cost',
+    ),
 
     # Router include LAST so explicit paths above take priority
     path('', include(router.urls)),

@@ -65,6 +65,12 @@ from .sprint5_views import (
     dashboard_narrative,
     meeting_agenda_auto_draft,
 )
+# Sprint 7 — cost dashboard + resource planner views live in the execution
+# app to keep backend/projects/views.py untouched during the parallel
+# cross-tenant workstream. The URLs are mounted here so the client-visible
+# namespace stays /api/v1/projects/<pk>/....
+from execution.s7_cost_planner_views import project_time_vs_budget_cost
+from execution.s7_resource_planner_views import project_resource_plan
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -178,4 +184,16 @@ urlpatterns = [
          name="project-dashboard-narrative"),
     path("<int:pk>/meetings/auto-draft-agenda/", meeting_agenda_auto_draft,
          name="project-meeting-agenda-auto-draft"),
+
+    # Sprint 7 — cost dashboard + resource planner.
+    path(
+        "<int:pk>/time-vs-budget-cost/",
+        project_time_vs_budget_cost,
+        name="project-time-vs-budget-cost",
+    ),
+    path(
+        "<int:pk>/resource-plan/",
+        project_resource_plan,
+        name="project-resource-plan",
+    ),
 ]
