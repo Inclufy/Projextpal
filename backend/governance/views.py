@@ -220,19 +220,34 @@ def ai_generate_text(request):
     logger = logging.getLogger(__name__)
 
     from core.i18n_ai import resolve_ui_language, prepend_language
-    from core.ai_context_helpers import get_project_context_prefix
+    from core.ai_context_helpers import (
+        get_project_context_prefix,
+        get_program_context_prefix,
+        get_portfolio_context_prefix,
+        MAX_CONTEXT_CHARS,
+    )
 
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
     lang = resolve_ui_language(request)
-    # Project-aware: if the caller sends a project_id and the user can reach
-    # it, prepend the project's uploaded-documents context so advice is
-    # grounded in the actual brief / tender / specs on file.
-    docs_prefix = get_project_context_prefix(
+    # Multi-level context: a single AI generate call may be scoped to a
+    # project AND/OR its program AND/OR its portfolio. Each helper is cap-
+    # ped at MAX_CONTEXT_CHARS; stacking all three gives a hard upper
+    # bound of 3*MAX_CONTEXT_CHARS prefix characters. The order (portfolio
+    # → program → project) matters because the project context is the most
+    # specific signal the LLM should weigh last/most heavily.
+    portfolio_prefix = get_portfolio_context_prefix(
+        request.user, request.data.get("portfolio_id"), language=lang,
+    )
+    program_prefix = get_program_context_prefix(
+        request.user, request.data.get("program_id"), language=lang,
+    )
+    project_prefix = get_project_context_prefix(
         request.user, request.data.get("project_id"), language=lang,
     )
+    docs_prefix = (portfolio_prefix or '') + (program_prefix or '') + (project_prefix or '')
     system_prompt = prepend_language(
         docs_prefix
         + 'You are a helpful project management expert. Respond concisely and professionally.',

@@ -40,3 +40,8 @@ from .views import governance_dashboard
 urlpatterns += [
     path('dashboard/', governance_dashboard, name='governance-dashboard'),
 ]
+
+from .ai_context_views import portfolio_ai_context
+urlpatterns += [
+    path('portfolios/<uuid:pk>/ai-context/', portfolio_ai_context, name='portfolio-ai-context'),
+]

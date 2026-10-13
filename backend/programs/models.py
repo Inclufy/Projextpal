@@ -489,3 +489,51 @@ class ProgramTailoring(models.Model):
             "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
             "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
         }
+
+
+class ProgramAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit programma (Programme AI-advisor, Benefits
+    Map draft, Ask Co-pilot bij een programme, …).
+
+    Spiegeltje van ``projects.ProjectAIContext`` maar op programme-niveau:
+    denk aan een programme-charter, meerjarenplan, business-case portefeuille
+    of MSP Blueprint-input die voor élk constituent-project én voor élke
+    AI-draft op het programma geldt.
+
+    Opgezet als 1-op-1 met Program (niet als veld op Program zelf) zodat
+    parallelle feature-branches op ``programs/models.py`` niet collider op
+    hetzelfde model.
+
+    ``extracted_text`` is al door ``plan_from_documents`` getrimd + genormalis-
+    eerd; we knippen hier op 50_000 tekens om DB-grootte in de hand te
+    houden (ruim voor een gemiddeld programma-dossier)."""
+
+    MAX_TEXT = 50_000
+
+    program = models.OneToOneField(
+        Program, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = models.TextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages} dicts for traceability.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Program AI Context"
+
+    def __str__(self):
+        return f"AI-context<program={self.program_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)
