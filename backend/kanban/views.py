@@ -103,14 +103,21 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):
-        """Initialize Kanban board with default columns"""
+        """Initialize Kanban board with default columns.
+
+        Idempotent: if the board exists but has 0 columns, seed defaults
+        anyway so an empty board can be "re-initialized" without manual
+        column creation.
+        """
         project = self.get_project()
         board, created = KanbanBoard.objects.get_or_create(
             project=project,
             defaults={'name': f'{project.name} Board'}
         )
-        
-        if created:
+
+        # Seed defaults if freshly created OR if an existing board has no
+        # columns yet (recovers legacy / partially-created boards).
+        if created or board.columns.count() == 0:
             # Create default columns
             default_columns = [
                 ('Backlog', 'backlog', None, False),
@@ -128,15 +135,16 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                     wip_limit=wip,
                     is_done_column=is_done
                 )
-            
-            # Create default swimlane
-            KanbanSwimlane.objects.create(
-                board=board,
-                name='Default',
-                order=0,
-                is_default=True
-            )
-        
+
+            # Create default swimlane if none exists
+            if not board.swimlanes.exists():
+                KanbanSwimlane.objects.create(
+                    board=board,
+                    name='Default',
+                    order=0,
+                    is_default=True
+                )
+
         return Response(KanbanBoardDetailSerializer(board).data)
 
 
