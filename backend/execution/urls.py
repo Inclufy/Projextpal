@@ -7,6 +7,7 @@ from .views import (
     GovernanceViewSet,
     ChangeRequestViewSet,
 )
+from .s7_resource_planner_views import resource_allocation_detail
 
 
 router = DefaultRouter()
@@ -16,4 +17,12 @@ router.register(r"change-requests", ChangeRequestViewSet, basename="change-reque
 
 urlpatterns = [
     path("", include(router.urls)),
+    # Sprint 7 — resource-plan allocation detail (list/create lives on the
+    # project route in projects.urls so it stays grouped with other project
+    # resources; detail is here because it is addressable by its own PK).
+    path(
+        "resource-plan/<int:pk>/",
+        resource_allocation_detail,
+        name="resource-allocation-detail",
+    ),
 ]

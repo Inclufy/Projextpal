@@ -387,6 +387,8 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
       { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
       { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
       { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+      // Sprint 7 — resource planner (per-person Gantt per project)
+      { title: "Resource planner", url: `/projects/${projectId}/resource-plan`, icon: Calendar },
     ],
   },
   {

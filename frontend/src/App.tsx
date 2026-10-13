@@ -103,6 +103,9 @@ const ProjectTailoring = lazyWithRetry(() => import("./pages/ProjectTailoring"))
 const ProjectCoach = lazyWithRetry(() => import("./pages/ProjectCoach"));
 const ProgramTailoring = lazyWithRetry(() => import("./pages/ProgramTailoring"));
 const FoundationTeam = lazyWithRetry(() => import("./pages/FoundationTeam"));
+// Sprint 7 — Resource planner + Capacity dashboard.
+const ResourcePlanner = lazyWithRetry(() => import("./pages/ResourcePlanner"));
+const UserCapacityDashboard = lazyWithRetry(() => import("./pages/UserCapacityDashboard"));
 const FoundationBudget = lazyWithRetry(() => import("./pages/FoundationBudget"));
 const FoundationCommunicationPlan = lazyWithRetry(() => import("./pages/FoundationCommunicationPlan"));
 const FoundationClosure = lazyWithRetry(() => import("./pages/FoundationClosure"));
@@ -996,6 +999,10 @@ const App = () => (
               <Route path="/projects/:id/coach" element={<ProtectedPage><ProjectCoach /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/team" element={<ProtectedPage><FoundationTeam /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/budget" element={<ProtectedPage><FoundationBudget /></ProtectedPage>} />
+              {/* Sprint 7 — resource planner + capacity dashboard */}
+              <Route path="/projects/:id/resource-plan" element={<ProtectedPage><ResourcePlanner /></ProtectedPage>} />
+              <Route path="/team/capacity" element={<ProtectedPage><UserCapacityDashboard /></ProtectedPage>} />
+              <Route path="/admin/capacity" element={<ProtectedPage><UserCapacityDashboard /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/communication-plan" element={<ProtectedPage><FoundationCommunicationPlan /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/invoices" element={<ProtectedPage><FoundationInvoices /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/closure" element={<ProtectedPage><FoundationClosure /></ProtectedPage>} />
