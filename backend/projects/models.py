@@ -2097,3 +2097,47 @@ class ProjectTailoring(models.Model):
             "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
             "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
         }
+
+
+class ProjectAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit project (Plan with AI, Ask Co-pilot,
+    risk-forecast, …).
+
+    Opgezet als 1-op-1 met Project (niet als veld op Project zelf) zodat
+    parallelle feature-branches op `projects/models.py` niet collider op
+    hetzelfde model. Hoort niet in `Project.description` omdat die zichtbaar
+    is voor eindgebruikers en de ruwe tender-tekst dat niet is.
+
+    `extracted_text` is al door `plan_from_documents` getrimd + genormalis-
+    eerd; we knippen hier op 50_000 tekens om DB-grootte in de hand te
+    houden (ruim voor een gemiddeld dossier van ~80 pagina's)."""
+
+    MAX_TEXT = 50_000
+
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = models.TextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages} dicts for traceability.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Project AI Context"
+
+    def __str__(self):
+        return f"AI-context<{self.project_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)
