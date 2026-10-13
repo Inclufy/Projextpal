@@ -685,3 +685,50 @@ class FinancialDisclosureAck(models.Model):
 
     def __str__(self):
         return f"FinancialDisclosureAck(project={self.project_id}, by={self.acknowledged_by_id})"
+
+
+class PortfolioAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit portfolio (Portfolio AI-advisor, portfolio-
+    strategie-draft, Ask Co-pilot bij een portfolio, …).
+
+    Spiegeltje van ``projects.ProjectAIContext`` maar op portfolio-niveau:
+    denk aan een strategisch meerjarenplan, investeringskader of
+    bestuursplan dat alle componenten (programs + projects) in dit portfolio
+    kaderen.
+
+    Opgezet als 1-op-1 met Portfolio (niet als veld op Portfolio zelf) zodat
+    parallelle feature-branches op ``governance/models.py`` niet collider op
+    hetzelfde model.
+
+    ``extracted_text`` wordt op 50_000 tekens geclipt om DB-grootte in de
+    hand te houden."""
+
+    MAX_TEXT = 50_000
+
+    portfolio = models.OneToOneField(
+        Portfolio, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = models.TextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages} dicts for traceability.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Portfolio AI Context'
+
+    def __str__(self):
+        return f"AI-context<portfolio={self.portfolio_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)

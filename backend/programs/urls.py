@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from projects.role_views import my_program_role
 from .tailoring_views import program_intake_scenarios, program_intake_analyze, program_tailoring
+from .ai_context_views import program_ai_context
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -50,6 +51,8 @@ urlpatterns = [
     path('intake/scenarios/', program_intake_scenarios, name='program-intake-scenarios'),
     path('intake/analyze/', program_intake_analyze, name='program-intake-analyze'),
     path('<int:pk>/tailoring/', program_tailoring, name='program-tailoring'),
+    # AI Context (uploaded-documents context used by every AI surface on this program)
+    path('<int:pk>/ai-context/', program_ai_context, name='program-ai-context'),
 
     # Nested routes for benefits
     path('<int:program_pk>/benefits/',
