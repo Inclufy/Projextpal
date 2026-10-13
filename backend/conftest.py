@@ -30,6 +30,22 @@ Usage:
 """
 
 import os
+# Shim: dev env ships langchain>=0.3 where ``create_agent`` is no longer
+# exported, but bot/ai/__init__.py imports it. Install a stub before anything
+# triggers urls.py → bot/views → bot/ai import.
+try:  # pragma: no cover
+    from langchain.agents import create_agent  # noqa: F401
+except ImportError:  # pragma: no cover
+    import langchain.agents as _la
+
+    def _stub_create_agent(*_a, **_kw):
+        class _StubAgent:
+            def invoke(self, *_a, **_kw):
+                return {"output": "stub"}
+        return _StubAgent()
+
+    _la.create_agent = _stub_create_agent  # type: ignore[attr-defined]
+
 # Ensure Django settings are configured before any app imports. pytest-django
 # normally handles this, but the earlier version of this conftest imported
 # models at module level which crashed with AppRegistryNotReady.
