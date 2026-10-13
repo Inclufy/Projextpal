@@ -113,6 +113,7 @@ def _d(scope, budget, duur, politiek, risico, regel):
 SCENARIOS = [
     {"key": "klant", "title": "Klantimplementatie", "desc": "Externe opdrachtgever, vaste scope & budget, oplevering in fasen.", "icon": "users", "color": "blue", "tags": ["PRINCE2", "Medium"], "methodology": "prince2", "project_type": "klant", "dimensions": _d(2, 2, 2, 2, 2, 1)},
     {"key": "compliance", "title": "Compliance / gereguleerd", "desc": "Wettelijke eisen (AVG/ISO), audit-trail, hoog afbreukrisico.", "icon": "shield", "color": "red", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "gereguleerd", "dimensions": _d(2, 2, 2, 2, 3, 3)},
+    {"key": "aanbesteding", "title": "Aanbesteding / tender", "desc": "Vaste eisen uit RFP, strakke indientermijn, compliance + audit-trail.", "icon": "file-check", "color": "indigo", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "aanbesteding", "dimensions": _d(3, 2, 2, 3, 3, 3)},
     {"key": "product", "title": "Productontwikkeling", "desc": "Nieuw product, onzekere/veranderende eisen. Werken in sprints.", "icon": "rocket", "color": "purple", "tags": ["Scrum", "Light"], "methodology": "scrum", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 3, 1)},
     {"key": "agileops", "title": "Digitale dienst doorontwikkelen", "desc": "Continue waardestroom, lichte ceremonie.", "icon": "sparkles", "color": "pink", "tags": ["Agile", "Light"], "methodology": "agile", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 2, 1)},
     {"key": "intern", "title": "Intern verbeterproject", "desc": "Klein team, laag risico, korte looptijd.", "icon": "wrench", "color": "teal", "tags": ["Inclufy", "Light"], "methodology": "inclufy", "project_type": "intern", "dimensions": _d(1, 1, 1, 1, 1, 1)},
@@ -332,6 +333,13 @@ def classify(description):
     if has("avg", "gdpr", "compliance", "audit", "wettelijk", "accountant", "iso", "patiënt", "patient", "zorg"):
         dims["regel"] = 3
         dims["risico"] = 3
+    if has("aanbesteding", "tender", "rfp", "offerte-traject", "inschrijving", "gunning"):
+        # Publieke/formele aanbesteding — strakke scope uit RFP, hoge politieke
+        # zichtbaarheid, exclusie-risico, aanbestedingswet-plicht.
+        dims["scope"] = 3
+        dims["politiek"] = 3
+        dims["regel"] = 3
+        dims["risico"] = 3
     if has("miljoen", "grootschalig", "programma"):
         dims["budget"] = 3
     if has("jaar", "meerjarig", "langlopend"):
@@ -357,6 +365,8 @@ def classify(description):
         scores["waterfall"] += 2
     if has("governance", "stuurgroep", "business case", "extern", "klant", "formeel", "zorg"):
         scores["prince2"] += 3
+    if has("aanbesteding", "tender", "rfp", "inschrijving", "gunning"):
+        scores["prince2"] += 4  # heavier weight — tender flow fits PRINCE2 stage boundaries + exception reports
     if has("proces", "verspilling", "defect", "kwaliteit", "doorlooptijd", "six sigma", "lean", "optimalis"):
         scores["lean_six_sigma_green"] += 3
     if has("software", "systeem", "platform", "webshop", "e-commerce", "applicatie"):
@@ -381,6 +391,8 @@ def classify(description):
 
 
 def _detect_type(has):
+    if has("aanbesteding", "tender", "rfp", "inschrijving", "gunning"):
+        return "aanbesteding"
     if has("avg", "compliance", "audit", "iso", "wettelijk"):
         return "gereguleerd"
     if has("patiënt", "patient", "zorg", "cliënt", "client"):
