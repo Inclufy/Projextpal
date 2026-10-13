@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { Plus, Trash2, CalendarDays, Loader2 } from "lucide-react";
 import { ProjectHeader } from "@/components/ProjectHeader";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 /**
  * Sprint 7 — S7-08
@@ -86,6 +87,7 @@ function addDaysISO(iso: string, days: number): string {
 }
 
 export default function ResourcePlanner() {
+  const { pt } = usePageTranslations();
   const { id: projectId } = useParams<{ id: string }>();
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -175,14 +177,14 @@ export default function ResourcePlanner() {
       });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        toast.error(err.detail || "Opslaan mislukt");
+        toast.error(err.detail || pt("Opslaan mislukt"));
         return;
       }
-      toast.success("Allocatie toegevoegd");
+      toast.success(pt("Allocatie toegevoegd"));
       setDialogOpen(false);
       fetchPlan();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Opslaan mislukt");
+      toast.error(e instanceof Error ? e.message : pt("Opslaan mislukt"));
     } finally {
       setSaving(false);
     }
@@ -194,13 +196,13 @@ export default function ResourcePlanner() {
         method: "DELETE",
       });
       if (!r.ok && r.status !== 204) {
-        toast.error("Verwijderen mislukt");
+        toast.error(pt("Verwijderen mislukt"));
         return;
       }
-      toast.success("Allocatie verwijderd");
+      toast.success(pt("Allocatie verwijderd"));
       fetchPlan();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Verwijderen mislukt");
+      toast.error(e instanceof Error ? e.message : pt("Verwijderen mislukt"));
     }
   };
 
@@ -217,7 +219,7 @@ export default function ResourcePlanner() {
     return (
       <div className="p-6 text-sm text-muted-foreground">
         <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-        Laden...
+        {pt("Laden...")}
       </div>
     );
   }
@@ -226,7 +228,7 @@ export default function ResourcePlanner() {
     return (
       <div className="p-6">
         <Card className="p-4">
-          <p className="text-sm text-red-600">Kon planner niet laden: {error}</p>
+          <p className="text-sm text-red-600">{pt("Kon planner niet laden")}: {error}</p>
         </Card>
       </div>
     );
@@ -241,28 +243,28 @@ export default function ResourcePlanner() {
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <CalendarDays className="w-5 h-5" />
-              Resource planner
+              {pt("Resource planner")}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Totaal gepland: {data?.total_allocated_hours || 0}u voor {data?.member_count || 0} mensen
+              {pt("Totaal gepland")}: {data?.total_allocated_hours || 0}{pt("u")} {pt("voor")} {data?.member_count || 0} {pt("mensen")}
             </p>
           </div>
           <Button onClick={openNewDialog} data-testid="new-allocation">
             <Plus className="w-4 h-4 mr-1" />
-            Nieuwe allocatie
+            {pt("Nieuwe allocatie")}
           </Button>
         </div>
 
         {!data || data.rows.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">
-            Nog geen allocaties — plan een persoon in de tijd via +
+            {pt("Nog geen allocaties — plan een persoon in de tijd via +")}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               {/* Header: date range summary */}
               <div className="flex text-xs text-muted-foreground mb-2 border-b pb-1">
-                <div className="w-40 shrink-0">Team-lid</div>
+                <div className="w-40 shrink-0">{pt("Team-lid")}</div>
                 <div className="flex-1 flex justify-between">
                   <span>{window.start}</span>
                   <span>{window.end}</span>
@@ -276,7 +278,7 @@ export default function ResourcePlanner() {
                   <div className="flex-1 relative h-10">
                     {row.allocations.length === 0 && (
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        Geen allocaties
+                        {pt("Geen allocaties")}
                       </span>
                     )}
                     {row.allocations.map((a) => (
@@ -284,16 +286,16 @@ export default function ResourcePlanner() {
                         key={a.id}
                         className={`absolute top-1/2 -translate-y-1/2 h-6 rounded ${colorForMember(idx)} opacity-90 flex items-center px-2 group hover:opacity-100 cursor-pointer`}
                         style={barStyle(a)}
-                        title={`${a.allocated_hours}u — ${row.user_name}${a.note ? ` — ${a.note}` : ""}`}
+                        title={`${a.allocated_hours}${pt("u")} — ${row.user_name}${a.note ? ` — ${a.note}` : ""}`}
                       >
                         <span className="text-xs text-white truncate flex-1">
-                          {a.allocated_hours}u{a.note ? ` · ${a.note}` : ""}
+                          {a.allocated_hours}{pt("u")}{a.note ? ` · ${a.note}` : ""}
                         </span>
                         <button
                           type="button"
                           className="ml-1 text-white opacity-0 group-hover:opacity-100 shrink-0"
                           onClick={() => deleteAllocation(a.id)}
-                          aria-label="Verwijderen"
+                          aria-label={pt("Verwijderen")}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -310,17 +312,17 @@ export default function ResourcePlanner() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nieuwe allocatie</DialogTitle>
+            <DialogTitle>{pt("Nieuwe allocatie")}</DialogTitle>
             <DialogDescription>
-              Plan een team-lid in op dit project voor een periode.
+              {pt("Plan een team-lid in op dit project voor een periode.")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Team-lid</Label>
+              <Label>{pt("Team-lid")}</Label>
               <Select value={memberId} onValueChange={setMemberId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecteer team-lid" />
+                  <SelectValue placeholder={pt("Selecteer team-lid")} />
                 </SelectTrigger>
                 <SelectContent>
                   {data?.rows.map((r) => (
@@ -332,36 +334,36 @@ export default function ResourcePlanner() {
               </Select>
               {data?.rows.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Geen team-leden op dit project. Voeg eerst leden toe via het team-overzicht.
+                  {pt("Geen team-leden op dit project. Voeg eerst leden toe via het team-overzicht.")}
                 </p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label>Start</Label>
+                <Label>{pt("Start")}</Label>
                 <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
               <div>
-                <Label>Eind</Label>
+                <Label>{pt("Eind")}</Label>
                 <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
             </div>
             <div>
-              <Label>Uren</Label>
+              <Label>{pt("Uren")}</Label>
               <Input type="number" step="0.5" min="0" value={hours} onChange={(e) => setHours(e.target.value)} />
             </div>
             <div>
-              <Label>Notitie</Label>
-              <Input placeholder="Bijv. ontwerp fase" value={note} onChange={(e) => setNote(e.target.value)} />
+              <Label>{pt("Notitie")}</Label>
+              <Input placeholder={pt("Bijv. ontwerp fase")} value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Annuleer
+              {pt("Annuleer")}
             </Button>
             <Button onClick={saveAllocation} disabled={saving || !memberId}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Opslaan
+              {pt("Opslaan")}
             </Button>
           </DialogFooter>
         </DialogContent>

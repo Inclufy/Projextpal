@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, Users, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 /**
  * Sprint 7 — S7-09
@@ -73,6 +74,7 @@ function addDaysISO(iso: string, days: number): string {
 }
 
 export default function UserCapacityDashboard() {
+  const { pt } = usePageTranslations();
   const { user } = useAuth();
   const [users, setUsers] = useState<CompanyUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>(
@@ -106,7 +108,7 @@ export default function UserCapacityDashboard() {
         `/api/v1/users/${selectedUserId}/capacity/?from=${from}&to=${to}`,
       );
       if (r.status === 403) {
-        setError("Je hebt geen toegang tot de capaciteit van deze gebruiker.");
+        setError(pt("Je hebt geen toegang tot de capaciteit van deze gebruiker."));
         setData(null);
         return;
       }
@@ -135,16 +137,16 @@ export default function UserCapacityDashboard() {
     <div className="p-6 space-y-4">
       <div className="flex items-center gap-2">
         <Users className="w-6 h-6" />
-        <h1 className="text-xl font-semibold">Capaciteit per persoon</h1>
+        <h1 className="text-xl font-semibold">{pt("Capaciteit per persoon")}</h1>
       </div>
 
       <Card className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <Label>Gebruiker</Label>
+            <Label>{pt("Gebruiker")}</Label>
             <Select value={selectedUserId} onValueChange={setSelectedUserId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecteer gebruiker" />
+                <SelectValue placeholder={pt("Selecteer gebruiker")} />
               </SelectTrigger>
               <SelectContent>
                 {users.map((u) => (
@@ -156,18 +158,18 @@ export default function UserCapacityDashboard() {
             </Select>
           </div>
           <div>
-            <Label>Van</Label>
+            <Label>{pt("Van")}</Label>
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
           <div>
-            <Label>Tot</Label>
+            <Label>{pt("Tot")}</Label>
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </div>
         <div className="mt-3">
           <Button variant="outline" onClick={loadCapacity} disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Verversen
+            {pt("Verversen")}
           </Button>
         </div>
       </Card>
@@ -185,7 +187,7 @@ export default function UserCapacityDashboard() {
               <div className="flex items-center gap-2 text-red-700">
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-medium">
-                  Overcommitted: {data.total_fte_pct.toFixed(1)}% van beschikbare tijd ({data.fte_hours_in_range}u)
+                  {pt("Overcommitted")}: {data.total_fte_pct.toFixed(1)}% {pt("van beschikbare tijd")} ({data.fte_hours_in_range}{pt("u")})
                 </span>
               </div>
             </Card>
@@ -196,21 +198,21 @@ export default function UserCapacityDashboard() {
               <div>
                 <h2 className="text-sm font-semibold">{data.user_name}</h2>
                 <p className="text-xs text-muted-foreground">
-                  {data.working_days_in_range} werkdagen · {data.fte_hours_in_range}u FTE in deze periode
+                  {data.working_days_in_range} {pt("werkdagen")} · {data.fte_hours_in_range}{pt("u")} {pt("FTE in deze periode")}
                 </p>
               </div>
               <div className="text-sm">
-                Totaal gepland:{" "}
+                {pt("Totaal gepland")}:{" "}
                 <span className={data.is_overcommitted ? "text-red-600 font-semibold" : ""}>
-                  {data.total_allocated}u
+                  {data.total_allocated}{pt("u")}
                 </span>{" "}
-                / {data.fte_hours_in_range}u
+                / {data.fte_hours_in_range}{pt("u")}
               </div>
             </div>
 
             {data.projects.length === 0 ? (
               <div className="text-sm text-muted-foreground py-6 text-center">
-                Geen projecten in deze periode.
+                {pt("Geen projecten in deze periode.")}
               </div>
             ) : (
               <div className="space-y-3">
@@ -221,8 +223,8 @@ export default function UserCapacityDashboard() {
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{p.project_name}</span>
                         <span className="text-muted-foreground">
-                          {p.allocated_hours}u gepland · {p.actual_hours}u gewerkt
-                          {p.budgeted_hours > 0 ? ` · ${p.budgeted_hours}u begroot` : ""}
+                          {p.allocated_hours}{pt("u")} {pt("gepland")} · {p.actual_hours}{pt("u")} {pt("gewerkt")}
+                          {p.budgeted_hours > 0 ? ` · ${p.budgeted_hours}${pt("u")} ${pt("begroot")}` : ""}
                         </span>
                       </div>
                       <div className="h-3 bg-muted rounded mt-1 overflow-hidden">
@@ -236,7 +238,7 @@ export default function UserCapacityDashboard() {
                 })}
                 {/* 100% FTE reference line */}
                 <div className="text-xs text-muted-foreground pt-1">
-                  Horizontale lijn: 100% FTE = {data.fte_hours_in_range}u
+                  {pt("Horizontale lijn")}: 100% FTE = {data.fte_hours_in_range}{pt("u")}
                 </div>
               </div>
             )}

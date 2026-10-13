@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 /**
  * Sprint 7 — S7-07
@@ -72,13 +73,13 @@ function statusBadgeClass(s: Row["status"]): string {
   return "bg-emerald-100 text-emerald-700 border-emerald-200";
 }
 
-function statusLabel(s: Row["status"]): string {
-  if (s === "exceeded") return "Overschreden";
-  if (s === "approaching") return "Nadert limiet";
-  return "Op koers";
-}
-
 export function CostVsBudgetWidget({ scope, id, className }: Props) {
+  const { pt } = usePageTranslations();
+  const statusLabel = (s: Row["status"]): string => {
+    if (s === "exceeded") return pt("Overschreden");
+    if (s === "approaching") return pt("Nadert limiet");
+    return pt("Op koers");
+  };
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,9 +128,9 @@ export function CostVsBudgetWidget({ scope, id, className }: Props) {
   if (forbidden) {
     return (
       <Card className={cn("p-4", className)}>
-        <h3 className="text-sm font-semibold mb-1">Begroting vs werkelijk (€)</h3>
+        <h3 className="text-sm font-semibold mb-1">{pt("Begroting vs werkelijk (€)")}</h3>
         <p className="text-sm text-muted-foreground">
-          Je hebt geen toegang tot financiële data voor dit onderdeel.
+          {pt("Je hebt geen toegang tot financiële data voor dit onderdeel.")}
         </p>
       </Card>
     );
@@ -138,8 +139,8 @@ export function CostVsBudgetWidget({ scope, id, className }: Props) {
   if (error) {
     return (
       <Card className={cn("p-4", className)}>
-        <h3 className="text-sm font-semibold mb-1">Begroting vs werkelijk (€)</h3>
-        <p className="text-sm text-red-600">Kon niet laden: {error}</p>
+        <h3 className="text-sm font-semibold mb-1">{pt("Begroting vs werkelijk (€)")}</h3>
+        <p className="text-sm text-red-600">{pt("Kon niet laden")}: {error}</p>
       </Card>
     );
   }
@@ -153,7 +154,7 @@ export function CostVsBudgetWidget({ scope, id, className }: Props) {
   return (
     <Card className={cn("p-4", className)} data-testid="cost-vs-budget-widget">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold">Begroting vs werkelijk (€)</h3>
+        <h3 className="text-sm font-semibold">{pt("Begroting vs werkelijk (€)")}</h3>
         <Badge className={cn("text-xs", statusBadgeClass(data.overall_status))}>
           {statusLabel(data.overall_status)} · {data.overall_pct.toFixed(1)}%
         </Badge>
@@ -161,14 +162,14 @@ export function CostVsBudgetWidget({ scope, id, className }: Props) {
 
       {!hasRows && (
         <div className="text-sm text-muted-foreground py-6 text-center">
-          Nog geen begrotingen voor dit team. Voeg begrote uren toe bij elk team-lid om de kosten te zien.
+          {pt("Nog geen begrotingen voor dit team. Voeg begrote uren toe bij elk team-lid om de kosten te zien.")}
         </div>
       )}
 
       {hasRows && (
         <>
           <div className="text-xs text-muted-foreground mb-2">
-            Totaal begroot: {fmtMoney(budgeted, currency)} · werkelijk:{" "}
+            {pt("Totaal begroot")}: {fmtMoney(budgeted, currency)} · {pt("werkelijk")}:{" "}
             {fmtMoney(data.totals.actual_cost, currency)}
           </div>
           <div className="space-y-2">
