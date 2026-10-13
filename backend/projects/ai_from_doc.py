@@ -110,11 +110,24 @@ _SYSTEM_PROMPT = (
     "  \"suggested_milestones\": [\n"
     "    {\"name\": \"...\", \"description\": \"...\", \"due_offset_weeks\": 4},\n"
     "    ...\n"
-    "  ]\n"
+    "  ],\n"
+    "  \"suggested_methodology\": \"EEN van: prince2, scrum, kanban, waterfall, agile, "
+    "lean_six_sigma_green, lean_six_sigma_black, hybrid, inclufy\",\n"
+    "  \"methodology_confidence\": 0-100 (integer, hoe zeker ben je op basis van de documenten),\n"
+    "  \"methodology_reason\": \"1 zin — waarom deze methodologie bij deze documenten past\"\n"
     "}\n\n"
     "Als het document weinig concreets zegt: wees voorzichtig en laat velden "
-    "leeg in plaats van verzinnen. Beperk tot max 6 milestones."
+    "leeg in plaats van verzinnen. Beperk tot max 6 milestones. Een aanbesteding/"
+    "tender wijst doorgaans op PRINCE2 of waterfall; een MVP/sprint-tekst op scrum; "
+    "support/ticket/flow-tekst op kanban; procesoptimalisatie met data op "
+    "lean_six_sigma_green."
 )
+
+# Valid methodology slugs — mirror ``projects.tailoring.PROJECT_MODULES`` keys.
+_VALID_METHODOLOGIES = {
+    "prince2", "scrum", "kanban", "waterfall", "agile",
+    "lean_six_sigma_green", "lean_six_sigma_black", "hybrid", "inclufy",
+}
 
 
 def _fallback_from_text(text: str) -> dict:
@@ -272,6 +285,24 @@ def plan_from_documents(request):
         if _s(d)
     ]
 
+    # S2-03: harden the methodology-suggestion fields so the frontend chip can
+    # trust the shape. We only emit a suggestion when:
+    #   - the LLM path ran (fallback would have no basis for an opinion), AND
+    #   - the slug is one we actually surface, AND
+    #   - the confidence is numeric 0..100.
+    suggested_methodology = None
+    methodology_confidence = 0
+    methodology_reason = ""
+    if source == "ai":
+        raw_meth = result.get("suggested_methodology")
+        if isinstance(raw_meth, str) and raw_meth.strip().lower() in _VALID_METHODOLOGIES:
+            suggested_methodology = raw_meth.strip().lower()
+            try:
+                methodology_confidence = max(0, min(100, int(result.get("methodology_confidence") or 0)))
+            except (TypeError, ValueError):
+                methodology_confidence = 0
+            methodology_reason = _s(result.get("methodology_reason"), 400)
+
     return Response({
         "name": _s(result.get("name"), 80) or "Nieuw project",
         "description": _s(result.get("description"), 1200),
@@ -279,6 +310,9 @@ def plan_from_documents(request):
         "scope_out": _s(result.get("scope_out"), 1000),
         "deliverables": deliverables,
         "suggested_milestones": milestones,
+        "suggested_methodology": suggested_methodology,
+        "methodology_confidence": methodology_confidence,
+        "methodology_reason": methodology_reason,
         "extracted_pages": total_pages,
         "extracted_text_preview": truncated[:PREVIEW_CHARS],
         "skipped": skipped,

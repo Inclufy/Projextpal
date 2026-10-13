@@ -94,10 +94,22 @@ def parse_and_create_project_structure(
     concrete action items.
     """
 
-    user_prompt = f"""Project Description:
+    # Sprint 2 S2-08: when the project has uploaded tender/brief/spec documents
+    # (ProjectAIContext), prepend that content to the free-text description so
+    # "Ask Co-pilot: maak taken uit de tender" automatically pulls in the
+    # document context. Fails closed — if context-helpers break, we fall back
+    # to the user-provided description.
+    doc_prefix = ""
+    try:
+        from core.ai_context_helpers import get_project_context_prefix
+        doc_prefix = get_project_context_prefix(user, project.id, language="nl") or ""
+    except Exception:
+        doc_prefix = ""
+
+    user_prompt = f"""{doc_prefix}Project Description:
     {description}
-    
-    Please analyze this project description and create a structured breakdown of milestones, tasks, 
+
+    Please analyze this project description and create a structured breakdown of milestones, tasks,
     and subtasks. Return ONLY a valid JSON object, nothing else."""
 
     try:

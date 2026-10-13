@@ -28,7 +28,15 @@ def project_diagnose(request, pk):
     project = _get_project(request, pk)
     if not project:
         return Response({"detail": "Project not found or not accessible."}, status=404)
-    return Response(diagnose(project, user=request.user))
+    # S2-05: opt-in doc-vs-reality LLM check via ?use_llm=1 (default off so the
+    # default behaviour and token-usage stay unchanged).
+    use_llm = str(request.query_params.get("use_llm", "")).lower() in ("1", "true", "yes")
+    try:
+        from core.i18n_ai import resolve_ui_language
+        lang = resolve_ui_language(request)
+    except Exception:
+        lang = "nl"
+    return Response(diagnose(project, user=request.user, use_llm=use_llm, language=lang))
 
 
 @api_view(["POST"])

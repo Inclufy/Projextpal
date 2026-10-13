@@ -455,11 +455,44 @@ def _rationale(methodology, project_type, dims, text):
     return base
 
 
-def classify_with_llm(description, company=None):
+def classify_with_llm(description, company=None, project_id=None, user=None, language="nl"):
     """Try to refine the classification with the company's configured LLM; on any
-    failure fall back to the deterministic classifier. Never raises."""
-    fallback = classify(description)
-    if not company or not description:
+    failure fall back to the deterministic classifier. Never raises.
+
+    Sprint 2 (S2-01 + S2-06): when ``project_id`` + ``user`` are provided and the
+    project has a ``ProjectAIContext`` row (uploaded tender / brief / spec PDFs),
+    the context text is prepended to the free-text description so the classifier
+    makes a doc-aware recommendation. The deterministic keyword path and the LLM
+    path both benefit — the keyword classifier picks up tender/compliance signals
+    from the document text, and the LLM gets a richer prompt. When no context is
+    available or anything fails, behaviour is identical to the pre-Sprint-2
+    version (safe fallback is always ``classify(description)``).
+    """
+    # S2-06: enrich the free-text with the uploaded-document context, if any.
+    # Even when the LLM path is not taken (no key, no company) this still helps
+    # the deterministic classifier react to tender/compliance keywords from the
+    # documents themselves — the whole point of the context-aware roadmap.
+    doc_prefix = ""
+    if project_id and user is not None:
+        try:
+            from core.ai_context_helpers import get_project_context_prefix
+            doc_prefix = get_project_context_prefix(user, project_id, language=language) or ""
+        except Exception:
+            doc_prefix = ""
+
+    # The deterministic classifier gets the enriched text so tender keywords in
+    # the uploaded docs (not only in the free-text) steer the recommendation.
+    enriched = ((doc_prefix + "\n" if doc_prefix else "") + (description or "")).strip()
+    fallback = classify(enriched)
+    if doc_prefix:
+        fallback["source"] = "deterministic+docs"
+        try:
+            fallback["rationale"] = (fallback.get("rationale", "")
+                                     + " (gevoed door projectdocumenten)").strip()
+        except Exception:
+            pass
+
+    if not company or not (description or doc_prefix):
         return fallback
     try:
         from core.llm_keys import get_openai_client
@@ -467,12 +500,20 @@ def classify_with_llm(description, company=None):
         if client is None:
             return fallback
         import json
+        # Keep the LLM prompt lean — doc_prefix already has its own heading &
+        # footer so the LLM sees the context clearly delimited.
+        user_block = (
+            (doc_prefix + "\n\n" if doc_prefix else "")
+            + f"Beschrijving: {description or ''}"
+        )
         prompt = (
             "Je bent een project-management adviseur. Classificeer het project in JSON met velden "
             "methodology (een van: prince2, scrum, agile, kanban, waterfall, lean_six_sigma_green, "
             "lean_six_sigma_black, hybrid, inclufy), project_type, en dimensions "
-            "(scope,budget,duur,politiek,risico,regel elk 1-3). Antwoord ALLEEN met JSON.\n\n"
-            f"Beschrijving: {description}"
+            "(scope,budget,duur,politiek,risico,regel elk 1-3). "
+            "Als er [PROJECT_DOCUMENTEN]/[PROJECT_DOCUMENTS] zijn: baseer je classificatie primair op "
+            "die inhoud, aangevuld met de beschrijving. Antwoord ALLEEN met JSON.\n\n"
+            f"{user_block}"
         )
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -491,10 +532,12 @@ def classify_with_llm(description, company=None):
         for d in DIMENSIONS:
             if d in dims:
                 fallback["dimensions"][d] = _clamp(dims[d])
-        fallback["source"] = "llm"
+        fallback["source"] = "llm+docs" if doc_prefix else "llm"
         fallback["rationale"] = _rationale(
             fallback["methodology"], fallback["project_type"], fallback["dimensions"], description
         )
+        if doc_prefix:
+            fallback["rationale"] = (fallback["rationale"] + " (gevoed door projectdocumenten)").strip()
     except Exception:
         return fallback
     return fallback
