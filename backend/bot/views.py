@@ -263,8 +263,21 @@ class ChatViewSet(viewsets.ModelViewSet):
                         f"this programme). Do not ask for the programme id.]\n"
                     )
 
+            # Project-wide uploaded-documents context (ProjectAIContext), only
+            # when a project is in scope. The helper does its own tenant check.
+            ai_docs_context = ""
+            try:
+                from core.ai_context_helpers import get_project_context_prefix
+                _proj_id_for_ctx = request.data.get("project_id")
+                if _proj_id_for_ctx:
+                    ai_docs_context = get_project_context_prefix(
+                        user_for_context, _proj_id_for_ctx, language=website_language,
+                    )
+            except Exception:
+                pass
+
             # Add language instruction to the message for AI processing
-            message_with_language = f"{language_instruction}{project_context}{program_context}{message}"
+            message_with_language = f"{language_instruction}{ai_docs_context}{project_context}{program_context}{message}"
             
             # Get AI response with language-aware message
             ai_response = user_ai_agent.process_message(message_with_language, chat_history)

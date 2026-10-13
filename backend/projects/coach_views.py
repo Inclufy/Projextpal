@@ -212,8 +212,18 @@ def project_coach(request, pk):
 def _answer(project, user, methodology, coach, shape, competence, question, context=""):
     """LLM answer grounded in the methodology + project; deterministic fallback."""
     company = getattr(user, "company", None)
+    # Uploaded project documents (if any) — same ProjectAIContext that
+    # Plan with AI already reads, so the coach can refer to the brief/
+    # tender the user attached to this project.
+    docs_prefix = ""
+    try:
+        from core.ai_context_helpers import get_project_context_prefix
+        docs_prefix = get_project_context_prefix(user, project.id, language="nl")
+    except Exception:
+        pass
     system = (
-        "Je bent de ProjeXtPal project-coach. Je helpt een gebruiker tijdens het "
+        docs_prefix
+        + "Je bent de ProjeXtPal project-coach. Je helpt een gebruiker tijdens het "
         "uitvoeren van een project. Antwoord praktisch, in het Nederlands, kort en "
         "concreet (max ~6 zinnen of een korte lijst). Blijf strikt binnen de "
         f"gekozen methodiek.\n\nMethodiek: {methodology}. {coach['focus']}\n"

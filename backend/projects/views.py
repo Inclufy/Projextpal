@@ -2764,9 +2764,13 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 }
 
                 # Generate AI mitigation — uses company's BYO key if configured.
+                # Pass user + project_id so the helper can inject the project's
+                # uploaded-documents context (ProjectAIContext) when enabled.
                 ai_plan = generate_ai_mitigation(
                     risk_data,
                     company=getattr(risk.project, "company", None) if risk.project else None,
+                    user=request.user,
+                    project_id=risk.project.id if risk.project else None,
                 )
 
                 # Create AI mitigation with generated data
@@ -2862,9 +2866,12 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             }
 
             # Generate AI mitigation — uses company's BYO key if configured.
+            # Pass user + project_id so ProjectAIContext docs are included.
             ai_plan = generate_ai_mitigation(
                 risk_data,
                 company=getattr(risk.project, "company", None) if risk.project else None,
+                user=request.user,
+                project_id=risk.project.id if risk.project else None,
             )
 
             # Update or create AI mitigation

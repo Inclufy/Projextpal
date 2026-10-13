@@ -220,14 +220,22 @@ def ai_generate_text(request):
     logger = logging.getLogger(__name__)
 
     from core.i18n_ai import resolve_ui_language, prepend_language
+    from core.ai_context_helpers import get_project_context_prefix
 
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
     lang = resolve_ui_language(request)
+    # Project-aware: if the caller sends a project_id and the user can reach
+    # it, prepend the project's uploaded-documents context so advice is
+    # grounded in the actual brief / tender / specs on file.
+    docs_prefix = get_project_context_prefix(
+        request.user, request.data.get("project_id"), language=lang,
+    )
     system_prompt = prepend_language(
-        'You are a helpful project management expert. Respond concisely and professionally.',
+        docs_prefix
+        + 'You are a helpful project management expert. Respond concisely and professionally.',
         lang,
     )
 
