@@ -237,11 +237,18 @@ const CreateProject = () => {
     scope_out: string;
     deliverables: string[];
     suggested_milestones: Array<{ name: string; description: string; due_offset_weeks: number }>;
+    // Sprint 2 S2-03/S2-04: methodology suggestion from the LLM, only present
+    // when source === "ai". null when the LLM path did not run.
+    suggested_methodology?: ProjectMethodology | null;
+    methodology_confidence?: number;
+    methodology_reason?: string;
     extracted_pages: number;
     extracted_text_preview: string;
     source: string;
     skipped: Array<{ name: string; reason: string }>;
   }>(null);
+  // S2-02: avoid auto-running the AI advisor more than once per docResult.
+  const [autoAdvisorDone, setAutoAdvisorDone] = useState(false);
   // Hergebruik de uploads als persistente AI-context voor élke downstream
   // AI-call op dit project (Plan with AI, Ask Co-pilot, risk-forecast…).
   // Default aan: als Elisa de moeite neemt om tenders te uploaden, wil ze
@@ -396,6 +403,32 @@ const CreateProject = () => {
       setAiLoading(false);
     }
   };
+
+  // Sprint 2 S2-02: when the user arrived at step 1 after extracting documents
+  // (common flow: Methodology → Documents → user hits Back → Methodology again,
+  // or the aanbesteding-scenario entrypoint that bootstraps a doc result), auto
+  // pre-fill the AI Methodology Advisor with the extracted description and run
+  // it once so the user sees a doc-grounded suggestion without typing. We gate
+  // on autoAdvisorDone so the user can later Try-Again manually without the
+  // effect clobbering their edit.
+  useEffect(() => {
+    if (
+      currentStep === 1 &&
+      docResult &&
+      !autoAdvisorDone &&
+      !aiLoading &&
+      !aiRecommendation &&
+      !aiPrompt.trim() &&
+      (docResult.description || docResult.extracted_text_preview)
+    ) {
+      const seed = (docResult.description || docResult.extracted_text_preview || "").slice(0, 1200);
+      setAiPrompt(seed);
+      setAutoAdvisorDone(true);
+      // Delay slightly so React commits the aiPrompt before the advisor reads it.
+      setTimeout(() => { handleAIAdvisor(); }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, docResult, autoAdvisorDone]);
 
   // Load scenario presets for the quick-start picker.
   useEffect(() => {
@@ -1029,6 +1062,52 @@ Be specific and professional. Use the context to determine appropriate methodolo
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+                      {/* S2-04: methodology chip from the doc-level LLM suggestion.
+                          Only renders when the AI returned one. */}
+                      {docResult.suggested_methodology && (
+                        <div className="flex items-center flex-wrap gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full border border-primary/30 bg-primary/10 text-primary px-2.5 py-1">
+                            <Sparkles className="h-3 w-3" />
+                            {pt('AI schat methodologie in:')}{' '}
+                            <b className="ml-0.5">
+                              {METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                || docResult.suggested_methodology}
+                            </b>
+                            {typeof docResult.methodology_confidence === 'number' && docResult.methodology_confidence > 0 && (
+                              <span className="opacity-70">· {docResult.methodology_confidence}%</span>
+                            )}
+                          </span>
+                          {formData.methodology !== docResult.suggested_methodology && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                if (docResult.suggested_methodology) {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    methodology: docResult.suggested_methodology as ProjectMethodology,
+                                  }));
+                                  toast.success(
+                                    pt('Methodologie uit documenten toegepast:') + ' ' +
+                                    (METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                      || docResult.suggested_methodology)
+                                  );
+                                }
+                              }}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              {pt('Pas toe')}
+                            </Button>
+                          )}
+                          {docResult.methodology_reason && (
+                            <div className="basis-full text-xs text-muted-foreground italic">
+                              {docResult.methodology_reason}
+                            </div>
+                          )}
                         </div>
                       )}
                       <p className="text-xs text-muted-foreground">
