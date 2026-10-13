@@ -911,6 +911,31 @@ class ProjectTeam(models.Model):
         max_digits=10, decimal_places=2, default=0,
         help_text="Hourly rate for this team member on this project"
     )
+    # Sprint 7 — per-member timesheet policy on this project. When True this
+    # user is expected to log hours; the picker on TimeTracking will keep
+    # showing the project. The flag is advisory on the backend (we do not
+    # block time entries on it today) but it is the switch an admin can
+    # flip without removing the user from the team.
+    timesheet_required = models.BooleanField(
+        default=True,
+        help_text=(
+            "Whether this member is expected to log hours on this project. "
+            "When False the picker still lets them pick the project but no "
+            "nudge is shown."
+        ),
+    )
+    # Sprint 7 — begrote uren voor deze persoon op dit project. Overschrijding
+    # produceert een warning (niet-blocking) op TimeEntry save en voedt het
+    # "Uren vs budget" reports-widget. NULL = geen budget ingesteld — admin
+    # kan later een waarde invullen.
+    budgeted_hours = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        null=True, blank=True,
+        help_text=(
+            "Begrote uren voor deze persoon op dit project. "
+            "Overschrijding = warning, niet blocking."
+        ),
+    )
 
     class Meta:
         unique_together = ["project", "user"]
