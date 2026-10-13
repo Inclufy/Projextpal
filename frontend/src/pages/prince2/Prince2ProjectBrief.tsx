@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, FileText, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 type BriefForm = {
   project_definition: string;
@@ -198,6 +199,43 @@ const Prince2ProjectBrief = () => {
                 </Label>
               </div>
             )}
+            <AutoDraftFromDocsButton
+              endpoint={`/api/v1/projects/${id}/prince2/project-brief/auto-draft/`}
+              title={pt("Project Brief — AI-draft from documents")}
+              description={pt("Review the AI-drafted fields and edit before applying.")}
+              fields={[
+                { key: "project_definition", label: pt("Project Definition"), kind: "textarea" },
+                { key: "business_case_outline", label: pt("Outline Business Case"), kind: "textarea" },
+                { key: "project_product_description", label: pt("Project Product Description"), kind: "textarea" },
+                { key: "project_approach", label: pt("Project Approach"), kind: "textarea" },
+              ]}
+              onApply={async (suggested) => {
+                // Map backend field names to the brief form shape.
+                const next: BriefForm = {
+                  ...form,
+                  project_definition: String(suggested.project_definition || form.project_definition || ""),
+                  project_approach: String(suggested.project_approach || form.project_approach || ""),
+                  outline_business_case: String(suggested.business_case_outline || form.outline_business_case || ""),
+                };
+                setForm(next);
+                const url = brief
+                  ? `/api/v1/projects/${id}/prince2/brief/${brief.id}/`
+                  : `/api/v1/projects/${id}/prince2/brief/`;
+                const method = brief ? "PATCH" : "POST";
+                const body: any = { ...next };
+                // Keep the project_product_description near its canonical home —
+                // the model doesn't have a dedicated column; stash it into the
+                // customer_quality_expectations block for Review-stage usability.
+                if (suggested.project_product_description) {
+                  body.customer_quality_expectations = String(suggested.project_product_description);
+                  setForm((p) => ({ ...p, customer_quality_expectations: body.customer_quality_expectations }));
+                }
+                const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+                if (!r.ok) throw new Error(pt("Save failed"));
+                const data = await r.json();
+                setBrief(data);
+              }}
+            />
             {brief && brief.status === "draft" && (
               <Button variant="outline" onClick={handleSubmitForReview} className="gap-2">
                 <Send className="h-4 w-4" /> {pt("Submit for Review")}

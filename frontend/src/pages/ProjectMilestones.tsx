@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle, Circle, Clock, Loader2, Plus, Sparkles } from "lucide-react";
+import { CheckCircle, Circle, Clock, Loader2, Plus, Sparkles, FileText } from "lucide-react";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -40,9 +40,31 @@ const ProjectMilestones = () => {
     enabled: !!id,
   });
   const [aiPlanOpen, setAiPlanOpen] = useState(false);
+  const [docsPlanOpen, setDocsPlanOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  // S4-07: show the "Genereer uit documenten" button only when the project
+  // actually has an enabled ProjectAIContext with non-empty extracted_text —
+  // otherwise the button would open a dialog whose first LLM call falls back
+  // to the no-docs path, which defeats the point.
+  const [hasDocs, setHasDocs] = useState(false);
+  useEffect(() => {
+    if (!id) return;
+    const token = localStorage.getItem("access_token");
+    (async () => {
+      try {
+        const r = await fetch(`${API_BASE_URL}/projects/${id}/ai-context/`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data && data.enabled && (data.chars || 0) > 0) setHasDocs(true);
+      } catch {
+        // Non-fatal — the button just stays hidden.
+      }
+    })();
+  }, [id]);
 
   const openAdd = () => {
     setForm(EMPTY_FORM);
@@ -150,6 +172,15 @@ const ProjectMilestones = () => {
             <Button variant="outline" className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50" onClick={() => setAiPlanOpen(true)}>
               <Sparkles className="h-4 w-4" />{pt("Plan with AI")}
             </Button>
+            {hasDocs && (
+              <Button
+                variant="outline"
+                className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50"
+                onClick={() => setDocsPlanOpen(true)}
+              >
+                <FileText className="h-4 w-4" />{pt("Generate from documents")}
+              </Button>
+            )}
             <Button onClick={openAdd}>
               <Plus className="h-4 w-4 mr-2" />
               {pt("Add Milestone")}
@@ -158,6 +189,15 @@ const ProjectMilestones = () => {
         </div>
 
         <AiPlanDialog projectId={id!} open={aiPlanOpen} onOpenChange={setAiPlanOpen} onApplied={() => refetch()} />
+        {hasDocs && (
+          <AiPlanDialog
+            projectId={id!}
+            open={docsPlanOpen}
+            onOpenChange={setDocsPlanOpen}
+            onApplied={() => refetch()}
+            autoFromDocs
+          />
+        )}
 
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogContent className="sm:max-w-[460px]">
