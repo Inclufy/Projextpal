@@ -588,15 +588,46 @@ class ProgramViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Sprint 7 — accept per-member timesheet policy + begrote uren at
+        # add time. Both are optional: timesheet_required defaults to True
+        # (iedereen moet uren loggen tenzij anders), budgeted_hours blijft
+        # NULL (geen cap) tenzij een decimal/int wordt meegegeven.
+        from decimal import Decimal, InvalidOperation
+        ts_req_raw = request.data.get('timesheet_required', True)
+        if isinstance(ts_req_raw, str):
+            timesheet_required = ts_req_raw.lower() not in ('false', '0', 'no')
+        else:
+            timesheet_required = bool(ts_req_raw)
+
+        budgeted_hours = None
+        bh_raw = request.data.get('budgeted_hours', None)
+        if bh_raw not in (None, '', 'null'):
+            try:
+                budgeted_hours = Decimal(str(bh_raw))
+                if budgeted_hours < 0:
+                    return Response(
+                        {'error': 'budgeted_hours must be >= 0 or null.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except (InvalidOperation, TypeError, ValueError):
+                return Response(
+                    {'error': 'budgeted_hours must be a decimal number or null.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         try:
             member = program.team_members.get(user=user, is_active=False)
             member.is_active = True
             member.role = role or member.role
             member.added_by = request.user
+            member.timesheet_required = timesheet_required
+            member.budgeted_hours = budgeted_hours
             member.save()
         except ProgramTeam.DoesNotExist:
             member = ProgramTeam.objects.create(
-                program=program, user=user, role=role, added_by=request.user
+                program=program, user=user, role=role, added_by=request.user,
+                timesheet_required=timesheet_required,
+                budgeted_hours=budgeted_hours,
             )
 
         return Response(ProgramTeamSerializer(member).data, status=status.HTTP_201_CREATED)

@@ -863,6 +863,9 @@ class ProjectTeamSerializer(serializers.ModelSerializer):
             "added_at",
             "is_active",
             "can_view_costs",
+            # Sprint 7 — timesheet policy + begrote uren voor deze persoon.
+            "timesheet_required",
+            "budgeted_hours",
         ]
         read_only_fields = ["id", "added_at", "added_by"]
 
@@ -1279,7 +1282,70 @@ class TimeEntrySerializer(serializers.ModelSerializer):
         if (task is not None and getattr(task, "is_internal", False)
                 and is_external_member(user, project)):
             data["task_title"] = None
+
+        # Sprint 7 S7-04 — append a `budget_warning` key when this user's
+        # project-team row has a non-null ``budgeted_hours`` AND the total
+        # (including this entry) is now over the budget. Non-blocking: the
+        # entry is already saved by the time we serialize. Only populated
+        # on a write (create / update) — on list/retrieve it is omitted
+        # because computing it there is pure noise.
+        if request is not None and request.method in ("POST", "PUT", "PATCH"):
+            try:
+                data["budget_warning"] = self._compute_budget_warning(instance)
+            except Exception:
+                # Serialization must never fail on a side-channel.
+                data["budget_warning"] = None
         return data
+
+    def _compute_budget_warning(self, instance):
+        """Return a dict when the saving user is over the budget on this
+        project, otherwise None. Shape:
+
+            {
+              "budgeted_hours": 40.0,
+              "actual_hours_after_save": 42.5,
+              "pct": 106.25
+            }
+
+        Only returned when:
+          * ``ProjectTeam.budgeted_hours IS NOT NULL`` for this user, AND
+          * cumulative hours (including this entry) > budgeted_hours.
+        """
+        from decimal import Decimal
+        from django.db.models import Sum
+
+        project = getattr(instance, "project", None)
+        user = getattr(instance, "user", None)
+        if project is None or user is None:
+            return None
+
+        try:
+            tm = ProjectTeam.objects.get(project=project, user=user)
+        except ProjectTeam.DoesNotExist:
+            return None
+        if tm.budgeted_hours is None:
+            return None
+
+        total = (
+            TimeEntry.objects
+            .filter(project=project, user=user)
+            .aggregate(total=Sum("hours"))["total"]
+            or Decimal("0")
+        )
+
+        budget = tm.budgeted_hours
+        if total <= budget:
+            return None
+
+        pct = (
+            round(float(total) / float(budget) * 100.0, 2)
+            if float(budget) > 0 else 100.0 + float(total)
+        )
+        return {
+            "budgeted_hours": float(budget),
+            "actual_hours_after_save": float(total),
+            "pct": pct,
+        }
 
 
 class TimeEntrySummarySerializer(serializers.Serializer):
@@ -1317,6 +1383,9 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
             "added_by_name",
             "added_at",
             "is_active",
+            # Sprint 7 — expose timesheet policy + begrote uren.
+            "timesheet_required",
+            "budgeted_hours",
         ]
         read_only_fields = ["added_by", "added_at"]
 

@@ -22,6 +22,8 @@ class ProgramTeamSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'program', 'user', 'user_id', 'user_name', 'user_email',
             'role', 'added_by', 'added_by_name', 'added_at', 'is_active',
+            # Sprint 7 — timesheet policy + begrote uren.
+            'timesheet_required', 'budgeted_hours',
         ]
         read_only_fields = ['id', 'program', 'added_by', 'added_at']
 
