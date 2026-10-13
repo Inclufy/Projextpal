@@ -51,6 +51,7 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import DynamicForm from "@/components/chat/DynamicForm";
 import { AIMessageRenderer } from "@/components/AIMessageRenderer";
+import AIUsageWarningBanner from "@/components/AIUsageWarningBanner";
 import { useCopilot } from "@/contexts/CopilotContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1425,6 +1426,8 @@ export default function AICopilotSidebar() {
           renderGuideTab()
         ) : (
           <>
+            {/* #9 — AI token-budget waarschuwing bij <1 dag resterend. */}
+            <div className="px-4 pt-3"><AIUsageWarningBanner /></div>
             <ScrollArea className="flex-1">
               <div className="p-4">
                 {messages.length === 0 ? (

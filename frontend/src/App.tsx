@@ -8,6 +8,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import NotificationBell from "@/components/NotificationBell";
+import AIUsagePill from "@/components/AIUsagePill";
 import MessagesIcon from "@/components/MessagesIcon";
 import CommandPalette from "@/components/CommandPalette";
 import { Moon, Sun, LogOut, Globe, Loader2, Sparkles, HelpCircle, GraduationCap, Search, FolderKanban, ChevronDown, Check } from "lucide-react";
@@ -517,6 +518,9 @@ const AppHeader = () => {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
+
+        {/* AI token budget pill */}
+        <AIUsagePill />
 
         {/* Direct messages */}
         <MessagesIcon />

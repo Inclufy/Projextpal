@@ -219,6 +219,12 @@ def generate_report(report_id, context_data, company=None, language="nl"):
 
         formatted = prompt.format_messages(**context_data)
         response = llm.invoke(formatted)
+        try:
+            from core.ai_usage import record as _record_usage, tokens_from_langchain_message
+            _record_usage(getattr(company, "id", None),
+                          tokens_from_langchain_message(response), provider="openai")
+        except Exception:
+            pass
         text = response.content.strip()
 
         # Parse JSON from response

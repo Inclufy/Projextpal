@@ -10,6 +10,7 @@ import { Loader2, Send, Sparkles, Wand2, HelpCircle, CheckCircle2, Info } from "
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { aiFetch } from "@/lib/aiFetch";
+import AIUsageWarningBanner from "@/components/AIUsageWarningBanner";
 
 // Plan met AI — een korte chat begeleidt de gebruiker naar een volledig
 // conceptplan (mijlpalen + taken + risico's). Het voorstel is BEWERKBAAR:
@@ -249,6 +250,9 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
         </DialogHeader>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+          {/* #9 — Waarschuwing wanneer het AI-tokenbudget onder één dag zit. */}
+          <AIUsageWarningBanner />
+
           {/* #8d — Status-banner: toont of een voorstel klaar ligt, of een vraag beantwoord moet worden. */}
           {proposal && lastAction === "propose" && (
             <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800">
