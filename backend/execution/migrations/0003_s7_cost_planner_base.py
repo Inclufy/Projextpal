@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['start_date', 'id'],
                 'indexes': [models.Index(fields=['project_team', 'start_date'], name='execution_p_project_46428e_idx'), models.Index(fields=['start_date', 'end_date'], name='execution_p_start_d_47ece2_idx')],
-                'constraints': [models.CheckConstraint(condition=models.Q(('end_date__gte', models.F('start_date'))), name='resourceallocation_end_gte_start'), models.CheckConstraint(condition=models.Q(('allocated_hours__gte', 0)), name='resourceallocation_hours_nonneg')],
+                'constraints': [models.CheckConstraint(check=models.Q(('end_date__gte', models.F('start_date'))), name='resourceallocation_end_gte_start'), models.CheckConstraint(check=models.Q(('allocated_hours__gte', 0)), name='resourceallocation_hours_nonneg')],
             },
         ),
     ]
