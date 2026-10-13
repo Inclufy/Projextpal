@@ -244,6 +244,28 @@ Context is nu één-op-één met `Project`. Maar ProjeXtPal heeft meerdere scope
 
 **Nu:** team members, roles, invitations. Niet AI-aware. Geen eigen context.
 
+### Team-cascade voor time-registration (operationeel gat, niet AI-specifiek)
+
+Tijdens Sprint 1-2 kwam een **structureel data-gat** aan het licht dat niet AI-gerelateerd is maar wel het team-oppervlak raakt:
+
+**Probleem:** `TimeEntry` heeft een verplichte `project` FK en `user` FK, en de business-logica vereist dat de user op `ProjectTeam` voor dat project zit. Maar:
+- Een **program manager** die 5 projecten overziet → niet automatisch `ProjectTeam`-lid → kan geen uren loggen
+- Een **governance board-lid** dat meetings bijwoont → geen project-koppeling → nergens uren loggen
+- Users die via alleen een program- of governance-rol in het systeem komen → voor hour-registration handmatig per project aan `ProjectTeam` toevoegen
+
+**Hybride oplossing (Sprint 4, zie S4-11):**
+1. Nieuw `ProgramTeam` model (als dat nog niet bestaat) + endpoints — spiegel van `ProjectTeam` maar op program-niveau
+2. Bij toevoegen aan Program → UI-stap "ook toevoegen aan onderliggende projecten" met checkbox-lijst van projecten in dat program (admin kiest, default = alles aan)
+3. `can_log_time` flag op `GovernanceBoardMember` + `GovernanceStakeholder` (default `False`) — governance-rollen zijn standaard niet-tijd-registrerend
+4. Nieuwe `Company.require_project_membership_for_time_entry` toggle (default `True`) — strikte klanten houden dit aan, losse klanten kunnen flexibeler zijn
+5. Frontend: TimeEntry project-select filtert op `ProjectTeam`-lidmaatschap van de user, inclusief via-cascade-toegevoegde projecten
+
+**Niet in scope van Sprint 4:**
+- `ProgramTimeEntry` als apart model (program-overhead vs project-detail) — kan later in Sprint 5-6 als klanten erom vragen
+- Meeting-attendance time-tracking voor governance board — eigen `MeetingAttendance` model, later
+
+### Context-aware team features (AI-specifiek)
+
 **Impact / mogelijkheden:**
 
 | Feature | Hoe context helpt |
