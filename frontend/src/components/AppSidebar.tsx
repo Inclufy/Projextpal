@@ -1808,7 +1808,7 @@ export function AppSidebar() {
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-fuchsia-500/20 p-3 border border-purple-200/50 dark:border-purple-800/30">
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
-                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">Current Plan</p>
+                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">{language === "nl" ? "Huidig abonnement" : language === "fr" ? "Abonnement actuel" : "Current Plan"}</p>
                 <Badge className={cn(getTierColor(userFeatures.tier), "text-xs font-semibold")}>
                   {getTierName(userFeatures.tier)}
                 </Badge>
@@ -1819,7 +1819,7 @@ export function AppSidebar() {
                   onClick={() => window.location.href = '/profile?tab=subscription'}
                 >
                   <CreditCard className="w-3 h-3 mr-1.5" />
-                  Manage Plan
+                  {language === "nl" ? "Abonnement beheren" : language === "fr" ? "Gérer l'abonnement" : "Manage Plan"}
                 </Button>
               </div>
             </div>

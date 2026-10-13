@@ -654,7 +654,7 @@ const translations = {
   },
   nl: {
     nav: {
-      home: 'Home',
+      home: 'Startpagina',
       about: 'Over Ons',
       features: 'Functies',
       pricing: 'Prijzen',
@@ -663,6 +663,9 @@ const translations = {
       logout: 'Uitloggen',
       openApp: 'Open App',
       website: 'Website',
+      projects: 'Projecten',
+      academy: 'Academy',
+      workspace: 'Werkruimte',
       dashboard: 'Dashboard',
       projects: 'Projecten',
       programs: "Programma's",

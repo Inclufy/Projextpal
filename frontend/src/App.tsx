@@ -436,7 +436,7 @@ const AppHeader = () => {
               className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
             >
               {onAcademy ? <GraduationCap className="h-4 w-4" /> : <FolderKanban className="h-4 w-4" />}
-              <span className="hidden sm:inline">{onAcademy ? 'Academy' : 'Projects'}</span>
+              <span className="hidden sm:inline">{onAcademy ? (t.nav?.academy || 'Academy') : (t.nav?.projects || 'Projects')}</span>
               <ChevronDown className="h-3.5 w-3.5 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
