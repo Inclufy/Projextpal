@@ -240,12 +240,15 @@ def ai_generate_text(request):
     # specific signal the LLM should weigh last/most heavily.
     portfolio_prefix = get_portfolio_context_prefix(
         request.user, request.data.get("portfolio_id"), language=lang,
+        surface="governance_ai",
     )
     program_prefix = get_program_context_prefix(
         request.user, request.data.get("program_id"), language=lang,
+        surface="governance_ai",
     )
     project_prefix = get_project_context_prefix(
         request.user, request.data.get("project_id"), language=lang,
+        surface="governance_ai",
     )
     docs_prefix = (portfolio_prefix or '') + (program_prefix or '') + (project_prefix or '')
     system_prompt = prepend_language(

@@ -73,7 +73,7 @@ def _llm_doc_vs_reality(project, user, language="nl"):
 
     doc_prefix = ""
     try:
-        doc_prefix = get_project_context_prefix(user, project.id, language=language) or ""
+        doc_prefix = get_project_context_prefix(user, project.id, language=language, surface="project_doctor") or ""
     except Exception:
         doc_prefix = ""
     if not doc_prefix:

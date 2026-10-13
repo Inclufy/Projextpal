@@ -277,7 +277,7 @@ def forecast(
     docs_prefix = ""
     try:
         from core.ai_context_helpers import get_project_context_prefix
-        docs_prefix = get_project_context_prefix(user, project.id, language="nl")
+        docs_prefix = get_project_context_prefix(user, project.id, language="nl", surface="risk_forecast")
     except Exception:
         pass
 

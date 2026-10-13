@@ -115,7 +115,7 @@ Generate a detailed, actionable mitigation plan.""",
         try:
             from core.ai_context_helpers import get_project_context_prefix
             _pid = project_id or risk_data.get("project_id")
-            docs_prefix = get_project_context_prefix(user, _pid, language="nl")
+            docs_prefix = get_project_context_prefix(user, _pid, language="nl", surface="risk_mitigation")
             if docs_prefix:
                 project_context = docs_prefix + project_context
         except Exception:

@@ -476,7 +476,7 @@ def classify_with_llm(description, company=None, project_id=None, user=None, lan
     if project_id and user is not None:
         try:
             from core.ai_context_helpers import get_project_context_prefix
-            doc_prefix = get_project_context_prefix(user, project_id, language=language) or ""
+            doc_prefix = get_project_context_prefix(user, project_id, language=language, surface="tailoring") or ""
         except Exception:
             doc_prefix = ""
 

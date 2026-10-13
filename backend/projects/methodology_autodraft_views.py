@@ -26,6 +26,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from core.throttles import AiContextThrottle
+
 from .models import Project
 from .methodology_autodrafts import (
     draft_business_case,
@@ -58,7 +60,7 @@ def _run_draft(request, pk, draft_fn, audit_action):
     from core.i18n_ai import resolve_ui_language
     from core.ai_context_helpers import get_project_context_prefix
     language = resolve_ui_language(request)
-    doc_prefix = get_project_context_prefix(request.user, pk, language)
+    doc_prefix = get_project_context_prefix(request.user, pk, language, surface="autodraft")
 
     result = draft_fn(project, request.user, language, doc_prefix)
 
@@ -80,7 +82,7 @@ def _run_draft(request, pk, draft_fn, audit_action):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def prince2_business_case_auto_draft(request, pk):
     return _run_draft(request, pk, draft_business_case, "project.ai_auto_draft_bc")
 
@@ -91,7 +93,7 @@ def prince2_business_case_auto_draft(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def prince2_project_brief_auto_draft(request, pk):
     return _run_draft(request, pk, draft_project_brief, "project.ai_auto_draft_brief")
 
@@ -102,7 +104,7 @@ def prince2_project_brief_auto_draft(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def scrum_auto_draft(request, pk):
     return _run_draft(request, pk, draft_scrum, "project.ai_auto_draft_scrum")
 
@@ -113,7 +115,7 @@ def scrum_auto_draft(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def kanban_suggest_swimlanes(request, pk):
     return _run_draft(request, pk, draft_kanban_swimlanes, "project.ai_suggest_swimlanes")
 
@@ -124,7 +126,7 @@ def kanban_suggest_swimlanes(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def lss_define_auto_draft(request, pk):
     return _run_draft(request, pk, draft_lss_define, "project.ai_auto_draft_lss_define")
 
@@ -135,6 +137,6 @@ def lss_define_auto_draft(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def waterfall_suggest_phases(request, pk):
     return _run_draft(request, pk, draft_waterfall_phases, "project.ai_suggest_phases")

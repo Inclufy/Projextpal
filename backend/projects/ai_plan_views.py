@@ -12,6 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from core.throttles import AiContextThrottle
+
 from .models import Project
 
 
@@ -31,7 +33,7 @@ def _get_project(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def project_ai_plan(request, pk):
     """Eén chatbeurt. Body: {messages: [{role: user|assistant, content: str}]}."""
     project = _get_project(request, pk)
@@ -87,6 +89,22 @@ def project_ai_plan(request, pk):
             messages = [{"role": "user", "content": auto}]
 
     result = plan_chat(project, request.user, messages, language=language)
+
+    # Sprint 6 (S6-07) — surface the AI-context usage block to the frontend.
+    # Done at the view layer (not inside plan_chat) so this stays additive
+    # and swallow-all: a failure here must never block the chat reply.
+    # log=False: plan_chat already recorded this access through the inner
+    # get_project_context_prefix call, we only re-read the metadata here.
+    try:
+        from core.ai_context_helpers import get_project_context_details
+        details = get_project_context_details(
+            request.user, project.id, language=language,
+            surface="project_ai_plan", log=False,
+        )
+        if isinstance(result, dict) and details.get("used"):
+            result = {**result, "ai_context_used": details["used"]}
+    except Exception:
+        pass
 
     try:
         from accounts.models import audit

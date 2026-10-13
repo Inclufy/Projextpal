@@ -102,7 +102,7 @@ def parse_and_create_project_structure(
     doc_prefix = ""
     try:
         from core.ai_context_helpers import get_project_context_prefix
-        doc_prefix = get_project_context_prefix(user, project.id, language="nl") or ""
+        doc_prefix = get_project_context_prefix(user, project.id, language="nl", surface="copilot_tool") or ""
     except Exception:
         doc_prefix = ""
 

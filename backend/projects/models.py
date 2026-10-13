@@ -4,6 +4,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+from core.secret_field import EncryptedTextField
+
 
 class Project(models.Model):
     # PRINCE2 governance tailoring: strict separation of duties means only the
@@ -2136,7 +2138,15 @@ class ProjectAIContext(models.Model):
 
     `extracted_text` is al door `plan_from_documents` getrimd + genormalis-
     eerd; we knippen hier op 50_000 tekens om DB-grootte in de hand te
-    houden (ruim voor een gemiddeld dossier van ~80 pagina's)."""
+    houden (ruim voor een gemiddeld dossier van ~80 pagina's).
+
+    Sprint 6: ``extracted_text`` is now an ``EncryptedTextField``. The DB
+    column is unchanged (both TextField and EncryptedTextField map to the
+    PostgreSQL ``text`` type), so existing plaintext rows continue to be
+    returned as-is (``decrypt_text`` falls through when the ciphertext
+    prefix ``gAAAAA`` is missing). New writes are Fernet-encrypted and the
+    data migration ``0040_encrypt_ai_context_text`` re-saves pre-existing
+    rows so their stored value is encrypted too."""
 
     MAX_TEXT = 50_000
 
@@ -2148,10 +2158,12 @@ class ProjectAIContext(models.Model):
         help_text="If false, the AI endpoints will ignore this context even "
                   "though it is stored (soft off-switch).",
     )
-    extracted_text = models.TextField(blank=True, default="")
+    extracted_text = EncryptedTextField(blank=True, default="")
     source_files = models.JSONField(
         default=list, blank=True,
-        help_text="List of {name, size, pages} dicts for traceability.",
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "The optional `enabled` flag lets the user hide a single "
+                  "document from AI context without removing it.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

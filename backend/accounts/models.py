@@ -924,3 +924,87 @@ class UserMethodologyProfile(models.Model):
 
     def __str__(self):
         return f"MethodologyProfile<{self.user_id}> {self.pm_experience}"
+
+
+class TenantAIFeatureFlags(models.Model):
+    """Per-tenant on/off switches for every ProjeXtPal AI surface.
+
+    Sprint 6 (enterprise readiness). Replaces the implicit "if it compiles,
+    it's on for everyone" model with a per-Company toggle grid that the
+    tenant admin (and Inclufy superadmin) can flip from Django admin.
+
+    A missing row = everything on by default (fail-open) — see
+    :meth:`is_enabled`. The ``post_save`` signal on ``Company`` eagerly
+    creates a default row so admin screens always have something to show.
+    """
+
+    FEATURE_FIELDS = (
+        "ai_context_enabled",
+        "ai_autodrafts_enabled",
+        "team_match_enabled",
+        "compliance_scan_enabled",
+        "dashboard_narratives_enabled",
+    )
+
+    company = models.OneToOneField(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="ai_feature_flags",
+    )
+    ai_context_enabled = models.BooleanField(
+        default=True,
+        help_text="Master switch for ProjectAIContext / ProgramAIContext / "
+                  "PortfolioAIContext injection into any AI call.",
+    )
+    ai_autodrafts_enabled = models.BooleanField(
+        default=True,
+        help_text="Methodology auto-drafts (PRINCE2 Business Case / Project "
+                  "Brief, Scrum, Waterfall, LSS, status-report).",
+    )
+    team_match_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 team recommender.",
+    )
+    compliance_scan_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 compliance rescan + auto-tag.",
+    )
+    dashboard_narratives_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 proactive dashboard narrative generator.",
+    )
+    audit_log_retention_days = models.PositiveIntegerField(
+        default=365,
+        help_text="How long AIContextAccessLog rows are kept before the "
+                  "nightly janitor purges them. 0 = keep forever.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Tenant AI Feature Flags"
+        verbose_name_plural = "Tenant AI Feature Flags"
+
+    def __str__(self):
+        return f"AIFlags<{self.company.name}>"
+
+    @classmethod
+    def is_enabled(cls, company, feature_name: str) -> bool:
+        """Fail-open feature check used by every AI endpoint.
+
+        Missing company, missing row, or any exception → True (so a
+        half-migrated tenant does not silently lose access to features).
+        Only an explicit row with the field set to False disables it.
+        """
+        if company is None:
+            return True
+        if feature_name not in cls.FEATURE_FIELDS:
+            # Unknown feature name — fail-open, log a warning upstream.
+            return True
+        try:
+            flags = cls.objects.filter(company=company).first()
+        except Exception:
+            return True
+        if flags is None:
+            return True
+        return bool(getattr(flags, feature_name, True))

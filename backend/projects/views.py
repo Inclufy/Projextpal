@@ -5,6 +5,7 @@ from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
 from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
+from core.throttles import AiContextThrottle
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -2841,7 +2842,10 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
         return super().destroy(request, *args, **kwargs)
 
-    @action(detail=True, methods=["post"], url_path="regenerate-ai-mitigation")
+    @action(
+        detail=True, methods=["post"], url_path="regenerate-ai-mitigation",
+        throttle_classes=[AiContextThrottle],
+    )
     def regenerate_ai_mitigation(self, request, pk=None):
         """Regenerate AI mitigation plan for a risk."""
         from .ai_risk_mitigation import generate_ai_mitigation
