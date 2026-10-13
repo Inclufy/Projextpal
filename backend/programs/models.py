@@ -155,6 +155,17 @@ class ProgramTeam(models.Model):
     )
     added_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # S7-06: optional per-program hourly rate override. 0 means "no override" —
+    # cost calculators fall back to the company's default_hourly_rate. Kept
+    # separate from ProjectTeam.hourly_rate so a program-level override can
+    # drive the roll-up dashboards without touching the project-level rates.
+    hourly_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, null=True, blank=True,
+        help_text=(
+            "Hourly rate override for this team member at the program level. "
+            "0 or null = use Company.default_hourly_rate."
+        ),
+    )
 
     class Meta:
         unique_together = ["program", "user"]
