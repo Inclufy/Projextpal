@@ -189,7 +189,10 @@ def generate_ai_report(request):
         "user_role": user.role,
     }
     
-    report = generate_report(report_id, context, company=company)
+    from core.i18n_ai import resolve_ui_language
+    lang = resolve_ui_language(request)
+
+    report = generate_report(report_id, context, company=company, language=lang)
     return Response(report)
 
 
@@ -216,9 +219,17 @@ def ai_generate_text(request):
 
     logger = logging.getLogger(__name__)
 
+    from core.i18n_ai import resolve_ui_language, prepend_language
+
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
+
+    lang = resolve_ui_language(request)
+    system_prompt = prepend_language(
+        'You are a helpful project management expert. Respond concisely and professionally.',
+        lang,
+    )
 
     api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.getenv('OPENAI_API_KEY')
     if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
@@ -246,7 +257,7 @@ def ai_generate_text(request):
             json={
                 'model': 'gpt-4o-mini',
                 'messages': [
-                    {'role': 'system', 'content': 'You are a helpful project management expert. Respond concisely and professionally.'},
+                    {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': prompt},
                 ],
                 'temperature': 0.7,

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Send, Sparkles, Wand2, HelpCircle, CheckCircle2, Info } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
+import { aiFetch } from "@/lib/aiFetch";
 
 // Plan met AI — een korte chat begeleidt de gebruiker naar een volledig
 // conceptplan (mijlpalen + taken + risico's). Het voorstel is BEWERKBAAR:
@@ -131,7 +132,7 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     setInput("");
     setBusy(true);
     try {
-      const r = await fetch(`/api/v1/projects/${projectId}/ai-plan/`, {
+      const r = await aiFetch(`/api/v1/projects/${projectId}/ai-plan/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify({ messages: next }),
       });
       const d = await r.json().catch(() => ({}));
@@ -193,7 +194,7 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
             : undefined,
         },
       };
-      const r = await fetch(`/api/v1/projects/${projectId}/ai-plan/apply/`, {
+      const r = await aiFetch(`/api/v1/projects/${projectId}/ai-plan/apply/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
       });
       const d = await r.json().catch(() => ({}));

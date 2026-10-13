@@ -290,11 +290,18 @@ def _fallback_plan(project) -> dict:
     return plan
 
 
-def plan_chat(project, user, messages: list) -> dict:
+def plan_chat(project, user, messages: list, language: str = "nl") -> dict:
     """Eén chatbeurt. `messages` = [{role: user|assistant, content: str}, ...].
-    Geeft altijd een bruikbaar resultaat terug (nooit een dead-end)."""
+    Geeft altijd een bruikbaar resultaat terug (nooit een dead-end).
+
+    ``language`` dwingt de LLM antwoord in de UI-taal van de gebruiker
+    (nl/en/fr). De NL-prompt zelf blijft, maar de taalinstructie wordt
+    bovenaan ingevoegd zodat EN/FR-users geen Nederlandse output krijgen.
+    """
+    from core.i18n_ai import prepend_language
+
     ctx = _project_context(project)
-    system = _system_prompt(ctx)
+    system = prepend_language(_system_prompt(ctx), language)
     company = getattr(user, "company", None)
 
     clean = [

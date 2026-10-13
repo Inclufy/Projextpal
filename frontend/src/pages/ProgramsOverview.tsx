@@ -76,6 +76,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { aiFetch } from "@/lib/aiFetch";
 
 // API functions
 const fetchPrograms = async () => {
@@ -133,7 +134,7 @@ const updateProgram = async ({ id, data }: { id: number; data: any }) => {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

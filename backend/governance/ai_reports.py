@@ -180,8 +180,14 @@ Company: {company_name}
 }
 
 
-def generate_report(report_id, context_data, company=None):
-    """Generate an AI report based on report type and context data."""
+def generate_report(report_id, context_data, company=None, language="nl"):
+    """Generate an AI report based on report type and context data.
+
+    ``language`` is a 2-letter UI language code (nl/en/fr) that forces the
+    LLM to answer in the user's chosen language. Falls back to Dutch.
+    """
+    from core.i18n_ai import prepend_language
+
     prompt_config = REPORT_PROMPTS.get(report_id)
     if not prompt_config:
         return {"error": f"Unknown report type: {report_id}"}
@@ -202,8 +208,12 @@ def generate_report(report_id, context_data, company=None):
             **llm_kwargs,
         )
 
+        # Prepend the UI-language directive to the EN-hardcoded templates
+        # so the model answers in the user's language without rewriting all
+        # 14 REPORT_PROMPTS entries.
+        system_prompt = prepend_language(prompt_config["system"], language)
         prompt = ChatPromptTemplate.from_messages([
-            ("system", prompt_config["system"]),
+            ("system", system_prompt),
             ("human", prompt_config["human"]),
         ])
 
