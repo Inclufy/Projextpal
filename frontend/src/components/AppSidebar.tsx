@@ -1168,6 +1168,8 @@ export function AppSidebar() {
     // — Resources —
     if (isPMPlus) {
       baseItems.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
+      // P2-6: capacity dashboard was reachable only by typing the URL
+      baseItems.push({ title: isNL ? 'Capaciteit' : 'Capacity', url: "/team/capacity", icon: BarChart3, feature: 'teams' });
     }
     baseItems.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
 
