@@ -54,7 +54,14 @@ const API_BASE_URL = '/api/v1';
 // API fetch functions
 const fetchProjects = async () => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${API_BASE_URL}/projects/`, {
+  // S4-11 — the TimeEntry UI must only offer projects the current user is
+  // actually allowed to log hours on. The server-side rules
+  //   * strict mode (default): only ProjectTeam members
+  //   * loose mode: all company projects (controlled per tenant)
+  //   * governance roles with can_log_time=False: nothing
+  // are concentrated behind this one endpoint so the picker, the empty
+  // state, and the strictness toggle never drift apart.
+  const response = await fetch(`${API_BASE_URL}/projects/time-entries/available-projects/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) return [];
@@ -1090,22 +1097,33 @@ Respond in JSON format only, no other text:
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="project">{tt.project}</Label>
-                  <Select value={selectedProject} onValueChange={(value) => {
-                    setSelectedProject(value);
-                    setSelectedTask("");
-                    setFormErrors((prev) => ({ ...prev, project: undefined }));
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={tt.selectProject} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((project: Project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* S4-11 — the dropdown shows ONLY the projects where the
+                      current user is allowed to log hours (ProjectTeam
+                      membership + governance can_log_time filter). When the
+                      list is empty, we surface a helpful hint instead of
+                      silently showing a blank dropdown. */}
+                  {projects.length === 0 && !projectsLoading ? (
+                    <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                      Je bent nog niet op een project-team. Vraag je PM om toegang zodat je uren kunt loggen.
+                    </div>
+                  ) : (
+                    <Select value={selectedProject} onValueChange={(value) => {
+                      setSelectedProject(value);
+                      setSelectedTask("");
+                      setFormErrors((prev) => ({ ...prev, project: undefined }));
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={tt.selectProject} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project: Project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   {formErrors.project && (
                     <p className="text-sm text-destructive">{formErrors.project}</p>
                   )}
