@@ -459,6 +459,13 @@ export default function Team() {
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [addingMembers, setAddingMembers] = useState(false);
 
+  // S4-11 — team-membership cascade: when adding a user to a PROGRAM, let the
+  // admin also mirror them onto the program's constituent projects so a
+  // program-manager can actually log hours.
+  const [programProjects, setProgramProjects] = useState<Array<{ id: number; name: string }>>([]);
+  const [cascadeProjectIds, setCascadeProjectIds] = useState<number[]>([]);
+  const [cascadeEnabled, setCascadeEnabled] = useState(true);
+
   // Company members (same endpoint PlanningTasks.tsx uses) — id + name + email
   const { data: companyMembers = [] } = useQuery<{ id: number; name: string; email: string }[]>({
     queryKey: ['company-members'],
@@ -850,14 +857,43 @@ if (!sendInviteEmail) {
         throw new Error('Assignment failed');
       }
 
+      // S4-11 — mirror this user onto the program's constituent projects when
+      // the admin selected the "also add to underlying projects" option on
+      // a program assignment. Response body contains the new ProgramTeam id.
+      let cascadeDescription = "";
+      if (
+        assignmentType === "program"
+        && cascadeEnabled
+        && cascadeProjectIds.length > 0
+      ) {
+        try {
+          const data = await response.clone().json().catch(() => null);
+          const teamMemberId = data?.id;
+          if (teamMemberId) {
+            const result = await cascadeMemberToProjects(
+              selectedItemId,
+              teamMemberId,
+              cascadeProjectIds,
+            );
+            if (result && (result.created > 0 || result.skipped > 0)) {
+              cascadeDescription = ` ${result.created} project(en) gekoppeld, ${result.skipped} overgeslagen.`;
+            }
+          }
+        } catch (_e) {
+          // non-fatal — the program assignment itself succeeded.
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
       setSelectedItemId("");
       setSelectedRole("");
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
       setIsAssignDialogOpen(false);
 
       toast({
         title: "Toewijzing succesvol",
-        description: `${selectedMember.name} is toegewezen.`,
+        description: `${selectedMember.name} is toegewezen.${cascadeDescription}`,
       });
     } catch (error) {
       toast({
@@ -933,6 +969,67 @@ if (!sendInviteEmail) {
     }
   };
 
+  // S4-11 — load the projects linked to a programme so the admin can tick
+  // which ones should auto-receive the new team member via the backend
+  // cascade endpoint. All boxes default to CHECKED.
+  const loadProgramProjects = async (programId: string) => {
+    if (!programId) {
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_BASE_URL}/programs/${programId}/projects/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        setProgramProjects([]);
+        setCascadeProjectIds([]);
+        return;
+      }
+      const data = await res.json();
+      const rows = Array.isArray(data) ? data : data.results || [];
+      const normalized = rows
+        .map((p: any) => ({ id: Number(p.id), name: p.name || p.title || `#${p.id}` }))
+        .filter((p: { id: number }) => !Number.isNaN(p.id));
+      setProgramProjects(normalized);
+      setCascadeProjectIds(normalized.map((p: { id: number }) => p.id));
+    } catch {
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
+    }
+  };
+
+  // S4-11 — fire the backend cascade endpoint for a freshly-added
+  // ProgramTeam row. Silent fallback: a 403/500 does not fail the whole
+  // flow, we just report the cascade separately.
+  const cascadeMemberToProjects = async (
+    programId: string,
+    teamMemberId: number | string,
+    projectIds: number[],
+  ): Promise<{ created: number; skipped: number } | null> => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(
+        `${API_BASE_URL}/programs/${programId}/team/${teamMemberId}/cascade/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ project_ids: projectIds }),
+        },
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return {
+        created: (data.created_project_teams || []).length,
+        skipped: (data.skipped_duplicates || []).length,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   // Load the current team of the selected project/programme so we can hide
   // members that are already on it from the picker.
   const loadExistingTeam = async (type: "project" | "program", itemId: string) => {
@@ -985,7 +1082,12 @@ if (!sendInviteEmail) {
     const token = localStorage.getItem("access_token");
     const base = inviteType === "project" ? "projects" : "programs";
     let added = 0;
+    let cascadedCreated = 0;
+    let cascadedSkipped = 0;
     const failed: string[] = [];
+
+    const shouldCascade =
+      inviteType === "program" && cascadeEnabled && cascadeProjectIds.length > 0;
 
     for (const userId of selectedMemberIds) {
       try {
@@ -996,6 +1098,26 @@ if (!sendInviteEmail) {
         });
         if (res.ok) {
           added += 1;
+          // S4-11 — cascade the new program-team row down to the ticked projects.
+          if (shouldCascade) {
+            try {
+              const row = await res.clone().json().catch(() => null);
+              const teamMemberId = row?.id;
+              if (teamMemberId) {
+                const r = await cascadeMemberToProjects(
+                  inviteItemId,
+                  teamMemberId,
+                  cascadeProjectIds,
+                );
+                if (r) {
+                  cascadedCreated += r.created;
+                  cascadedSkipped += r.skipped;
+                }
+              }
+            } catch (_e) {
+              // non-fatal
+            }
+          }
         } else {
           const data = await res.json().catch(() => ({}));
           failed.push(data.error || data.detail || `ID ${userId}`);
@@ -1013,9 +1135,12 @@ if (!sendInviteEmail) {
     setSelectedMemberIds([]);
 
     if (added > 0) {
+      const cascadeSuffix = shouldCascade && (cascadedCreated > 0 || cascadedSkipped > 0)
+        ? ` ${cascadedCreated} project-lidmaatschap(pen) aangemaakt, ${cascadedSkipped} overgeslagen.`
+        : "";
       toast({
         title: "Leden toegevoegd",
-        description: `${added} bestaand lid/leden toegevoegd aan het team.`,
+        description: `${added} bestaand lid/leden toegevoegd aan het team.${cascadeSuffix}`,
       });
     }
     if (failed.length > 0) {
@@ -1045,6 +1170,9 @@ if (!sendInviteEmail) {
     setMemberSearch("");
     setSelectedMemberIds([]);
     setExistingTeamUserIds([]);
+    setProgramProjects([]);
+    setCascadeProjectIds([]);
+    setCascadeEnabled(true);
   };
 
   // AI Functions (simplified - would call backend AI endpoints in production)
@@ -1769,11 +1897,17 @@ if (!sendInviteEmail) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{assignmentType === "project" ? pt("Project") : pt("Program")}</Label>
-              <Select 
-                value={selectedItemId} 
+              <Select
+                value={selectedItemId}
                 onValueChange={(value) => {
                   setSelectedItemId(value);
                   setSelectedRole("");
+                  if (assignmentType === "program") {
+                    loadProgramProjects(value);
+                  } else {
+                    setProgramProjects([]);
+                    setCascadeProjectIds([]);
+                  }
                 }}
               >
                 <SelectTrigger>
@@ -1837,6 +1971,69 @@ if (!sendInviteEmail) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* S4-11 — cascade panel: only when assigning to a PROGRAM */}
+            {assignmentType === "program" && selectedItemId && programProjects.length > 0 && (
+              <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Ook toevoegen aan onderliggende projecten</p>
+                    <p className="text-xs text-muted-foreground">
+                      Zodat deze persoon ook uren kan loggen op projecten binnen dit programma.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground underline shrink-0"
+                    onClick={() => {
+                      setCascadeEnabled(false);
+                      setCascadeProjectIds([]);
+                    }}
+                  >
+                    Overslaan
+                  </button>
+                </div>
+                {cascadeEnabled && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
+                    {programProjects.map((p) => {
+                      const checked = cascadeProjectIds.includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-accent/50 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-border accent-primary"
+                            checked={checked}
+                            onChange={(e) => {
+                              setCascadeProjectIds((prev) =>
+                                e.target.checked
+                                  ? [...prev, p.id]
+                                  : prev.filter((x) => x !== p.id),
+                              );
+                            }}
+                          />
+                          <span className="truncate">{p.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {!cascadeEnabled && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary underline"
+                    onClick={() => {
+                      setCascadeEnabled(true);
+                      setCascadeProjectIds(programProjects.map((p) => p.id));
+                    }}
+                  >
+                    Toch koppelen aan projecten
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)}>
@@ -1869,6 +2066,9 @@ if (!sendInviteEmail) {
               setInviteRole("");
               setSelectedMemberIds([]);
               setExistingTeamUserIds([]);
+              setProgramProjects([]);
+              setCascadeProjectIds([]);
+              setCascadeEnabled(true);
             }}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="project" className="gap-2">
@@ -1909,6 +2109,12 @@ if (!sendInviteEmail) {
                   setInviteRole("");
                   setSelectedMemberIds([]);
                   loadExistingTeam(inviteType, value);
+                  if (inviteType === "program") {
+                    loadProgramProjects(value);
+                  } else {
+                    setProgramProjects([]);
+                    setCascadeProjectIds([]);
+                  }
                 }}
               >
                 <SelectTrigger>
@@ -1948,6 +2154,69 @@ if (!sendInviteEmail) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* S4-11 — cascade panel: only when inviting into a PROGRAM */}
+            {inviteType === "program" && inviteItemId && programProjects.length > 0 && (
+              <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Ook toevoegen aan onderliggende projecten</p>
+                    <p className="text-xs text-muted-foreground">
+                      Zodat uitgenodigde leden ook uren kunnen loggen op projecten binnen dit programma.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground underline shrink-0"
+                    onClick={() => {
+                      setCascadeEnabled(false);
+                      setCascadeProjectIds([]);
+                    }}
+                  >
+                    Overslaan
+                  </button>
+                </div>
+                {cascadeEnabled && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
+                    {programProjects.map((p) => {
+                      const checked = cascadeProjectIds.includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-accent/50 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-border accent-primary"
+                            checked={checked}
+                            onChange={(e) => {
+                              setCascadeProjectIds((prev) =>
+                                e.target.checked
+                                  ? [...prev, p.id]
+                                  : prev.filter((x) => x !== p.id),
+                              );
+                            }}
+                          />
+                          <span className="truncate">{p.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {!cascadeEnabled && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary underline"
+                    onClick={() => {
+                      setCascadeEnabled(true);
+                      setCascadeProjectIds(programProjects.map((p) => p.id));
+                    }}
+                  >
+                    Toch koppelen aan projecten
+                  </button>
+                )}
+              </div>
+            )}
 
             {inviteMode === "email" && (
               <>
