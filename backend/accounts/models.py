@@ -49,6 +49,22 @@ class Company(models.Model):
     next_invoice_date = models.DateTimeField(null=True, blank=True)
     last_payment_date = models.DateTimeField(null=True, blank=True)
 
+    # S4-11: Time-entry strictness. True (default) means a user may only log
+    # time on projects where they are an active ProjectTeam member — which
+    # closes the gap where a program-manager/governance-board member who sits
+    # on the Program (not on the Project) could not log any hours. A looser
+    # tenant can turn this off and let any company user log time on any
+    # company-scoped project. Program/governance roles that still should not
+    # log time are gated by `can_log_time=False` on their stakeholder/board-
+    # member row (see governance.GovernanceStakeholder.can_log_time).
+    require_project_membership_for_time_entry = models.BooleanField(
+        default=True,
+        help_text=(
+            "If True: users may only log time on projects where they are on "
+            "ProjectTeam. Default True — individual tenants can turn this off."
+        ),
+    )
+
     def __str__(self):
         return self.name
 

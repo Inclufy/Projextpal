@@ -169,9 +169,21 @@ class BoardMember(models.Model):
     board = models.ForeignKey(GovernanceBoard, on_delete=models.CASCADE, related_name='members')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=50, choices=MEMBER_ROLES, default='member')
-    
+
     joined_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # S4-11: whether this board member is allowed to log hours against the
+    # components under their board. Default False: a board member is an
+    # oversight role, not a delivery role, so they do not clutter the
+    # TimeEntry project picker. A tenant can flip this per member for a
+    # working chair / member who also delivers.
+    can_log_time = models.BooleanField(
+        default=False,
+        help_text=(
+            "Allow this board member to log time on the components under "
+            "their board. Default False — oversight role, not delivery."
+        ),
+    )
 
     class Meta:
         unique_together = ['board', 'user']
@@ -230,6 +242,17 @@ class GovernanceStakeholder(models.Model):
     desired_engagement = models.CharField(max_length=20, choices=ENGAGEMENT_LEVELS, default='supportive')
     notes = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    # S4-11: whether this stakeholder may log hours against the components
+    # they are tied to. Default False: executive sponsors, SROs, business
+    # change managers etc. are governance roles, not delivery roles, and we
+    # keep them out of the TimeEntry project picker unless a tenant opts in.
+    can_log_time = models.BooleanField(
+        default=False,
+        help_text=(
+            "Allow this stakeholder to log time on the components they are "
+            "tied to. Default False — governance role, not delivery."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
