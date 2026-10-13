@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Play, CheckCircle2, ShieldCheck, Pencil, Trash2, ListChecks } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 const WaterfallPhaseGate = () => {
   const { pt } = usePageTranslations();
@@ -52,7 +53,48 @@ const WaterfallPhaseGate = () => {
   return (
     <div className="min-h-full bg-background"><ProjectHeader />
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><ListChecks className="h-6 w-6 text-cyan-500" /><h1 className="text-2xl font-bold">{pt("Phases")} & Gates</h1><Badge variant="outline">{phases.length}</Badge></div><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Phase")}</Button></div>
+        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><ListChecks className="h-6 w-6 text-cyan-500" /><h1 className="text-2xl font-bold">{pt("Phases")} & Gates</h1><Badge variant="outline">{phases.length}</Badge></div><div className="flex items-center gap-2"><AutoDraftFromDocsButton
+          endpoint={`/api/v1/projects/${id}/waterfall/suggest-phases/`}
+          title={pt("Waterfall phases — AI-draft from documents")}
+          description={pt("Review the proposed phases before applying.")}
+          fields={[{ key: "phases", label: pt("Phases"), kind: "phases" }]}
+          onApply={async (suggested) => {
+            // Map AI "name" to the required WaterfallPhase shape. We default
+            // phase_type by position/name heuristics — the user can edit each
+            // after apply if the inferred phase_type is wrong.
+            const items: any[] = Array.isArray(suggested.phases) ? suggested.phases : [];
+            const typeFor = (name: string, i: number): string => {
+              const n = (name || "").toLowerCase();
+              if (/req|requirement|eis/.test(n)) return "requirements";
+              if (/design|ontwerp|concept|architect/.test(n)) return "design";
+              if (/dev|build|bouw|implement|real/.test(n)) return "development";
+              if (/test|accept/.test(n)) return "testing";
+              if (/deploy|go-?live|livegang|roll/.test(n)) return "deployment";
+              if (/maint|nazorg/.test(n)) return "maintenance";
+              const seq = ["requirements", "design", "development", "testing", "deployment", "maintenance"];
+              return seq[Math.min(i, seq.length - 1)];
+            };
+            let order = phases.length + 1;
+            for (let i = 0; i < items.length; i++) {
+              const p = items[i];
+              if (!p?.name) continue;
+              const body: any = {
+                name: String(p.name).slice(0, 100),
+                phase_type: typeFor(p.name, i),
+                description: Array.isArray(p.deliverables) && p.deliverables.length
+                  ? `Deliverables: ${p.deliverables.join("; ")}${p.gate_criteria ? ` — Gate: ${p.gate_criteria}` : ""}`
+                  : (p.gate_criteria ? `Gate: ${p.gate_criteria}` : ""),
+                order: order++,
+              };
+              if (p.start_date) body.start_date = p.start_date;
+              if (p.end_date) body.end_date = p.end_date;
+              await fetch(`/api/v1/projects/${id}/waterfall/phases/`, {
+                method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
+              });
+            }
+            fetchData();
+          }}
+        /><Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Phase")}</Button></div></div>
         {phases.length === 0 ? <Card className="p-8 text-center"><ListChecks className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No phases defined yet")}</h3><p className="text-muted-foreground">Initialize from dashboard or add phases manually</p></Card> : (
           <div className="space-y-4">{phases.sort((a, b) => (a.order || 0) - (b.order || 0)).map((p, i) => (
             <Card key={p.id} className={p.status === "in_progress" ? "border-blue-300 shadow-md" : ""}>
