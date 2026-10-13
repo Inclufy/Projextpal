@@ -617,6 +617,71 @@ class ProgramViewSet(viewsets.ModelViewSet):
         member.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='team/(?P<team_member_id>[^/.]+)/cascade',
+    )
+    def cascade_team_member(self, request, pk=None, team_member_id=None):
+        """S4-11 — cascade a ProgramTeam member down to constituent projects.
+
+        Body: ``{"project_ids": [1, 2, 3]}`` — list of project ids the admin
+        checked in the "Also add to underlying projects" box when adding the
+        user to the program. Omitting ``project_ids`` (or passing ``null``)
+        means "all projects linked to this program".
+
+        Idempotent: already-existing ProjectTeam rows are reported as
+        ``skipped_duplicates`` and nothing is overwritten. Tenant-safe:
+        projects outside this program are silently dropped from the request.
+
+        Only admin / pm / program-manager / superadmin may trigger this —
+        the same tier that may add a program team member.
+        """
+        program = self.get_object()
+
+        # Permission tier: the same lineup that already gates team add/remove.
+        user = request.user
+        role = getattr(user, 'role', None)
+        if role not in {'admin', 'pm', 'program_manager', 'superadmin'} and not getattr(user, 'is_superuser', False):
+            return Response(
+                {'error': 'Only admins/PMs/program-managers may cascade team members.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            member = program.team_members.get(id=team_member_id)
+        except (ProgramTeam.DoesNotExist, ValueError, TypeError):
+            return Response({'error': 'Team member not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Normalize body — project_ids may be absent, null, [], or a list.
+        payload = request.data if isinstance(request.data, dict) else {}
+        project_ids = payload.get('project_ids', None)
+        if isinstance(project_ids, list):
+            # Keep the explicit list (including empty, which is a no-op).
+            pass
+        elif project_ids is None:
+            project_ids = None  # "all linked projects"
+        else:
+            return Response(
+                {'error': "'project_ids' must be a list of project ids or null."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created, skipped = member.cascade_to_project_teams(
+            project_ids=project_ids, added_by=request.user,
+        )
+
+        return Response(
+            {
+                'created_project_teams': [
+                    {'id': pt.id, 'project_id': pt.project_id, 'user_id': pt.user_id}
+                    for pt in created
+                ],
+                'skipped_duplicates': list(skipped),
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class ProgramBenefitViewSet(viewsets.ModelViewSet):
     """ViewSet for Program Benefits."""
