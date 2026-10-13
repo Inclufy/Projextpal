@@ -45,6 +45,14 @@ from .coach_views import project_coach
 from .ai_plan_views import project_ai_plan, project_ai_plan_apply
 from .ai_from_doc import plan_from_documents
 from .ai_context_views import project_ai_context
+from .methodology_autodraft_views import (
+    prince2_business_case_auto_draft,
+    prince2_project_brief_auto_draft,
+    scrum_auto_draft,
+    kanban_suggest_swimlanes,
+    lss_define_auto_draft,
+    waterfall_suggest_phases,
+)
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -108,6 +116,20 @@ urlpatterns = [
     path("plan-from-documents/", plan_from_documents, name="project-plan-from-documents"),
     path("<int:pk>/ai-context/", project_ai_context, name="project-ai-context"),
     path("<int:pk>/ai-plan/apply/", project_ai_plan_apply, name="project-ai-plan-apply"),
+
+    # Sprint 4 — methodology auto-drafts from project documents (S4-01..S4-06).
+    path("<int:pk>/prince2/business-case/auto-draft/",
+         prince2_business_case_auto_draft, name="project-prince2-bc-auto-draft"),
+    path("<int:pk>/prince2/project-brief/auto-draft/",
+         prince2_project_brief_auto_draft, name="project-prince2-brief-auto-draft"),
+    path("<int:pk>/scrum/auto-draft/",
+         scrum_auto_draft, name="project-scrum-auto-draft"),
+    path("<int:pk>/kanban/suggest-swimlanes/",
+         kanban_suggest_swimlanes, name="project-kanban-suggest-swimlanes"),
+    path("<int:pk>/lss/define/auto-draft/",
+         lss_define_auto_draft, name="project-lss-define-auto-draft"),
+    path("<int:pk>/waterfall/suggest-phases/",
+         waterfall_suggest_phases, name="project-waterfall-suggest-phases"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),
