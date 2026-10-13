@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from admin_portal.views import CurrentUserView
+from execution.s7_cost_planner_views import user_capacity
 from core.compliance_views import compliance_posture
 from core.status_views import system_status
 from core.ai_usage_views import ai_usage_summary
@@ -90,6 +91,9 @@ urlpatterns = [
 
     # Single endpoint views
     path("api/v1/users/me/", CurrentUserView.as_view(), name="current-user"),
+    # Sprint 7 — per-user capacity (hours allocated/budgeted/actual over a
+    # date range across every project the user is on).
+    path("api/v1/users/<int:pk>/capacity/", user_capacity, name="user-capacity"),
     path("api/v1/public/plans/", PublicPlansView.as_view(), name="public-plans"),
 
     # API Documentation
