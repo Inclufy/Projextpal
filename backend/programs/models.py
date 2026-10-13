@@ -161,6 +161,91 @@ class ProgramTeam(models.Model):
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.email} - {self.program.name}"
 
+    # ------------------------------------------------------------------
+    # S4-11 — team-membership cascade for time registration.
+    # ------------------------------------------------------------------
+    # Why this lives on ProgramTeam (and not a signal):
+    #   * explicit opt-in — the admin UI shows a project checklist on add,
+    #     so this cascade only runs when the admin asks for it;
+    #   * idempotent — safe to call repeatedly without creating duplicates
+    #     or re-activating a row the admin deliberately took out;
+    #   * tenant-safe — only projects whose program == self.program are
+    #     touched, so this can never leak across tenants.
+    def cascade_to_project_teams(self, project_ids=None, added_by=None):
+        """Create ProjectTeam rows under this program's projects for this user.
+
+        Args:
+            project_ids: iterable of project ids to cascade into. ``None``
+                means "every project linked to this program" (the common
+                case from the admin UI's default-checked list). An empty
+                iterable is a no-op.
+            added_by: user recorded on the created ProjectTeam rows. Falls
+                back to ``self.added_by`` so the cascade keeps the same
+                provenance as the ProgramTeam row that triggered it.
+
+        Returns:
+            A ``(created, skipped)`` tuple of ``ProjectTeam`` querysets /
+            lists for the caller to report back as ``created_project_teams``
+            and ``skipped_duplicates``.
+
+        Methodology choice (deliberately opinionated, see S4-11 spec):
+            * ``is_active=True`` — the cascaded member is immediately live
+              on the project.
+            * ``can_view_costs=True`` — a program-manager who was added at
+              the program level needs the financial view on the project
+              too; admins can downgrade later.
+            * ``hourly_rate=0`` — unknown at cascade time; the admin fills
+              it in when needed.
+            * ``role`` is NOT set here — ProjectTeam has no per-project
+              role field; the user's CustomUser.role (e.g.
+              ``program_manager``) is what the rest of the app reads.
+        """
+        # Deferred import — projects imports accounts which imports programs;
+        # at module-import time projects.models is not yet loaded.
+        from projects.models import ProjectTeam
+
+        # Resolve the target project set. ``None`` → every project linked to
+        # this program; a list stays as given but is intersected with the
+        # program's linked projects so a caller can never slip a project
+        # from another program (or another tenant) into the cascade.
+        linked_ids = set(self.program.projects.values_list("id", flat=True))
+        if project_ids is None:
+            target_ids = linked_ids
+        else:
+            try:
+                requested = {int(pid) for pid in project_ids}
+            except (TypeError, ValueError):
+                requested = set()
+            target_ids = requested & linked_ids
+
+        if not target_ids:
+            return [], []
+
+        provenance = added_by or self.added_by
+
+        existing_project_ids = set(
+            ProjectTeam.objects.filter(
+                project_id__in=target_ids, user=self.user,
+            ).values_list("project_id", flat=True)
+        )
+
+        created = []
+        skipped = []
+        for pid in target_ids:
+            if pid in existing_project_ids:
+                skipped.append(pid)
+                continue
+            pt = ProjectTeam.objects.create(
+                project_id=pid,
+                user=self.user,
+                added_by=provenance,
+                is_active=True,
+                can_view_costs=True,
+                hourly_rate=0,
+            )
+            created.append(pt)
+        return created, skipped
+
 
 class ProgramBenefit(models.Model):
     """Benefits tracking for programs."""

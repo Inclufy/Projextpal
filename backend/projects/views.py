@@ -3266,7 +3266,7 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "summary", "my_entries"]:
+        if self.action in ["list", "retrieve", "summary", "my_entries", "available_projects"]:
             return [IsAuthenticated()]
         if self.action in ["create", "update", "partial_update"]:
             return [IsAuthenticated()]
@@ -3345,6 +3345,85 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             )
         except Exception:
             pass
+
+    @action(detail=False, methods=["get"], url_path="available-projects")
+    def available_projects(self, request):
+        """S4-11 — projects the current user may select for a NEW TimeEntry.
+
+        Scoping rules, in this order:
+          1) A SuperAdmin sees every project.
+          2) Governance role-holders with ``can_log_time=False`` (board
+             members or stakeholders) are blocked outright — their role is
+             oversight, not delivery, and they should not clutter the picker
+             even if they happen to be on a ProjectTeam somewhere.
+          3) Otherwise:
+             * strict mode (``Company.require_project_membership_for_time_entry
+               == True``, the default) — only projects where the user is on
+               ``ProjectTeam`` with ``is_active=True``;
+             * loose mode — every project in the user's company.
+
+        A separate endpoint (rather than mutating ``ProjectViewSet.list``) so
+        the generic project list keeps its broader semantics (admin/pm see
+        every company project for navigation / dashboards), while the time-
+        entry picker gets the stricter, delivery-focused view.
+        """
+        from django.db.models import Q
+        user = request.user
+
+        # SuperAdmin / is_superuser → unconstrained.
+        role = getattr(user, 'role', None)
+        if role == 'superadmin' or getattr(user, 'is_superuser', False):
+            projects = Project.objects.all().select_related('company').order_by('name')
+            return Response([
+                {'id': p.id, 'name': p.name, 'company_id': p.company_id}
+                for p in projects
+            ])
+
+        # Governance gate — if the user is tracked as a board member or
+        # governance stakeholder on at least one row AND every such row has
+        # ``can_log_time=False``, the picker is empty by design.
+        try:
+            from governance.models import BoardMember, GovernanceStakeholder
+            bm_rows = BoardMember.objects.filter(user=user, is_active=True)
+            gs_rows = GovernanceStakeholder.objects.filter(user=user, is_active=True)
+            has_gov_rows = bm_rows.exists() or gs_rows.exists()
+            if has_gov_rows:
+                any_can_log = (
+                    bm_rows.filter(can_log_time=True).exists()
+                    or gs_rows.filter(can_log_time=True).exists()
+                )
+                if not any_can_log:
+                    return Response([])
+        except Exception:
+            # Governance app not installed / migrated — fall through.
+            pass
+
+        company = getattr(user, 'company', None)
+        require_membership = True
+        if company is not None:
+            require_membership = getattr(
+                company, 'require_project_membership_for_time_entry', True,
+            )
+
+        if require_membership:
+            qs = Project.objects.filter(
+                team_members__user=user,
+                team_members__is_active=True,
+            ).distinct()
+        else:
+            if company is None:
+                qs = Project.objects.none()
+            else:
+                qs = Project.objects.filter(
+                    Q(company=company)
+                    | Q(team_members__user=user, team_members__is_active=True)
+                ).distinct()
+
+        qs = qs.order_by('name')
+        return Response([
+            {'id': p.id, 'name': p.name, 'company_id': p.company_id}
+            for p in qs
+        ])
 
     @action(detail=False, methods=["get"])
     def my_entries(self, request):
