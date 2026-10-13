@@ -2,6 +2,66 @@ from django.db import models
 from django.conf import settings
 
 
+class ProjectResourceAllocation(models.Model):
+    """S7-08 — Per-user time-slot allocation on a project.
+
+    ProjectTeam answers *who* is on the project; ProjectResourceAllocation
+    answers *when* and *how much*. One row = one planned block of hours for
+    one team-member in a date range. The Gantt view groups rows by
+    ProjectTeam member and lays them along the time axis.
+
+    Sprint 7 ships a read-only Gantt + a dialog-driven create/edit/delete.
+    Drag/resize on the Gantt itself lands in Sprint 8.
+    """
+
+    project_team = models.ForeignKey(
+        "projects.ProjectTeam",
+        on_delete=models.CASCADE,
+        related_name="allocations",
+        help_text="The ProjectTeam row this allocation plans against.",
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    allocated_hours = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        help_text="Hours planned across start_date..end_date (inclusive).",
+    )
+    note = models.CharField(max_length=255, blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_resource_allocations",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["start_date", "id"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(end_date__gte=models.F("start_date")),
+                name="resourceallocation_end_gte_start",
+            ),
+            models.CheckConstraint(
+                check=models.Q(allocated_hours__gte=0),
+                name="resourceallocation_hours_nonneg",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["project_team", "start_date"]),
+            models.Index(fields=["start_date", "end_date"]),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.project_team} {self.start_date}→{self.end_date}: "
+            f"{self.allocated_hours}h"
+        )
+
+
 class Stakeholder(models.Model):
     INFLUENCE_CHOICES = [
         ("Low", "Low"),
