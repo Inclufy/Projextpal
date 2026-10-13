@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import {
+import { aiFetch } from "@/lib/aiFetch";
   NO_TASK,
   type TimeEntryFormErrors,
   buildTimeEntryPayload,
@@ -155,7 +156,7 @@ const formatDurationFromMinutes = (mins: number) => {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

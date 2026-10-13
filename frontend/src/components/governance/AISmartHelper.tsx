@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sparkles, Wand2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { aiFetch } from "@/lib/aiFetch";
 
 interface AISmartHelperProps {
   type: "portfolio" | "board" | "stakeholder";
@@ -33,7 +34,7 @@ const stakeholderSuggestions = [
 const callAI = async (prompt: string): Promise<string | null> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

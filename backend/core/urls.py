@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from admin_portal.views import CurrentUserView
 from core.compliance_views import compliance_posture
 from core.status_views import system_status
+from core.ai_usage_views import ai_usage_summary
 from subscriptions.public_api import PublicPlansView
 from subscriptions.pricing_catalog_view import PricingCatalogView
 from drf_spectacular.views import (
@@ -26,6 +27,9 @@ urlpatterns = [
     path("api/v1/compliance/posture/", compliance_posture, name="compliance-posture"),
     # Public system status (for the /status page)
     path("api/v1/status/", system_status, name="system-status"),
+
+    # Rolling AI-token verbruiksoverzicht (voor de topbar-pill + warnings).
+    path("api/v1/ai/usage/", ai_usage_summary, name="ai-usage-summary"),
 
     # Auth
     path("api/v1/auth/", include("accounts.urls")),

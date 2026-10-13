@@ -63,6 +63,82 @@ def update_task_form(task_id: str) -> Dict[str, Any]:
 
 
 @ToolRegistry.register_tool(return_direct=False)
+def create_task(
+    milestone_id: str,
+    title: str,
+    description: str = "",
+    priority: str = "medium",
+    start_date: str = "",
+    due_date: str = "",
+    status: str = "todo",
+) -> Dict[str, Any]:
+    """
+    Create a new task on the given milestone — DIRECTLY, without opening a
+    form. Prefer this over get_task_form whenever the user has supplied
+    enough context (milestone + title). Dates are optional YYYY-MM-DD
+    strings; priority is one of: low, medium, high, urgent; status one of
+    the project's Task statuses (default "todo"). Returns the task's id
+    on success.
+    """
+    permission_error = require_permission(
+        return_dict=True,
+        allowed_roles=["superadmin", "admin", "pm", "team_member"],
+    )
+    if permission_error:
+        return permission_error
+
+    if not milestone_id or not str(milestone_id).isdigit():
+        return {"error": "milestone_id is required and must be numeric."}
+    if not title or not title.strip():
+        return {"error": "A task title is required."}
+
+    title = title.strip()[:255]
+    description = (description or "").strip()
+    allowed_priority = {"low", "medium", "high", "urgent"}
+    priority = priority if priority in allowed_priority else "medium"
+
+    def _parse_date(s: str):
+        if not s:
+            return None
+        try:
+            return datetime.strptime(s.strip(), "%Y-%m-%d").date()
+        except Exception:
+            return None
+
+    sd = _parse_date(start_date)
+    dd = _parse_date(due_date)
+    if sd and dd and dd < sd:
+        return {"error": "due_date cannot be before start_date."}
+
+    user_session = get_user_session()
+    user = user_session["user"]
+
+    from projects.models import Milestone
+    milestone = Milestone.objects.filter(
+        id=int(milestone_id), project__company=user.company,
+    ).first()
+    if not milestone:
+        return {"error": f"Milestone {milestone_id} not found or you don't have access."}
+
+    try:
+        t = Task.objects.create(
+            milestone=milestone, title=title, description=description,
+            priority=priority, start_date=sd, due_date=dd, status=status,
+        )
+    except Exception as e:
+        return {"error": f"Could not create task: {e}"}
+
+    return {
+        "success": True,
+        "message": f"Task '{t.title}' created on milestone '{milestone.name}'.",
+        "data": {
+            "id": t.id, "title": t.title, "milestone_id": milestone.id,
+            "priority": t.priority, "status": t.status,
+        },
+    }
+
+
+@ToolRegistry.register_tool(return_direct=False)
 def delete_task(task_id: str) -> Dict[str, Any]:
     """
     Deletes the task. TASK_ID is required.

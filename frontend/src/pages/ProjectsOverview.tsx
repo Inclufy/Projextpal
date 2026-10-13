@@ -80,6 +80,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatBudget, getCurrencyFromLanguage } from '@/lib/currencies';
 import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { aiFetch } from "@/lib/aiFetch";
 
 // API functions
 const fetchProjects = async () => {
@@ -123,7 +124,7 @@ const createProject = async (projectData: any) => {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

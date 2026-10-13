@@ -131,6 +131,17 @@ class MethodologyMatchesProjectPermission(BasePermission):
         if actual == expected:
             return True
 
+        # Inclufy Best Practice borrows from PRINCE2 (Light Business Case +
+        # Charter) — so prince2 BC / charter endpoints are intentionally
+        # reachable from an Inclufy project. Any other prince2-slug endpoint
+        # still 403s (stage boundaries, exception reports, etc. are PRINCE2-
+        # specific governance that Best Practice does not expose).
+        if actual == 'inclufy' and expected == 'prince2':
+            tail = path_parts[idx + 3:] if idx + 3 < len(path_parts) else []
+            INCLUFY_PRINCE2_ALLOWLIST = {'business-case', 'business-cases', 'project-brief'}
+            if tail and tail[0] in INCLUFY_PRINCE2_ALLOWLIST:
+                return True
+
         raise PermissionDenied(self.message)
 
 

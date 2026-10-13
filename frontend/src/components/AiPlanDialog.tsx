@@ -3,10 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Send, Sparkles, Wand2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Send, Sparkles, Wand2, HelpCircle, CheckCircle2, Info } from "lucide-react";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
+import { aiFetch } from "@/lib/aiFetch";
+import AIUsageWarningBanner from "@/components/AIUsageWarningBanner";
 
 // Plan met AI — een korte chat begeleidt de gebruiker naar een volledig
 // conceptplan (mijlpalen + taken + risico's). Het voorstel is BEWERKBAAR:
@@ -16,6 +20,8 @@ import { toast } from "sonner";
 // dan zelf bedenken.
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
+type LastAction = "ask" | "propose" | null;
+type Source = "ai" | "fallback" | null;
 
 type PropTask = { title: string; description?: string; priority?: string; start_date?: string | null; due_date?: string | null; _include: boolean };
 type PropMilestone = { name: string; description?: string; start_date?: string | null; end_date?: string | null; tasks: PropTask[]; _include: boolean };
@@ -62,7 +68,11 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
   const [busy, setBusy] = useState(false);
   const [applying, setApplying] = useState(false);
   const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [lastAction, setLastAction] = useState<LastAction>(null);
+  const [source, setSource] = useState<Source>(null);
+  const [confirmClose, setConfirmClose] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const token = localStorage.getItem("access_token");
   const jsonHeaders = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
@@ -71,7 +81,27 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, busy]);
 
-  const reset = () => { setMessages([]); setProposal(null); setInput(""); };
+  // #8d — Als AI om verduidelijking vraagt: focus het inputveld zodat de user
+  // meteen ziet dat er een antwoord nodig is.
+  useEffect(() => {
+    if (lastAction === "ask" && inputRef.current) inputRef.current.focus();
+  }, [lastAction]);
+
+  const reset = () => {
+    setMessages([]); setProposal(null); setInput("");
+    setLastAction(null); setSource(null);
+  };
+
+  // #8d — Guard dialog-close: als er een niet-toegepast voorstel is, vraag bevestiging.
+  const hasUnappliedProposal = !!proposal;
+  const handleOpenChange = (o: boolean) => {
+    if (!o && hasUnappliedProposal && !applying) {
+      setConfirmClose(true);
+      return;
+    }
+    onOpenChange(o);
+    if (!o) reset();
+  };
 
   const toProposalState = (p: any): Proposal => ({
     summary: p?.summary || "",
@@ -103,13 +133,19 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     setInput("");
     setBusy(true);
     try {
-      const r = await fetch(`/api/v1/projects/${projectId}/ai-plan/`, {
+      const r = await aiFetch(`/api/v1/projects/${projectId}/ai-plan/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify({ messages: next }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { toast.error(d.detail || pt("Something went wrong")); setBusy(false); return; }
       setMessages([...next, { role: "assistant", content: d.message || "" }]);
-      if (d.action === "propose" && d.proposal) setProposal(toProposalState(d.proposal));
+      if (d.action === "propose" && d.proposal) {
+        setProposal(toProposalState(d.proposal));
+        setLastAction("propose");
+      } else if (d.action === "ask") {
+        setLastAction("ask");
+      }
+      if (d.source === "ai" || d.source === "fallback") setSource(d.source);
     } catch {
       toast.error(pt("Something went wrong"));
     } finally {
@@ -159,7 +195,7 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
             : undefined,
         },
       };
-      const r = await fetch(`/api/v1/projects/${projectId}/ai-plan/apply/`, {
+      const r = await aiFetch(`/api/v1/projects/${projectId}/ai-plan/apply/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
       });
       const d = await r.json().catch(() => ({}));
@@ -200,9 +236,12 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     }));
 
   const counts = includedCounts();
+  // #8d — Apply mag niet onder een openstaande AI-vraag.
+  const applyBlocked = applying || (counts.milestones === 0 && counts.methodItems === 0) || lastAction === "ask";
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
+    <>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -211,9 +250,31 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
         </DialogHeader>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+          {/* #9 — Waarschuwing wanneer het AI-tokenbudget onder één dag zit. */}
+          <AIUsageWarningBanner />
+
+          {/* #8d — Status-banner: toont of een voorstel klaar ligt, of een vraag beantwoord moet worden. */}
+          {proposal && lastAction === "propose" && (
+            <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span>{pt("Draft is ready — review below and click Apply to save, or chat to adjust.")}</span>
+              {source === "fallback" && (
+                <Badge variant="outline" className="ml-auto text-[10px] gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                  <Info className="h-3 w-3" />{pt("Template plan (AI unavailable)")}
+                </Badge>
+              )}
+            </div>
+          )}
+          {lastAction === "ask" && (
+            <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-md bg-amber-50 border border-amber-200 text-amber-800">
+              <HelpCircle className="h-3.5 w-3.5 shrink-0" />
+              <span>{pt("The assistant has a question — answer below to continue.")}</span>
+            </div>
+          )}
+
           {/* Chat */}
           <div ref={scrollRef} className="overflow-y-auto space-y-3 pr-1" style={{ maxHeight: proposal ? "22vh" : "48vh" }}>
-            {messages.length === 0 && (
+            {messages.length === 0 && !busy && (
               <div className="text-sm text-muted-foreground space-y-3">
                 <p>{pt("Describe in a few words what you want to plan — the AI drafts the full plan, you only adjust it.")}</p>
                 <div className="flex flex-col gap-2">
@@ -230,7 +291,21 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
                 {m.content}
               </div>
             ))}
-            {busy && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{pt("Drafting your plan…")}</div>}
+            {busy && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-indigo-700">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{pt("AI is drafting your plan — this usually takes 10–20 seconds…")}</span>
+                </div>
+                {!proposal && (
+                  <div className="space-y-1.5 pt-1" aria-hidden>
+                    <div className="h-3 bg-muted rounded animate-pulse w-5/6" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-4/6" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-3/6" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Bewerkbaar voorstel */}
@@ -302,15 +377,27 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
           {/* Invoer + acties */}
           <div className="flex items-center gap-2">
             <Input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder={proposal ? pt("Adjust via chat, e.g. “make phase 2 shorter”") : pt("Describe what you want to plan…")}
+              placeholder={
+                lastAction === "ask"
+                  ? pt("Answer the assistant's question…")
+                  : proposal
+                    ? pt("Adjust via chat, e.g. “make phase 2 shorter”")
+                    : pt("Describe what you want to plan…")
+              }
               disabled={busy}
             />
             <Button variant="outline" size="icon" onClick={() => send()} disabled={busy || !input.trim()}><Send className="h-4 w-4" /></Button>
             {proposal && (
-              <Button onClick={apply} disabled={applying || (counts.milestones === 0 && counts.methodItems === 0)} className="gap-2 shrink-0">
+              <Button
+                onClick={apply}
+                disabled={applyBlocked}
+                className="gap-2 shrink-0"
+                title={lastAction === "ask" ? pt("Answer the question first") : undefined}
+              >
                 {applying && <Loader2 className="h-4 w-4 animate-spin" />}
                 {pt("Apply")} ({counts.tasks} {pt("tasks")}{counts.methodItems > 0 ? ` + ${counts.methodItems} ${pt("method items")}` : ""})
               </Button>
@@ -319,5 +406,27 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* #8d — Confirm wanneer er een niet-toegepast voorstel is bij sluiten. */}
+    <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{pt("Discard the AI draft?")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {pt("You have an unapplied AI plan. Close without applying and the draft is lost.")}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{pt("Keep editing")}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => { setConfirmClose(false); onOpenChange(false); reset(); }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {pt("Discard")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

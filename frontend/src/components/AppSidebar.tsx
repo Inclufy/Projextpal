@@ -384,6 +384,7 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
       { title: "Overview", url: `/projects/${projectId}/foundation/overview`, icon: FolderKanban },
       { title: "Workflow", url: `/projects/${projectId}/foundation/workflow`, icon: GitBranch },
       { title: "Project Charter", url: `/projects/${projectId}/foundation/charter`, icon: FileCheck },
+      { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
       { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
       { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
     ],

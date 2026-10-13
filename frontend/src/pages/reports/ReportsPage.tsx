@@ -27,6 +27,7 @@ import {
   Activity,
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { aiFetch } from "@/lib/aiFetch";
 
 interface ReportTemplate {
   id: string;
@@ -239,7 +240,7 @@ const ReportsPage: React.FC = () => {
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch("/api/v1/governance/reports/generate/", {
+      const response = await aiFetch("/api/v1/governance/reports/generate/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

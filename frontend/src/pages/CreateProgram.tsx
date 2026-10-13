@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { aiFetch } from "@/lib/aiFetch";
 
 // Types
 type ProgramMethodology = 'inclufy' | 'safe' | 'msp' | 'pmi' | 'prince2_programme' | 'hybrid';
@@ -69,7 +70,7 @@ interface MethodologyOption {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
