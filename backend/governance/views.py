@@ -269,6 +269,13 @@ def ai_generate_text(request):
         )
         api_response.raise_for_status()
         data = api_response.json()
+        try:
+            from core.ai_usage import record as _record_usage, tokens_from_openai_http
+            company = getattr(request.user, "company", None)
+            _record_usage(getattr(company, "id", None),
+                          tokens_from_openai_http(data), provider="openai")
+        except Exception:
+            pass
         content = (data.get('choices') or [{}])[0].get('message', {}).get('content', '').strip()
         if not content:
             logger.warning("ai_generate_text: empty content from OpenAI")

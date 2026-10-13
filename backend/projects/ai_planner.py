@@ -194,6 +194,7 @@ def _parse_reply(raw: str) -> dict | None:
 def _chat_anthropic(company, system: str, messages: list) -> dict | None:
     try:
         from core.llm_keys import get_anthropic_client
+        from core import ai_usage
         client = get_anthropic_client(company)
         if client is None:
             return None
@@ -201,6 +202,8 @@ def _chat_anthropic(company, system: str, messages: list) -> dict | None:
             model=ANTHROPIC_MODEL, max_tokens=6000, system=system,
             messages=[{"role": m["role"], "content": m["content"]} for m in messages],
         )
+        ai_usage.record(getattr(company, "id", None),
+                        ai_usage.tokens_from_anthropic(resp), provider="anthropic")
         raw = "".join(
             b.text for b in resp.content if getattr(b, "type", "") == "text"
         )
@@ -212,6 +215,7 @@ def _chat_anthropic(company, system: str, messages: list) -> dict | None:
 def _chat_openai(company, system: str, messages: list) -> dict | None:
     try:
         from core.llm_keys import get_openai_client
+        from core import ai_usage
         client = get_openai_client(company)
         if client is None:
             return None
@@ -223,6 +227,12 @@ def _chat_openai(company, system: str, messages: list) -> dict | None:
             max_tokens=4000,
             response_format={"type": "json_object"},
         )
+        try:
+            usage = getattr(resp, "usage", None)
+            total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
+            ai_usage.record(getattr(company, "id", None), total, provider="openai")
+        except Exception:
+            pass
         return _parse_reply(resp.choices[0].message.content or "")
     except Exception:
         return None
