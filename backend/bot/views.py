@@ -289,8 +289,16 @@ class ChatViewSet(viewsets.ModelViewSet):
                                 display_content = "Het bedrijfsupdateformulier is gestart."
                             elif form_type == "project_creation":
                                 display_content = "Het projectaanmaakformulier is gestart."
+                            elif form_type == "project_update":
+                                display_content = "Het projectupdateformulier is gestart."
                             elif form_type == "task_creation":
                                 display_content = "Het taakaanmaakformulier is gestart."
+                            elif form_type == "task_update":
+                                display_content = "Het taakupdateformulier is gestart."
+                            elif form_type == "milestone_creation":
+                                display_content = "Het mijlpaalaanmaakformulier is gestart."
+                            elif form_type == "milestone_update":
+                                display_content = "Het mijlpaalupdateformulier is gestart."
                             else:
                                 display_content = f"Het {form_type.replace('_', ' ')} formulier is gestart."
                         else:
@@ -300,8 +308,16 @@ class ChatViewSet(viewsets.ModelViewSet):
                                 display_content = "Company update form has been initiated."
                             elif form_type == "project_creation":
                                 display_content = "Project creation form has been initiated."
+                            elif form_type == "project_update":
+                                display_content = "Project update form has been initiated."
                             elif form_type == "task_creation":
                                 display_content = "Task creation form has been initiated."
+                            elif form_type == "task_update":
+                                display_content = "Task update form has been initiated."
+                            elif form_type == "milestone_creation":
+                                display_content = "Milestone creation form has been initiated."
+                            elif form_type == "milestone_update":
+                                display_content = "Milestone update form has been initiated."
                             else:
                                 display_content = f"{form_type.replace('_', ' ').title()} form has been initiated."
                     elif parsed_response.get("view"):
