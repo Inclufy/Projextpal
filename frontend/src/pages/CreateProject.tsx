@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MethodologyOnboardingWizard } from '@/components/MethodologyOnboardingWizard';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { aiFetch } from "@/lib/aiFetch";
 
 // Types
 type ProjectMethodology = 'inclufy' | 'prince2' | 'agile' | 'scrum' | 'kanban' | 'waterfall' | 'lean_six_sigma_green' | 'lean_six_sigma_black' | 'hybrid';
@@ -69,7 +70,7 @@ interface MethodologyOption {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

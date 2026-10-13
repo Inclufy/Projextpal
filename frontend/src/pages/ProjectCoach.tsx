@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Loader2, Sparkles, Send, GraduationCap, Bot, BookOpen, Zap, ArrowRight } from "lucide-react";
+import { aiFetch } from "@/lib/aiFetch";
 
 type LinkT = { title: string; url: string };
 type Msg = { role: "user" | "coach"; text: string; source?: string; act?: LinkT[] };
@@ -21,7 +22,7 @@ const ProjectCoach = () => {
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
   useEffect(() => {
-    fetch(`/api/v1/projects/${id}/coach/`, { headers })
+    aiFetch(`/api/v1/projects/${id}/coach/`, { headers })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => d && setCtx(d))
       .catch(() => {});
@@ -36,7 +37,7 @@ const ProjectCoach = () => {
     setMessages((m) => [...m, { role: "user", text: question }]);
     setLoading(true);
     try {
-      const r = await fetch(`/api/v1/projects/${id}/coach/`, {
+      const r = await aiFetch(`/api/v1/projects/${id}/coach/`, {
         method: "POST", headers, body: JSON.stringify({ question }),
       });
       const d = await r.json();

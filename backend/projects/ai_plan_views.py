@@ -39,11 +39,13 @@ def project_ai_plan(request, pk):
         return Response({"detail": "Project niet gevonden of niet toegankelijk."}, status=404)
 
     from .ai_planner import plan_chat
+    from core.i18n_ai import resolve_ui_language
     messages = (request.data or {}).get("messages") or []
     if not isinstance(messages, list):
         return Response({"detail": "messages moet een lijst zijn."}, status=400)
 
-    result = plan_chat(project, request.user, messages)
+    language = resolve_ui_language(request)
+    result = plan_chat(project, request.user, messages, language=language)
 
     try:
         from accounts.models import audit
