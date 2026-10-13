@@ -23,7 +23,7 @@ from datetime import date, timedelta
 
 from . import ai_planner_methodology as methodology_ext
 
-ANTHROPIC_MODEL = "claude-opus-5"
+ANTHROPIC_MODEL = "claude-opus-4-7"
 OPENAI_MODEL = "gpt-4o-mini"
 
 # Harde limieten op wat één apply mag aanmaken (misbruik-/foutgrens).
