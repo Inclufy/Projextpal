@@ -80,7 +80,7 @@ def pm_a(db, company_a):
 
 @pytest.fixture
 def contributor_a(db, company_a):
-    return _mkuser("contrib-a@acme.test", company_a, role="contibuter")
+    return _mkuser("contrib-a@acme.test", company_a, role="contributor")
 
 
 @pytest.fixture

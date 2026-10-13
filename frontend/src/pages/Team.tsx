@@ -296,8 +296,8 @@ const mapBackendRole = (role: string): TeamMember['role'] => {
     'program_manager': 'PROGRAM_MANAGER',
     'project_manager': 'PM',
     'member': 'MEMBER',
-    'contibuter': 'MEMBER',
     'contributor': 'MEMBER',
+    'contibuter': 'MEMBER',
     'reviewer': 'REVIEWER',
     'guest': 'GUEST',
   };
@@ -571,7 +571,7 @@ export default function Team() {
         'ADMIN': 'admin',
         'PROGRAM_MANAGER': 'program_manager',
         'PM': 'pm',
-        'MEMBER': 'contibuter',
+        'MEMBER': 'contributor',
         'REVIEWER': 'reviewer',
         'GUEST': 'guest',
       };
@@ -665,7 +665,7 @@ if (!sendInviteEmail) {
         'ADMIN': 'admin',
         'PROGRAM_MANAGER': 'program_manager',
         'PM': 'pm',
-        'MEMBER': 'contibuter',
+        'MEMBER': 'contributor',
         'REVIEWER': 'reviewer',
         'GUEST': 'guest',
       };

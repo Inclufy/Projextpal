@@ -92,7 +92,7 @@ class CustomUser(AbstractUser):
         ("admin", "Administrator"),
         ("pm", "Project Manager"),
         ("program_manager", "Program Manager"),
-        ("contibuter", "Contibuter"),
+        ("contributor", "Contributor"),
         ("reviewer", "Reviewer"),
         ("guest", "Guest"),
     ]

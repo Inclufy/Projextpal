@@ -25,8 +25,8 @@ from .serializers import (
 
 # Permission classes
 IsAdminOrPM = HasRole("admin", "pm")
-IsAdminOrPMOrContributor = HasRole("admin", "pm", "contibuter")
-IsAdminOrPMOrContributorOrReviewer = HasRole("admin", "pm", "contibuter", "reviewer")
+IsAdminOrPMOrContributor = HasRole("admin", "pm", "contributor")
+IsAdminOrPMOrContributorOrReviewer = HasRole("admin", "pm", "contributor", "reviewer")
 
 
 class ProgramCharterViewSet(viewsets.ModelViewSet):

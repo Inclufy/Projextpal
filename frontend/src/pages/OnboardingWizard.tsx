@@ -1234,7 +1234,7 @@ const OnboardingWizard = () => {
       { v: 'admin', l: 'Admin' },
       { v: 'pm', l: 'Project Manager' },
       { v: 'program_manager', l: 'Program Manager' },
-      { v: 'contibuter', l: 'Contributor' },
+      { v: 'contributor', l: 'Contributor' },
       { v: 'reviewer', l: 'Reviewer' },
       { v: 'guest', l: 'Guest' },
     ];
