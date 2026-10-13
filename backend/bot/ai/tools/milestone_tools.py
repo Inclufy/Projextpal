@@ -61,6 +61,76 @@ def update_milestone_form(milestone_id: str) -> Dict[str, Any]:
 
 
 @ToolRegistry.register_tool(return_direct=False)
+def create_milestone(
+    project_id: str,
+    name: str,
+    description: str = "",
+    start_date: str = "",
+    end_date: str = "",
+    status: str = "pending",
+) -> Dict[str, Any]:
+    """
+    Create a new milestone on the given project — DIRECTLY, without opening a
+    form. Prefer this over get_milestone_form whenever the user has supplied
+    enough context (project + name). Dates are optional strings in YYYY-MM-DD
+    format; status must be one of: pending, in_progress, completed, on_hold.
+    Returns the created milestone's id + name on success.
+    """
+    permission_error = require_permission(
+        return_dict=True,
+        allowed_roles=["superadmin", "admin", "pm", "team_member"],
+    )
+    if permission_error:
+        return permission_error
+
+    if not project_id or not str(project_id).isdigit():
+        return {"error": "project_id is required and must be numeric."}
+    if not name or not name.strip():
+        return {"error": "A milestone name is required."}
+
+    name = name.strip()[:255]
+    description = (description or "").strip()
+    allowed_status = {"pending", "in_progress", "completed", "on_hold"}
+    status = status if status in allowed_status else "pending"
+
+    def _parse_date(s: str):
+        if not s:
+            return None
+        try:
+            return datetime.strptime(s.strip(), "%Y-%m-%d").date()
+        except Exception:
+            return None
+
+    sd = _parse_date(start_date)
+    ed = _parse_date(end_date)
+    if sd and ed and ed < sd:
+        return {"error": "end_date cannot be before start_date."}
+
+    user_session = get_user_session()
+    user = user_session["user"]
+
+    # Tenant check — the milestone must land on a project the caller can access.
+    from projects.models import Project
+    project = Project.objects.filter(id=int(project_id), company=user.company).first()
+    if not project:
+        return {"error": f"Project {project_id} not found or you don't have access."}
+
+    try:
+        m = Milestone.objects.create(
+            project=project, name=name, description=description,
+            start_date=sd, end_date=ed, status=status,
+        )
+    except Exception as e:
+        return {"error": f"Could not create milestone: {e}"}
+
+    return {
+        "success": True,
+        "message": f"Milestone '{m.name}' created on project '{project.name}'.",
+        "data": {"id": m.id, "name": m.name, "project_id": project.id, "status": m.status},
+    }
+
+
+@ToolRegistry.register_tool(return_direct=False)
 def delete_milestone(milestone_id: str) -> Dict[str, Any]:
     """
     Deletes the milestone. MILESTONE_ID is required.
