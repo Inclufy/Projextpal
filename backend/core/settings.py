@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'product_issues',  # NEW: user-feedback + auto-CI issue capture
     'notifications',   # NEW: per-user in-app notification centre (the bell)
     'collaboration',   # NEW: comments (task + project discussion) + direct messages
+    'ai_audit',        # Sprint 6: AIContextAccessLog for compliance review
 ]
 
 MIDDLEWARE = [
@@ -228,6 +229,12 @@ REST_FRAMEWORK = {
         # Generous enough for full incremental refreshes across all
         # entities, but bounded so a leaked token can't hammer the API.
         "service_token": "1000/hour",
+        # Sprint 6 — per-user cap on AI endpoints that read a Project/
+        # Program/Portfolio AIContext row. Context-including calls carry
+        # a huge prompt, so the bucket is tighter than the plain "ai"
+        # throttle. Lift this per-tenant via ``TenantAIFeatureFlags`` if
+        # we ever need an enterprise tier.
+        "ai_context": "20/hour",
     },
 }
 

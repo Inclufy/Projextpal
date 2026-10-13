@@ -40,6 +40,8 @@ urlpatterns = [
     # Specific app paths - EACH NEEDS A UNIQUE PREFIX
     path("api/v1/projects/", include("projects.urls")),
     path("api/v1/programs/", include("programs.urls")),
+    # Sprint 6: AI context access log (compliance review)
+    path("api/v1/ai-audit/", include("ai_audit.urls")),
     path("api/v1/", include("product_issues.urls")),  # /product-issues/ + /product-issues/auto/ci/
     path("api/v1/", include("notifications.urls")),  # /notifications/ + unread_count + mark_read
     path("api/v1/", include("collaboration.urls")),  # /comments/ + /messages/ (DM)

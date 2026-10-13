@@ -1,9 +1,11 @@
-"""Persist (and read) the AI context that `plan_from_documents` extracted,
-so every subsequent AI call on a project (Plan with AI, Ask Co-pilot,
-risk-forecast, …) can transparently use it.
+"""Persist (and read, delete) the AI context that `plan_from_documents`
+extracted, so every subsequent AI call on a project (Plan with AI, Ask
+Co-pilot, risk-forecast, …) can transparently use it.
 
-  POST /api/v1/projects/<pk>/ai-context/  {extracted_text, source_files, enabled}
-  GET  /api/v1/projects/<pk>/ai-context/
+  GET    /api/v1/projects/<pk>/ai-context/
+  POST   /api/v1/projects/<pk>/ai-context/   {extracted_text, source_files, enabled}
+  PATCH  /api/v1/projects/<pk>/ai-context/   {source_files}  — per-doc enabled toggle
+  DELETE /api/v1/projects/<pk>/ai-context/   {confirm: true} — GDPR erasure
 """
 from __future__ import annotations
 
@@ -27,24 +29,47 @@ def _serialize(aic: ProjectAIContext | None) -> dict:
             "source_files": [],
             "updated_at": None,
         }
+    files_out = []
+    for f in aic.source_files or []:
+        if not isinstance(f, dict):
+            continue
+        files_out.append({
+            "name": f.get("name"),
+            "size": int(f.get("size") or 0),
+            "pages": int(f.get("pages") or 0),
+            "enabled": bool(f.get("enabled", True)),
+        })
     return {
         "exists": True,
         "enabled": bool(aic.enabled),
         "chars": len(aic.extracted_text or ""),
-        "source_files": aic.source_files or [],
+        "source_files": files_out,
         "updated_at": aic.updated_at.isoformat() if aic.updated_at else None,
     }
 
 
-@api_view(["GET", "POST"])
+def _normalize_source_files(raw) -> list[dict]:
+    files = []
+    if not isinstance(raw, list):
+        return files
+    for item in raw[:MAX_FILES]:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "")[:200]
+        if not name:
+            continue
+        files.append({
+            "name": name,
+            "size": int(item.get("size") or 0),
+            "pages": int(item.get("pages") or 0),
+            "enabled": bool(item.get("enabled", True)),
+        })
+    return files
+
+
+@api_view(["GET", "POST", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def project_ai_context(request, pk):
-    """Read or (over)write the project's uploaded-documents context.
-
-    The ``extracted_text`` the frontend sends is already the trimmed
-    ``extracted_text_preview`` style output of ``plan-from-documents``; the
-    model clips to its own MAX_TEXT on save as a last safety net.
-    """
     project = _get_project(request, pk)
     if not project:
         return Response({"detail": "Project niet gevonden of niet toegankelijk."}, status=404)
@@ -54,24 +79,36 @@ def project_ai_context(request, pk):
     if request.method == "GET":
         return Response(_serialize(aic))
 
+    if request.method == "DELETE":
+        confirm = (request.data or {}).get("confirm") is True
+        if not confirm:
+            return Response(
+                {"detail": "Confirmation required.", "hint": "POST {\"confirm\": true}"},
+                status=400,
+            )
+        if aic is not None:
+            aic.delete()
+        return Response({"deleted": True, "project_id": project.id})
+
     data = request.data or {}
+
+    if request.method == "PATCH":
+        # Partial update: only the fields that are sent are touched. The
+        # chief use case is toggling a single document on/off through the
+        # new per-document switch. ``extracted_text`` is NOT writable here
+        # (that stays a full-POST operation).
+        if aic is None:
+            return Response({"detail": "No AI context to patch."}, status=404)
+        if "source_files" in data:
+            aic.source_files = _normalize_source_files(data.get("source_files"))
+        if "enabled" in data:
+            aic.enabled = bool(data.get("enabled"))
+        aic.save()
+        return Response(_serialize(aic))
+
     text = str(data.get("extracted_text") or "")[: ProjectAIContext.MAX_TEXT]
     enabled = bool(data.get("enabled", True))
-    files_raw = data.get("source_files") or []
-    if not isinstance(files_raw, list):
-        files_raw = []
-    source_files = []
-    for item in files_raw[:MAX_FILES]:
-        if not isinstance(item, dict):
-            continue
-        name = str(item.get("name") or "")[:200]
-        if not name:
-            continue
-        source_files.append({
-            "name": name,
-            "size": int(item.get("size") or 0),
-            "pages": int(item.get("pages") or 0),
-        })
+    source_files = _normalize_source_files(data.get("source_files") or [])
 
     if aic is None:
         aic = ProjectAIContext.objects.create(
@@ -81,8 +118,6 @@ def project_ai_context(request, pk):
             enabled=enabled,
         )
     else:
-        # If the caller only wants to toggle the switch and sent no text,
-        # keep the existing text intact.
         if text:
             aic.extracted_text = text
         if source_files:

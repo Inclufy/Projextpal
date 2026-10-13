@@ -27,6 +27,8 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from django.utils import timezone
 
+from core.throttles import AiContextThrottle
+
 from .models import Project, ProjectAIContext, ProjectTeam, Risk, Milestone, Task
 from .ai_draft_shared import (
     DraftResult,
@@ -88,7 +90,7 @@ def _doc_prefix(user, project_id, language):
     """Fetch the uploaded-documents system-prompt prefix (if any)."""
     try:
         from core.ai_context_helpers import get_project_context_prefix
-        return get_project_context_prefix(user, project_id, language)
+        return get_project_context_prefix(user, project_id, language, surface="sprint5")
     except Exception:
         return ""
 
@@ -107,7 +109,7 @@ def _attach_language(system: str, language: str) -> str:
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def compliance_rescan(request, pk):
     """POST /api/v1/projects/<pk>/compliance/rescan/
 
@@ -187,7 +189,7 @@ def _coerce_tags(parsed: Optional[dict]) -> Optional[List[str]]:
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def project_auto_tag(request, pk):
     """POST /api/v1/projects/<pk>/auto-tag/
 
@@ -340,7 +342,7 @@ def _status_report_fallback(project, signals: dict, lm: dict) -> dict:
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def status_report_ai_draft(request, pk):
     """POST /api/v1/projects/<pk>/status-reports/auto-draft/
 
@@ -449,7 +451,7 @@ def _coerce_risk_sniff(parsed: Optional[dict]) -> Optional[dict]:
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def risk_sniff(request, pk):
     """POST /api/v1/projects/<pk>/risk-sniff/
 
@@ -594,7 +596,7 @@ def _coerce_team_match(parsed: Optional[dict], candidates: List[dict]) -> Option
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def team_match(request, pk):
     """POST /api/v1/projects/<pk>/team-match/
 
@@ -650,7 +652,7 @@ def team_match(request, pk):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def onboarding_tour(request, pk, user_id):
     """GET /api/v1/projects/<pk>/team/<user_id>/onboarding-tour/
 
@@ -761,7 +763,7 @@ def _narrative_signals(project) -> dict:
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def dashboard_narrative(request, pk):
     """GET /api/v1/projects/<pk>/dashboard/narrative/
 
@@ -855,7 +857,7 @@ def _coerce_meeting_agenda(parsed: Optional[dict]) -> Optional[dict]:
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def meeting_agenda_auto_draft(request, pk):
     """POST /api/v1/projects/<pk>/meetings/auto-draft-agenda/
 

@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 import uuid
 
+from core.secret_field import EncryptedTextField
+
 
 class Portfolio(models.Model):
     """Strategic Portfolio - highest organizational level"""
@@ -714,10 +716,13 @@ class PortfolioAIContext(models.Model):
         help_text="If false, the AI endpoints will ignore this context even "
                   "though it is stored (soft off-switch).",
     )
-    extracted_text = models.TextField(blank=True, default="")
+    # Sprint 6: Fernet-encrypted at rest (same scheme as ProjectAIContext).
+    extracted_text = EncryptedTextField(blank=True, default="")
     source_files = models.JSONField(
         default=list, blank=True,
-        help_text="List of {name, size, pages} dicts for traceability.",
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "Optional per-document ``enabled`` flag (default True) hides "
+                  "a single document from AI context without removing it.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

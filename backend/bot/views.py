@@ -15,6 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.throttles import AiContextThrottle
+
 from bot.ai import ERPAIAgent
 from bot.ai.tools import ToolRegistry
 from bot.ai.tools.project_analysis_tools import get_project_analysis
@@ -132,7 +134,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             {"chats": serializer.data, "total": total, "page": page, "size": size}
         )
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AiContextThrottle])
     def send_message(self, request, pk=None):
         chat = self.get_object()
         message = request.data.get("message")
@@ -266,13 +268,17 @@ class ChatViewSet(viewsets.ModelViewSet):
             # Project-wide uploaded-documents context (ProjectAIContext), only
             # when a project is in scope. The helper does its own tenant check.
             ai_docs_context = ""
+            ai_context_used = None
             try:
-                from core.ai_context_helpers import get_project_context_prefix
+                from core.ai_context_helpers import get_project_context_details
                 _proj_id_for_ctx = request.data.get("project_id")
                 if _proj_id_for_ctx:
-                    ai_docs_context = get_project_context_prefix(
-                        user_for_context, _proj_id_for_ctx, language=website_language,
+                    details = get_project_context_details(
+                        user_for_context, _proj_id_for_ctx,
+                        language=website_language, surface="copilot",
                     )
+                    ai_docs_context = details.get("prefix", "")
+                    ai_context_used = details.get("used")
             except Exception:
                 pass
 
@@ -355,6 +361,9 @@ class ChatViewSet(viewsets.ModelViewSet):
                 "user_message": ChatMessageSerializer(user_message).data,
                 "ai_response": ChatMessageSerializer(ai_message).data,
             }
+            if ai_context_used:
+                # Sprint 6 (S6-07) — chip in the chat sidebar.
+                response_data["ai_context_used"] = ai_context_used
 
             return Response(response_data)
 

@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import DynamicForm from "@/components/chat/DynamicForm";
 import { AIMessageRenderer } from "@/components/AIMessageRenderer";
+import AIContextUsedChip, { AIContextUsed } from "@/components/AIContextUsedChip";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -53,6 +54,9 @@ interface Message {
   content: string;
   timestamp: Date;
   formSchema?: any;
+  // Sprint 6 (S6-07) — carried alongside the assistant reply so the UI
+  // can render the amber "AI gebruikte N documenten" chip underneath it.
+  aiContextUsed?: AIContextUsed | null;
 }
 
 interface Conversation {
@@ -78,6 +82,7 @@ interface ChatResponse {
 interface SendMessageResponse {
   user_message: { id: number; content: string };
   ai_response: { id: number; content: string; original_ai_response?: string };
+  ai_context_used?: AIContextUsed | null;
 }
 
 // Quick action suggestions
@@ -254,6 +259,7 @@ export default function AIAssistant() {
         content: response.ai_response?.content || "Sorry, I could not process your request.",
         timestamp: new Date(),
         formSchema,
+        aiContextUsed: response.ai_context_used || null,
       };
 
       setMessages((prev) => [...prev, aiResponse]);
@@ -539,17 +545,23 @@ export default function AIAssistant() {
               ) : (
                 /* Messages */
                 messages.map((message) => (
-                  <AIMessageRenderer
-                    key={message.id}
-                    message={{
-                      id: message.id,
-                      role: message.role,
-                      content: message.content,
-                    }}
-                    onCopy={handleCopyMessage}
-                    onFeedback={handleFeedback}
-                    showActions={message.role === 'assistant'}
-                  />
+                  <div key={message.id}>
+                    <AIMessageRenderer
+                      message={{
+                        id: message.id,
+                        role: message.role,
+                        content: message.content,
+                      }}
+                      onCopy={handleCopyMessage}
+                      onFeedback={handleFeedback}
+                      showActions={message.role === 'assistant'}
+                    />
+                    {message.role === 'assistant' && message.aiContextUsed && (
+                      <div className="pl-12 pr-4 -mt-2 mb-4">
+                        <AIContextUsedChip used={message.aiContextUsed} />
+                      </div>
+                    )}
+                  </div>
                 ))
               )}
               
