@@ -97,7 +97,7 @@ class StatusReportSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = StatusReport
-        fields = ['id', 'project', 'status', 'progress', 'last_updated', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'title', 'status', 'progress', 'last_updated', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
     
     def validate_progress(self, value):
