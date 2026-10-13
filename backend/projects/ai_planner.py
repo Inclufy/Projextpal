@@ -112,6 +112,20 @@ def _project_context(project) -> dict:
         "today": date.today().isoformat(),
     }
     ctx.update(_charter_context(project))
+    # Door de gebruiker geüploade tender-/brief-documenten (ProjectAIContext)
+    # — alleen gebruiken als het expliciet aan staat.
+    try:
+        aic = getattr(project, "ai_context", None)
+        if aic and aic.enabled and aic.extracted_text:
+            # Rank na charter: ruwe documenttekst is signaal-rijk maar lang;
+            # knippen op 8_000 tekens om prompt-size te beheersen.
+            ctx["uploaded_documents"] = aic.extracted_text[:8000]
+            if aic.source_files:
+                ctx["uploaded_documents_files"] = [
+                    f.get("name") for f in aic.source_files[:10] if f.get("name")
+                ]
+    except Exception:
+        pass
     return ctx
 
 

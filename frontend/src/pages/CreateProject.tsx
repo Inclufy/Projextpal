@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectsApi } from "@/lib/api";
 import MultiFileDropzone from "@/components/MultiFileDropzone";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -225,6 +226,11 @@ const CreateProject = () => {
     source: string;
     skipped: Array<{ name: string; reason: string }>;
   }>(null);
+  // Hergebruik de uploads als persistente AI-context voor élke downstream
+  // AI-call op dit project (Plan with AI, Ask Co-pilot, risk-forecast…).
+  // Default aan: als Elisa de moeite neemt om tenders te uploaden, wil ze
+  // zelden alleen de wizard-stap pre-fillen en de context daarna wegduwen.
+  const [useDocsAsContext, setUseDocsAsContext] = useState(true);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -301,12 +307,34 @@ const CreateProject = () => {
     } catch { /* tailoring is additive — never block project creation */ }
   };
 
+  const persistAIContext = async (projectId: number | undefined) => {
+    if (!projectId || !docResult || !useDocsAsContext) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      await fetch(`/api/v1/projects/${projectId}/ai-context/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          enabled: true,
+          extracted_text: docResult.extracted_text_preview,
+          source_files: docFiles.map((f) => ({ name: f.name, size: f.size, pages: 0 })),
+        }),
+      });
+    } catch {
+      /* AI context is additive — never block project creation */
+    }
+  };
+
   // Create project mutation
   const createMutation = useMutation({
     mutationFn: (data: any) => projectsApi.create(data),
     onSuccess: async (created: any) => {
       const newId = created?.id ?? created?.data?.id;
       await persistTailoring(newId);
+      await persistAIContext(newId);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(pt("Project created successfully!"));
       navigate(newId ? `/projects/${newId}/tailoring` : "/projects");
@@ -997,6 +1025,28 @@ Be specific and professional. Use the context to determine appropriate methodolo
                       )}
                     </AlertDescription>
                   </Alert>
+                )}
+
+                {docResult && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <Label htmlFor="use-docs-ctx" className="text-sm font-medium">
+                            {pt('Use these documents as AI context for the whole project')}
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {pt('When on, Plan with AI, Ask Co-pilot and other AI features on this project will transparently include the uploaded document text as background. You can toggle this off later on the project page.')}
+                          </p>
+                        </div>
+                        <Switch
+                          id="use-docs-ctx"
+                          checked={useDocsAsContext}
+                          onCheckedChange={setUseDocsAsContext}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             )}

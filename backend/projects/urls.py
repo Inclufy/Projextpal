@@ -44,6 +44,7 @@ from .tailoring_views import intake_analyze, intake_scenarios, project_tailoring
 from .coach_views import project_coach
 from .ai_plan_views import project_ai_plan, project_ai_plan_apply
 from .ai_from_doc import plan_from_documents
+from .ai_context_views import project_ai_context
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -105,6 +106,7 @@ urlpatterns = [
     path("<int:pk>/coach/", project_coach, name="project-coach"),
     path("<int:pk>/ai-plan/", project_ai_plan, name="project-ai-plan"),
     path("plan-from-documents/", plan_from_documents, name="project-plan-from-documents"),
+    path("<int:pk>/ai-context/", project_ai_context, name="project-ai-context"),
     path("<int:pk>/ai-plan/apply/", project_ai_plan_apply, name="project-ai-plan-apply"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
