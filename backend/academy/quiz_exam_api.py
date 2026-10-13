@@ -225,8 +225,23 @@ def submit_exam(request, exam_id):
     answers = request.data.get('answers', [])
     time_taken = request.data.get('time_taken', 0)
 
-    # Score against exam.questions (JSONField with {id, correct, ...} shape)
-    questions = exam.questions or []
+    raw = exam.questions
+    questions = raw if isinstance(raw, list) else []
+    if not questions:
+        return Response(
+            {
+                'error': 'exam_not_configured',
+                'detail': (
+                    'Dit examen heeft nog geen vragen. Vraag een beheerder '
+                    'om de vragen te genereren voordat je verder gaat.'
+                ),
+                'correct': 0,
+                'total': 0,
+                'score': 0,
+                'passed': False,
+            },
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
     correct, total = _score_fixture(answers, questions)
     score = int((correct / total) * 100) if total else 0
     passed = total > 0 and score >= (exam.passing_score or 80)
@@ -288,7 +303,7 @@ def get_exam(request, lesson_id):
         'passingScore': exam.passing_score,
         'timeLimit': exam.time_limit,
         'maxAttempts': exam.max_attempts,
-        'questions': exam.questions or [],
+        'questions': exam.questions if isinstance(exam.questions, list) else [],
     })
 
 

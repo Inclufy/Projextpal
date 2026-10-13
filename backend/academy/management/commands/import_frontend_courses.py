@@ -314,11 +314,12 @@ class Command(BaseCommand):
                                     'passing_score': 80,
                                     'time_limit': mins or 45,
                                     'max_attempts': 3,
-                                    # Question content lives in the TS file
-                                    # next to the lesson; for now we record
-                                    # the count and let quiz_exam_api fetch
-                                    # the actual questions out of the lesson.
-                                    'questions': {'frontend_count': qcount},
+                                    # Store an empty list so submit_exam can
+                                    # safely iterate; qcount from the TS file
+                                    # is recorded in meta_frontend for later
+                                    # backfill via bulk_generate_exams.
+                                    'questions': [],
+                                    'meta_frontend': {'count': qcount},
                                     'is_active': True,
                                 },
                             )
