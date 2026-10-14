@@ -82,12 +82,13 @@ class ProductIssueAdmin(admin.ModelAdmin):
                 "resolution_summary",
             ),
         }),
-        ("Claude Auto-Triage", {
-            "fields": ("metadata",),
-            "description": (
-                "Opaque bag populated by the Claude auto-triage pipeline — "
-                "agent id, PR url, commit sha, last error, attempt count. "
-                "Use the 'Trigger Claude' row action to force a dispatch."
+        ("Decision-request flow (Sprint 12)", {
+            "classes": ("collapse",),
+            "fields": (
+                "decision_questions",
+                "decision_answers",
+                "decision_history",
+                "decision_last_requested_at",
             ),
         }),
         ("Meta", {"fields": ("created_at", "updated_at")}),

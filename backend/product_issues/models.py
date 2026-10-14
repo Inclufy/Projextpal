@@ -71,6 +71,7 @@ class ProductIssue(models.Model):
         ("new", "New"),
         ("triaging", "Triaging (agent running)"),
         ("needs-info", "Needs more info from reporter"),
+        ("needs-decision", "Needs decision from reporter / tenant admin"),
         ("accepted", "Accepted"),
         ("in-progress", "In progress"),
         ("resolved", "Resolved"),
@@ -219,26 +220,45 @@ class ProductIssue(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     resolution_summary = models.TextField(blank=True)
 
-    # --- Claude auto-triage pipeline (Sprint 10 S10-02) ---------------------
-    # Opaque metadata bag used by the ClaudeAutoTriage pipeline to record
-    # auto-triage attempts, webhook responses, PR tracking etc. Deliberately
-    # untyped so additional fields can land without migrations. Example shape:
-    #   {
-    #     "claude_agent_id": "run_abc123",
-    #     "claude_triggered_at": "2026-10-14T12:34:00+00:00",
-    #     "claude_pr_url": "https://github.com/.../pull/42",
-    #     "claude_commit_sha": "...",
-    #     "claude_last_error": "...",
-    #     "claude_attempts": 1,
-    #   }
-    metadata = models.JSONField(
+    # --- Sprint 12 decision-request flow -------------------------------------
+    # When the auto-fix pipeline (sonar-fix-worker / issue-fix-pr ladder) hits
+    # an issue that needs a human architectural call (e.g. "streaming or async
+    # for ai-plan latency?"), it moves the issue to status 'needs-decision'
+    # and writes a short list of 2–5 concrete questions here. The reporter (or
+    # a tenant admin) answers via UI or email reply; the answers are stored,
+    # appended to history, and the orchestrator re-queues the worker with the
+    # decision context in its prompt.
+    decision_questions = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "List of 2–5 {id, text, type, choices?} objects posed by the "
+            "worker. type is one of 'single_choice' / 'multi_choice' / 'text'."
+        ),
+    )
+    decision_answers = models.JSONField(
         default=dict,
         blank=True,
         help_text=(
-            "Opaque metadata bag for the Claude auto-triage pipeline — "
-            "tracks agent id, triggered-at, PR url, commit sha, last error, "
-            "attempt count. Written by claude_triage.ClaudeAutoTriage and "
-            "the /claude-callback/ endpoint."
+            "Mapping of question_id → answer value. Cleared when a new round "
+            "of questions is issued; previous answers live in decision_history."
+        ),
+    )
+    decision_history = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "Append-only audit trail of each decision round: "
+            "{questions, answers, requested_at, answered_at, answered_by, "
+            "worker_run_id, outcome}. Preserved across reruns."
+        ),
+    )
+    decision_last_requested_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "When the current needs-decision round was opened. Used to "
+            "throttle email reminders and to compute time-to-answer."
         ),
     )
 
