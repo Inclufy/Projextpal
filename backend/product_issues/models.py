@@ -219,6 +219,29 @@ class ProductIssue(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     resolution_summary = models.TextField(blank=True)
 
+    # --- Claude auto-triage pipeline (Sprint 10 S10-02) ---------------------
+    # Opaque metadata bag used by the ClaudeAutoTriage pipeline to record
+    # auto-triage attempts, webhook responses, PR tracking etc. Deliberately
+    # untyped so additional fields can land without migrations. Example shape:
+    #   {
+    #     "claude_agent_id": "run_abc123",
+    #     "claude_triggered_at": "2026-10-14T12:34:00+00:00",
+    #     "claude_pr_url": "https://github.com/.../pull/42",
+    #     "claude_commit_sha": "...",
+    #     "claude_last_error": "...",
+    #     "claude_attempts": 1,
+    #   }
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Opaque metadata bag for the Claude auto-triage pipeline — "
+            "tracks agent id, triggered-at, PR url, commit sha, last error, "
+            "attempt count. Written by claude_triage.ClaudeAutoTriage and "
+            "the /claude-callback/ endpoint."
+        ),
+    )
+
     # --- Auto-meta -----------------------------------------------------------
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

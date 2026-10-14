@@ -322,6 +322,29 @@ ANTHROPIC_API_KEY = decouple.config("ANTHROPIC_API_KEY", default="")
 FIELD_ENCRYPTION_KEY = decouple.config("FIELD_ENCRYPTION_KEY", default="")
 FIELD_ENCRYPTION_KEYS = decouple.config("FIELD_ENCRYPTION_KEYS", default="")
 
+# ---------------------------------------------------------------------------
+# Claude Auto-Triage pipeline (Sprint 10 S10-02).
+# See backend/product_issues/claude_triage.py and
+# backend/product_issues/management/commands/claude_auto_triage.py.
+# Default = DISABLED. Opt in by setting both env vars in prod.
+# ---------------------------------------------------------------------------
+CLAUDE_FIX_AGENT_WEBHOOK = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK", default=""
+)
+CLAUDE_FIX_AGENT_WEBHOOK_SECRET = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", default=""
+)
+CLAUDE_AUTO_TRIAGE_ENABLED = (
+    decouple.config("CLAUDE_AUTO_TRIAGE_ENABLED", default="false").lower()
+    == "true"
+)
+# Public base URL used to build the callback URL sent to the external
+# orchestrator. Falls back to BASE_URL.
+PROJEXTPAL_PUBLIC_URL = decouple.config(
+    "PROJEXTPAL_PUBLIC_URL",
+    default=decouple.config("BASE_URL", default=""),
+)
+
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ProjExpal API',
