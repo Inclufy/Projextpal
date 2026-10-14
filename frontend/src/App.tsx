@@ -84,6 +84,7 @@ const StatusPage = lazyWithRetry(() => import("./pages/StatusPage"));
 const SubProcessorsPage = lazyWithRetry(() => import("./pages/SubProcessorsPage"));
 const SsoCallback = lazyWithRetry(() => import("./pages/SsoCallback"));
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const SkillsCatalog = lazyWithRetry(() => import("./pages/SkillsCatalog"));
 const Settings = lazyWithRetry(() => import("./pages/Settings"));
 const AIAssistant = lazyWithRetry(() => import("./pages/AIAssistant"));
 const Team = lazyWithRetry(() => import("./pages/Team"));
@@ -1248,6 +1249,7 @@ const App = () => (
               <Route path="/academy/quote" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
 
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
+              <Route path="/skills" element={<ProtectedPage><SkillsCatalog /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedPage><TwoFactorAuth /></ProtectedPage>} />
               <Route path="/settings/biometric" element={<ProtectedPage><BiometricAuth /></ProtectedPage>} />
