@@ -88,6 +88,7 @@ import {
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useAuth } from '@/contexts/AuthContext';
+import FindSkilledMemberButton from '@/components/skills/FindSkilledMemberButton';
 
 // Use relative path - proxy handles the backend URL
 const API_BASE_URL = '/api/v1';
@@ -2648,18 +2649,33 @@ if (!sendInviteEmail) {
               </Button>
             )}
             {inviteMode === "existing" && (
-              <Button
-                onClick={handleAddExistingMembers}
-                disabled={addingMembers || selectedMemberIds.length === 0}
-                className="gap-2"
-              >
-                {addingMembers ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserPlus className="h-4 w-4" />
+              <>
+                {/* S9-05 (B6) — pick a member by required skills via the
+                    Skill DB rather than scrolling the full existing-member
+                    list. Only meaningful once a specific project is picked. */}
+                {inviteType === "project" && inviteItemId && (
+                  <FindSkilledMemberButton
+                    projectId={inviteItemId}
+                    onPick={(userId) => {
+                      setSelectedMemberIds((prev) =>
+                        prev.includes(userId) ? prev : [...prev, userId],
+                      );
+                    }}
+                  />
                 )}
-                Lid toevoegen
-              </Button>
+                <Button
+                  onClick={handleAddExistingMembers}
+                  disabled={addingMembers || selectedMemberIds.length === 0}
+                  className="gap-2"
+                >
+                  {addingMembers ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserPlus className="h-4 w-4" />
+                  )}
+                  Lid toevoegen
+                </Button>
+              </>
             )}
           </DialogFooter>
         </DialogContent>
