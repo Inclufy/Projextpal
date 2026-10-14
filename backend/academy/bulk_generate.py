@@ -388,3 +388,230 @@ def bulk_generate_simulations(request):
         })
 
     return Response({'course': course.slug, 'lessons_processed': len(report), 'report': report})
+
+
+# ===========================================================================
+# S9-06 - Unified content generation (quizzes + exams in one admin call).
+# Fills the UAT gap of 0 QuizQuestion rows and Exams with questions=[] with
+# one click. Scope is intentionally narrow - quizzes + exams only (skills
+# and practice stay on their own existing endpoints).
+# ===========================================================================
+from django.contrib.auth import get_user_model as _get_user_model  # noqa: E402
+
+_User = _get_user_model()
+
+
+def _is_super_admin(user) -> bool:
+    """Allow is_superuser OR role=superadmin to drive the bulk-generate.
+
+    Matches ``admin_portal.permissions.IsSuperAdmin`` plus the ``is_superuser``
+    bypass used elsewhere in the codebase - keeps parity with the other
+    academy admin endpoints and avoids a 403 for Django superusers that
+    aren't tagged ``role=superadmin``.
+    """
+    if not getattr(user, 'is_authenticated', False):
+        return False
+    return bool(
+        getattr(user, 'is_superuser', False)
+        or getattr(user, 'role', None) == 'superadmin'
+    )
+
+
+def _generate_quizzes_for_course(course):
+    """Fill every eligible lesson of ``course`` with 5 MCQs.
+    Idempotent - a lesson that already has QuizQuestion rows is skipped.
+    Returns (generated_count, errors_list). Each ``generated`` unit = 1
+    lesson's full quiz; the number of individual questions is not counted
+    separately."""
+    generated = 0
+    errors: list[dict] = []
+    lessons = CourseLesson.objects.filter(module__course=course).order_by(
+        'module__order', 'order'
+    )
+    for lesson in lessons:
+        if lesson.lesson_type not in ('video', 'quiz'):
+            continue
+        if lesson.questions.exists():
+            continue  # idempotent skip
+
+        prompt = (
+            f"Based on this lesson content, create 5 multiple-choice "
+            f"questions with 4 answers each, exactly 1 correct.\n\n"
+            f"Course: {course.title}\n"
+            f"Lesson: {lesson.title}\n"
+            f"Content (transcript or body): {(lesson.content or '')[:2500]}\n\n"
+            f"Return JSON shape:\n"
+            f'{{"questions":[{{"question":"...","options":["...","...","...","..."],'
+            f'"correct":0,"explanation":"...","difficulty":"medium"}}]}}'
+        )
+        try:
+            out = _call_openai(
+                prompt,
+                'You create exam-accurate training quizzes. Return JSON only.',
+            )
+        except Exception as e:
+            errors.append({
+                'lesson_id': lesson.id,
+                'type': 'quiz',
+                'error': str(e)[:200],
+            })
+            continue
+
+        qs = out.get('questions') or []
+        if not qs:
+            errors.append({
+                'lesson_id': lesson.id,
+                'type': 'quiz',
+                'error': 'ai_returned_empty',
+            })
+            continue
+
+        for idx, q in enumerate(qs):
+            qq = QuizQuestion.objects.create(
+                lesson=lesson,
+                question_text=q.get('question', ''),
+                question_type='multiple_choice',
+                points=q.get('points', 10),
+                order=idx,
+            )
+            correct_idx = q.get('correct', 0)
+            for a_idx, ans in enumerate(q.get('options', [])):
+                QuizAnswer.objects.create(
+                    question=qq,
+                    answer_text=ans,
+                    is_correct=(a_idx == correct_idx),
+                    order=a_idx,
+                )
+        generated += 1
+    return generated, errors
+
+
+def _generate_exam_for_course(course):
+    """Create one final Exam of 10 MCQs. Idempotent - if an Exam row with
+    non-empty ``questions`` already exists, skip. If an Exam exists but
+    its ``questions`` field is empty (the UAT symptom), FILL it in-place."""
+    existing = Exam.objects.filter(course=course).first()
+    if existing and existing.questions:
+        return 0, []  # already populated
+
+    lessons = CourseLesson.objects.filter(module__course=course).order_by(
+        'module__order', 'order'
+    )
+    outline = '\n'.join(
+        f"- Module {l.module.order+1}: {l.title}" for l in lessons[:40]
+    )
+    prompt = (
+        f"Based on this course outline, create 10 multiple-choice exam "
+        f"questions with 4 answers each, exactly 1 correct. Cover breadth "
+        f"of the course.\n\n"
+        f"Course: {course.title}\n"
+        f"Outline:\n{outline}\n\n"
+        f"Return JSON shape:\n"
+        f'{{"questions":[{{"question":"...","options":["...","...","...","..."],'
+        f'"correct":0,"explanation":"...","difficulty":"medium","points":5}}]}}'
+    )
+    try:
+        out = _call_openai(
+            prompt,
+            'You create certification-grade exam questions. Return JSON only.',
+        )
+    except Exception as e:
+        return 0, [{'course_id': course.id, 'type': 'exam', 'error': str(e)[:200]}]
+
+    qs = out.get('questions') or []
+    if not qs:
+        return 0, [{
+            'course_id': course.id,
+            'type': 'exam',
+            'error': 'ai_returned_empty',
+        }]
+
+    if existing:
+        existing.questions = qs
+        existing.is_active = True
+        existing.save(update_fields=['questions', 'is_active'])
+    else:
+        Exam.objects.create(
+            course=course,
+            title=f'{course.title} - Final Exam',
+            title_nl=f'{course.title_nl or course.title} - Eindexamen',
+            description='Pass this exam to earn your certificate.',
+            passing_score=80,
+            time_limit=45,
+            max_attempts=3,
+            questions=qs,
+            is_active=True,
+        )
+    return 1, []
+
+
+@api_view(['POST'])
+def bulk_generate_content(request):
+    """Unified content generator: fills quizzes + exams for one or every
+    course with a single admin call.
+
+    ``POST /api/v1/academy/admin/bulk-generate-content/``
+
+    Body:
+        {
+          "course_id": 42,                      # optional; omit = every course
+          "type": "quizzes" | "exams" | "both"  # default "both"
+        }
+
+    Response:
+        {
+          "generated_quizzes": N,   # lessons filled with questions
+          "generated_exams":   M,   # courses whose Exam got questions
+          "errors": [ ... ]         # one entry per failure
+        }
+
+    Idempotent - a lesson that already has quiz questions or an Exam
+    whose questions field is non-empty is left untouched.
+    """
+    if not _is_super_admin(request.user):
+        return Response(
+            {'detail': 'Only superadmin users can bulk-generate academy content.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    data = request.data or {}
+    content_type = (data.get('type') or 'both').lower()
+    if content_type not in ('quizzes', 'exams', 'both'):
+        return Response(
+            {'detail': "type must be one of 'quizzes', 'exams', 'both'."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    course_id = data.get('course_id')
+    if course_id:
+        try:
+            courses_qs = Course.objects.filter(pk=int(course_id))
+        except (TypeError, ValueError):
+            courses_qs = Course.objects.filter(pk=course_id)
+        if not courses_qs.exists():
+            return Response(
+                {'detail': f'Course {course_id!r} not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+    else:
+        courses_qs = Course.objects.all()
+
+    total_quizzes = 0
+    total_exams = 0
+    errors: list[dict] = []
+
+    for course in courses_qs:
+        if content_type in ('quizzes', 'both'):
+            g, errs = _generate_quizzes_for_course(course)
+            total_quizzes += g
+            errors.extend(errs)
+        if content_type in ('exams', 'both'):
+            g, errs = _generate_exam_for_course(course)
+            total_exams += g
+            errors.extend(errs)
+
+    return Response({
+        'generated_quizzes': total_quizzes,
+        'generated_exams': total_exams,
+        'errors': errors,
+    })

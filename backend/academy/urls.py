@@ -113,6 +113,9 @@ urlpatterns = [
          name='admin-bulk-practice'),
     path('admin/bulk/simulations/', bulk_generate.bulk_generate_simulations,
          name='admin-bulk-simulations'),
+    # S9-06 - unified one-click filler for quizzes + exams (superadmin only).
+    path('admin/bulk-generate-content/', bulk_generate.bulk_generate_content,
+         name='admin-bulk-generate-content'),
 
     # Practice + simulation submission endpoints (Phase 4)
     # Practice submissions count toward cert eligibility; simulation
