@@ -214,6 +214,33 @@ class NeedsDecisionRequestSerializer(serializers.Serializer):
         return value
 
 
+# Characters we strip from reporter-controlled text before persistence.
+# ASCII control chars (except \t \n \r) and the Unicode bidi-override family
+# that can hide text direction — both are vectors for prompt-injection into
+# the downstream fix-worker's LLM prompt (see sonar-fix-worker.mjs
+# renderDecisionBlock). The CT side re-strips on render too (defence in
+# depth) but doing it at persistence keeps the DB clean and the audit
+# trail legible.
+_UNTRUSTED_CTRL_RE = __import__("re").compile(
+    r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F‪-‮⁦-⁩]"
+)
+# Hard cap at the persistence boundary. The CT prompt wraps at 500; we
+# allow a bit more so a multi-paragraph "extra context" from a reporter
+# survives in the audit trail but any pathological "I pasted a whole
+# config file" attack is clipped early.
+_FREE_TEXT_MAX = 2000
+
+
+def _scrub_untrusted(text: str) -> str:
+    """Strip control + bidi chars, trim whitespace, cap length."""
+    if not isinstance(text, str):
+        return ""
+    cleaned = _UNTRUSTED_CTRL_RE.sub("", text).strip()
+    if len(cleaned) > _FREE_TEXT_MAX:
+        cleaned = cleaned[:_FREE_TEXT_MAX].rstrip() + "…"
+    return cleaned
+
+
 class AnswerDecisionSerializer(serializers.Serializer):
     """Body for POST /product-issues/{id}/answer-decision/ (user→backend).
 
@@ -221,6 +248,11 @@ class AnswerDecisionSerializer(serializers.Serializer):
     choices; for multi_choice a list of them; for text a free-form string.
     Shape-validation against the issue's open questions happens in the view
     (needs the question-list, not available in the serializer).
+
+    free_text is reporter-controlled and flows into the auto-fix-worker's
+    LLM prompt downstream. We scrub control + bidi characters and cap at
+    _FREE_TEXT_MAX so a hostile reporter cannot inject "forget prior
+    instructions"-style payloads via bidi-override tricks.
     """
 
     answers = serializers.DictField(
@@ -233,6 +265,9 @@ class AnswerDecisionSerializer(serializers.Serializer):
         allow_blank=True,
         help_text="Optional extra context the reporter wants to send along.",
     )
+
+    def validate_free_text(self, value: str) -> str:
+        return _scrub_untrusted(value)
 
 
 class ProductIssueTriageUpdateSerializer(serializers.ModelSerializer):

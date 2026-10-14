@@ -11,6 +11,7 @@ from .claude_triage import ClaudeAutoTriage, TriageError
 from .models import ProductIssue, ProductIssueComment
 from .permissions import CanAnswerDecision, IsAutoFixWorker
 from .serializers import (
+    _scrub_untrusted,
     AnswerDecisionSerializer,
     NeedsDecisionRequestSerializer,
     ProductIssueAutoCISerializer,
@@ -68,7 +69,11 @@ def _validate_answers(questions: list[dict], answers: dict) -> dict:
             if not isinstance(raw, str) or not raw.strip():
                 errors[qid] = "answer must be non-empty text"
                 continue
-            cleaned[qid] = raw.strip()[:4000]
+            # Reporter-controlled text — flows into the fix-worker's LLM
+            # prompt downstream. Scrub control / bidi chars + hard-cap
+            # before persistence, same contract as free_text (see
+            # AnswerDecisionSerializer._scrub_untrusted).
+            cleaned[qid] = _scrub_untrusted(raw)[:4000]
         else:
             errors[qid] = f"question type {qtype!r} is not answerable"
     missing = [qid for qid in by_id if qid not in cleaned and qid not in errors]

@@ -146,7 +146,12 @@ def parse_answers_from_body(
             matched.append(qid)
             consumed_spans.append(m.span())
         elif qtype == "text":
-            answers[qid] = raw[:4000]
+            # Reporter-controlled free text — scrub control / bidi chars
+            # BEFORE persistence so the fix-worker's LLM prompt cannot be
+            # subverted (same contract as the UI /answer-decision/).
+            from .serializers import _scrub_untrusted
+
+            answers[qid] = _scrub_untrusted(raw)[:4000]
             matched.append(qid)
             consumed_spans.append(m.span())
 
