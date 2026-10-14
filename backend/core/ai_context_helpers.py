@@ -209,10 +209,31 @@ def _project_prefix_impl(user, project_id, language, surface, log=True):
         logger.warning("ai_context_helpers db read failed: %s", e)
         return empty
 
+    company_for_attempt = None
+    if aic is None:
+        try:
+            from projects.models import Project
+            p = Project.objects.filter(id=project_id).only("company_id").first()
+            company_for_attempt = getattr(p, "company_id", None) and p.company
+        except Exception:
+            company_for_attempt = None
+    else:
+        company_for_attempt = getattr(getattr(aic, "project", None), "company", None)
+
+    if log:
+        _log_access(
+            user=user,
+            context_type="project",
+            context_id=project_id,
+            surface=surface,
+            chars_used=0,
+            company=company_for_attempt,
+        )
+
     if not aic:
         return empty
 
-    company = getattr(getattr(aic, "project", None), "company", None)
+    company = company_for_attempt
     if not _tenant_feature_enabled(company, "ai_context_enabled"):
         return empty
 
@@ -308,14 +329,24 @@ def _program_prefix_impl(user, program_id, language, surface, log=True):
         logger.warning("ai_context_helpers program db read failed: %s", e)
         return empty
 
-    if not aic:
-        return empty
-
     try:
         from accounts.models import Company
         company = Company.objects.filter(id=program.company_id).first()
     except Exception:
         company = None
+
+    if log:
+        _log_access(
+            user=user,
+            context_type="program",
+            context_id=program_id,
+            surface=surface,
+            chars_used=0,
+            company=company,
+        )
+
+    if not aic:
+        return empty
 
     if not _tenant_feature_enabled(company, "ai_context_enabled"):
         return empty
@@ -414,14 +445,24 @@ def _portfolio_prefix_impl(user, portfolio_id, language, surface, log=True):
         logger.warning("ai_context_helpers portfolio db read failed: %s", e)
         return empty
 
-    if not aic:
-        return empty
-
     try:
         from accounts.models import Company
         company = Company.objects.filter(id=portfolio.company_id).first()
     except Exception:
         company = None
+
+    if log:
+        _log_access(
+            user=user,
+            context_type="portfolio",
+            context_id=str(portfolio_uuid),
+            surface=surface,
+            chars_used=0,
+            company=company,
+        )
+
+    if not aic:
+        return empty
 
     if not _tenant_feature_enabled(company, "ai_context_enabled"):
         return empty
