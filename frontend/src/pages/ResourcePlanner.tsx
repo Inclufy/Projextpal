@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,15 @@ import { ProjectHeader } from "@/components/ProjectHeader";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 /**
- * Sprint 7 — S7-08
- * ----------------
- * Read-only Gantt view of resource allocations per team-member on a project,
- * with a dialog-driven "+ Nieuwe allocatie" flow. Drag/resize = Sprint 8.
+ * Sprint 7 — S7-08 (base) + Sprint 9 — S9-04 (drag/resize)
+ * --------------------------------------------------------
+ * Gantt view of resource allocations per team-member on a project, with
+ * a dialog-driven "+ Nieuwe allocatie" flow.
+ *
+ * S9-04: drag a bar horizontally to shift start+end together (keeps the
+ * same duration), or drag either edge to resize start/end independently.
+ * Snap to whole days. On pointer-up we PATCH the allocation; the UI uses
+ * an optimistic update + reverts on 4xx/5xx.
  */
 
 interface Allocation {
@@ -215,6 +220,203 @@ export default function ResourcePlanner() {
     };
   };
 
+  // -----------------------------------------------------------------
+  // Sprint 9 — S9-04 drag/resize for Gantt allocation blocks
+  // -----------------------------------------------------------------
+
+  // Transient drag overrides keyed by allocation id. While a drag is in
+  // flight we render against these instead of the backing state so the
+  // bar follows the pointer, then clear on pointer-up (optimistic patch
+  // merges into `data`, revert on error).
+  const [dragOverrides, setDragOverrides] = useState<
+    Record<number, { start_date: string; end_date: string }>
+  >({});
+  // Row refs keyed by project_team_id — gives us the pixel-width of the
+  // gantt track so we can convert pointer-delta → day-delta.
+  const rowTrackRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const effectiveAlloc = (a: Allocation): Allocation => {
+    const ov = dragOverrides[a.id];
+    return ov ? { ...a, start_date: ov.start_date, end_date: ov.end_date } : a;
+  };
+
+  const patchAllocation = async (
+    allocation: Allocation,
+    newStart: string,
+    newEnd: string,
+    originalStart: string,
+    originalEnd: string,
+  ) => {
+    try {
+      const r = await defaultFetcher(
+        `/api/v1/execution/resource-plan/${allocation.id}/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ start_date: newStart, end_date: newEnd }),
+        },
+      );
+      if (!r.ok) {
+        // Revert the optimistic state in the backing data.
+        setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            rows: prev.rows.map((row) => ({
+              ...row,
+              allocations: row.allocations.map((al) =>
+                al.id === allocation.id
+                  ? { ...al, start_date: originalStart, end_date: originalEnd }
+                  : al,
+              ),
+            })),
+          };
+        });
+        const err = await r.json().catch(() => ({}));
+        toast.error(err.detail || pt("Opslaan mislukt"));
+        return;
+      }
+      toast.success(pt("Allocatie bijgewerkt"));
+    } catch (e) {
+      // Network / exception path — revert.
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          rows: prev.rows.map((row) => ({
+            ...row,
+            allocations: row.allocations.map((al) =>
+              al.id === allocation.id
+                ? { ...al, start_date: originalStart, end_date: originalEnd }
+                : al,
+            ),
+          })),
+        };
+      });
+      toast.error(e instanceof Error ? e.message : pt("Opslaan mislukt"));
+    }
+  };
+
+  type DragMode = "move" | "resize-start" | "resize-end";
+
+  const beginDrag = (
+    event: React.PointerEvent<HTMLDivElement>,
+    row: MemberRow,
+    allocation: Allocation,
+    mode: DragMode,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const track = rowTrackRefs.current[row.project_team_id];
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    if (rect.width <= 0) return;
+
+    const originalStart = allocation.start_date;
+    const originalEnd = allocation.end_date;
+    const originalDuration = Math.max(0, dayDiff(originalStart, originalEnd));
+    const startX = event.clientX;
+    const pxPerDay = rect.width / spanDays;
+
+    // Target just this element so the handle keeps catching move events
+    // once the pointer leaves the bar.
+    const target = event.currentTarget;
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch {
+      // some browsers refuse capture on non-primary pointers — ignore.
+    }
+
+    let liveStart = originalStart;
+    let liveEnd = originalEnd;
+
+    const handleMove = (ev: PointerEvent) => {
+      const dxPx = ev.clientX - startX;
+      const dxDays = Math.round(dxPx / pxPerDay);
+      if (mode === "move") {
+        liveStart = addDaysISO(originalStart, dxDays);
+        liveEnd = addDaysISO(originalEnd, dxDays);
+      } else if (mode === "resize-start") {
+        const newStart = addDaysISO(originalStart, dxDays);
+        // Keep at least 1 day of width (start <= end).
+        liveStart =
+          dayDiff(newStart, originalEnd) >= 0
+            ? newStart
+            : addDaysISO(originalEnd, 0);
+        liveEnd = originalEnd;
+      } else {
+        const newEnd = addDaysISO(originalEnd, dxDays);
+        liveStart = originalStart;
+        liveEnd =
+          dayDiff(originalStart, newEnd) >= 0
+            ? newEnd
+            : addDaysISO(originalStart, 0);
+      }
+      setDragOverrides((prev) => ({
+        ...prev,
+        [allocation.id]: { start_date: liveStart, end_date: liveEnd },
+      }));
+    };
+
+    const handleUp = async () => {
+      target.removeEventListener("pointermove", handleMove);
+      target.removeEventListener("pointerup", handleUp);
+      target.removeEventListener("pointercancel", handleUp);
+      try {
+        target.releasePointerCapture(event.pointerId);
+      } catch {
+        // ignore — not every browser lets us release.
+      }
+      // Clear the transient override.
+      setDragOverrides((prev) => {
+        const { [allocation.id]: _dropped, ...rest } = prev;
+        return rest;
+      });
+
+      // No change → no network call.
+      if (liveStart === originalStart && liveEnd === originalEnd) return;
+
+      // Guard: never submit end < start (shouldn't happen with the
+      // clamps above, but belt-and-braces).
+      if (dayDiff(liveStart, liveEnd) < 0) return;
+
+      // Keep the resize mode honest about duration preservation for 'move'.
+      if (
+        mode === "move" &&
+        Math.max(0, dayDiff(liveStart, liveEnd)) !== originalDuration
+      ) {
+        liveEnd = addDaysISO(liveStart, originalDuration);
+      }
+
+      // Optimistic commit into `data` so the bar stays put without re-fetch.
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          rows: prev.rows.map((rr) => ({
+            ...rr,
+            allocations: rr.allocations.map((al) =>
+              al.id === allocation.id
+                ? { ...al, start_date: liveStart, end_date: liveEnd }
+                : al,
+            ),
+          })),
+        };
+      });
+
+      await patchAllocation(
+        allocation,
+        liveStart,
+        liveEnd,
+        originalStart,
+        originalEnd,
+      );
+    };
+
+    target.addEventListener("pointermove", handleMove);
+    target.addEventListener("pointerup", handleUp);
+    target.addEventListener("pointercancel", handleUp);
+  };
+
   if (loading) {
     return (
       <div className="p-6 text-sm text-muted-foreground">
@@ -275,32 +477,69 @@ export default function ResourcePlanner() {
                   <div className="w-40 shrink-0 pr-2 text-sm font-medium truncate" title={row.user_name}>
                     {row.user_name}
                   </div>
-                  <div className="flex-1 relative h-10">
+                  <div
+                    className="flex-1 relative h-10"
+                    ref={(el) => {
+                      rowTrackRefs.current[row.project_team_id] = el;
+                    }}
+                  >
                     {row.allocations.length === 0 && (
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                         {pt("Geen allocaties")}
                       </span>
                     )}
-                    {row.allocations.map((a) => (
-                      <div
-                        key={a.id}
-                        className={`absolute top-1/2 -translate-y-1/2 h-6 rounded ${colorForMember(idx)} opacity-90 flex items-center px-2 group hover:opacity-100 cursor-pointer`}
-                        style={barStyle(a)}
-                        title={`${a.allocated_hours}${pt("u")} — ${row.user_name}${a.note ? ` — ${a.note}` : ""}`}
-                      >
-                        <span className="text-xs text-white truncate flex-1">
-                          {a.allocated_hours}{pt("u")}{a.note ? ` · ${a.note}` : ""}
-                        </span>
-                        <button
-                          type="button"
-                          className="ml-1 text-white opacity-0 group-hover:opacity-100 shrink-0"
-                          onClick={() => deleteAllocation(a.id)}
-                          aria-label={pt("Verwijderen")}
+                    {row.allocations.map((rawA) => {
+                      const a = effectiveAlloc(rawA);
+                      return (
+                        <div
+                          key={a.id}
+                          className={`absolute top-1/2 -translate-y-1/2 h-6 rounded ${colorForMember(idx)} opacity-90 flex items-center px-2 group hover:opacity-100 cursor-grab active:cursor-grabbing touch-none select-none`}
+                          style={barStyle(a)}
+                          title={`${a.allocated_hours}${pt("u")} — ${row.user_name}${a.note ? ` — ${a.note}` : ""} (${a.start_date} → ${a.end_date})`}
+                          onPointerDown={(e) => {
+                            if (e.button !== 0) return;
+                            beginDrag(e, row, rawA, "move");
+                          }}
+                          data-testid={`alloc-bar-${a.id}`}
                         >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                          {/* Left resize handle */}
+                          <div
+                            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize bg-white/30 opacity-0 group-hover:opacity-100 rounded-l"
+                            onPointerDown={(e) => {
+                              if (e.button !== 0) return;
+                              beginDrag(e, row, rawA, "resize-start");
+                            }}
+                            aria-label={pt("Startdatum verschuiven")}
+                            data-testid={`alloc-resize-start-${a.id}`}
+                          />
+                          <span className="text-xs text-white truncate flex-1 pointer-events-none">
+                            {a.allocated_hours}{pt("u")}{a.note ? ` · ${a.note}` : ""}
+                          </span>
+                          <button
+                            type="button"
+                            className="ml-1 text-white opacity-0 group-hover:opacity-100 shrink-0"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteAllocation(a.id);
+                            }}
+                            aria-label={pt("Verwijderen")}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                          {/* Right resize handle */}
+                          <div
+                            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize bg-white/30 opacity-0 group-hover:opacity-100 rounded-r"
+                            onPointerDown={(e) => {
+                              if (e.button !== 0) return;
+                              beginDrag(e, row, rawA, "resize-end");
+                            }}
+                            aria-label={pt("Einddatum verschuiven")}
+                            data-testid={`alloc-resize-end-${a.id}`}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
