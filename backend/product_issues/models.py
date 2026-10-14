@@ -220,6 +220,21 @@ class ProductIssue(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     resolution_summary = models.TextField(blank=True)
 
+    # --- Claude auto-triage pipeline (Sprint 10 S10-02) ---------------------
+    # Opaque metadata bag used by the ClaudeAutoTriage pipeline to record
+    # auto-triage attempts, webhook responses, PR tracking etc. Deliberately
+    # untyped so additional fields can land without migrations.
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Opaque metadata bag for the Claude auto-triage pipeline — "
+            "tracks agent id, triggered-at, PR url, commit sha, last error, "
+            "attempt count. Written by claude_triage.ClaudeAutoTriage and "
+            "the /claude-callback/ endpoint."
+        ),
+    )
+
     # --- Sprint 12 decision-request flow -------------------------------------
     # When the auto-fix pipeline (sonar-fix-worker / issue-fix-pr ladder) hits
     # an issue that needs a human architectural call (e.g. "streaming or async
