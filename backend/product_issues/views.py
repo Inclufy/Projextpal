@@ -410,138 +410,178 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
         )
 
 
-class ProductIssueClaudeCallbackView(APIView):
-    """
-    POST /api/v1/product-issues/<id>/claude-callback/
+class ResendInboundDecisionView(APIView):
+    """POST /api/v1/webhooks/resend/inbound-decision/
 
-    Called by the external Claude fix-agent orchestrator once it has
-    opened / merged a PR for an auto-triaged issue, or when the fix
-    attempt failed. Body:
+    Accepts a Resend inbound-email payload (``{from, to, subject, text, ...}``)
+    and, when the mail is a reply to a decision-request email we sent in
+    S12-04, parses the answer lines (``q_id=value``) and applies them exactly
+    like the UI's answer-decision endpoint. The parser lives in
+    ``inbound_email.py``; this view wires auth + idempotency + the audit
+    comment.
 
-        {
-          "status": "pr_opened" | "merged" | "failed",
-          "pr_url": "https://...",        # optional
-          "commit_sha": "abc123",         # optional
-          "agent_id": "run_abc123",       # optional — correlation hint
-          "error": "..."                  # optional, for status=failed
-        }
-
-    Authentication: shared-secret HMAC over the request body in the
-    ``X-ProjeXtPal-Signature`` header (``sha256=<hex>``). The secret is
-    ``CLAUDE_FIX_AGENT_WEBHOOK_SECRET``. If no secret is configured on
-    the server the endpoint falls back to IsAuthenticated (dev only).
+    No DRF authentication: Resend posts without a user JWT. The HMAC
+    signature in ``X-Resend-Signature`` (verified against
+    ``RESEND_INBOUND_SIGNING_SECRET``) IS the authentication; we fail
+    closed when the secret is unset so a misconfigured environment cannot
+    accept unverified mail by accident.
     """
 
-    permission_classes = [permissions.AllowAny]
     authentication_classes: list = []
+    permission_classes: list = []
 
-    _ALLOWED_STATUSES = {"pr_opened", "merged", "failed"}
+    def post(self, request):
+        from .inbound_email import (
+            parse_answers_from_body,
+            parse_subject_issue_id,
+            sender_matches_recipient_or_admin,
+            verify_resend_signature,
+        )
+        from .signals import _admin_emails  # internal helper
 
-    def _verify_signature(self, request) -> bool:
-        secret = getattr(settings, "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", "") or ""
-        if not secret:
-            # Dev / local: require an authenticated user instead.
-            return bool(request.user and request.user.is_authenticated)
-        header = request.META.get("HTTP_X_PROJEXTPAL_SIGNATURE", "")
-        if not header or "=" not in header:
-            return False
-        algo, _, provided = header.partition("=")
-        if algo != "sha256":
-            return False
-        expected = hmac.new(
-            secret.encode("utf-8"), request.body, hashlib.sha256
-        ).hexdigest()
-        return hmac.compare_digest(expected, provided)
-
-    def post(self, request, pk=None):
-        if not self._verify_signature(request):
+        raw_body = request.body or b""
+        sig = request.headers.get("X-Resend-Signature") or request.headers.get(
+            "X-Signature"
+        )
+        ok, reason = verify_resend_signature(raw_body, sig)
+        if not ok:
+            logger.warning("resend inbound rejected: %s", reason)
             return Response(
-                {"error": "invalid signature"},
+                {"detail": f"signature check failed: {reason}"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        issue = get_object_or_404(ProductIssue, pk=pk)
 
-        new_status = (request.data.get("status") or "").strip()
-        if new_status not in self._ALLOWED_STATUSES:
-            return Response(
-                {"error": f"status must be one of {sorted(self._ALLOWED_STATUSES)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        pr_url = (request.data.get("pr_url") or "").strip()
-        commit_sha = (request.data.get("commit_sha") or "").strip()
-        agent_id = (request.data.get("agent_id") or "").strip()
-        error_msg = (request.data.get("error") or "").strip()
-
-        meta = dict(issue.metadata or {})
-        meta["claude_callback_at"] = timezone.now().isoformat()
-        meta["claude_callback_status"] = new_status
-        if pr_url:
-            meta["claude_pr_url"] = pr_url
-        if commit_sha:
-            meta["claude_commit_sha"] = commit_sha
-        if agent_id:
-            meta["claude_agent_id"] = agent_id
-        if error_msg:
-            meta["claude_last_error"] = error_msg[:500]
-        issue.metadata = meta
-
-        if new_status == "pr_opened":
-            issue.status = "in-progress"
-            if pr_url:
-                issue.linked_pr_url = pr_url
-        elif new_status == "merged":
-            issue.status = "resolved"
-            issue.resolved_at = timezone.now()
-            if pr_url:
-                issue.linked_pr_url = pr_url
-            if not issue.resolution_summary:
-                issue.resolution_summary = (
-                    f"Auto-resolved by Claude fix agent"
-                    f"{' — ' + pr_url if pr_url else ''}"
-                )
-        elif new_status == "failed":
-            # Hand back to human triage.
-            issue.status = "new"
-
-        issue.save()
-
-        return Response(
-            {"ok": True, "id": issue.id, "status": issue.status},
-            status=status.HTTP_200_OK,
+        payload = request.data if isinstance(request.data, dict) else {}
+        subject = payload.get("subject") or ""
+        from_email = (
+            payload.get("from_email")
+            or (payload.get("from") or {}).get("email")
+            if isinstance(payload.get("from"), dict)
+            else payload.get("from")
         )
+        body_text = payload.get("text") or payload.get("body") or ""
 
-
-class ProductIssueTriggerClaudeView(APIView):
-    """
-    POST /api/v1/product-issues/<id>/trigger-claude/
-
-    Admin-only manual trigger — bypasses the ``should_auto_triage``
-    heuristics and forces a fix-agent dispatch for one issue. Used by
-    the "Trigger Claude" admin button to pick up issues the automatic
-    policy would otherwise skip (wrong category, P3, etc.).
-    """
-
-    permission_classes = [permissions.IsAdminUser]
-
-    def post(self, request, pk=None):
-        issue = get_object_or_404(ProductIssue, pk=pk)
-        triage = ClaudeAutoTriage()
-        if not triage.webhook_url:
+        issue_id = parse_subject_issue_id(subject)
+        if issue_id is None:
+            logger.info("resend inbound: no issue id in subject %r", subject[:120])
             return Response(
-                {"error": "CLAUDE_FIX_AGENT_WEBHOOK not configured"},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                {"detail": "no issue id in subject"}, status=status.HTTP_202_ACCEPTED
             )
-        try:
-            agent_id = triage.trigger_fix_agent(issue)
-        except TriageError as exc:
-            triage.mark_failed(issue, str(exc))
+        issue = ProductIssue.objects.filter(pk=issue_id).first()
+        if issue is None:
             return Response(
-                {"error": str(exc)}, status=status.HTTP_502_BAD_GATEWAY
+                {"detail": "unknown issue"}, status=status.HTTP_202_ACCEPTED
             )
-        triage.mark_in_progress(issue, agent_id)
+        if issue.status != "needs-decision":
+            logger.info(
+                "resend inbound: issue #%s not needs-decision (status=%s), dropped",
+                issue.id, issue.status,
+            )
+            return Response(
+                {"detail": "issue not awaiting decision"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+
+        allowed_senders = list(_admin_emails())
+        if issue.reporter and issue.reporter.email:
+            allowed_senders.insert(0, issue.reporter.email)
+        if not sender_matches_recipient_or_admin(from_email, allowed_senders):
+            logger.warning(
+                "resend inbound: sender %r not allowed for issue #%s",
+                from_email, issue.id,
+            )
+            return Response(
+                {"detail": "sender not permitted"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        questions = list(issue.decision_questions or [])
+        answers, matched_ids, leftover = parse_answers_from_body(
+            body_text, questions,
+        )
+        required = {q.get("id") for q in questions if isinstance(q, dict)}
+        if required - set(answers.keys()):
+            # Partial answer — leave a comment with what we got + what is
+            # still missing so the reporter sees it in the thread, but
+            # don't mutate decision_answers (we only commit on complete
+            # rounds, same as the UI endpoint).
+            missing = ", ".join(sorted(required - set(answers.keys())))
+            ProductIssueComment.objects.create(
+                issue=issue,
+                author=(from_email or "unknown"),
+                body=(
+                    "**Partial reply received by email** — nog niet alle "
+                    f"vragen beantwoord. Ontbreekt: {missing}.\n\n"
+                    + (leftover[:1500] if leftover else "")
+                ),
+                visibility=ProductIssueComment.VISIBILITY_PUBLIC,
+            )
+            return Response(
+                {"status": "partial", "matched": matched_ids, "missing": sorted(required - set(answers.keys()))},
+                status=status.HTTP_200_OK,
+            )
+
+        now = timezone.now()
+        history = list(issue.decision_history or [])
+        round_id = None
+        for row in history:
+            if row.get("outcome") == "awaiting_answer":
+                row["answers"] = answers
+                row["answered_at"] = now.isoformat()
+                row["answered_by"] = from_email or "email"
+                if leftover:
+                    row["answered_free_text"] = leftover
+                row["outcome"] = "awaiting_worker"
+                round_id = row.get("round_id")
+                break
+        if round_id is None:
+            import uuid
+
+            round_id = uuid.uuid4().hex[:12]
+            history.append(
+                {
+                    "round_id": round_id,
+                    "questions": questions,
+                    "answers": answers,
+                    "requested_at": None,
+                    "answered_at": now.isoformat(),
+                    "answered_by": from_email or "email",
+                    "answered_free_text": leftover or None,
+                    "worker_run_id": "",
+                    "outcome": "awaiting_worker",
+                }
+            )
+
+        issue.decision_answers = answers
+        issue.decision_history = history
+        issue.status = "in-progress"
+        issue.save(
+            update_fields=[
+                "decision_answers", "decision_history", "status", "updated_at",
+            ]
+        )
+        summary = ["**Beslissing beantwoord per email.**"]
+        for q in questions:
+            qid = q.get("id")
+            val = answers.get(qid)
+            if isinstance(val, list):
+                val = ", ".join(val)
+            summary.append(f"- {q.get('text', qid)} → **{val}**")
+        if leftover:
+            summary.append("")
+            summary.append(leftover)
+        ProductIssueComment.objects.create(
+            issue=issue,
+            author=from_email or "email",
+            body="\n".join(summary),
+            visibility=ProductIssueComment.VISIBILITY_PUBLIC,
+        )
+        logger.info(
+            "resend inbound: issue #%s answered via email by %s (round=%s)",
+            issue.id, from_email, round_id,
+        )
         return Response(
-            {"ok": True, "agent_id": agent_id, "status": issue.status},
+            {"status": "ok", "round_id": round_id, "answers": answers},
             status=status.HTTP_200_OK,
         )
 
