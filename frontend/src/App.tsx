@@ -613,6 +613,27 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// B7 — Admin tenant-admins must reach a few admin-portal screens that the
+// backend already allows (IsAdminOrSuperAdmin on /integrations/,
+// /automation-rules/ and /sandbox-invite/) but the frontend was blocking
+// behind SuperAdminRoute. This lighter guard lets role === 'admin' OR a
+// superadmin in. Keep SuperAdminRoute for everything else (plans,
+// tenants, settings, logs, billing, etc.).
+const AdminOrSuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-purple-600" /></div>;
+  }
+
+  const allowed = user?.isSuperAdmin || user?.role === 'admin';
+  if (!isAuthenticated || !allowed) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // ============================================
 // Public Route Component
 // ============================================
@@ -681,26 +702,34 @@ const App = () => (
               {/* ============================================ */}
               {/* Admin Portal Routes (SuperAdmin Only)        */}
               {/* ============================================ */}
-              <Route path="/admin" element={<SuperAdminRoute><AdminPortalLayout /></SuperAdminRoute>}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<UserManagement />} />
-                <Route path="tenants" element={<TenantManagement />} />
-                <Route path="tenants/new" element={<TenantProvisioning />} />
+              {/* B7: parent gate is the lighter AdminOrSuperAdminRoute so a
+                  tenant-admin can reach integrations / automation-rules /
+                  sandbox-invite (backend already allows them via
+                  IsAdminOrSuperAdmin). Every OTHER child route still needs
+                  SuperAdminRoute, so only superadmins see them. */}
+              <Route path="/admin" element={<AdminOrSuperAdminRoute><AdminPortalLayout /></AdminOrSuperAdminRoute>}>
+                <Route index element={<SuperAdminRoute><AdminDashboard /></SuperAdminRoute>} />
+                <Route path="users" element={<SuperAdminRoute><UserManagement /></SuperAdminRoute>} />
+                <Route path="tenants" element={<SuperAdminRoute><TenantManagement /></SuperAdminRoute>} />
+                <Route path="tenants/new" element={<SuperAdminRoute><TenantProvisioning /></SuperAdminRoute>} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="sandbox-invite" element={<SandboxInvite />} />
-                <Route path="tenants/:id/edit" element={<TenantEdit />} />
+                <Route path="tenants/:id/edit" element={<SuperAdminRoute><TenantEdit /></SuperAdminRoute>} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="integrations" element={<IntegrationManagement />} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="automation-rules" element={<AutomationRules />} />
-                <Route path="plans" element={<PlanManagement />} /> 
-                <Route path="settings" element={<SystemSettings />} />
-                <Route path="logs" element={<AuditLogs />} />
-                <Route path="registrations" element={<Registrations />} />
-                <Route path="training" element={<AdminTrainingManagement />} />
-                <Route path="invoices" element={<InvoiceManagement />} />
-                <Route path="subscriptions" element={<SubscriptionManagement />} />
-                <Route path="pricing-configurator" element={<PricingConfigurator />} />
-                <Route path="subscription-plans" element={<SubscriptionPlans />} />
-                <Route path="demo-requests" element={<DemoRequests />} />
-                <Route path="monitoring" element={<MonitoringDashboard />} />
+                <Route path="plans" element={<SuperAdminRoute><PlanManagement /></SuperAdminRoute>} />
+                <Route path="settings" element={<SuperAdminRoute><SystemSettings /></SuperAdminRoute>} />
+                <Route path="logs" element={<SuperAdminRoute><AuditLogs /></SuperAdminRoute>} />
+                <Route path="registrations" element={<SuperAdminRoute><Registrations /></SuperAdminRoute>} />
+                <Route path="training" element={<SuperAdminRoute><AdminTrainingManagement /></SuperAdminRoute>} />
+                <Route path="invoices" element={<SuperAdminRoute><InvoiceManagement /></SuperAdminRoute>} />
+                <Route path="subscriptions" element={<SuperAdminRoute><SubscriptionManagement /></SuperAdminRoute>} />
+                <Route path="pricing-configurator" element={<SuperAdminRoute><PricingConfigurator /></SuperAdminRoute>} />
+                <Route path="subscription-plans" element={<SuperAdminRoute><SubscriptionPlans /></SuperAdminRoute>} />
+                <Route path="demo-requests" element={<SuperAdminRoute><DemoRequests /></SuperAdminRoute>} />
+                <Route path="monitoring" element={<SuperAdminRoute><MonitoringDashboard /></SuperAdminRoute>} />
               </Route>
               
               {/* ============================================ */}
