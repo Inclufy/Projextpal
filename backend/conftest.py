@@ -627,18 +627,25 @@ def msp_program(db, user, company):
 
 @pytest.fixture
 def pmi_program(db, user, company):
-    """Create a PMI (PMI Program Management Standard) program"""
-    if not PROJECTS_AVAILABLE or not Project:
-        pytest.skip("projects.Project model not available")
-    
-    return Project.objects.create(
+    """Create a PMI (PMI Program Management Standard) programme.
+
+    PMI sub-tabs (components, governance boards, charter, benefits,
+    stakeholders, roadmap items) hang off ``programs.Program`` — not
+    ``projects.Project`` — so the fixture creates a real Program with
+    ``methodology='pmi'`` for the UI/API scoping to resolve.
+    """
+    try:
+        from programs.models import Program
+    except Exception:
+        pytest.skip("programs.Program model not available")
+
+    return Program.objects.create(
         name='Test PMI Program',
         description='PMI Program Management Standard test',
         methodology='pmi',
         created_by=user,
         company=company,
-
-        start_date=datetime.now().date()
+        start_date=datetime.now().date(),
     )
 
 
