@@ -219,9 +219,9 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
     <Card>
       <CardHeader className="cursor-pointer" onClick={toggle}>
         <CardTitle className="flex items-center justify-between">
-          <span>{pt("Budget vs Actueel")}</span>
+          <span>{pt("Budget vs Actual")}</span>
           <span className="text-xs text-muted-foreground">
-            {open ? pt("Verberg") : pt("Toon")}
+            {open ? pt("Hide") : pt("Show")}
           </span>
         </CardTitle>
       </CardHeader>
@@ -230,12 +230,12 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
           {loading && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {pt("Laden...")}
+              {pt("Loading...")}
             </div>
           )}
           {err && (
             <p className="text-sm text-red-600">
-              {pt("Kon vergelijking niet laden")}: {err}
+              {pt("Could not load comparison")}: {err}
             </p>
           )}
           {data && !loading && !err && (
@@ -243,7 +243,7 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <div className="text-xs text-muted-foreground">
-                    {pt("Begroot (uur)")}
+                    {pt("Budgeted (hours)")}
                   </div>
                   <div className="font-semibold">
                     {data.budgeted_hours_total}
@@ -251,7 +251,7 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">
-                    {pt("Actueel (uur)")}
+                    {pt("Actual (hours)")}
                   </div>
                   <div className="font-semibold">
                     {data.actual_hours_total}
@@ -259,7 +259,7 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">
-                    {pt("Afwijking")}
+                    {pt("Variance")}
                   </div>
                   <div
                     className={`font-semibold ${varianceColor(
@@ -276,10 +276,10 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-left text-xs text-muted-foreground">
-                        <th className="py-2">{pt("Team-lid")}</th>
-                        <th className="py-2 text-right">{pt("Begroot")}</th>
-                        <th className="py-2 text-right">{pt("Actueel")}</th>
-                        <th className="py-2 text-right">{pt("Afwijking")}</th>
+                        <th className="py-2">{pt("Team member")}</th>
+                        <th className="py-2 text-right">{pt("Budgeted")}</th>
+                        <th className="py-2 text-right">{pt("Actual")}</th>
+                        <th className="py-2 text-right">{pt("Variance")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -310,7 +310,7 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
               {data.insights.length > 0 && (
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {pt("Inzichten voor volgend project")}
+                    {pt("Insights for next project")}
                   </div>
                   <ul className="list-disc pl-5 space-y-1 text-sm">
                     {data.insights.map((ins, i) => (
@@ -323,7 +323,7 @@ const LessonsBudgetComparison = ({ projectId }: { projectId: string }) => {
               {data.per_member.length === 0 && data.insights.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   {pt(
-                    "Geen begrote uren of tijdregistraties beschikbaar voor dit project.",
+                    "No budgeted hours or time entries available for this project.",
                   )}
                 </p>
               )}
