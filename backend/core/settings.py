@@ -334,6 +334,14 @@ CLAUDE_FIX_AGENT_WEBHOOK = decouple.config(
 CLAUDE_FIX_AGENT_WEBHOOK_SECRET = decouple.config(
     "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", default=""
 )
+# Optional Authorization header for the outbound webhook. REQUIRED when
+# CLAUDE_FIX_AGENT_WEBHOOK points at GitHub's repository_dispatch endpoint
+# (``https://api.github.com/repos/<owner>/<repo>/dispatches``) — the token
+# needs the ``repo`` + ``workflow`` scopes to fire the orchestrator. For a
+# self-hosted webhook that only verifies the HMAC header, leave this blank.
+CLAUDE_FIX_AGENT_WEBHOOK_AUTH = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK_AUTH", default=""
+)
 CLAUDE_AUTO_TRIAGE_ENABLED = (
     decouple.config("CLAUDE_AUTO_TRIAGE_ENABLED", default="false").lower()
     == "true"

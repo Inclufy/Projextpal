@@ -37,6 +37,7 @@ import logging
 import uuid
 from datetime import datetime
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.utils import timezone
@@ -96,6 +97,7 @@ class ClaudeAutoTriage:
         webhook_url: Optional[str] = None,
         webhook_secret: Optional[str] = None,
         enabled: Optional[bool] = None,
+        webhook_auth: Optional[str] = None,
     ) -> None:
         self.webhook_url = (
             webhook_url
@@ -111,6 +113,13 @@ class ClaudeAutoTriage:
             enabled
             if enabled is not None
             else bool(getattr(settings, "CLAUDE_AUTO_TRIAGE_ENABLED", False))
+        )
+        # Optional Authorization header for the outbound webhook — required
+        # for the GitHub repository_dispatch path (see _post_webhook).
+        self.webhook_auth = (
+            webhook_auth
+            if webhook_auth is not None
+            else getattr(settings, "CLAUDE_FIX_AGENT_WEBHOOK_AUTH", "")
         )
 
     # ------------------------------------------------------------------
@@ -215,8 +224,39 @@ class ClaudeAutoTriage:
         )
         return f"sha256={mac.hexdigest()}"
 
+    def _is_github_dispatch_url(self, url: str) -> bool:
+        """True iff *url* targets GitHub's ``repository_dispatch`` endpoint.
+
+        Pattern: ``https://api.github.com/repos/<owner>/<repo>/dispatches``.
+        We check the host + the ``/dispatches`` tail so a self-hosted proxy
+        URL stays on the generic HMAC path.
+        """
+        try:
+            parsed = urlparse(url)
+        except (ValueError, AttributeError):
+            return False
+        if parsed.scheme not in ("http", "https"):
+            return False
+        if parsed.netloc.lower() != "api.github.com":
+            return False
+        return parsed.path.rstrip("/").endswith("/dispatches")
+
     def _post_webhook(self, payload: dict[str, Any]) -> str:
         """POST the payload to the webhook; return the external tracking id.
+
+        Autodetects two shapes:
+
+        1. **GitHub repository_dispatch** — when the URL points at
+           ``api.github.com/repos/<...>/dispatches``, the payload is wrapped
+           into ``{"event_type": "claude-auto-triage", "client_payload": ...}``
+           and an ``Authorization: Bearer <pat>`` header is attached from
+           ``CLAUDE_FIX_AGENT_WEBHOOK_AUTH``. The HMAC header is also sent
+           (harmless — GitHub ignores unknown headers) so the orchestrator
+           can still verify authenticity if it reads client_payload off the
+           dispatch event. GitHub returns 204 No Content, so there is no
+           tracking id to parse.
+        2. **Generic webhook** (self-hosted orchestrator) — raw JSON body,
+           HMAC header, tracking id parsed from the response body.
 
         Isolated as a method so tests can mock it in one place.
         """
@@ -227,14 +267,31 @@ class ClaudeAutoTriage:
         except ImportError as exc:  # pragma: no cover
             raise TriageError(f"requests not installed: {exc}") from exc
 
-        body = json.dumps(payload, default=str).encode("utf-8")
-        headers = {
+        is_github = self._is_github_dispatch_url(self.webhook_url)
+        if is_github:
+            body_obj: dict[str, Any] = {
+                "event_type": "claude-auto-triage",
+                "client_payload": payload,
+            }
+        else:
+            body_obj = payload
+        body = json.dumps(body_obj, default=str).encode("utf-8")
+
+        headers: dict[str, str] = {
             "Content-Type": "application/json",
             "User-Agent": "ProjeXtPal-ClaudeAutoTriage/1.0",
         }
         sig = self._sign(body)
         if sig:
             headers["X-ProjeXtPal-Signature"] = sig
+        if is_github:
+            headers["Accept"] = "application/vnd.github+json"
+            headers["X-GitHub-Api-Version"] = "2022-11-28"
+            if self.webhook_auth:
+                auth = self.webhook_auth.strip()
+                if not auth.lower().startswith(("bearer ", "token ")):
+                    auth = f"Bearer {auth}"
+                headers["Authorization"] = auth
 
         resp = requests.post(
             self.webhook_url, data=body, headers=headers, timeout=15
@@ -243,8 +300,10 @@ class ClaudeAutoTriage:
             raise TriageError(
                 f"webhook responded {resp.status_code}: {resp.text[:300]}"
             )
-        # The receiver can return a tracking id so we can later match
-        # a callback to the agent run; fall back to our own uuid otherwise.
+        # GitHub returns 204 No Content with an empty body — synthesise
+        # a tracking id so the caller still records something unique.
+        if is_github:
+            return f"gh-dispatch-{uuid.uuid4().hex[:12]}"
         try:
             data = resp.json() or {}
         except ValueError:
