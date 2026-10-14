@@ -326,6 +326,54 @@ def _capture_old_status(sender, instance: ProductIssue, **kwargs):
 # Main dispatch
 # ---------------------------------------------------------------------------
 
+def _maybe_trigger_claude_auto_triage(issue: ProductIssue) -> None:
+    """Fire the Claude auto-triage pipeline for a brand-new P1 agent-scan.
+
+    Rationale: for P1 agent-scan issues the cron's 15-min lag is too long,
+    so we trigger immediately from the post_save signal. Lower-priority
+    agent-scan issues wait for the cron tick to keep the signal path
+    cheap.
+
+    Runs in a daemon thread so the request thread never blocks on an
+    outbound webhook. All failures are logged and swallowed — the signal
+    MUST NOT raise, or the issue's own save would roll back.
+    """
+    # Fast gate so we don't even import the triage module in the common
+    # case where this isn't an agent-scan P1.
+    if issue.source != "agent-scan" or issue.priority != "P1":
+        return
+    if issue.status != "new":
+        return
+
+    def _run() -> None:
+        try:
+            from .claude_triage import ClaudeAutoTriage, TriageError
+
+            triage = ClaudeAutoTriage()
+            if not triage.should_auto_triage(issue):
+                return
+            try:
+                agent_id = triage.trigger_fix_agent(issue)
+                triage.mark_in_progress(issue, agent_id)
+                logger.info(
+                    "claude_auto_triage: triggered %s for issue #%s",
+                    agent_id,
+                    issue.id,
+                )
+            except TriageError as exc:
+                triage.mark_failed(issue, str(exc))
+                logger.warning(
+                    "claude_auto_triage: failed to trigger for issue #%s: %s",
+                    issue.id,
+                    exc,
+                )
+        except Exception as exc:  # noqa: BLE001 — never let the signal raise
+            logger.exception("claude_auto_triage signal path crashed: %s", exc)
+
+    # Daemon thread so a slow webhook never blocks the HTTP request.
+    threading.Thread(target=_run, daemon=True).start()
+
+
 @receiver(post_save, sender=ProductIssue)
 def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kwargs):
     """Route ProductIssue lifecycle events to the right notification emails.
@@ -351,6 +399,8 @@ def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kw
         should_escalate, reason = _needs_human_escalation(issue, old_status=None)
         if should_escalate:
             _notify_superadmin_escalation(issue, issue_url, reason)
+        # Claude auto-triage: immediate trigger for P1 agent-scan (opt-in).
+        _maybe_trigger_claude_auto_triage(issue)
         return
 
     # ── 2. Escalation to superadmin (if AI can't resolve) ─────────────────
