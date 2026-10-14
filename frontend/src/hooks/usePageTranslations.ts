@@ -3440,6 +3440,18 @@ const translations: Record<string, Record<string, string>> = {
     "Actual": "Actueel",
     "Insights for next project": "Inzichten voor volgend project",
     "No budgeted hours or time entries available for this project.": "Geen begrote uren of tijdregistraties beschikbaar voor dit project.",
+
+    // === Sprint 10 UI polish — Inclufy Best Practice cards (Issue 43) ===
+    "Inclufy Best Practice": "Inclufy Best Practice",
+    "A curated, governed default — the best of every method, so you don't have to pick a framework to get started.": "Een gecureerde, bestuurde standaard — het beste van elke methodiek, zodat je geen framework hoeft te kiezen om te starten.",
+    "Light Business Case & Charter": "Lichte Business Case & Charter",
+    "Justify the project up front — vision, objectives, and a one-page charter. Borrowed from PRINCE2, kept lightweight.": "Rechtvaardig het project vooraf — visie, doelen en een charter van één pagina. Geleend van PRINCE2, bewust licht gehouden.",
+    "Flow Board with WIP": "Flow-bord met WIP",
+    "A pull-based workflow that limits work in progress, so the team finishes before it starts. Borrowed from Kanban & Agile.": "Een pull-gebaseerde workflow die work-in-progress limiteert, zodat het team afmaakt vóór het begint. Geleend van Kanban & Agile.",
+    "Milestone & Budget Health": "Mijlpaal- & Budgetgezondheid",
+    "Track milestones and budget burn with simple EVM-style health, so slippage surfaces early. Borrowed from Waterfall.": "Volg mijlpalen en budgetverbruik met eenvoudige EVM-achtige gezondheid, zodat uitloop vroeg zichtbaar wordt. Geleend van Waterfall.",
+    "Closure & Lessons Gate": "Afsluit- & Lessen-poort",
+    "Close the project deliberately: confirm deliverables and capture lessons before sign-off. Borrowed from PRINCE2.": "Sluit het project bewust af: bevestig resultaten en leg lessen vast vóór akkoord. Geleend van PRINCE2.",
   },
   fr: {
     "Cancel": "Annuler", "Save": "Enregistrer", "Delete": "Supprimer", "Edit": "Modifier", "Add": "Ajouter", "Create": "Créer", "Update": "Mettre à jour", "Close": "Fermer", "Back": "Retour", "Next": "Suivant", "Previous": "Précédent", "Submit": "Soumettre", "Confirm": "Confirmer", "Reset": "Réinitialiser", "Refresh": "Actualiser", "Search": "Rechercher", "Filter": "Filtrer", "Export": "Exporter", "Import": "Importer", "Download": "Télécharger", "Upload": "Téléverser", "Loading": "Chargement", "Actions": "Actions", "Details": "Détails", "View All": "Tout voir", "View Details": "Voir les détails", "Show More": "Afficher plus", "Show Less": "Afficher moins", "Select": "Sélectionner", "None": "Aucun", "Yes": "Oui", "No": "Non", "OK": "OK", "Apply": "Appliquer", "Clear": "Effacer", "Copy": "Copier", "Move": "Déplacer", "Archive": "Archiver", "Restore": "Restaurer", "Duplicate": "Dupliquer",
