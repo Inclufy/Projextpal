@@ -1036,3 +1036,11 @@ class TenantAIFeatureFlags(models.Model):
         if flags is None:
             return True
         return bool(getattr(flags, feature_name, True))
+
+
+# ---------------------------------------------------------------------------
+# S9-05 Member-skills catalog
+# Imported here (not inlined above) so the model code lives in its own file
+# but Django's app registry still sees the models under the ``accounts`` label.
+# ---------------------------------------------------------------------------
+from .skills_models import Skill, UserSkill  # noqa: E402, F401

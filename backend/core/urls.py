@@ -35,6 +35,9 @@ urlpatterns = [
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
 
+    # Member-skills catalog + matching (Sprint 9 Agent B / S9-05)
+    path("api/v1/skills/", include("accounts.skills_urls")),
+
     # Quotation Engine — consumed by Inclufy Finance sync-product-catalog cron
     path("api/v1/public/pricing-catalog/", PricingCatalogView.as_view(), name="pricing-catalog"),
     
