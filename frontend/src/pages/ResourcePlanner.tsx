@@ -182,14 +182,14 @@ export default function ResourcePlanner() {
       });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        toast.error(err.detail || pt("Opslaan mislukt"));
+        toast.error(err.detail || pt("Save failed"));
         return;
       }
-      toast.success(pt("Allocatie toegevoegd"));
+      toast.success(pt("Allocation added"));
       setDialogOpen(false);
       fetchPlan();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : pt("Opslaan mislukt"));
+      toast.error(e instanceof Error ? e.message : pt("Save failed"));
     } finally {
       setSaving(false);
     }
@@ -201,13 +201,13 @@ export default function ResourcePlanner() {
         method: "DELETE",
       });
       if (!r.ok && r.status !== 204) {
-        toast.error(pt("Verwijderen mislukt"));
+        toast.error(pt("Delete failed"));
         return;
       }
-      toast.success(pt("Allocatie verwijderd"));
+      toast.success(pt("Allocation deleted"));
       fetchPlan();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : pt("Verwijderen mislukt"));
+      toast.error(e instanceof Error ? e.message : pt("Delete failed"));
     }
   };
 
@@ -272,10 +272,10 @@ export default function ResourcePlanner() {
           };
         });
         const err = await r.json().catch(() => ({}));
-        toast.error(err.detail || pt("Opslaan mislukt"));
+        toast.error(err.detail || pt("Save failed"));
         return;
       }
-      toast.success(pt("Allocatie bijgewerkt"));
+      toast.success(pt("Allocation updated"));
     } catch (e) {
       // Network / exception path — revert.
       setData((prev) => {
@@ -292,7 +292,7 @@ export default function ResourcePlanner() {
           })),
         };
       });
-      toast.error(e instanceof Error ? e.message : pt("Opslaan mislukt"));
+      toast.error(e instanceof Error ? e.message : pt("Save failed"));
     }
   };
 
@@ -421,7 +421,7 @@ export default function ResourcePlanner() {
     return (
       <div className="p-6 text-sm text-muted-foreground">
         <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-        {pt("Laden...")}
+        {pt("Loading...")}
       </div>
     );
   }
@@ -430,7 +430,7 @@ export default function ResourcePlanner() {
     return (
       <div className="p-6">
         <Card className="p-4">
-          <p className="text-sm text-red-600">{pt("Kon planner niet laden")}: {error}</p>
+          <p className="text-sm text-red-600">{pt("Could not load planner")}: {error}</p>
         </Card>
       </div>
     );
@@ -448,25 +448,25 @@ export default function ResourcePlanner() {
               {pt("Resource planner")}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {pt("Totaal gepland")}: {data?.total_allocated_hours || 0}{pt("u")} {pt("voor")} {data?.member_count || 0} {pt("mensen")}
+              {pt("Total planned")}: {data?.total_allocated_hours || 0}{pt("h")} {pt("for")} {data?.member_count || 0} {pt("people")}
             </p>
           </div>
           <Button onClick={openNewDialog} data-testid="new-allocation">
             <Plus className="w-4 h-4 mr-1" />
-            {pt("Nieuwe allocatie")}
+            {pt("New allocation")}
           </Button>
         </div>
 
         {!data || data.rows.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">
-            {pt("Nog geen allocaties — plan een persoon in de tijd via +")}
+            {pt("No allocations yet — plan someone with +")}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               {/* Header: date range summary */}
               <div className="flex text-xs text-muted-foreground mb-2 border-b pb-1">
-                <div className="w-40 shrink-0">{pt("Team-lid")}</div>
+                <div className="w-40 shrink-0">{pt("Team member")}</div>
                 <div className="flex-1 flex justify-between">
                   <span>{window.start}</span>
                   <span>{window.end}</span>
@@ -485,7 +485,7 @@ export default function ResourcePlanner() {
                   >
                     {row.allocations.length === 0 && (
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        {pt("Geen allocaties")}
+                        {pt("No allocations")}
                       </span>
                     )}
                     {row.allocations.map((rawA) => {
@@ -495,7 +495,7 @@ export default function ResourcePlanner() {
                           key={a.id}
                           className={`absolute top-1/2 -translate-y-1/2 h-6 rounded ${colorForMember(idx)} opacity-90 flex items-center px-2 group hover:opacity-100 cursor-grab active:cursor-grabbing touch-none select-none`}
                           style={barStyle(a)}
-                          title={`${a.allocated_hours}${pt("u")} — ${row.user_name}${a.note ? ` — ${a.note}` : ""} (${a.start_date} → ${a.end_date})`}
+                          title={`${a.allocated_hours}${pt("h")} — ${row.user_name}${a.note ? ` — ${a.note}` : ""} (${a.start_date} → ${a.end_date})`}
                           onPointerDown={(e) => {
                             if (e.button !== 0) return;
                             beginDrag(e, row, rawA, "move");
@@ -509,11 +509,11 @@ export default function ResourcePlanner() {
                               if (e.button !== 0) return;
                               beginDrag(e, row, rawA, "resize-start");
                             }}
-                            aria-label={pt("Startdatum verschuiven")}
+                            aria-label={pt("Shift start date")}
                             data-testid={`alloc-resize-start-${a.id}`}
                           />
                           <span className="text-xs text-white truncate flex-1 pointer-events-none">
-                            {a.allocated_hours}{pt("u")}{a.note ? ` · ${a.note}` : ""}
+                            {a.allocated_hours}{pt("h")}{a.note ? ` · ${a.note}` : ""}
                           </span>
                           <button
                             type="button"
@@ -523,7 +523,7 @@ export default function ResourcePlanner() {
                               e.stopPropagation();
                               deleteAllocation(a.id);
                             }}
-                            aria-label={pt("Verwijderen")}
+                            aria-label={pt("Delete")}
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -534,7 +534,7 @@ export default function ResourcePlanner() {
                               if (e.button !== 0) return;
                               beginDrag(e, row, rawA, "resize-end");
                             }}
-                            aria-label={pt("Einddatum verschuiven")}
+                            aria-label={pt("Shift end date")}
                             data-testid={`alloc-resize-end-${a.id}`}
                           />
                         </div>
@@ -551,17 +551,17 @@ export default function ResourcePlanner() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{pt("Nieuwe allocatie")}</DialogTitle>
+            <DialogTitle>{pt("New allocation")}</DialogTitle>
             <DialogDescription>
-              {pt("Plan een team-lid in op dit project voor een periode.")}
+              {pt("Plan a team member on this project for a period.")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>{pt("Team-lid")}</Label>
+              <Label>{pt("Team member")}</Label>
               <Select value={memberId} onValueChange={setMemberId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={pt("Selecteer team-lid")} />
+                  <SelectValue placeholder={pt("Select team member")} />
                 </SelectTrigger>
                 <SelectContent>
                   {data?.rows.map((r) => (
@@ -573,7 +573,7 @@ export default function ResourcePlanner() {
               </Select>
               {data?.rows.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {pt("Geen team-leden op dit project. Voeg eerst leden toe via het team-overzicht.")}
+                  {pt("No team members on this project. Add members via the team overview first.")}
                 </p>
               )}
             </div>
@@ -583,26 +583,26 @@ export default function ResourcePlanner() {
                 <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
               <div>
-                <Label>{pt("Eind")}</Label>
+                <Label>{pt("End")}</Label>
                 <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
             </div>
             <div>
-              <Label>{pt("Uren")}</Label>
+              <Label>{pt("Hours")}</Label>
               <Input type="number" step="0.5" min="0" value={hours} onChange={(e) => setHours(e.target.value)} />
             </div>
             <div>
-              <Label>{pt("Notitie")}</Label>
-              <Input placeholder={pt("Bijv. ontwerp fase")} value={note} onChange={(e) => setNote(e.target.value)} />
+              <Label>{pt("Note")}</Label>
+              <Input placeholder={pt("e.g. design phase")} value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              {pt("Annuleer")}
+              {pt("Cancel")}
             </Button>
             <Button onClick={saveAllocation} disabled={saving || !memberId}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              {pt("Opslaan")}
+              {pt("Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
