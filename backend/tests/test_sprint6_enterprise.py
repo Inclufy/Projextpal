@@ -154,13 +154,17 @@ class TestAuditLog:
         assert log.chars_used > 0
         assert log.user_id == user.id
 
-    def test_log_access_zero_chars_skipped(self, db, user, company):
+    def test_log_access_zero_chars_still_recorded(self, db, user, company):
+        # BUG-#37 fix: chars_used=0 is a valid "attempt without context"
+        # audit row — GDPR requires the WHO/WHICH-surface/WHEN trail even
+        # when no document context was pulled into the prompt.
         AIContextAccessLog.objects.all().delete()
         log_access(
             user=user, context_type="project", context_id=1,
             surface="x", chars_used=0, company=company,
         )
-        assert AIContextAccessLog.objects.count() == 0
+        assert AIContextAccessLog.objects.count() == 1
+        assert AIContextAccessLog.objects.first().chars_used == 0
 
     def test_log_access_swallows_errors(self, db, user, company):
         # Pass a context_type longer than max_length to force a DB error;
