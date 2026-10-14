@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
+import { usePageTranslations } from "@/hooks/usePageTranslations";
 
 interface CatalogSkill {
   id: number;
@@ -43,6 +44,19 @@ interface UserSkill {
 const LEVELS: UserSkill["level"][] = ["beginner", "intermediate", "expert"];
 
 const MySkillsTab = () => {
+  const { pt } = usePageTranslations();
+  const levelLabel = (l: UserSkill["level"]) => {
+    switch (l) {
+      case "beginner":
+        return pt("Beginner");
+      case "intermediate":
+        return pt("Intermediate");
+      case "expert":
+        return pt("Expert");
+      default:
+        return l;
+    }
+  };
   const [catalog, setCatalog] = useState<CatalogSkill[]>([]);
   const [mine, setMine] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +78,7 @@ const MySkillsTab = () => {
       setMine(me ?? []);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load.");
+      setError(err instanceof Error ? err.message : pt("Failed to load."));
     } finally {
       setLoading(false);
     }
@@ -87,7 +101,7 @@ const MySkillsTab = () => {
       setAddYears("");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add.");
+      setError(err instanceof Error ? err.message : pt("Failed to add."));
     } finally {
       setSubmitting(false);
     }
@@ -98,7 +112,7 @@ const MySkillsTab = () => {
       await api.delete(`/skills/me/${id}/`);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove.");
+      setError(err instanceof Error ? err.message : pt("Failed to remove."));
     }
   };
 
@@ -107,7 +121,7 @@ const MySkillsTab = () => {
       await api.patch(`/skills/me/${id}/`, { level });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update.");
+      setError(err instanceof Error ? err.message : pt("Failed to update."));
     }
   };
 
@@ -117,9 +131,9 @@ const MySkillsTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>My skills</CardTitle>
+        <CardTitle>{pt("My skills")}</CardTitle>
         <CardDescription>
-          Declare the skills you bring so you show up when a project needs them.
+          {pt("Declare the skills you bring so you show up when a project needs them.")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -131,10 +145,10 @@ const MySkillsTab = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <div>
-            <label className="text-xs text-muted-foreground">Skill</label>
+            <label className="text-xs text-muted-foreground">{pt("Skill")}</label>
             <Select value={addSkillCode} onValueChange={setAddSkillCode}>
               <SelectTrigger>
-                <SelectValue placeholder="Pick a skill" />
+                <SelectValue placeholder={pt("Pick a skill")} />
               </SelectTrigger>
               <SelectContent>
                 {availableSkills.map((s) => (
@@ -146,7 +160,7 @@ const MySkillsTab = () => {
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Level</label>
+            <label className="text-xs text-muted-foreground">{pt("Level")}</label>
             <Select
               value={addLevel}
               onValueChange={(v) => setAddLevel(v as UserSkill["level"])}
@@ -157,35 +171,35 @@ const MySkillsTab = () => {
               <SelectContent>
                 {LEVELS.map((l) => (
                   <SelectItem key={l} value={l}>
-                    {l[0].toUpperCase() + l.slice(1)}
+                    {levelLabel(l)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Years</label>
+            <label className="text-xs text-muted-foreground">{pt("Years")}</label>
             <Input
               type="number"
               min={0}
               value={addYears}
               onChange={(e) => setAddYears(e.target.value)}
-              placeholder="optional"
+              placeholder={pt("optional")}
             />
           </div>
           <Button
             onClick={addSkill}
             disabled={submitting || !addSkillCode || availableSkills.length === 0}
           >
-            Add
+            {pt("Add")}
           </Button>
         </div>
 
         {loading ? (
-          <p className="text-muted-foreground">Loading…</p>
+          <p className="text-muted-foreground">{pt("Loading...")}</p>
         ) : mine.length === 0 ? (
           <p className="text-muted-foreground">
-            No skills declared yet. Add your strongest ones above.
+            {pt("No skills declared yet. Add your strongest ones above.")}
           </p>
         ) : (
           <ul className="divide-y">
@@ -199,14 +213,14 @@ const MySkillsTab = () => {
                     {us.skill.name}{" "}
                     {us.verified_at && (
                       <Badge variant="secondary" className="ml-2">
-                        verified
+                        {pt("verified")}
                       </Badge>
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {us.skill.category}
                     {us.years_experience != null
-                      ? ` · ${us.years_experience}y experience`
+                      ? ` · ${us.years_experience}${pt("y experience")}`
                       : ""}
                   </p>
                 </div>
@@ -223,7 +237,7 @@ const MySkillsTab = () => {
                     <SelectContent>
                       {LEVELS.map((l) => (
                         <SelectItem key={l} value={l}>
-                          {l[0].toUpperCase() + l.slice(1)}
+                          {levelLabel(l)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -232,7 +246,7 @@ const MySkillsTab = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => removeSkill(us.id)}
-                    aria-label="Remove"
+                    aria-label={pt("Remove")}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
