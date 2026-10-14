@@ -8,7 +8,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product_issues', '0003_add_comment_attachments'),
+        # 0004_add_metadata_claude_auto_triage already landed on prod ahead
+        # of this branch (origin/master was behind). Depend on it so the
+        # DAG stays linear instead of forking.
+        ('product_issues', '0004_add_metadata_claude_auto_triage'),
     ]
 
     operations = [
