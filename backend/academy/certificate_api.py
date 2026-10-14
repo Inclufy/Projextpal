@@ -111,17 +111,22 @@ def generate_certificate(request, enrollment_id):
         # Create certificate
         cert_number = f"PM-{datetime.now().year}-{Certificate.objects.count()+1:06d}"
         
+        # Sprint 9 S9-03 — persist the ACTUAL counts from the eligibility
+        # dict instead of hard-coded placeholders (85/24/20/1/15/10). The
+        # eligibility payload is the server-side source of truth for what
+        # the learner actually completed, so the certificate record now
+        # matches the "earned" state rather than fake marketing numbers.
         cert = Certificate.objects.create(
             enrollment=enrollment,
             certificate_number=cert_number,
             verification_code=secrets.token_urlsafe(9)[:12].upper(),
             skills_data=skills_data,
-            total_score=85,
-            lessons_completed=24,
-            quizzes_passed=20,
-            exams_passed=1,
-            simulations_completed=15,
-            practice_submitted=10
+            lessons_completed=eligibility.get("lessons_completed", 0),
+            quizzes_passed=eligibility.get("quizzes_passed", 0),
+            exams_passed=eligibility.get("exams_passed", 0),
+            simulations_completed=eligibility.get("simulations_completed", 0),
+            practice_submitted=eligibility.get("practice_submitted", 0),
+            total_score=eligibility.get("total_score", 0),
         )
 
         # Render PDF and attach to cert.pdf_file so /download/ returns a
