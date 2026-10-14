@@ -59,6 +59,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { IssuesTab } from "@/components/copilot/IssuesTab";
+import AIContextUsedChip, { type AIContextUsed } from "@/components/AIContextUsedChip";
 
 /* ─── Types ─── */
 type CopilotTab = "chat" | "guide" | "setup" | "issues";
@@ -69,6 +70,7 @@ interface Message {
   content: string;
   timestamp: Date;
   formSchema?: any;
+  aiContextUsed?: AIContextUsed | null;
 }
 
 interface ChatResponse {
@@ -87,6 +89,7 @@ interface ChatResponse {
 interface SendMessageResponse {
   user_message: { id: number; content: string };
   ai_response: { id: number; content: string; original_ai_response?: string };
+  ai_context_used?: AIContextUsed | null;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1190,7 +1193,7 @@ export default function AICopilotSidebar() {
           if (parsed.form_type && parsed.fields) { formSchema = parsed; setActiveForm(parsed); }
         } catch {}
       }
-      const aiResponse: Message = { id: (response.ai_response?.id || Date.now() + 1).toString(), role: "assistant", content: response.ai_response?.content || "Sorry, I could not process your request.", timestamp: new Date(), formSchema };
+      const aiResponse: Message = { id: (response.ai_response?.id || Date.now() + 1).toString(), role: "assistant", content: response.ai_response?.content || "Sorry, I could not process your request.", timestamp: new Date(), formSchema, aiContextUsed: response.ai_context_used || null };
       setMessages((prev) => [...prev, aiResponse]);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -1572,6 +1575,11 @@ export default function AICopilotSidebar() {
                       return (
                         <div key={message.id}>
                           <AIMessageRenderer message={{ id: message.id, role: message.role, content: message.content }} onCopy={handleCopyMessage} onFeedback={handleFeedback} showActions={message.role === "assistant"} />
+                          {message.role === "assistant" && message.aiContextUsed && (
+                            <div className="ml-9 mt-1 mb-2" data-testid={`ai-context-chip-${message.id}`}>
+                              <AIContextUsedChip used={message.aiContextUsed} />
+                            </div>
+                          )}
                           {showIssueCta && (
                             <button
                               onClick={() => openIssueFromChat(prevUserMsg)}
