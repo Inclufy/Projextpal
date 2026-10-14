@@ -1,13 +1,14 @@
 import { LayoutDashboard, MessageSquare, FolderKanban, Users, Inbox,
-  FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare, 
-  GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText, 
-  Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers, 
+  FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare,
+  GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText,
+  Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, Sparkles,
-  Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
-  TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
+  Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3,
+  TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag,
   Palette, Code, TestTube, Wrench, FileEdit, Settings, Settings2, CreditCard, Lock, GanttChartSquare,
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star,
+  ArrowLeft
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -1446,7 +1447,52 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className={cn("px-1", roomyNav ? "space-y-1.5 py-2" : "space-y-0.5")}>
-              {menuItems.map((item) => {
+              {/* S8-01 — Contextual sidebar (Jira/Linear/Notion stijl).
+                  Inside a project or programme, the global nav disappears and
+                  is replaced by a "Terug naar Projecten/Programma's" link and
+                  the current entity's title + status chip. The project/
+                  programme phases below render as before. Outside this
+                  context (/dashboard, /projects, /team, …) the global nav
+                  is unchanged. */}
+              {(isProjectContext || isProgramContext) && !isCollapsed && (
+                <div className="px-1 pb-2">
+                  <NavLink
+                    to={isProjectContext ? "/projects" : "/programs"}
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-md hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>
+                      {isProjectContext
+                        ? (isNL ? "Terug naar Projecten" : "Back to Projects")
+                        : (isNL ? "Terug naar Programma's" : "Back to Programs")}
+                    </span>
+                  </NavLink>
+                  <div className="mt-2 px-2">
+                    <h3 className="text-sm font-semibold text-foreground truncate" title={(isProjectContext ? project?.name : program?.name) || ""}>
+                      {(isProjectContext ? project?.name : program?.name) || (isNL ? "Laden…" : "Loading…")}
+                    </h3>
+                    {(isProjectContext ? project?.status : program?.status) && (
+                      <Badge variant="outline" className="text-[10px] mt-1 capitalize">
+                        {(isProjectContext ? project?.status : program?.status)?.toString().replace(/_/g, " ")}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+              {(isProjectContext || isProgramContext) && isCollapsed && (
+                <NavLink
+                  to={isProjectContext ? "/projects" : "/programs"}
+                  title={isProjectContext
+                    ? (isNL ? "Terug naar Projecten" : "Back to Projects")
+                    : (isNL ? "Terug naar Programma's" : "Back to Programs")}
+                  className="mx-auto my-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </NavLink>
+              )}
+
+              {/* Global nav only shown outside project/programme context. */}
+              {!(isProjectContext || isProgramContext) && menuItems.map((item) => {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
