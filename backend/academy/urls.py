@@ -138,6 +138,13 @@ urlpatterns = [
     path('admin/skills/generate/', admin_api.generate_skills_ai, name='admin-generate-skills'),
     path('admin/practice/', admin_api.list_practice_assignments, name='admin-list-practice'),
     path('admin/practice/create/', admin_api.create_practice_assignment, name='admin-create-practice'),
+    # Admin practice-review surface (B4) — the UI side of the eligibility gate.
+    path('admin/practice-submissions/',
+         admin_api.list_practice_submissions,
+         name='admin-list-practice-submissions'),
+    path('admin/practice-submissions/<int:submission_id>/',
+         admin_api.review_practice_submission,
+         name='admin-review-practice-submission'),
     path('admin/exams/', admin_api.list_exams, name='admin-list-exams'),
     path('admin/exams/create/', admin_api.create_exam, name='admin-create-exam'),
     path('admin/certificates/', admin_api.list_certificates, name='admin-list-certificates'),
