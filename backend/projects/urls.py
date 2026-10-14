@@ -69,6 +69,7 @@ from .budget_views import (
     set_team_member_budget as project_set_team_member_budget,
     project_time_vs_budget,
 )
+from .lessons_budget_views import project_lessons_budget_comparison
 from execution.s7_cost_planner_views import project_time_vs_budget_cost
 from execution.s7_resource_planner_views import project_resource_plan
 
@@ -204,5 +205,11 @@ urlpatterns = [
         "<int:pk>/resource-plan/",
         project_resource_plan,
         name="project-resource-plan",
+    ),
+    # Sprint 9 S9-02 — Lessons-learned budget vs actual rollup.
+    path(
+        "<int:pk>/lessons/budget-comparison/",
+        project_lessons_budget_comparison,
+        name="project-lessons-budget-comparison",
     ),
 ]
