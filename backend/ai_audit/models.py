@@ -121,8 +121,12 @@ def log_access(
     is wrapped in a broad ``except`` so a DB outage, migration lag, or
     permission issue cannot bubble up into the LLM path.
     """
-    if not chars_used:
-        return  # nothing was actually sent to the LLM
+    # chars_used==0 is a valid "access attempt without context" record for
+    # GDPR-grade audit: tenants need to see WHO invoked AI on WHICH surface
+    # even when no document context was pulled in. Only skip when the whole
+    # payload is void (no surface + no context_id).
+    if not chars_used and not (surface or context_id):
+        return
     try:
         if company is None:
             company = getattr(user, "company", None) or getattr(
