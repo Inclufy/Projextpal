@@ -235,6 +235,12 @@ REST_FRAMEWORK = {
         # throttle. Lift this per-tenant via ``TenantAIFeatureFlags`` if
         # we ever need an enterprise tier.
         "ai_context": "20/hour",
+        # Sprint 12 — Resend inbound-email webhook (reply-by-email on
+        # decision-request flow). HMAC-authenticated, so this is defense-
+        # in-depth: if the signing secret ever leaks, 60/h/IP caps the
+        # blast radius before rotation. Real traffic is < 1 reply/issue,
+        # so the ceiling is generous.
+        "resend_inbound": "60/hour",
     },
 }
 

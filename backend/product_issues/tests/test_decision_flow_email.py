@@ -116,3 +116,29 @@ class TestNeedsDecisionEmail:
                 issue.save()
         assert not nd.called
         assert rr.called
+
+    def test_subject_carries_issue_id_marker_for_inbound_parser(self, db, issue):
+        """P0 regression — the inbound-email reply parser (S12-07) extracts
+        the issue id from the subject's ``#<n>`` marker. Without this
+        guard the whole reply-by-email flow is dead code because the
+        parser can never route the reply to the right issue."""
+        from product_issues.inbound_email import parse_subject_issue_id
+        issue.decision_questions = SAMPLE_QUESTIONS
+        captured = {}
+        def _capture(**kwargs):
+            captured.update(kwargs)
+        with patch(
+            "product_issues.signals._send_email_safe", side_effect=_capture,
+        ):
+            with patch(
+                "product_issues.signals._admin_emails",
+                return_value=["admin@s12.test"],
+            ):
+                issue.status = "needs-decision"
+                issue.save()
+        subject = captured.get("subject", "")
+        parsed_id = parse_subject_issue_id(subject)
+        assert parsed_id == issue.id, (
+            f"subject {subject!r} must contain #{issue.id} for the inbound "
+            "parser to route the reply; got parsed_id=" + repr(parsed_id)
+        )

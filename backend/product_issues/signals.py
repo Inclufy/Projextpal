@@ -540,7 +540,11 @@ def _notify_reporter_needs_decision(issue: ProductIssue, issue_url: str) -> None
         if (issue.reporter and issue.reporter.first_name)
         else "daar"
     )
-    subject = f"{_app_prefix(issue)} Beslissing nodig: {issue.title[:70]}"
+    # P0 fix — must include #<issue.id> so the inbound-email parser
+    # (S12-07, parse_subject_issue_id) can route the reply back to the
+    # correct issue when the reporter answers from their mail client.
+    # Without this marker the whole reply-by-email path is dead code.
+    subject = f"{_app_prefix(issue)} #{issue.id} Beslissing nodig: {issue.title[:60]}"
 
     # Plain-text — rendered for mobile mail apps that strip HTML. Each
     # question is numbered so the reader can refer to them by number

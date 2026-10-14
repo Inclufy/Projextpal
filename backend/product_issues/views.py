@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from .claude_triage import ClaudeAutoTriage, TriageError
@@ -429,11 +430,18 @@ class ResendInboundDecisionView(APIView):
     signature in ``X-Resend-Signature`` (verified against
     ``RESEND_INBOUND_SIGNING_SECRET``) IS the authentication; we fail
     closed when the secret is unset so a misconfigured environment cannot
-    accept unverified mail by accident.
+    accept unverified mail by accident. The ScopedRateThrottle below caps
+    requests at the DRF-settings ``resend_inbound`` scope (default 60/h/IP)
+    so an attacker who learned the secret cannot flood this endpoint.
     """
 
     authentication_classes: list = []
     permission_classes: list = []
+    # Scoped rate throttle — rate configured in DRF's REST_FRAMEWORK settings
+    # under DEFAULT_THROTTLE_RATES['resend_inbound']. Falls back to the
+    # anonymous throttle rate when the scope is not configured.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "resend_inbound"
 
     def post(self, request):
         from .inbound_email import (
