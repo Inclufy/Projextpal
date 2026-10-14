@@ -1,9 +1,6 @@
-import hashlib
-import hmac
 import logging
+import uuid
 
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
@@ -12,7 +9,10 @@ from rest_framework.views import APIView
 
 from .claude_triage import ClaudeAutoTriage, TriageError
 from .models import ProductIssue, ProductIssueComment
+from .permissions import CanAnswerDecision, IsAutoFixWorker
 from .serializers import (
+    AnswerDecisionSerializer,
+    NeedsDecisionRequestSerializer,
     ProductIssueAutoCISerializer,
     ProductIssueCommentSerializer,
     ProductIssueSerializer,
@@ -20,6 +20,63 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# Terminal statuses a decision cannot be re-opened on — attempting a worker
+# POST or an answer POST on one of these returns 409 instead of mutating the
+# archived audit trail.
+_TERMINAL_STATUSES = {"resolved", "wont-fix", "duplicate", "closed"}
+
+
+def _validate_answers(questions: list[dict], answers: dict) -> dict:
+    """Shape-check answers against the open question set.
+
+    Returns the cleaned answers dict. Raises ``ValueError`` with a dict of
+    per-question errors (same shape the view echoes back as 400) so the
+    caller can wrap it in a Response.
+    """
+    by_id: dict[str, dict] = {q["id"]: q for q in questions if isinstance(q, dict)}
+    cleaned: dict[str, object] = {}
+    errors: dict[str, str] = {}
+    for qid, raw in answers.items():
+        q = by_id.get(qid)
+        if q is None:
+            errors[qid] = "unknown question id"
+            continue
+        qtype = q.get("type")
+        if qtype == "single_choice":
+            if not isinstance(raw, str) or raw not in (q.get("choices") or []):
+                errors[qid] = "answer must be one of the listed choices"
+                continue
+            cleaned[qid] = raw
+        elif qtype == "multi_choice":
+            allowed = set(q.get("choices") or [])
+            if not isinstance(raw, list) or not raw:
+                errors[qid] = "answer must be a non-empty list of choices"
+                continue
+            bad = [c for c in raw if not isinstance(c, str) or c not in allowed]
+            if bad:
+                errors[qid] = "unknown choice(s): " + ", ".join(bad[:3])
+                continue
+            # Dedupe while preserving order, cap at the question's choice count.
+            seen: list[str] = []
+            for c in raw:
+                if c not in seen:
+                    seen.append(c)
+            cleaned[qid] = seen
+        elif qtype == "text":
+            if not isinstance(raw, str) or not raw.strip():
+                errors[qid] = "answer must be non-empty text"
+                continue
+            cleaned[qid] = raw.strip()[:4000]
+        else:
+            errors[qid] = f"question type {qtype!r} is not answerable"
+    missing = [qid for qid in by_id if qid not in cleaned and qid not in errors]
+    for qid in missing:
+        errors[qid] = "answer is required"
+    if errors:
+        raise ValueError(errors)
+    return cleaned
 
 
 class ProductIssueViewSet(viewsets.ModelViewSet):
@@ -76,6 +133,216 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
         ser.is_valid(raise_exception=True)
         ser.save(triaged_at=timezone.now())
         return Response(ProductIssueSerializer(issue).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="needs-decision",
+        permission_classes=[IsAutoFixWorker],
+    )
+    def needs_decision(self, request, pk=None):
+        """Worker opens a decision round on this issue.
+
+        Body: ``{questions: [...], worker_run_id?: str, reason?: str}``.
+        Side effects: status → ``needs-decision``, questions replace any
+        previously-open round (prior round is closed-out in history with
+        outcome ``superseded``), an audit row is appended with the new
+        round id + requested_at + worker_run_id. The post-save signal in
+        ``signals.py`` picks up the status change and fires the Resend
+        email (wired in S12-04).
+        """
+        # Bypass tenant scoping for the worker: get the raw row by pk so a
+        # cross-tenant superuser worker can post on any company's issue.
+        issue = ProductIssue.objects.filter(pk=pk).first()
+        if issue is None:
+            return Response(
+                {"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        if issue.status in _TERMINAL_STATUSES:
+            return Response(
+                {
+                    "detail": (
+                        f"Issue is {issue.status}; reopen it before requesting "
+                        "another decision."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        ser = NeedsDecisionRequestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        payload = ser.validated_data
+        questions = [dict(q) for q in payload["questions"]]
+        worker_run_id = payload.get("worker_run_id") or ""
+        reason = payload.get("reason") or ""
+        now = timezone.now()
+        round_id = uuid.uuid4().hex[:12]
+
+        history = list(issue.decision_history or [])
+        # Supersede any currently-open round so history always makes sense.
+        for row in history:
+            if row.get("outcome") == "awaiting_answer":
+                row["outcome"] = "superseded"
+                row["superseded_at"] = now.isoformat()
+        history.append(
+            {
+                "round_id": round_id,
+                "questions": questions,
+                "answers": {},
+                "requested_at": now.isoformat(),
+                "answered_at": None,
+                "answered_by": None,
+                "worker_run_id": worker_run_id,
+                "reason": reason,
+                "outcome": "awaiting_answer",
+            }
+        )
+
+        issue.decision_questions = questions
+        issue.decision_answers = {}
+        issue.decision_history = history
+        issue.decision_last_requested_at = now
+        issue.status = "needs-decision"
+        issue.save(
+            update_fields=[
+                "decision_questions",
+                "decision_answers",
+                "decision_history",
+                "decision_last_requested_at",
+                "status",
+                "updated_at",
+            ]
+        )
+        logger.info(
+            "product_issue %s moved to needs-decision (round=%s, worker=%s, q=%s)",
+            issue.id, round_id, worker_run_id, len(questions),
+        )
+        return Response(
+            {
+                "status": issue.status,
+                "round_id": round_id,
+                "questions": questions,
+                "decision_last_requested_at": issue.decision_last_requested_at,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="answer-decision",
+        permission_classes=[permissions.IsAuthenticated, CanAnswerDecision],
+    )
+    def answer_decision(self, request, pk=None):
+        """Reporter / tenant admin answers the open decision round.
+
+        Body: ``{answers: {q_id: value, ...}, free_text?: str}``. All open
+        questions must be answered in a single POST (we don't want half-
+        answered rounds re-triggering the worker). On success the issue
+        moves to status ``in-progress``, decision_answers is stored, the
+        history row for the open round is closed with outcome
+        ``awaiting_worker``, and a comment is attached for the audit trail.
+        The orchestrator (S12-08) picks this up and re-queues the worker.
+        """
+        issue = self.get_object()
+        if issue.status != "needs-decision":
+            return Response(
+                {"detail": f"Issue is not awaiting a decision (status={issue.status})."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        questions = list(issue.decision_questions or [])
+        if not questions:
+            return Response(
+                {"detail": "No open questions to answer."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        ser = AnswerDecisionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            cleaned = _validate_answers(questions, ser.validated_data["answers"])
+        except ValueError as exc:
+            return Response(
+                {"answers": exc.args[0]}, status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        free_text = (ser.validated_data.get("free_text") or "").strip()
+        answered_by = getattr(request.user, "email", None) or str(request.user.id)
+
+        history = list(issue.decision_history or [])
+        updated_row = None
+        for row in history:
+            if row.get("outcome") == "awaiting_answer":
+                row["answers"] = cleaned
+                row["answered_at"] = now.isoformat()
+                row["answered_by"] = answered_by
+                if free_text:
+                    row["answered_free_text"] = free_text[:4000]
+                row["outcome"] = "awaiting_worker"
+                updated_row = row
+                break
+        if updated_row is None:
+            # Shouldn't happen given status == needs-decision, but be
+            # defensive: append a synthetic row rather than lose the input.
+            updated_row = {
+                "round_id": uuid.uuid4().hex[:12],
+                "questions": questions,
+                "answers": cleaned,
+                "requested_at": None,
+                "answered_at": now.isoformat(),
+                "answered_by": answered_by,
+                "answered_free_text": free_text[:4000] if free_text else None,
+                "worker_run_id": "",
+                "outcome": "awaiting_worker",
+            }
+            history.append(updated_row)
+
+        issue.decision_answers = cleaned
+        issue.decision_history = history
+        issue.status = "in-progress"
+        issue.save(
+            update_fields=[
+                "decision_answers",
+                "decision_history",
+                "status",
+                "updated_at",
+            ]
+        )
+
+        # Audit comment so the thread shows the answer alongside other
+        # events. Internal-visibility so the reporter sees it on their own
+        # issue, same as needs-info replies.
+        summary_lines = ["**Decision answered.**"]
+        for q in questions:
+            qid = q.get("id")
+            val = cleaned.get(qid)
+            if isinstance(val, list):
+                val = ", ".join(val)
+            summary_lines.append(f"- {q.get('text', qid)} → **{val}**")
+        if free_text:
+            summary_lines.append("")
+            summary_lines.append(free_text)
+        ProductIssueComment.objects.create(
+            issue=issue,
+            author=answered_by,
+            body="\n".join(summary_lines),
+            is_triage_step=False,
+            visibility=ProductIssueComment.VISIBILITY_PUBLIC,
+        )
+
+        logger.info(
+            "product_issue %s decision answered by %s (round=%s)",
+            issue.id, answered_by, updated_row.get("round_id"),
+        )
+        return Response(
+            {
+                "status": issue.status,
+                "round_id": updated_row.get("round_id"),
+                "answers": cleaned,
+                "answered_at": updated_row.get("answered_at"),
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="comment")
     def comment(self, request, pk=None):
