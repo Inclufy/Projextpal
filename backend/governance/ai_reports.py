@@ -3,6 +3,7 @@ AI-powered report generation using OpenAI GPT.
 """
 import json
 import logging
+from datetime import date
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from django.conf import settings
@@ -10,6 +11,30 @@ from django.conf import settings
 from core.llm_keys import get_langchain_openai_kwargs
 
 logger = logging.getLogger(__name__)
+
+# Dutch month names so the "Vandaag is …" directive reads correctly for NL
+# tenants without pulling in Babel/strftime-locale machinery.
+_NL_MONTHS = (
+    "januari", "februari", "maart", "april", "mei", "juni",
+    "juli", "augustus", "september", "oktober", "november", "december",
+)
+
+
+def _today_directive() -> str:
+    """Return a short bilingual system-prompt line stating today's date.
+
+    The LLM has no notion of "now", so without this it hallucinates dates
+    (observed: a governance report dated "24 oktober 2023" generated in
+    2026).  We inject the real date in both ISO form (unambiguous) and
+    NL long form (matches the Dutch headings the model otherwise fabricates).
+    """
+    today = date.today()
+    nl_long = f"{today.day} {_NL_MONTHS[today.month - 1]} {today.year}"
+    return (
+        f"[CURRENT DATE — AUTHORITATIVE] Today is {today.isoformat()} "
+        f"({nl_long}). Use this date verbatim wherever the report asks for "
+        f"\"Current date\" or similar; never fabricate another date."
+    )
 
 REPORT_PROMPTS = {
     "portfolio-analysis": {
@@ -210,8 +235,12 @@ def generate_report(report_id, context_data, company=None, language="nl"):
 
         # Prepend the UI-language directive to the EN-hardcoded templates
         # so the model answers in the user's language without rewriting all
-        # 14 REPORT_PROMPTS entries.
+        # 14 REPORT_PROMPTS entries.  Also inject today's real date — the
+        # templates say "date: Current date" but gpt-4o has no clock and
+        # will otherwise invent one (observed hallucination: "24 oktober 2023"
+        # on a 2026 report).
         system_prompt = prepend_language(prompt_config["system"], language)
+        system_prompt = f"{_today_directive()}\n\n{system_prompt}"
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", prompt_config["human"]),
