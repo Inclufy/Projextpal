@@ -19,6 +19,13 @@ from product_issues.inbound_email import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _no_ssl_redirect(settings):
+    # Prod forces https (SECURE_SSL_REDIRECT); without this APIClient
+    # POSTs land on a 301 instead of hitting the view.
+    settings.SECURE_SSL_REDIRECT = False
+
+
 SAMPLE_QUESTIONS = [
     {
         "id": "latency_target",

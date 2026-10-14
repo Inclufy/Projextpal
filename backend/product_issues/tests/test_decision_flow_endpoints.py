@@ -17,6 +17,14 @@ from product_issues.models import ProductIssue, ProductIssueComment
 User = get_user_model()
 
 
+@pytest.fixture(autouse=True)
+def _no_ssl_redirect(settings):
+    # Prod forces https (SECURE_SSL_REDIRECT); the APIClient speaks http
+    # → every POST turns into a 301 and `.data` disappears. Mirror the
+    # pattern from tests/security/test_cross_tenant_isolation.py.
+    settings.SECURE_SSL_REDIRECT = False
+
+
 @pytest.fixture
 def company(db) -> Company:
     return Company.objects.create(name="S12 Endpoint Co")
