@@ -1,9 +1,16 @@
+import hashlib
+import hmac
+import logging
+
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .claude_triage import ClaudeAutoTriage, TriageError
 from .models import ProductIssue, ProductIssueComment
 from .serializers import (
     ProductIssueAutoCISerializer,
@@ -11,6 +18,8 @@ from .serializers import (
     ProductIssueSerializer,
     ProductIssueTriageUpdateSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProductIssueViewSet(viewsets.ModelViewSet):
@@ -131,6 +140,142 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
         return Response(
             ProductIssueCommentSerializer(comment).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class ProductIssueClaudeCallbackView(APIView):
+    """
+    POST /api/v1/product-issues/<id>/claude-callback/
+
+    Called by the external Claude fix-agent orchestrator once it has
+    opened / merged a PR for an auto-triaged issue, or when the fix
+    attempt failed. Body:
+
+        {
+          "status": "pr_opened" | "merged" | "failed",
+          "pr_url": "https://...",        # optional
+          "commit_sha": "abc123",         # optional
+          "agent_id": "run_abc123",       # optional — correlation hint
+          "error": "..."                  # optional, for status=failed
+        }
+
+    Authentication: shared-secret HMAC over the request body in the
+    ``X-ProjeXtPal-Signature`` header (``sha256=<hex>``). The secret is
+    ``CLAUDE_FIX_AGENT_WEBHOOK_SECRET``. If no secret is configured on
+    the server the endpoint falls back to IsAuthenticated (dev only).
+    """
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes: list = []
+
+    _ALLOWED_STATUSES = {"pr_opened", "merged", "failed"}
+
+    def _verify_signature(self, request) -> bool:
+        secret = getattr(settings, "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", "") or ""
+        if not secret:
+            # Dev / local: require an authenticated user instead.
+            return bool(request.user and request.user.is_authenticated)
+        header = request.META.get("HTTP_X_PROJEXTPAL_SIGNATURE", "")
+        if not header or "=" not in header:
+            return False
+        algo, _, provided = header.partition("=")
+        if algo != "sha256":
+            return False
+        expected = hmac.new(
+            secret.encode("utf-8"), request.body, hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(expected, provided)
+
+    def post(self, request, pk=None):
+        if not self._verify_signature(request):
+            return Response(
+                {"error": "invalid signature"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        issue = get_object_or_404(ProductIssue, pk=pk)
+
+        new_status = (request.data.get("status") or "").strip()
+        if new_status not in self._ALLOWED_STATUSES:
+            return Response(
+                {"error": f"status must be one of {sorted(self._ALLOWED_STATUSES)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        pr_url = (request.data.get("pr_url") or "").strip()
+        commit_sha = (request.data.get("commit_sha") or "").strip()
+        agent_id = (request.data.get("agent_id") or "").strip()
+        error_msg = (request.data.get("error") or "").strip()
+
+        meta = dict(issue.metadata or {})
+        meta["claude_callback_at"] = timezone.now().isoformat()
+        meta["claude_callback_status"] = new_status
+        if pr_url:
+            meta["claude_pr_url"] = pr_url
+        if commit_sha:
+            meta["claude_commit_sha"] = commit_sha
+        if agent_id:
+            meta["claude_agent_id"] = agent_id
+        if error_msg:
+            meta["claude_last_error"] = error_msg[:500]
+        issue.metadata = meta
+
+        if new_status == "pr_opened":
+            issue.status = "in-progress"
+            if pr_url:
+                issue.linked_pr_url = pr_url
+        elif new_status == "merged":
+            issue.status = "resolved"
+            issue.resolved_at = timezone.now()
+            if pr_url:
+                issue.linked_pr_url = pr_url
+            if not issue.resolution_summary:
+                issue.resolution_summary = (
+                    f"Auto-resolved by Claude fix agent"
+                    f"{' — ' + pr_url if pr_url else ''}"
+                )
+        elif new_status == "failed":
+            # Hand back to human triage.
+            issue.status = "new"
+
+        issue.save()
+
+        return Response(
+            {"ok": True, "id": issue.id, "status": issue.status},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ProductIssueTriggerClaudeView(APIView):
+    """
+    POST /api/v1/product-issues/<id>/trigger-claude/
+
+    Admin-only manual trigger — bypasses the ``should_auto_triage``
+    heuristics and forces a fix-agent dispatch for one issue. Used by
+    the "Trigger Claude" admin button to pick up issues the automatic
+    policy would otherwise skip (wrong category, P3, etc.).
+    """
+
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk=None):
+        issue = get_object_or_404(ProductIssue, pk=pk)
+        triage = ClaudeAutoTriage()
+        if not triage.webhook_url:
+            return Response(
+                {"error": "CLAUDE_FIX_AGENT_WEBHOOK not configured"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        try:
+            agent_id = triage.trigger_fix_agent(issue)
+        except TriageError as exc:
+            triage.mark_failed(issue, str(exc))
+            return Response(
+                {"error": str(exc)}, status=status.HTTP_502_BAD_GATEWAY
+            )
+        triage.mark_in_progress(issue, agent_id)
+        return Response(
+            {"ok": True, "agent_id": agent_id, "status": issue.status},
+            status=status.HTTP_200_OK,
         )
 
 
