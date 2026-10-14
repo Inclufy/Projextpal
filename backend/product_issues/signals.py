@@ -422,7 +422,14 @@ def notify_on_product_issue_change(sender, instance: ProductIssue, created, **kw
         _notify_admins_progress(issue, issue_url, "Resolved")
         return
 
-    # 3b. Status progressed (new → triaging → in_review → in_progress, etc.)
+    # 3b. NEEDS-DECISION → ask reporter + tenant admins to answer the open
+    # questions the auto-fix worker posted. Skip the "we're on it" copy
+    # (3c) in this branch: the whole point is that WE are blocked on YOU.
+    if issue.status == "needs-decision":
+        _notify_reporter_needs_decision(issue, issue_url)
+        return
+
+    # 3c. Status progressed (new → triaging → in_review → in_progress, etc.)
     # Notify reporter "we're on it" + admins for visibility.
     _notify_reporter_progress(issue, issue_url, old_status)
     _notify_admins_progress(issue, issue_url, issue.get_status_display())
@@ -490,6 +497,146 @@ def _notify_reporter_progress(issue: ProductIssue, issue_url: str, old_status: s
     _send_email_safe(
         subject=subject, text_body=text, html_body=html,
         to=[issue.reporter.email],
+    )
+
+
+def _notify_reporter_needs_decision(issue: ProductIssue, issue_url: str) -> None:
+    """Sprint 12 — the auto-fix pipeline posted questions, we need an answer.
+
+    Sends to the reporter when we have their email, and always CCs the
+    tenant admin list so a shift-handoff or an admin-only tenant can
+    still answer when the original reporter is unavailable. The email
+    renders every open question with its choices so a mobile reader can
+    scan them without opening the app. The subject is deliberately
+    distinct from the "Update over jouw issue" progress mail so an inbox
+    filter can treat decision-requests as higher priority.
+    """
+    questions = list(issue.decision_questions or [])
+    if not questions:
+        # Defensive — status moved to needs-decision but no questions
+        # were saved. Nothing useful to ask; skip the email rather than
+        # send a blank "please answer nothing" mail.
+        logger.warning(
+            "product_issue %s is needs-decision but has no questions — skipping email",
+            issue.id,
+        )
+        return
+
+    recipients: list[str] = []
+    if issue.reporter and issue.reporter.email:
+        recipients.append(issue.reporter.email)
+    for addr in _admin_emails():
+        if addr and addr not in recipients:
+            recipients.append(addr)
+    if not recipients:
+        logger.warning(
+            "product_issue %s needs decision but no recipients — skipping email",
+            issue.id,
+        )
+        return
+
+    greeting_name = (
+        issue.reporter.first_name
+        if (issue.reporter and issue.reporter.first_name)
+        else "daar"
+    )
+    subject = f"{_app_prefix(issue)} Beslissing nodig: {issue.title[:70]}"
+
+    # Plain-text — rendered for mobile mail apps that strip HTML. Each
+    # question is numbered so the reader can refer to them by number
+    # when replying via the inbound-email flow (S12-07).
+    q_lines_text: list[str] = []
+    for idx, q in enumerate(questions, start=1):
+        q_lines_text.append(f"{idx}. [{q.get('id')}] {q.get('text')}")
+        qtype = q.get("type")
+        if qtype in ("single_choice", "multi_choice") and q.get("choices"):
+            for c in q["choices"]:
+                q_lines_text.append(f"     - {c}")
+        if q.get("help"):
+            q_lines_text.append(f"     ({q['help']})")
+    text = (
+        f"Hallo {greeting_name},\n\n"
+        f"De auto-fix pipeline kan de volgende issue niet oplossen zonder "
+        f"jouw inbreng.\n\n"
+        f"Issue: {issue.title}\n\n"
+        f"Open vragen:\n\n"
+        + "\n".join(q_lines_text)
+        + "\n\n"
+        f"Beantwoord in de app: {issue_url}\n\n"
+        f"Zodra de antwoorden binnen zijn pakt de pipeline het automatisch "
+        f"weer op.\n\n"
+        f"Met vriendelijke groet,\nProjeXtPal support"
+    )
+
+    # HTML — each question in its own card so the choices are legible
+    # on mobile. We don't inline the "reply by email" instructions
+    # until the inbound parser (S12-07) is live.
+    def _esc(val: str) -> str:
+        from html import escape
+
+        return escape(str(val))
+
+    q_cards_html: list[str] = []
+    for idx, q in enumerate(questions, start=1):
+        choices_html = ""
+        qtype = q.get("type")
+        if qtype in ("single_choice", "multi_choice") and q.get("choices"):
+            items = "".join(
+                f'<li style="margin:2px 0;">{_esc(c)}</li>' for c in q["choices"]
+            )
+            choices_html = (
+                '<ul style="font-size:13px; color:#4b5563; margin:6px 0 0 18px;'
+                ' padding:0;">'
+                f"{items}</ul>"
+            )
+            if qtype == "multi_choice":
+                choices_html = (
+                    '<p style="font-size:12px; color:#6b7280; margin:6px 0 0 0;">'
+                    "Meerdere opties kiezen is toegestaan.</p>" + choices_html
+                )
+        elif qtype == "text":
+            choices_html = (
+                '<p style="font-size:12px; color:#6b7280; margin:6px 0 0 0;">'
+                "Vrij tekstantwoord gevraagd.</p>"
+            )
+        help_html = (
+            f'<p style="font-size:12px; color:#6b7280; margin:4px 0 0 0;">'
+            f"{_esc(q['help'])}</p>"
+            if q.get("help")
+            else ""
+        )
+        q_cards_html.append(
+            '<div style="background:#fdf4ff; border:1px solid #e9d5ff; '
+            'border-radius:8px; padding:12px 14px; margin:12px 0;">'
+            f'<p style="font-size:14px; font-weight:600; color:#86198f; margin:0;">'
+            f'Vraag {idx} <span style="font-family:monospace; color:#a21caf;'
+            f' font-weight:500;">[{_esc(q.get("id") or "")}]</span></p>'
+            f'<p style="font-size:14px; color:#1f2937; margin:4px 0 0 0;">'
+            f"{_esc(q.get('text') or '')}</p>"
+            f"{help_html}{choices_html}"
+            "</div>"
+        )
+
+    html_body = (
+        f'<p style="font-size:15px;">Hallo {_esc(greeting_name)},</p>'
+        '<p style="font-size:15px; line-height:1.6;">'
+        "De auto-fix pipeline kan deze issue niet oplossen zonder jouw inbreng. "
+        "Beantwoord de onderstaande vragen zodat de volgende poging door kan:"
+        "</p>"
+        '<p style="font-size:15px; background:#fdf4ff; border-left:3px solid #c026d3;'
+        ' padding:12px 16px; margin:16px 0;">'
+        f"<strong>{_esc(issue.title)}</strong>"
+        "</p>"
+        + "".join(q_cards_html)
+    )
+    html = _wrap_html(
+        "Beslissing nodig op jouw issue",
+        html_body,
+        issue_url,
+        "Beantwoorden in de app →",
+    )
+    _send_email_safe(
+        subject=subject, text_body=text, html_body=html, to=recipients,
     )
 
 
