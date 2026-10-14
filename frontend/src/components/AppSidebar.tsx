@@ -1669,13 +1669,6 @@ export function AppSidebar() {
                 </Collapsible>
               ))}
 
-              {isProjectContext && methodologyBadge && !isCollapsed && (
-                <div className="px-3 py-2">
-                  <Badge className={`${methodologyBadge.color} text-white text-xs`}>
-                    {methodologyBadge.label}
-                  </Badge>
-                </div>
-              )}
               {isProjectContext && roleViewControls}
 
               {isProjectContext && filteredProjectPhases.map((phase) => (
