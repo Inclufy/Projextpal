@@ -12,6 +12,7 @@ from .models import (
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     visual = serializers.SerializerMethodField()
+    practice_assignments = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseLesson
@@ -31,6 +32,20 @@ class CourseLessonSerializer(serializers.ModelSerializer):
         except LessonVisual.DoesNotExist:
             pass
         return None
+
+    def get_practice_assignments(self, obj):
+        """Surface practice assignments attached to this lesson so the
+        player (CourseLearningPlayer.tsx) can read
+        `lesson.practice_assignments[0].id` and open the submit modal.
+        Without this, the reverse FK was silently absent from the
+        serialized output and the submit button never fired.
+        """
+        # Deferred import avoids a circular import at module load.
+        from .models import PracticeAssignment
+        return [
+            {"id": pa.id, "title": pa.title, "points": pa.points}
+            for pa in PracticeAssignment.objects.filter(lesson=obj)
+        ]
 
 
 class LessonVisualConfigSerializer(serializers.ModelSerializer):
