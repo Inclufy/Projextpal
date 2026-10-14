@@ -87,6 +87,7 @@ import {
   KeyRound,
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Use relative path - proxy handles the backend URL
 const API_BASE_URL = '/api/v1';
@@ -132,6 +133,14 @@ interface TeamMember {
   email: string;
   phone?: string;
   role: "ADMIN" | "PROGRAM_MANAGER" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
+  // S8-02: raw backend role ('superadmin'/'admin'/...) kept alongside the UI
+  // role so the client-side tenant-anchor heuristic in S8-03 can prefer an
+  // admin's email domain as the tenant's "home" domain.
+  rawRole?: string;
+  // S8-02: tenant name attached to this user. Rendered as a badge for
+  // superadmin viewers only — non-superadmin viewers get a tenant-scoped
+  // listing and do not see cross-tenant hints.
+  companyName?: string | null;
   department?: string;
   status: "Active" | "Inactive" | "Pending";
   joinedDate: string;
@@ -211,6 +220,12 @@ const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     email: m.email || '',
     phone: m.phone || m.phone_number || '',
     role: mapBackendRole(m.role),
+    // S8-02/S8-03: keep the raw backend role so the tenant-anchor heuristic
+    // can prefer an admin/superadmin as the "home domain" for each tenant.
+    rawRole: m.role || '',
+    // S8-02: company_name already returned by admin_users_list; propagate so
+    // superadmin can see which tenant each row belongs to.
+    companyName: m.company_name ?? null,
     department: m.department || '',
     status: mapBackendStatus(m.status || m.is_active),
     joinedDate: m.date_joined ? new Date(m.date_joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
@@ -383,11 +398,53 @@ const getMethodologyBadgeColor = (methodology: string): string => {
 
 const departments = ["IT", "Operations", "Development", "Design", "Finance", "HR", "Marketing", "Sales"];
 
+// S8-03 — Pure-frontend external-collaborator heuristic.
+// Groups the members list by companyName, picks each tenant's "anchor"
+// domain (prefer superadmin/admin, then majority, else first member) and
+// returns a map of companyName → anchor email domain. Members whose domain
+// does not match their tenant's anchor are rendered as "Externe deelnemer".
+// Pure, deterministic over the current fetch — no backend change required.
+function buildTenantDomainAnchors(
+  members: Pick<TeamMember, 'email' | 'companyName' | 'rawRole'>[],
+): Record<string, string> {
+  const byTenant: Record<string, Pick<TeamMember, 'email' | 'companyName' | 'rawRole'>[]> = {};
+  for (const m of members) {
+    const key = m.companyName || '__none__';
+    (byTenant[key] ||= []).push(m);
+  }
+  const anchors: Record<string, string> = {};
+  for (const [tenant, list] of Object.entries(byTenant)) {
+    const admin = list.find((m) => {
+      const r = (m.rawRole || '').toLowerCase();
+      return r === 'superadmin' || r === 'admin' || r === 'administrator';
+    });
+    if (admin?.email?.includes('@')) {
+      anchors[tenant] = admin.email.split('@')[1].toLowerCase();
+      continue;
+    }
+    // Majority domain fallback.
+    const freq: Record<string, number> = {};
+    for (const m of list) {
+      const d = (m.email || '').split('@')[1]?.toLowerCase();
+      if (d) freq[d] = (freq[d] || 0) + 1;
+    }
+    const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (top) anchors[tenant] = top;
+  }
+  return anchors;
+}
+
 export default function Team() {
   const { pt } = usePageTranslations();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  // S8-02/S8-03: current user drives (a) whether tenant badges are shown
+  // (superadmin only) and (b) the fallback anchor for the "external
+  // collaborator" heuristic when no admin row is in the current tenant.
+  const { user: currentUser } = useAuth();
+  const isSuperAdminViewer = currentUser?.isSuperAdmin || currentUser?.role === 'superadmin';
+  const currentUserDomain = currentUser?.email?.split('@')[1]?.toLowerCase() || '';
 
   const tt = {
     title: pt("Team Management"),
@@ -500,6 +557,26 @@ export default function Team() {
   const [aiWorkloadAnalysis, setAiWorkloadAnalysis] = useState<AIWorkloadAnalysis[]>([]);
   const [aiGeneratedMessage, setAiGeneratedMessage] = useState("");
   const [aiOnboardingPlan, setAiOnboardingPlan] = useState<AIOnboardingPlan | null>(null);
+
+  // S8-03: per-tenant domain anchors, recomputed when the member list changes.
+  // Superadmin sees cross-tenant rows and gets a map keyed by companyName.
+  // Non-superadmin sees only their own tenant, in which case the current
+  // user's domain is a safe fallback anchor.
+  const tenantAnchors = buildTenantDomainAnchors(members);
+  const resolveAnchor = (member: TeamMember): string | null => {
+    const key = member.companyName || '__none__';
+    const anchor = tenantAnchors[key];
+    if (anchor) return anchor;
+    // Non-superadmin: fall back to the current user's own email domain.
+    if (!isSuperAdminViewer && currentUserDomain) return currentUserDomain;
+    return null;
+  };
+  const isExternalMember = (member: TeamMember): boolean => {
+    const anchor = resolveAnchor(member);
+    const domain = member.email?.split('@')[1]?.toLowerCase();
+    if (!anchor || !domain) return false;
+    return domain !== anchor;
+  };
 
   // Filter members
   const filteredMembers = members.filter((member) => {
@@ -1635,7 +1712,7 @@ if (!sendInviteEmail) {
                 </div>
 
                 {/* Status Badges */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-4">
                   <Badge variant="secondary" className={cn("text-xs", getStatusColor(member.status))}>
                     {member.status === "Active" ? pt("Active") : member.status === "Inactive" ? pt("Inactive") : pt("Pending")}
                   </Badge>
@@ -1643,6 +1720,46 @@ if (!sendInviteEmail) {
                     <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                       <Clock className="h-3 w-3 mr-1" />
                       {pt("Time tr.")}
+                    </Badge>
+                  )}
+                  {/* S8-02 — tenant badge. Only superadmin sees cross-tenant
+                      info; non-superadmin viewers get a tenant-scoped list
+                      and no badge, to avoid any info-leak hint. The badge is
+                      yellow when the row belongs to a different tenant than
+                      the superadmin's own, otherwise a neutral tenant chip. */}
+                  {isSuperAdminViewer && member.companyName && (
+                    member.companyName !== currentUser?.companyName ? (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800"
+                        title={pt("Different tenant")}
+                      >
+                        <Building2 className="h-3 w-3 mr-1" />
+                        {member.companyName}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/40 dark:text-gray-300 dark:border-gray-700"
+                        title={pt("Own tenant")}
+                      >
+                        <Building2 className="h-3 w-3 mr-1" />
+                        {member.companyName}
+                      </Badge>
+                    )
+                  )}
+                  {/* S8-03 — external collaborator badge. Visible to every
+                      viewer; computed from the per-tenant domain anchor
+                      (admin/majority) so a user whose email domain differs
+                      from their tenant's home domain is flagged. */}
+                  {isExternalMember(member) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
+                      title={pt("External collaborator")}
+                    >
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      {pt("External")}
                     </Badge>
                   )}
                 </div>
