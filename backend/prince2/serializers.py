@@ -12,17 +12,26 @@ from .models import (
 
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
-    # Backward-compat alias: clients (frontend, mobile) may still send/expect
-    # `project_definition`. We map it onto the renamed `background` column.
+    # Canonical PRINCE2 API field for the "Background / Project Definition"
+    # column.  Writes land on the underlying ``background`` model column via
+    # ``source=``.  This is the ONLY write path — ``background`` below is
+    # read-only so a client that sends both keys in one payload can no longer
+    # silently clobber the value depending on field ordering (P3 bug).
     project_definition = serializers.CharField(
         source='background', required=False, allow_blank=True
     )
+    # Backward-compat READ alias: existing clients (frontend, mobile) that
+    # still fetch ``background`` keep working.  Marked read-only so it never
+    # participates in validation/save — anything a client sends under this
+    # key is silently ignored by DRF, which is the desired "harden latent
+    # collision" behaviour.
+    background = serializers.CharField(read_only=True)
 
     class Meta:
         model = ProjectBrief
         fields = [
             'id', 'project',
-            'background', 'project_definition',  # both exposed
+            'background', 'project_definition',  # background = read-only alias
             'project_approach', 'outline_business_case',
             'project_objectives', 'project_scope', 'project_team_structure',
             'constraints', 'assumptions',
@@ -31,18 +40,9 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['project', 'created_at', 'updated_at']
         extra_kwargs = {
-            'background': {'required': False, 'allow_blank': True},
             'project_approach': {'required': False, 'allow_blank': True},
             'outline_business_case': {'required': False, 'allow_blank': True},
         }
-
-    def to_internal_value(self, data):
-        # Accept either field name on input. If only the legacy alias is
-        # present, copy it onto `background` so validation/save stays clean.
-        if isinstance(data, dict) and 'project_definition' in data and 'background' not in data:
-            data = dict(data)
-            data['background'] = data['project_definition']
-        return super().to_internal_value(data)
 
 
 class BusinessCaseBenefitSerializer(serializers.ModelSerializer):
