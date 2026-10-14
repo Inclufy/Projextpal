@@ -251,8 +251,16 @@ def ai_generate_text(request):
         surface="governance_ai",
     )
     docs_prefix = (portfolio_prefix or '') + (program_prefix or '') + (project_prefix or '')
+    # B8 — P3-3 "today" directive was only wired into generate_report(),
+    # which left ai_generate_text() still prone to hallucinated dates
+    # (observed: a 2023 date fabricated in a report written in 2026).
+    # Prepend the real date here too so EVERY governance AI call grounds
+    # itself in the current day.
+    from .ai_reports import _today_directive
+    today_prefix = _today_directive() + "\n\n"
     system_prompt = prepend_language(
-        docs_prefix
+        today_prefix
+        + docs_prefix
         + 'You are a helpful project management expert. Respond concisely and professionally.',
         lang,
     )
