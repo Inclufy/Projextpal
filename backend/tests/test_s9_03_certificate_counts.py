@@ -89,19 +89,23 @@ def test_generate_certificate_uses_real_counts_not_placeholders(
 
     cert = Certificate.objects.get(id=body["certificate_id"])
 
-    # Real counts from the eligibility dict (keys that exist in it).
+    # Real counts from the eligibility dict (mapped from the actual
+    # eligibility key names: exam_passed/practice_approved/progress_percent).
     assert cert.lessons_completed == 3
     assert cert.quizzes_passed == 2
+    # exam_passed=True → 1
+    assert cert.exams_passed == 1
+    # practice_approved=1 submission → 1
+    assert cert.practice_submitted == 1
+    # progress_percent=72 is persisted as total_score
+    assert cert.total_score == 72
+    # simulations_completed isn't tracked in eligibility → always 0
+    assert cert.simulations_completed == 0
 
     # None of the pre-fix placeholders may leak through — if the fix was
     # reverted these would be 24/20/1/15/10/85 respectively.
     assert cert.lessons_completed != 24
     assert cert.quizzes_passed != 20
-    assert cert.exams_passed != 1 or True  # exams_passed is not in dict → 0
-    assert cert.exams_passed == 0
     assert cert.simulations_completed != 15
-    assert cert.simulations_completed == 0
     assert cert.practice_submitted != 10
-    assert cert.practice_submitted == 0
     assert cert.total_score != 85
-    assert cert.total_score == 0
