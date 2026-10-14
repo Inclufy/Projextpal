@@ -24,6 +24,16 @@ def _no_ssl_redirect(settings):
     # Prod forces https (SECURE_SSL_REDIRECT); without this APIClient
     # POSTs land on a 301 instead of hitting the view.
     settings.SECURE_SSL_REDIRECT = False
+    # The webhook view declares throttle_scope='resend_inbound'. Make
+    # sure the scope's rate is wired for the test — on prod it's set in
+    # core/settings.py but the test container's in-image settings may
+    # pre-date this commit.
+    rates = dict(settings.REST_FRAMEWORK.get("DEFAULT_THROTTLE_RATES", {}))
+    rates.setdefault("resend_inbound", "60/hour")
+    settings.REST_FRAMEWORK = {
+        **settings.REST_FRAMEWORK,
+        "DEFAULT_THROTTLE_RATES": rates,
+    }
 
 
 SAMPLE_QUESTIONS = [
