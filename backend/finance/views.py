@@ -119,6 +119,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not _is_superadmin(user):
             company = _user_company(user)
             qs = qs.filter(company=company) if company else qs.none()
+            # Per-member cost confidentiality: hide invoices of projects this
+            # member is restricted from (vendor-invoice amounts are project costs).
+            from projects.models import ProjectTeam
+            qs = qs.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
 
         params = self.request.query_params
         if params.get("vendor"):
@@ -564,6 +572,7 @@ def _internal_cost_for_project(project):
 def project_cost_summary(request, project_id):
     """Cost summary for a single project."""
     from projects.models import Project, BudgetItem
+    from projects.permissions import can_view_costs_for
 
     user = request.user
     project = get_object_or_404(Project, pk=project_id)
@@ -571,6 +580,15 @@ def project_cost_summary(request, project_id):
         company = _user_company(user)
         if not company or project.company_id != company.id:
             return Response({"detail": "Not found."}, status=404)
+
+    # Purely-financial endpoint: deny when the viewer may not see this
+    # project's costs (non-finance role, external cross-tenant member, or a
+    # per-member ProjectTeam.can_view_costs=False restriction).
+    if not can_view_costs_for(user, project):
+        return Response(
+            {"detail": "You do not have permission to view project costs."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     # Budget figures
     budget_total = float(project.budget or 0)
@@ -625,7 +643,23 @@ def program_cost_summary(request, program_id):
         if not company or program.company_id != company.id:
             return Response({"detail": "Not found."}, status=404)
 
-    linked_projects = list(program.projects.all())
+    # Cost confidentiality: finance-roles only, and never for an external
+    # collaborator or a per-member-restricted member — and drop any linked
+    # project the member is restricted from so its costs don't roll up here.
+    from projects.permissions import can_view_costs
+    from projects.models import ProjectTeam
+    if not can_view_costs(request.user):
+        return Response(
+            {"detail": "You do not have permission to view costs."}, status=403
+        )
+    _restricted = set(
+        ProjectTeam.objects.filter(
+            user=request.user, can_view_costs=False
+        ).values_list("project_id", flat=True)
+    )
+    linked_projects = [
+        p for p in program.projects.all() if p.id not in _restricted
+    ]
     project_ids = [p.id for p in linked_projects]
 
     # Budgets/spend across projects

@@ -31,7 +31,7 @@ class CompanyScopedQuerysetMixin:
 
 # Permission classes
 IsAdminOrPM = HasRole("admin", "pm")
-IsAdminOrPMOrContributor = HasRole("admin", "pm", "contibuter")
+IsAdminOrPMOrContributor = HasRole("admin", "pm", "contributor")
 
 
 class WorkflowDiagramViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):

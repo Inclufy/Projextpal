@@ -11,6 +11,8 @@ import {
   RotateCcw,
   ArrowLeft,
   Trash2,
+  Mail,
+  Copy,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
@@ -43,6 +45,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
@@ -127,7 +136,21 @@ export const ProjectHeader = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "", budget: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    budget: "",
+    start_date: "",
+    end_date: "",
+  });
+  const [dateError, setDateError] = useState<string | null>(null);
+  // In-project invite (cross-tenant collaborator) — pre-linked to THIS project.
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("guest");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
   const { pt } = usePageTranslations();
 
   const { data: project } = useQuery({
@@ -189,20 +212,73 @@ export const ProjectHeader = () => {
         name: project.name || "",
         description: project.description || "",
         budget: project.budget?.toString() || "",
+        start_date: project.start_date || "",
+        end_date: project.end_date || "",
       });
     }
+    setDateError(null);
     setEditOpen(true);
   };
 
   const handleSave = () => {
+    // Client-side guard that mirrors ProjectSerializer.validate_end_date
+    // (end_date must not be before start_date). Prevents the known bad-data
+    // case where end precedes start — the server would also reject it, but
+    // we want fast, inline feedback.
+    if (formData.start_date && formData.end_date && formData.end_date < formData.start_date) {
+      setDateError(pt("End date cannot be before start date"));
+      return;
+    }
+    setDateError(null);
     updateMutation.mutate({
       id: id!,
       data: {
         name: formData.name,
         description: formData.description,
         budget: parseFloat(formData.budget) || 0,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
       },
     });
+  };
+
+  // Map UI role → backend TeamInvitation.ROLE_CHOICES (mirrors Team.tsx).
+  const roleMap: Record<string, string> = {
+    admin: "admin", pm: "pm", program_manager: "program_manager",
+    member: "guest", reviewer: "guest", guest: "guest",
+  };
+
+  const handleInvite = async () => {
+    const email = inviteEmail.trim();
+    if (!email) {
+      toast.error(pt("Email is required"));
+      return;
+    }
+    setInviteSending(true);
+    setInviteLink("");
+    try {
+      const backendRole = roleMap[inviteRole] || "guest";
+      const res = await fetch(`/api/v1/auth/invitations/create/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          email,
+          role: backendRole,
+          project_id: id ? parseInt(id, 10) : null,
+          message: inviteMessage,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.message || "Invite failed");
+      if (data.invitation_link) setInviteLink(data.invitation_link);
+      toast.success(pt("Invitation sent"));
+      setInviteEmail("");
+      setInviteMessage("");
+    } catch {
+      toast.error(pt("Could not send invitation"));
+    } finally {
+      setInviteSending(false);
+    }
   };
 
   const statusMeta = STATUS_META[project?.status] ?? STATUS_META.pending;
@@ -273,6 +349,17 @@ export const ProjectHeader = () => {
               <Edit2 className="h-4 w-4" />
               {pt("Edit Project")}
             </Button>
+
+            {isPMPlus && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => { setInviteLink(""); setInviteOpen(true); }}
+              >
+                <Mail className="h-4 w-4" />
+                {pt("Invite (email)")}
+              </Button>
+            )}
 
             {isPMPlus && (
               <DropdownMenu>
@@ -408,6 +495,35 @@ export const ProjectHeader = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_date">{pt("Start Date")}</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={formData.start_date || ""}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, start_date: e.target.value }));
+                    setDateError(null);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_date">{pt("End Date")}</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={formData.end_date || ""}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, end_date: e.target.value }));
+                    setDateError(null);
+                  }}
+                />
+              </div>
+            </div>
+            {dateError && (
+              <p className="text-sm text-red-500" role="alert">{dateError}</p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditOpen(false)}>
@@ -415,6 +531,79 @@ export const ProjectHeader = () => {
             </Button>
             <Button onClick={handleSave} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? pt("Saving...") : pt("Save Changes")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* In-project invite — sends a real invitation pre-linked to this project */}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{pt("Invite (email)")}</DialogTitle>
+            <DialogDescription>
+              {pt("Invite someone by email to collaborate on this project.")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">{pt("Email")}</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="naam@bedrijf.nl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{pt("Role")}</Label>
+              <Select value={inviteRole} onValueChange={setInviteRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="guest">{pt("Guest")}</SelectItem>
+                  <SelectItem value="reviewer">{pt("Reviewer")}</SelectItem>
+                  <SelectItem value="member">{pt("Member")}</SelectItem>
+                  <SelectItem value="pm">{pt("Project Manager")}</SelectItem>
+                  <SelectItem value="admin">{pt("Admin")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-message">{pt("Message (optional)")}</Label>
+              <Textarea
+                id="invite-message"
+                rows={2}
+                value={inviteMessage}
+                onChange={(e) => setInviteMessage(e.target.value)}
+              />
+            </div>
+            {inviteLink && (
+              <div className="space-y-1.5">
+                <Label>{pt("Invite link")}</Label>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={inviteLink} className="text-xs" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(inviteLink);
+                      toast.success(pt("Copied"));
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>
+              {pt("Close")}
+            </Button>
+            <Button onClick={handleInvite} disabled={inviteSending || !inviteEmail.trim()}>
+              {inviteSending ? pt("Sending...") : pt("Send invitation")}
             </Button>
           </div>
         </DialogContent>

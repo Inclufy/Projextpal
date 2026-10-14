@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import date
 
 from projects.models import Project
-from projects.permissions import MethodologyMatchesProjectPermission
+from projects.permissions import MethodologyMatchesProjectPermission, can_view_costs_for
 from .models import (
     WaterfallPhase, WaterfallTeamMember, WaterfallRequirement,
     WaterfallDesignDocument, WaterfallTask, WaterfallTestCase,
@@ -125,9 +125,11 @@ class WaterfallDashboardViewSet(viewsets.ViewSet):
             status__in=['submitted', 'under_review']
         ).count()
         
-        # Budget utilization
+        # Budget utilization — hidden from viewers not allowed to see costs.
         budget = WaterfallBudget.objects.filter(project=project).first()
-        if budget and budget.total_budget > 0:
+        if not can_view_costs_for(request.user, project):
+            budget_utilization = None
+        elif budget and budget.total_budget > 0:
             budget_utilization = float((budget.total_spent / budget.total_budget) * 100)
         else:
             budget_utilization = 0
@@ -867,13 +869,27 @@ class WaterfallMaintenanceItemViewSet(WaterfallProjectMixin, viewsets.ModelViewS
 class WaterfallBudgetViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
     
+    def _cost_denied(self, request, project):
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {'detail': 'You do not have permission to view project costs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
     def retrieve(self, request, project_id=None):
         project = _gated_project_lookup(request.user, project_id)
+        denied = self._cost_denied(request, project)
+        if denied:
+            return denied
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         return Response(WaterfallBudgetSerializer(budget).data)
-    
+
     def update(self, request, project_id=None):
         project = _gated_project_lookup(request.user, project_id)
+        denied = self._cost_denied(request, project)
+        if denied:
+            return denied
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         serializer = WaterfallBudgetSerializer(budget, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -885,6 +901,9 @@ class WaterfallBudgetViewSet(viewsets.ViewSet):
         the snapshot. Optionally records a historical EarnedValueRecord for the
         current reporting period when persist=true is passed."""
         project = _gated_project_lookup(request.user, project_id)
+        denied = self._cost_denied(request, project)
+        if denied:
+            return denied
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         budget.recompute_evm(commit=True)
         if str(request.data.get('snapshot', '')).lower() in ('1', 'true', 'yes'):
@@ -909,8 +928,19 @@ class EarnedValueRecordViewSet(WaterfallProjectMixin, viewsets.ModelViewSet):
     serializer_class = EarnedValueRecordSerializer
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
+    def get_queryset(self):
+        # EVM series carries cost figures (PV/EV/AC → CV/CPI/SPI); hide it from
+        # viewers not allowed to see this project's costs.
+        project = self.get_project()
+        if not can_view_costs_for(self.request.user, project):
+            return EarnedValueRecord.objects.none()
+        return super().get_queryset()
+
     def perform_create(self, serializer):
         project = self.get_project()
+        if not can_view_costs_for(self.request.user, project):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to view project costs.")
         serializer.save(
             project=project,
             recorded_by=self.request.user if self.request.user.is_authenticated else None,
@@ -925,13 +955,18 @@ class WaterfallBudgetItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         project = _gated_project_lookup(self.request.user, project_id)
+        if not can_view_costs_for(self.request.user, project):
+            return WaterfallBudgetItem.objects.none()
         budget = WaterfallBudget.objects.filter(project=project).first()
         if budget:
             return WaterfallBudgetItem.objects.filter(budget=budget)
         return WaterfallBudgetItem.objects.none()
-    
+
     def perform_create(self, serializer):
         project = _gated_project_lookup(self.request.user, self.kwargs.get('project_id'))
+        if not can_view_costs_for(self.request.user, project):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to view project costs.")
         budget, _ = WaterfallBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
 

@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from projects.models import Project
-from projects.permissions import MethodologyMatchesProjectPermission
+from projects.permissions import MethodologyMatchesProjectPermission, can_view_costs_for
 
 from .models import HybridArtifact, HybridConfiguration, PhaseMethodology, HybridTask
 from .serializers import (
@@ -161,7 +161,9 @@ class HybridDashboardView(APIView):
                 .values('phase', 'methodology')
             ),
             'progress': progress or 0,
-            'budget': project.budget or 0,
+            # Cost-confidential: masked for viewers not allowed to see costs
+            # (non-finance role or a per-member ProjectTeam restriction).
+            'budget': (project.budget or 0) if can_view_costs_for(request.user, project) else None,
         })
 
 

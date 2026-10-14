@@ -68,6 +68,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CURRENCIES, type CurrencyCode } from "@/lib/currencies";
 import { toast } from "sonner";
+import AIContextUpload from "@/components/AIContextUpload";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -592,6 +593,7 @@ const ProgramDetail = () => {
           <TabsTrigger value="projects">{pt("Projects")} ({projects.length})</TabsTrigger>
           <TabsTrigger value="timeline">{pt("Timeline")} ({milestones.length})</TabsTrigger>
           <TabsTrigger value="risks">{pt("Risks & Issues")} ({risks.length})</TabsTrigger>
+          <TabsTrigger value="documents">{pt("Documents")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -884,6 +886,19 @@ const ProgramDetail = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
+        </TabsContent>
+
+        {/* Sprint 3 S3-06 — ProgramAIContext upload surface. */}
+        <TabsContent value="documents" className="space-y-4">
+          {id && (
+            <AIContextUpload
+              endpoint={`/api/v1/programs/${id}/ai-context/`}
+              title={pt("Program documents (AI context)")}
+              description={pt(
+                "Upload a programme charter, business-case portfolio, blueprint or multi-year plan. The AI uses these documents as context for every program-level draft (benefits map, programme vision, tranche planning, portfolio advice).",
+              )}
+            />
           )}
         </TabsContent>
       </Tabs>

@@ -3,8 +3,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from admin_portal.views import CurrentUserView
+from execution.s7_cost_planner_views import user_capacity
 from core.compliance_views import compliance_posture
 from core.status_views import system_status
+from core.ai_usage_views import ai_usage_summary
 from subscriptions.public_api import PublicPlansView
 from subscriptions.pricing_catalog_view import PricingCatalogView
 from drf_spectacular.views import (
@@ -27,8 +29,14 @@ urlpatterns = [
     # Public system status (for the /status page)
     path("api/v1/status/", system_status, name="system-status"),
 
+    # Rolling AI-token verbruiksoverzicht (voor de topbar-pill + warnings).
+    path("api/v1/ai/usage/", ai_usage_summary, name="ai-usage-summary"),
+
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
+
+    # Member-skills catalog + matching (Sprint 9 Agent B / S9-05)
+    path("api/v1/skills/", include("accounts.skills_urls")),
 
     # Quotation Engine — consumed by Inclufy Finance sync-product-catalog cron
     path("api/v1/public/pricing-catalog/", PricingCatalogView.as_view(), name="pricing-catalog"),
@@ -36,6 +44,8 @@ urlpatterns = [
     # Specific app paths - EACH NEEDS A UNIQUE PREFIX
     path("api/v1/projects/", include("projects.urls")),
     path("api/v1/programs/", include("programs.urls")),
+    # Sprint 6: AI context access log (compliance review)
+    path("api/v1/ai-audit/", include("ai_audit.urls")),
     path("api/v1/", include("product_issues.urls")),  # /product-issues/ + /product-issues/auto/ci/
     path("api/v1/", include("notifications.urls")),  # /notifications/ + unread_count + mark_read
     path("api/v1/", include("collaboration.urls")),  # /comments/ + /messages/ (DM)
@@ -84,6 +94,9 @@ urlpatterns = [
 
     # Single endpoint views
     path("api/v1/users/me/", CurrentUserView.as_view(), name="current-user"),
+    # Sprint 7 — per-user capacity (hours allocated/budgeted/actual over a
+    # date range across every project the user is on).
+    path("api/v1/users/<int:pk>/capacity/", user_capacity, name="user-capacity"),
     path("api/v1/public/plans/", PublicPlansView.as_view(), name="public-plans"),
 
     # API Documentation

@@ -18,6 +18,8 @@ import {
   Sparkles,
   ChevronDown,
   CalendarClock,
+  Lock,
+  ShieldCheck,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -97,6 +99,23 @@ export const ProjectAttentionPanel = () => {
     onError: () => toast.error(pt("Could not pick up this item")),
   });
 
+  const acceptDisclosure = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/v1/projects/${id}/financial-disclosure/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: "{}",
+      });
+      if (!res.ok) throw new Error("Failed to accept financial disclosure");
+      return res.json();
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success(pt("Financial disclosure accepted"));
+    },
+    onError: () => toast.error(pt("Could not accept the financial disclosure")),
+  });
+
   const project = { id: id!, name: data?.name };
 
   const promptFor = (type: ItemType, label: string, itemId: number, auto: boolean) => {
@@ -146,7 +165,10 @@ export const ProjectAttentionPanel = () => {
   const actions = data?.actions ?? [];
   const issues = data?.issues ?? [];
   const risks = data?.risks ?? [];
-  const nothing = actions.length === 0 && issues.length === 0 && risks.length === 0;
+  const fd = data?.financial_disclosure ?? null;
+  const fdFlag = !!fd && (fd.needs_ack || fd.stale);
+  const nothing =
+    actions.length === 0 && issues.length === 0 && risks.length === 0 && !fdFlag;
 
   return (
     <Card>
@@ -159,6 +181,63 @@ export const ProjectAttentionPanel = () => {
       <CardContent className="space-y-5">
         {nothing && (
           <p className="text-sm text-muted-foreground">{pt("Nothing needs attention right now.")}</p>
+        )}
+
+        {/* Governance — financial disclosure to cost-viewing members */}
+        {fd && (fdFlag || fd.acknowledged) && (
+          <section className="space-y-2">
+            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <Lock className="h-3.5 w-3.5" /> {pt("Financial disclosure")}
+            </h4>
+            <div
+              className={cn(
+                "rounded-lg border p-2.5",
+                fdFlag
+                  ? "border-amber-200 bg-amber-50"
+                  : "border-emerald-200 bg-emerald-50",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">
+                    {fd.stale
+                      ? pt("The set of members who can see this project's financials has changed — please re-confirm.")
+                      : fd.needs_ack
+                        ? pt("This project's budget, rates and EVM are visible to its cost-viewing members.")
+                        : pt("Financial disclosure accepted.")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {pt("Visible to")} {fd.disclosed_count}{" "}
+                    {fd.disclosed_count === 1 ? pt("member") : pt("members")}
+                    {Array.isArray(fd.disclosed_members) && fd.disclosed_members.length > 0 && (
+                      <>: {fd.disclosed_members.map((m: any) => m.name).filter(Boolean).join(", ")}</>
+                    )}
+                    {!fdFlag && fd.acknowledged_by_name && (
+                      <>
+                        {" — "}
+                        {pt("accepted by")} {fd.acknowledged_by_name}
+                        {fd.acknowledged_at && <> ({new Date(fd.acknowledged_at).toLocaleDateString()})</>}
+                      </>
+                    )}
+                  </p>
+                </div>
+                {fdFlag ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 shrink-0 gap-1 text-xs"
+                    disabled={acceptDisclosure.isPending}
+                    onClick={() => acceptDisclosure.mutate()}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {pt("Accept")}
+                  </Button>
+                ) : (
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                )}
+              </div>
+            </div>
+          </section>
         )}
 
         {/* Open actions */}

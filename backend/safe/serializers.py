@@ -9,7 +9,9 @@ class ARTSyncSerializer(serializers.ModelSerializer):
     class Meta:
         model = ARTSync
         fields = '__all__'
-        read_only_fields = ['id', 'created_at']
+        # `art` is injected server-side from the nested route
+        # (/programs/<pid>/arts/<art_pk>/syncs/), so it is read-only on input.
+        read_only_fields = ['id', 'art', 'created_at']
 
 
 class AgileReleaseTrainSerializer(serializers.ModelSerializer):
@@ -27,7 +29,9 @@ class PIObjectiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = PIObjective
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `pi` is injected server-side from the nested route
+        # (/programs/<pid>/pis/<pi_id>/objectives/), so it is read-only on input.
+        read_only_fields = ['id', 'pi', 'created_at', 'updated_at']
 
     def get_assigned_team_name(self, obj):
         if obj.assigned_team_id:
@@ -93,7 +97,9 @@ class DependencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Dependency
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `pi` is injected server-side from the nested route
+        # (/pis/<pi_id>/dependencies/), so it is read-only on input.
+        read_only_fields = ['id', 'pi', 'created_at', 'updated_at']
 
     def get_target_feature_name(self, obj):
         return obj.target_feature.name if obj.target_feature_id else None
@@ -110,7 +116,9 @@ class SystemDemoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SystemDemo
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `pi` is injected server-side from the nested route
+        # (/pis/<pi_id>/system-demos/), so it is read-only on input.
+        read_only_fields = ['id', 'pi', 'created_at', 'updated_at']
 
     def get_feature_count(self, obj):
         return obj.features_demoed.count()
@@ -120,7 +128,9 @@ class InspectAdaptSerializer(serializers.ModelSerializer):
     class Meta:
         model = InspectAdapt
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `pi` is injected server-side from the nested route
+        # (/pis/<pi_id>/inspect-adapt/), so it is read-only on input.
+        read_only_fields = ['id', 'pi', 'created_at', 'updated_at']
 
 
 class ProgramIncrementSerializer(serializers.ModelSerializer):

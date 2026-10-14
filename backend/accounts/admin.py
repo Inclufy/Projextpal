@@ -6,6 +6,7 @@ from accounts.models import (
     PasswordResetToken,
     Company,
     CompanyAIKey,
+    TenantAIFeatureFlags,
 )
 
 
@@ -45,6 +46,29 @@ class CompanyAIKeyAdmin(admin.ModelAdmin):
         return bool(obj.anthropic_api_key)
     has_anthropic.boolean = True
     has_anthropic.short_description = "Anthropic"
+
+
+@admin.register(TenantAIFeatureFlags)
+class TenantAIFeatureFlagsAdmin(admin.ModelAdmin):
+    list_display = (
+        "company",
+        "ai_context_enabled",
+        "ai_autodrafts_enabled",
+        "team_match_enabled",
+        "compliance_scan_enabled",
+        "dashboard_narratives_enabled",
+        "audit_log_retention_days",
+        "updated_at",
+    )
+    list_filter = (
+        "ai_context_enabled",
+        "ai_autodrafts_enabled",
+        "team_match_enabled",
+        "compliance_scan_enabled",
+        "dashboard_narratives_enabled",
+    )
+    search_fields = ("company__name",)
+    readonly_fields = ("created_at", "updated_at")
 
 
 class CompanyAdmin(admin.ModelAdmin):

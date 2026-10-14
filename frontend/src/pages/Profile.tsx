@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { User, Shield, CreditCard, LogOut, Mail, Calendar } from 'lucide-react';
+import { User, Shield, CreditCard, LogOut, Mail, Calendar, Sparkles } from 'lucide-react';
 import SubscriptionTab from '@/components/profile/SubscriptionTab';
+import MySkillsTab from '@/components/profile/MySkillsTab';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const PersonalInfoTab = () => {
@@ -149,23 +150,30 @@ const Profile = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-1.5 rounded-2xl ring-1 ring-purple-100 dark:ring-purple-900/50 shadow-lg">
-            <TabsTrigger 
-              value="personal" 
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-1.5 rounded-2xl ring-1 ring-purple-100 dark:ring-purple-900/50 shadow-lg">
+            <TabsTrigger
+              value="personal"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-xl font-bold transition-all"
             >
               <User className="w-4 h-4" />
               {pt("Personal")}
             </TabsTrigger>
-            <TabsTrigger 
-              value="security" 
+            <TabsTrigger
+              value="security"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-xl font-bold transition-all"
             >
               <Shield className="w-4 h-4" />
               {pt("Security")}
             </TabsTrigger>
-            <TabsTrigger 
-              value="subscription" 
+            <TabsTrigger
+              value="skills"
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-xl font-bold transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              {pt("Skills")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="subscription"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-xl font-bold transition-all"
             >
               <CreditCard className="w-4 h-4" />
@@ -179,6 +187,10 @@ const Profile = () => {
 
           <TabsContent value="security">
             <SecurityTab />
+          </TabsContent>
+
+          <TabsContent value="skills">
+            <MySkillsTab />
           </TabsContent>
 
           <TabsContent value="subscription">

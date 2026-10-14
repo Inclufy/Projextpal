@@ -30,6 +30,22 @@ Usage:
 """
 
 import os
+# Shim: dev env ships langchain>=0.3 where ``create_agent`` is no longer
+# exported, but bot/ai/__init__.py imports it. Install a stub before anything
+# triggers urls.py → bot/views → bot/ai import.
+try:  # pragma: no cover
+    from langchain.agents import create_agent  # noqa: F401
+except ImportError:  # pragma: no cover
+    import langchain.agents as _la
+
+    def _stub_create_agent(*_a, **_kw):
+        class _StubAgent:
+            def invoke(self, *_a, **_kw):
+                return {"output": "stub"}
+        return _StubAgent()
+
+    _la.create_agent = _stub_create_agent  # type: ignore[attr-defined]
+
 # Ensure Django settings are configured before any app imports. pytest-django
 # normally handles this, but the earlier version of this conftest imported
 # models at module level which crashed with AppRegistryNotReady.
@@ -611,18 +627,25 @@ def msp_program(db, user, company):
 
 @pytest.fixture
 def pmi_program(db, user, company):
-    """Create a PMI (PMI Program Management Standard) program"""
-    if not PROJECTS_AVAILABLE or not Project:
-        pytest.skip("projects.Project model not available")
-    
-    return Project.objects.create(
+    """Create a PMI (PMI Program Management Standard) programme.
+
+    PMI sub-tabs (components, governance boards, charter, benefits,
+    stakeholders, roadmap items) hang off ``programs.Program`` — not
+    ``projects.Project`` — so the fixture creates a real Program with
+    ``methodology='pmi'`` for the UI/API scoping to resolve.
+    """
+    try:
+        from programs.models import Program
+    except Exception:
+        pytest.skip("programs.Program model not available")
+
+    return Program.objects.create(
         name='Test PMI Program',
         description='PMI Program Management Standard test',
         methodology='pmi',
         created_by=user,
         company=company,
-
-        start_date=datetime.now().date()
+        start_date=datetime.now().date(),
     )
 
 

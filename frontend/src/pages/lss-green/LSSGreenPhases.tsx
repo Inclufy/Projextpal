@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Target, Pencil, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 const fetchJson = async (url: string) => {
   const token = localStorage.getItem("access_token");
@@ -106,7 +107,50 @@ const LSSGreenPhases = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3"><Target className="h-6 w-6 text-green-500" /><h1 className="text-2xl font-bold">{pt("DMAIC Phases")}</h1><Badge variant="outline">{phases.length}</Badge></div>
-          <AiPlanButton projectId={id!} onApplied={() => { phasesQ.refetch(); tasksQ.refetch(); }} />
+          <div className="flex items-center gap-2">
+            <AutoDraftFromDocsButton
+              endpoint={`/api/v1/projects/${id}/lss/define/auto-draft/`}
+              title={pt("DMAIC Define — AI-draft from documents")}
+              description={pt("Review the Define-phase fields before applying.")}
+              fields={[
+                { key: "problem_statement", label: pt("Problem Statement"), kind: "textarea" },
+                { key: "scope", label: pt("Scope"), kind: "textarea" },
+                { key: "sipoc", label: pt("SIPOC"), kind: "sipoc" },
+                { key: "project_charter", label: pt("Project Charter"), kind: "textarea" },
+              ]}
+              onApply={async (suggested) => {
+                // Build a markdown-friendly objective that captures the Define
+                // artefacts in a single text block — the user can split later.
+                const lines: string[] = [];
+                if (suggested.problem_statement) lines.push(`## Problem Statement\n${suggested.problem_statement}`);
+                if (suggested.scope) lines.push(`## Scope\n${suggested.scope}`);
+                const s = suggested.sipoc || {};
+                const sipocFmt = ["suppliers", "inputs", "process", "outputs", "customers"]
+                  .map((k) => Array.isArray(s[k]) && s[k].length ? `**${k}**: ${s[k].join("; ")}` : null)
+                  .filter(Boolean).join("\n");
+                if (sipocFmt) lines.push(`## SIPOC\n${sipocFmt}`);
+                if (suggested.project_charter) lines.push(`## Project Charter\n${suggested.project_charter}`);
+                const objective = lines.join("\n\n");
+                // Find existing Define phase (idempotent) or create.
+                const existing = phases.find((p: any) => p.phase === "define");
+                if (existing) {
+                  const r = await fetch(`/api/v1/lss-green/projects/${id}/dmaic-phases/${existing.id}/`, {
+                    method: "PATCH", headers: jsonHeaders,
+                    body: JSON.stringify({ objective }),
+                  });
+                  if (!r.ok) throw new Error(pt("Save failed"));
+                } else {
+                  const r = await fetch(`/api/v1/lss-green/projects/${id}/dmaic-phases/`, {
+                    method: "POST", headers: jsonHeaders,
+                    body: JSON.stringify({ phase: "define", objective, status: "not_started" }),
+                  });
+                  if (!r.ok) throw new Error(pt("Save failed"));
+                }
+                phasesQ.refetch();
+              }}
+            />
+            <AiPlanButton projectId={id!} onApplied={() => { phasesQ.refetch(); tasksQ.refetch(); }} />
+          </div>
         </div>
 
         {phases.length === 0 ? <Card className="p-8 text-center"><Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold">{pt("No phases yet")}</h3></Card> : (

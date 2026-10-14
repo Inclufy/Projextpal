@@ -12,17 +12,26 @@ from .models import (
 
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
-    # Backward-compat alias: clients (frontend, mobile) may still send/expect
-    # `project_definition`. We map it onto the renamed `background` column.
+    # Canonical PRINCE2 API field for the "Background / Project Definition"
+    # column.  Writes land on the underlying ``background`` model column via
+    # ``source=``.  This is the ONLY write path — ``background`` below is
+    # read-only so a client that sends both keys in one payload can no longer
+    # silently clobber the value depending on field ordering (P3 bug).
     project_definition = serializers.CharField(
         source='background', required=False, allow_blank=True
     )
+    # Backward-compat READ alias: existing clients (frontend, mobile) that
+    # still fetch ``background`` keep working.  Marked read-only so it never
+    # participates in validation/save — anything a client sends under this
+    # key is silently ignored by DRF, which is the desired "harden latent
+    # collision" behaviour.
+    background = serializers.CharField(read_only=True)
 
     class Meta:
         model = ProjectBrief
         fields = [
             'id', 'project',
-            'background', 'project_definition',  # both exposed
+            'background', 'project_definition',  # background = read-only alias
             'project_approach', 'outline_business_case',
             'project_objectives', 'project_scope', 'project_team_structure',
             'constraints', 'assumptions',
@@ -31,18 +40,9 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['project', 'created_at', 'updated_at']
         extra_kwargs = {
-            'background': {'required': False, 'allow_blank': True},
             'project_approach': {'required': False, 'allow_blank': True},
             'outline_business_case': {'required': False, 'allow_blank': True},
         }
-
-    def to_internal_value(self, data):
-        # Accept either field name on input. If only the legacy alias is
-        # present, copy it onto `background` so validation/save stays clean.
-        if isinstance(data, dict) and 'project_definition' in data and 'background' not in data:
-            data = dict(data)
-            data['background'] = data['project_definition']
-        return super().to_internal_value(data)
 
 
 class BusinessCaseBenefitSerializer(serializers.ModelSerializer):
@@ -262,11 +262,19 @@ class HighlightReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide money figures from non-finance roles.
         data = super().to_representation(instance)
-        from projects.permissions import can_view_costs
+        from projects.permissions import can_view_costs_for, is_external_member
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        user = getattr(request, "user", None)
+        project = getattr(instance, "project", None)
+        if not can_view_costs_for(user, project):
             data.pop("budget_spent", None)
             data.pop("budget_forecast", None)
+        # work_completed / issues_summary auto-draft from the host's task titles
+        # (completed + blocked tasks); redact them for external cross-tenant
+        # members so internal-only task titles are not disclosed.
+        if is_external_member(user, project):
+            data["work_completed"] = "— withheld —"
+            data["issues_summary"] = "— withheld —"
         return data
 
 

@@ -244,7 +244,7 @@ export default function UserManagement() {
         email: formData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        role: formData.role === 'contributor' ? 'contibuter' : formData.role,
+        role: formData.role,
         send_invite: sendInviteEmail,
       };
 

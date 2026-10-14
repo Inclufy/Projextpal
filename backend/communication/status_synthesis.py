@@ -409,7 +409,16 @@ def synthesize(
     raw = ""
     if use_llm and _ANTHROPIC_OK and key:
         try:
-            narrative, raw = _llm_narrative(metrics, rag, api_key=key, model=model)
+            # Never hand cost facts to the LLM: the stored narrative is served
+            # to external / per-member-restricted viewers who may not see costs,
+            # and a cost figure echoed into free prose would bypass the
+            # serializer's metric-level masking. The deterministic narrative
+            # never mentions budget either, so this keeps the two paths aligned.
+            llm_metrics = {
+                k: v for k, v in metrics.items()
+                if k not in ("budget", "currency")
+            }
+            narrative, raw = _llm_narrative(llm_metrics, rag, api_key=key, model=model)
             model_used = model
         except Exception:
             narrative = _deterministic_narrative(metrics, rag)

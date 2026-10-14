@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'product_issues',  # NEW: user-feedback + auto-CI issue capture
     'notifications',   # NEW: per-user in-app notification centre (the bell)
     'collaboration',   # NEW: comments (task + project discussion) + direct messages
+    'ai_audit',        # Sprint 6: AIContextAccessLog for compliance review
 ]
 
 MIDDLEWARE = [
@@ -228,6 +229,18 @@ REST_FRAMEWORK = {
         # Generous enough for full incremental refreshes across all
         # entities, but bounded so a leaked token can't hammer the API.
         "service_token": "1000/hour",
+        # Sprint 6 — per-user cap on AI endpoints that read a Project/
+        # Program/Portfolio AIContext row. Context-including calls carry
+        # a huge prompt, so the bucket is tighter than the plain "ai"
+        # throttle. Lift this per-tenant via ``TenantAIFeatureFlags`` if
+        # we ever need an enterprise tier.
+        "ai_context": "20/hour",
+        # Sprint 12 — Resend inbound-email webhook (reply-by-email on
+        # decision-request flow). HMAC-authenticated, so this is defense-
+        # in-depth: if the signing secret ever leaks, 60/h/IP caps the
+        # blast radius before rotation. Real traffic is < 1 reply/issue,
+        # so the ceiling is generous.
+        "resend_inbound": "60/hour",
     },
 }
 
@@ -314,6 +327,37 @@ OPENAI_API_KEY = decouple.config("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = decouple.config("ANTHROPIC_API_KEY", default="")
 FIELD_ENCRYPTION_KEY = decouple.config("FIELD_ENCRYPTION_KEY", default="")
 FIELD_ENCRYPTION_KEYS = decouple.config("FIELD_ENCRYPTION_KEYS", default="")
+
+# ---------------------------------------------------------------------------
+# Claude Auto-Triage pipeline (Sprint 10 S10-02).
+# See backend/product_issues/claude_triage.py and
+# backend/product_issues/management/commands/claude_auto_triage.py.
+# Default = DISABLED. Opt in by setting both env vars in prod.
+# ---------------------------------------------------------------------------
+CLAUDE_FIX_AGENT_WEBHOOK = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK", default=""
+)
+CLAUDE_FIX_AGENT_WEBHOOK_SECRET = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", default=""
+)
+# Optional Authorization header for the outbound webhook. REQUIRED when
+# CLAUDE_FIX_AGENT_WEBHOOK points at GitHub's repository_dispatch endpoint
+# (``https://api.github.com/repos/<owner>/<repo>/dispatches``) — the token
+# needs the ``repo`` + ``workflow`` scopes to fire the orchestrator. For a
+# self-hosted webhook that only verifies the HMAC header, leave this blank.
+CLAUDE_FIX_AGENT_WEBHOOK_AUTH = decouple.config(
+    "CLAUDE_FIX_AGENT_WEBHOOK_AUTH", default=""
+)
+CLAUDE_AUTO_TRIAGE_ENABLED = (
+    decouple.config("CLAUDE_AUTO_TRIAGE_ENABLED", default="false").lower()
+    == "true"
+)
+# Public base URL used to build the callback URL sent to the external
+# orchestrator. Falls back to BASE_URL.
+PROJEXTPAL_PUBLIC_URL = decouple.config(
+    "PROJEXTPAL_PUBLIC_URL",
+    default=decouple.config("BASE_URL", default=""),
+)
 
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {

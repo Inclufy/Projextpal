@@ -60,10 +60,15 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
+        # Membership-scoped (was company-only, which hid a shared board from a
+        # legitimate external member). The URL project_id pins the board to one
+        # project, and project_id__in restricts to the caller's accessible set —
+        # so an external member reaches ONLY the shared project's board.
         return KanbanBoard.objects.filter(
             project_id=project_id,
-            project__company=self.request.user.company
+            project_id__in=accessible_project_ids(self.request.user),
         )
 
     def get_serializer_class(self):
@@ -98,14 +103,21 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def initialize(self, request, project_id=None):
-        """Initialize Kanban board with default columns"""
+        """Initialize Kanban board with default columns.
+
+        Idempotent: if the board exists but has 0 columns, seed defaults
+        anyway so an empty board can be "re-initialized" without manual
+        column creation.
+        """
         project = self.get_project()
         board, created = KanbanBoard.objects.get_or_create(
             project=project,
             defaults={'name': f'{project.name} Board'}
         )
-        
-        if created:
+
+        # Seed defaults if freshly created OR if an existing board has no
+        # columns yet (recovers legacy / partially-created boards).
+        if created or board.columns.count() == 0:
             # Create default columns
             default_columns = [
                 ('Backlog', 'backlog', None, False),
@@ -123,15 +135,16 @@ class KanbanBoardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
                     wip_limit=wip,
                     is_done_column=is_done
                 )
-            
-            # Create default swimlane
-            KanbanSwimlane.objects.create(
-                board=board,
-                name='Default',
-                order=0,
-                is_default=True
-            )
-        
+
+            # Create default swimlane if none exists
+            if not board.swimlanes.exists():
+                KanbanSwimlane.objects.create(
+                    board=board,
+                    name='Default',
+                    order=0,
+                    is_default=True
+                )
+
         return Response(KanbanBoardDetailSerializer(board).data)
 
 
@@ -144,10 +157,11 @@ class KanbanColumnViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
         return KanbanColumn.objects.filter(
             board__project_id=project_id,
-            board__project__company=self.request.user.company
+            board__project_id__in=accessible_project_ids(self.request.user),
         )
 
     def perform_create(self, serializer):
@@ -176,10 +190,11 @@ class KanbanSwimlaneViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
         return KanbanSwimlane.objects.filter(
             board__project_id=project_id,
-            board__project__company=self.request.user.company
+            board__project_id__in=accessible_project_ids(self.request.user),
         )
 
     def perform_create(self, serializer):
@@ -200,12 +215,18 @@ class KanbanCardViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
+        # Membership-scoped containment: an external member only ever reaches
+        # the cards of the shared project named in the URL, never another of the
+        # host company's projects. (KanbanCard carries no is_internal flag — it
+        # is a distinct model from projects.Task — so there is no internal-task
+        # subset to strip at the card level; the Task board handles that.)
         queryset = KanbanCard.objects.filter(
             board__project_id=project_id,
-            board__project__company=self.request.user.company
+            board__project_id__in=accessible_project_ids(self.request.user),
         )
-        
+
         # Filters
         column = self.request.query_params.get('column')
         swimlane = self.request.query_params.get('swimlane')
@@ -422,10 +443,11 @@ class CardCommentViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
         return CardComment.objects.filter(
             card__board__project_id=project_id,
-            card__board__project__company=self.request.user.company
+            card__board__project_id__in=accessible_project_ids(self.request.user),
         )
 
 
@@ -434,10 +456,11 @@ class CardChecklistViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
         return CardChecklist.objects.filter(
             card__board__project_id=project_id,
-            card__board__project__company=self.request.user.company
+            card__board__project_id__in=accessible_project_ids(self.request.user),
         )
 
     @action(detail=True, methods=['post'])
@@ -469,10 +492,11 @@ class KanbanMetricsViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, MethodologyMatchesProjectPermission]
 
     def get_queryset(self):
+        from projects.views import accessible_project_ids
         project_id = self.kwargs.get('project_id')
         return KanbanMetrics.objects.filter(
             board__project_id=project_id,
-            board__project__company=self.request.user.company
+            board__project_id__in=accessible_project_ids(self.request.user),
         )
 
     @action(detail=False, methods=['post'])
@@ -658,11 +682,14 @@ class KanbanDashboardView(APIView):
 
     def get(self, request, project_id):
         from projects.models import Project
-        
+        from projects.views import accessible_project_ids
+
+        # Membership-scoped so an external collaborator can see the shared
+        # project's board dashboard; the id__in set still bars every other
+        # host-company project.
         project = get_object_or_404(
-            Project,
+            Project.objects.filter(id__in=accessible_project_ids(request.user)),
             id=project_id,
-            company=request.user.company
         )
         
         board = KanbanBoard.objects.filter(project=project).first()

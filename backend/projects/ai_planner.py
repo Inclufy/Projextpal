@@ -23,7 +23,7 @@ from datetime import date, timedelta
 
 from . import ai_planner_methodology as methodology_ext
 
-ANTHROPIC_MODEL = "claude-opus-5"
+ANTHROPIC_MODEL = "claude-opus-4-7"
 OPENAI_MODEL = "gpt-4o-mini"
 
 # Harde limieten op wat één apply mag aanmaken (misbruik-/foutgrens).
@@ -112,6 +112,20 @@ def _project_context(project) -> dict:
         "today": date.today().isoformat(),
     }
     ctx.update(_charter_context(project))
+    # Door de gebruiker geüploade tender-/brief-documenten (ProjectAIContext)
+    # — alleen gebruiken als het expliciet aan staat.
+    try:
+        aic = getattr(project, "ai_context", None)
+        if aic and aic.enabled and aic.extracted_text:
+            # Rank na charter: ruwe documenttekst is signaal-rijk maar lang;
+            # knippen op 8_000 tekens om prompt-size te beheersen.
+            ctx["uploaded_documents"] = aic.extracted_text[:8000]
+            if aic.source_files:
+                ctx["uploaded_documents_files"] = [
+                    f.get("name") for f in aic.source_files[:10] if f.get("name")
+                ]
+    except Exception:
+        pass
     return ctx
 
 
@@ -194,6 +208,7 @@ def _parse_reply(raw: str) -> dict | None:
 def _chat_anthropic(company, system: str, messages: list) -> dict | None:
     try:
         from core.llm_keys import get_anthropic_client
+        from core import ai_usage
         client = get_anthropic_client(company)
         if client is None:
             return None
@@ -201,6 +216,8 @@ def _chat_anthropic(company, system: str, messages: list) -> dict | None:
             model=ANTHROPIC_MODEL, max_tokens=6000, system=system,
             messages=[{"role": m["role"], "content": m["content"]} for m in messages],
         )
+        ai_usage.record(getattr(company, "id", None),
+                        ai_usage.tokens_from_anthropic(resp), provider="anthropic")
         raw = "".join(
             b.text for b in resp.content if getattr(b, "type", "") == "text"
         )
@@ -212,6 +229,7 @@ def _chat_anthropic(company, system: str, messages: list) -> dict | None:
 def _chat_openai(company, system: str, messages: list) -> dict | None:
     try:
         from core.llm_keys import get_openai_client
+        from core import ai_usage
         client = get_openai_client(company)
         if client is None:
             return None
@@ -223,6 +241,12 @@ def _chat_openai(company, system: str, messages: list) -> dict | None:
             max_tokens=4000,
             response_format={"type": "json_object"},
         )
+        try:
+            usage = getattr(resp, "usage", None)
+            total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
+            ai_usage.record(getattr(company, "id", None), total, provider="openai")
+        except Exception:
+            pass
         return _parse_reply(resp.choices[0].message.content or "")
     except Exception:
         return None
@@ -290,11 +314,18 @@ def _fallback_plan(project) -> dict:
     return plan
 
 
-def plan_chat(project, user, messages: list) -> dict:
+def plan_chat(project, user, messages: list, language: str = "nl") -> dict:
     """Eén chatbeurt. `messages` = [{role: user|assistant, content: str}, ...].
-    Geeft altijd een bruikbaar resultaat terug (nooit een dead-end)."""
+    Geeft altijd een bruikbaar resultaat terug (nooit een dead-end).
+
+    ``language`` dwingt de LLM antwoord in de UI-taal van de gebruiker
+    (nl/en/fr). De NL-prompt zelf blijft, maar de taalinstructie wordt
+    bovenaan ingevoegd zodat EN/FR-users geen Nederlandse output krijgen.
+    """
+    from core.i18n_ai import prepend_language
+
     ctx = _project_context(project)
-    system = _system_prompt(ctx)
+    system = prepend_language(_system_prompt(ctx), language)
     company = getattr(user, "company", None)
 
     clean = [

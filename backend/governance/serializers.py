@@ -82,7 +82,9 @@ class GovernanceStakeholderSerializer(serializers.ModelSerializer):
         return obj.user.get_full_name() or obj.user.email
 
     def validate(self, data):
-        if not data.get('user') and not data.get('email'):
+        # Only require user/email on CREATE. On PATCH/PUT the instance already
+        # has a user; a partial update may touch unrelated fields (role, etc.).
+        if self.instance is None and not data.get('user') and not data.get('email'):
             raise serializers.ValidationError("Either 'user' or 'email' must be provided.")
         return data
 

@@ -14,6 +14,18 @@ from .models import Course, CourseModule, CourseLesson, Enrollment
 IsAcademyEditor = HasRole("superadmin", "admin")
 
 class CourseLessonSerializer(serializers.ModelSerializer):
+    practice_assignments = serializers.SerializerMethodField()
+
+    def get_practice_assignments(self, obj):
+        try:
+            from .models import PracticeAssignment
+            return [
+                {"id": pa.id, "title": pa.title}
+                for pa in PracticeAssignment.objects.filter(lesson=obj).only("id", "title")
+            ]
+        except Exception:
+            return []
+
     class Meta:
         model = CourseLesson
         fields = [
@@ -22,6 +34,7 @@ class CourseLessonSerializer(serializers.ModelSerializer):
             'video_url', 'content', 'content_nl',
             'visual_type', 'visual_data',
             'ai_profile', 'simulation_id', 'practice_set_id',
+            'practice_assignments',
         ]
 
 class CourseModuleSerializer(serializers.ModelSerializer):

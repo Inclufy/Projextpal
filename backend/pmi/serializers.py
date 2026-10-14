@@ -14,7 +14,10 @@ class PMIComponentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         # `status` is read-only: a component changes status ONLY through a
         # recorded gate decision (the `decide` action), never a raw PATCH.
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        # `program` is injected by the nested-URL ViewSet (``program_id`` kwarg)
+        # — the ``POST /pmi/programs/<id>/components/`` route is the sanctioned
+        # path, so clients must not have to repeat it in the body.
+        read_only_fields = ['id', 'program', 'status', 'created_at', 'updated_at']
 
     def get_dependency_count(self, obj):
         return obj.depends_on.count()
@@ -24,7 +27,9 @@ class PMIGovernanceBoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = PMIGovernanceBoard
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # ``program`` is injected by the nested-URL ViewSet — see the parallel
+        # note on PMIComponentSerializer.
+        read_only_fields = ['id', 'program', 'created_at', 'updated_at']
 
 
 class PMIGateDecisionSerializer(serializers.ModelSerializer):

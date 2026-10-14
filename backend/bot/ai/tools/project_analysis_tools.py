@@ -854,6 +854,11 @@ def get_project_analysis(
 
     project_id = project.id
 
+    # Cost confidentiality: hide budget figures from external (cross-tenant) and
+    # per-member-restricted viewers (zeroed so the narrative/health keep shape).
+    from projects.permissions import can_view_costs_for
+    show_costs = can_view_costs_for(user, project)
+
     # Get time filter dates
     start_date, end_date = get_time_filter_dates(time_filter)
 
@@ -867,6 +872,12 @@ def get_project_analysis(
     performance_metrics = calculate_performance_metrics(project, start_date, end_date)
     additional_context = gather_additional_context(project, start_date, end_date)
 
+    if not show_costs and isinstance(performance_metrics, dict) and "budget" in performance_metrics:
+        performance_metrics["budget"] = {
+            "total_budget": 0, "total_spent": 0, "remaining": 0,
+            "utilization_percentage": 0,
+        }
+
     # Compile the analysis data
     analysis_data = {
         "project": {
@@ -874,7 +885,7 @@ def get_project_analysis(
             "name": project.name,
             "status": project.status,
             "methodology": project.methodology,
-            "budget": float(project.budget) if project.budget else 0,
+            "budget": float(project.budget) if (show_costs and project.budget) else 0,
             "start_date": str(project.start_date) if project.start_date else None,
             "end_date": str(project.end_date) if project.end_date else None,
         },
@@ -1098,7 +1109,7 @@ def analyze_cross_module_intelligence(project_id: str) -> Dict[str, Any]:
 
     try:
         from projects.compound_signals import compute_compound_signals
-        sig = compute_compound_signals(project)
+        sig = compute_compound_signals(project, user=user)
     except Exception:
         sig = {"signals": [], "count": 0}
     try:
@@ -1108,6 +1119,12 @@ def analyze_cross_module_intelligence(project_id: str) -> Dict[str, Any]:
         m = {}
 
     signals = sig.get("signals", [])
+    # Cost signals embed the absolute budget + spend % in their detail/title;
+    # hide them from viewers not allowed to see this project's costs (external
+    # or per-member restricted). Mirrors ProjectViewSet.compound_signals.
+    from projects.permissions import can_view_costs_for
+    if not can_view_costs_for(user, project):
+        signals = [s for s in signals if "cost" not in s.get("areas", [])]
     md = f"# 🧠 Cross-module intelligence — {project.name}\n\n"
     md += (
         f"- Tasks: {m.get('tasks_done', 0)}/{m.get('tasks_total', 0)} done, "

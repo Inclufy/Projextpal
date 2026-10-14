@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from projects.models import Project
+from programs.models import Program
 
 from .models import (
     PMIComponent, PMIGovernanceBoard, PMIGateDecision,
@@ -22,9 +22,15 @@ def _get_company(user):
 
 
 def _verify_program_access(user, program_id):
-    """Verify the user's company owns the target program."""
+    """Verify the user's company owns the target program.
+
+    The ``program_id`` is a :class:`programs.Program` primary key — PMI
+    components, boards, charters, benefits, stakeholders and roadmap items are
+    all scoped to a real Program (not a Project), so the access check must look
+    the id up in ``programs.Program``.
+    """
     company = _get_company(user)
-    if not company or not Project.objects.filter(id=program_id, company=company).exists():
+    if not company or not Program.objects.filter(id=program_id, company=company).exists():
         raise PermissionDenied("You do not have access to this program.")
 
 

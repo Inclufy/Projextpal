@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle, ScrollText } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 type BusinessCaseForm = {
   executive_summary: string;
@@ -116,10 +117,38 @@ const Prince2BusinessCase = () => {
     } catch { toast.error(pt("Action failed")); }
   };
 
-  const addBenefit = async () => {
-    if (!bc || !benefitForm.description) return;
+  /**
+   * Ensure a BusinessCase row exists before we add a child benefit/risk.
+   * Fixes the UX bug where the Add buttons were a no-op on fresh projects:
+   * users saw a disabled control with no hint that the parent BC had to be
+   * saved first. Now the Add flow auto-creates the parent BC (POST with the
+   * current form state, which may be empty) and returns the live object.
+   */
+  const ensureBusinessCase = async (): Promise<any | null> => {
+    if (bc) return bc;
     try {
-      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_benefit/`, {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/`, {
+        method: "POST", headers: jsonHeaders, body: JSON.stringify(form),
+      });
+      if (response.ok) {
+        const created = await response.json();
+        setBc(created);
+        return created;
+      }
+      toast.error(pt("Create failed"));
+      return null;
+    } catch {
+      toast.error(pt("Create failed"));
+      return null;
+    }
+  };
+
+  const addBenefit = async () => {
+    if (!benefitForm.description) return;
+    const parent = await ensureBusinessCase();
+    if (!parent) return;
+    try {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${parent.id}/add_benefit/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(benefitForm),
       });
       if (response.ok) { toast.success(pt("Created")); setBenefitDialog(false); setBenefitForm({ description: "", benefit_type: "financial", value: "", timing: "" }); fetchBC(); }
@@ -128,9 +157,11 @@ const Prince2BusinessCase = () => {
   };
 
   const addRisk = async () => {
-    if (!bc || !riskForm.description) return;
+    if (!riskForm.description) return;
+    const parent = await ensureBusinessCase();
+    if (!parent) return;
     try {
-      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${bc.id}/add_risk/`, {
+      const response = await fetch(`/api/v1/projects/${id}/prince2/business-case/${parent.id}/add_risk/`, {
         method: "POST", headers: jsonHeaders, body: JSON.stringify(riskForm),
       });
       if (response.ok) { toast.success(pt("Created")); setRiskDialog(false); setRiskForm({ description: "", probability: "medium", impact: "medium", mitigation: "" }); fetchBC(); }
@@ -165,6 +196,35 @@ const Prince2BusinessCase = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate(`/projects/${id}/foundation/charter`)} className="gap-2"><ScrollText className="h-4 w-4" /> {pt("Project Charter")}</Button>
+            <AutoDraftFromDocsButton
+              endpoint={`/api/v1/projects/${id}/prince2/business-case/auto-draft/`}
+              title={pt("Business Case — AI-draft from documents")}
+              description={pt("Review the AI-drafted fields and edit before applying.")}
+              fields={[
+                { key: "executive_summary", label: pt("Executive Summary"), kind: "textarea" },
+                { key: "reasons", label: pt("Reasons"), kind: "textarea" },
+                { key: "business_options", label: pt("Options"), kind: "textarea" },
+                { key: "expected_benefits", label: pt("Expected Benefits"), kind: "textarea" },
+                { key: "expected_dis_benefits", label: pt("Dis-Benefits"), kind: "textarea" },
+                { key: "major_risks", label: pt("Major Risks"), kind: "textarea" },
+              ]}
+              onApply={async (suggested) => {
+                const base = { ...form, ...suggested };
+                setForm((prev) => ({ ...prev, ...suggested }));
+                const url = bc
+                  ? `/api/v1/projects/${id}/prince2/business-case/${bc.id}/`
+                  : `/api/v1/projects/${id}/prince2/business-case/`;
+                const method = bc ? "PATCH" : "POST";
+                const body: any = { ...base };
+                body.development_costs = base.development_costs !== "" && !isNaN(Number(base.development_costs)) ? Number(base.development_costs) : 0;
+                body.ongoing_costs = base.ongoing_costs !== "" && !isNaN(Number(base.ongoing_costs)) ? Number(base.ongoing_costs) : 0;
+                const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+                if (!r.ok) throw new Error(pt("Save failed"));
+                const data = await r.json();
+                setBc(data);
+                fetchBC();
+              }}
+            />
             {bc && bc.status !== "approved" && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600"><CheckCircle2 className="h-4 w-4" /> {pt("Approve")}</Button>
             )}
@@ -196,7 +256,7 @@ const Prince2BusinessCase = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Euro className="h-5 w-5 text-green-500" /> {pt("Benefits")} ({bc?.benefits?.length || 0})</CardTitle>
-            <Button size="sm" onClick={() => setBenefitDialog(true)} disabled={!bc}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
+            <Button size="sm" onClick={() => setBenefitDialog(true)}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
           </CardHeader>
           <CardContent>
             {(!bc?.benefits || bc.benefits.length === 0) ? <p className="text-muted-foreground text-center py-4">{pt("No benefits added yet")}</p> : (
@@ -214,7 +274,7 @@ const Prince2BusinessCase = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> {pt("Risks")} ({bc?.risks?.length || 0})</CardTitle>
-            <Button size="sm" onClick={() => setRiskDialog(true)} disabled={!bc}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
+            <Button size="sm" onClick={() => setRiskDialog(true)}><Plus className="h-4 w-4 mr-1" /> {pt("Add")}</Button>
           </CardHeader>
           <CardContent>
             {(!bc?.risks || bc.risks.length === 0) ? <p className="text-muted-foreground text-center py-4">{pt("No risks added yet")}</p> : (

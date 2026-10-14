@@ -189,7 +189,10 @@ def generate_ai_report(request):
         "user_role": user.role,
     }
     
-    report = generate_report(report_id, context, company=company)
+    from core.i18n_ai import resolve_ui_language
+    lang = resolve_ui_language(request)
+
+    report = generate_report(report_id, context, company=company, language=lang)
     return Response(report)
 
 
@@ -216,9 +219,51 @@ def ai_generate_text(request):
 
     logger = logging.getLogger(__name__)
 
+    from core.i18n_ai import resolve_ui_language, prepend_language
+    from core.ai_context_helpers import (
+        get_project_context_prefix,
+        get_program_context_prefix,
+        get_portfolio_context_prefix,
+        MAX_CONTEXT_CHARS,
+    )
+
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
+
+    lang = resolve_ui_language(request)
+    # Multi-level context: a single AI generate call may be scoped to a
+    # project AND/OR its program AND/OR its portfolio. Each helper is cap-
+    # ped at MAX_CONTEXT_CHARS; stacking all three gives a hard upper
+    # bound of 3*MAX_CONTEXT_CHARS prefix characters. The order (portfolio
+    # → program → project) matters because the project context is the most
+    # specific signal the LLM should weigh last/most heavily.
+    portfolio_prefix = get_portfolio_context_prefix(
+        request.user, request.data.get("portfolio_id"), language=lang,
+        surface="governance_ai",
+    )
+    program_prefix = get_program_context_prefix(
+        request.user, request.data.get("program_id"), language=lang,
+        surface="governance_ai",
+    )
+    project_prefix = get_project_context_prefix(
+        request.user, request.data.get("project_id"), language=lang,
+        surface="governance_ai",
+    )
+    docs_prefix = (portfolio_prefix or '') + (program_prefix or '') + (project_prefix or '')
+    # B8 — P3-3 "today" directive was only wired into generate_report(),
+    # which left ai_generate_text() still prone to hallucinated dates
+    # (observed: a 2023 date fabricated in a report written in 2026).
+    # Prepend the real date here too so EVERY governance AI call grounds
+    # itself in the current day.
+    from .ai_reports import _today_directive
+    today_prefix = _today_directive() + "\n\n"
+    system_prompt = prepend_language(
+        today_prefix
+        + docs_prefix
+        + 'You are a helpful project management expert. Respond concisely and professionally.',
+        lang,
+    )
 
     api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.getenv('OPENAI_API_KEY')
     if not api_key or api_key.startswith('sk-test') or api_key.startswith('sk-your') or len(api_key) < 20:
@@ -246,7 +291,7 @@ def ai_generate_text(request):
             json={
                 'model': 'gpt-4o-mini',
                 'messages': [
-                    {'role': 'system', 'content': 'You are a helpful project management expert. Respond concisely and professionally.'},
+                    {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': prompt},
                 ],
                 'temperature': 0.7,
@@ -258,6 +303,13 @@ def ai_generate_text(request):
         )
         api_response.raise_for_status()
         data = api_response.json()
+        try:
+            from core.ai_usage import record as _record_usage, tokens_from_openai_http
+            company = getattr(request.user, "company", None)
+            _record_usage(getattr(company, "id", None),
+                          tokens_from_openai_http(data), provider="openai")
+        except Exception:
+            pass
         content = (data.get('choices') or [{}])[0].get('message', {}).get('content', '').strip()
         if not content:
             logger.warning("ai_generate_text: empty content from OpenAI")

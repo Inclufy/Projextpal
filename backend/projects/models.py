@@ -4,6 +4,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+from core.secret_field import EncryptedTextField
+
 
 class Project(models.Model):
     # PRINCE2 governance tailoring: strict separation of duties means only the
@@ -144,6 +146,17 @@ class Project(models.Model):
     health_risk = models.CharField(max_length=7, default='#808080', blank=True)
     health_quality = models.CharField(max_length=7, default='#808080', blank=True)
     last_analysis_date = models.DateTimeField(null=True, blank=True)
+
+    # Sprint 5 S5-01 — compliance regimes auto-detected from
+    # ProjectAIContext.extracted_text. Canonical slugs only
+    # (e.g. "avg_gdpr", "iso_27001"); the frontend turns the slug into a
+    # chip label via the shared compliance_scan.chip_label() table.
+    compliance_flags = models.JSONField(default=list, blank=True)
+
+    # Sprint 5 S5-02 — AI-suggested project tags, generated from the
+    # ProjectAIContext text at project-create time. List of short strings
+    # (max ~5). Users may edit freely.
+    ai_suggested_tags = models.JSONField(default=list, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -305,6 +318,13 @@ class Task(models.Model):
     )
     progress = models.PositiveIntegerField(default=0)
     order_index = models.PositiveIntegerField(default=0)
+    # Confidentiality: an internal/technical task is hidden from cross-tenant
+    # (external-company) collaborators on a shared project. Visible as normal to
+    # the owning company. Default False so nothing changes for existing tasks.
+    is_internal = models.BooleanField(
+        default=False,
+        help_text="Hide this task from external (cross-tenant) collaborators.",
+    )
     # RACI fields
     raci_responsible = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -880,9 +900,41 @@ class ProjectTeam(models.Model):
     )
     added_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # Per-member financial confidentiality: when False, this member does not see
+    # budgets/expenses/hourly rates on this project, even if their role normally
+    # could. Default True so existing members are unaffected.
+    can_view_costs = models.BooleanField(
+        default=True,
+        help_text="Allow this member to see budgets/rates on this project.",
+    )
     hourly_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=0,
         help_text="Hourly rate for this team member on this project"
+    )
+    # Sprint 7 — per-member timesheet policy on this project. When True this
+    # user is expected to log hours; the picker on TimeTracking will keep
+    # showing the project. The flag is advisory on the backend (we do not
+    # block time entries on it today) but it is the switch an admin can
+    # flip without removing the user from the team.
+    timesheet_required = models.BooleanField(
+        default=True,
+        help_text=(
+            "Whether this member is expected to log hours on this project. "
+            "When False the picker still lets them pick the project but no "
+            "nudge is shown."
+        ),
+    )
+    # Sprint 7 — begrote uren voor deze persoon op dit project. Overschrijding
+    # produceert een warning (niet-blocking) op TimeEntry save en voedt het
+    # "Uren vs budget" reports-widget. NULL = geen budget ingesteld — admin
+    # kan later een waarde invullen.
+    budgeted_hours = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        null=True, blank=True,
+        help_text=(
+            "Begrote uren voor deze persoon op dit project. "
+            "Overschrijding = warning, niet blocking."
+        ),
     )
 
     class Meta:
@@ -2097,3 +2149,57 @@ class ProjectTailoring(models.Model):
             "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
             "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
         }
+
+
+class ProjectAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit project (Plan with AI, Ask Co-pilot,
+    risk-forecast, …).
+
+    Opgezet als 1-op-1 met Project (niet als veld op Project zelf) zodat
+    parallelle feature-branches op `projects/models.py` niet collider op
+    hetzelfde model. Hoort niet in `Project.description` omdat die zichtbaar
+    is voor eindgebruikers en de ruwe tender-tekst dat niet is.
+
+    `extracted_text` is al door `plan_from_documents` getrimd + genormalis-
+    eerd; we knippen hier op 50_000 tekens om DB-grootte in de hand te
+    houden (ruim voor een gemiddeld dossier van ~80 pagina's).
+
+    Sprint 6: ``extracted_text`` is now an ``EncryptedTextField``. The DB
+    column is unchanged (both TextField and EncryptedTextField map to the
+    PostgreSQL ``text`` type), so existing plaintext rows continue to be
+    returned as-is (``decrypt_text`` falls through when the ciphertext
+    prefix ``gAAAAA`` is missing). New writes are Fernet-encrypted and the
+    data migration ``0040_encrypt_ai_context_text`` re-saves pre-existing
+    rows so their stored value is encrypted too."""
+
+    MAX_TEXT = 50_000
+
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = EncryptedTextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "The optional `enabled` flag lets the user hide a single "
+                  "document from AI context without removing it.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Project AI Context"
+
+    def __str__(self):
+        return f"AI-context<{self.project_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)

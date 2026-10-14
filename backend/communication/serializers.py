@@ -27,6 +27,41 @@ class MethodologyReportSerializer(serializers.ModelSerializer):
             "original_ai_response",
         ]
 
+    def to_representation(self, instance):
+        # Hide cost/EVM figures (metrics CPI+SPI/budget + cost RAG, and any
+        # CPI/SPI/EVM mention in the executive summary and highlights) from
+        # external and per-member-restricted viewers.
+        data = super().to_representation(instance)
+        from projects.permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            m = data.get("metrics")
+            if isinstance(m, dict):
+                for k in ("cpi", "spi", "budget", "budget_total", "spent", "cost",
+                          "ev", "ac", "pv", "cv", "budget_utilization"):
+                    m.pop(k, None)
+            data.pop("rag_cost", None)
+            import re
+            # Strip the whole "EVM shows CPI x.xx / SPI x.xx." clause, then any
+            # residual standalone CPI/SPI token, then collapse stray whitespace.
+            def _scrub(text):
+                if not isinstance(text, str) or not text:
+                    return text
+                text = re.sub(
+                    r"EVM shows\s*CPI[\s:]*[0-9.]+\s*/\s*SPI[\s:]*[0-9.]+\.?\s*",
+                    "", text,
+                )
+                text = re.sub(r"\s*(?:CPI|SPI)[\s:]*[0-9]+(?:\.[0-9]+)?", "", text)
+                return re.sub(r"\s{2,}", " ", text).strip()
+            data["executive_summary"] = _scrub(data.get("executive_summary"))
+            hl = data.get("highlights")
+            if isinstance(hl, list):
+                data["highlights"] = [
+                    h for h in hl
+                    if not (isinstance(h, str) and re.search(r"\b(?:CPI|SPI|EVM)\b", h, re.I))
+                ]
+        return data
+
 
 class GeneratedStatusReportSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source="project.name", read_only=True)
@@ -43,12 +78,26 @@ class GeneratedStatusReportSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def to_representation(self, instance):
+        # Hide cost figures (metrics.budget + cost RAG) from external and
+        # per-member-restricted viewers.
+        data = super().to_representation(instance)
+        from projects.permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            m = data.get("metrics")
+            if isinstance(m, dict):
+                for k in ("budget", "budget_total", "spent", "cost", "cpi", "budget_utilization"):
+                    m.pop(k, None)
+            data.pop("rag_cost", None)
+        return data
+
 class StatusReportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)  # String ID to match frontend
     
     class Meta:
         model = StatusReport
-        fields = ['id', 'project', 'status', 'progress', 'last_updated', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'title', 'status', 'progress', 'last_updated', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
     
     def validate_progress(self, value):

@@ -156,7 +156,7 @@ class SurveyCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_allowed_roles(self, value):
         """Validate allowed roles"""
         if value:
-            valid_roles = ['guest', 'contibuter', 'reviewer', 'pm', 'admin']
+            valid_roles = ['guest', 'contributor', 'contibuter', 'reviewer', 'pm', 'admin']
             for role in value:
                 if role not in valid_roles:
                     raise serializers.ValidationError(f"Invalid role: {role}")

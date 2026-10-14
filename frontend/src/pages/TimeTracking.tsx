@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTranslations } from "@/hooks/usePageTranslations";
+import { aiFetch } from "@/lib/aiFetch";
 import {
   NO_TASK,
   type TimeEntryFormErrors,
@@ -53,7 +54,14 @@ const API_BASE_URL = '/api/v1';
 // API fetch functions
 const fetchProjects = async () => {
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`${API_BASE_URL}/projects/`, {
+  // S4-11 — the TimeEntry UI must only offer projects the current user is
+  // actually allowed to log hours on. The server-side rules
+  //   * strict mode (default): only ProjectTeam members
+  //   * loose mode: all company projects (controlled per tenant)
+  //   * governance roles with can_log_time=False: nothing
+  // are concentrated behind this one endpoint so the picker, the empty
+  // state, and the strictness toggle never drift apart.
+  const response = await fetch(`${API_BASE_URL}/projects/time-entries/available-projects/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) return [];
@@ -155,7 +163,7 @@ const formatDurationFromMinutes = (mins: number) => {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -391,9 +399,31 @@ const TimeTracking = () => {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
       toast.success(pt("Created"));
+      // Sprint 7 S7-04 — non-blocking budget warning. Backend adds this key
+      // on the create response when the saving user is over their
+      // ProjectTeam.budgeted_hours. Shape: { budgeted_hours, actual_hours_
+      // after_save, pct }. We render a human-friendly toast; the entry
+      // itself is already saved.
+      const warn = data?.budget_warning;
+      if (warn && typeof warn === 'object') {
+        const budget = Number(warn.budgeted_hours) || 0;
+        const actual = Number(warn.actual_hours_after_save) || 0;
+        const over = Math.max(0, actual - budget);
+        const pct = Number(warn.pct) || 0;
+        const lang = (() => {
+          try { return localStorage.getItem('preferred_language') === 'en' ? 'en' : 'nl'; }
+          catch { return 'nl'; }
+        })();
+        const msg = lang === 'en'
+          ? `You are now ${over.toFixed(2)}h over your ${budget.toFixed(0)}h budget (${pct.toFixed(1)}%). Check in with your PM.`
+          : `Je bent nu ${over.toFixed(2).replace('.', ',')}u over je begroting van ${budget.toFixed(0)}u (${pct.toFixed(1).replace('.', ',')}%). Overleg met je PM.`;
+        // Prepend a warning glyph in the string so the base toast layer
+        // keeps working even when it does not expose an "icon" slot.
+        toast(`⚠️ ${msg}`, { duration: 8000 });
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || pt("Create failed"));
@@ -1089,22 +1119,33 @@ Respond in JSON format only, no other text:
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="project">{tt.project}</Label>
-                  <Select value={selectedProject} onValueChange={(value) => {
-                    setSelectedProject(value);
-                    setSelectedTask("");
-                    setFormErrors((prev) => ({ ...prev, project: undefined }));
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={tt.selectProject} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((project: Project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* S4-11 — the dropdown shows ONLY the projects where the
+                      current user is allowed to log hours (ProjectTeam
+                      membership + governance can_log_time filter). When the
+                      list is empty, we surface a helpful hint instead of
+                      silently showing a blank dropdown. */}
+                  {projects.length === 0 && !projectsLoading ? (
+                    <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                      Je bent nog niet op een project-team. Vraag je PM om toegang zodat je uren kunt loggen.
+                    </div>
+                  ) : (
+                    <Select value={selectedProject} onValueChange={(value) => {
+                      setSelectedProject(value);
+                      setSelectedTask("");
+                      setFormErrors((prev) => ({ ...prev, project: undefined }));
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={tt.selectProject} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project: Project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   {formErrors.project && (
                     <p className="text-sm text-destructive">{formErrors.project}</p>
                   )}

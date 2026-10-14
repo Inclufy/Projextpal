@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+from core.secret_field import EncryptedTextField
+
 
 class Program(models.Model):
     """Program management model for coordinating multiple related projects."""
@@ -153,6 +155,29 @@ class ProgramTeam(models.Model):
     )
     added_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    timesheet_required = models.BooleanField(
+        default=True,
+        help_text=(
+            "Whether this member is expected to log hours on projects under "
+            "this program. Cascades to ProjectTeam.timesheet_required when a "
+            "program membership fans out to constituent projects."
+        ),
+    )
+    budgeted_hours = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        null=True, blank=True,
+        help_text=(
+            "Begrote uren voor deze persoon op het programma. "
+            "Overschrijding = warning, niet blocking."
+        ),
+    )
+    hourly_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, null=True, blank=True,
+        help_text=(
+            "Hourly rate override for this team member at the program level. "
+            "0 or null = use Company.default_hourly_rate."
+        ),
+    )
 
     class Meta:
         unique_together = ["program", "user"]
@@ -160,6 +185,97 @@ class ProgramTeam(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.email} - {self.program.name}"
+
+    # ------------------------------------------------------------------
+    # S4-11 — team-membership cascade for time registration.
+    # ------------------------------------------------------------------
+    # Why this lives on ProgramTeam (and not a signal):
+    #   * explicit opt-in — the admin UI shows a project checklist on add,
+    #     so this cascade only runs when the admin asks for it;
+    #   * idempotent — safe to call repeatedly without creating duplicates
+    #     or re-activating a row the admin deliberately took out;
+    #   * tenant-safe — only projects whose program == self.program are
+    #     touched, so this can never leak across tenants.
+    def cascade_to_project_teams(self, project_ids=None, added_by=None):
+        """Create ProjectTeam rows under this program's projects for this user.
+
+        Args:
+            project_ids: iterable of project ids to cascade into. ``None``
+                means "every project linked to this program" (the common
+                case from the admin UI's default-checked list). An empty
+                iterable is a no-op.
+            added_by: user recorded on the created ProjectTeam rows. Falls
+                back to ``self.added_by`` so the cascade keeps the same
+                provenance as the ProgramTeam row that triggered it.
+
+        Returns:
+            A ``(created, skipped)`` tuple of ``ProjectTeam`` querysets /
+            lists for the caller to report back as ``created_project_teams``
+            and ``skipped_duplicates``.
+
+        Methodology choice (deliberately opinionated, see S4-11 spec):
+            * ``is_active=True`` — the cascaded member is immediately live
+              on the project.
+            * ``can_view_costs=True`` — a program-manager who was added at
+              the program level needs the financial view on the project
+              too; admins can downgrade later.
+            * ``hourly_rate=0`` — unknown at cascade time; the admin fills
+              it in when needed.
+            * ``role`` is NOT set here — ProjectTeam has no per-project
+              role field; the user's CustomUser.role (e.g.
+              ``program_manager``) is what the rest of the app reads.
+        """
+        # Deferred import — projects imports accounts which imports programs;
+        # at module-import time projects.models is not yet loaded.
+        from projects.models import ProjectTeam
+
+        # Resolve the target project set. ``None`` → every project linked to
+        # this program; a list stays as given but is intersected with the
+        # program's linked projects so a caller can never slip a project
+        # from another program (or another tenant) into the cascade.
+        linked_ids = set(self.program.projects.values_list("id", flat=True))
+        if project_ids is None:
+            target_ids = linked_ids
+        else:
+            try:
+                requested = {int(pid) for pid in project_ids}
+            except (TypeError, ValueError):
+                requested = set()
+            target_ids = requested & linked_ids
+
+        if not target_ids:
+            return [], []
+
+        provenance = added_by or self.added_by
+
+        existing_project_ids = set(
+            ProjectTeam.objects.filter(
+                project_id__in=target_ids, user=self.user,
+            ).values_list("project_id", flat=True)
+        )
+
+        created = []
+        skipped = []
+        for pid in target_ids:
+            if pid in existing_project_ids:
+                skipped.append(pid)
+                continue
+            pt = ProjectTeam.objects.create(
+                project_id=pid,
+                user=self.user,
+                added_by=provenance,
+                is_active=True,
+                can_view_costs=True,
+                hourly_rate=0,
+                # Sprint 7 — timesheet_required erft van de ProgramTeam-waarde
+                # zodat admin's beleid op programma-niveau door-cascadeert.
+                # budgeted_hours blijft NULL op elk ProjectTeam — program-
+                # begroting wordt niet automatisch verdeeld.
+                timesheet_required=self.timesheet_required,
+                budgeted_hours=None,
+            )
+            created.append(pt)
+        return created, skipped
 
 
 class ProgramBenefit(models.Model):
@@ -489,3 +605,54 @@ class ProgramTailoring(models.Model):
             "scope": self.dim_scope, "budget": self.dim_budget, "duur": self.dim_duur,
             "politiek": self.dim_politiek, "risico": self.dim_risico, "regel": self.dim_regel,
         }
+
+
+class ProgramAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit programma (Programme AI-advisor, Benefits
+    Map draft, Ask Co-pilot bij een programme, …).
+
+    Spiegeltje van ``projects.ProjectAIContext`` maar op programme-niveau:
+    denk aan een programme-charter, meerjarenplan, business-case portefeuille
+    of MSP Blueprint-input die voor élk constituent-project én voor élke
+    AI-draft op het programma geldt.
+
+    Opgezet als 1-op-1 met Program (niet als veld op Program zelf) zodat
+    parallelle feature-branches op ``programs/models.py`` niet collider op
+    hetzelfde model.
+
+    ``extracted_text`` is al door ``plan_from_documents`` getrimd + genormalis-
+    eerd; we knippen hier op 50_000 tekens om DB-grootte in de hand te
+    houden (ruim voor een gemiddeld programma-dossier)."""
+
+    MAX_TEXT = 50_000
+
+    program = models.OneToOneField(
+        Program, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    # Sprint 6: Fernet-encrypted at rest (same scheme as ProjectAIContext).
+    extracted_text = EncryptedTextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "Optional per-document ``enabled`` flag (default True) hides "
+                  "a single document from AI context without removing it.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Program AI Context"
+
+    def __str__(self):
+        return f"AI-context<program={self.program_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)

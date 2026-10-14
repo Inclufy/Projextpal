@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from .views import accessible_project_ids
 from .models import Project
-from .permissions import can_view_costs
+from .permissions import can_view_costs, can_view_costs_for
 
 
 FULL_ROLES = {"project_owner", "project_manager"}
@@ -81,8 +81,18 @@ def effective_program_role(user, program):
     return APP_FALLBACK.get(getattr(user, "role", None), ("stakeholder", False))
 
 
-def _build_response(obj_id, role, full, user, preview=False):
-    costs_ok = bool(full and (preview or can_view_costs(user)))
+def _build_response(obj_id, role, full, user, preview=False, project=None):
+    # Capability flag must reflect the FULL confidentiality gate for a project
+    # (role + external cross-tenant + per-member ProjectTeam restriction), not
+    # the role-only check. Programs have no per-project context, so they keep
+    # the role-only gate. Admin preview keeps forcing the flag on.
+    if preview:
+        _cost_base = True
+    elif project is not None:
+        _cost_base = can_view_costs_for(user, project)
+    else:
+        _cost_base = can_view_costs(user)
+    costs_ok = bool(full and _cost_base)
     allowed = ["*"] if full else ROLE_ALLOWED.get(role, ["overview", "discussion"])
     return Response({
         "id": obj_id,
@@ -113,7 +123,7 @@ def my_project_role(request, pk):
         return Response({"detail": "Project not found or not accessible."}, status=404)
     role, full = effective_project_role(request.user, project)
     role, full, preview = _apply_preview(request, role, full)
-    return _build_response(project.id, role, full, request.user, preview)
+    return _build_response(project.id, role, full, request.user, preview, project=project)
 
 
 @api_view(["GET"])

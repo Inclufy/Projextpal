@@ -148,11 +148,8 @@ const TenantProvisioning = () => {
       const email = emailPart.trim().toLowerCase();
       if (!re.test(email)) continue;
       const role = rolePart.trim().toLowerCase();
-      const validRoles = ["admin", "pm", "program_manager", "contibuter", "contributor", "reviewer", "guest"];
-      // Accept both spellings — backend ROLE_CHOICES still uses 'contibuter'
-      // (typo in the model). Map the corrected spelling so admins typing
-      // 'contributor' in bulk import don't lose data.
-      const finalRole = role === "contributor" ? "contibuter" : role;
+      const validRoles = ["admin", "pm", "program_manager", "contributor", "contibuter", "reviewer", "guest"];
+      const finalRole = role === "contibuter" ? "contributor" : role;
       parsed.push({ email, role: validRoles.includes(role) ? finalRole : "pm" });
     }
     if (parsed.length === 0) {

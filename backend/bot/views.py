@@ -15,6 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.throttles import AiContextThrottle
+
 from bot.ai import ERPAIAgent
 from bot.ai.tools import ToolRegistry
 from bot.ai.tools.project_analysis_tools import get_project_analysis
@@ -132,7 +134,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             {"chats": serializer.data, "total": total, "page": page, "size": size}
         )
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AiContextThrottle])
     def send_message(self, request, pk=None):
         chat = self.get_object()
         message = request.data.get("message")
@@ -263,8 +265,25 @@ class ChatViewSet(viewsets.ModelViewSet):
                         f"this programme). Do not ask for the programme id.]\n"
                     )
 
+            # Project-wide uploaded-documents context (ProjectAIContext), only
+            # when a project is in scope. The helper does its own tenant check.
+            ai_docs_context = ""
+            ai_context_used = None
+            try:
+                from core.ai_context_helpers import get_project_context_details
+                _proj_id_for_ctx = request.data.get("project_id")
+                if _proj_id_for_ctx:
+                    details = get_project_context_details(
+                        user_for_context, _proj_id_for_ctx,
+                        language=website_language, surface="copilot",
+                    )
+                    ai_docs_context = details.get("prefix", "")
+                    ai_context_used = details.get("used")
+            except Exception:
+                pass
+
             # Add language instruction to the message for AI processing
-            message_with_language = f"{language_instruction}{project_context}{program_context}{message}"
+            message_with_language = f"{language_instruction}{ai_docs_context}{project_context}{program_context}{message}"
             
             # Get AI response with language-aware message
             ai_response = user_ai_agent.process_message(message_with_language, chat_history)
@@ -289,8 +308,16 @@ class ChatViewSet(viewsets.ModelViewSet):
                                 display_content = "Het bedrijfsupdateformulier is gestart."
                             elif form_type == "project_creation":
                                 display_content = "Het projectaanmaakformulier is gestart."
+                            elif form_type == "project_update":
+                                display_content = "Het projectupdateformulier is gestart."
                             elif form_type == "task_creation":
                                 display_content = "Het taakaanmaakformulier is gestart."
+                            elif form_type == "task_update":
+                                display_content = "Het taakupdateformulier is gestart."
+                            elif form_type == "milestone_creation":
+                                display_content = "Het mijlpaalaanmaakformulier is gestart."
+                            elif form_type == "milestone_update":
+                                display_content = "Het mijlpaalupdateformulier is gestart."
                             else:
                                 display_content = f"Het {form_type.replace('_', ' ')} formulier is gestart."
                         else:
@@ -300,8 +327,16 @@ class ChatViewSet(viewsets.ModelViewSet):
                                 display_content = "Company update form has been initiated."
                             elif form_type == "project_creation":
                                 display_content = "Project creation form has been initiated."
+                            elif form_type == "project_update":
+                                display_content = "Project update form has been initiated."
                             elif form_type == "task_creation":
                                 display_content = "Task creation form has been initiated."
+                            elif form_type == "task_update":
+                                display_content = "Task update form has been initiated."
+                            elif form_type == "milestone_creation":
+                                display_content = "Milestone creation form has been initiated."
+                            elif form_type == "milestone_update":
+                                display_content = "Milestone update form has been initiated."
                             else:
                                 display_content = f"{form_type.replace('_', ' ').title()} form has been initiated."
                     elif parsed_response.get("view"):
@@ -326,6 +361,9 @@ class ChatViewSet(viewsets.ModelViewSet):
                 "user_message": ChatMessageSerializer(user_message).data,
                 "ai_response": ChatMessageSerializer(ai_message).data,
             }
+            if ai_context_used:
+                # Sprint 6 (S6-07) — chip in the chat sidebar.
+                response_data["ai_context_used"] = ai_context_used
 
             return Response(response_data)
 

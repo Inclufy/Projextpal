@@ -84,6 +84,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "category",
+            "is_internal",
             "assigned_to",
             "assigned_to_email",
             "assigned_to_name",
@@ -123,7 +124,15 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
 
     def get_depends_on_titles(self, obj):
-        return [{"id": t.id, "title": t.title, "status": t.status} for t in obj.depends_on.all()]
+        # Withhold internal dependency titles from external cross-tenant members
+        # (a visible non-internal task must not leak the titles of internal
+        # tasks it depends on).
+        from .permissions import exclude_internal_for_external
+        request = self.context.get("request")
+        deps = exclude_internal_for_external(
+            obj.depends_on.all(), getattr(request, "user", None)
+        )
+        return [{"id": t.id, "title": t.title, "status": t.status} for t in deps]
 
     def get_assigned_to_name(self, obj):
         user = getattr(obj, "assigned_to", None)
@@ -279,7 +288,16 @@ class SubtaskSerializer(serializers.ModelSerializer):
 
 
 class MilestoneSerializer(serializers.ModelSerializer):
-    tasks = TaskSerializer(many=True, read_only=True)
+    tasks = serializers.SerializerMethodField()
+
+    def get_tasks(self, obj):
+        # Withhold internal-only tasks from external cross-tenant members. This
+        # nested list (also reached via ProjectSerializer.milestones) otherwise
+        # bypasses the TaskViewSet's exclude_internal_for_external guard.
+        from .permissions import exclude_internal_for_external
+        request = self.context.get("request")
+        qs = exclude_internal_for_external(obj.tasks.all(), getattr(request, "user", None))
+        return TaskSerializer(qs, many=True, read_only=True, context=self.context).data
 
     class Meta:
         model = Milestone
@@ -393,9 +411,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Yanmar SC-05 — hide budget/expenses from non-finance roles (ROI %
         # stays — it's part of the visible business case, PP-03).
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), instance):
             for k in ("budget", "expenses_total", "expenses"):
                 data.pop(k, None)
         return data
@@ -444,9 +462,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide budget/expenses from non-finance roles.
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        if not can_view_costs_for(getattr(request, "user", None), instance):
             data.pop("budget", None)
             data.pop("expenses_total", None)
         return data
@@ -471,6 +489,17 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_by", "created_at", "updated_at"]
+
+    def to_representation(self, instance):
+        # Expense amounts are cost-confidential: hidden from non-finance roles
+        # (SC-05), external cross-tenant collaborators, and per-member-restricted
+        # users on this project.
+        data = super().to_representation(instance)
+        from .permissions import can_view_costs_for
+        request = self.context.get("request")
+        if not can_view_costs_for(getattr(request, "user", None), getattr(instance, "project", None)):
+            data.pop("amount", None)
+        return data
 
 
 class ProjectActivitySerializer(serializers.ModelSerializer):
@@ -833,6 +862,10 @@ class ProjectTeamSerializer(serializers.ModelSerializer):
             "added_by_name",
             "added_at",
             "is_active",
+            "can_view_costs",
+            # Sprint 7 — timesheet policy + begrote uren voor deze persoon.
+            "timesheet_required",
+            "budgeted_hours",
         ]
         read_only_fields = ["id", "added_at", "added_by"]
 
@@ -1236,12 +1269,83 @@ class TimeEntrySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Yanmar SC-05 — hide rates/costs from non-finance roles.
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for, is_external_member
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        user = getattr(request, "user", None)
+        project = getattr(instance, "project", None)
+        if not can_view_costs_for(user, project):
             data.pop("hourly_rate_snapshot", None)
             data.pop("labor_cost", None)
+        # Withhold the title of an internal task from external cross-tenant
+        # members (time may be logged against an internal-only task).
+        task = getattr(instance, "task", None)
+        if (task is not None and getattr(task, "is_internal", False)
+                and is_external_member(user, project)):
+            data["task_title"] = None
+
+        # Sprint 7 S7-04 — append a `budget_warning` key when this user's
+        # project-team row has a non-null ``budgeted_hours`` AND the total
+        # (including this entry) is now over the budget. Non-blocking: the
+        # entry is already saved by the time we serialize. Only populated
+        # on a write (create / update) — on list/retrieve it is omitted
+        # because computing it there is pure noise.
+        if request is not None and request.method in ("POST", "PUT", "PATCH"):
+            try:
+                data["budget_warning"] = self._compute_budget_warning(instance)
+            except Exception:
+                # Serialization must never fail on a side-channel.
+                data["budget_warning"] = None
         return data
+
+    def _compute_budget_warning(self, instance):
+        """Return a dict when the saving user is over the budget on this
+        project, otherwise None. Shape:
+
+            {
+              "budgeted_hours": 40.0,
+              "actual_hours_after_save": 42.5,
+              "pct": 106.25
+            }
+
+        Only returned when:
+          * ``ProjectTeam.budgeted_hours IS NOT NULL`` for this user, AND
+          * cumulative hours (including this entry) > budgeted_hours.
+        """
+        from decimal import Decimal
+        from django.db.models import Sum
+
+        project = getattr(instance, "project", None)
+        user = getattr(instance, "user", None)
+        if project is None or user is None:
+            return None
+
+        try:
+            tm = ProjectTeam.objects.get(project=project, user=user)
+        except ProjectTeam.DoesNotExist:
+            return None
+        if tm.budgeted_hours is None:
+            return None
+
+        total = (
+            TimeEntry.objects
+            .filter(project=project, user=user)
+            .aggregate(total=Sum("hours"))["total"]
+            or Decimal("0")
+        )
+
+        budget = tm.budgeted_hours
+        if total <= budget:
+            return None
+
+        pct = (
+            round(float(total) / float(budget) * 100.0, 2)
+            if float(budget) > 0 else 100.0 + float(total)
+        )
+        return {
+            "budgeted_hours": float(budget),
+            "actual_hours_after_save": float(total),
+            "pct": pct,
+        }
 
 
 class TimeEntrySummarySerializer(serializers.Serializer):
@@ -1279,6 +1383,9 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
             "added_by_name",
             "added_at",
             "is_active",
+            # Sprint 7 — expose timesheet policy + begrote uren.
+            "timesheet_required",
+            "budgeted_hours",
         ]
         read_only_fields = ["added_by", "added_at"]
 
@@ -1299,11 +1406,24 @@ class ProjectTeamWithRateSerializer(serializers.ModelSerializer):
         return None
 
     def to_representation(self, instance):
-        # Yanmar SC-05 — hide hourly rate from non-finance roles.
+        # Hide the hourly rate from non-finance roles (Yanmar SC-05) AND from a
+        # viewer in a different company than the rated member — a cross-tenant
+        # collaborator on a shared project must never see another company's
+        # internal rates (per-field privacy, not row-level).
         data = super().to_representation(instance)
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
         request = self.context.get("request")
-        if not can_view_costs(getattr(request, "user", None)):
+        viewer = getattr(request, "user", None)
+        member_company_id = getattr(getattr(instance, "user", None), "company_id", None)
+        same_company = (
+            viewer is not None
+            and getattr(viewer, "company_id", None) is not None
+            and member_company_id == viewer.company_id
+        )
+        # Mask unless the viewer may see costs on this project (role + not
+        # external + not per-member-restricted) AND the rated member is in the
+        # viewer's own company (never expose another company's internal rates).
+        if not can_view_costs_for(viewer, getattr(instance, "project", None)) or not same_company:
             data.pop("hourly_rate", None)
         return data
 # ========================================

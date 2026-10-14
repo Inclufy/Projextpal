@@ -5,6 +5,7 @@ from .methodology_service import apply_methodology_template
 
 from rest_framework import viewsets
 from core.ai_utils import RiskDetector, BudgetForecaster, ProjectHealthScorer
+from core.throttles import AiContextThrottle
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -114,8 +115,17 @@ def accessible_project_ids(user):
     if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
         return Project.objects.all().values_list('id', flat=True)
     if getattr(user, 'role', None) in COMPANY_WIDE_ROLES and getattr(user, 'company_id', None):
-        return Project.objects.filter(company_id=user.company_id)\
-            .values_list('id', flat=True)
+        # Company-wide roles see every project in their own company, PLUS any
+        # project they were explicitly added to (active team member) or created,
+        # which may live in another company — so a cross-tenant project shared
+        # with e.g. a partner's PM/admin is visible, not hidden by the
+        # own-company shortcut. Membership is explicit, so this never broadens
+        # access beyond what was deliberately granted.
+        return Project.objects.filter(
+            Q(company_id=user.company_id)
+            | Q(team_members__user=user, team_members__is_active=True)
+            | Q(created_by=user)
+        ).values_list('id', flat=True).distinct()
     return Project.objects.filter(
         Q(team_members__user=user, team_members__is_active=True)
         | Q(created_by=user)
@@ -248,8 +258,8 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
         template_name = request.query_params.get("template", "")
         renderer = pick_template(project.company, template_name, kind="project_plan_docx")
-        from .permissions import can_view_costs
-        docx_bytes = renderer(project, show_costs=can_view_costs(request.user))
+        from .permissions import can_view_costs_for
+        docx_bytes = renderer(project, show_costs=can_view_costs_for(request.user, project))
         filename = f"{slugify(project.name) or 'project'}-project-plan.docx"
         response = HttpResponse(
             docx_bytes,
@@ -336,8 +346,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         Body (optional): {"complete_activities": true|false} (default true).
         """
         from .models import Task
+        from .permissions import is_external_member
 
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         complete_activities = request.data.get("complete_activities", True)
         completed = 0
         if complete_activities:
@@ -357,7 +373,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="hold")
     def hold(self, request, pk=None):
         """Put the project on hold (status 'on_hold'). Activities are left as-is."""
+        from .permissions import is_external_member
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         project.status = "on_hold"
         project.save(update_fields=["status", "updated_at"])
         return Response({"id": project.id, "status": project.status})
@@ -367,8 +389,14 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """Reopen a closed/held project (status 'in_progress'). Activity statuses
         are left untouched. Any closing sign-off is revoked (is_valid=False)."""
         from .models import ProjectSignOff
+        from .permissions import is_external_member
 
         project = self.get_object()
+        if is_external_member(request.user, project):
+            return Response(
+                {"detail": "External collaborators cannot change this project's lifecycle."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         project.status = "in_progress"
         project.save(update_fields=["status", "updated_at"])
         ProjectSignOff.objects.filter(project=project).update(is_valid=False)
@@ -388,10 +416,15 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """
         from django.utils import timezone
         from .models import Task
+        from .permissions import exclude_internal_for_external
 
         project = self.get_object()
         today = timezone.localdate()
-        task_qs = Task.objects.filter(milestone__project=project)
+        # Internal-task confidentiality: counts must not leak internal tasks to
+        # external (cross-tenant) collaborators.
+        task_qs = exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), request.user
+        )
         open_actions = task_qs.exclude(status="done").count()
         overdue_actions = (
             task_qs.exclude(status="done")
@@ -427,13 +460,16 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         them and let the user pick them up. Methodology-agnostic."""
         from django.utils import timezone
         from .models import Task
+        from .permissions import exclude_internal_for_external
 
         project = self.get_object()
         today = timezone.localdate()
 
         actions = []
         task_qs = (
-            Task.objects.filter(milestone__project=project)
+            exclude_internal_for_external(
+                Task.objects.filter(milestone__project=project), request.user
+            )
             .exclude(status="done")
             .select_related("assigned_to")
             .order_by("due_date", "-priority")[:100]
@@ -461,7 +497,21 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             for r in project.risks.filter(status="Open")
             .select_related("owner").order_by("-level")[:100]
         ]
-        return Response({"actions": actions, "issues": issues, "risks": risks})
+
+        # Governance flag: financial disclosure to cost-viewing members, for the
+        # PM to accept. Surfaced only to someone who can actually see THIS
+        # project's costs (can_view_costs_for → excludes external collaborators
+        # AND per-member-restricted members), so the governance metadata follows
+        # the same per-member boundary as the figures themselves.
+        from .permissions import can_view_costs_for, financial_disclosure_state
+        financial_disclosure = None
+        if can_view_costs_for(request.user, project):
+            financial_disclosure = financial_disclosure_state(project, request.user)
+
+        return Response({
+            "actions": actions, "issues": issues, "risks": risks,
+            "financial_disclosure": financial_disclosure,
+        })
 
     @action(detail=True, methods=["get"], url_path="governance/decisions")
     def governance_decisions(self, request, pk=None):
@@ -586,7 +636,7 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         """AI auto-draft a meeting agenda from open actions, issues, signals, milestones."""
         from .ai_drafts import draft_meeting_agenda
 
-        return Response(draft_meeting_agenda(self.get_object()))
+        return Response(draft_meeting_agenda(self.get_object(), user=request.user))
 
     @action(detail=True, methods=["get"], url_path="ai/draft-comms")
     def ai_draft_comms(self, request, pk=None):
@@ -607,9 +657,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         from .permissions import can_view_costs
 
         project = self.get_object()
-        result = compute_compound_signals(project)
+        result = compute_compound_signals(project, user=request.user)
 
-        if not can_view_costs(request.user):
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
             result["signals"] = [
                 s for s in result["signals"] if "cost" not in s.get("areas", [])
             ]
@@ -651,10 +702,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         from decimal import Decimal
         from django.db.models import F, Sum, Value, DecimalField
         from django.db.models.functions import Coalesce
-        from .permissions import can_view_costs
+        from .permissions import can_view_costs_for
 
-        # Yanmar SC-05 — cost/rate roll-up is finance-roles only.
-        if not can_view_costs(request.user):
+        # Finance-roles only AND not external / per-member-restricted on this project.
+        if not can_view_costs_for(request.user, self.get_object()):
             return Response(
                 {"detail": "You do not have permission to view project costs."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -765,7 +816,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         tomorrow = today + timedelta(days=1)
 
         from .models import Task
-        qs = Task.objects.filter(milestone__project=project).annotate(
+        from .permissions import exclude_internal_for_external
+        qs = exclude_internal_for_external(
+            Task.objects.filter(milestone__project=project), self.request.user
+        ).annotate(
             eff_due=Coalesce("revised_due_date", "due_date"),
         )
 
@@ -1126,9 +1180,10 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 "is_overdue": is_overdue,
             },
         }
-        # Yanmar SC-05 — hide budget figures from non-finance roles.
-        from .permissions import can_view_costs
-        if not can_view_costs(request.user):
+        # Hide budget figures from non-finance roles AND from external
+        # (cross-tenant) collaborators on this project.
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
             for k in ("budget_total", "spent", "percent_used"):
                 data.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
@@ -1244,8 +1299,12 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 }
             )
 
-            # Tasks as timeline bars under the milestone
-            for t in m.tasks.all().order_by("order_index", "id"):
+            # Tasks as timeline bars under the milestone (internal tasks hidden
+            # from external cross-tenant collaborators).
+            from .permissions import exclude_internal_for_external
+            for t in exclude_internal_for_external(
+                m.tasks.all(), request.user
+            ).order_by("order_index", "id"):
                 owner_user = (
                     t.assigned_to or t.raci_responsible or t.raci_accountable or None
                 )
@@ -1338,16 +1397,24 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Per-member cost visibility (default True; mask budgets/rates for this
+        # person on this project when set to False).
+        can_view_costs_flag = request.data.get("can_view_costs", True)
+        if isinstance(can_view_costs_flag, str):
+            can_view_costs_flag = can_view_costs_flag.lower() not in ("false", "0", "no")
+
         # Check if an inactive team member record exists and reactivate it
         try:
             team_member = project.team_members.get(user=user, is_active=False)
             team_member.is_active = True
             team_member.added_by = request.user
+            team_member.can_view_costs = bool(can_view_costs_flag)
             team_member.save()
         except ProjectTeam.DoesNotExist:
             # Create new team member if no inactive record exists
             team_member = ProjectTeam.objects.create(
-                project=project, user=user, added_by=request.user
+                project=project, user=user, added_by=request.user,
+                can_view_costs=bool(can_view_costs_flag),
             )
 
         serializer = ProjectTeamSerializer(team_member)
@@ -1359,18 +1426,101 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         url_path="team/remove/(?P<team_member_id>[^/.]+)",
     )
     def remove_team_member(self, request, pk=None, team_member_id=None):
-        """Remove a team member from the project"""
+        """Remove a team member from the project.
+
+        The owning company (project.company) keeps full control; a cross-tenant
+        collaborator may only remove members from their own company or members
+        they added themselves — so a partner PM on a shared project cannot
+        deactivate the host company's own people.
+        """
         project = self.get_object()
 
         try:
             team_member = project.team_members.get(id=team_member_id)
-            team_member.is_active = False
-            team_member.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except ProjectTeam.DoesNotExist:
             return Response(
                 {"error": "Team member not found"}, status=status.HTTP_404_NOT_FOUND
             )
+
+        req_company_id = getattr(request.user, "company_id", None)
+        is_owner_company = (
+            req_company_id is not None and req_company_id == project.company_id
+        )
+        target_company_id = getattr(getattr(team_member, "user", None), "company_id", None)
+        if not (
+            is_owner_company
+            or (req_company_id is not None and target_company_id == req_company_id)
+            or team_member.added_by_id == request.user.id
+        ):
+            return Response(
+                {"error": "You can only remove members from your own company or ones you added."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        team_member.is_active = False
+        team_member.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _is_owning_cost_manager(self, request, project):
+        """True when the requester may govern cost visibility on this project:
+        someone who can actually see THIS project's costs (or superuser). Using
+        can_view_costs_for means an external collaborator OR a per-member-
+        restricted member is refused — you cannot grant/revoke cost visibility
+        you don't hold yourself."""
+        from .permissions import can_view_costs_for
+        return bool(request.user.is_superuser or can_view_costs_for(request.user, project))
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="team/(?P<team_member_id>[^/.]+)/cost-visibility",
+    )
+    def set_cost_visibility(self, request, pk=None, team_member_id=None):
+        """Toggle a team member's per-project cost visibility (budgets / hourly
+        rates / EVM). Owning-company cost-viewing managers only."""
+        project = self.get_object()
+        if not self._is_owning_cost_manager(request, project):
+            return Response(
+                {"detail": "Only an owning-company manager who can view costs may change cost visibility."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            team_member = project.team_members.get(id=team_member_id, is_active=True)
+        except ProjectTeam.DoesNotExist:
+            return Response(
+                {"error": "Team member not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        val = request.data.get("can_view_costs")
+        if isinstance(val, str):
+            val = val.lower() not in ("false", "0", "no")
+        team_member.can_view_costs = bool(val)
+        team_member.save(update_fields=["can_view_costs"])
+        return Response(ProjectTeamSerializer(team_member).data)
+
+    @action(detail=True, methods=["get", "post"], url_path="financial-disclosure")
+    def financial_disclosure(self, request, pk=None):
+        """GET: the financial-disclosure governance flag (who this project's
+        financials are disclosed to + acknowledgement state). POST: the PM
+        accepts the CURRENT disclosed-member set; the flag re-raises later if
+        that set changes. Owning-company cost-viewing managers only."""
+        project = self.get_object()
+        from .permissions import financial_disclosure_state
+        if not self._is_owning_cost_manager(request, project):
+            return Response(
+                {"detail": "Only an owning-company manager who can view costs may view or accept this."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if request.method == "POST":
+            from django.utils import timezone
+            from governance.models import FinancialDisclosureAck
+            state = financial_disclosure_state(project, request.user)
+            ack, _ = FinancialDisclosureAck.objects.get_or_create(project=project)
+            ack.acknowledged_by = request.user
+            ack.acknowledged_at = timezone.now()
+            ack.signature = state["signature"]
+            ack.save()
+            project = Project.objects.get(pk=project.pk)  # fresh reverse relation
+        return Response(financial_disclosure_state(project, request.user))
 
     @action(detail=False, methods=["get"], url_path="company-dashboard")
     def company_dashboard(self, request):
@@ -1389,6 +1539,15 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         projects = Project.objects.filter(company=user.company).select_related(
             "company"
         )
+        # Per-member cost confidentiality: drop projects this member is
+        # restricted from (can_view_costs=False) so none of their budgets/
+        # expenses/cash-flow surface anywhere on this financial dashboard.
+        _restricted_ids = set(
+            ProjectTeam.objects.filter(user=user, can_view_costs=False)
+            .values_list("project_id", flat=True)
+        )
+        if _restricted_ids:
+            projects = projects.exclude(id__in=_restricted_ids)
 
         total_projects = projects.count()
         program_budget = float(sum([p.budget or 0 for p in projects]))
@@ -1515,6 +1674,21 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             "budget_vs_paid": budget_vs_paid,
             "cash_flow": cash_flow,
         }
+        # SC-05 — strip all financial figures for roles that may not view costs
+        # (company-wide aggregate, so the role gate is the right granularity).
+        from .permissions import can_view_costs
+        if not can_view_costs(request.user):
+            pm = data.get("program_metrics", {})
+            for k in ("program_budget", "committed_to_date", "final_forecast_cost",
+                      "variance_to_budget", "paid_to_date"):
+                pm.pop(k, None)
+            data.pop("budget_vs_paid", None)
+            data.pop("cash_flow", None)
+            for row in data.get("projects", []):
+                if isinstance(row, dict):
+                    for k in ("budget", "paid", "spent", "remaining",
+                              "total_paid", "payment_progress", "variance"):
+                        row.pop(k, None)
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -1526,8 +1700,13 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         project = self.get_object()
 
         # Get metrics. project.budget is a Decimal — multiplying by a float
-        # raises TypeError, so coerce to Decimal throughout.
-        budget = project.budget or Decimal('0')
+        # raises TypeError, so coerce to Decimal throughout. Budget-derived
+        # insights (risk/forecast) are financial: hidden from external
+        # collaborators and per-member-restricted users (zero out so nothing
+        # leaks into the forecast, and strip the budget sections below).
+        from .permissions import can_view_costs_for
+        show_costs = can_view_costs_for(request.user, project)
+        budget = (project.budget or Decimal('0')) if show_costs else Decimal('0')
         # For now, assume 50% spent if in progress (we can enhance this later)
         spent = budget * Decimal('0.5') if project.status == 'in_progress' else Decimal('0')
         allocated = budget
@@ -1566,16 +1745,21 @@ class ProjectViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 'reason': timeline_risk['message']
             })
         
+        analysis = {
+            'timeline_risk': timeline_risk,
+            'health_score': health_score,
+        }
+        if show_costs:
+            analysis['budget_risk'] = budget_risk
+            analysis['budget_forecast'] = budget_forecast
+        recs = recommendations if show_costs else [
+            r for r in recommendations if r.get('category') != 'budget'
+        ]
         return Response({
             'project_id': project.id,
             'project_name': project.name,
-            'analysis': {
-                'budget_risk': budget_risk,
-                'timeline_risk': timeline_risk,
-                'budget_forecast': budget_forecast,
-                'health_score': health_score
-            },
-            'recommendations': recommendations,
+            'analysis': analysis,
+            'recommendations': recs,
             'generated_at': datetime.now().isoformat()
         })
 
@@ -1842,6 +2026,7 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         })
 
     def get_queryset(self):
+        from .permissions import exclude_internal_for_external
         qs = super().get_queryset()
         project_id = self.request.query_params.get("project")
         if project_id:
@@ -1858,6 +2043,9 @@ class TaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         category = self.request.query_params.get("category")
         if category:
             qs = qs.filter(category=category)
+        # Cross-tenant confidentiality: external collaborators never see the
+        # host company's internal-only tasks. No-op for same-company/superadmin.
+        qs = exclude_internal_for_external(qs, self.request.user)
         return qs
 
     def update(self, request, *args, **kwargs):
@@ -1967,6 +2155,13 @@ class TaskDueDateChangeRequestViewSet(CompanyScopedQuerysetMixin, viewsets.Model
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Withhold change requests on internal-only tasks from external
+        # cross-tenant members (the serializer exposes task_title).
+        from .permissions import exclude_internal_for_external
+        from .models import Task
+        qs = qs.filter(
+            task__in=exclude_internal_for_external(Task.objects.all(), self.request.user)
+        )
         status_f = self.request.query_params.get("status")
         if status_f:
             qs = qs.filter(status=status_f)
@@ -2034,6 +2229,12 @@ class SubtaskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Hide subtasks of internal-only tasks from external cross-tenant members.
+        from .permissions import exclude_internal_for_external
+        from .models import Task
+        qs = qs.filter(
+            task__in=exclude_internal_for_external(Task.objects.all(), self.request.user)
+        )
         task_id = self.request.query_params.get("task")
         if task_id:
             qs = qs.filter(task_id=task_id)
@@ -2078,10 +2279,26 @@ class ExpenseViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Expenses are host-company-confidential financial data: an external
+        # (cross-tenant) collaborator on a shared project must not read host
+        # expense amounts. Scope non-superadmin to their OWN company.
+        user = self.request.user
+        if not (getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False)):
+            company = getattr(user, "company", None)
+            qs = qs.filter(project__company=company) if company is not None else qs.none()
+            # Per-member confidentiality: hide expense METADATA (description/
+            # category/date) of projects where this user is restricted
+            # (ProjectTeam.can_view_costs=False) — the amount is already masked
+            # by the serializer, but the rows themselves must be withheld too.
+            qs = qs.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-        
+
         program_id = self.request.query_params.get("program")
         if program_id:
             qs = qs.filter(project__program_id=program_id)
@@ -2108,10 +2325,38 @@ class ProjectActivityViewSet(CompanyScopedQuerysetMixin, viewsets.ReadOnlyModelV
 
     def get_queryset(self):
         qs = super().get_queryset()
+
+        # Hide activity rows whose target is an internal-only task/subtask from
+        # external cross-tenant members — the `message` embeds the task title.
+        # Only suppressed for projects the viewer is EXTERNAL to (company !=
+        # project.company); same-company members and superadmins see everything.
+        user = self.request.user
+        is_super = (getattr(user, "role", None) == "superadmin"
+                    or getattr(user, "is_superuser", False))
+        if not is_super:
+            from django.contrib.contenttypes.models import ContentType
+            from django.db.models import Q
+            from .models import Task, Subtask
+            own_company_id = getattr(user, "company_id", None)
+            task_ct = ContentType.objects.get_for_model(Task)
+            subtask_ct = ContentType.objects.get_for_model(Subtask)
+            internal_task_ids = Task.objects.filter(is_internal=True).values_list("id", flat=True)
+            internal_subtask_ids = Subtask.objects.filter(
+                task__is_internal=True
+            ).values_list("id", flat=True)
+            qs = qs.exclude(
+                Q(project__company_id__isnull=False)
+                & ~Q(project__company_id=own_company_id)
+                & (
+                    Q(target_content_type=task_ct, target_object_id__in=internal_task_ids)
+                    | Q(target_content_type=subtask_ct, target_object_id__in=internal_subtask_ids)
+                )
+            )
+
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-        
+
         program_id = self.request.query_params.get("program")
         if program_id:
             qs = qs.filter(project__program_id=program_id)
@@ -2136,6 +2381,13 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
             project = Project.objects.get(id=pk, company=request.user.company)
         except Project.DoesNotExist:
             return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {"detail": "You do not have permission to view project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Monthly totals for the project's expenses
         expenses_qs = Expense.objects.filter(project=project)
@@ -2177,6 +2429,13 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
             project = Project.objects.get(id=pk, company=request.user.company)
         except Project.DoesNotExist:
             return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        from .permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {"detail": "You do not have permission to view project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         try:
             window_months = int(request.query_params.get("window_months", 4))
@@ -2230,12 +2489,25 @@ class ProjectFinancialsViewSet(CompanyScopedQuerysetMixin, viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if getattr(request.user, "company", None) is None:
+            # company=None would forecast across ALL tenants — never do that.
+            return Response({"count": 0, "results": []}, status=status.HTTP_200_OK)
         forecasts = forecast_for_active_projects(
             window_months=window_months,
             horizon_months=horizon_months,
             company=request.user.company,
         )
         payload = [asdict(result) for result in forecasts]
+        # Per-member cost confidentiality: drop forecasts for projects this
+        # member is restricted from seeing costs on.
+        from .models import ProjectTeam
+        restricted = set(
+            ProjectTeam.objects.filter(
+                user=request.user, can_view_costs=False
+            ).values_list("project_id", flat=True)
+        )
+        if restricted:
+            payload = [p for p in payload if p.get("project_id") not in restricted]
         return Response(
             {"count": len(payload), "results": payload}, status=status.HTTP_200_OK
         )
@@ -2493,9 +2765,13 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 }
 
                 # Generate AI mitigation — uses company's BYO key if configured.
+                # Pass user + project_id so the helper can inject the project's
+                # uploaded-documents context (ProjectAIContext) when enabled.
                 ai_plan = generate_ai_mitigation(
                     risk_data,
                     company=getattr(risk.project, "company", None) if risk.project else None,
+                    user=request.user,
+                    project_id=risk.project.id if risk.project else None,
                 )
 
                 # Create AI mitigation with generated data
@@ -2566,7 +2842,10 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
 
         return super().destroy(request, *args, **kwargs)
 
-    @action(detail=True, methods=["post"], url_path="regenerate-ai-mitigation")
+    @action(
+        detail=True, methods=["post"], url_path="regenerate-ai-mitigation",
+        throttle_classes=[AiContextThrottle],
+    )
     def regenerate_ai_mitigation(self, request, pk=None):
         """Regenerate AI mitigation plan for a risk."""
         from .ai_risk_mitigation import generate_ai_mitigation
@@ -2591,9 +2870,12 @@ class RiskViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
             }
 
             # Generate AI mitigation — uses company's BYO key if configured.
+            # Pass user + project_id so ProjectAIContext docs are included.
             ai_plan = generate_ai_mitigation(
                 risk_data,
                 company=getattr(risk.project, "company", None) if risk.project else None,
+                user=request.user,
+                project_id=risk.project.id if risk.project else None,
             )
 
             # Update or create AI mitigation
@@ -2884,14 +3166,18 @@ class ProjectEventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter events by user's company and optionally by project."""
+        """Filter events by project membership (opens shared-project events to
+        external collaborators) and optionally by project.
+
+        Was ``project__company=user.company``, which hid a shared project's
+        calendar from legitimate cross-tenant members. Events carry no financial
+        data, so they are safe to open to the same membership set projects use.
+        """
         user = self.request.user
         if not user.is_authenticated:
             return ProjectEvent.objects.none()
-        if not getattr(user, "company", None):
-            return ProjectEvent.objects.none()
 
-        qs = self.queryset.filter(project__company=user.company)
+        qs = self.queryset.filter(project_id__in=accessible_project_ids(user))
 
         # Filter by project if provided
         project_id = self.request.query_params.get("project")
@@ -2984,7 +3270,7 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
     filter_backends = [ModifiedSinceFilterBackend]
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "summary", "my_entries"]:
+        if self.action in ["list", "retrieve", "summary", "my_entries", "available_projects"]:
             return [IsAuthenticated()]
         if self.action in ["create", "update", "partial_update"]:
             return [IsAuthenticated()]
@@ -3064,6 +3350,85 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
         except Exception:
             pass
 
+    @action(detail=False, methods=["get"], url_path="available-projects")
+    def available_projects(self, request):
+        """S4-11 — projects the current user may select for a NEW TimeEntry.
+
+        Scoping rules, in this order:
+          1) A SuperAdmin sees every project.
+          2) Governance role-holders with ``can_log_time=False`` (board
+             members or stakeholders) are blocked outright — their role is
+             oversight, not delivery, and they should not clutter the picker
+             even if they happen to be on a ProjectTeam somewhere.
+          3) Otherwise:
+             * strict mode (``Company.require_project_membership_for_time_entry
+               == True``, the default) — only projects where the user is on
+               ``ProjectTeam`` with ``is_active=True``;
+             * loose mode — every project in the user's company.
+
+        A separate endpoint (rather than mutating ``ProjectViewSet.list``) so
+        the generic project list keeps its broader semantics (admin/pm see
+        every company project for navigation / dashboards), while the time-
+        entry picker gets the stricter, delivery-focused view.
+        """
+        from django.db.models import Q
+        user = request.user
+
+        # SuperAdmin / is_superuser → unconstrained.
+        role = getattr(user, 'role', None)
+        if role == 'superadmin' or getattr(user, 'is_superuser', False):
+            projects = Project.objects.all().select_related('company').order_by('name')
+            return Response([
+                {'id': p.id, 'name': p.name, 'company_id': p.company_id}
+                for p in projects
+            ])
+
+        # Governance gate — if the user is tracked as a board member or
+        # governance stakeholder on at least one row AND every such row has
+        # ``can_log_time=False``, the picker is empty by design.
+        try:
+            from governance.models import BoardMember, GovernanceStakeholder
+            bm_rows = BoardMember.objects.filter(user=user, is_active=True)
+            gs_rows = GovernanceStakeholder.objects.filter(user=user, is_active=True)
+            has_gov_rows = bm_rows.exists() or gs_rows.exists()
+            if has_gov_rows:
+                any_can_log = (
+                    bm_rows.filter(can_log_time=True).exists()
+                    or gs_rows.filter(can_log_time=True).exists()
+                )
+                if not any_can_log:
+                    return Response([])
+        except Exception:
+            # Governance app not installed / migrated — fall through.
+            pass
+
+        company = getattr(user, 'company', None)
+        require_membership = True
+        if company is not None:
+            require_membership = getattr(
+                company, 'require_project_membership_for_time_entry', True,
+            )
+
+        if require_membership:
+            qs = Project.objects.filter(
+                team_members__user=user,
+                team_members__is_active=True,
+            ).distinct()
+        else:
+            if company is None:
+                qs = Project.objects.none()
+            else:
+                qs = Project.objects.filter(
+                    Q(company=company)
+                    | Q(team_members__user=user, team_members__is_active=True)
+                ).distinct()
+
+        qs = qs.order_by('name')
+        return Response([
+            {'id': p.id, 'name': p.name, 'company_id': p.company_id}
+            for p in qs
+        ])
+
     @action(detail=False, methods=["get"])
     def my_entries(self, request):
         """Get current user's time entries"""
@@ -3091,8 +3456,13 @@ class TimeEntryViewSet(CompanyScopedQuerysetMixin, viewsets.ModelViewSet):
                 {"detail": "Project ID is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # Yanmar SC-05 — labour-cost summary is finance-roles only.
-        if not can_view_costs(request.user):
+        # Labour-cost summary is finance-roles only AND never for an external
+        # (cross-tenant) collaborator or a per-member-restricted user on this
+        # project (the totals are built manually, so guard with the same
+        # external-aware check the list endpoint/serializer use).
+        from .permissions import can_view_costs_for
+        _project = Project.objects.filter(id=project_id).first()
+        if not can_view_costs_for(request.user, _project):
             return Response(
                 {"detail": "You do not have permission to view labour costs."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3344,12 +3714,31 @@ class BudgetItemViewSet(viewsets.ModelViewSet):
         if getattr(user, 'role', None) == 'superadmin' or getattr(user, 'is_superuser', False):
             queryset = BudgetItem.objects.all()
         else:
-            queryset = BudgetItem.objects.filter(project_id__in=accessible_project_ids(user))
+            # Budget line items are host-company-confidential: scope strictly to
+            # the user's OWN company (never via cross-tenant membership), so an
+            # external collaborator on a shared project cannot read host budgets.
+            company = getattr(user, 'company', None)
+            if company is None:
+                return BudgetItem.objects.none()
+            queryset = BudgetItem.objects.filter(project__company=company)
+            # Per-member confidentiality: hide budget items of projects this
+            # member is restricted from, for any query (with or without project_id).
+            queryset = queryset.exclude(
+                project_id__in=ProjectTeam.objects.filter(
+                    user=user, can_view_costs=False
+                ).values("project_id")
+            )
 
         # Filters
         project_id = self.request.query_params.get('project_id')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+            # Per-member cost confidentiality: a member restricted on this
+            # project may not read its budget line items.
+            from .permissions import can_view_costs_for
+            proj = Project.objects.filter(id=project_id).first()
+            if proj is not None and not can_view_costs_for(user, proj):
+                return BudgetItem.objects.none()
 
         category_id = self.request.query_params.get('category_id')
         if category_id:

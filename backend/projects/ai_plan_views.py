@@ -12,6 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from core.throttles import AiContextThrottle
+
 from .models import Project
 
 
@@ -31,7 +33,7 @@ def _get_project(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@throttle_classes([_AiThrottle])
+@throttle_classes([_AiThrottle, AiContextThrottle])
 def project_ai_plan(request, pk):
     """Eén chatbeurt. Body: {messages: [{role: user|assistant, content: str}]}."""
     project = _get_project(request, pk)
@@ -39,11 +41,70 @@ def project_ai_plan(request, pk):
         return Response({"detail": "Project niet gevonden of niet toegankelijk."}, status=404)
 
     from .ai_planner import plan_chat
+    from core.i18n_ai import resolve_ui_language
     messages = (request.data or {}).get("messages") or []
     if not isinstance(messages, list):
         return Response({"detail": "messages moet een lijst zijn."}, status=400)
 
-    result = plan_chat(project, request.user, messages)
+    language = resolve_ui_language(request)
+
+    # Sprint 4 (S4-07) — "Genereer uit documenten" shortcut. When the caller
+    # passes `use_documents: true` AND the project has a ProjectAIContext,
+    # auto-inject a short user prompt that asks the planner to extract
+    # milestones (and tasks + risks) from those documents. This lets the UI
+    # offer a one-click "generate from documents" button without the user
+    # having to type anything.
+    use_documents = bool((request.data or {}).get("use_documents"))
+    if use_documents and not messages:
+        has_docs = False
+        try:
+            aic = getattr(project, "ai_context", None)
+            if aic and aic.enabled and (aic.extracted_text or "").strip():
+                has_docs = True
+        except Exception:
+            has_docs = False
+        if has_docs:
+            if language == "en":
+                auto = (
+                    "Use the uploaded project documents to generate milestones, "
+                    "tasks and risks for this project. Base dates on timing in "
+                    "those documents when stated; otherwise interpolate within "
+                    "the project period. Return a propose action."
+                )
+            elif language == "fr":
+                auto = (
+                    "Utilisez les documents téléversés pour générer les jalons, "
+                    "tâches et risques. Basez les dates sur le calendrier des "
+                    "documents quand il est présent; sinon interpolez dans la "
+                    "période du projet. Renvoyez une action propose."
+                )
+            else:
+                auto = (
+                    "Gebruik de geüploade projectdocumenten om mijlpalen, taken "
+                    "en risico's voor dit project te genereren. Baseer datums op "
+                    "de timing in de documenten als die er is; anders "
+                    "interpoleer binnen de projectperiode. Geef een propose "
+                    "action terug."
+                )
+            messages = [{"role": "user", "content": auto}]
+
+    result = plan_chat(project, request.user, messages, language=language)
+
+    # Sprint 6 (S6-07) — surface the AI-context usage block to the frontend.
+    # Done at the view layer (not inside plan_chat) so this stays additive
+    # and swallow-all: a failure here must never block the chat reply.
+    # log=False: plan_chat already recorded this access through the inner
+    # get_project_context_prefix call, we only re-read the metadata here.
+    try:
+        from core.ai_context_helpers import get_project_context_details
+        details = get_project_context_details(
+            request.user, project.id, language=language,
+            surface="project_ai_plan", log=False,
+        )
+        if isinstance(result, dict) and details.get("used"):
+            result = {**result, "ai_context_used": details["used"]}
+    except Exception:
+        pass
 
     try:
         from accounts.models import audit

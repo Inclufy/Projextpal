@@ -71,6 +71,7 @@ import {
   priorityBadgeClass,
   statusBadgeClass,
 } from "@/lib/copilotIssues";
+import { DecisionAnswerForm } from "@/components/copilot/DecisionAnswerForm";
 
 interface IssuesTabProps {
   pathname: string;
@@ -445,7 +446,13 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
               </Button>
             </div>
           ) : (
-            issues.map((issue) => <IssueRow key={issue.id} issue={issue} />)
+            issues.map((issue) => (
+              <IssueRow
+                key={issue.id}
+                issue={issue}
+                onIssueChanged={refreshList}
+              />
+            ))
           )}
         </div>
       </div>
@@ -710,7 +717,13 @@ export function IssuesTab({ pathname, isActive, prefill, onPrefillConsumed }: Is
 
 /* ─── IssueRow ────────────────────────────────────────────────────────── */
 
-function IssueRow({ issue }: { issue: ProductIssueRecord }) {
+function IssueRow({
+  issue,
+  onIssueChanged,
+}: {
+  issue: ProductIssueRecord;
+  onIssueChanged?: () => void | Promise<void>;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState<ProductIssueComment[] | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -997,6 +1010,26 @@ function IssueRow({ issue }: { issue: ProductIssueRecord }) {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Sprint 12 — decision-request flow: when the auto-fix pipeline
+              could not one-shot this issue it posted a few questions and
+              moved the issue to needs-decision. Reporter / tenant admin
+              answers here; the orchestrator re-queues the worker. */}
+          {issue.status === "needs-decision" && (
+            <DecisionAnswerForm
+              issue={issue}
+              isNl={isNl}
+              onAnswered={async () => {
+                try {
+                  const detail = await fetchIssueDetail(issue.id);
+                  setComments(detail.comments);
+                } catch {
+                  /* comments refresh is best-effort */
+                }
+                await onIssueChanged?.();
+              }}
+            />
           )}
 
           {/* Comments */}

@@ -21,7 +21,7 @@ class PMIComponent(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='pmi_components')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='pmi_components')
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=30, choices=COMPONENT_TYPE_CHOICES, default='project')
     description = models.TextField(blank=True)
@@ -53,7 +53,7 @@ class PMIGovernanceBoard(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='pmi_governance_boards')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='pmi_governance_boards')
     meeting_type = models.CharField(max_length=30, choices=MEETING_TYPE_CHOICES)
     meeting_date = models.DateField()
     attendees = models.JSONField(default=list)
@@ -118,7 +118,7 @@ class PMIProgramCharter(models.Model):
     """The program charter — mandate, vision, objectives and success criteria."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.OneToOneField('projects.Project', on_delete=models.CASCADE, related_name='pmi_charter')
+    program = models.OneToOneField('programs.Program', on_delete=models.CASCADE, related_name='pmi_charter')
     vision = models.TextField(blank=True)
     objectives = models.TextField(blank=True)
     scope = models.TextField(blank=True)
@@ -148,7 +148,7 @@ class PMIBenefit(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='pmi_benefits')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='pmi_benefits')
     component = models.ForeignKey(PMIComponent, on_delete=models.SET_NULL, null=True, blank=True, related_name='benefits',
                                   help_text="The component that delivers this benefit.")
     name = models.CharField(max_length=200)
@@ -174,7 +174,7 @@ class PMIStakeholder(models.Model):
     LEVEL_CHOICES = [('low', 'Low'), ('high', 'High')]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='pmi_stakeholders')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='pmi_stakeholders')
     name = models.CharField(max_length=200)
     role = models.CharField(max_length=200, blank=True)
     power = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='low')
@@ -212,7 +212,7 @@ class PMIRoadmapItem(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    program = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='pmi_roadmap_items')
+    program = models.ForeignKey('programs.Program', on_delete=models.CASCADE, related_name='pmi_roadmap_items')
     name = models.CharField(max_length=200)
     phase = models.CharField(max_length=100, blank=True, help_text="Life-cycle phase label.")
     sequence = models.PositiveIntegerField(default=1)

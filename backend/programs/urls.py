@@ -2,6 +2,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from projects.role_views import my_program_role
 from .tailoring_views import program_intake_scenarios, program_intake_analyze, program_tailoring
+from .ai_context_views import program_ai_context
+from .budget_views import (
+    set_program_team_member_budget,
+    program_time_vs_budget,
+)
+from execution.s7_cost_planner_views import program_time_vs_budget_cost
 from .views import (
     ProgramViewSet,
     ProgramBenefitViewSet,
@@ -50,6 +56,8 @@ urlpatterns = [
     path('intake/scenarios/', program_intake_scenarios, name='program-intake-scenarios'),
     path('intake/analyze/', program_intake_analyze, name='program-intake-analyze'),
     path('<int:pk>/tailoring/', program_tailoring, name='program-tailoring'),
+    # AI Context (uploaded-documents context used by every AI surface on this program)
+    path('<int:pk>/ai-context/', program_ai_context, name='program-ai-context'),
 
     # Nested routes for benefits
     path('<int:program_pk>/benefits/',
@@ -74,6 +82,22 @@ urlpatterns = [
     path('<int:program_pk>/milestones/<int:pk>/',
          ProgramMilestoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='program-milestones-detail'),
+
+    path(
+        '<int:pk>/team/<int:team_member_id>/budget/',
+        set_program_team_member_budget,
+        name='program-team-member-budget',
+    ),
+    path(
+        '<int:pk>/time-vs-budget/',
+        program_time_vs_budget,
+        name='program-time-vs-budget',
+    ),
+    path(
+        '<int:pk>/time-vs-budget-cost/',
+        program_time_vs_budget_cost,
+        name='program-time-vs-budget-cost',
+    ),
 
     # Router include LAST so explicit paths above take priority
     path('', include(router.urls)),

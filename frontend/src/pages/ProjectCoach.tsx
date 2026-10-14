@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { Loader2, Sparkles, Send, GraduationCap, Bot, BookOpen, Zap, ArrowRight } from "lucide-react";
+import { aiFetch } from "@/lib/aiFetch";
 
 type LinkT = { title: string; url: string };
 type Msg = { role: "user" | "coach"; text: string; source?: string; act?: LinkT[] };
@@ -15,17 +16,45 @@ const ProjectCoach = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // Sprint 2 S2-07: when the project has uploaded documents (ProjectAIContext),
+  // surface three preset "ask the tender" questions above the coach so the user
+  // can one-click interrogate their own documents.
+  const [hasDocContext, setHasDocContext] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem("access_token");
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
   useEffect(() => {
-    fetch(`/api/v1/projects/${id}/coach/`, { headers })
+    aiFetch(`/api/v1/projects/${id}/coach/`, { headers })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => d && setCtx(d))
       .catch(() => {});
+    // Detect whether an uploaded-document AI context exists for this project.
+    // Fails silently — the preset block is additive.
+    aiFetch(`/api/v1/projects/${id}/ai-context/`, { headers })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (d && d.exists && d.enabled && (d.chars || 0) > 0) setHasDocContext(true);
+      })
+      .catch(() => {});
   }, [id]);
+
+  // S2-07: three tender-grounded preset questions. Only rendered when the
+  // project has at least one enabled ProjectAIContext row. Taalbewust via
+  // the stored UI language (nl default).
+  const lang = (typeof window !== "undefined" && localStorage.getItem("language")) || "nl";
+  const docPresets = lang.toLowerCase().startsWith("en")
+    ? [
+        "What are the main requirements the documents list?",
+        "Which deadlines do the documents mention?",
+        "Which risks do the documents mention?",
+      ]
+    : [
+        "Wat zijn de belangrijkste eisen in de documenten?",
+        "Welke deadlines noemen de documenten?",
+        "Welke risico's noemen de documenten?",
+      ];
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
@@ -36,7 +65,7 @@ const ProjectCoach = () => {
     setMessages((m) => [...m, { role: "user", text: question }]);
     setLoading(true);
     try {
-      const r = await fetch(`/api/v1/projects/${id}/coach/`, {
+      const r = await aiFetch(`/api/v1/projects/${id}/coach/`, {
         method: "POST", headers, body: JSON.stringify({ question }),
       });
       const d = await r.json();
@@ -72,6 +101,26 @@ const ProjectCoach = () => {
                   <button key={s} onClick={() => ask(s)}
                     className="text-xs border border-border rounded-full px-3 py-1.5 hover:border-primary hover:bg-primary/10 hover:text-primary transition">
                     {s}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* S2-07: tender-grounded preset questions, only when docs are attached */}
+        {hasDocContext && (
+          <Card className="border-fuchsia-200 bg-fuchsia-50/50 dark:bg-fuchsia-950/15 dark:border-fuchsia-900">
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <BookOpen className="h-4 w-4 text-fuchsia-600" />
+                {lang.toLowerCase().startsWith("en") ? "Ask your documents" : "Vraag je documenten"}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {docPresets.map((q) => (
+                  <button key={q} onClick={() => ask(q)}
+                    className="text-xs border border-fuchsia-300 bg-background rounded-full px-3 py-1.5 hover:border-fuchsia-500 hover:bg-fuchsia-100 hover:text-fuchsia-900 transition">
+                    {q}
                   </button>
                 ))}
               </div>

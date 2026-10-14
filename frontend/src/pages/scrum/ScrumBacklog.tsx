@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, ListChecks, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 const ScrumBacklog = () => {
   const { pt } = usePageTranslations();
@@ -121,6 +122,43 @@ const ScrumBacklog = () => {
           <div className="flex items-center gap-3"><ListChecks className="h-6 w-6 text-blue-500" /><h1 className="text-2xl font-bold">{pt("Product Backlog")}</h1><Badge variant="outline">{items.length} items</Badge></div>
           <div className="flex items-center gap-2">
             <AiPlanButton projectId={id!} onApplied={() => fetchData()} />
+            <AutoDraftFromDocsButton
+              endpoint={`/api/v1/projects/${id}/scrum/auto-draft/`}
+              title={pt("Scrum vision + backlog — AI-draft from documents")}
+              description={pt("Review the vision and backlog items before applying.")}
+              fields={[
+                { key: "vision", label: pt("Product Vision"), kind: "textarea" },
+                { key: "backlog_items", label: pt("Backlog Items"), kind: "backlogItems" },
+              ]}
+              onApply={async (suggested) => {
+                // 1. Upsert vision on ProductBacklog.
+                const bl = await fetch(`/api/v1/projects/${id}/scrum/backlog/initialize/`, {
+                  method: "POST", headers: jsonHeaders,
+                }).then((r) => r.ok ? r.json() : null);
+                if (bl?.id && suggested.vision) {
+                  await fetch(`/api/v1/projects/${id}/scrum/backlog/${bl.id}/`, {
+                    method: "PATCH", headers: jsonHeaders,
+                    body: JSON.stringify({ vision: String(suggested.vision) }),
+                  });
+                }
+                // 2. Create each backlog item in order.
+                const items: any[] = Array.isArray(suggested.backlog_items) ? suggested.backlog_items : [];
+                for (const it of items) {
+                  if (!it?.title) continue;
+                  const body: any = {
+                    title: String(it.title).slice(0, 300),
+                    description: String(it.description || ""),
+                    priority: ["critical", "high", "medium", "low"].includes(it.priority) ? it.priority : "medium",
+                    item_type: "user_story",
+                  };
+                  if (it.acceptance_criteria) body.acceptance_criteria = String(it.acceptance_criteria);
+                  await fetch(`/api/v1/projects/${id}/scrum/items/`, {
+                    method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
+                  });
+                }
+                fetchData();
+              }}
+            />
             <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {pt("Add Item")}</Button>
           </div>
         </div>

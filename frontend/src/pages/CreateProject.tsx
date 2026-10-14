@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectsApi } from "@/lib/api";
+import MultiFileDropzone from "@/components/MultiFileDropzone";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -50,6 +53,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MethodologyOnboardingWizard } from '@/components/MethodologyOnboardingWizard';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { aiFetch } from "@/lib/aiFetch";
 
 // Types
 type ProjectMethodology = 'inclufy' | 'prince2' | 'agile' | 'scrum' | 'kanban' | 'waterfall' | 'lean_six_sigma_green' | 'lean_six_sigma_black' | 'hybrid';
@@ -69,7 +73,7 @@ interface MethodologyOption {
 const callAI = async (prompt: string): Promise<string> => {
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch("/api/v1/governance/ai/generate/", {
+    const response = await aiFetch("/api/v1/governance/ai/generate/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -176,13 +180,30 @@ const CreateProject = () => {
 
   const STEPS = [
     { id: 1, title: pt('Methodology'), description: pt('Select framework') },
-    { id: 2, title: pt('Details'), description: pt('Project information') },
-    { id: 3, title: pt('Review'), description: pt('Confirm & create') },
+    { id: 2, title: pt('Documents'), description: pt('Upload briefs or tenders (optional)') },
+    { id: 3, title: pt('Details'), description: pt('Project information') },
+    { id: 4, title: pt('Review'), description: pt('Confirm & create') },
   ];
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Entry point via "Generate with AI" / "AI Assistant" buttons on the
+  // Projects overview: /projects/new?ai=1 auto-opens the AI Methodology
+  // Advisor so the two flows (modal + wizard) are a single UX.
+  useEffect(() => {
+    if (searchParams.get("ai") === "1") {
+      setAiAdvisorOpen(true);
+      // Strip the param so a refresh doesn't re-open the dialog on top of
+      // existing state.
+      const next = new URLSearchParams(searchParams);
+      next.delete("ai");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // AI States
   const [aiAdvisorOpen, setAiAdvisorOpen] = useState(false);
@@ -202,6 +223,37 @@ const CreateProject = () => {
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [showMethodologies, setShowMethodologies] = useState(false);
   const [showAdvancedDetails, setShowAdvancedDetails] = useState(false);
+
+  // Document-driven onboarding (nieuwe wizard-stap 2). Elisa uploadt tender-
+  // PDF's → endpoint destilleert naam/beschrijving/milestones → we pre-fillen
+  // Details en bewaren de voorgestelde milestones voor na project-creatie.
+  const [docFiles, setDocFiles] = useState<File[]>([]);
+  const [docHint, setDocHint] = useState("");
+  const [docExtracting, setDocExtracting] = useState(false);
+  const [docResult, setDocResult] = useState<null | {
+    name: string;
+    description: string;
+    scope_in: string;
+    scope_out: string;
+    deliverables: string[];
+    suggested_milestones: Array<{ name: string; description: string; due_offset_weeks: number }>;
+    // Sprint 2 S2-03/S2-04: methodology suggestion from the LLM, only present
+    // when source === "ai". null when the LLM path did not run.
+    suggested_methodology?: ProjectMethodology | null;
+    methodology_confidence?: number;
+    methodology_reason?: string;
+    extracted_pages: number;
+    extracted_text_preview: string;
+    source: string;
+    skipped: Array<{ name: string; reason: string }>;
+  }>(null);
+  // S2-02: avoid auto-running the AI advisor more than once per docResult.
+  const [autoAdvisorDone, setAutoAdvisorDone] = useState(false);
+  // Hergebruik de uploads als persistente AI-context voor élke downstream
+  // AI-call op dit project (Plan with AI, Ask Co-pilot, risk-forecast…).
+  // Default aan: als Elisa de moeite neemt om tenders te uploaden, wil ze
+  // zelden alleen de wizard-stap pre-fillen en de context daarna wegduwen.
+  const [useDocsAsContext, setUseDocsAsContext] = useState(true);
 
   // Form state
   const [portfolios, setPortfolios] = useState<any[]>([]);
@@ -278,12 +330,34 @@ const CreateProject = () => {
     } catch { /* tailoring is additive — never block project creation */ }
   };
 
+  const persistAIContext = async (projectId: number | undefined) => {
+    if (!projectId || !docResult || !useDocsAsContext) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      await fetch(`/api/v1/projects/${projectId}/ai-context/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          enabled: true,
+          extracted_text: docResult.extracted_text_preview,
+          source_files: docFiles.map((f) => ({ name: f.name, size: f.size, pages: 0 })),
+        }),
+      });
+    } catch {
+      /* AI context is additive — never block project creation */
+    }
+  };
+
   // Create project mutation
   const createMutation = useMutation({
     mutationFn: (data: any) => projectsApi.create(data),
     onSuccess: async (created: any) => {
       const newId = created?.id ?? created?.data?.id;
       await persistTailoring(newId);
+      await persistAIContext(newId);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(pt("Project created successfully!"));
       navigate(newId ? `/projects/${newId}/tailoring` : "/projects");
@@ -329,6 +403,32 @@ const CreateProject = () => {
       setAiLoading(false);
     }
   };
+
+  // Sprint 2 S2-02: when the user arrived at step 1 after extracting documents
+  // (common flow: Methodology → Documents → user hits Back → Methodology again,
+  // or the aanbesteding-scenario entrypoint that bootstraps a doc result), auto
+  // pre-fill the AI Methodology Advisor with the extracted description and run
+  // it once so the user sees a doc-grounded suggestion without typing. We gate
+  // on autoAdvisorDone so the user can later Try-Again manually without the
+  // effect clobbering their edit.
+  useEffect(() => {
+    if (
+      currentStep === 1 &&
+      docResult &&
+      !autoAdvisorDone &&
+      !aiLoading &&
+      !aiRecommendation &&
+      !aiPrompt.trim() &&
+      (docResult.description || docResult.extracted_text_preview)
+    ) {
+      const seed = (docResult.description || docResult.extracted_text_preview || "").slice(0, 1200);
+      setAiPrompt(seed);
+      setAutoAdvisorDone(true);
+      // Delay slightly so React commits the aiPrompt before the advisor reads it.
+      setTimeout(() => { handleAIAdvisor(); }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, docResult, autoAdvisorDone]);
 
   // Load scenario presets for the quick-start picker.
   useEffect(() => {
@@ -469,8 +569,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
       case 1:
         return !!formData.methodology;
       case 2:
-        return formData.name && formData.startDate && formData.endDate;
+        return true;                                        // documents are optional
       case 3:
+        return formData.name && formData.startDate && formData.endDate;
+      case 4:
         return true;
       default:
         return false;
@@ -478,8 +580,54 @@ Be specific and professional. Use the context to determine appropriate methodolo
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const extractFromDocuments = async () => {
+    if (docFiles.length === 0 || docExtracting) return;
+    setDocExtracting(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const fd = new FormData();
+      docFiles.forEach((f) => fd.append("files", f));
+      if (docHint.trim()) fd.append("hint", docHint.trim());
+      const lang = (localStorage.getItem("language") || "nl").toLowerCase();
+      const r = await fetch("/api/v1/projects/plan-from-documents/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-UI-Language": lang,
+        },
+        body: fd,
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        toast.error(d.detail || pt("Could not extract from documents"));
+        return;
+      }
+      setDocResult(d);
+      // Pre-fill the Details form from the extracted project draft so the
+      // user only has to adjust, not type.
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || d.name || "",
+        description: prev.description || d.description || "",
+        objectives: prev.objectives || [d.scope_in, d.scope_out]
+          .filter(Boolean)
+          .map((s: string, i: number) => (i === 0 ? `In scope: ${s}` : `Out of scope: ${s}`))
+          .join("\n") || "",
+      }));
+      toast.success(
+        d.source === "fallback"
+          ? pt("Draft prepared from documents (template — AI unavailable)")
+          : pt("Draft prepared from documents")
+      );
+    } catch {
+      toast.error(pt("Could not extract from documents"));
+    } finally {
+      setDocExtracting(false);
     }
   };
 
@@ -830,8 +978,176 @@ Be specific and professional. Use the context to determine appropriate methodolo
               </div>
             )}
 
-            {/* Step 2: Project Details */}
+            {/* Step 2: Documents — optional pre-fill from tender/brief PDFs */}
             {currentStep === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-1">{pt('Documents')}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {pt('Drop tender documents, briefs or specs here. The AI extracts a project draft (name, scope, milestones) you review on the next step.')}
+                  </p>
+                </div>
+
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <MultiFileDropzone
+                      files={docFiles}
+                      onFilesChange={setDocFiles}
+                      accept=".pdf,.txt,.md,.csv"
+                      description={pt('PDF, TXT, MD or CSV — up to 10 files, 15 MB each.')}
+                      disabled={docExtracting}
+                    />
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="doc-hint">{pt('Hint (optional)')}</Label>
+                      <Textarea
+                        id="doc-hint"
+                        rows={2}
+                        placeholder={pt('e.g. "Focus on gemeente Heerenveen scope, Wmo tracks only"')}
+                        value={docHint}
+                        onChange={(e) => setDocHint(e.target.value)}
+                        disabled={docExtracting}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">
+                        {docFiles.length === 0
+                          ? pt('Skip this step if you don’t have supporting documents.')
+                          : `${docFiles.length} ${pt(docFiles.length === 1 ? 'file' : 'files')} ${pt('ready for extraction')}`}
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={extractFromDocuments}
+                        disabled={docFiles.length === 0 || docExtracting}
+                        className="gap-2"
+                      >
+                        {docExtracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                        {docExtracting ? pt('Extracting…') : pt('Extract with AI')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {docResult && (
+                  <Alert>
+                    <AlertTitle className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-emerald-600" />
+                      {pt('Draft prepared')}
+                      {docResult.source === "fallback" && (
+                        <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                          {pt('Template plan (AI unavailable)')}
+                        </span>
+                      )}
+                    </AlertTitle>
+                    <AlertDescription className="space-y-2 pt-2">
+                      <p className="text-sm">
+                        <strong>{pt('Name')}:</strong> {docResult.name}
+                      </p>
+                      {docResult.description && (
+                        <p className="text-sm whitespace-pre-wrap">
+                          <strong>{pt('Description')}:</strong> {docResult.description}
+                        </p>
+                      )}
+                      {docResult.suggested_milestones.length > 0 && (
+                        <div className="text-sm">
+                          <strong>{pt('Suggested milestones')}:</strong>
+                          <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                            {docResult.suggested_milestones.map((m, i) => (
+                              <li key={i}>
+                                {m.name}
+                                {m.due_offset_weeks > 0 && (
+                                  <span className="text-muted-foreground"> — {pt('week')} {m.due_offset_weeks}</span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {/* S2-04: methodology chip from the doc-level LLM suggestion.
+                          Only renders when the AI returned one. */}
+                      {docResult.suggested_methodology && (
+                        <div className="flex items-center flex-wrap gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full border border-primary/30 bg-primary/10 text-primary px-2.5 py-1">
+                            <Sparkles className="h-3 w-3" />
+                            {pt('AI schat methodologie in:')}{' '}
+                            <b className="ml-0.5">
+                              {METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                || docResult.suggested_methodology}
+                            </b>
+                            {typeof docResult.methodology_confidence === 'number' && docResult.methodology_confidence > 0 && (
+                              <span className="opacity-70">· {docResult.methodology_confidence}%</span>
+                            )}
+                          </span>
+                          {formData.methodology !== docResult.suggested_methodology && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                if (docResult.suggested_methodology) {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    methodology: docResult.suggested_methodology as ProjectMethodology,
+                                  }));
+                                  toast.success(
+                                    pt('Methodologie uit documenten toegepast:') + ' ' +
+                                    (METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                      || docResult.suggested_methodology)
+                                  );
+                                }
+                              }}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              {pt('Pas toe')}
+                            </Button>
+                          )}
+                          {docResult.methodology_reason && (
+                            <div className="basis-full text-xs text-muted-foreground italic">
+                              {docResult.methodology_reason}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {pt('Extracted from')} {docResult.extracted_pages} {pt('pages')}. {pt('Review & adjust on the next step.')}
+                      </p>
+                      {docResult.skipped.length > 0 && (
+                        <p className="text-xs text-amber-700">
+                          {pt('Skipped')}: {docResult.skipped.map((s) => s.name).join(", ")}
+                        </p>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {docResult && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <Label htmlFor="use-docs-ctx" className="text-sm font-medium">
+                            {pt('Use these documents as AI context for the whole project')}
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {pt('When on, Plan with AI, Ask Co-pilot and other AI features on this project will transparently include the uploaded document text as background. You can toggle this off later on the project page.')}
+                          </p>
+                        </div>
+                        <Switch
+                          id="use-docs-ctx"
+                          checked={useDocsAsContext}
+                          onCheckedChange={setUseDocsAsContext}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Project Details */}
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">{pt("Project Details")}</h2>
@@ -1022,7 +1338,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
             )}
 
             {/* Step 3: Review */}
-            {currentStep === 3 && (
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">{pt("Review & Create")}</h2>
@@ -1126,7 +1442,7 @@ Be specific and professional. Use the context to determine appropriate methodolo
             {currentStep === 1 ? pt('Cancel') : pt('Back')}
           </Button>
 
-          {currentStep < 3 ? (
+          {currentStep < 4 ? (
             <Button onClick={handleNext} disabled={!canProceed()}>
               {pt("Next")}
               <ArrowRight className="h-4 w-4 ml-2" />
