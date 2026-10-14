@@ -20,6 +20,7 @@ from invoices.serializers import (
     InvoiceItemCreateSerializer,
 )
 from accounts.models import Company
+from admin_portal.permissions import IsSuperAdmin
 from subscriptions.models import CompanySubscription
 
 # Helper function to replace dateutil.relativedelta
@@ -68,10 +69,16 @@ class InvoiceSettingsViewSet(viewsets.ModelViewSet):
 
 class CompanyInvoiceViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing company invoices
+    ViewSet for managing company invoices.
+
+    Access is gated by ``IsSuperAdmin`` (role-based), matching every other
+    ViewSet in the admin portal.  The manual ``is_superuser`` checks that
+    used to live in ``get_queryset`` / ``create`` / every ``@action`` are
+    now redundant and have been removed — the permission class returns
+    403 before the handler runs, so there is nothing to fail-safe past.
     """
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
     def get_serializer_class(self):
         if self.action == 'list':
             return CompanyInvoiceListSerializer
@@ -80,11 +87,8 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update']:
             return CompanyInvoiceUpdateSerializer
         return CompanyInvoiceDetailSerializer
-    
+
     def get_queryset(self):
-        if not self.request.user.is_superuser:
-            return CompanyInvoice.objects.none()
-        
         queryset = CompanyInvoice.objects.select_related(
             'company', 'subscription', 'generated_by'
         ).prefetch_related('items', 'reminders')
@@ -113,28 +117,12 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by('-invoice_date', '-created_at')
     
-    def create(self, request, *args, **kwargs):
-        """Create a new invoice"""
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        return super().create(request, *args, **kwargs)
-    
     @action(detail=False, methods=['post'])
     def generate(self, request):
         """
         Generate invoices for active subscriptions
         POST /api/admin/invoices/generate/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         serializer = GenerateInvoiceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -200,12 +188,6 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         Send invoice via email
         POST /api/admin/invoices/{id}/send/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         invoice = self.get_object()
         serializer = SendInvoiceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -250,12 +232,6 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         Mark invoice as paid
         POST /api/admin/invoices/{id}/mark_paid/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         invoice = self.get_object()
         serializer = MarkPaidSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -281,12 +257,6 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         Generate PDF for invoice
         POST /api/admin/invoices/{id}/generate_pdf/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         invoice = self.get_object()
         
         try:
@@ -309,12 +279,6 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         Cancel an invoice
         POST /api/admin/invoices/{id}/cancel/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         invoice = self.get_object()
         
         if invoice.status == 'paid':
@@ -337,12 +301,6 @@ class CompanyInvoiceViewSet(viewsets.ModelViewSet):
         Check and update overdue invoices
         POST /api/admin/invoices/check_overdue/
         """
-        if not request.user.is_superuser:
-            return Response(
-                {'detail': 'Permission denied'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
         overdue_count = 0
         for invoice in CompanyInvoice.objects.filter(status='sent'):
             if invoice.check_overdue():
