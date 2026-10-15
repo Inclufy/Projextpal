@@ -1374,10 +1374,25 @@ export default function AICopilotSidebar() {
   // ──────────────────────────────────────────────────────────────────
   // Scope detection first — the IDs feed both the scope-gaps fetch below
   // and the suggestions/quick-actions selection further down.
+  //
+  // URL wins. activeProject/activeProgram is a hint set when the user
+  // opened the copilot via a "Vraag de Co-pilot" button, and it must NOT
+  // outlast the next navigation — once the URL leaves /projects/<id>
+  // (bv. de PM gaat terug naar het dashboard) we drop the project scope
+  // so the welcome header, gaps and quick-actions reflect where the user
+  // actually is now, not the last place he visited.
   const urlProjectIdForScope = location.pathname.match(/\/projects\/(\d+)/)?.[1];
-  const scopeProjectId = activeProject?.id != null ? String(activeProject.id) : urlProjectIdForScope;
+  const scopeProjectId = urlProjectIdForScope
+    ? (activeProject?.id != null && String(activeProject.id) === urlProjectIdForScope
+        ? String(activeProject.id)
+        : urlProjectIdForScope)
+    : undefined;
   const urlProgramIdForScope = location.pathname.match(/\/programs\/(\d+)/)?.[1];
-  const scopeProgramId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramIdForScope;
+  const scopeProgramId = urlProgramIdForScope
+    ? (activeProgram?.id != null && String(activeProgram.id) === urlProgramIdForScope
+        ? String(activeProgram.id)
+        : urlProgramIdForScope)
+    : undefined;
   const scopeMethodology = methodologyMatch?.[2] as string | undefined;
   const lang: Lang = language === "nl" || language === "fr" ? language : "en";
   // Governance surfaces — UUID in path.
@@ -1597,13 +1612,24 @@ export default function AICopilotSidebar() {
       // an explicitly set active project (opened via "Ask Co-pilot" or a pick-up);
       // otherwise fall back to the project in the current URL, so the copilot has
       // context however it was opened while inside a project.
+      // URL wins over activeProject/Program — a stale active project
+      // from an earlier page must not travel with the chat to a new
+      // URL (bv. de dashboard-chat moet NIET nog Barneveld-context
+      // meesturen). We only carry the active-id when it matches the
+      // current URL; otherwise fall back to whatever the URL says
+      // (which can be nothing, i.e. a true dashboard/portfolio chat).
       const urlProjectId = window.location.pathname.match(/\/projects\/(\d+)/)?.[1];
-      const projectId = activeProject?.id != null ? String(activeProject.id) : urlProjectId;
-      // Same for the programme: prefer an explicitly set active programme
-      // (opened via "Ask Co-pilot" or a pick-up on a programme), else fall back
-      // to the programme in the current URL (/programs/:id).
+      const projectId = urlProjectId
+        ? (activeProject?.id != null && String(activeProject.id) === urlProjectId
+            ? String(activeProject.id)
+            : urlProjectId)
+        : undefined;
       const urlProgramId = window.location.pathname.match(/\/programs\/(\d+)/)?.[1];
-      const programId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramId;
+      const programId = urlProgramId
+        ? (activeProgram?.id != null && String(activeProgram.id) === urlProgramId
+            ? String(activeProgram.id)
+            : urlProgramId)
+        : undefined;
       // Governance scopes — their IDs are UUIDs so we loosen the regex.
       // Board URL also matters for Decisions / Meetings when they are
       // opened from the board detail; the backend stacks board context
