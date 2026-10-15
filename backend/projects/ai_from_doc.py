@@ -82,12 +82,94 @@ def _extract_pdf_text(fobj) -> Tuple[str, int]:
         return "", 0
 
 
-def _extract_text_any(filename: str, data: bytes) -> Tuple[str, int]:
+def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
+    """Fallback for scanned/image-only PDFs: ask Claude to OCR + extract text.
+
+    Only called when pdfplumber returned an empty text layer. The Claude
+    document content block accepts base64-encoded PDFs ≤ 32 MB and the
+    model has built-in OCR for scanned pages, so we skip local Tesseract
+    (which would require a separate OS package and a slow model download).
+    """
+    import base64
+
+    try:
+        ac = get_anthropic_client(company)
+    except Exception:
+        return "", 0
+    if ac is None:
+        return "", 0
+    try:
+        b64 = base64.b64encode(data).decode("ascii")
+    except Exception:
+        return "", 0
+    try:
+        resp = ac.messages.create(
+            model="claude-opus-4-7",
+            max_tokens=4000,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "application/pdf",
+                            "data": b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            "Extract the plain text content of this PDF. "
+                            "Preserve paragraph breaks. Do NOT summarize, "
+                            "do NOT add commentary — only the extracted text. "
+                            "If the document contains forms or tables, "
+                            "linearise them as plain-text lines."
+                        ),
+                    },
+                ],
+            }],
+        )
+        text = "".join(
+            b.text for b in resp.content if getattr(b, "type", "") == "text"
+        ).strip()
+        if not text:
+            return "", 0
+        # Record token spend so the usage meter stays honest.
+        try:
+            from core import ai_usage
+            ai_usage.record(
+                getattr(company, "id", None),
+                ai_usage.tokens_from_anthropic(resp),
+                provider="anthropic",
+            )
+        except Exception:
+            pass
+        # Pages are unknown from Claude's reply — approximate as 1 so the
+        # downstream code has a sane non-zero.
+        return text, 1
+    except Exception as e:
+        logger.info("plan-from-doc Claude-vision OCR failed: %s", e)
+        return "", 0
+
+
+def _extract_text_any(filename: str, data: bytes, company=None) -> Tuple[str, int]:
     """Minimalistische text-extractor voor PDF / plain text. .docx-support
-    kan later via python-docx worden toegevoegd."""
+    kan later via python-docx worden toegevoegd.
+
+    PDFs waarbij pdfplumber geen text-layer vindt (scanned/image-only)
+    worden doorgezet naar Claude vision OCR als er een Anthropic-key is.
+    """
     lower = (filename or "").lower()
     if lower.endswith(".pdf"):
-        return _extract_pdf_text(io.BytesIO(data))
+        text, pages = _extract_pdf_text(io.BytesIO(data))
+        if text.strip() or company is None:
+            return text, pages
+        # Local extractor leeg → fallback naar Claude vision OCR.
+        ocr_text, ocr_pages = _extract_pdf_via_claude(data, company)
+        if ocr_text.strip():
+            return ocr_text, (pages or ocr_pages)
+        return "", pages
     if lower.endswith((".txt", ".md", ".csv")):
         try:
             return data.decode("utf-8", errors="ignore"), 1
@@ -226,9 +308,16 @@ def plan_from_documents(request):
 
     hint = (request.data.get("hint") or "").strip()
 
+    company = getattr(request.user, "company", None)
+
     combined_text_parts: List[str] = []
     total_pages = 0
     skipped: List[dict] = []
+    # Per-file breakdown so the caller can attach each (name, text) to the
+    # new project's AI-context after create. The AI-context endpoint keeps
+    # one encrypted text blob per project, so we also return the merged
+    # ``combined`` text as the canonical blob for immediate upload.
+    extracted_files: List[dict] = []
     for f in files:
         size = getattr(f, "size", 0) or 0
         name = getattr(f, "name", "")
@@ -236,12 +325,18 @@ def plan_from_documents(request):
             skipped.append({"name": name, "reason": f"too large ({size} bytes)"})
             continue
         data = f.read()
-        text, pages = _extract_text_any(name, data)
+        text, pages = _extract_text_any(name, data, company=company)
         if not text:
             skipped.append({"name": name, "reason": "no text extracted"})
             continue
         combined_text_parts.append(f"--- {name} ---\n{text}")
         total_pages += pages
+        extracted_files.append({
+            "name": name,
+            "size": size,
+            "pages": pages,
+            "enabled": True,
+        })
 
     combined = "\n\n".join(combined_text_parts)
     truncated = combined[:MAX_TEXT_CHARS]
@@ -260,7 +355,6 @@ def plan_from_documents(request):
         + truncated
     )
 
-    company = getattr(request.user, "company", None)
     result = _call_llm(company, system, user_block)
     source = "ai"
     if not result:
@@ -315,6 +409,12 @@ def plan_from_documents(request):
         "methodology_reason": methodology_reason,
         "extracted_pages": total_pages,
         "extracted_text_preview": truncated[:PREVIEW_CHARS],
+        # Full extracted text + file list — the caller passes these to
+        # /api/v1/projects/{id}/ai-context/ right after project create so
+        # the uploaded tender/brief lives on in the project context and
+        # feeds the Business Case / Project Brief / … auto-draft dialogs.
+        "extracted_text": truncated,
+        "extracted_files": extracted_files,
         "skipped": skipped,
         "source": source,
     })

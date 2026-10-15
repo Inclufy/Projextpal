@@ -244,6 +244,12 @@ const CreateProject = () => {
     methodology_reason?: string;
     extracted_pages: number;
     extracted_text_preview: string;
+    // Full extracted text + per-file breakdown (set by backend) — used to
+    // seed the new project's AI-context after create instead of the
+    // preview-only snippet so Business Case / Project Brief / … auto-drafts
+    // see the whole tender/brief.
+    extracted_text?: string;
+    extracted_files?: Array<{ name: string; size: number; pages: number; enabled: boolean }>;
     source: string;
     skipped: Array<{ name: string; reason: string }>;
   }>(null);
@@ -334,6 +340,16 @@ const CreateProject = () => {
     if (!projectId || !docResult || !useDocsAsContext) return;
     try {
       const token = localStorage.getItem("access_token");
+      // Prefer the full extracted text + per-file breakdown the backend
+      // returned; fall back to the ingekorte preview + raw file-list so
+      // older backend responses still land something non-empty.
+      const extracted = docResult.extracted_text || docResult.extracted_text_preview || "";
+      const files =
+        docResult.extracted_files && docResult.extracted_files.length > 0
+          ? docResult.extracted_files
+          : docFiles.map((f) => ({
+              name: f.name, size: f.size, pages: 0, enabled: true,
+            }));
       await fetch(`/api/v1/projects/${projectId}/ai-context/`, {
         method: "POST",
         headers: {
@@ -342,8 +358,8 @@ const CreateProject = () => {
         },
         body: JSON.stringify({
           enabled: true,
-          extracted_text: docResult.extracted_text_preview,
-          source_files: docFiles.map((f) => ({ name: f.name, size: f.size, pages: 0 })),
+          extracted_text: extracted,
+          source_files: files,
         }),
       });
     } catch {
