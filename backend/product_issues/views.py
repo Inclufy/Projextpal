@@ -1,5 +1,9 @@
+import hashlib
+import hmac
 import logging
 import uuid
+
+from django.conf import settings
 
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
@@ -28,6 +32,13 @@ logger = logging.getLogger(__name__)
 # POST or an answer POST on one of these returns 409 instead of mutating the
 # archived audit trail.
 _TERMINAL_STATUSES = {"resolved", "wont-fix", "duplicate", "closed"}
+
+
+# Outcomes the Control-Tower fix agent reports back through
+# /claude-callback/. Deliberately narrow: the caller is a machine, so an
+# unrecognised value means a version mismatch between agent and backend and
+# is answered with 400 rather than guessed at.
+_CALLBACK_STATUSES = {"merged", "failed"}
 
 
 def _validate_answers(questions: list[dict], answers: dict) -> dict:
@@ -347,6 +358,120 @@ class ProductIssueViewSet(viewsets.ModelViewSet):
                 "answers": cleaned,
                 "answered_at": updated_row.get("answered_at"),
             },
+            status=status.HTTP_200_OK,
+        )
+
+    # ------------------------------------------------------------------
+    # Inbound callback from the Control-Tower fix agent.
+    #
+    # ``claude_triage.mark_in_progress()`` parks an auto-triaged issue on
+    # "in-progress" and stamps ``claude_agent_id``; ``_can_auto_fix()`` then
+    # refuses to re-trigger it, calling this endpoint "the only way to move
+    # it forward". It was never written: claude_triage's module docstring
+    # points at a ``views.ProductIssueClaudeCallbackView`` that does not
+    # exist, and ``_callback_url()`` hands the agent a URL that 404s. Every
+    # auto-triaged issue therefore stayed in-progress for good.
+    #
+    # The caller is a machine with no user identity, so authentication is
+    # the HMAC-SHA256 signature over the raw body using the same shared
+    # secret as the outbound webhook. Fail-closed: with no secret
+    # configured, no callback is accepted at all.
+    # ------------------------------------------------------------------
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="claude-callback",
+        permission_classes=[permissions.AllowAny],
+        authentication_classes=[],
+    )
+    def claude_callback(self, request, pk=None):
+        secret = getattr(settings, "CLAUDE_FIX_AGENT_WEBHOOK_SECRET", "") or ""
+        if not secret:
+            return Response(
+                {"detail": "Callback not configured."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        provided = request.META.get("HTTP_X_PROJEXTPAL_SIGNATURE", "")
+        expected = "sha256=" + hmac.new(
+            secret.encode("utf-8"), request.body, hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(provided, expected):
+            logger.warning(
+                "claude-callback: bad signature for issue %s", pk
+            )
+            return Response(
+                {"detail": "Invalid signature."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        reported = request.data.get("status")
+        if reported not in _CALLBACK_STATUSES:
+            return Response(
+                {
+                    "detail": "Unknown status.",
+                    "allowed": sorted(_CALLBACK_STATUSES),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Not self.get_object(): that queryset is scoped to request.user's
+        # company, and this caller is anonymous by design.
+        issue = ProductIssue.objects.filter(pk=pk).first()
+        if issue is None:
+            return Response(
+                {"detail": "Not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Every string here comes from outside, so it goes through the same
+        # scrub as reporter-supplied text -- control and bidi characters out,
+        # length capped.
+        pr_url = _scrub_untrusted(request.data.get("pr_url") or "")
+        commit_sha = _scrub_untrusted(request.data.get("commit_sha") or "")
+        agent_id = _scrub_untrusted(request.data.get("agent_id") or "")
+
+        meta = dict(issue.metadata or {})
+        if pr_url:
+            meta["claude_pr_url"] = pr_url
+        if commit_sha:
+            meta["claude_commit_sha"] = commit_sha
+        if agent_id:
+            meta["claude_agent_id"] = agent_id
+        meta["claude_callback_status"] = reported
+        meta["claude_callback_at"] = timezone.now().isoformat()
+
+        update_fields = ["metadata", "updated_at"]
+
+        if reported == "merged":
+            issue.status = "resolved"
+            issue.resolved_at = timezone.now()
+            update_fields += ["status", "resolved_at"]
+            if pr_url:
+                issue.linked_pr_url = pr_url
+                update_fields.append("linked_pr_url")
+        else:
+            # "failed": record it and leave the status alone. Deciding what
+            # happens to a failed auto-fix is a human call, and silently
+            # re-opening it would let the agent loop on the same issue.
+            error = _scrub_untrusted(request.data.get("error") or "")
+            if error:
+                meta["claude_last_error"] = error[:500]
+                meta["claude_last_error_at"] = timezone.now().isoformat()
+
+        issue.metadata = meta
+        # Suppress the per-issue email: the cron batch sends a digest.
+        issue._suppress_email_on_save = True  # type: ignore[attr-defined]
+        issue.save(update_fields=update_fields)
+
+        logger.info(
+            "claude-callback: issue %s reported %s -> status %s",
+            issue.id,
+            reported,
+            issue.status,
+        )
+        return Response(
+            {"id": issue.id, "status": issue.status},
             status=status.HTTP_200_OK,
         )
 

@@ -268,6 +268,14 @@ def test_management_command_noop_when_disabled(company):
 # 6. /claude-callback/ endpoint
 # ---------------------------------------------------------------------------
 
+# The three callback tests below are the only ones in this file that go
+# through the full middleware stack (the rest call the triage class directly),
+# so they are the only ones SECURE_SSL_REDIRECT can reach. It is enabled
+# whenever DEBUG is off, and then a plain-HTTP post is answered with 301 before
+# the view ever runs. CI happens to run with DEBUG on, so it does not hit that
+# today -- but a local run does, and nothing pins the setting. ``secure=True``
+# makes the test independent of it, and it is also what production looks like:
+# the Control-Tower fix agent posts to an https:// callback URL.
 def _signed_headers(body: bytes, secret: str) -> dict:
     sig = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     return {"HTTP_X_PROJEXTPAL_SIGNATURE": f"sha256={sig}"}
@@ -291,6 +299,7 @@ def test_claude_callback_marks_resolved_on_merged(company, api_client):
         url,
         data=raw,
         content_type="application/json",
+        secure=True,
         **_signed_headers(raw, "cb-secret"),
     )
     assert resp.status_code == 200, resp.content
@@ -313,6 +322,7 @@ def test_claude_callback_rejects_bad_signature(company, api_client):
         url,
         data=json.dumps({"status": "merged"}),
         content_type="application/json",
+        secure=True,
         HTTP_X_PROJEXTPAL_SIGNATURE="sha256=deadbeefdeadbeef",
     )
     assert resp.status_code == 401
@@ -331,6 +341,7 @@ def test_claude_callback_rejects_unknown_status(company, api_client):
         url,
         data=raw,
         content_type="application/json",
+        secure=True,
         **_signed_headers(raw, "cb-secret"),
     )
     assert resp.status_code == 400

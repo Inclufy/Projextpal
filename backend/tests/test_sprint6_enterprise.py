@@ -78,6 +78,28 @@ class TestTenantAIFeatureFlags:
 # --------------------------------------------------------------------------
 
 class TestEncryptionAtRest:
+
+    @pytest.fixture(autouse=True)
+    def _veldsleutel(self, settings):
+        """Configure a throwaway Fernet key for this class.
+
+        ``EncryptedTextField`` falls back to storing plaintext when no key is
+        configured -- that is deliberate, so local dev works without the
+        secret. CI never sets ``FIELD_ENCRYPTION_KEY``, so
+        ``test_new_row_stored_encrypted`` was asserting on the fallback and
+        read back "Confidential tender body" where it expected a Fernet
+        token. The test was not proving anything about encryption.
+
+        Generating the key here keeps the test self-contained (no CI variable
+        to forget) and makes it exercise the real encrypt/decrypt path. The
+        legacy-plaintext test below still passes with a key configured:
+        ``decrypt_text`` returns a value unchanged when it lacks the Fernet
+        prefix, which is exactly the migration behaviour it covers.
+        """
+        from cryptography.fernet import Fernet
+
+        settings.FIELD_ENCRYPTION_KEYS = [Fernet.generate_key().decode()]
+
     def test_new_row_stored_encrypted(self, db, project):
         aic = ProjectAIContext.objects.create(
             project=project, extracted_text="Confidential tender body"

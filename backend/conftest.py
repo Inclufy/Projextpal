@@ -1146,3 +1146,43 @@ def prince2_stage(db, prince2_project):
         )
     except ImportError:
         pytest.skip("prince2.Stage model not available")
+
+
+# ---------------------------------------------------------------------------
+# Cache- en throttle-isolatie
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _geisoleerde_cache(settings):
+    """Give every test an empty, in-process cache.
+
+    pytest.ini points DJANGO_SETTINGS_MODULE at ``core.settings`` itself, so
+    without this the suite talks to the real Redis cache (db 1) and DRF's
+    throttle buckets survive from one test to the next. The ``ai_context``
+    scope is 20/hour *per user* and almost every API test authenticates as
+    the same fixture user, so once twenty AI-endpoint calls had been made
+    anywhere in the run, every later one got HTTP 429 instead of its own
+    result.
+
+    That is what 28 of the 44 failures on 14 October 2026 were -- 25 in
+    test_sprint5_proactive.py and 3 in test_sprint4_methodology_autodrafts.py
+    all asserting ``429 == 200``. None of them was about the behaviour under
+    test, and because test:backend is what gates the build+push job, the
+    production images stopped reaching the registry.
+
+    LocMemCache keeps it in-process (the suite no longer needs a running
+    Redis) and the explicit clear() stops state leaking between tests. A
+    test that wants to assert throttling still can: it just has to spend the
+    bucket within its own test body.
+    """
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "projextpal-tests",
+        }
+    }
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
