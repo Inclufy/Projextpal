@@ -73,10 +73,10 @@ class TenantAIFeatureFlagsAdmin(admin.ModelAdmin):
 
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "name", "is_subscribed",
+        "id", "name", "is_subscribed", "ai_premium_models",
         "ai_user_daily_token_cap", "ai_monthly_token_quota",
     )
-    list_filter = ("is_subscribed",)
+    list_filter = ("is_subscribed", "ai_premium_models")
     search_fields = ("name",)
     fieldsets = (
         (None, {"fields": ("name", "description", "is_subscribed")}),
@@ -85,6 +85,17 @@ class CompanyAdmin(admin.ModelAdmin):
         ("Tenant defaults", {"fields": ("industry", "organization_size",
                                         "timezone", "locale", "currency"),
                               "classes": ("collapse",)}),
+        ("AI model tier", {
+            "fields": ("ai_premium_models",),
+            "description": (
+                "OFF (default): Sonnet-first ladder for heavy drafts "
+                "(BC/Brief/Scrum), Haiku-first for light drafts "
+                "(risks/milestones/swimlanes). Keeps bruto marge ~80%. "
+                "ON: Opus-first for heavy drafts, Sonnet-first for light "
+                "ones. ~5x more expensive on inkoop; only enable for "
+                "Enterprise-tier contracts or on explicit customer request."
+            ),
+        }),
         ("AI caps (per-tenant override)", {
             "fields": ("ai_user_daily_token_cap", "ai_monthly_token_quota"),
             "description": (

@@ -88,6 +88,21 @@ class Company(models.Model):
         ),
     )
 
+    # Model-tier C: Enterprise-opt-in for premium (Opus) models. When False
+    # (default), all auto-draft calls use the cheaper Sonnet (heavy) /
+    # Haiku (light) ladder. When True, the tenant gets Opus (heavy) /
+    # Sonnet (light) — ~5x more expensive on inkoop but marginally higher
+    # output quality. Only toggled on for Enterprise plans or on request.
+    ai_premium_models = models.BooleanField(
+        default=False,
+        help_text=(
+            "Grant this tenant access to premium (Opus) models for heavy "
+            "auto-drafts. Default False = Sonnet-first ladder, which gives "
+            "us a ~80% bruto marge on pool pricing. True = Opus-first "
+            "ladder, higher inkoop but Enterprise-tier quality guarantee."
+        ),
+    )
+
     # S7-06: default hourly rate for this tenant. When a ProjectTeam row has
     # ``hourly_rate=0`` (the "no override" signal), the cost dashboards and
     # budget calculators fall back to this company-level default. Set 0 for

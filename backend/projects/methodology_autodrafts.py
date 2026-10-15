@@ -400,7 +400,7 @@ def draft_milestones(project, user, language: str, doc_prefix: str) -> DraftResu
     user_prompt = _wrap(doc_prefix, _project_meta(project), _tail)
     parsed = _run_llm(
         user, system, user_prompt, _MAX_TOKENS_SMALL,
-        surface="milestones-auto-draft",
+        surface="milestones-auto-draft", heavy=False,
     )
     # Validator — keep only rows with a valid name + both dates parseable
     # and inside the project period.
@@ -551,7 +551,7 @@ def draft_risks(project, user, language: str, doc_prefix: str) -> DraftResult:
     user_prompt = _wrap(doc_prefix, _project_meta(project), _tail)
     parsed = _run_llm(
         user, system, user_prompt, _MAX_TOKENS_SMALL,
-        surface="risk-register-auto-draft",
+        surface="risk-register-auto-draft", heavy=False,
     )
     # Validate the shape — we expect {"risks": [{…}, …]} with at least 1 item.
     if isinstance(parsed, dict) and isinstance(parsed.get("risks"), list) and parsed["risks"]:
@@ -774,7 +774,7 @@ def draft_kanban_swimlanes(project, user, language: str, doc_prefix: str) -> Dra
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "kanban")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="kanban-swimlanes-auto-draft")
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="kanban-swimlanes-auto-draft", heavy=False)
     coerced = _coerce_kanban(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _kanban_fallback(lm), warnings, bool(doc_prefix), lm)
 
