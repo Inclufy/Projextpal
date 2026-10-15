@@ -192,7 +192,24 @@ def generate_ai_report(request):
     from core.i18n_ai import resolve_ui_language
     lang = resolve_ui_language(request)
 
-    report = generate_report(report_id, context, company=company, language=lang)
+    # Honor a scope hint from the client so the report can actually use
+    # the uploaded context of the portfolio/board/program/project it
+    # applies to. All optional — a plain ecosystem-wide report still
+    # works, it just has no docs prefix stacked on it.
+    scope_portfolio = request.data.get("portfolio_id") or request.data.get("portfolioId")
+    scope_board = request.data.get("board_id") or request.data.get("boardId")
+    scope_program = request.data.get("program_id") or request.data.get("programId")
+    scope_project = request.data.get("project_id") or request.data.get("projectId")
+
+    report = generate_report(
+        report_id, context, company=company, language=lang,
+        user=user,
+        portfolio_id=scope_portfolio,
+        board_id=scope_board,
+        program_id=scope_program,
+        project_id=scope_project,
+        surface=f"governance-report-{report_id}",
+    )
     return Response(report)
 
 

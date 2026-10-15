@@ -499,3 +499,175 @@ def _portfolio_prefix_impl(user, portfolio_id, language, surface, log=True):
             company=company,
         )
     return {"prefix": prefix, "used": _usage_details(prefix, files, surface)}
+
+
+# --------------------------------------------------------------------------
+# BOARD (governance) — Decisions + Meetings inherit this via their parent
+# board at AI-call time; see ``get_decision_context_prefix`` /
+# ``get_meeting_context_prefix`` below which simply walk up to the board
+# and reuse this implementation.
+# --------------------------------------------------------------------------
+def get_board_context_prefix(
+    user,
+    board_id,
+    language: str = "nl",
+    surface: str = "unknown",
+) -> str:
+    return _board_prefix_impl(user, board_id, language, surface, log=True)["prefix"]
+
+
+def get_board_context_details(
+    user,
+    board_id,
+    language: str = "nl",
+    surface: str = "unknown",
+    log: bool = True,
+) -> Dict[str, Any]:
+    return _board_prefix_impl(user, board_id, language, surface, log=log)
+
+
+def _board_prefix_impl(user, board_id, language, surface, log=True):
+    empty = {"prefix": "", "used": None}
+    if not user or not getattr(user, "is_authenticated", False):
+        return empty
+    if not board_id:
+        return empty
+
+    try:
+        import uuid as _uuid
+        board_uuid = _uuid.UUID(str(board_id))
+    except (TypeError, ValueError):
+        return empty
+
+    try:
+        from governance.models import GovernanceBoard, BoardAIContext
+    except Exception as e:
+        logger.warning("ai_context_helpers board import failed: %s", e)
+        return empty
+
+    try:
+        board = (GovernanceBoard.objects
+                 .filter(id=board_uuid)
+                 .select_related("portfolio", "program", "project")
+                 .only("id", "portfolio__company_id",
+                       "program__company_id", "project__company_id")
+                 .first())
+        if not board:
+            return empty
+        # Boards inherit company via portfolio / programme / project.
+        board_company_id = (
+            getattr(board.portfolio, "company_id", None)
+            or getattr(board.program, "company_id", None)
+            or getattr(board.project, "company_id", None)
+        )
+        if not getattr(user, "is_superuser", False) and getattr(user, "role", None) != "superadmin":
+            user_company_id = getattr(user, "company_id", None)
+            if not user_company_id or user_company_id != board_company_id:
+                return empty
+    except Exception:
+        return empty
+
+    try:
+        aic = BoardAIContext.objects.filter(
+            board_id=board_uuid, enabled=True,
+        ).first()
+    except Exception as e:
+        logger.warning("ai_context_helpers board db read failed: %s", e)
+        return empty
+
+    try:
+        from accounts.models import Company
+        company = Company.objects.filter(id=board_company_id).first() if board_company_id else None
+    except Exception:
+        company = None
+
+    if log:
+        _log_access(
+            user=user,
+            context_type="board",
+            context_id=str(board_uuid),
+            surface=surface,
+            chars_used=0,
+            company=company,
+        )
+
+    if not aic:
+        return empty
+
+    if not _tenant_feature_enabled(company, "ai_context_enabled"):
+        return empty
+
+    files = _enabled_source_files(aic.source_files)
+    text = (aic.extracted_text or "")[:MAX_CONTEXT_CHARS]
+    if not text:
+        return empty
+
+    prefix = _build_prefix(
+        text=text, files=files, language=language,
+        heading_nl="[BOARD_DOCUMENTEN]",
+        heading_en="[BOARD_DOCUMENTS]",
+        body_lead_nl="Inhoud uit de board-documenten (mandaat, dossier, standing papers):",
+        body_lead_en="Content extracted from the board papers (mandate, dossier, standing instructions):",
+        footer_nl=(
+            "Behandel bovenstaande board-documenten als autoritatieve bron "
+            "voor besluiten en vergaderingen van deze board; vul aan met "
+            "methodologie-kennis waar nodig."
+        ),
+        footer_en=(
+            "Treat the board papers above as the authoritative source for "
+            "decisions and meetings of this board; fall back to methodology "
+            "knowledge where they are silent."
+        ),
+    )
+    if log:
+        _log_access(
+            user=user,
+            context_type="board",
+            context_id=str(board_uuid),
+            surface=surface,
+            chars_used=len(prefix),
+            company=company,
+        )
+    return {"prefix": prefix, "used": _usage_details(prefix, files, surface)}
+
+
+def get_decision_context_prefix(
+    user,
+    decision_id,
+    language: str = "nl",
+    surface: str = "unknown",
+) -> str:
+    """Decision context = its parent board's context. No separate
+    AIContext model on Decision — the board papers are what matters.
+    Returns "" when the decision has no board or the board has no
+    context uploaded."""
+    if not decision_id:
+        return ""
+    try:
+        from governance.models import Decision
+        d = Decision.objects.filter(id=decision_id).only("id", "board_id").first()
+    except Exception:
+        return ""
+    if not d or not getattr(d, "board_id", None):
+        return ""
+    return get_board_context_prefix(user, d.board_id, language=language, surface=surface)
+
+
+def get_meeting_context_prefix(
+    user,
+    meeting_id,
+    language: str = "nl",
+    surface: str = "unknown",
+) -> str:
+    """Meeting context = its parent board's context. Same pattern as
+    ``get_decision_context_prefix``."""
+    if not meeting_id:
+        return ""
+    try:
+        from governance.models import Meeting
+        m = Meeting.objects.filter(id=meeting_id).only("id", "board_id").first()
+    except Exception:
+        return ""
+    if not m or not getattr(m, "board_id", None):
+        return ""
+    return get_board_context_prefix(user, m.board_id, language=language, surface=surface)

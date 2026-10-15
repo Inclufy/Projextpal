@@ -90,6 +90,19 @@ def ai_billing_summary(request):
         if v is None:
             agg_month[k] = 0
 
+    # Per-tier split so the UI can show "pool list-price" vs "BYOK
+    # service-fee" side by side.
+    agg_pool = qs_month.filter(byok=False).aggregate(
+        tokens=Sum("tokens"), cost_cents=Sum("cost_cents"), calls=Count("id"),
+    )
+    agg_byok = qs_month.filter(byok=True).aggregate(
+        tokens=Sum("tokens"), cost_cents=Sum("cost_cents"), calls=Count("id"),
+    )
+    for d in (agg_pool, agg_byok):
+        for k, v in list(d.items()):
+            if v is None:
+                d[k] = 0
+
     by_provider = list(
         qs_month.values("provider").annotate(
             tokens=Sum("tokens"), cost_cents=Sum("cost_cents"),
@@ -123,9 +136,12 @@ def ai_billing_summary(request):
                                  "cost_cents": r["cost_cents"] or 0}
                 for r in daily_rows}
 
+    from .ai_cost import BYOK_SERVICE_FEE_FRACTION
+
     return Response({
         "company_id": company_id,
         "byok": byok,
+        "byok_service_fee_fraction": BYOK_SERVICE_FEE_FRACTION,
         "month_start": start.isoformat(),
         "month_summary": {
             "tokens": agg_month["total_tokens"],
@@ -133,14 +149,22 @@ def ai_billing_summary(request):
             "tokens_completion": agg_month["total_completion"],
             "cost_cents": agg_month["total_cost_cents"],
             "calls": agg_month["call_count"],
+            "pool_cost_cents": agg_pool["cost_cents"],
+            "pool_tokens": agg_pool["tokens"],
+            "pool_calls": agg_pool["calls"],
+            "byok_fee_cents": agg_byok["cost_cents"],
+            "byok_tokens": agg_byok["tokens"],
+            "byok_calls": agg_byok["calls"],
         },
         "by_provider": by_provider,
         "by_surface": by_surface,
         "by_user": by_user,
         "daily": daily,
         "note": (
-            "Dit zijn Inclufy-pool kosten." if not byok else
-            "Jouw eigen AI-key is actief — bovenstaande tokens worden "
-            "rechtstreeks door jouw provider gefactureerd, niet door Inclufy."
+            "Dit zijn Inclufy-pool kosten (volledige lijstprijs)." if not byok else
+            f"Jouw eigen AI-key is actief — jouw provider factureert het ruwe "
+            f"token-verbruik rechtstreeks aan jou. Inclufy rekent alleen "
+            f"{int(BYOK_SERVICE_FEE_FRACTION * 100)}% service-fee over de "
+            f"lijstprijs."
         ),
     })

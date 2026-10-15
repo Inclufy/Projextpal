@@ -26,11 +26,51 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-ANTHROPIC_MODEL = "claude-opus-4-7"
 OPENAI_MODEL = "gpt-4o-mini"
+
+# Model-tier C — Sonnet-first for every tenant, Opus-opt-in via
+# Company.ai_premium_models.
+#
+# Rationale: 90%+ of our draft-call volume ran on Opus which gave us a
+# magere 23% bruto marge on BC-size calls. Sonnet is ~95% of Opus quality
+# on structured JSON drafts at 20% of the cost — flipping the default
+# brings bruto marge on heavy drafts to ~80%, while Enterprise tenants
+# that want Opus-quality guarantee can opt in via the ai_premium_models
+# flag on their Company row.
+#
+# Heavy vs light: Business Case, Project Brief, Scrum vision and the
+# Waterfall-phases/LSS-define drafts need rich grounded prose and get
+# the "heavy" tier. Risk-registers, milestones, kanban-swimlanes return
+# compact structured lists and are fine on the "light" tier.
+#
+# Keep BC backwards-compat (keep ANTHROPIC_MODEL symbol pointing to the
+# heavy default so legacy imports still work).
+
+ANTHROPIC_HEAVY_PREMIUM = "claude-opus-4-7"
+ANTHROPIC_HEAVY_DEFAULT = "claude-sonnet-5"
+ANTHROPIC_LIGHT_PREMIUM = "claude-sonnet-5"
+ANTHROPIC_LIGHT_DEFAULT = "claude-haiku-4-5-20251001"
+
+# Backwards-compat alias used by anything that imported ANTHROPIC_MODEL
+# directly; defaults to the heavy-default (Sonnet).
+ANTHROPIC_MODEL = ANTHROPIC_HEAVY_DEFAULT
 
 MAX_TOKENS_SMALL = 2000
 MAX_TOKENS_LARGE = 4000
+
+
+def _resolve_anthropic_model(company, heavy: bool) -> str:
+    """Pick the Anthropic model based on tenant tier + workload weight.
+
+    heavy=True + premium  → Opus     (BC / Brief / Scrum vision)
+    heavy=True + default  → Sonnet
+    heavy=False + premium → Sonnet   (risks / milestones / swimlanes)
+    heavy=False + default → Haiku
+    """
+    premium = bool(getattr(company, "ai_premium_models", False))
+    if heavy:
+        return ANTHROPIC_HEAVY_PREMIUM if premium else ANTHROPIC_HEAVY_DEFAULT
+    return ANTHROPIC_LIGHT_PREMIUM if premium else ANTHROPIC_LIGHT_DEFAULT
 
 
 # =========================================================================
@@ -87,15 +127,17 @@ def _byok_for(company, provider: str) -> bool:
 def call_anthropic(company, system: str, user_prompt: str,
                    max_tokens: int = MAX_TOKENS_SMALL,
                    user_id: Optional[int] = None,
-                   surface: str = "") -> Optional[dict]:
+                   surface: str = "",
+                   heavy: bool = True) -> Optional[dict]:
     try:
         from core.llm_keys import get_anthropic_client
         from core import ai_usage
         client = get_anthropic_client(company)
         if client is None:
             return None
+        model = _resolve_anthropic_model(company, heavy)
         resp = client.messages.create(
-            model=ANTHROPIC_MODEL, max_tokens=max_tokens, system=system,
+            model=model, max_tokens=max_tokens, system=system,
             messages=[{"role": "user", "content": user_prompt}],
         )
         _total = ai_usage.tokens_from_anthropic(resp)
@@ -106,7 +148,7 @@ def call_anthropic(company, system: str, user_prompt: str,
             company_id=getattr(company, "id", None),
             user_id=user_id,
             provider="anthropic",
-            model=ANTHROPIC_MODEL,
+            model=model,
             surface=surface,
             tokens_total=_total,
             tokens_prompt=_prompt,
@@ -168,8 +210,15 @@ def call_openai(company, system: str, user_prompt: str,
 
 def run_llm(user, system: str, user_prompt: str,
             max_tokens: int = MAX_TOKENS_SMALL,
-            surface: str = "") -> Optional[dict]:
+            surface: str = "",
+            heavy: bool = True) -> Optional[dict]:
     """Anthropic → OpenAI ladder. Returns parsed dict or None.
+
+    ``heavy`` tells the resolver whether this draft needs the richer
+    tier (BC / Project Brief / Scrum vision = True) or the cheaper tier
+    (risk-register / milestones / kanban swimlanes = False). The actual
+    model picked also depends on Company.ai_premium_models (opt-in for
+    Opus / Sonnet escalation).
 
     ``surface`` is the AI endpoint label ('business-case-auto-draft',
     'scrum-vision-auto-draft', …) → lands in AIUsageLog.surface so the
@@ -178,7 +227,7 @@ def run_llm(user, system: str, user_prompt: str,
     company = getattr(user, "company", None)
     uid = getattr(user, "id", None)
     parsed = call_anthropic(company, system, user_prompt, max_tokens,
-                            user_id=uid, surface=surface)
+                            user_id=uid, surface=surface, heavy=heavy)
     if parsed is not None:
         return parsed
     return call_openai(company, system, user_prompt, max_tokens,

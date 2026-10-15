@@ -331,6 +331,263 @@ def draft_business_case(project, user, language: str, doc_prefix: str) -> DraftR
 
 
 # =========================================================================
+# Milestones — methodology-agnostic. Produces 4-8 milestones with
+# dates interpolated inside the project period, grounded in deliverables
+# the project documents mention. Persisted on projects.Milestone by the
+# propose_milestones bot tool.
+# =========================================================================
+
+def _milestones_system_prompt() -> str:
+    return (
+        "You produce a project milestone plan from the project context. "
+        "Return STRICT JSON, no markdown, with EXACTLY this shape: "
+        "{\"milestones\": [{\"name\": str, \"description\": str, "
+        "\"start_date\": \"YYYY-MM-DD\", \"end_date\": \"YYYY-MM-DD\"}, …]}. "
+        "Produce 4 to 8 milestones total. Dates MUST fall inside the "
+        "project's start_date and end_date (both passed in the metadata). "
+        "Space the milestones evenly across the period unless the "
+        "uploaded documents suggest a specific cadence. Each name should "
+        "be a concrete deliverable or decision gate (not 'Phase 2' — "
+        "but 'Leidraad + PvE geaccepteerd' for a tender project). "
+        "Order the milestones chronologically by start_date."
+    )
+
+
+def _milestones_fallback(project, lang_meta: dict) -> dict:
+    """Deterministic 4-milestone timeline when no LLM is available."""
+    from datetime import date as _date, timedelta as _td
+    start = project.start_date or _date.today()
+    end = project.end_date or (start + _td(days=90))
+    span = (end - start).days or 90
+    pts = [start + _td(days=int(span * r)) for r in (0.0, 0.33, 0.66, 1.0)]
+    return {
+        "milestones": [
+            {"name": "Kick-off & initiatie",       "description": "", "start_date": pts[0].isoformat(), "end_date": (pts[0] + _td(days=3)).isoformat()},
+            {"name": "Analyse & ontwerp",          "description": "", "start_date": pts[0].isoformat(), "end_date": pts[1].isoformat()},
+            {"name": "Realisatie & test",          "description": "", "start_date": pts[1].isoformat(), "end_date": pts[2].isoformat()},
+            {"name": "Oplevering & afsluiting",    "description": "", "start_date": pts[2].isoformat(), "end_date": pts[3].isoformat()},
+        ]
+    }
+
+
+def draft_milestones(project, user, language: str, doc_prefix: str) -> DraftResult:
+    lm = _lang_meta(language)
+    warnings = _collect_warnings(bool(doc_prefix), lm)
+    system = _milestones_system_prompt()
+    from core.i18n_ai import prepend_language
+    system = prepend_language(system, language)
+    _tail = {
+        "nl": (
+            "Lever nu het mijlpalen JSON (object met \"milestones\" lijst). "
+            "Datums MOETEN tussen de project start_date en end_date vallen; "
+            "houd ze chronologisch. ALLE tekst in de JSON-waarden MOET in "
+            "het Nederlands zijn."
+        ),
+        "fr": (
+            "Produisez maintenant le JSON des jalons (objet avec une liste "
+            "\"milestones\"). Les dates DOIVENT se situer entre start_date "
+            "et end_date du projet; gardez l'ordre chronologique. TOUT en "
+            "français."
+        ),
+        "en": (
+            "Produce the milestones JSON now (object with a \"milestones\" "
+            "list). Dates MUST fall between the project's start_date and "
+            "end_date; keep them chronological. All text in English."
+        ),
+    }.get((language or "nl").lower(), None) or (
+        "Produce the milestones JSON now."
+    )
+    user_prompt = _wrap(doc_prefix, _project_meta(project), _tail)
+    parsed = _run_llm(
+        user, system, user_prompt, _MAX_TOKENS_SMALL,
+        surface="milestones-auto-draft", heavy=False,
+    )
+    # Validator — keep only rows with a valid name + both dates parseable
+    # and inside the project period.
+    from datetime import date as _d
+    def _parse_d(v):
+        try:
+            return _d.fromisoformat(str(v)[:10])
+        except Exception:
+            return None
+    p_start = project.start_date
+    p_end = project.end_date
+    kept = []
+    if isinstance(parsed, dict) and isinstance(parsed.get("milestones"), list):
+        for item in parsed["milestones"][:12]:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            if not name:
+                continue
+            sd = _parse_d(item.get("start_date"))
+            ed = _parse_d(item.get("end_date"))
+            # Snap to project bounds when outside — never silently drop
+            # for being a day off; only drop when both dates unparsable.
+            if sd and p_start and sd < p_start:
+                sd = p_start
+            if ed and p_end and ed > p_end:
+                ed = p_end
+            if not sd and not ed:
+                sd = p_start
+                ed = p_end
+            if sd and ed and sd > ed:
+                sd, ed = ed, sd
+            kept.append({
+                "name": name[:255],
+                "description": str(item.get("description") or "")[:4000],
+                "start_date": sd.isoformat() if sd else None,
+                "end_date": ed.isoformat() if ed else None,
+            })
+    if kept:
+        # Sort chronologically — LLMs sometimes return the wrong order.
+        kept.sort(key=lambda m: (m["start_date"] or "", m["end_date"] or ""))
+        return _finalize({"milestones": kept}, _milestones_fallback(project, lm), warnings, bool(doc_prefix), lm)
+    return _finalize(None, _milestones_fallback(project, lm), warnings, bool(doc_prefix), lm)
+
+
+# =========================================================================
+# Risico-register — methodology-agnostic. Produces 4-8 realistic risks
+# grounded in the uploaded project documents (tender leidraad, PvE,
+# scope) + project metadata. Each risk maps 1-1 to the projects.Risk
+# model so the bot tool can persist them directly.
+# =========================================================================
+
+def _risks_system_prompt() -> str:
+    return (
+        "You draft an initial project risk register from the project "
+        "context. Return STRICT JSON, no markdown, with EXACTLY this "
+        "shape: {\"risks\": [{\"name\": str, \"description\": str, "
+        "\"category\": one of [Technical, Schedule, Financial, "
+        "Operational, Strategic, Compliance], \"probability\": int 0-100, "
+        "\"impact\": one of [High, Medium, Low], \"level\": one of "
+        "[High, Medium, Low]}, …]}. Produce 4 to 8 risks total, each "
+        "with a concrete, project-specific name (not 'Scope creep' in "
+        "general — but 'Nvi-antwoorden Barneveld later dan planning' for "
+        "a Barneveld tender project). Spread categories so the register "
+        "covers more than one risk type. 'level' should reflect the "
+        "combined probability+impact (High when both are high, Low when "
+        "both are low, else Medium)."
+    )
+
+
+def _risks_fallback(project, lang_meta: dict) -> dict:
+    name = (project.name or "project")[:60]
+    return {
+        "risks": [
+            {
+                "name": f"Scope creep op {name}",
+                "description": (
+                    "Zonder expliciet change-controle-regime kunnen "
+                    "aanvullende wensen de planning en het budget "
+                    "verdringen."
+                ),
+                "category": "Scope" if False else "Operational",
+                "probability": 50, "impact": "High", "level": "High",
+            },
+            {
+                "name": "Vertraging door NvI's / verduidelijkingsvragen",
+                "description": (
+                    "Latere Nota's van Inlichtingen of extra "
+                    "klantvragen kunnen deliverables doorschuiven "
+                    "voorbij de deadline."
+                ),
+                "category": "Schedule",
+                "probability": 40, "impact": "Medium", "level": "Medium",
+            },
+            {
+                "name": "Resource-conflict met andere lopende opdrachten",
+                "description": (
+                    "Dezelfde senior-rollen zijn ook op andere projecten "
+                    "ingezet — overlap kan tot kwaliteitsverlies leiden."
+                ),
+                "category": "Operational",
+                "probability": 35, "impact": "Medium", "level": "Medium",
+            },
+            {
+                "name": "Compliance-eisen onderschat",
+                "description": (
+                    "Als specifieke keurmerk-/privacy-eisen pas laat "
+                    "boven water komen, moet de oplossing herontworpen "
+                    "worden."
+                ),
+                "category": "Compliance",
+                "probability": 25, "impact": "High", "level": "Medium",
+            },
+        ]
+    }
+
+
+def draft_risks(project, user, language: str, doc_prefix: str) -> DraftResult:
+    lm = _lang_meta(language)
+    warnings = _collect_warnings(bool(doc_prefix), lm)
+    system = _risks_system_prompt()
+    from core.i18n_ai import prepend_language
+    system = prepend_language(system, language)
+    # Reuse the business_case tail but swap the "register" wording in-line
+    # so NL/EN/FR instructions stay consistent in tone.
+    _tail = {
+        "nl": (
+            "Lever nu het risico-register JSON (object met \"risks\" lijst). "
+            "Baseer namen en beschrijvingen op de geüploade documenten "
+            "wanneer die er zijn — anders op de projectmetadata. ALLE tekst "
+            "in de JSON-waarden MOET in het Nederlands zijn."
+        ),
+        "fr": (
+            "Produisez maintenant le JSON du registre des risques (objet "
+            "avec une liste \"risks\"). Fondez noms et descriptions sur "
+            "les documents téléversés quand ils existent — sinon sur les "
+            "métadonnées du projet. TOUT le texte en français."
+        ),
+        "en": (
+            "Produce the risk register JSON now (object with a \"risks\" "
+            "list). Ground names and descriptions in the uploaded documents "
+            "when available — otherwise in project metadata. All text in "
+            "English."
+        ),
+    }.get((language or "nl").lower(), None) or (
+        "Produce the risk register JSON now."
+    )
+    user_prompt = _wrap(doc_prefix, _project_meta(project), _tail)
+    parsed = _run_llm(
+        user, system, user_prompt, _MAX_TOKENS_SMALL,
+        surface="risk-register-auto-draft", heavy=False,
+    )
+    # Validate the shape — we expect {"risks": [{…}, …]} with at least 1 item.
+    if isinstance(parsed, dict) and isinstance(parsed.get("risks"), list) and parsed["risks"]:
+        kept = []
+        for item in parsed["risks"][:12]:  # hard cap on quantity
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            desc = str(item.get("description") or "").strip()
+            if not name or not desc:
+                continue
+            cat = str(item.get("category") or "Operational").strip()
+            if cat not in {"Technical", "Schedule", "Financial", "Operational", "Strategic", "Compliance"}:
+                cat = "Operational"
+            try:
+                prob = int(item.get("probability") or 0)
+                prob = max(0, min(100, prob))
+            except (TypeError, ValueError):
+                prob = 50
+            impact = str(item.get("impact") or "Medium").title()
+            if impact not in {"High", "Medium", "Low"}:
+                impact = "Medium"
+            level = str(item.get("level") or impact).title()
+            if level not in {"High", "Medium", "Low"}:
+                level = impact
+            kept.append({
+                "name": name[:255], "description": desc,
+                "category": cat, "probability": prob,
+                "impact": impact, "level": level,
+            })
+        if kept:
+            return _finalize({"risks": kept}, _risks_fallback(project, lm), warnings, bool(doc_prefix), lm)
+    return _finalize(None, _risks_fallback(project, lm), warnings, bool(doc_prefix), lm)
+
+
+# =========================================================================
 # S4-02  PRINCE2 Project Brief
 # =========================================================================
 
@@ -517,7 +774,7 @@ def draft_kanban_swimlanes(project, user, language: str, doc_prefix: str) -> Dra
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "kanban")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="kanban-swimlanes-auto-draft")
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="kanban-swimlanes-auto-draft", heavy=False)
     coerced = _coerce_kanban(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _kanban_fallback(lm), warnings, bool(doc_prefix), lm)
 

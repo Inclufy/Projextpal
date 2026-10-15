@@ -44,15 +44,63 @@ def _user_day_key(user_id: int, day: date) -> str:
     return f"ai_usage:user:{user_id}:{day.isoformat()}"
 
 
-def _quota() -> int:
+def _quota(company_id: Optional[int] = None) -> int:
+    """Monthly per-company token quota. Reads the per-tenant override on
+    Company.ai_monthly_token_quota first; falls back to the global
+    settings default when NULL. A tenant value of 0 means 'no quota'
+    for that tenant (returns a very large number so the usual
+    remaining-quota maths keeps working)."""
+    override = _company_override(company_id, "ai_monthly_token_quota")
+    if override is not None:
+        if override == 0:
+            return 10**12  # effectively unlimited for the dashboard maths
+        return int(override)
     return int(getattr(settings, "AI_MONTHLY_TOKEN_QUOTA", 1_000_000))
 
 
-def _user_daily_cap() -> int:
-    """Default: 100k tokens per user per day. At ~15k tokens for a solid
-    BC auto-draft that's ~6 heavy drafts or ~30 Ask Co-pilot turns, which
-    forces the operator to stop and think before another dozen rounds."""
+def _user_daily_cap(user_id: Optional[int] = None) -> int:
+    """Per-user daily token cap. Reads the per-tenant override on
+    Company.ai_user_daily_token_cap first (resolved via user.company_id);
+    falls back to the global settings default when NULL. A tenant value
+    of 0 disables the cap for all users in that tenant.
+
+    Default (no override): 100k tokens per user per day. At ~15k tokens
+    for a solid BC auto-draft that's ~6 heavy drafts or ~30 Ask Co-pilot
+    turns, which forces the operator to stop and think before another
+    dozen rounds."""
+    if user_id:
+        company_id = _company_id_for_user(user_id)
+        override = _company_override(company_id, "ai_user_daily_token_cap")
+        if override is not None:
+            if override == 0:
+                return 0  # 0 means 'disabled' downstream
+            return int(override)
     return int(getattr(settings, "AI_USER_DAILY_TOKEN_CAP", 100_000))
+
+
+def _company_id_for_user(user_id: int) -> Optional[int]:
+    """Cheap lookup of the user's company_id — scoped so we never pull
+    the whole user object into memory just for the FK."""
+    try:
+        from accounts.models import CustomUser
+        return (CustomUser.objects
+                .filter(id=user_id).values_list("company_id", flat=True).first())
+    except Exception:
+        return None
+
+
+def _company_override(company_id: Optional[int], attr: str):
+    """Fetch a single AI-cap override from the Company table. Returns
+    None when no company_id, no row, or the field is NULL. Isolated so
+    one bad import can never kill the quota check path."""
+    if not company_id:
+        return None
+    try:
+        from accounts.models import Company
+        return (Company.objects
+                .filter(id=company_id).values_list(attr, flat=True).first())
+    except Exception:
+        return None
 
 
 def record_user(user_id: Optional[int], tokens: int) -> None:
@@ -89,7 +137,7 @@ def user_cap_exceeded(user_id: Optional[int]) -> bool:
     expensive call that would push the user over the ceiling anyway."""
     if not user_id:
         return False
-    cap = _user_daily_cap()
+    cap = _user_daily_cap(user_id)
     if cap <= 0:
         return False
     try:
@@ -130,14 +178,15 @@ def record_call(
     try:
         from accounts.models import AIUsageLog
         from .ai_cost import estimate_cost_cents
-        # BYOK calls generate NO Inclufy-billable cost (customer pays the
-        # LLM provider directly). Keep cost_cents=0 so the invoice line
-        # aggregator cleanly separates billable vs non-billable rows.
-        cost_cents = 0 if byok else estimate_cost_cents(
+        # BYOK calls: tenant's own provider bills the raw token cost;
+        # Inclufy charges only a service-fee share of the pool list-price
+        # (default 15%). Non-BYOK: full Inclufy-pool list-price.
+        cost_cents = estimate_cost_cents(
             model=model,
             tokens_prompt=tokens_prompt,
             tokens_completion=tokens_completion,
             tokens_total=total,
+            byok=byok,
         )
         AIUsageLog.objects.create(
             company_id=company_id,
@@ -198,7 +247,7 @@ def get_summary(company_id: Optional[int]) -> dict:
       - ``daily_avg_7d`` + ``estimated_days_left`` (op basis van rolling average)
       - ``warn_level``: "ok" | "warning" (<7 dagen) | "critical" (<1 dag)
     """
-    quota = _quota()
+    quota = _quota(company_id)
     if not company_id:
         return {
             "available": False,
