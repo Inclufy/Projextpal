@@ -348,6 +348,7 @@ const AutomationRules = lazyWithRetry(() => import('./pages/admin-portal/Automat
 const AuditLogs = lazyWithRetry(() => import('./pages/admin-portal/AuditLogs'));
 const SystemSettings = lazyWithRetry(() => import('./pages/admin-portal/SystemSettings'));
 const PlanManagement = lazyWithRetry(() => import('@/pages/admin/PlanManagement'));
+const AiBillingPage = lazyWithRetry(() => import("./pages/AiBillingPage"));
 const TwoFactorAuth = lazyWithRetry(() => import("./pages/settings/TwoFactorAuth"));
 const BiometricAuth = lazyWithRetry(() => import("./pages/settings/BiometricAuth"));
 const AdminTrainingManagement = lazyWithRetry(() => import('@/pages/admin-portal/AdminTrainingManagement'));
@@ -1280,6 +1281,7 @@ const App = () => (
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
               <Route path="/skills" element={<ProtectedPage><SkillsCatalog /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
+              <Route path="/settings/ai-billing" element={<ProtectedPage><AiBillingPage /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedPage><TwoFactorAuth /></ProtectedPage>} />
               <Route path="/settings/biometric" element={<ProtectedPage><BiometricAuth /></ProtectedPage>} />
 
