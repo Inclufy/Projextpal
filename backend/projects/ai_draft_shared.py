@@ -62,8 +62,32 @@ def parse_json(raw: str) -> Optional[dict]:
 # LLM ladder
 # =========================================================================
 
+def _byok_for(company, provider: str) -> bool:
+    """True when the company has an active CompanyAIKey for provider.
+
+    Lets the billing-DB-log cleanly separate rows that cost Inclufy money
+    (byok=False) from rows the customer paid their own LLM provider for
+    (byok=True, cost_cents=0 on the AIUsageLog row).
+    """
+    if not company:
+        return False
+    try:
+        key = getattr(company, "ai_key", None)
+    except Exception:
+        return False
+    if not key or not getattr(key, "is_active", False):
+        return False
+    if provider == "openai":
+        return bool(getattr(key, "openai_api_key", ""))
+    if provider == "anthropic":
+        return bool(getattr(key, "anthropic_api_key", ""))
+    return False
+
+
 def call_anthropic(company, system: str, user_prompt: str,
-                   max_tokens: int = MAX_TOKENS_SMALL) -> Optional[dict]:
+                   max_tokens: int = MAX_TOKENS_SMALL,
+                   user_id: Optional[int] = None,
+                   surface: str = "") -> Optional[dict]:
     try:
         from core.llm_keys import get_anthropic_client
         from core import ai_usage
@@ -74,8 +98,21 @@ def call_anthropic(company, system: str, user_prompt: str,
             model=ANTHROPIC_MODEL, max_tokens=max_tokens, system=system,
             messages=[{"role": "user", "content": user_prompt}],
         )
-        ai_usage.record(getattr(company, "id", None),
-                        ai_usage.tokens_from_anthropic(resp), provider="anthropic")
+        _total = ai_usage.tokens_from_anthropic(resp)
+        _usage = getattr(resp, "usage", None)
+        _prompt = int(getattr(_usage, "input_tokens", 0) or 0) if _usage else 0
+        _completion = int(getattr(_usage, "output_tokens", 0) or 0) if _usage else 0
+        ai_usage.record_call(
+            company_id=getattr(company, "id", None),
+            user_id=user_id,
+            provider="anthropic",
+            model=ANTHROPIC_MODEL,
+            surface=surface,
+            tokens_total=_total,
+            tokens_prompt=_prompt,
+            tokens_completion=_completion,
+            byok=_byok_for(company, "anthropic"),
+        )
         raw = "".join(
             b.text for b in resp.content if getattr(b, "type", "") == "text"
         )
@@ -86,7 +123,9 @@ def call_anthropic(company, system: str, user_prompt: str,
 
 
 def call_openai(company, system: str, user_prompt: str,
-                max_tokens: int = MAX_TOKENS_SMALL) -> Optional[dict]:
+                max_tokens: int = MAX_TOKENS_SMALL,
+                user_id: Optional[int] = None,
+                surface: str = "") -> Optional[dict]:
     try:
         from core.llm_keys import get_openai_client
         from core import ai_usage
@@ -105,8 +144,20 @@ def call_openai(company, system: str, user_prompt: str,
         )
         try:
             usage = getattr(resp, "usage", None)
-            total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
-            ai_usage.record(getattr(company, "id", None), total, provider="openai")
+            _total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
+            _prompt = int(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0
+            _completion = int(getattr(usage, "completion_tokens", 0) or 0) if usage else 0
+            ai_usage.record_call(
+                company_id=getattr(company, "id", None),
+                user_id=user_id,
+                provider="openai",
+                model=OPENAI_MODEL,
+                surface=surface,
+                tokens_total=_total,
+                tokens_prompt=_prompt,
+                tokens_completion=_completion,
+                byok=_byok_for(company, "openai"),
+            )
         except Exception:
             pass
         return parse_json(resp.choices[0].message.content or "")
@@ -116,13 +167,22 @@ def call_openai(company, system: str, user_prompt: str,
 
 
 def run_llm(user, system: str, user_prompt: str,
-            max_tokens: int = MAX_TOKENS_SMALL) -> Optional[dict]:
-    """Anthropic → OpenAI ladder. Returns parsed dict or None."""
+            max_tokens: int = MAX_TOKENS_SMALL,
+            surface: str = "") -> Optional[dict]:
+    """Anthropic → OpenAI ladder. Returns parsed dict or None.
+
+    ``surface`` is the AI endpoint label ('business-case-auto-draft',
+    'scrum-vision-auto-draft', …) → lands in AIUsageLog.surface so the
+    billing dashboard can show per-feature breakdown.
+    """
     company = getattr(user, "company", None)
-    parsed = call_anthropic(company, system, user_prompt, max_tokens)
+    uid = getattr(user, "id", None)
+    parsed = call_anthropic(company, system, user_prompt, max_tokens,
+                            user_id=uid, surface=surface)
     if parsed is not None:
         return parsed
-    return call_openai(company, system, user_prompt, max_tokens)
+    return call_openai(company, system, user_prompt, max_tokens,
+                       user_id=uid, surface=surface)
 
 
 # =========================================================================
