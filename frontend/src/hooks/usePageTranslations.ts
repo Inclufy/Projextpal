@@ -3473,6 +3473,9 @@ const translations: Record<string, Record<string, string>> = {
     "Development Costs": "Ontwikkelkosten",
     "Ongoing Costs": "Doorlopende kosten",
     "Investment Appraisal": "Investeringsbeoordeling",
+    "AI is reading your project context…": "AI leest je projectcontext…",
+    "This typically takes 10–30 seconds — the dialog stays open.": "Dit duurt gewoonlijk 10–30 seconden — het venster blijft open.",
+    "No draft yet.": "Nog geen concept.",
   },
   fr: {
     "Cancel": "Annuler", "Save": "Enregistrer", "Delete": "Supprimer", "Edit": "Modifier", "Add": "Ajouter", "Create": "Créer", "Update": "Mettre à jour", "Close": "Fermer", "Back": "Retour", "Next": "Suivant", "Previous": "Précédent", "Submit": "Soumettre", "Confirm": "Confirmer", "Reset": "Réinitialiser", "Refresh": "Actualiser", "Search": "Rechercher", "Filter": "Filtrer", "Export": "Exporter", "Import": "Importer", "Download": "Télécharger", "Upload": "Téléverser", "Loading": "Chargement", "Actions": "Actions", "Details": "Détails", "View All": "Tout voir", "View Details": "Voir les détails", "Show More": "Afficher plus", "Show Less": "Afficher moins", "Select": "Sélectionner", "None": "Aucun", "Yes": "Oui", "No": "Non", "OK": "OK", "Apply": "Appliquer", "Clear": "Effacer", "Copy": "Copier", "Move": "Déplacer", "Archive": "Archiver", "Restore": "Restaurer", "Duplicate": "Dupliquer",
@@ -3600,6 +3603,9 @@ const translations: Record<string, Record<string, string>> = {
     "Development Costs": "Coûts de développement",
     "Ongoing Costs": "Coûts récurrents",
     "Investment Appraisal": "Évaluation de l'investissement",
+    "AI is reading your project context…": "L'IA lit le contexte de votre projet…",
+    "This typically takes 10–30 seconds — the dialog stays open.": "Cela prend généralement 10 à 30 secondes — la boîte de dialogue reste ouverte.",
+    "No draft yet.": "Pas encore de brouillon.",
   }
 };
 
