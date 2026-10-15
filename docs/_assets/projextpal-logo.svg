@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2078 1008" width="2078" height="1008">
+  <title>ProjeXtPal Logo - Light Background</title>
+  
+  <!-- AI Badge (Green) -->
+  <rect fill="#22C55E" y="778" width="215" height="230" rx="30"/>
+  <text x="107" y="920" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="110" font-weight="800">AI</text>
+  
+  <!-- P Letter (Dark) -->
+  <path fill="#1a1a2e" d="M487,0H0V216H487c84,0,152,68,152,152s-68,152-152,152H0V736H487c203,0,368-165,368-368S690,0,487,0Z"/>
+  
+  <!-- X Letter - Outer Parts (Dark) -->
+  <polygon fill="#1a1a2e" points="1656 586 1497 746 1383 631 1337 586 1383 540 1497 426 1656 586"/>
+  <polygon fill="#1a1a2e" points="2078 1008 1759 1008 1542 791 1702 631 2078 1008"/>
+  <polygon fill="#1a1a2e" points="2020 222 1702 540 1542 381 1701 222 2020 222"/>
+  
+  <!-- X Letter - Center (Pink/Magenta) -->
+  <polygon fill="#D946EF" points="1656 586 1235 1008 915 1008 1337 586 973 222 1292 222 1656 586"/>
+</svg>
