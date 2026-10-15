@@ -1372,20 +1372,14 @@ export default function AICopilotSidebar() {
   // Wording stays service-oriented: "Shall I…", "Want me to…" — the
   // copilot offers to do the work, it doesn't demand it.
   // ──────────────────────────────────────────────────────────────────
+  // Scope detection first — the IDs feed both the scope-gaps fetch below
+  // and the suggestions/quick-actions selection further down.
   const urlProjectIdForScope = location.pathname.match(/\/projects\/(\d+)/)?.[1];
   const scopeProjectId = activeProject?.id != null ? String(activeProject.id) : urlProjectIdForScope;
   const urlProgramIdForScope = location.pathname.match(/\/programs\/(\d+)/)?.[1];
   const scopeProgramId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramIdForScope;
-  // activeProject/activeProgram.name is only set when the copilot is opened
-  // via openForProject/openForProgram. When the user hits the sparkle button
-  // in the top bar instead, these are empty — fall back to the name the
-  // scope-gaps endpoint returns (fetchedScopeName) so quick-action labels
-  // and the welcome header still carry the real entity name.
-  const scopeProjectName = activeProject?.name || fetchedScopeName;
-  const scopeProgramName = activeProgram?.name || fetchedScopeName;
   const scopeMethodology = methodologyMatch?.[2] as string | undefined;
   const lang: Lang = language === "nl" || language === "fr" ? language : "en";
-
   // Governance surfaces — UUID in path.
   const uuidRe = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.source;
   const scopePortfolioId = location.pathname.match(new RegExp(`/governance/portfolios/(${uuidRe})`))?.[1];
@@ -1393,40 +1387,11 @@ export default function AICopilotSidebar() {
   const scopeDecisionId = location.pathname.match(new RegExp(`/governance/decisions/(${uuidRe})`))?.[1];
   const scopeMeetingId = location.pathname.match(new RegExp(`/governance/meetings/(${uuidRe})`))?.[1];
 
-  // Precedence: project > program > board > portfolio > default. Decisions
-  // and meetings share the board scope — they are always "about" a board.
-  const scopeKind: "project" | "program" | "board" | "portfolio" | "default" =
-    scopeProjectId ? "project"
-      : scopeProgramId ? "program"
-        : (scopeBoardId || scopeDecisionId || scopeMeetingId) ? "board"
-          : scopePortfolioId ? "portfolio"
-            : "default";
-
-  const suggestions = scopeKind === "project"
-    ? projectBaseSuggestions(lang, scopeProjectName)
-    : scopeKind === "program"
-      ? programSuggestionsData[lang](scopeProgramName)
-      : scopeKind === "board"
-        ? boardScopeSuggestions[lang]
-        : scopeKind === "portfolio"
-          ? portfolioScopeSuggestions[lang]
-          : portfolioSuggestionsData[lang];
-
-  const quickActions = scopeKind === "project"
-    ? ((scopeMethodology && projectMethodologyActions[scopeMethodology])
-        ? projectMethodologyActions[scopeMethodology][lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project"))
-        : projectGenericActions[lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project")))
-    : scopeKind === "program"
-      ? programQuickActionsData[lang](scopeProgramName)
-      : scopeKind === "board"
-        ? boardScopeQuickActions[lang]
-        : scopeKind === "portfolio"
-          ? portfolioScopeQuickActions[lang]
-          : portfolioQuickActionsData[lang];
-
   // Scope-gaps: fetch "what's still missing on this scope" so we can show
   // a dedicated "Ontbreekt nog" section above the suggestions with
   // offer-to-fill buttons that pre-send the fill prompt to the chat.
+  // Must be declared BEFORE scopeProjectName so that fallback reads a
+  // valid binding (TDZ otherwise).
   type ScopeGap = {
     key: string;
     label_nl: string; label_en: string; label_fr: string;
@@ -1475,6 +1440,45 @@ export default function AICopilotSidebar() {
   }, [isOpen, scopeProjectId, scopeProgramId, scopeBoardId, scopePortfolioId]);
   const gapLabel = (g: ScopeGap) => (lang === "nl" ? g.label_nl : lang === "fr" ? g.label_fr : g.label_en);
   const gapPrompt = (g: ScopeGap) => (lang === "nl" ? g.fill_prompt_nl : lang === "fr" ? g.fill_prompt_fr : g.fill_prompt_en);
+
+  // activeProject/activeProgram.name is only set when the copilot is opened
+  // via openForProject/openForProgram. When the user hits the sparkle button
+  // in the top bar instead, these are empty — fall back to the name the
+  // scope-gaps endpoint returned above so quick-action labels and the
+  // welcome header still carry the real entity name.
+  const scopeProjectName = activeProject?.name || fetchedScopeName;
+  const scopeProgramName = activeProgram?.name || fetchedScopeName;
+
+  // Precedence: project > program > board > portfolio > default. Decisions
+  // and meetings share the board scope — they are always "about" a board.
+  const scopeKind: "project" | "program" | "board" | "portfolio" | "default" =
+    scopeProjectId ? "project"
+      : scopeProgramId ? "program"
+        : (scopeBoardId || scopeDecisionId || scopeMeetingId) ? "board"
+          : scopePortfolioId ? "portfolio"
+            : "default";
+
+  const suggestions = scopeKind === "project"
+    ? projectBaseSuggestions(lang, scopeProjectName)
+    : scopeKind === "program"
+      ? programSuggestionsData[lang](scopeProgramName)
+      : scopeKind === "board"
+        ? boardScopeSuggestions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeSuggestions[lang]
+          : portfolioSuggestionsData[lang];
+
+  const quickActions = scopeKind === "project"
+    ? ((scopeMethodology && projectMethodologyActions[scopeMethodology])
+        ? projectMethodologyActions[scopeMethodology][lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project"))
+        : projectGenericActions[lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project")))
+    : scopeKind === "program"
+      ? programQuickActionsData[lang](scopeProgramName)
+      : scopeKind === "board"
+        ? boardScopeQuickActions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeQuickActions[lang]
+          : portfolioQuickActionsData[lang];
 
   // Sprint 5 S5-05 — "Wat zegt de tender over X?" preset questions.
   // Only shown while viewing a project page AND when that project has an
