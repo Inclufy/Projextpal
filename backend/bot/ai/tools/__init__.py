@@ -102,6 +102,7 @@ from . import (
     program_lifecycle_tools,
     business_case_tools,
     risk_register_tools,
+    milestone_draft_tools,
 )
 
 import os
