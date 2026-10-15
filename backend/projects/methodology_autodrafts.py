@@ -55,6 +55,111 @@ from .ai_draft_shared import (
 logger = logging.getLogger(__name__)
 
 
+def _draft_instructions(language: str, kind: str) -> str:
+    """Per-language user-prompt instruction tail.
+
+    The system prompt sets the language directive, but the USER prompt
+    carries the "produce X JSON now" tail. Keeping that tail in English
+    was enough to tilt the model into replying in English — this helper
+    delivers the tail in the user's language so the whole prompt stack
+    agrees on the target language.
+    """
+    lang = (language or "nl").lower()
+    _blocks = {
+        "nl": {
+            "business_case": (
+                "Lever nu de Business Case JSON. Houd beweringen consistent "
+                "met de geüploade documenten (indien aanwezig) en de "
+                "projectmetadata. Verzin geen concrete financiële getallen; "
+                "beschrijf baten kwalitatief. ALLE tekst in de JSON-waarden "
+                "MOET in het Nederlands zijn."
+            ),
+            "project_brief": (
+                "Lever nu de Project Brief JSON. Baseer project_definition en "
+                "project_approach op de geüploade documenten als die er zijn; "
+                "houd de business_case_outline kort (3-4 zinnen). ALLE tekst "
+                "in de JSON-waarden MOET in het Nederlands zijn."
+            ),
+            "scrum": (
+                "Lever nu de Scrum visie + backlog JSON. Gebruik voor backlog-"
+                "items user-story titels (\"Als <rol> kan ik ...\"-stijl) "
+                "wanneer de documenten een gebruiker noemen; anders concrete "
+                "deliverable-titels. ALLE tekst in het Nederlands."
+            ),
+            "kanban": "Lever nu de swimlane JSON. ALLE tekst in het Nederlands.",
+            "lss": "Lever nu de DMAIC Define JSON. ALLE tekst in het Nederlands.",
+            "waterfall": (
+                "Lever nu de Waterfall fases JSON. Gebruik bij voorkeur "
+                "fasenamen en datums die in de projectdocumenten voorkomen; "
+                "interpoleer anders binnen de projectperiode. ALLE tekst in "
+                "het Nederlands."
+            ),
+        },
+        "fr": {
+            "business_case": (
+                "Produisez maintenant le JSON du Business Case. Gardez les "
+                "affirmations cohérentes avec les documents téléversés (le "
+                "cas échéant) et les métadonnées du projet. N'inventez pas "
+                "de montants financiers concrets; décrivez les bénéfices "
+                "qualitativement. TOUT le texte dans les valeurs JSON DOIT "
+                "être en français."
+            ),
+            "project_brief": (
+                "Produisez maintenant le JSON du Project Brief. Fondez "
+                "project_definition et project_approach sur les documents "
+                "téléversés quand ils sont disponibles; gardez "
+                "business_case_outline court (3-4 phrases). TOUT en français."
+            ),
+            "scrum": (
+                "Produisez maintenant le JSON vision + backlog Scrum. Pour "
+                "chaque item, préférez des titres de user-story (\"En tant "
+                "que <rôle>, je peux ...\") quand les documents mentionnent "
+                "un utilisateur; sinon des titres de livrables concrets. "
+                "TOUT le texte en français."
+            ),
+            "kanban": "Produisez maintenant le JSON des swimlanes. TOUT le texte en français.",
+            "lss": "Produisez maintenant le JSON DMAIC Define. TOUT le texte en français.",
+            "waterfall": (
+                "Produisez maintenant le JSON des phases Waterfall. Préférez "
+                "les noms de phases et dates présents dans les documents "
+                "projet quand ils existent; interpolez sinon dans la période "
+                "projet. TOUT le texte en français."
+            ),
+        },
+        "en": {
+            "business_case": (
+                "Produce the Business Case JSON now. Keep claims consistent "
+                "with the uploaded documents (if any) and the project "
+                "metadata. Do not invent concrete financial numbers; narrate "
+                "benefits qualitatively. All text in the JSON values MUST "
+                "be in English."
+            ),
+            "project_brief": (
+                "Produce the Project Brief JSON now. Ground project_definition "
+                "and project_approach in the uploaded documents when "
+                "available; keep the business_case_outline short (3-4 "
+                "sentences). All text MUST be in English."
+            ),
+            "scrum": (
+                "Produce the Scrum vision + backlog JSON now. For each "
+                "backlog item, prefer user-story titles (\"As a <role>, I "
+                "can ...\" style) when the documents mention a user; "
+                "otherwise concrete deliverable titles. All text in English."
+            ),
+            "kanban": "Produce the swimlane JSON now. All text in English.",
+            "lss": "Produce the DMAIC Define JSON now. All text in English.",
+            "waterfall": (
+                "Produce the Waterfall phases JSON now. Prefer phase names "
+                "and dates that appear in the project documents when they "
+                "are present; otherwise interpolate within the project "
+                "period. All text in English."
+            ),
+        },
+    }
+    pack = _blocks.get(lang, _blocks["en"])
+    return pack.get(kind, pack["business_case"])
+
+
 def _project_meta(project) -> dict:
     """Compact fact sheet about the project — fed to the LLM alongside
     the document prefix, so the model knows the project name/dates even
@@ -213,11 +318,7 @@ def draft_business_case(project, user, language: str, doc_prefix: str) -> DraftR
     system = _bc_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = (
-        "Produce the Business Case JSON now. Keep claims consistent with the "
-        "uploaded documents (if any) and the project metadata. Do not invent "
-        "concrete financial numbers; narrate benefits qualitatively."
-    )
+    instructions = _draft_instructions(language, "business_case")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
     # Keep only the known fields, coerce to str so a mis-typed model reply can
@@ -265,11 +366,7 @@ def draft_project_brief(project, user, language: str, doc_prefix: str) -> DraftR
     system = _pb_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = (
-        "Produce the Project Brief JSON now. Ground project_definition and "
-        "project_approach in the uploaded documents when available; keep the "
-        "business_case_outline short (3-4 sentences)."
-    )
+    instructions = _draft_instructions(language, "project_brief")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
     if isinstance(parsed, dict):
@@ -346,11 +443,7 @@ def draft_scrum(project, user, language: str, doc_prefix: str) -> DraftResult:
     system = _scrum_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = (
-        "Produce the Scrum vision + backlog JSON now. For each backlog item, "
-        "prefer user-story titles (\"As a <role>, I can …\" style) when the "
-        "documents mention a user; otherwise concrete deliverable titles."
-    )
+    instructions = _draft_instructions(language, "scrum")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_LARGE)
     coerced = _coerce_scrum(parsed) if isinstance(parsed, dict) else None
@@ -422,7 +515,7 @@ def draft_kanban_swimlanes(project, user, language: str, doc_prefix: str) -> Dra
     system = _kanban_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = "Produce the swimlane JSON now."
+    instructions = _draft_instructions(language, "kanban")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
     coerced = _coerce_kanban(parsed) if isinstance(parsed, dict) else None
@@ -488,7 +581,7 @@ def draft_lss_define(project, user, language: str, doc_prefix: str) -> DraftResu
     system = _lss_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = "Produce the DMAIC Define JSON now."
+    instructions = _draft_instructions(language, "lss")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
     coerced = _coerce_lss(parsed) if isinstance(parsed, dict) else None
@@ -571,11 +664,7 @@ def draft_waterfall_phases(project, user, language: str, doc_prefix: str) -> Dra
     system = _wf_system_prompt()
     from core.i18n_ai import prepend_language
     system = prepend_language(system, language)
-    instructions = (
-        "Produce the Waterfall phases JSON now. Prefer phase names + dates "
-        "that appear in the project documents when they are present; "
-        "otherwise interpolate within the project period."
-    )
+    instructions = _draft_instructions(language, "waterfall")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
     parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
     coerced = _coerce_waterfall(parsed) if isinstance(parsed, dict) else None
