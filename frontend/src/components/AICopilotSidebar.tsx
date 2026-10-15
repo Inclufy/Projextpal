@@ -1376,8 +1376,13 @@ export default function AICopilotSidebar() {
   const scopeProjectId = activeProject?.id != null ? String(activeProject.id) : urlProjectIdForScope;
   const urlProgramIdForScope = location.pathname.match(/\/programs\/(\d+)/)?.[1];
   const scopeProgramId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramIdForScope;
-  const scopeProjectName = activeProject?.name;
-  const scopeProgramName = activeProgram?.name;
+  // activeProject/activeProgram.name is only set when the copilot is opened
+  // via openForProject/openForProgram. When the user hits the sparkle button
+  // in the top bar instead, these are empty — fall back to the name the
+  // scope-gaps endpoint returns (fetchedScopeName) so quick-action labels
+  // and the welcome header still carry the real entity name.
+  const scopeProjectName = activeProject?.name || fetchedScopeName;
+  const scopeProgramName = activeProgram?.name || fetchedScopeName;
   const scopeMethodology = methodologyMatch?.[2] as string | undefined;
   const lang: Lang = language === "nl" || language === "fr" ? language : "en";
 
@@ -1429,6 +1434,12 @@ export default function AICopilotSidebar() {
     fill_prompt_nl: string; fill_prompt_en: string; fill_prompt_fr: string;
   };
   const [scopeGaps, setScopeGaps] = useState<ScopeGap[]>([]);
+  // Scope-name fetched from the same endpoint — makes the welcome header
+  // and the quick-action labels show the real entity name even when the
+  // copilot was opened via the sparkle button in the top bar (which does
+  // not go through openForProject/openForProgram and so leaves
+  // activeProject/activeProgram empty).
+  const [fetchedScopeName, setFetchedScopeName] = useState<string>("");
   useEffect(() => {
     const scopeKey = scopeProjectId ? `project_id=${scopeProjectId}`
       : scopeProgramId ? `program_id=${scopeProgramId}`
@@ -1437,6 +1448,7 @@ export default function AICopilotSidebar() {
       : "";
     if (!scopeKey || !isOpen) {
       setScopeGaps([]);
+      setFetchedScopeName("");
       return;
     }
     let cancel = false;
@@ -1448,9 +1460,15 @@ export default function AICopilotSidebar() {
         });
         if (!r.ok) return;
         const data = await r.json();
-        if (!cancel) setScopeGaps(Array.isArray(data?.gaps) ? data.gaps : []);
+        if (!cancel) {
+          setScopeGaps(Array.isArray(data?.gaps) ? data.gaps : []);
+          setFetchedScopeName(typeof data?.scope_name === "string" ? data.scope_name : "");
+        }
       } catch {
-        if (!cancel) setScopeGaps([]);
+        if (!cancel) {
+          setScopeGaps([]);
+          setFetchedScopeName("");
+        }
       }
     })();
     return () => { cancel = true; };

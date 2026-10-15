@@ -177,7 +177,7 @@ def _project_gaps(project) -> List[Dict[str, Any]]:
 
     # PRINCE2 / methodology-specific — only when methodology is set and matches.
     try:
-        from projects.prince2_models import BusinessCase
+        from prince2.models import BusinessCase
         if (getattr(project, "methodology", "") or "").lower().startswith("prince2"):
             if not BusinessCase.objects.filter(project=project).exists():
                 gaps.append(_gap(
