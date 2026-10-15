@@ -265,20 +265,78 @@ class ChatViewSet(viewsets.ModelViewSet):
                         f"this programme). Do not ask for the programme id.]\n"
                     )
 
-            # Project-wide uploaded-documents context (ProjectAIContext), only
-            # when a project is in scope. The helper does its own tenant check.
+            # Uploaded-documents context from every scope the client passed
+            # in. Each helper does its own tenant check — the caller doesn't
+            # need to pre-filter. Scopes with no uploaded context contribute
+            # nothing. Order mirrors the hierarchy — portfolio (broadest) →
+            # programme → board → project — so the narrower doc appears
+            # closer to the user's message when they overlap.
             ai_docs_context = ""
             ai_context_used = None
             try:
-                from core.ai_context_helpers import get_project_context_details
+                from core.ai_context_helpers import (
+                    get_project_context_details,
+                    get_program_context_prefix,
+                    get_portfolio_context_prefix,
+                    get_board_context_prefix,
+                    get_decision_context_prefix,
+                    get_meeting_context_prefix,
+                )
+                _portfolio_id = request.data.get("portfolio_id")
+                _board_id = request.data.get("board_id")
+                _decision_id = request.data.get("decision_id")
+                _meeting_id = request.data.get("meeting_id")
+                _program_id_for_ctx = request.data.get("program_id")
                 _proj_id_for_ctx = request.data.get("project_id")
+                layered = []
+                if _portfolio_id:
+                    p = get_portfolio_context_prefix(
+                        user_for_context, _portfolio_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _program_id_for_ctx:
+                    p = get_program_context_prefix(
+                        user_for_context, _program_id_for_ctx,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _board_id:
+                    p = get_board_context_prefix(
+                        user_for_context, _board_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _decision_id and not _board_id:
+                    p = get_decision_context_prefix(
+                        user_for_context, _decision_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _meeting_id and not _board_id:
+                    p = get_meeting_context_prefix(
+                        user_for_context, _meeting_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
                 if _proj_id_for_ctx:
                     details = get_project_context_details(
                         user_for_context, _proj_id_for_ctx,
                         language=website_language, surface="copilot",
                     )
-                    ai_docs_context = details.get("prefix", "")
+                    p = details.get("prefix", "")
+                    if p:
+                        layered.append(p)
+                    # Keep the UI chip wired to the project-level context so
+                    # the existing AIContextUsedChip component stays correct.
                     ai_context_used = details.get("used")
+                if layered:
+                    ai_docs_context = "\n\n".join(layered) + "\n\n"
             except Exception:
                 pass
 

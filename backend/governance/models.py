@@ -712,6 +712,53 @@ class FinancialDisclosureAck(models.Model):
         return f"FinancialDisclosureAck(project={self.project_id}, by={self.acknowledged_by_id})"
 
 
+class BoardAIContext(models.Model):
+    """Snapshot of user-uploaded documents treated as background for every
+    AI call tied to this governance board (board papers, mandate, dossier,
+    standing instructions, …).
+
+    Mirrors ``PortfolioAIContext`` but one board scope deeper. Decisions
+    and Meetings do NOT need their own context model: at AI-call time we
+    walk from the Decision/Meeting up to its parent Board and stack this
+    context on top of the board's parent portfolio/program context —
+    board papers are typically what matters at both the decision and the
+    minutes level.
+
+    OneToOne so parallel branches don't collide on ``GovernanceBoard``.
+    """
+
+    MAX_TEXT = 50_000
+
+    board = models.OneToOneField(
+        GovernanceBoard, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = EncryptedTextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "Optional per-document ``enabled`` flag (default True) hides "
+                  "a single document from AI context without removing it.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Board AI Context'
+
+    def __str__(self):
+        return f"AI-context<board={self.board_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)
+
+
 class PortfolioAIContext(models.Model):
     """Snapshot van door de gebruiker geüploade documenten die als context
     gelden voor élke AI-call op dit portfolio (Portfolio AI-advisor, portfolio-

@@ -15,7 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Portfolio, PortfolioAIContext
+from .models import Portfolio, PortfolioAIContext, GovernanceBoard, BoardAIContext
 
 
 MAX_FILES = 20
@@ -36,7 +36,33 @@ def _get_portfolio(request, pk):
     return Portfolio.objects.filter(id=pk, company=company).first()
 
 
-def _serialize(aic: PortfolioAIContext | None) -> dict:
+def _get_board(request, pk):
+    """Fetch a board the user is allowed to see — same tenant-isolation
+    rules as ``_get_portfolio``. A board inherits its tenant from its
+    parent portfolio/programme/project (whichever is set), so we filter
+    through those FKs."""
+    user = request.user
+    if not user or not getattr(user, "is_authenticated", False):
+        return None
+    qs = GovernanceBoard.objects.filter(id=pk)
+    role = getattr(user, "role", None)
+    if role == "superadmin" or getattr(user, "is_superuser", False):
+        return qs.first()
+    company = getattr(user, "company", None)
+    if not company:
+        return None
+    # Boards live under portfolio / programme / project — accept the board
+    # as long as any of those parents is in the user's company.
+    from django.db.models import Q
+    scoped = qs.filter(
+        Q(portfolio__company=company)
+        | Q(program__company=company)
+        | Q(project__company=company)
+    )
+    return scoped.first()
+
+
+def _serialize(aic: PortfolioAIContext | BoardAIContext | None) -> dict:
     if aic is None:
         return {
             "exists": False,
@@ -129,6 +155,72 @@ def portfolio_ai_context(request, pk):
     if aic is None:
         aic = PortfolioAIContext.objects.create(
             portfolio=portfolio,
+            extracted_text=text,
+            source_files=source_files,
+            enabled=enabled,
+        )
+    else:
+        if text:
+            aic.extracted_text = text
+        if source_files:
+            aic.source_files = source_files
+        aic.enabled = enabled
+        aic.save()
+
+    return Response(_serialize(aic))
+
+
+@api_view(["GET", "POST", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
+def board_ai_context(request, pk):
+    """Read or (over)write the board's uploaded-documents context.
+
+    Decisions + Meetings do not have their own endpoint — AI calls that
+    target them resolve the parent board and read this context (see
+    ``core.ai_context_helpers.get_board_context_prefix``).
+    """
+    board = _get_board(request, pk)
+    if not board:
+        return Response(
+            {"detail": "Board niet gevonden of niet toegankelijk."},
+            status=404,
+        )
+
+    aic = BoardAIContext.objects.filter(board=board).first()
+
+    if request.method == "GET":
+        return Response(_serialize(aic))
+
+    if request.method == "DELETE":
+        confirm = (request.data or {}).get("confirm") is True
+        if not confirm:
+            return Response(
+                {"detail": "Confirmation required.", "hint": "POST {\"confirm\": true}"},
+                status=400,
+            )
+        if aic is not None:
+            aic.delete()
+        return Response({"deleted": True, "board_id": str(board.id)})
+
+    data = request.data or {}
+
+    if request.method == "PATCH":
+        if aic is None:
+            return Response({"detail": "No AI context to patch."}, status=404)
+        if "source_files" in data:
+            aic.source_files = _normalize_source_files(data.get("source_files"))
+        if "enabled" in data:
+            aic.enabled = bool(data.get("enabled"))
+        aic.save()
+        return Response(_serialize(aic))
+
+    text = str(data.get("extracted_text") or "")[: BoardAIContext.MAX_TEXT]
+    enabled = bool(data.get("enabled", True))
+    source_files = _normalize_source_files(data.get("source_files") or [])
+
+    if aic is None:
+        aic = BoardAIContext.objects.create(
+            board=board,
             extracted_text=text,
             source_files=source_files,
             enabled=enabled,

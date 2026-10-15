@@ -991,6 +991,82 @@ const portfolioQuickActionsData = {
   ],
 };
 
+/* Portfolio scope — shown when inside /governance/portfolios/:id. */
+const portfolioScopeSuggestions = {
+  en: [
+    { icon: TrendingUp, title: "Shall I prepare a portfolio review?", description: "I'll compile performance, delivery and risk signals across every component — ready for a board slide." },
+    { icon: AlertTriangle, title: "Want me to compare components?", description: "I'll rank your programmes and projects by health, spend and benefits realised so you can see outliers." },
+    { icon: FileText, title: "Draft a strategic update for the board?", description: "I'll turn the portfolio's current state into a one-page update aligned to the uploaded strategy docs." },
+  ],
+  nl: [
+    { icon: TrendingUp, title: "Zal ik een portfolio-review voorbereiden?", description: "Ik stel prestatie-, levering- en risicosignalen over alle componenten samen — klaar voor een board-slide." },
+    { icon: AlertTriangle, title: "Wil je dat ik componenten vergelijk?", description: "Ik rangschik je programma's en projecten op gezondheid, uitgaven en gerealiseerde baten zodat je uitschieters ziet." },
+    { icon: FileText, title: "Zal ik een strategische update voor de board opstellen?", description: "Ik vertaal de huidige portfoliostand naar een één-pagina update, in lijn met de geüploade strategiedocumenten." },
+  ],
+  fr: [
+    { icon: TrendingUp, title: "Dois-je préparer une revue de portefeuille ?", description: "Je compile les signaux de performance, livraison et risque sur chaque composant — prêt pour une slide de comité." },
+    { icon: AlertTriangle, title: "Voulez-vous que je compare les composants ?", description: "Je classe vos programmes et projets par santé, dépense et bénéfices réalisés pour voir les écarts." },
+    { icon: FileText, title: "Dois-je rédiger une mise à jour stratégique pour le comité ?", description: "Je traduis l'état actuel du portefeuille en une page alignée aux documents stratégiques téléversés." },
+  ],
+};
+
+const portfolioScopeQuickActions = {
+  en: [
+    { icon: BarChart3, label: "Shall I prioritise components by value?" },
+    { icon: Target, label: "Review the investment allocation for me?" },
+    { icon: AlertTriangle, label: "Run a portfolio-level risk scan" },
+  ],
+  nl: [
+    { icon: BarChart3, label: "Zal ik componenten prioriteren op waarde?" },
+    { icon: Target, label: "Wil je dat ik de investeringsallocatie herzie?" },
+    { icon: AlertTriangle, label: "Voer een portfolio-brede risico-scan uit" },
+  ],
+  fr: [
+    { icon: BarChart3, label: "Dois-je prioriser les composants par valeur ?" },
+    { icon: Target, label: "Voulez-vous que je revoie l'allocation d'investissement ?" },
+    { icon: AlertTriangle, label: "Lancez une analyse des risques au niveau portefeuille" },
+  ],
+};
+
+/* Board scope — shown when inside /governance/boards/:id. The same set
+   also covers Decision and Meeting detail pages (they inherit the board's
+   suggestions since those entities almost always point back to a board). */
+const boardScopeSuggestions = {
+  en: [
+    { icon: Calendar, title: "Shall I prepare the next board agenda?", description: "I'll draft an agenda from the pending decisions, open actions and the standing-papers you've uploaded." },
+    { icon: AlertTriangle, title: "Want me to list open board decisions?", description: "I'll gather every decision still awaiting a vote or an outcome, with the required quorum and current approvals." },
+    { icon: FileText, title: "Draft a briefing note for the chair?", description: "I'll turn the papers + current state into a one-pager that briefs the chair before the meeting." },
+  ],
+  nl: [
+    { icon: Calendar, title: "Zal ik de volgende boardagenda voorbereiden?", description: "Ik stel een agenda op uit de openstaande besluiten, acties en de door jou geüploade standing papers." },
+    { icon: AlertTriangle, title: "Wil je dat ik de openstaande board-besluiten toon?", description: "Ik verzamel elk besluit dat nog op een stem of uitkomst wacht, met vereist quorum en huidige fiatteringen." },
+    { icon: FileText, title: "Zal ik een briefingnotitie voor de voorzitter opstellen?", description: "Ik vertaal de papers + huidige stand in een één-pagina briefing voor de voorzitter vóór de meeting." },
+  ],
+  fr: [
+    { icon: Calendar, title: "Dois-je préparer l'ordre du jour du prochain comité ?", description: "Je rédige l'ordre du jour à partir des décisions en attente, des actions ouvertes et des documents permanents téléversés." },
+    { icon: AlertTriangle, title: "Voulez-vous que je liste les décisions ouvertes ?", description: "Je rassemble chaque décision en attente d'un vote ou d'un résultat, avec le quorum requis et les approbations actuelles." },
+    { icon: FileText, title: "Dois-je rédiger une note de briefing pour le président ?", description: "Je traduis les documents + l'état actuel en une page de briefing pour le président avant la réunion." },
+  ],
+};
+
+const boardScopeQuickActions = {
+  en: [
+    { icon: Users, label: "Shall I summarise the last meeting's minutes?" },
+    { icon: CheckCircle2, label: "Update the open action items for me?" },
+    { icon: FileText, label: "Draft a stakeholder update after this board" },
+  ],
+  nl: [
+    { icon: Users, label: "Zal ik de notulen van de laatste meeting samenvatten?" },
+    { icon: CheckCircle2, label: "Wil je dat ik de openstaande acties bijwerk?" },
+    { icon: FileText, label: "Stel een stakeholderupdate op na deze board" },
+  ],
+  fr: [
+    { icon: Users, label: "Dois-je résumer les minutes de la dernière réunion ?" },
+    { icon: CheckCircle2, label: "Voulez-vous que je mette à jour les actions ouvertes ?" },
+    { icon: FileText, label: "Rédigez une mise à jour pour les parties prenantes après ce comité" },
+  ],
+};
+
 /* Programme-level scope — shown when inside /programs/:id. */
 const programSuggestionsData = {
   en: (name?: string) => [
@@ -1305,14 +1381,31 @@ export default function AICopilotSidebar() {
   const scopeMethodology = methodologyMatch?.[2] as string | undefined;
   const lang: Lang = language === "nl" || language === "fr" ? language : "en";
 
-  const scopeKind: "project" | "program" | "portfolio" =
-    scopeProjectId ? "project" : scopeProgramId ? "program" : "portfolio";
+  // Governance surfaces — UUID in path.
+  const uuidRe = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.source;
+  const scopePortfolioId = location.pathname.match(new RegExp(`/governance/portfolios/(${uuidRe})`))?.[1];
+  const scopeBoardId = location.pathname.match(new RegExp(`/governance/boards/(${uuidRe})`))?.[1];
+  const scopeDecisionId = location.pathname.match(new RegExp(`/governance/decisions/(${uuidRe})`))?.[1];
+  const scopeMeetingId = location.pathname.match(new RegExp(`/governance/meetings/(${uuidRe})`))?.[1];
+
+  // Precedence: project > program > board > portfolio > default. Decisions
+  // and meetings share the board scope — they are always "about" a board.
+  const scopeKind: "project" | "program" | "board" | "portfolio" | "default" =
+    scopeProjectId ? "project"
+      : scopeProgramId ? "program"
+        : (scopeBoardId || scopeDecisionId || scopeMeetingId) ? "board"
+          : scopePortfolioId ? "portfolio"
+            : "default";
 
   const suggestions = scopeKind === "project"
     ? projectBaseSuggestions(lang, scopeProjectName)
     : scopeKind === "program"
       ? programSuggestionsData[lang](scopeProgramName)
-      : portfolioSuggestionsData[lang];
+      : scopeKind === "board"
+        ? boardScopeSuggestions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeSuggestions[lang]
+          : portfolioSuggestionsData[lang];
 
   const quickActions = scopeKind === "project"
     ? ((scopeMethodology && projectMethodologyActions[scopeMethodology])
@@ -1320,7 +1413,50 @@ export default function AICopilotSidebar() {
         : projectGenericActions[lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project")))
     : scopeKind === "program"
       ? programQuickActionsData[lang](scopeProgramName)
-      : portfolioQuickActionsData[lang];
+      : scopeKind === "board"
+        ? boardScopeQuickActions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeQuickActions[lang]
+          : portfolioQuickActionsData[lang];
+
+  // Scope-gaps: fetch "what's still missing on this scope" so we can show
+  // a dedicated "Ontbreekt nog" section above the suggestions with
+  // offer-to-fill buttons that pre-send the fill prompt to the chat.
+  type ScopeGap = {
+    key: string;
+    label_nl: string; label_en: string; label_fr: string;
+    deep_link?: string;
+    fill_prompt_nl: string; fill_prompt_en: string; fill_prompt_fr: string;
+  };
+  const [scopeGaps, setScopeGaps] = useState<ScopeGap[]>([]);
+  useEffect(() => {
+    const scopeKey = scopeProjectId ? `project_id=${scopeProjectId}`
+      : scopeProgramId ? `program_id=${scopeProgramId}`
+      : scopeBoardId ? `board_id=${scopeBoardId}`
+      : scopePortfolioId ? `portfolio_id=${scopePortfolioId}`
+      : "";
+    if (!scopeKey || !isOpen) {
+      setScopeGaps([]);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const r = await fetch(`/api/v1/ai/scope-gaps/?${scopeKey}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!cancel) setScopeGaps(Array.isArray(data?.gaps) ? data.gaps : []);
+      } catch {
+        if (!cancel) setScopeGaps([]);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [isOpen, scopeProjectId, scopeProgramId, scopeBoardId, scopePortfolioId]);
+  const gapLabel = (g: ScopeGap) => (lang === "nl" ? g.label_nl : lang === "fr" ? g.label_fr : g.label_en);
+  const gapPrompt = (g: ScopeGap) => (lang === "nl" ? g.fill_prompt_nl : lang === "fr" ? g.fill_prompt_fr : g.fill_prompt_en);
 
   // Sprint 5 S5-05 — "Wat zegt de tender over X?" preset questions.
   // Only shown while viewing a project page AND when that project has an
@@ -1446,11 +1582,25 @@ export default function AICopilotSidebar() {
       // to the programme in the current URL (/programs/:id).
       const urlProgramId = window.location.pathname.match(/\/programs\/(\d+)/)?.[1];
       const programId = activeProgram?.id != null ? String(activeProgram.id) : urlProgramId;
+      // Governance scopes — their IDs are UUIDs so we loosen the regex.
+      // Board URL also matters for Decisions / Meetings when they are
+      // opened from the board detail; the backend stacks board context
+      // automatically for decision_id/meeting_id too, but passing both
+      // is cheaper than one extra DB hop.
+      const uuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+      const portfolioId = window.location.pathname.match(new RegExp(`/governance/portfolios/(${uuid})`))?.[1];
+      const boardId = window.location.pathname.match(new RegExp(`/governance/boards/(${uuid})`))?.[1];
+      const decisionId = window.location.pathname.match(new RegExp(`/governance/decisions/(${uuid})`))?.[1];
+      const meetingId = window.location.pathname.match(new RegExp(`/governance/meetings/(${uuid})`))?.[1];
       const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
         message: messageContent,
         language,
         ...(projectId ? { project_id: projectId } : {}),
         ...(programId ? { program_id: programId } : {}),
+        ...(portfolioId ? { portfolio_id: portfolioId } : {}),
+        ...(boardId ? { board_id: boardId } : {}),
+        ...(decisionId ? { decision_id: decisionId } : {}),
+        ...(meetingId ? { meeting_id: meetingId } : {}),
       });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {
@@ -1781,16 +1931,49 @@ export default function AICopilotSidebar() {
                                 : language === "fr"
                                   ? `Bonjour ! Comment puis-je vous aider sur ${scopeProgramName || "ce programme"} ?`
                                   : `Hi! How can I help you on ${scopeProgramName || "this programme"}?`)
-                            : (isNl ? "Hallo! Waar kan ik je vandaag mee helpen?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider aujourd'hui ?" : "Hi! How can I help you today?")}
+                            : scopeKind === "board"
+                              ? (isNl ? "Hallo! Waar kan ik je mee helpen bij deze board?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider sur ce comité ?" : "Hi! How can I help you on this board?")
+                              : scopeKind === "portfolio"
+                                ? (isNl ? "Hallo! Waar kan ik je mee helpen op dit portfolio?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider sur ce portefeuille ?" : "Hi! How can I help you on this portfolio?")
+                                : (isNl ? "Hallo! Waar kan ik je vandaag mee helpen?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider aujourd'hui ?" : "Hi! How can I help you today?")}
                       </h3>
                       <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
                         {scopeKind === "project"
                           ? (isNl ? "Ik neem routinewerk graag van je over — stel een vraag of pak een snelle actie." : language === "fr" ? "Je prends volontiers le travail de routine en charge — posez une question ou lancez une action rapide." : "I'll gladly take routine work off your plate — ask a question or pick a quick action.")
                           : scopeKind === "program"
                             ? (isNl ? "Ik rol status en risico's op uit je projecten en help je het programma te sturen." : language === "fr" ? "Je consolide statut et risques depuis vos projets et vous aide à piloter le programme." : "I roll up status and risks from your projects and help you steer the programme.")
-                            : (isNl ? "Ik help je met overzicht over je projecten en programma's — en neem routinewerk van je over." : language === "fr" ? "Je vous aide avec une vue sur vos projets et programmes — et prends le travail de routine en charge." : "I help you with insights across your projects and programmes — and take routine work off your plate.")}
+                            : scopeKind === "board"
+                              ? (isNl ? "Ik bereid agenda's voor, hou openstaande besluiten en acties bij, en vat notulen samen." : language === "fr" ? "Je prépare les ordres du jour, suis les décisions et actions ouvertes et résume les minutes." : "I prepare agendas, track open decisions and actions, and summarise minutes.")
+                              : scopeKind === "portfolio"
+                                ? (isNl ? "Ik vergelijk je componenten, help prioriteren en stel strategische updates op." : language === "fr" ? "Je compare vos composants, aide à prioriser et rédige des mises à jour stratégiques." : "I compare your components, help prioritise and draft strategic updates.")
+                                : (isNl ? "Ik help je met overzicht over je projecten en programma's — en neem routinewerk van je over." : language === "fr" ? "Je vous aide avec une vue sur vos projets et programmes — et prends le travail de routine en charge." : "I help you with insights across your projects and programmes — and take routine work off your plate.")}
                       </p>
                     </div>
+                    {scopeGaps.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          {isNl ? "Ontbreekt nog — zal ik voor je invullen?" : language === "fr" ? "Encore manquant — dois-je les remplir pour vous ?" : "Still missing — shall I fill these in?"}
+                        </p>
+                        <div className="space-y-1.5">
+                          {scopeGaps.slice(0, 6).map((g) => (
+                            <button
+                              key={g.key}
+                              onClick={() => handleSendMessage(gapPrompt(g))}
+                              className="w-full flex items-start gap-3 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-all text-left group"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <AlertTriangle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground">{gapLabel(g)}</p>
+                                <p className="text-[10px] text-muted-foreground line-clamp-2 italic">{gapPrompt(g)}</p>
+                              </div>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-amber-700 transition-colors mt-1 flex-shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {projectIdForPresets && tenderContextEnabled && (
                       <div>
                         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">

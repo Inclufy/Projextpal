@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import MeetingActionsPanel from "@/components/governance/MeetingActionsPanel";
+import AIContextUpload from "@/components/AIContextUpload";
 
 interface Board {
   id: string;
@@ -396,6 +397,20 @@ const BoardDetail: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* BoardAIContext upload surface — mirrors PortfolioDetail.
+          Decisions and Meetings on this board inherit this context, so
+          this is the single place the chair uploads board papers,
+          mandate, dossier and standing instructions. */}
+      {id && (
+        <AIContextUpload
+          endpoint={`/api/v1/governance/boards/${id}/ai-context/`}
+          title={pt("Board documents (AI context)")}
+          description={pt(
+            "Upload board papers, mandate, standing instructions or the dossier. The AI uses these documents as context for every call on this board — meeting agenda drafts, briefing notes, minutes summaries, decision write-ups — and automatically for every decision and meeting under it.",
+          )}
+        />
+      )}
 
       {/* Members panel — preserved. Names clickable to the user (no profile
           page in scope yet) — left as plain text but visually consistent. */}

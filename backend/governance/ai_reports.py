@@ -205,11 +205,30 @@ Company: {company_name}
 }
 
 
-def generate_report(report_id, context_data, company=None, language="nl"):
+def generate_report(
+    report_id,
+    context_data,
+    company=None,
+    language="nl",
+    *,
+    user=None,
+    portfolio_id=None,
+    board_id=None,
+    program_id=None,
+    project_id=None,
+    surface: str = "governance-report",
+):
     """Generate an AI report based on report type and context data.
 
     ``language`` is a 2-letter UI language code (nl/en/fr) that forces the
     LLM to answer in the user's chosen language. Falls back to Dutch.
+
+    When any of ``portfolio_id`` / ``board_id`` / ``program_id`` /
+    ``project_id`` are passed we stack their uploaded-document context on
+    top of the system prompt so the report reflects the actual papers of
+    the scope it covers — not just whatever ChatGPT knows about the
+    tenant. Scopes with no uploaded context contribute nothing (empty
+    string), so this is additive and safe for ecosystem-wide reports.
     """
     from core.i18n_ai import prepend_language
 
@@ -241,6 +260,40 @@ def generate_report(report_id, context_data, company=None, language="nl"):
         # on a 2026 report).
         system_prompt = prepend_language(prompt_config["system"], language)
         system_prompt = f"{_today_directive()}\n\n{system_prompt}"
+
+        # Stack uploaded-document context from every scope the caller
+        # passed in. Order matters: portfolio (broadest) → programme →
+        # board → project (narrowest) so the LLM sees the hierarchy
+        # from top to bottom and the narrower doc wins when they conflict.
+        # Each prefix is "" when the scope has no uploaded context.
+        try:
+            from core.ai_context_helpers import (
+                get_portfolio_context_prefix,
+                get_program_context_prefix,
+                get_board_context_prefix,
+                get_project_context_prefix,
+            )
+            prefixes = []
+            if portfolio_id:
+                p = get_portfolio_context_prefix(user, portfolio_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if program_id:
+                p = get_program_context_prefix(user, program_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if board_id:
+                p = get_board_context_prefix(user, board_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if project_id:
+                p = get_project_context_prefix(user, project_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if prefixes:
+                system_prompt = "\n\n".join(prefixes) + "\n\n" + system_prompt
+        except Exception:  # context stacking must never crash the report
+            pass
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", prompt_config["human"]),

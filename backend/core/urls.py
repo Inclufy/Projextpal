@@ -8,6 +8,7 @@ from core.compliance_views import compliance_posture
 from core.status_views import system_status
 from core.ai_usage_views import ai_usage_summary
 from core.ai_billing_views import ai_billing_summary
+from core.ai_scope_gaps_views import scope_gaps
 from subscriptions.public_api import PublicPlansView
 from subscriptions.pricing_catalog_view import PricingCatalogView
 from drf_spectacular.views import (
@@ -33,6 +34,7 @@ urlpatterns = [
     # Rolling AI-token verbruiksoverzicht (voor de topbar-pill + warnings).
     path("api/v1/ai/usage/", ai_usage_summary, name="ai-usage-summary"),
     path("api/v1/ai/billing/summary/", ai_billing_summary, name="ai-billing-summary"),
+    path("api/v1/ai/scope-gaps/", scope_gaps, name="ai-scope-gaps"),
 
     # Auth
     path("api/v1/auth/", include("accounts.urls")),
