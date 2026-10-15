@@ -15,7 +15,7 @@ Deze prijslijst combineert twee facturen die klanten normaal in één contract w
 | **Starter** | € 25 | geen pool (pay per use) | Teams tot 10, projecten in Agile/Kanban/Waterfall, geen AI-automatisering |
 | **Professional** | € 49 | 50.000 / gebr. / mnd | Standaard PM-teams, incl. AI-notulen, Gantt, document-generatie |
 | **Business** | € 79 | 200.000 / gebr. / mnd | Portfolio-management, multi-workspace, advanced analytics, standaard integraties |
-| **Enterprise** | € 120 | BYOK standaard (15% service-fee) | Zorg/overheid/financieel met SSO, GDPR-exports, DPO-support, SLA 99.9% |
+| **Enterprise** | € 120 | BYOK standaard (15% service-fee) + **premium model-tier (Claude Opus)** | Zorg/overheid/financieel met SSO, GDPR-exports, DPO-support, SLA 99.9%, kwaliteitsgarantie op top-tier modellen |
 
 **Jaarlijks vooruit betaald:** 10% korting over de licentie-component. Bijvoorbeeld Professional wordt dan € 44 per gebruiker per maand (jaarbetaling), of een jaar vooruit € 528 per gebruiker.
 
@@ -64,6 +64,39 @@ Vanaf Business plan, standaard op Enterprise. Je stelt je eigen AI-key van OpenA
 - Data-residency voordeel: tokens gaan direct van jouw infrastructuur naar jouw gekozen provider.
 
 **Voorbeeld:** een PRINCE2 Business Case kost op Inclufy-pool € 0,27. Op BYOK: € 0,04 service-fee bij Inclufy, plus de rauwe provider-rekening direct bij jou.
+
+---
+
+## 4a. Model-tier (welk AI-model gebruikt jouw plan precies?)
+
+Niet elk AI-model is even duur, en niet elke taak heeft het duurste model nodig. ProjeXtPal kiest automatisch het passende model per actie en per plan. Twee tiers:
+
+### Standaard tier (Starter, Professional, Business)
+
+| Workload | Model | Waarom |
+|---|---|---|
+| Zware drafts (Business Case, Project Brief, Scrum vision, LSS Define, Waterfall-fasen) | **Claude Sonnet 5** | Beste prijs/kwaliteit verhouding; ~95% van de kwaliteit van het top-tier model op gestructureerde JSON-drafts, voor 20% van de inkoop. |
+| Lichte drafts (risico-register, mijlpalen, Kanban-swimlanes) | **Claude Haiku 4.5** | Snel + goedkoop; perfect voor compacte lijsten met vaste schema. |
+| Ask Co-pilot gesprekken | **GPT-4o-mini** | Snelste response voor conversaties die interactief moeten voelen. |
+| Fallback bij provider-storing | **GPT-4o-mini** | Zorgt dat je nooit zonder antwoord zit, zelfs als één provider uitvalt. |
+
+Deze tier houdt jouw AI-kosten laag en voorkomt dat de 50.000 of 200.000 tokens uit jouw pool worden "opgegeten" door zware drafts die ook kleiner konden.
+
+### Premium tier (Enterprise)
+
+Enterprise-klanten krijgen standaard toegang tot het **premium model-tier**: alles schuift één niveau op naar het beste model dat op dat moment beschikbaar is.
+
+| Workload | Model op Enterprise | Verschil met standaard |
+|---|---|---|
+| Zware drafts | **Claude Opus 4.7** | Top-tier reasoning voor contracten, aanbestedingen en board-level documenten die 100% kloppen moeten zijn. |
+| Lichte drafts | **Claude Sonnet 5** | Richer context, langere coherente lijsten. |
+| Ask Co-pilot | **GPT-4o** | Groter contextvenster, scherpere beredenering. |
+
+Dit is onderdeel van je Enterprise-licentie (€ 120/gebr./mnd), geen aparte add-on. Zorg-, overheid- en financiële klanten kiezen Enterprise vaak juist om deze kwaliteitsgarantie: elk auto-gegenereerd document dat later audit-ready moet zijn draait op het beste beschikbare model.
+
+### Opt-in tussentijds
+
+Zit je op Business en wil je incidenteel Opus-kwaliteit voor één specifieke klant-case? Een Inclufy-beheerder kan **de premium tier tenant-specifiek aanzetten** zonder plan-wijziging (op kostprijs-basis bijgefactureerd). Vraag ernaar via sales@inclufy.com.
 
 ---
 
@@ -131,9 +164,9 @@ Multi-methodology werkplek, standaard-setup. Consultants kiezen per klant-opdrac
 
 Jaarbudget: € 23.700. Met jaarbetaling korting: ongeveer € 21.330.
 
-### Voorbeeld C, zorginstelling 50 gebruikers op Enterprise (BYOK)
+### Voorbeeld C, zorginstelling 50 gebruikers op Enterprise (BYOK + premium Opus)
 
-Enterprise met compliance-eisen, inclusief officiële PRINCE2-templates voor certificeringsaudits.
+Enterprise met compliance-eisen, inclusief premium model-tier (Opus voor zware drafts) en officiële PRINCE2-templates voor certificeringsaudits.
 
 | Component | Berekening | Per maand |
 |---|---|---|
@@ -185,7 +218,7 @@ Snelle beslissingsboom:
 | Minder dan 10 gebruikers, geen AI-automatisering nodig | **Starter** (€ 25/gebr.) |
 | Standaard PM-team, gematigd AI-gebruik, methodiek PRINCE2/Agile/Scrum | **Professional** (€ 49/gebr.) + PRINCE2 module |
 | 20+ gebruikers, portfolio-overzicht nodig, intensief AI-gebruik | **Business** (€ 79/gebr.) + evt. BYOK |
-| Zorg / overheid / financieel, SSO, audit-log retention, DPO-support | **Enterprise** (€ 120/gebr.) + Compliance pakket |
+| Zorg / overheid / financieel, SSO, audit-log retention, DPO-support, kwaliteitsgarantie op top-tier modellen (Opus) | **Enterprise** (€ 120/gebr.) + Compliance pakket |
 | Multi-programma portfolio-sturing | elk plan + **MSP module** (€ 149/org.) |
 | Procesverbetering met DMAIC | elk plan + **LSS module** (€ 99/org.) |
 
