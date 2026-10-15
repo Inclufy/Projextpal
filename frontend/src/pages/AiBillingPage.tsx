@@ -1,12 +1,13 @@
 // =============================================================================
 // AiBillingPage — per-tenant AI usage + billing overview.
 //
-// Twee lezer-contexten:
-//   * BYOK-tenant → "jouw tokens, jouw rekening — gewoon een overzicht"
-//     geen cost-cijfer, alleen token-metrics (dollar-equivalent kan de
-//     tenant zelf bij hun provider zien).
-//   * Inclufy-pool tenant → "deze kosten landen volgende maand op je
-//     factuur via Finance" — toont EUR-cent kolom + banner.
+// Twee tiers op dezelfde factuur:
+//   * BYOK-tenant → jouw provider rekent het ruwe token-verbruik; Inclufy
+//     rekent een service-fee (default 15% van de lijstprijs) voor het
+//     draaien van de infrastructuur (audit, dashboard, isolatie, support).
+//   * Inclufy-pool tenant → volle lijstprijs, direct door Inclufy op je
+//     Finance-factuur gezet.
+// Beide tiers tonen een € kolom; het verschil zit in het bedrag.
 //
 // Mount in App.tsx als /settings/ai-billing (any authenticated user ziet
 // zijn eigen company; superuser kan via ?company=<id> cross-tenant).
@@ -23,10 +24,13 @@ import { ProjectHeader } from "@/components/ProjectHeader";  // no-op without /:
 interface Summary {
   company_id: number;
   byok: boolean;
+  byok_service_fee_fraction: number;
   month_start: string;
   month_summary: {
     tokens: number; tokens_prompt: number; tokens_completion: number;
     cost_cents: number; calls: number;
+    pool_cost_cents: number; pool_tokens: number; pool_calls: number;
+    byok_fee_cents: number; byok_tokens: number; byok_calls: number;
   };
   by_provider: Array<{ provider: string; tokens: number; cost_cents: number; calls: number }>;
   by_surface: Array<{ surface: string; tokens: number; cost_cents: number; calls: number }>;
@@ -119,13 +123,21 @@ export default function AiBillingPage() {
         {/* Big tiles */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Tile label={pt("Tokens deze maand")} value={nfmt(s.tokens || 0)} />
-          <Tile label={pt("Prompt / Completion")}
-                value={`${nfmt(s.tokens_prompt || 0)} / ${nfmt(s.tokens_completion || 0)}`} />
           <Tile label={pt("Aantal calls")} value={nfmt(s.calls || 0)} />
           <Tile
-            label={data.byok ? pt("Factureerbaar") : pt("Op volgende Inclufy-factuur")}
-            value={data.byok ? "—" : euroCents(s.cost_cents || 0)}
-            emphasis={!data.byok}
+            label={pt("Inclufy-pool")}
+            value={euroCents(s.pool_cost_cents || 0)}
+            sublabel={`${nfmt(s.pool_calls || 0)} ${pt("calls")} · ${nfmt(s.pool_tokens || 0)} ${pt("tokens")}`}
+            emphasis={!data.byok && (s.pool_cost_cents || 0) > 0}
+          />
+          <Tile
+            label={pt("BYOK service-fee")}
+            value={euroCents(s.byok_fee_cents || 0)}
+            sublabel={`${nfmt(s.byok_calls || 0)} ${pt("calls")} · ${Math.round(
+              (data.byok_service_fee_fraction || 0.15) * 100
+            )}% ${pt("van lijstprijs")}`}
+            emphasis={data.byok && (s.byok_fee_cents || 0) > 0}
+            tier="byok"
           />
         </div>
 
@@ -140,7 +152,7 @@ export default function AiBillingPage() {
               <tr><th className="text-left py-1">{pt("Provider")}</th>
                 <th className="text-right">{pt("Calls")}</th>
                 <th className="text-right">{pt("Tokens")}</th>
-                {!data.byok && <th className="text-right">{pt("Kosten")}</th>}
+                <th className="text-right">{pt("Kosten")}</th>
               </tr>
             </thead>
             <tbody>
@@ -149,7 +161,7 @@ export default function AiBillingPage() {
                   <td className="py-1.5">{r.provider}</td>
                   <td className="text-right text-muted-foreground">{nfmt(r.calls)}</td>
                   <td className="text-right">{nfmt(r.tokens)}</td>
-                  {!data.byok && <td className="text-right font-medium">{euroCents(r.cost_cents)}</td>}
+                  <td className="text-right font-medium">{euroCents(r.cost_cents)}</td>
                 </tr>
               ))}
               {data.by_provider.length === 0 && (
@@ -169,7 +181,7 @@ export default function AiBillingPage() {
               <tr><th className="text-left py-1">{pt("Feature / surface")}</th>
                 <th className="text-right">{pt("Calls")}</th>
                 <th className="text-right">{pt("Tokens")}</th>
-                {!data.byok && <th className="text-right">{pt("Kosten")}</th>}
+                <th className="text-right">{pt("Kosten")}</th>
               </tr>
             </thead>
             <tbody>
@@ -178,7 +190,7 @@ export default function AiBillingPage() {
                   <td className="py-1.5 font-mono text-xs">{r.surface || "(unknown)"}</td>
                   <td className="text-right text-muted-foreground">{nfmt(r.calls)}</td>
                   <td className="text-right">{nfmt(r.tokens)}</td>
-                  {!data.byok && <td className="text-right">{euroCents(r.cost_cents)}</td>}
+                  <td className="text-right">{euroCents(r.cost_cents)}</td>
                 </tr>
               ))}
             </tbody>
@@ -193,7 +205,7 @@ export default function AiBillingPage() {
               <tr><th className="text-left py-1">{pt("Gebruiker")}</th>
                 <th className="text-right">{pt("Calls")}</th>
                 <th className="text-right">{pt("Tokens")}</th>
-                {!data.byok && <th className="text-right">{pt("Kosten")}</th>}
+                <th className="text-right">{pt("Kosten")}</th>
               </tr>
             </thead>
             <tbody>
@@ -202,7 +214,7 @@ export default function AiBillingPage() {
                   <td className="py-1.5">{r.user__email || `#${r.user_id ?? "?"}`}</td>
                   <td className="text-right text-muted-foreground">{nfmt(r.calls)}</td>
                   <td className="text-right">{nfmt(r.tokens)}</td>
-                  {!data.byok && <td className="text-right">{euroCents(r.cost_cents)}</td>}
+                  <td className="text-right">{euroCents(r.cost_cents)}</td>
                 </tr>
               ))}
             </tbody>
@@ -213,11 +225,25 @@ export default function AiBillingPage() {
   );
 }
 
-function Tile({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
+function Tile({
+  label, value, sublabel, emphasis, tier,
+}: {
+  label: string;
+  value: string;
+  sublabel?: string;
+  emphasis?: boolean;
+  tier?: "byok" | "pool";
+}) {
+  const emColor = tier === "byok"
+    ? "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100"
+    : "border-amber-300 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100";
   return (
-    <Card className={`p-4 ${emphasis ? "border-amber-300 bg-amber-50 dark:bg-amber-950/30" : ""}`}>
+    <Card className={`p-4 ${emphasis ? emColor : ""}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-2xl font-bold mt-1 ${emphasis ? "text-amber-900 dark:text-amber-100" : ""}`}>{value}</div>
+      <div className={`text-2xl font-bold mt-1 ${emphasis ? "" : ""}`}>{value}</div>
+      {sublabel && (
+        <div className="text-[11px] text-muted-foreground mt-1">{sublabel}</div>
+      )}
     </Card>
   );
 }

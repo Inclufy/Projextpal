@@ -130,14 +130,15 @@ def record_call(
     try:
         from accounts.models import AIUsageLog
         from .ai_cost import estimate_cost_cents
-        # BYOK calls generate NO Inclufy-billable cost (customer pays the
-        # LLM provider directly). Keep cost_cents=0 so the invoice line
-        # aggregator cleanly separates billable vs non-billable rows.
-        cost_cents = 0 if byok else estimate_cost_cents(
+        # BYOK calls: tenant's own provider bills the raw token cost;
+        # Inclufy charges only a service-fee share of the pool list-price
+        # (default 15%). Non-BYOK: full Inclufy-pool list-price.
+        cost_cents = estimate_cost_cents(
             model=model,
             tokens_prompt=tokens_prompt,
             tokens_completion=tokens_completion,
             tokens_total=total,
+            byok=byok,
         )
         AIUsageLog.objects.create(
             company_id=company_id,
