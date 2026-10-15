@@ -663,8 +663,6 @@ const translations = {
       logout: 'Uitloggen',
       openApp: 'Open App',
       website: 'Website',
-      projects: 'Projecten',
-      academy: 'Academy',
       workspace: 'Werkruimte',
       dashboard: 'Dashboard',
       projects: 'Projecten',
