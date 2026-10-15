@@ -50,7 +50,9 @@ export function useAIUsage(pollMs = STALE_MS): { data: AIUsageSummary | null; re
   const mounted = useRef(true);
 
   const trigger = () => {
-    if (_inflight) return _inflight;
+    // Expliciet tegen null: _inflight is Promise | null, en een Promise is altijd
+    // truthy. Gedrag identiek, maar de bedoeling staat er nu (S6544).
+    if (_inflight !== null) return _inflight;
     _inflight = fetchUsage().finally(() => { _inflight = null; });
     return _inflight;
   };

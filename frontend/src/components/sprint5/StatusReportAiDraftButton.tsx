@@ -37,7 +37,7 @@ const StatusReportAiDraftButton: React.FC<StatusReportAiDraftButtonProps> = ({
         { key: "summary", label: isNl ? "Samenvatting" : "Summary", kind: "textarea" },
         { key: "period_start", label: isNl ? "Periode start" : "Period start", kind: "text" },
         { key: "period_end", label: isNl ? "Periode einde" : "Period end", kind: "text" },
-        { key: "highlights", label: isNl ? "Highlights" : "Highlights", kind: "stringList" },
+        { key: "highlights", label: "Highlights", kind: "stringList" },
         { key: "risks", label: isNl ? "Risico's" : "Risks", kind: "stringList" },
         { key: "actions_required", label: isNl ? "Vereiste acties" : "Actions required", kind: "stringList" },
       ]}
