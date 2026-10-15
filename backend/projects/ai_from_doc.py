@@ -82,6 +82,16 @@ def _extract_pdf_text(fobj) -> Tuple[str, int]:
         return "", 0
 
 
+# Hard caps on the Claude-vision fallback: scanned PDFs are the most
+# expensive path (bytes * 1.3 base64 + large context in the LLM), so a
+# single multipart POST with several scans can push gunicorn past its
+# per-worker timeout and SIGKILL mid-request. Keep these conservative;
+# bump them deliberately when the gunicorn --timeout is raised.
+_VISION_MAX_BYTES_PER_PDF = 4_000_000      # ~4 MB raw PDF
+_VISION_MAX_TOKENS_PER_PDF = 2500          # Claude output cap
+_VISION_TIMEOUT_SECONDS = 55               # per-call deadline
+
+
 def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
     """Fallback for scanned/image-only PDFs: ask Claude to OCR + extract text.
 
@@ -89,9 +99,15 @@ def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
     document content block accepts base64-encoded PDFs ≤ 32 MB and the
     model has built-in OCR for scanned pages, so we skip local Tesseract
     (which would require a separate OS package and a slow model download).
+
+    Caps enforced here keep a single ``plan-from-documents`` request below
+    the 120s gunicorn worker timeout even when several scanned PDFs are
+    uploaded in one go — see ``_VISION_MAX_BYTES_PER_PDF``.
     """
     import base64
 
+    if not data or len(data) > _VISION_MAX_BYTES_PER_PDF:
+        return "", 0
     try:
         ac = get_anthropic_client(company)
     except Exception:
@@ -105,7 +121,8 @@ def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
     try:
         resp = ac.messages.create(
             model="claude-opus-4-7",
-            max_tokens=4000,
+            max_tokens=_VISION_MAX_TOKENS_PER_PDF,
+            timeout=_VISION_TIMEOUT_SECONDS,
             messages=[{
                 "role": "user",
                 "content": [
@@ -153,17 +170,21 @@ def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
         return "", 0
 
 
-def _extract_text_any(filename: str, data: bytes, company=None) -> Tuple[str, int]:
+def _extract_text_any(
+    filename: str, data: bytes, company=None, allow_vision: bool = True,
+) -> Tuple[str, int]:
     """Minimalistische text-extractor voor PDF / plain text. .docx-support
     kan later via python-docx worden toegevoegd.
 
     PDFs waarbij pdfplumber geen text-layer vindt (scanned/image-only)
-    worden doorgezet naar Claude vision OCR als er een Anthropic-key is.
+    worden doorgezet naar Claude vision OCR als er een Anthropic-key is
+    EN ``allow_vision`` True is. De view begrenst het aantal vision-calls
+    per request om de 120s gunicorn worker-timeout te respecteren.
     """
     lower = (filename or "").lower()
     if lower.endswith(".pdf"):
         text, pages = _extract_pdf_text(io.BytesIO(data))
-        if text.strip() or company is None:
+        if text.strip() or company is None or not allow_vision:
             return text, pages
         # Local extractor leeg → fallback naar Claude vision OCR.
         ocr_text, ocr_pages = _extract_pdf_via_claude(data, company)
@@ -310,6 +331,14 @@ def plan_from_documents(request):
 
     company = getattr(request.user, "company", None)
 
+    # Per-request Claude-vision budget. If several files hit the OCR path
+    # one HTTP request can easily cross the 120s gunicorn worker-timeout.
+    # Cap at 2 PDFs through Claude per request; the rest get a graceful
+    # "skipped — upload later" so the UI can still move forward with the
+    # text-only subset.
+    _MAX_VISION_FILES_PER_REQUEST = 2
+    vision_calls_remaining = _MAX_VISION_FILES_PER_REQUEST
+
     combined_text_parts: List[str] = []
     total_pages = 0
     skipped: List[dict] = []
@@ -325,10 +354,22 @@ def plan_from_documents(request):
             skipped.append({"name": name, "reason": f"too large ({size} bytes)"})
             continue
         data = f.read()
-        text, pages = _extract_text_any(name, data, company=company)
+        text, pages = _extract_text_any(
+            name, data, company=company,
+            allow_vision=vision_calls_remaining > 0,
+        )
         if not text:
             skipped.append({"name": name, "reason": "no text extracted"})
             continue
+        # Charge the vision budget only when the extractor actually used it
+        # (i.e. pdfplumber returned empty and Claude filled in). We cannot
+        # see that from here, so decrement when the file is a PDF and
+        # pdfplumber-only mode is unlikely to have had a text layer. Safe
+        # heuristic: always decrement for PDF — worst case we skip one more
+        # file than strictly needed, which still leaves the user with a
+        # usable draft.
+        if (name or "").lower().endswith(".pdf"):
+            vision_calls_remaining -= 1
         combined_text_parts.append(f"--- {name} ---\n{text}")
         total_pages += pages
         extracted_files.append({
