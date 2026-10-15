@@ -1,4 +1,4 @@
-# Wat is er nieuw in ProjeXtPal — 15 oktober 2026
+# Wat is er nieuw in ProjeXtPal, 15 oktober 2026
 
 Beste gebruiker,
 
@@ -8,19 +8,19 @@ Deze week hebben we ProjeXtPal weer een flinke stap vooruit gebracht. De grootst
 
 ## 1. De Co-pilot biedt nu zelf hulp aan
 
-Vroeger moest je exact weten wat je aan de Co-pilot moest vragen. Vanaf nu kijkt de Co-pilot zelf naar jouw project of programma en biedt direct hulp aan — in de stijl van *"Zal ik dat voor je doen?"* in plaats van *"Wat wil je weten?"*.
+Vroeger moest je exact weten wat je aan de Co-pilot moest vragen. Vanaf nu kijkt de Co-pilot zelf naar jouw project of programma en biedt direct hulp aan, in de stijl van *"Zal ik dat voor je doen?"* in plaats van *"Wat wil je weten?"*.
 
 Wat merk je ervan:
 
 - Open je de Co-pilot op een project, dan heet hij je persoonlijk welkom: *"Hallo! Waar kan ik je mee helpen op [naam van jouw project]?"*
 - Hij stelt zelf drie tot vier concrete acties voor die bij jouw project passen.
-- Zeg je "ja" op zo'n voorstel, dan voert hij de actie ook écht uit — hij praat er niet alleen over.
+- Zeg je "ja" op zo'n voorstel, dan voert hij de actie ook écht uit, hij praat er niet alleen over.
 
 De Co-pilot gedraagt zich als een dienstbare collega die routinewerk graag van je overneemt, zodat jij je op beslissingen en mensen kunt richten.
 
 ---
 
-## 2. "Ontbreekt nog — zal ik voor je invullen?"
+## 2. "Ontbreekt nog, zal ik voor je invullen?"
 
 Bovenaan het chatvenster verschijnt voortaan een duidelijke **oranje sectie** zodra je op een project, programma, board of portfolio staat waar nog velden of tabbladen leeg zijn. Elke regel is een knop die direct de ontbrekende informatie voor je gaat invullen.
 
@@ -36,21 +36,21 @@ Voorbeelden van wat de Co-pilot nu zelf kan opstellen:
 
 Eén klik is genoeg. Binnen 15 tot 30 seconden heeft de Co-pilot het resultaat opgesteld, opgeslagen bij jouw project, en in de chat laten zien waar je het kunt reviewen.
 
-De Co-pilot plaatst nooit zomaar iets definitief. Alles komt binnen als **concept** — jij reviewt, past aan en zet het op *actief*. "De mens blijft nadenken".
+De Co-pilot plaatst nooit zomaar iets definitief. Alles komt binnen als **concept**, jij reviewt, past aan en zet het op *actief*. "De mens blijft nadenken".
 
 ---
 
-## 3. Business Case, risico-register en mijlpalen — in één klik opgesteld
+## 3. Business Case, risico-register en mijlpalen, in één klik opgesteld
 
 Drie concrete acties die de Co-pilot zelfstandig voor je uitvoert, als jij ja zegt:
 
 ### Business Case opstellen (PRINCE2-projecten)
 
-Op een PRINCE2-project vult de Co-pilot alle zes hoofdvelden van de Business Case in — Executive Summary, redenen, opties, verwachte baten, mogelijke nadelen en belangrijkste risico's — op basis van de documenten die je op het project hebt geüpload. Resultaat staat als concept klaar op het Business Case-tabblad, waar jij benefits en risks kunt aanvullen voor de board.
+Op een PRINCE2-project vult de Co-pilot alle zes hoofdvelden van de Business Case in, Executive Summary, redenen, opties, verwachte baten, mogelijke nadelen en belangrijkste risico's, op basis van de documenten die je op het project hebt geüpload. Resultaat staat als concept klaar op het Business Case-tabblad, waar jij benefits en risks kunt aanvullen voor de board.
 
 ### Risico-register opstellen (elk project)
 
-De Co-pilot genereert vier tot acht project-specifieke risico's, elk met categorie (Technisch / Planning / Financieel / Operationeel / Strategisch / Compliance), kans in procenten, impact en risiconiveau. De risico's zijn geformuleerd op basis van jouw projectscope — niet generiek *"Scope creep"*, maar *"Late antwoorden op vragen verkorten inschrijftijd"* als het om een aanbesteding gaat.
+De Co-pilot genereert vier tot acht project-specifieke risico's, elk met categorie (Technisch / Planning / Financieel / Operationeel / Strategisch / Compliance), kans in procenten, impact en risiconiveau. De risico's zijn geformuleerd op basis van jouw projectscope, niet generiek *"Scope creep"*, maar *"Late antwoorden op vragen verkorten inschrijftijd"* als het om een aanbesteding gaat.
 
 ### Mijlpalen voorstellen (elk project)
 
@@ -62,9 +62,9 @@ Vier tot acht realistische mijlpalen met start- en einddatums binnen jouw projec
 
 Tot nu toe werkte de Co-pilot vooral op projectniveau. Vanaf deze release past hij zich aan **waar je bent**:
 
-- **Op een programma** — de Co-pilot biedt een gezondheidscheck over alle onderliggende projecten aan, lijst overkoepelende risico's op, of helpt je een highlightrapport opstellen.
-- **Op een governance board** (stuurgroep / programma-board / project-board) — de Co-pilot bereidt de volgende agenda voor, toont openstaande besluiten, of maakt een briefing voor de voorzitter.
-- **Op een portfolio** — de Co-pilot helpt componenten te vergelijken, prioriteert op waarde, of stelt een strategische update voor de board op.
+- **Op een programma**, de Co-pilot biedt een gezondheidscheck over alle onderliggende projecten aan, lijst overkoepelende risico's op, of helpt je een highlightrapport opstellen.
+- **Op een governance board** (stuurgroep / programma-board / project-board), de Co-pilot bereidt de volgende agenda voor, toont openstaande besluiten, of maakt een briefing voor de voorzitter.
+- **Op een portfolio**, de Co-pilot helpt componenten te vergelijken, prioriteert op waarde, of stelt een strategische update voor de board op.
 
 Elke scope laat passende voorbeeldvragen en voorbeeldacties zien. Geen *"Portfolio-analyse"* meer in het chatvenster van een PRINCE2-project.
 
@@ -72,15 +72,15 @@ Elke scope laat passende voorbeeldvragen en voorbeeldacties zien. Geen *"Portfol
 
 ## 5. Documenten uploaden werkt nu ook op een board
 
-De AI-context functie — upload één keer je bronnen, de AI gebruikt ze overal — werkte al op projecten, programma's en portfolio's. **Nieuw deze release**: ook op governance boards.
+De AI-context functie, upload één keer je bronnen, de AI gebruikt ze overal, werkte al op projecten, programma's en portfolio's. **Nieuw deze release**: ook op governance boards.
 
 Praktisch voorbeeld: upload het mandaat of jaarplan van jullie stuurgroep één keer op de board. Vanaf dat moment heeft elke besluit, elke meeting en elke rapportage onder die board automatisch die context. De AI "weet" dus wat de spelregels zijn zonder dat jij ze telkens opnieuw hoeft op te sommen.
 
-**Besluiten (decisions) en meetings erven dit automatisch**. Je hoeft niet per besluit opnieuw iets te uploaden — het board papers geldt voor alles eronder. Dat sluit aan bij hoe governance in de praktijk werkt: één dossier per gremium, meerdere besluiten en meetings uit datzelfde dossier.
+**Besluiten (decisions) en meetings erven dit automatisch**. Je hoeft niet per besluit opnieuw iets te uploaden, het board papers geldt voor alles eronder. Dat sluit aan bij hoe governance in de praktijk werkt: één dossier per gremium, meerdere besluiten en meetings uit datzelfde dossier.
 
 ---
 
-## 6. AI-verbruik dashboard — met twee tarieftypes
+## 6. AI-verbruik dashboard, met twee tarieftypes
 
 In de linker sidebar vind je **AI-verbruik**. Daar zie je per maand hoeveel tokens je team verbruikt, uitgesplitst per AI-provider, per feature en per gebruiker. Nieuw is de keuze tussen twee facturatie-tiers:
 
@@ -88,13 +88,13 @@ In de linker sidebar vind je **AI-verbruik**. Daar zie je per maand hoeveel toke
 
 Je gebruikt de gedeelde AI-sleutels van Inclufy. Inclufy rekent de volledige lijstprijs van de AI-provider plus een kleine marge. Facturatie loopt via de maandelijkse Inclufy-factuur.
 
-**Met eigen AI-key (BYOK — Bring Your Own Key)**
+**Met eigen AI-key (BYOK, Bring Your Own Key)**
 
 Heeft jouw organisatie zelf een contract bij OpenAI of Anthropic? Dan kun je onder **Instellingen → API Keys** je eigen sleutel invullen. Vanaf dat moment:
 
 - Factureert jouw provider jou rechtstreeks voor het ruwe token-gebruik.
 - Rekent Inclufy slechts een **servicevergoeding van 15% van de lijstprijs** voor het hosten, auditloggen en facturen samenvoegen.
-- Voor een typische Business Case auto-draft betekent dat ongeveer **€0,04 bij Inclufy** in plaats van €0,27 — een voordeel van ~85%.
+- Voor een typische Business Case auto-draft betekent dat ongeveer **€0,04 bij Inclufy** in plaats van €0,27, een voordeel van ~85%.
 
 De keuze is per organisatie, niet per gebruiker. De keuze is ook een data-residency-keuze: met je eigen key gaan je tokens direct naar jouw gekozen provider, zonder tussenstop bij de gedeelde Inclufy-pool.
 
@@ -108,7 +108,7 @@ Deze limiet is bewust strakker dan nodig: *"de mens moet blijven nadenken"*. AI 
 
 ---
 
-## 8. Scope-aware welkomscherm — in jouw taal
+## 8. Scope-aware welkomscherm, in jouw taal
 
 Afhankelijk van waar je in de app bent, verandert het welkomscherm van de Co-pilot. Elke tekst is in jouw voorkeurstaal (Nederlands, Engels of Frans). Een paar voorbeelden:
 
@@ -129,7 +129,7 @@ Als je morgen inlogt:
 1. Open een project waar nog velden leeg zijn. Open de Co-pilot. Bovenaan zie je een oranje **"Ontbreekt nog"** sectie met concrete suggesties.
 2. Klik op bijvoorbeeld *"Zal ik een risico-register voor dit project opstellen?"*. Binnen een halve minuut staan er vier tot acht risico's op jouw risico-tabblad, klaar om te reviewen en te verrijken met eigenaar en mitigatie.
 3. Open vervolgens een governance board. Scroll naar het nieuwe **"Board documents (AI context)"** blok. Upload daar het mandaat of de jaarplanning van die board. Vanaf dat moment "weet" elke decision- en meeting-rapportage onder die board die context.
-4. Open **Instellingen → AI-verbruik** om te zien hoeveel je team verbruikt deze maand — en overleg eventueel met je beheerder of een eigen AI-key voor jouw organisatie zinvol is.
+4. Open **Instellingen → AI-verbruik** om te zien hoeveel je team verbruikt deze maand, en overleg eventueel met je beheerder of een eigen AI-key voor jouw organisatie zinvol is.
 
 ---
 
@@ -137,10 +137,10 @@ Als je morgen inlogt:
 
 Alle bestaande functionaliteit blijft werken zoals je gewend bent:
 
-- Projecten / programma's / portfolio's / taken / mijlpalen / tijdregistratie / budget — allemaal ongewijzigd.
-- GDPR- en audit-garanties — Fernet-encryptie op uploaded documenten, per-document privacy-toggle, delete-knop met confirm, volledig audit-log. Alles uit de release van 14 oktober blijft onverkort gelden.
-- Rate limit van 20 AI-vragen per uur per gebruiker — ongewijzigd. De nieuwe dagelijkse tokenlimiet staat erbovenop.
-- Tenant-isolatie — jouw data blijft binnen jouw organisatie; geen enkele andere klant kan jouw projecten of risico's zien, inclusief in het AI-verbruik dashboard.
+- Projecten / programma's / portfolio's / taken / mijlpalen / tijdregistratie / budget, allemaal ongewijzigd.
+- GDPR- en audit-garanties, Fernet-encryptie op uploaded documenten, per-document privacy-toggle, delete-knop met confirm, volledig audit-log. Alles uit de release van 14 oktober blijft onverkort gelden.
+- Rate limit van 20 AI-vragen per uur per gebruiker, ongewijzigd. De nieuwe dagelijkse tokenlimiet staat erbovenop.
+- Tenant-isolatie, jouw data blijft binnen jouw organisatie; geen enkele andere klant kan jouw projecten of risico's zien, inclusief in het AI-verbruik dashboard.
 
 ---
 

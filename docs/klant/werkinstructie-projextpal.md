@@ -1,8 +1,8 @@
 # Werkinstructie ProjeXtPal
 
-**Voor:** gebruikers van ProjeXtPal — projectleiders, programma-eigenaren, portfolio-managers en board-leden
+**Voor:** gebruikers van ProjeXtPal, projectleiders, programma-eigenaren, portfolio-managers en board-leden
 **Versie:** oktober 2026
-**Doel:** je bent binnen een uur zelfstandig productief in ProjeXtPal — van inloggen tot een werkend project met risico-register, mijlpalen en Business Case.
+**Doel:** je bent binnen een uur zelfstandig productief in ProjeXtPal, van inloggen tot een werkend project met risico-register, mijlpalen en Business Case.
 
 ---
 
@@ -12,7 +12,7 @@
 
 - Ga naar `https://projextpal.com`.
 - Werk met je zakelijke e-mailadres. Nog geen account? Je beheerder nodigt je uit via het Admin Portal.
-- Vergeten wachtwoord? Klik "Wachtwoord vergeten" op het inlogscherm — je krijgt een reset-link die één uur geldig is.
+- Vergeten wachtwoord? Klik "Wachtwoord vergeten" op het inlogscherm, je krijgt een reset-link die één uur geldig is.
 
 **Je rol**
 
@@ -20,9 +20,9 @@ Binnen jouw organisatie heb je één van drie rollen:
 
 | Rol | Wat je kunt |
 |---|---|
-| **Admin** | Volledige rechten — gebruikers beheren, instellingen, AI-keys, factuur-inzicht. |
+| **Admin** | Volledige rechten, gebruikers beheren, instellingen, AI-keys, factuur-inzicht. |
 | **Member** | Projecten en programma's beheren, taken toewijzen, documenten uploaden, Co-pilot gebruiken. |
-| **Guest** | Lezen en beperkt bijdragen — ideaal voor stakeholders die alleen willen volgen. |
+| **Guest** | Lezen en beperkt bijdragen, ideaal voor stakeholders die alleen willen volgen. |
 
 **Taal en thema**
 
@@ -32,15 +32,15 @@ Binnen jouw organisatie heb je één van drie rollen:
 
 **Je werkruimte**
 
-- Je komt binnen op het **Dashboard** — portfolio-overzicht van je organisatie.
+- Je komt binnen op het **Dashboard**, portfolio-overzicht van je organisatie.
 - Linker sidebar: Projecten · Programma's · Governance · Rapportages · AI Chat · Tijdregistratie.
-- Rechtsboven: **AI Co-pilot** (sparkle-knop) — altijd beschikbaar, past zich aan waar je bent.
+- Rechtsboven: **AI Co-pilot** (sparkle-knop), altijd beschikbaar, past zich aan waar je bent.
 
 ---
 
 ## 1. Centrale begrippen
 
-Voor je in de tool duikt — de termen die bepalen hoe je werkt.
+Voor je in de tool duikt, de termen die bepalen hoe je werkt.
 
 ### 1.1 Project
 
@@ -80,30 +80,30 @@ Een **board** is het besluitvormings-orgaan: stuurgroep, programma-board, projec
 
 Elk project kiest één methodologie die bepaalt welke tabbladen en artefacten zichtbaar zijn:
 
-- **PRINCE2** — gestructureerd, met Business Case, Fasepoorten, Highlight Reports, Exception Reports.
-- **Scrum** — iteratief, met Sprint Backlog, Sprint Planning, Sprint Review, Velocity.
-- **Kanban** — flow-georiënteerd, met WIP-limieten, doorlooptijd, cumulatieve stroom.
-- **Agile** — algemeen iteratief met iteraties, backlog en releaseplanning.
-- **Waterfall** — fase-gebaseerd met fasepoorten en baselines.
-- **Lean Six Sigma (Green / Black)** — DMAIC-cyclus met SIPOC, Cp/Cpk, DOE.
-- **Hybrid** — mix van voorspellende en adaptieve fasen in één project.
-- **Inclufy Best Practice** — een lichte, methodologie-neutrale default.
+- **PRINCE2**, gestructureerd, met Business Case, Fasepoorten, Highlight Reports, Exception Reports.
+- **Scrum**, iteratief, met Sprint Backlog, Sprint Planning, Sprint Review, Velocity.
+- **Kanban**, flow-georiënteerd, met WIP-limieten, doorlooptijd, cumulatieve stroom.
+- **Agile**, algemeen iteratief met iteraties, backlog en releaseplanning.
+- **Waterfall**, fase-gebaseerd met fasepoorten en baselines.
+- **Lean Six Sigma (Green / Black)**, DMAIC-cyclus met SIPOC, Cp/Cpk, DOE.
+- **Hybrid**, mix van voorspellende en adaptieve fasen in één project.
+- **Inclufy Best Practice**, een lichte, methodologie-neutrale default.
 
 De AI Co-pilot biedt alleen suggesties die bij de gekozen methodologie passen.
 
 ---
 
-## 2. Een nieuw project starten — in vijf minuten
+## 2. Een nieuw project starten, in vijf minuten
 
-### Stap 1 — Nieuw project
+### Stap 1, Nieuw project
 
 Klik in de sidebar op **Projecten** → **Nieuw project**. Je ziet een wizard met vier stappen: Methodologie → Documenten → Details → Review.
 
-### Stap 2 — Kies methodologie
+### Stap 2, Kies methodologie
 
 Kies de methodologie die bij je project past. Twijfel je? Kies dan **Inclufy Best Practice** en wijzig het later.
 
-### Stap 3 — Upload documenten (optioneel maar sterk aanbevolen)
+### Stap 3, Upload documenten (optioneel maar sterk aanbevolen)
 
 Sleep hier je bronmateriaal in: scope-document, offerte-aanvraag, leidraad, PvE, projectplan, briefing of vergelijkbaar. Max 10 bestanden, 15 MB per bestand. Formaten: PDF, TXT, MD, CSV, DOCX.
 
@@ -116,13 +116,13 @@ Sleep hier je bronmateriaal in: scope-document, offerte-aanvraag, leidraad, PvE,
 
 De documenten worden versleuteld opgeslagen (Fernet-encryptie) en zijn alleen beschikbaar binnen jouw organisatie. Je kunt ze later per stuk weer uitzetten of verwijderen.
 
-### Stap 4 — Details
+### Stap 4, Details
 
 ProjeXtPal vult naam, beschrijving, start-/einddatum, budget en prioriteit automatisch in op basis van je uploads. Loop ze langs en pas aan waar nodig.
 
-### Stap 5 — Review en aanmaken
+### Stap 5, Review en aanmaken
 
-Zie je alles kloppen? Klik **Project aanmaken**. Je komt op het project-dashboard. Bovenaan verschijnt een gele banner: *"Project is uit documenten opgezet — menselijke review vereist voor activatie"*. Loop alle tabs na (Setup, Business Case, Team, Budget, Mijlpalen) en pas aan waar de AI iets heeft gemist. Klik dan **Ik heb gereviewd** om het project te activeren.
+Zie je alles kloppen? Klik **Project aanmaken**. Je komt op het project-dashboard. Bovenaan verschijnt een gele banner: *"Project is uit documenten opgezet, menselijke review vereist voor activatie"*. Loop alle tabs na (Setup, Business Case, Team, Budget, Mijlpalen) en pas aan waar de AI iets heeft gemist. Klik dan **Ik heb gereviewd** om het project te activeren.
 
 ---
 
@@ -132,9 +132,9 @@ De AI Co-pilot (sparkle-knop rechtsboven) is je persoonlijke assistent. Hij past
 
 ### 3.1 Hij biedt zelf hulp aan
 
-In plaats van wachten op jouw vraag, kijkt de Co-pilot naar jouw huidige scope en biedt direct concrete acties aan — in de stijl *"Zal ik dat voor je doen?"*. Zeg je ja, dan voert hij het ook écht uit (geen loze belofte, geen eindeloze dialoog).
+In plaats van wachten op jouw vraag, kijkt de Co-pilot naar jouw huidige scope en biedt direct concrete acties aan, in de stijl *"Zal ik dat voor je doen?"*. Zeg je ja, dan voert hij het ook écht uit (geen loze belofte, geen eindeloze dialoog).
 
-### 3.2 "Ontbreekt nog — zal ik voor je invullen?"
+### 3.2 "Ontbreekt nog, zal ik voor je invullen?"
 
 Bovenaan het chatvenster, in oranje: concrete offer-to-fill knoppen voor velden en tabbladen die nog leeg zijn op jouw scope.
 
@@ -152,20 +152,20 @@ Eén klik en binnen 15–30 seconden staat het resultaat als concept klaar op jo
 
 Afhankelijk van waar je staat, biedt de Co-pilot methodology-specifieke acties aan:
 
-- **Op een PRINCE2-project** — Business Case opstellen, Exception Report openen, Fasepoort-review voorbereiden, Highlight Report genereren.
-- **Op een Scrum-project** — Sprint plannen, Daily Standup samenvatten, Sprint Review opstellen, Velocity berekenen.
-- **Op een Kanban-project** — Geblokkeerde items opvragen, doorlooptijd + throughput metrics, WIP-limiet-check.
-- **Op een programma** — Programma-gezondheid, overkoepelende risico's, baatrealisatie.
-- **Op een governance board** — Boardagenda voorbereiden, openstaande besluiten tonen, briefing voor voorzitter.
-- **Op een portfolio** — Portfolio-review voorbereiden, componenten vergelijken, strategische update.
+- **Op een PRINCE2-project**, Business Case opstellen, Exception Report openen, Fasepoort-review voorbereiden, Highlight Report genereren.
+- **Op een Scrum-project**, Sprint plannen, Daily Standup samenvatten, Sprint Review opstellen, Velocity berekenen.
+- **Op een Kanban-project**, Geblokkeerde items opvragen, doorlooptijd + throughput metrics, WIP-limiet-check.
+- **Op een programma**, Programma-gezondheid, overkoepelende risico's, baatrealisatie.
+- **Op een governance board**, Boardagenda voorbereiden, openstaande besluiten tonen, briefing voor voorzitter.
+- **Op een portfolio**, Portfolio-review voorbereiden, componenten vergelijken, strategische update.
 
 ### 3.4 Hij antwoordt in jouw taal, kort en zakelijk
 
-De Co-pilot schrijft in NL, EN of FR afhankelijk van je voorkeur. Hij spiegelt je toonzetting (schrijf je casual, dan reageert hij ook casual) en houdt het kort — één of twee zinnen voor normale vragen, uitgebreide rapporten alleen als je daar expliciet om vraagt.
+De Co-pilot schrijft in NL, EN of FR afhankelijk van je voorkeur. Hij spiegelt je toonzetting (schrijf je casual, dan reageert hij ook casual) en houdt het kort, één of twee zinnen voor normale vragen, uitgebreide rapporten alleen als je daar expliciet om vraagt.
 
 ### 3.5 Transparant: welke bronnen gebruikt hij?
 
-Onder elk antwoord zie je een chip zoals *"gebruikte 3 documenten · 12.400 tekens context"*. Klik erop om precies te zien welke documenten de Co-pilot heeft geraadpleegd. Zo kun je verantwoorden welke bronnen de AI heeft gezien — ook naar een Functionaris Gegevensbescherming of een auditor.
+Onder elk antwoord zie je een chip zoals *"gebruikte 3 documenten · 12.400 tekens context"*. Klik erop om precies te zien welke documenten de Co-pilot heeft geraadpleegd. Zo kun je verantwoorden welke bronnen de AI heeft gezien, ook naar een Functionaris Gegevensbescherming of een auditor.
 
 ---
 
@@ -198,7 +198,7 @@ De Co-pilot kan vanuit een board-pagina direct een agenda voorbereiden of de not
 
 ---
 
-## 5. Documenten als AI-context — hoe werkt het precies?
+## 5. Documenten als AI-context, hoe werkt het precies?
 
 De centrale filosofie: **één upload, alle AI-features gebruiken 'em**.
 
@@ -213,15 +213,15 @@ De centrale filosofie: **één upload, alle AI-features gebruiken 'em**.
 
 ### Hoe wordt het veilig gehouden?
 
-- **Encryptie at rest** — Fernet-encryptie met server-side sleutel die niet in de database staat.
-- **Per-document privacy-toggle** — je kunt een document "zichtbaar bewaren" maar uitsluiten van AI-gebruik.
-- **Delete met confirm** — permanent verwijderen met één klik; de bytes verdwijnen uit zowel opslag als database.
-- **Audit-log** — elke AI-call wordt gelogd met wie, wanneer, welke documenten. Beheerders kunnen dit log inzien.
-- **Tenant-isolatie** — jouw documenten en risico's zijn nooit zichtbaar voor andere klanten.
+- **Encryptie at rest**, Fernet-encryptie met server-side sleutel die niet in de database staat.
+- **Per-document privacy-toggle**, je kunt een document "zichtbaar bewaren" maar uitsluiten van AI-gebruik.
+- **Delete met confirm**, permanent verwijderen met één klik; de bytes verdwijnen uit zowel opslag als database.
+- **Audit-log**, elke AI-call wordt gelogd met wie, wanneer, welke documenten. Beheerders kunnen dit log inzien.
+- **Tenant-isolatie**, jouw documenten en risico's zijn nooit zichtbaar voor andere klanten.
 
 ### Welke documentformaten?
 
-PDF, TXT, Markdown, CSV, DOCX. Max 15 MB per bestand, max 10 bestanden per scope. Scanned PDF's zonder tekstlaag worden door AI-OCR (Claude Vision) alsnog gelezen — maximaal twee gescande PDF's per upload-sessie om de verwerkingstijd beheersbaar te houden.
+PDF, TXT, Markdown, CSV, DOCX. Max 15 MB per bestand, max 10 bestanden per scope. Scanned PDF's zonder tekstlaag worden door AI-OCR (Claude Vision) alsnog gelezen, maximaal twee gescande PDF's per upload-sessie om de verwerkingstijd beheersbaar te houden.
 
 ---
 
@@ -272,10 +272,10 @@ Resultaat: een highlight-rapport dat je direct kunt delen met je sponsor of boar
 
 ### Rapport-tabbladen
 
-- **Highlight Reports** — per periode (bijvoorbeeld tweewekelijks), geschreven voor de board.
-- **Exception Reports** (PRINCE2) — alleen als een tolerantie dreigt te worden overschreden.
-- **End Stage Reports** — bij elke fasepoort-overgang.
-- **End Project Report + Lessons Learned** — bij projectafsluiting; de Co-pilot genereert hieruit automatisch leerpunten die bij vergelijkbare projecten als suggestie opduiken.
+- **Highlight Reports**, per periode (bijvoorbeeld tweewekelijks), geschreven voor de board.
+- **Exception Reports** (PRINCE2), alleen als een tolerantie dreigt te worden overschreden.
+- **End Stage Reports**, bij elke fasepoort-overgang.
+- **End Project Report + Lessons Learned**, bij projectafsluiting; de Co-pilot genereert hieruit automatisch leerpunten die bij vergelijkbare projecten als suggestie opduiken.
 
 ---
 
@@ -309,7 +309,7 @@ Zonder eigen AI-key: Inclufy-pool, volledige lijstprijs. Met eigen AI-key: 15% s
 
 ### Per-gebruiker dagelijkse limiet
 
-Default 100.000 tokens per gebruiker per dag — ongeveer zes zware auto-drafts of dertig Co-pilot gesprekken. Beheerder kan dit per tenant verhogen of verlagen.
+Default 100.000 tokens per gebruiker per dag, ongeveer zes zware auto-drafts of dertig Co-pilot gesprekken. Beheerder kan dit per tenant verhogen of verlagen.
 
 ---
 
