@@ -67,15 +67,15 @@ Vanaf Business plan, standaard op Enterprise. Je stelt je eigen AI-key van OpenA
 
 ---
 
-## 5. Methodology modules (per organisatie per maand)
+## 5. Optionele diepere methodologie-modules (per organisatie per maand)
 
-Module-licenties zijn per organisatie, niet per gebruiker. Inclusief in Business + Enterprise voor de klant op maat, los af te nemen vanaf Starter of Professional.
+**Belangrijk vooraf:** alle methodologieën (PRINCE2, Scrum, Agile, Kanban, Waterfall, Hybrid, Lean Six Sigma, MSP) zitten al **standaard** in élk plan. Je kiest per project welke je wilt gebruiken, zonder meerprijs. De onderstaande modules zijn **optioneel** en voegen een diepere, enterprise-grade laag toe aan die methodiek voor organisaties die er intensief op sturen (externe audit, certificering, PMO-stijl governance). De meeste klanten hebben ze niet nodig.
 
-| Module | Prijs/org./mnd | Wat zit erin |
+| Module | Prijs/org./mnd | Wat voegt het toe boven de standaard |
 |---|---|---|
-| **PRINCE2** | € 79 | Business Case, Project Brief, Project Initiation Document, Fasepoorten, Exception Report, Highlight Report, Lessons Log, Quality Register, Product Status |
-| **LSS Black / Green** | € 99 | DMAIC-cyclus, SIPOC, CTQ, Cp/Cpk, Pareto, control plans, SPC-charts, FMEA, charter |
-| **MSP** | € 149 | Multi-project programme governance, benefits map, tranches, programme board, roadmap |
+| **PRINCE2 Enterprise** | € 79 | Volledige PRINCE2 2017/7 compliance kit: Project Brief, PID, Stage Plans, Quality Register, Product Status reports en Lessons Log in de officiële templates klaar voor certificering-audit. Standaard projecten gebruiken al Business Case + Highlight Reports + Exception Reports zonder deze module. |
+| **LSS Black / Green uitbreiding** | € 99 | DMAIC-dashboards, SPC-charts (Cp/Cpk/Pareto), FMEA-templates, Green Belt / Black Belt certificeringspakket. Standaard LSS-projecten gebruiken al SIPOC + VOC + control plans zonder deze module. |
+| **MSP programme-governance** | € 149 | Benefits-map, tranches, programme board met formele vergaderritme, roadmap-view met strategische KPI's. Standaard programma's gebruiken al multi-project management zonder deze module. |
 
 ---
 
@@ -105,56 +105,74 @@ Vrijblijvend bij elk plan toe te voegen:
 
 ## 8. Rekenvoorbeelden (combinatie licenties + AI-verbruik)
 
+In deze voorbeelden kiest het team zelf welke methodologie(ën) ze gebruiken per project (bv. PRINCE2 voor zorgverbeteringen, Scrum voor pilots) — zónder dat daar een module-upgrade voor nodig is, die zit in de basis. Optionele modules zijn alleen opgenomen wanneer het team specifiek om die extra laag vraagt.
+
 ### Voorbeeld A, zorginstelling 10 gebruikers op Professional
+
+Standaard-setup zonder extra modules. Het team gebruikt PRINCE2 voor zijn hoofdprojecten en Agile voor pilots. Beide methodologieën standaard inbegrepen.
 
 | Component | Berekening | Per maand |
 |---|---|---|
 | 10 × Professional | 10 × € 49 | € 490 |
-| PRINCE2 module | € 79 | € 79 |
-| Governance pakket | € 99 | € 99 |
 | AI-verbruik binnen 10 × 50K pool | 300.000 van 500.000 inbegrepen | € 0 |
-| **Totaal** | | **€ 668** |
+| **Totaal** | | **€ 490** |
 
-Jaarbudget: € 8.016. Met jaarbetaling korting: ongeveer € 7.600.
+Jaarbudget: € 5.880. Met jaarbetaling korting: ongeveer € 5.290.
 
 ### Voorbeeld B, consultancy 25 gebruikers op Business
+
+Multi-methodology werkplek, standaard-setup. Consultants kiezen per klant-opdracht de passende methodiek.
 
 | Component | Berekening | Per maand |
 |---|---|---|
 | 25 × Business | 25 × € 79 | € 1.975 |
-| PRINCE2 + LSS modules | € 79 + € 99 | € 178 |
 | AI-verbruik binnen 25 × 200K pool | 2M van 5M inbegrepen | € 0 |
-| **Totaal** | | **€ 2.153** |
+| **Totaal** | | **€ 1.975** |
 
-Jaarbudget: € 25.836. Met jaarbetaling korting: ongeveer € 23.700.
+Jaarbudget: € 23.700. Met jaarbetaling korting: ongeveer € 21.330.
 
 ### Voorbeeld C, zorginstelling 50 gebruikers op Enterprise (BYOK)
+
+Enterprise met compliance-eisen, inclusief officiële PRINCE2-templates voor certificeringsaudits.
 
 | Component | Berekening | Per maand |
 |---|---|---|
 | 50 × Enterprise | 50 × € 120 | € 6.000 |
-| Governance pakket | € 99 | € 99 |
 | Compliance pakket | € 199 | € 199 |
+| PRINCE2 Enterprise module (voor audit-templates) | € 79 | € 79 |
 | AI service-fee (BYOK, 50 gebr. × 100K tokens/mnd gem.) | 15% × ongeveer € 200 | € 30 |
 | Eigen OpenAI/Anthropic factuur | pay-as-you-go | ongeveer € 170 |
-| **Totaal maandfactuur van Inclufy** | | **€ 6.328** |
+| **Totaal maandfactuur van Inclufy** | | **€ 6.308** |
 | Plus eigen provider | | ongeveer € 170 |
 
-Jaarbudget bij Inclufy: ongeveer € 75.900, plus eigen AI-provider ongeveer € 2.040. Totaal ongeveer € 78.000, met voordeel dat alle token-stroom direct via het klant-eigen contract loopt.
+Jaarbudget bij Inclufy: ongeveer € 75.700, plus eigen AI-provider ongeveer € 2.040. Totaal ongeveer € 77.700, met voordeel dat alle token-stroom direct via het klant-eigen contract loopt.
 
 ### Voorbeeld D, tender/bid-bureau 5 gebruikers Professional + intensief AI
 
-Gespecialiseerd team dat zware tender-trajecten doet, verbruikt per gebruiker boven de inclusieve 50K:
+Gespecialiseerd team dat zware tender-trajecten doet. Alle methodiekondersteuning (PRINCE2 voor response-governance, Agile voor interne iteratie) zit standaard in Professional.
 
 | Component | Berekening | Per maand |
 |---|---|---|
 | 5 × Professional | 5 × € 49 | € 245 |
-| PRINCE2 module | € 79 | € 79 |
 | AI-verbruik, inclusief | 5 × 50K = 250K | € 0 |
 | AI-verbruik, overage | 5 × 100K extra op Claude Opus | ongeveer € 45 |
-| **Totaal** | | **€ 369** |
+| **Totaal** | | **€ 290** |
 
-Advies voor dit type team: BYOK aanzetten en ongeveer € 7 betalen (15% van ~€ 45) plus eigen Anthropic contract (ongeveer € 38). Netto hetzelfde maar met strakkere data-residency.
+Advies voor dit type team: BYOK aanzetten en ongeveer € 7 betalen (15% van ~€ 45) plus eigen Anthropic contract (ongeveer € 38). Netto hetzelfde Inclufy-tarief maar met strakkere data-residency.
+
+### Voorbeeld E, programma-portfolio 30 gebruikers Business + MSP-module
+
+Programma-manager wil MSP-benefits-realisatie bovenop multi-projectmanagement. Deze klant kiest bewust voor de MSP-uitbreiding; andere klanten met multi-project werk hebben die niet nodig.
+
+| Component | Berekening | Per maand |
+|---|---|---|
+| 30 × Business | 30 × € 79 | € 2.370 |
+| MSP programme-governance module | € 149 | € 149 |
+| Governance pakket (boards, decisions) | € 99 | € 99 |
+| AI-verbruik binnen 30 × 200K pool | 3M van 6M inbegrepen | € 0 |
+| **Totaal** | | **€ 2.618** |
+
+Jaarbudget: € 31.416. Met jaarbetaling korting: ongeveer € 28.260.
 
 ---
 
