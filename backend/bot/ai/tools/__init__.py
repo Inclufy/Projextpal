@@ -101,6 +101,7 @@ from . import (
     program_tools,
     program_lifecycle_tools,
     business_case_tools,
+    risk_register_tools,
 )
 
 import os
