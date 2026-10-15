@@ -1,0 +1,63 @@
+# Spiegelt master naar GitLab, waar gebouwd en uitgerold wordt.
+#
+# Waarom dit bestaat. Tot 15 oktober 2026 was er in GEEN van beide richtingen een
+# spiegel: geen pull-mirror op GitLab (`mirror: None`), geen push-mirror
+# (`remote_mirrors: []`), geen workflow hier. Beide kanten werden met de hand
+# gepusht, en dat stopte op enig moment. De twee lijnen liepen 198 om 27 commits
+# uit elkaar: het reviewwerk kwam binnen op GitHub, terwijl build:backend en
+# deploy:production op GitLab draaien. Gevolg was dat die buildlijn maandenlang
+# een oudere master bouwde, en dat de productie-images stil verouderden tot ze in
+# de registry niet eens meer te vinden waren.
+#
+# BEWUST GEEN --force. Als deze push geweigerd wordt, betekent dat dat GitLab
+# commits heeft die hier niet staan -- precies de situatie die dit moet
+# voorkomen. Die hoort luid te falen, niet stil overschreven te worden. De fix is
+# dan: haal dat werk eerst hierheen, net als in PR #136/#137.
+name: Spiegel naar GitLab
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Eén tegelijk, en niet afbreken: een halve push naar de buildlijn is erger dan
+# een paar seconden wachten.
+concurrency:
+  group: spiegel-naar-gitlab
+  cancel-in-progress: false
+
+jobs:
+  spiegel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Volledige historie: GitLab weigert een push die hij niet kan
+          # vastknopen aan wat hij al heeft.
+          fetch-depth: 0
+
+      - name: Push master naar GitLab
+        env:
+          GITLAB_SPIEGEL_TOKEN: ${{ secrets.GITLAB_SPIEGEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GITLAB_SPIEGEL_TOKEN:-}" ]; then
+            echo "::error::Secret GITLAB_SPIEGEL_TOKEN ontbreekt. Maak een GitLab-token met scope write_repository (account minimaal Maintainer op inclufy/projextpal) en zet hem in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          # Via de credential-store in plaats van in de URL: een mislukte push
+          # echoot de remote-URL, en daar hoort geen token in te staan.
+          git config --global credential.helper store
+          printf 'https://oauth2:%s@gitlab.com\n' "$GITLAB_SPIEGEL_TOKEN" > "$HOME/.git-credentials"
+          chmod 600 "$HOME/.git-credentials"
+
+          if git push https://gitlab.com/inclufy/projextpal.git "HEAD:refs/heads/master"; then
+            echo "Gespiegeld: $(git rev-parse --short HEAD) staat nu op gitlab/master."
+          else
+            echo "::error::Push naar GitLab geweigerd. Dat betekent dat GitLab commits heeft die hier niet staan -- de lijnen zijn opnieuw uit elkaar gelopen. Haal dat werk eerst hierheen (zie PR #136/#137) in plaats van te forceren; master is daar bovendien protected met allow_force_push=false."
+            exit 1
+          fi
+
+      - name: Credentials opruimen
+        if: always()
+        run: rm -f "$HOME/.git-credentials"
