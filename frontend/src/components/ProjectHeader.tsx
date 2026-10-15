@@ -13,6 +13,7 @@ import {
   Trash2,
   Mail,
   Copy,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ProjectAttentionPanel } from "./ProjectAttentionPanel";
@@ -283,8 +284,47 @@ export const ProjectHeader = () => {
 
   const statusMeta = STATUS_META[project?.status] ?? STATUS_META.pending;
 
+  // When the project was seeded from AI-extracted documents (see
+  // CreateProject.tsx onSuccess) a per-project localStorage flag triggers
+  // a persistent review-warning banner at the top of every project page.
+  // The flag is cleared once the operator clicks "Ik heb gereviewd".
+  const needsReviewKey = id ? `project:${id}:needsReview` : "";
+  const [needsReview, setNeedsReview] = useState(() => {
+    try { return !!needsReviewKey && localStorage.getItem(needsReviewKey) === "1"; }
+    catch { return false; }
+  });
+  const dismissReview = () => {
+    try { if (needsReviewKey) localStorage.removeItem(needsReviewKey); } catch { /* best-effort */ }
+    setNeedsReview(false);
+  };
+
   return (
     <>
+      {needsReview && (
+        <div
+          role="alert"
+          className="border-b border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40"
+        >
+          <div className="px-6 py-3 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-300 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm">
+                {pt("Project is uit documenten opgezet — menselijke review vereist voor activatie")}
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-200 mt-0.5">
+                {pt("De AI heeft de velden en milestones gevuld op basis van jouw uploads. Loop alle tabs (Setup, Projectinitiatie, Business Case, Team, Budget, Gantt) na voordat je het project activeert. Pas aan waar de context niet klopt.")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={dismissReview}
+              className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700"
+            >
+              {pt("Ik heb gereviewd")}
+            </button>
+          </div>
+        </div>
+      )}
       <div className="border-b border-border bg-card">
         <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           {/* Left: back + project title + status + health + subtitle */}
