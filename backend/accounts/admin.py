@@ -72,9 +72,33 @@ class TenantAIFeatureFlagsAdmin(admin.ModelAdmin):
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "is_subscribed")
+    list_display = (
+        "id", "name", "is_subscribed",
+        "ai_user_daily_token_cap", "ai_monthly_token_quota",
+    )
     list_filter = ("is_subscribed",)
     search_fields = ("name",)
+    fieldsets = (
+        (None, {"fields": ("name", "description", "is_subscribed")}),
+        ("Branding", {"fields": ("logo", "primary_color", "custom_domain"),
+                      "classes": ("collapse",)}),
+        ("Tenant defaults", {"fields": ("industry", "organization_size",
+                                        "timezone", "locale", "currency"),
+                              "classes": ("collapse",)}),
+        ("AI caps (per-tenant override)", {
+            "fields": ("ai_user_daily_token_cap", "ai_monthly_token_quota"),
+            "description": (
+                "Leave blank to use the global settings defaults "
+                "(100.000 tokens/day/user and 1.000.000 tokens/month/tenant). "
+                "Set a positive number to override. Set 0 to disable the cap "
+                "for this tenant. No deploy needed, takes effect immediately."
+            ),
+        }),
+        ("Advanced", {"fields": ("eval_mode", "require_2fa",
+                                  "require_project_membership_for_time_entry",
+                                  "default_hourly_rate"),
+                       "classes": ("collapse",)}),
+    )
 
 
 class CustomUserAdmin(admin.ModelAdmin):

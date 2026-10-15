@@ -65,6 +65,29 @@ class Company(models.Model):
         ),
     )
 
+    # Per-tenant AI cap overrides. When NULL the global defaults from
+    # settings.AI_USER_DAILY_TOKEN_CAP (100_000) and settings.AI_MONTHLY_
+    # TOKEN_QUOTA (1_000_000) apply — set a value here to raise or lower
+    # the cap for just this tenant without a backend redeploy. The pre-
+    # flight checks in core.ai_usage read company-first and fall back to
+    # settings so this is a safe additive override.
+    ai_user_daily_token_cap = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=(
+            "Override the global per-user daily token cap for this tenant. "
+            "NULL = use settings default (100.000 tokens/day/user). "
+            "Set to 0 to disable the cap entirely for this tenant."
+        ),
+    )
+    ai_monthly_token_quota = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=(
+            "Override the global per-company monthly token quota for this "
+            "tenant. NULL = use settings default (1.000.000 tokens/month). "
+            "Set to 0 to disable the quota entirely for this tenant."
+        ),
+    )
+
     # S7-06: default hourly rate for this tenant. When a ProjectTeam row has
     # ``hourly_rate=0`` (the "no override" signal), the cost dashboards and
     # budget calculators fall back to this company-level default. Set 0 for
