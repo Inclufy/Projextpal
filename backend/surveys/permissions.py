@@ -5,7 +5,7 @@ from rest_framework import permissions
 # Your existing role hierarchy from accounts
 ROLE_HIERARCHY = {
     "guest": 0,
-    "contibuter": 1,  # Note: keeping your spelling
+    "contributor": 1,  # Note: keeping your spelling
     "reviewer": 2,
     "pm": 3,
     "admin": 4,

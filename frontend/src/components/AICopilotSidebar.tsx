@@ -59,6 +59,7 @@ import { usePageTranslations } from "@/hooks/usePageTranslations";
 import { toast } from "sonner";
 import { GuidedTour, type TourStep } from "@/components/GuidedTour";
 import { IssuesTab } from "@/components/copilot/IssuesTab";
+import AIContextUsedChip, { type AIContextUsed } from "@/components/AIContextUsedChip";
 
 /* ─── Types ─── */
 type CopilotTab = "chat" | "guide" | "setup" | "issues";
@@ -69,6 +70,7 @@ interface Message {
   content: string;
   timestamp: Date;
   formSchema?: any;
+  aiContextUsed?: AIContextUsed | null;
 }
 
 interface ChatResponse {
@@ -87,6 +89,7 @@ interface ChatResponse {
 interface SendMessageResponse {
   user_message: { id: number; content: string };
   ai_response: { id: number; content: string; original_ai_response?: string };
+  ai_context_used?: AIContextUsed | null;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -953,27 +956,336 @@ const APP_SITEMAP: NavSection[] = [
    SUGGESTIONS & QUICK ACTIONS (Chat tab)
    ═══════════════════════════════════════════════════════════════════ */
 
-const suggestionsData = {
+/* Portfolio / dashboard scope — shown when NOT inside a project or programme.
+   Service-oriented wording: we offer to do the work for the PM, not demand it. */
+const portfolioSuggestionsData = {
   en: [
-    { icon: AlertTriangle, title: "Project risks", description: "Analyze current project risks and suggest mitigations." },
-    { icon: TrendingUp, title: "Performance report", description: "Generate a summary of project performance metrics." },
+    { icon: AlertTriangle, title: "Shall I scan your portfolio for risks?", description: "I'll walk every active project and surface emerging risks with a suggested mitigation per item." },
+    { icon: TrendingUp, title: "Want a monthly performance summary?", description: "I'll compile this month's delivery across your projects and programmes — ready to share with your sponsor." },
   ],
   nl: [
-    { icon: AlertTriangle, title: "Projectrisico's", description: "Analyseer huidige projectrisico's en stel mitigaties voor." },
-    { icon: TrendingUp, title: "Prestatierapport", description: "Genereer een samenvatting van projectprestaties." },
+    { icon: AlertTriangle, title: "Zal ik je portfolio scannen op risico's?", description: "Ik loop elk actief project na en breng de opkomende risico's naar voren, met een voorgestelde mitigatie per item." },
+    { icon: TrendingUp, title: "Wil je een maandprestatie-samenvatting?", description: "Ik stel de levering van deze maand over je projecten en programma's op — klaar om met je sponsor te delen." },
+  ],
+  fr: [
+    { icon: AlertTriangle, title: "Dois-je scanner votre portefeuille pour les risques ?", description: "Je parcours chaque projet actif et fais ressortir les risques émergents, avec une mesure proposée par item." },
+    { icon: TrendingUp, title: "Vous voulez un résumé mensuel de performance ?", description: "Je compile la livraison de ce mois sur vos projets et programmes — prêt à partager avec votre sponsor." },
   ],
 };
 
-const quickActionsData = {
+const portfolioQuickActionsData = {
   en: [
-    { icon: BarChart3, label: "Monthly report" },
-    { icon: TrendingUp, label: "Portfolio analysis" },
-    { icon: AlertTriangle, label: "Risk scan" },
+    { icon: BarChart3, label: "Draft my monthly report" },
+    { icon: TrendingUp, label: "Give me a portfolio analysis" },
+    { icon: AlertTriangle, label: "Run a risk scan for me" },
   ],
   nl: [
-    { icon: BarChart3, label: "Maandrapportage" },
-    { icon: TrendingUp, label: "Portfolio analyse" },
-    { icon: AlertTriangle, label: "Risico scan" },
+    { icon: BarChart3, label: "Stel mijn maandrapport op" },
+    { icon: TrendingUp, label: "Geef mij een portfolio-analyse" },
+    { icon: AlertTriangle, label: "Voer een risico-scan voor mij uit" },
+  ],
+  fr: [
+    { icon: BarChart3, label: "Rédigez mon rapport mensuel" },
+    { icon: TrendingUp, label: "Donnez-moi une analyse de portefeuille" },
+    { icon: AlertTriangle, label: "Lancez une analyse des risques pour moi" },
+  ],
+};
+
+/* Portfolio scope — shown when inside /governance/portfolios/:id. */
+const portfolioScopeSuggestions = {
+  en: [
+    { icon: TrendingUp, title: "Shall I prepare a portfolio review?", description: "I'll compile performance, delivery and risk signals across every component — ready for a board slide." },
+    { icon: AlertTriangle, title: "Want me to compare components?", description: "I'll rank your programmes and projects by health, spend and benefits realised so you can see outliers." },
+    { icon: FileText, title: "Draft a strategic update for the board?", description: "I'll turn the portfolio's current state into a one-page update aligned to the uploaded strategy docs." },
+  ],
+  nl: [
+    { icon: TrendingUp, title: "Zal ik een portfolio-review voorbereiden?", description: "Ik stel prestatie-, levering- en risicosignalen over alle componenten samen — klaar voor een board-slide." },
+    { icon: AlertTriangle, title: "Wil je dat ik componenten vergelijk?", description: "Ik rangschik je programma's en projecten op gezondheid, uitgaven en gerealiseerde baten zodat je uitschieters ziet." },
+    { icon: FileText, title: "Zal ik een strategische update voor de board opstellen?", description: "Ik vertaal de huidige portfoliostand naar een één-pagina update, in lijn met de geüploade strategiedocumenten." },
+  ],
+  fr: [
+    { icon: TrendingUp, title: "Dois-je préparer une revue de portefeuille ?", description: "Je compile les signaux de performance, livraison et risque sur chaque composant — prêt pour une slide de comité." },
+    { icon: AlertTriangle, title: "Voulez-vous que je compare les composants ?", description: "Je classe vos programmes et projets par santé, dépense et bénéfices réalisés pour voir les écarts." },
+    { icon: FileText, title: "Dois-je rédiger une mise à jour stratégique pour le comité ?", description: "Je traduis l'état actuel du portefeuille en une page alignée aux documents stratégiques téléversés." },
+  ],
+};
+
+const portfolioScopeQuickActions = {
+  en: [
+    { icon: BarChart3, label: "Shall I prioritise components by value?" },
+    { icon: Target, label: "Review the investment allocation for me?" },
+    { icon: AlertTriangle, label: "Run a portfolio-level risk scan" },
+  ],
+  nl: [
+    { icon: BarChart3, label: "Zal ik componenten prioriteren op waarde?" },
+    { icon: Target, label: "Wil je dat ik de investeringsallocatie herzie?" },
+    { icon: AlertTriangle, label: "Voer een portfolio-brede risico-scan uit" },
+  ],
+  fr: [
+    { icon: BarChart3, label: "Dois-je prioriser les composants par valeur ?" },
+    { icon: Target, label: "Voulez-vous que je revoie l'allocation d'investissement ?" },
+    { icon: AlertTriangle, label: "Lancez une analyse des risques au niveau portefeuille" },
+  ],
+};
+
+/* Board scope — shown when inside /governance/boards/:id. The same set
+   also covers Decision and Meeting detail pages (they inherit the board's
+   suggestions since those entities almost always point back to a board). */
+const boardScopeSuggestions = {
+  en: [
+    { icon: Calendar, title: "Shall I prepare the next board agenda?", description: "I'll draft an agenda from the pending decisions, open actions and the standing-papers you've uploaded." },
+    { icon: AlertTriangle, title: "Want me to list open board decisions?", description: "I'll gather every decision still awaiting a vote or an outcome, with the required quorum and current approvals." },
+    { icon: FileText, title: "Draft a briefing note for the chair?", description: "I'll turn the papers + current state into a one-pager that briefs the chair before the meeting." },
+  ],
+  nl: [
+    { icon: Calendar, title: "Zal ik de volgende boardagenda voorbereiden?", description: "Ik stel een agenda op uit de openstaande besluiten, acties en de door jou geüploade standing papers." },
+    { icon: AlertTriangle, title: "Wil je dat ik de openstaande board-besluiten toon?", description: "Ik verzamel elk besluit dat nog op een stem of uitkomst wacht, met vereist quorum en huidige fiatteringen." },
+    { icon: FileText, title: "Zal ik een briefingnotitie voor de voorzitter opstellen?", description: "Ik vertaal de papers + huidige stand in een één-pagina briefing voor de voorzitter vóór de meeting." },
+  ],
+  fr: [
+    { icon: Calendar, title: "Dois-je préparer l'ordre du jour du prochain comité ?", description: "Je rédige l'ordre du jour à partir des décisions en attente, des actions ouvertes et des documents permanents téléversés." },
+    { icon: AlertTriangle, title: "Voulez-vous que je liste les décisions ouvertes ?", description: "Je rassemble chaque décision en attente d'un vote ou d'un résultat, avec le quorum requis et les approbations actuelles." },
+    { icon: FileText, title: "Dois-je rédiger une note de briefing pour le président ?", description: "Je traduis les documents + l'état actuel en une page de briefing pour le président avant la réunion." },
+  ],
+};
+
+const boardScopeQuickActions = {
+  en: [
+    { icon: Users, label: "Shall I summarise the last meeting's minutes?" },
+    { icon: CheckCircle2, label: "Update the open action items for me?" },
+    { icon: FileText, label: "Draft a stakeholder update after this board" },
+  ],
+  nl: [
+    { icon: Users, label: "Zal ik de notulen van de laatste meeting samenvatten?" },
+    { icon: CheckCircle2, label: "Wil je dat ik de openstaande acties bijwerk?" },
+    { icon: FileText, label: "Stel een stakeholderupdate op na deze board" },
+  ],
+  fr: [
+    { icon: Users, label: "Dois-je résumer les minutes de la dernière réunion ?" },
+    { icon: CheckCircle2, label: "Voulez-vous que je mette à jour les actions ouvertes ?" },
+    { icon: FileText, label: "Rédigez une mise à jour pour les parties prenantes après ce comité" },
+  ],
+};
+
+/* Programme-level scope — shown when inside /programs/:id. */
+const programSuggestionsData = {
+  en: (name?: string) => [
+    { icon: TrendingUp, title: "Programme health check", description: `Give me a health status for ${name || "this programme"} across its component projects.` },
+    { icon: AlertTriangle, title: "Cross-project risks", description: `List risks that affect multiple projects in ${name || "this programme"} and suggest a shared mitigation.` },
+    { icon: BarChart3, title: "Benefits realisation", description: `Summarise realised vs expected benefits for ${name || "this programme"}.` },
+  ],
+  nl: (name?: string) => [
+    { icon: TrendingUp, title: "Programmagezondheid", description: `Geef mij een gezondheidsstatus voor ${name || "dit programma"} over de onderliggende projecten.` },
+    { icon: AlertTriangle, title: "Overkoepelende risico's", description: `Toon risico's die meerdere projecten in ${name || "dit programma"} raken en stel een gezamenlijke mitigatie voor.` },
+    { icon: BarChart3, title: "Baatrealisatie", description: `Vat de gerealiseerde versus verwachte baten samen voor ${name || "dit programma"}.` },
+  ],
+  fr: (name?: string) => [
+    { icon: TrendingUp, title: "Santé du programme", description: `Donne-moi un bilan de santé pour ${name || "ce programme"} à travers ses projets constitutifs.` },
+    { icon: AlertTriangle, title: "Risques inter-projets", description: `Liste les risques affectant plusieurs projets dans ${name || "ce programme"} et propose une mesure partagée.` },
+    { icon: BarChart3, title: "Réalisation des bénéfices", description: `Résume les bénéfices réalisés par rapport aux prévisions pour ${name || "ce programme"}.` },
+  ],
+};
+
+const programQuickActionsData = {
+  en: (name?: string) => [
+    { icon: FileText, label: `Draft programme highlight report for ${name || "this programme"}` },
+    { icon: TrendingUp, label: "Roll up status from all component projects" },
+    { icon: AlertTriangle, label: "List escalations to the programme board" },
+  ],
+  nl: (name?: string) => [
+    { icon: FileText, label: `Stel programma-highlightrapport op voor ${name || "dit programma"}` },
+    { icon: TrendingUp, label: "Rol de status op uit alle onderliggende projecten" },
+    { icon: AlertTriangle, label: "Toon escalaties naar de programmaraad" },
+  ],
+  fr: (name?: string) => [
+    { icon: FileText, label: `Rédiger le rapport de suivi programme pour ${name || "ce programme"}` },
+    { icon: TrendingUp, label: "Consolider le statut depuis tous les projets constitutifs" },
+    { icon: AlertTriangle, label: "Lister les escalades vers le comité programme" },
+  ],
+};
+
+/* Project scope — shown when inside /projects/:id. Methodology-aware. */
+type Lang = "nl" | "en" | "fr";
+
+const projectBaseSuggestions = (lang: Lang, name?: string) => {
+  const pName = name || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project");
+  const dict = {
+    en: [
+      { icon: AlertTriangle, title: `Shall I analyse the risks of ${pName}?`, description: `I'll walk the risk register, score what's open, and propose a concrete mitigation per item.` },
+      { icon: TrendingUp, title: `Want me to draft a status report?`, description: `I'll compile a highlight report for ${pName} from current progress, risks and milestones — ready to share.` },
+      { icon: FileText, title: `Should I list the open actions?`, description: `I'll show every open action and overdue task on ${pName} with the responsible owner for each.` },
+    ],
+    nl: [
+      { icon: AlertTriangle, title: `Zal ik de risico's van ${pName} analyseren?`, description: `Ik loop het risico-register na, scoor wat open is en stel per item een concrete mitigatie voor.` },
+      { icon: TrendingUp, title: `Wil je dat ik een statusrapport opstel?`, description: `Ik stel een highlight-rapport samen voor ${pName} uit de huidige voortgang, risico's en mijlpalen — klaar om te delen.` },
+      { icon: FileText, title: `Zal ik de openstaande acties tonen?`, description: `Ik laat elke openstaande actie en te-late taak op ${pName} zien, met de verantwoordelijke per actie.` },
+    ],
+    fr: [
+      { icon: AlertTriangle, title: `Dois-je analyser les risques de ${pName} ?`, description: `Je parcours le registre, note ce qui est ouvert et propose une mesure concrète par item.` },
+      { icon: TrendingUp, title: `Vous voulez que je rédige un rapport de suivi ?`, description: `Je compile un rapport pour ${pName} à partir des progrès, risques et jalons actuels — prêt à partager.` },
+      { icon: FileText, title: `Dois-je lister les actions ouvertes ?`, description: `Je montre chaque action ouverte et tâche en retard sur ${pName} avec le responsable de chacune.` },
+    ],
+  };
+  return dict[lang];
+};
+
+const projectMethodologyActions: Record<string, Record<Lang, (name: string) => Array<{ icon: any; label: string }>>> = {
+  prince2: {
+    en: (n) => [
+      { icon: Briefcase, label: `Shall I draft a Business Case for ${n}?` },
+      { icon: AlertTriangle, label: `Want me to raise an Exception Report for ${n}?` },
+      { icon: CheckCircle2, label: `Shall I prepare the next Stage-Gate review for ${n}?` },
+      { icon: FileText, label: `Shall I generate the Highlight Report for ${n}?` },
+    ],
+    nl: (n) => [
+      { icon: Briefcase, label: `Zal ik een Business Case opstellen voor ${n}?` },
+      { icon: AlertTriangle, label: `Wil je dat ik een Exceptierapport open voor ${n}?` },
+      { icon: CheckCircle2, label: `Zal ik de volgende Fasepoort-review voorbereiden voor ${n}?` },
+      { icon: FileText, label: `Zal ik het Highlightrapport genereren voor ${n}?` },
+    ],
+    fr: (n) => [
+      { icon: Briefcase, label: `Dois-je rédiger un Business Case pour ${n} ?` },
+      { icon: AlertTriangle, label: `Voulez-vous que je déclenche un rapport d'exception pour ${n} ?` },
+      { icon: CheckCircle2, label: `Dois-je préparer la prochaine revue de jalon pour ${n} ?` },
+      { icon: FileText, label: `Dois-je générer le rapport de suivi pour ${n} ?` },
+    ],
+  },
+  scrum: {
+    en: (n) => [
+      { icon: Target, label: `Shall I plan the next sprint for ${n}?` },
+      { icon: Users, label: `Want me to summarise today's daily standup for ${n}?` },
+      { icon: CheckCircle2, label: `Shall I draft the sprint review summary for ${n}?` },
+      { icon: BarChart3, label: `Shall I compute velocity over the last 3 sprints of ${n}?` },
+    ],
+    nl: (n) => [
+      { icon: Target, label: `Zal ik de volgende sprint plannen voor ${n}?` },
+      { icon: Users, label: `Wil je dat ik de daily standup van vandaag samenvat voor ${n}?` },
+      { icon: CheckCircle2, label: `Zal ik de sprint-review-samenvatting opstellen voor ${n}?` },
+      { icon: BarChart3, label: `Zal ik de velocity berekenen over de laatste 3 sprints van ${n}?` },
+    ],
+    fr: (n) => [
+      { icon: Target, label: `Dois-je planifier le prochain sprint pour ${n} ?` },
+      { icon: Users, label: `Voulez-vous que je résume le daily d'aujourd'hui pour ${n} ?` },
+      { icon: CheckCircle2, label: `Dois-je rédiger le résumé de revue de sprint pour ${n} ?` },
+      { icon: BarChart3, label: `Dois-je calculer la vélocité sur les 3 derniers sprints de ${n} ?` },
+    ],
+  },
+  kanban: {
+    en: (n) => [
+      { icon: AlertTriangle, label: `Shall I surface the blocked items on ${n}?` },
+      { icon: BarChart3, label: `Want me to pull lead-time + throughput metrics for ${n}?` },
+      { icon: Target, label: `Shall I check which column of ${n} is near its WIP limit?` },
+    ],
+    nl: (n) => [
+      { icon: AlertTriangle, label: `Zal ik de geblokkeerde items op ${n} naar voren halen?` },
+      { icon: BarChart3, label: `Wil je dat ik doorlooptijd + doorstroom-metrics voor ${n} ophaal?` },
+      { icon: Target, label: `Zal ik checken welke kolom van ${n} tegen de WIP-limiet aan zit?` },
+    ],
+    fr: (n) => [
+      { icon: AlertTriangle, label: `Dois-je faire ressortir les éléments bloqués de ${n} ?` },
+      { icon: BarChart3, label: `Voulez-vous que je récupère délai + débit pour ${n} ?` },
+      { icon: Target, label: `Dois-je vérifier quelle colonne de ${n} approche de la limite WIP ?` },
+    ],
+  },
+  agile: {
+    en: (n) => [
+      { icon: Target, label: `Plan the next iteration of ${n}` },
+      { icon: FileText, label: `Refine the backlog of ${n}` },
+      { icon: Calendar, label: `Draft release planning for ${n}` },
+    ],
+    nl: (n) => [
+      { icon: Target, label: `Plan de volgende iteratie van ${n}` },
+      { icon: FileText, label: `Verfijn de backlog van ${n}` },
+      { icon: Calendar, label: `Stel een release-planning op voor ${n}` },
+    ],
+    fr: (n) => [
+      { icon: Target, label: `Planifiez la prochaine itération de ${n}` },
+      { icon: FileText, label: `Affinez le backlog de ${n}` },
+      { icon: Calendar, label: `Rédigez la planification des releases pour ${n}` },
+    ],
+  },
+  waterfall: {
+    en: (n) => [
+      { icon: CheckCircle2, label: `Draft the next phase-gate sign-off for ${n}` },
+      { icon: FileText, label: `Baseline the requirements of ${n}` },
+      { icon: AlertTriangle, label: `List deviations against the plan of ${n}` },
+    ],
+    nl: (n) => [
+      { icon: CheckCircle2, label: `Stel de volgende fasepoort-sign-off op voor ${n}` },
+      { icon: FileText, label: `Baseline de eisen van ${n}` },
+      { icon: AlertTriangle, label: `Toon afwijkingen t.o.v. het plan van ${n}` },
+    ],
+    fr: (n) => [
+      { icon: CheckCircle2, label: `Rédiger la validation du prochain jalon pour ${n}` },
+      { icon: FileText, label: `Baseliner les exigences de ${n}` },
+      { icon: AlertTriangle, label: `Lister les écarts par rapport au plan de ${n}` },
+    ],
+  },
+  hybrid: {
+    en: (n) => [
+      { icon: Workflow, label: `Which phases of ${n} are predictive vs adaptive` },
+      { icon: AlertTriangle, label: `List the open risks of ${n} across all phases` },
+    ],
+    nl: (n) => [
+      { icon: Workflow, label: `Welke fasen van ${n} zijn voorspellend vs adaptief` },
+      { icon: AlertTriangle, label: `Toon de openstaande risico's van ${n} over alle fasen` },
+    ],
+    fr: (n) => [
+      { icon: Workflow, label: `Quelles phases de ${n} sont prédictives vs adaptatives` },
+      { icon: AlertTriangle, label: `Listez les risques ouverts de ${n} toutes phases confondues` },
+    ],
+  },
+  "lss-green": {
+    en: (n) => [
+      { icon: BarChart3, label: `Draft a SIPOC for ${n}` },
+      { icon: TrendingUp, label: `Measure baseline Cp/Cpk for ${n}` },
+      { icon: CheckCircle2, label: `Prepare the next tollgate review for ${n}` },
+    ],
+    nl: (n) => [
+      { icon: BarChart3, label: `Stel een SIPOC op voor ${n}` },
+      { icon: TrendingUp, label: `Meet baseline Cp/Cpk voor ${n}` },
+      { icon: CheckCircle2, label: `Bereid de volgende tollgate-review voor voor ${n}` },
+    ],
+    fr: (n) => [
+      { icon: BarChart3, label: `Rédiger un SIPOC pour ${n}` },
+      { icon: TrendingUp, label: `Mesurer Cp/Cpk de référence pour ${n}` },
+      { icon: CheckCircle2, label: `Préparer la prochaine revue tollgate pour ${n}` },
+    ],
+  },
+  "lss-black": {
+    en: (n) => [
+      { icon: BarChart3, label: `Design a DOE for ${n}` },
+      { icon: TrendingUp, label: `Run an MSA / Gage R&R on ${n}` },
+      { icon: Shield, label: `Draft the control plan for ${n}` },
+    ],
+    nl: (n) => [
+      { icon: BarChart3, label: `Ontwerp een DOE voor ${n}` },
+      { icon: TrendingUp, label: `Draai een MSA / Gage R&R op ${n}` },
+      { icon: Shield, label: `Stel het control plan op voor ${n}` },
+    ],
+    fr: (n) => [
+      { icon: BarChart3, label: `Concevoir un DOE pour ${n}` },
+      { icon: TrendingUp, label: `Lancer une MSA / Gage R&R sur ${n}` },
+      { icon: Shield, label: `Rédiger le plan de contrôle pour ${n}` },
+    ],
+  },
+};
+
+const projectGenericActions = {
+  en: (n: string) => [
+    { icon: FileText, label: `Shall I draft a status update for ${n}?` },
+    { icon: AlertTriangle, label: `Want me to scan ${n} for emerging risks?` },
+    { icon: Users, label: `Shall I check who is overloaded on ${n}?` },
+  ],
+  nl: (n: string) => [
+    { icon: FileText, label: `Zal ik een statusupdate opstellen voor ${n}?` },
+    { icon: AlertTriangle, label: `Wil je dat ik ${n} scan op opkomende risico's?` },
+    { icon: Users, label: `Zal ik checken wie overbelast is op ${n}?` },
+  ],
+  fr: (n: string) => [
+    { icon: FileText, label: `Dois-je rédiger une mise à jour de statut pour ${n} ?` },
+    { icon: AlertTriangle, label: `Voulez-vous que j'analyse ${n} à la recherche de risques ?` },
+    { icon: Users, label: `Dois-je vérifier qui est surchargé sur ${n} ?` },
   ],
 };
 
@@ -982,7 +1294,7 @@ const quickActionsData = {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function AICopilotSidebar() {
-  const { isOpen, close, requestedTab } = useCopilot();
+  const { isOpen, close, requestedTab, activeProject, activeProgram, pendingMessage, consumePendingMessage } = useCopilot();
   const { language } = useLanguage();
   const { pt } = usePageTranslations();
   const { user } = useAuth();
@@ -1050,8 +1362,201 @@ export default function AICopilotSidebar() {
     : GUIDE_MAP[location.pathname] || GUIDE_MAP[currentPath] || DEFAULT_GUIDE;
   const guide = resolveGuide(rawGuide, guideLang);
 
-  const suggestions = language === "nl" ? suggestionsData.nl : suggestionsData.en;
-  const quickActions = language === "nl" ? quickActionsData.nl : quickActionsData.en;
+  // ──────────────────────────────────────────────────────────────────
+  // Context-aware suggestions + quick actions.
+  //
+  // The chat intro should be dedicated to WHERE the user is standing:
+  //   * inside a project (methodology-aware if we can detect it)
+  //   * inside a programme
+  //   * else → portfolio/dashboard defaults.
+  // Wording stays service-oriented: "Shall I…", "Want me to…" — the
+  // copilot offers to do the work, it doesn't demand it.
+  // ──────────────────────────────────────────────────────────────────
+  // Scope detection first — the IDs feed both the scope-gaps fetch below
+  // and the suggestions/quick-actions selection further down.
+  //
+  // URL wins. activeProject/activeProgram is a hint set when the user
+  // opened the copilot via a "Vraag de Co-pilot" button, and it must NOT
+  // outlast the next navigation — once the URL leaves /projects/<id>
+  // (bv. de PM gaat terug naar het dashboard) we drop the project scope
+  // so the welcome header, gaps and quick-actions reflect where the user
+  // actually is now, not the last place he visited.
+  const urlProjectIdForScope = location.pathname.match(/\/projects\/(\d+)/)?.[1];
+  const scopeProjectId = urlProjectIdForScope
+    ? (activeProject?.id != null && String(activeProject.id) === urlProjectIdForScope
+        ? String(activeProject.id)
+        : urlProjectIdForScope)
+    : undefined;
+  const urlProgramIdForScope = location.pathname.match(/\/programs\/(\d+)/)?.[1];
+  const scopeProgramId = urlProgramIdForScope
+    ? (activeProgram?.id != null && String(activeProgram.id) === urlProgramIdForScope
+        ? String(activeProgram.id)
+        : urlProgramIdForScope)
+    : undefined;
+  const scopeMethodology = methodologyMatch?.[2] as string | undefined;
+  const lang: Lang = language === "nl" || language === "fr" ? language : "en";
+  // Governance surfaces — UUID in path.
+  const uuidRe = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/.source;
+  const scopePortfolioId = location.pathname.match(new RegExp(`/governance/portfolios/(${uuidRe})`))?.[1];
+  const scopeBoardId = location.pathname.match(new RegExp(`/governance/boards/(${uuidRe})`))?.[1];
+  const scopeDecisionId = location.pathname.match(new RegExp(`/governance/decisions/(${uuidRe})`))?.[1];
+  const scopeMeetingId = location.pathname.match(new RegExp(`/governance/meetings/(${uuidRe})`))?.[1];
+
+  // Scope-gaps: fetch "what's still missing on this scope" so we can show
+  // a dedicated "Ontbreekt nog" section above the suggestions with
+  // offer-to-fill buttons that pre-send the fill prompt to the chat.
+  // Must be declared BEFORE scopeProjectName so that fallback reads a
+  // valid binding (TDZ otherwise).
+  type ScopeGap = {
+    key: string;
+    label_nl: string; label_en: string; label_fr: string;
+    deep_link?: string;
+    fill_prompt_nl: string; fill_prompt_en: string; fill_prompt_fr: string;
+  };
+  const [scopeGaps, setScopeGaps] = useState<ScopeGap[]>([]);
+  // Scope-name fetched from the same endpoint — makes the welcome header
+  // and the quick-action labels show the real entity name even when the
+  // copilot was opened via the sparkle button in the top bar (which does
+  // not go through openForProject/openForProgram and so leaves
+  // activeProject/activeProgram empty).
+  const [fetchedScopeName, setFetchedScopeName] = useState<string>("");
+  useEffect(() => {
+    const scopeKey = scopeProjectId ? `project_id=${scopeProjectId}`
+      : scopeProgramId ? `program_id=${scopeProgramId}`
+      : scopeBoardId ? `board_id=${scopeBoardId}`
+      : scopePortfolioId ? `portfolio_id=${scopePortfolioId}`
+      : "";
+    if (!scopeKey || !isOpen) {
+      setScopeGaps([]);
+      setFetchedScopeName("");
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const r = await fetch(`/api/v1/ai/scope-gaps/?${scopeKey}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!cancel) {
+          setScopeGaps(Array.isArray(data?.gaps) ? data.gaps : []);
+          setFetchedScopeName(typeof data?.scope_name === "string" ? data.scope_name : "");
+        }
+      } catch {
+        if (!cancel) {
+          setScopeGaps([]);
+          setFetchedScopeName("");
+        }
+      }
+    })();
+    return () => { cancel = true; };
+  }, [isOpen, scopeProjectId, scopeProgramId, scopeBoardId, scopePortfolioId]);
+  const gapLabel = (g: ScopeGap) => (lang === "nl" ? g.label_nl : lang === "fr" ? g.label_fr : g.label_en);
+  const gapPrompt = (g: ScopeGap) => (lang === "nl" ? g.fill_prompt_nl : lang === "fr" ? g.fill_prompt_fr : g.fill_prompt_en);
+
+  // activeProject/activeProgram.name is only set when the copilot is opened
+  // via openForProject/openForProgram. When the user hits the sparkle button
+  // in the top bar instead, these are empty — fall back to the name the
+  // scope-gaps endpoint returned above so quick-action labels and the
+  // welcome header still carry the real entity name.
+  const scopeProjectName = activeProject?.name || fetchedScopeName;
+  const scopeProgramName = activeProgram?.name || fetchedScopeName;
+
+  // Precedence: project > program > board > portfolio > default. Decisions
+  // and meetings share the board scope — they are always "about" a board.
+  const scopeKind: "project" | "program" | "board" | "portfolio" | "default" =
+    scopeProjectId ? "project"
+      : scopeProgramId ? "program"
+        : (scopeBoardId || scopeDecisionId || scopeMeetingId) ? "board"
+          : scopePortfolioId ? "portfolio"
+            : "default";
+
+  const suggestions = scopeKind === "project"
+    ? projectBaseSuggestions(lang, scopeProjectName)
+    : scopeKind === "program"
+      ? programSuggestionsData[lang](scopeProgramName)
+      : scopeKind === "board"
+        ? boardScopeSuggestions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeSuggestions[lang]
+          : portfolioSuggestionsData[lang];
+
+  const quickActions = scopeKind === "project"
+    ? ((scopeMethodology && projectMethodologyActions[scopeMethodology])
+        ? projectMethodologyActions[scopeMethodology][lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project"))
+        : projectGenericActions[lang](scopeProjectName || (lang === "nl" ? "dit project" : lang === "fr" ? "ce projet" : "this project")))
+    : scopeKind === "program"
+      ? programQuickActionsData[lang](scopeProgramName)
+      : scopeKind === "board"
+        ? boardScopeQuickActions[lang]
+        : scopeKind === "portfolio"
+          ? portfolioScopeQuickActions[lang]
+          : portfolioQuickActionsData[lang];
+
+  // Sprint 5 S5-05 — "Wat zegt de tender over X?" preset questions.
+  // Only shown while viewing a project page AND when that project has an
+  // enabled ProjectAIContext. The questions are routed through the
+  // normal chat-send flow so the backend's X-UI-Language / co-pilot
+  // handling stays unchanged.
+  const projectIdForPresets = methodologyMatch?.[1] || null;
+  const [tenderContextEnabled, setTenderContextEnabled] = useState<boolean>(false);
+  useEffect(() => {
+    if (!projectIdForPresets) {
+      setTenderContextEnabled(false);
+      return;
+    }
+    let cancel = false;
+    (async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const r = await fetch(`/api/v1/projects/${projectIdForPresets}/ai-context/`, {
+          method: "GET",
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (!r.ok) {
+          if (!cancel) setTenderContextEnabled(false);
+          return;
+        }
+        const payload = await r.json();
+        if (!cancel) setTenderContextEnabled(!!payload?.enabled);
+      } catch {
+        if (!cancel) setTenderContextEnabled(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [projectIdForPresets]);
+
+  const tenderPresets = (() => {
+    if (language === "en") {
+      return [
+        "What are the key requirements the tender lists?",
+        "Which deadlines are mentioned in the documents?",
+        "Which risks do the documents call out?",
+        "Which stakeholders are mentioned?",
+        "Which KPIs or measurable goals are stated?",
+      ];
+    }
+    if (language === "fr") {
+      return [
+        "Quelles sont les exigences principales ?",
+        "Quelles échéances sont mentionnées ?",
+        "Quels risques les documents soulèvent-ils ?",
+        "Quels parties prenantes sont nommés ?",
+        "Quels KPI ou objectifs mesurables sont cités ?",
+      ];
+    }
+    return [
+      "Wat zijn de belangrijkste eisen?",
+      "Welke deadlines noemen de documenten?",
+      "Welke risico's noemen de documenten?",
+      "Welke stakeholders worden genoemd?",
+      "Welke KPI's / meetbare doelen staan er?",
+    ];
+  })();
 
   // Sync with requested tab from context
   useEffect(() => {
@@ -1072,6 +1577,21 @@ export default function AICopilotSidebar() {
     if (isOpen && activeTab === "chat") setTimeout(() => inputRef.current?.focus(), 300);
   }, [isOpen, activeTab]);
 
+  // A pending message queued by a "pick up with AI" action: switch to chat and
+  // either auto-send it (AI does it) or prefill the input (AI guidance).
+  useEffect(() => {
+    if (!isOpen || !pendingMessage) return;
+    setActiveTab("chat");
+    const m = consumePendingMessage();
+    if (!m) return;
+    if (m.autoSend) {
+      setTimeout(() => handleSendMessage(m.text), 350);
+    } else {
+      setInputValue(m.text);
+      setTimeout(() => inputRef.current?.focus(), 350);
+    }
+  }, [isOpen, pendingMessage]);
+
   const handleSendMessage = async (customMessage?: string) => {
     const messageContent = customMessage || inputValue;
     if (!messageContent.trim() || isSending) return;
@@ -1087,7 +1607,49 @@ export default function AICopilotSidebar() {
         chatId = newChat.id.toString();
         setCurrentChatId(chatId);
       }
-      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, { message: messageContent, language });
+      // Scope the turn to the current project so tools like "close this project"
+      // / "complete all tasks" / "add an action" act on it without an id. Prefer
+      // an explicitly set active project (opened via "Ask Co-pilot" or a pick-up);
+      // otherwise fall back to the project in the current URL, so the copilot has
+      // context however it was opened while inside a project.
+      // URL wins over activeProject/Program — a stale active project
+      // from an earlier page must not travel with the chat to a new
+      // URL (bv. de dashboard-chat moet NIET nog Barneveld-context
+      // meesturen). We only carry the active-id when it matches the
+      // current URL; otherwise fall back to whatever the URL says
+      // (which can be nothing, i.e. a true dashboard/portfolio chat).
+      const urlProjectId = window.location.pathname.match(/\/projects\/(\d+)/)?.[1];
+      const projectId = urlProjectId
+        ? (activeProject?.id != null && String(activeProject.id) === urlProjectId
+            ? String(activeProject.id)
+            : urlProjectId)
+        : undefined;
+      const urlProgramId = window.location.pathname.match(/\/programs\/(\d+)/)?.[1];
+      const programId = urlProgramId
+        ? (activeProgram?.id != null && String(activeProgram.id) === urlProgramId
+            ? String(activeProgram.id)
+            : urlProgramId)
+        : undefined;
+      // Governance scopes — their IDs are UUIDs so we loosen the regex.
+      // Board URL also matters for Decisions / Meetings when they are
+      // opened from the board detail; the backend stacks board context
+      // automatically for decision_id/meeting_id too, but passing both
+      // is cheaper than one extra DB hop.
+      const uuid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+      const portfolioId = window.location.pathname.match(new RegExp(`/governance/portfolios/(${uuid})`))?.[1];
+      const boardId = window.location.pathname.match(new RegExp(`/governance/boards/(${uuid})`))?.[1];
+      const decisionId = window.location.pathname.match(new RegExp(`/governance/decisions/(${uuid})`))?.[1];
+      const meetingId = window.location.pathname.match(new RegExp(`/governance/meetings/(${uuid})`))?.[1];
+      const response = await api.post<SendMessageResponse>(`/bot/chats/${chatId}/send_message/`, {
+        message: messageContent,
+        language,
+        ...(projectId ? { project_id: projectId } : {}),
+        ...(programId ? { program_id: programId } : {}),
+        ...(portfolioId ? { portfolio_id: portfolioId } : {}),
+        ...(boardId ? { board_id: boardId } : {}),
+        ...(decisionId ? { decision_id: decisionId } : {}),
+        ...(meetingId ? { meeting_id: meetingId } : {}),
+      });
       let formSchema = null;
       if (response.ai_response?.original_ai_response) {
         try {
@@ -1095,7 +1657,7 @@ export default function AICopilotSidebar() {
           if (parsed.form_type && parsed.fields) { formSchema = parsed; setActiveForm(parsed); }
         } catch {}
       }
-      const aiResponse: Message = { id: (response.ai_response?.id || Date.now() + 1).toString(), role: "assistant", content: response.ai_response?.content || "Sorry, I could not process your request.", timestamp: new Date(), formSchema };
+      const aiResponse: Message = { id: (response.ai_response?.id || Date.now() + 1).toString(), role: "assistant", content: response.ai_response?.content || "Sorry, I could not process your request.", timestamp: new Date(), formSchema, aiContextUsed: response.ai_context_used || null };
       setMessages((prev) => [...prev, aiResponse]);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -1404,9 +1966,86 @@ export default function AICopilotSidebar() {
                       <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-purple-400 to-fuchsia-500 shadow-lg">
                         <Sparkles className="h-8 w-8 text-white" />
                       </div>
-                      <h3 className="text-base font-semibold text-foreground mb-1">{isNl ? "Hallo! Ik ben uw AI Copilot" : "Hello! I'm your AI Copilot"}</h3>
-                      <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">{isNl ? "Ik help u met overzicht van uw projecten en programma's" : "I help you with insights on your projects and programs"}</p>
+                      <h3 className="text-base font-semibold text-foreground mb-1">
+                        {scopeKind === "project"
+                          ? (isNl
+                              ? `Hallo! Waar kan ik je mee helpen op ${scopeProjectName || "dit project"}?`
+                              : language === "fr"
+                                ? `Bonjour ! Comment puis-je vous aider sur ${scopeProjectName || "ce projet"} ?`
+                                : `Hi! How can I help you on ${scopeProjectName || "this project"}?`)
+                          : scopeKind === "program"
+                            ? (isNl
+                                ? `Hallo! Waar kan ik je mee helpen op ${scopeProgramName || "dit programma"}?`
+                                : language === "fr"
+                                  ? `Bonjour ! Comment puis-je vous aider sur ${scopeProgramName || "ce programme"} ?`
+                                  : `Hi! How can I help you on ${scopeProgramName || "this programme"}?`)
+                            : scopeKind === "board"
+                              ? (isNl ? "Hallo! Waar kan ik je mee helpen bij deze board?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider sur ce comité ?" : "Hi! How can I help you on this board?")
+                              : scopeKind === "portfolio"
+                                ? (isNl ? "Hallo! Waar kan ik je mee helpen op dit portfolio?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider sur ce portefeuille ?" : "Hi! How can I help you on this portfolio?")
+                                : (isNl ? "Hallo! Waar kan ik je vandaag mee helpen?" : language === "fr" ? "Bonjour ! Comment puis-je vous aider aujourd'hui ?" : "Hi! How can I help you today?")}
+                      </h3>
+                      <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
+                        {scopeKind === "project"
+                          ? (isNl ? "Ik neem routinewerk graag van je over — stel een vraag of pak een snelle actie." : language === "fr" ? "Je prends volontiers le travail de routine en charge — posez une question ou lancez une action rapide." : "I'll gladly take routine work off your plate — ask a question or pick a quick action.")
+                          : scopeKind === "program"
+                            ? (isNl ? "Ik rol status en risico's op uit je projecten en help je het programma te sturen." : language === "fr" ? "Je consolide statut et risques depuis vos projets et vous aide à piloter le programme." : "I roll up status and risks from your projects and help you steer the programme.")
+                            : scopeKind === "board"
+                              ? (isNl ? "Ik bereid agenda's voor, hou openstaande besluiten en acties bij, en vat notulen samen." : language === "fr" ? "Je prépare les ordres du jour, suis les décisions et actions ouvertes et résume les minutes." : "I prepare agendas, track open decisions and actions, and summarise minutes.")
+                              : scopeKind === "portfolio"
+                                ? (isNl ? "Ik vergelijk je componenten, help prioriteren en stel strategische updates op." : language === "fr" ? "Je compare vos composants, aide à prioriser et rédige des mises à jour stratégiques." : "I compare your components, help prioritise and draft strategic updates.")
+                                : (isNl ? "Ik help je met overzicht over je projecten en programma's — en neem routinewerk van je over." : language === "fr" ? "Je vous aide avec une vue sur vos projets et programmes — et prends le travail de routine en charge." : "I help you with insights across your projects and programmes — and take routine work off your plate.")}
+                      </p>
                     </div>
+                    {scopeGaps.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          {isNl ? "Ontbreekt nog — zal ik voor je invullen?" : language === "fr" ? "Encore manquant — dois-je les remplir pour vous ?" : "Still missing — shall I fill these in?"}
+                        </p>
+                        <div className="space-y-1.5">
+                          {scopeGaps.slice(0, 6).map((g) => (
+                            <button
+                              key={g.key}
+                              onClick={() => handleSendMessage(gapPrompt(g))}
+                              className="w-full flex items-start gap-3 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-all text-left group"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <AlertTriangle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground">{gapLabel(g)}</p>
+                                <p className="text-[10px] text-muted-foreground line-clamp-2 italic">{gapPrompt(g)}</p>
+                              </div>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-amber-700 transition-colors mt-1 flex-shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {projectIdForPresets && tenderContextEnabled && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          {isNl ? "Wat zeggen de documenten?" : language === "fr" ? "Que disent les documents ?" : "What do the documents say?"}
+                        </p>
+                        <div className="space-y-1.5">
+                          {tenderPresets.map((q, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleSendMessage(q)}
+                              className="w-full flex items-start gap-3 p-2.5 rounded-lg border border-purple-200 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-all text-left group"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-foreground">{q}</p>
+                              </div>
+                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-purple-600 transition-colors mt-1 flex-shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isNl ? "Suggesties" : "Suggestions"}</p>
                       <div className="space-y-2">
@@ -1453,6 +2092,11 @@ export default function AICopilotSidebar() {
                       return (
                         <div key={message.id}>
                           <AIMessageRenderer message={{ id: message.id, role: message.role, content: message.content }} onCopy={handleCopyMessage} onFeedback={handleFeedback} showActions={message.role === "assistant"} />
+                          {message.role === "assistant" && message.aiContextUsed && (
+                            <div className="ml-9 mt-1 mb-2" data-testid={`ai-context-chip-${message.id}`}>
+                              <AIContextUsedChip used={message.aiContextUsed} />
+                            </div>
+                          )}
                           {showIssueCta && (
                             <button
                               onClick={() => openIssueFromChat(prevUserMsg)}

@@ -59,9 +59,15 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onApplied: () => void;
+  /**
+   * Sprint 4 (S4-07) — when true, the dialog kicks off the backend plan_chat
+   * with `use_documents: true` on open. The backend then auto-injects a short
+   * doc-grounded user prompt so the user sees a proposal without typing.
+   */
+  autoFromDocs?: boolean;
 }
 
-export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied }: Props) {
+export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied, autoFromDocs }: Props) {
   const { pt } = usePageTranslations();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -91,6 +97,44 @@ export default function AiPlanDialog({ projectId, open, onOpenChange, onApplied 
     setMessages([]); setProposal(null); setInput("");
     setLastAction(null); setSource(null);
   };
+
+  // S4-07: when the dialog opens in "generate-from-documents" mode and the
+  // chat is empty, auto-call the backend with `use_documents: true` so the
+  // backend injects its own doc-grounded user message. We only kick off once
+  // per open-cycle; the user can still type follow-up messages afterwards.
+  const [autoKicked, setAutoKicked] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      if (autoKicked) setAutoKicked(false);
+      return;
+    }
+    if (!autoFromDocs || autoKicked || busy || messages.length > 0) return;
+    setAutoKicked(true);
+    (async () => {
+      setBusy(true);
+      try {
+        const r = await aiFetch(`/api/v1/projects/${projectId}/ai-plan/`, {
+          method: "POST", headers: jsonHeaders,
+          body: JSON.stringify({ messages: [], use_documents: true }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { toast.error(d.detail || pt("Something went wrong")); return; }
+        setMessages([{ role: "assistant", content: d.message || "" }]);
+        if (d.action === "propose" && d.proposal) {
+          setProposal(toProposalState(d.proposal));
+          setLastAction("propose");
+        } else if (d.action === "ask") {
+          setLastAction("ask");
+        }
+        if (d.source === "ai" || d.source === "fallback") setSource(d.source);
+      } catch {
+        toast.error(pt("Something went wrong"));
+      } finally {
+        setBusy(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoFromDocs]);
 
   // #8d — Guard dialog-close: als er een niet-toegepast voorstel is, vraag bevestiging.
   const hasUnappliedProposal = !!proposal;

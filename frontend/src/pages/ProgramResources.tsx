@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { ProjectHeader } from '@/components/ProjectHeader';
 import { Users, AlertTriangle, CheckCircle2, User, Loader2, Plus } from 'lucide-react';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import TimeVsBudgetWidget from '@/components/TimeVsBudgetWidget';
+import { CostVsBudgetWidget } from '@/components/CostVsBudgetWidget';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
@@ -104,6 +106,13 @@ const ProgramResources = () => {
             {pt("Add Resource")}
           </Button>
         </div>
+
+        {id && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TimeVsBudgetWidget programId={id} />
+            <CostVsBudgetWidget scope="program" id={id} />
+          </div>
+        )}
 
         {/* Summary */}
         <div className="grid grid-cols-4 gap-4">

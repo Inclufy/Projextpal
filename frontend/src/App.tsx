@@ -84,6 +84,7 @@ const StatusPage = lazyWithRetry(() => import("./pages/StatusPage"));
 const SubProcessorsPage = lazyWithRetry(() => import("./pages/SubProcessorsPage"));
 const SsoCallback = lazyWithRetry(() => import("./pages/SsoCallback"));
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const SkillsCatalog = lazyWithRetry(() => import("./pages/SkillsCatalog"));
 const Settings = lazyWithRetry(() => import("./pages/Settings"));
 const AIAssistant = lazyWithRetry(() => import("./pages/AIAssistant"));
 const Team = lazyWithRetry(() => import("./pages/Team"));
@@ -103,6 +104,9 @@ const ProjectTailoring = lazyWithRetry(() => import("./pages/ProjectTailoring"))
 const ProjectCoach = lazyWithRetry(() => import("./pages/ProjectCoach"));
 const ProgramTailoring = lazyWithRetry(() => import("./pages/ProgramTailoring"));
 const FoundationTeam = lazyWithRetry(() => import("./pages/FoundationTeam"));
+// Sprint 7 — Resource planner + Capacity dashboard.
+const ResourcePlanner = lazyWithRetry(() => import("./pages/ResourcePlanner"));
+const UserCapacityDashboard = lazyWithRetry(() => import("./pages/UserCapacityDashboard"));
 const FoundationBudget = lazyWithRetry(() => import("./pages/FoundationBudget"));
 const FoundationCommunicationPlan = lazyWithRetry(() => import("./pages/FoundationCommunicationPlan"));
 const FoundationClosure = lazyWithRetry(() => import("./pages/FoundationClosure"));
@@ -344,6 +348,7 @@ const AutomationRules = lazyWithRetry(() => import('./pages/admin-portal/Automat
 const AuditLogs = lazyWithRetry(() => import('./pages/admin-portal/AuditLogs'));
 const SystemSettings = lazyWithRetry(() => import('./pages/admin-portal/SystemSettings'));
 const PlanManagement = lazyWithRetry(() => import('@/pages/admin/PlanManagement'));
+const AiBillingPage = lazyWithRetry(() => import("./pages/AiBillingPage"));
 const TwoFactorAuth = lazyWithRetry(() => import("./pages/settings/TwoFactorAuth"));
 const BiometricAuth = lazyWithRetry(() => import("./pages/settings/BiometricAuth"));
 const AdminTrainingManagement = lazyWithRetry(() => import('@/pages/admin-portal/AdminTrainingManagement'));
@@ -436,7 +441,7 @@ const AppHeader = () => {
               className={onAcademy ? "gap-2 bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700" : "gap-2"}
             >
               {onAcademy ? <GraduationCap className="h-4 w-4" /> : <FolderKanban className="h-4 w-4" />}
-              <span className="hidden sm:inline">{onAcademy ? 'Academy' : 'Projects'}</span>
+              <span className="hidden sm:inline">{onAcademy ? (t.nav?.academy || 'Academy') : (t.nav?.projects || 'Projects')}</span>
               <ChevronDown className="h-3.5 w-3.5 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
@@ -609,6 +614,27 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// B7 — Admin tenant-admins must reach a few admin-portal screens that the
+// backend already allows (IsAdminOrSuperAdmin on /integrations/,
+// /automation-rules/ and /sandbox-invite/) but the frontend was blocking
+// behind SuperAdminRoute. This lighter guard lets role === 'admin' OR a
+// superadmin in. Keep SuperAdminRoute for everything else (plans,
+// tenants, settings, logs, billing, etc.).
+const AdminOrSuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-purple-600" /></div>;
+  }
+
+  const allowed = user?.isSuperAdmin || user?.role === 'admin';
+  if (!isAuthenticated || !allowed) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // ============================================
 // Public Route Component
 // ============================================
@@ -677,26 +703,34 @@ const App = () => (
               {/* ============================================ */}
               {/* Admin Portal Routes (SuperAdmin Only)        */}
               {/* ============================================ */}
-              <Route path="/admin" element={<SuperAdminRoute><AdminPortalLayout /></SuperAdminRoute>}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<UserManagement />} />
-                <Route path="tenants" element={<TenantManagement />} />
-                <Route path="tenants/new" element={<TenantProvisioning />} />
+              {/* B7: parent gate is the lighter AdminOrSuperAdminRoute so a
+                  tenant-admin can reach integrations / automation-rules /
+                  sandbox-invite (backend already allows them via
+                  IsAdminOrSuperAdmin). Every OTHER child route still needs
+                  SuperAdminRoute, so only superadmins see them. */}
+              <Route path="/admin" element={<AdminOrSuperAdminRoute><AdminPortalLayout /></AdminOrSuperAdminRoute>}>
+                <Route index element={<SuperAdminRoute><AdminDashboard /></SuperAdminRoute>} />
+                <Route path="users" element={<SuperAdminRoute><UserManagement /></SuperAdminRoute>} />
+                <Route path="tenants" element={<SuperAdminRoute><TenantManagement /></SuperAdminRoute>} />
+                <Route path="tenants/new" element={<SuperAdminRoute><TenantProvisioning /></SuperAdminRoute>} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="sandbox-invite" element={<SandboxInvite />} />
-                <Route path="tenants/:id/edit" element={<TenantEdit />} />
+                <Route path="tenants/:id/edit" element={<SuperAdminRoute><TenantEdit /></SuperAdminRoute>} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="integrations" element={<IntegrationManagement />} />
+                {/* B7 — reachable by admin OR superadmin */}
                 <Route path="automation-rules" element={<AutomationRules />} />
-                <Route path="plans" element={<PlanManagement />} /> 
-                <Route path="settings" element={<SystemSettings />} />
-                <Route path="logs" element={<AuditLogs />} />
-                <Route path="registrations" element={<Registrations />} />
-                <Route path="training" element={<AdminTrainingManagement />} />
-                <Route path="invoices" element={<InvoiceManagement />} />
-                <Route path="subscriptions" element={<SubscriptionManagement />} />
-                <Route path="pricing-configurator" element={<PricingConfigurator />} />
-                <Route path="subscription-plans" element={<SubscriptionPlans />} />
-                <Route path="demo-requests" element={<DemoRequests />} />
-                <Route path="monitoring" element={<MonitoringDashboard />} />
+                <Route path="plans" element={<SuperAdminRoute><PlanManagement /></SuperAdminRoute>} />
+                <Route path="settings" element={<SuperAdminRoute><SystemSettings /></SuperAdminRoute>} />
+                <Route path="logs" element={<SuperAdminRoute><AuditLogs /></SuperAdminRoute>} />
+                <Route path="registrations" element={<SuperAdminRoute><Registrations /></SuperAdminRoute>} />
+                <Route path="training" element={<SuperAdminRoute><AdminTrainingManagement /></SuperAdminRoute>} />
+                <Route path="invoices" element={<SuperAdminRoute><InvoiceManagement /></SuperAdminRoute>} />
+                <Route path="subscriptions" element={<SuperAdminRoute><SubscriptionManagement /></SuperAdminRoute>} />
+                <Route path="pricing-configurator" element={<SuperAdminRoute><PricingConfigurator /></SuperAdminRoute>} />
+                <Route path="subscription-plans" element={<SuperAdminRoute><SubscriptionPlans /></SuperAdminRoute>} />
+                <Route path="demo-requests" element={<SuperAdminRoute><DemoRequests /></SuperAdminRoute>} />
+                <Route path="monitoring" element={<SuperAdminRoute><MonitoringDashboard /></SuperAdminRoute>} />
               </Route>
               
               {/* ============================================ */}
@@ -996,6 +1030,10 @@ const App = () => (
               <Route path="/projects/:id/coach" element={<ProtectedPage><ProjectCoach /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/team" element={<ProtectedPage><FoundationTeam /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/budget" element={<ProtectedPage><FoundationBudget /></ProtectedPage>} />
+              {/* Sprint 7 — resource planner + capacity dashboard */}
+              <Route path="/projects/:id/resource-plan" element={<ProtectedPage><ResourcePlanner /></ProtectedPage>} />
+              <Route path="/team/capacity" element={<ProtectedPage><UserCapacityDashboard /></ProtectedPage>} />
+              <Route path="/admin/capacity" element={<ProtectedPage><UserCapacityDashboard /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/communication-plan" element={<ProtectedPage><FoundationCommunicationPlan /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/invoices" element={<ProtectedPage><FoundationInvoices /></ProtectedPage>} />
               <Route path="/projects/:id/foundation/closure" element={<ProtectedPage><FoundationClosure /></ProtectedPage>} />
@@ -1241,7 +1279,9 @@ const App = () => (
               <Route path="/academy/quote" element={<ProtectedPage><RequestQuote /></ProtectedPage>} />
 
               <Route path="/profile" element={<ProtectedPage><Profile /></ProtectedPage>} />
+              <Route path="/skills" element={<ProtectedPage><SkillsCatalog /></ProtectedPage>} />
               <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
+              <Route path="/settings/ai-billing" element={<ProtectedPage><AiBillingPage /></ProtectedPage>} />
               <Route path="/settings/2fa" element={<ProtectedPage><TwoFactorAuth /></ProtectedPage>} />
               <Route path="/settings/biometric" element={<ProtectedPage><BiometricAuth /></ProtectedPage>} />
 

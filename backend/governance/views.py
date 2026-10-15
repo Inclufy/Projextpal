@@ -192,7 +192,24 @@ def generate_ai_report(request):
     from core.i18n_ai import resolve_ui_language
     lang = resolve_ui_language(request)
 
-    report = generate_report(report_id, context, company=company, language=lang)
+    # Honor a scope hint from the client so the report can actually use
+    # the uploaded context of the portfolio/board/program/project it
+    # applies to. All optional — a plain ecosystem-wide report still
+    # works, it just has no docs prefix stacked on it.
+    scope_portfolio = request.data.get("portfolio_id") or request.data.get("portfolioId")
+    scope_board = request.data.get("board_id") or request.data.get("boardId")
+    scope_program = request.data.get("program_id") or request.data.get("programId")
+    scope_project = request.data.get("project_id") or request.data.get("projectId")
+
+    report = generate_report(
+        report_id, context, company=company, language=lang,
+        user=user,
+        portfolio_id=scope_portfolio,
+        board_id=scope_board,
+        program_id=scope_program,
+        project_id=scope_project,
+        surface=f"governance-report-{report_id}",
+    )
     return Response(report)
 
 
@@ -220,14 +237,48 @@ def ai_generate_text(request):
     logger = logging.getLogger(__name__)
 
     from core.i18n_ai import resolve_ui_language, prepend_language
+    from core.ai_context_helpers import (
+        get_project_context_prefix,
+        get_program_context_prefix,
+        get_portfolio_context_prefix,
+        MAX_CONTEXT_CHARS,
+    )
 
     prompt = request.data.get('prompt', '')
     if not prompt:
         return Response({"error": "prompt is required"}, status=http_status.HTTP_400_BAD_REQUEST)
 
     lang = resolve_ui_language(request)
+    # Multi-level context: a single AI generate call may be scoped to a
+    # project AND/OR its program AND/OR its portfolio. Each helper is cap-
+    # ped at MAX_CONTEXT_CHARS; stacking all three gives a hard upper
+    # bound of 3*MAX_CONTEXT_CHARS prefix characters. The order (portfolio
+    # → program → project) matters because the project context is the most
+    # specific signal the LLM should weigh last/most heavily.
+    portfolio_prefix = get_portfolio_context_prefix(
+        request.user, request.data.get("portfolio_id"), language=lang,
+        surface="governance_ai",
+    )
+    program_prefix = get_program_context_prefix(
+        request.user, request.data.get("program_id"), language=lang,
+        surface="governance_ai",
+    )
+    project_prefix = get_project_context_prefix(
+        request.user, request.data.get("project_id"), language=lang,
+        surface="governance_ai",
+    )
+    docs_prefix = (portfolio_prefix or '') + (program_prefix or '') + (project_prefix or '')
+    # B8 — P3-3 "today" directive was only wired into generate_report(),
+    # which left ai_generate_text() still prone to hallucinated dates
+    # (observed: a 2023 date fabricated in a report written in 2026).
+    # Prepend the real date here too so EVERY governance AI call grounds
+    # itself in the current day.
+    from .ai_reports import _today_directive
+    today_prefix = _today_directive() + "\n\n"
     system_prompt = prepend_language(
-        'You are a helpful project management expert. Respond concisely and professionally.',
+        today_prefix
+        + docs_prefix
+        + 'You are a helpful project management expert. Respond concisely and professionally.',
         lang,
     )
 

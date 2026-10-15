@@ -870,7 +870,9 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         """Re-synthesise content for an existing highlight report from live signals."""
         report = self.get_object()
         report.auto_draft_content(save=True)
-        return Response(HighlightReportSerializer(report).data)
+        return Response(
+            HighlightReportSerializer(report, context={"request": request}).data
+        )
 
     @action(detail=False, methods=['post'])
     def auto_draft(self, request, project_id=None):
@@ -886,7 +888,7 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         )
         report.auto_draft_content(save=True)
         return Response(
-            HighlightReportSerializer(report).data,
+            HighlightReportSerializer(report, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -900,6 +902,12 @@ class HighlightReportViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         from projects.export_templates import pick_template
 
         report = self.get_object()
+        from projects.permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, report.project):
+            return Response(
+                {"detail": "You do not have permission to export project financials."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         company = getattr(report.project, "company", None)
         template_name = request.query_params.get("template", "")
         renderer = pick_template(company, template_name, kind="highlight_pptx")
@@ -1179,9 +1187,15 @@ class ProjectToleranceViewSet(ProjectFilterMixin, viewsets.ModelViewSet):
         closing the *Manage by Exception* loop automatically.
         """
         from projects.models import BudgetItem
+        from projects.permissions import can_view_costs_for
         from datetime import date as _date
 
         project = self.get_project()
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {'detail': 'You do not have permission to view project costs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         active = Stage.objects.filter(project=project, status='active').order_by('order').first()
         if not active:
             return Response(
@@ -1462,6 +1476,25 @@ class Prince2DashboardView(APIView):
             'active_cost_breach': active_cost_breach,
         }
 
+        # Cross-tenant / per-member confidentiality: hide all cost figures
+        # (total + per-stage planned/actual/remaining/variance) from viewers
+        # who may not see this project's costs.
+        from projects.permissions import can_view_costs_for
+        if not can_view_costs_for(request.user, project):
+            budget_governance = {
+                'currency': currency,
+                'total_planned': 0,
+                'total_actual': 0,
+                'total_remaining': 0,
+                'variance': 0,
+                'variance_pct': None,
+                'over_budget': False,
+                'has_budget_data': False,
+                'stages': [],
+                'active_cost_breach': None,
+                'restricted': True,
+            }
+
         # ------------------------------------------------------------------
         # Board approvals inbox — items awaiting Project Board sign-off.
         # Surfaces the "Manage by Exception" governance flow on the dashboard.
@@ -1524,7 +1557,9 @@ class Prince2DashboardView(APIView):
             'top_risks': Prince2RiskSerializer(top_risks, many=True).data,
             'open_issues_total': open_issues.count(),
             'stages': StageSerializer(stages, many=True).data,
-            'recent_highlight_reports': HighlightReportSerializer(recent_reports, many=True).data,
+            'recent_highlight_reports': HighlightReportSerializer(
+                recent_reports, many=True, context={"request": request}
+            ).data,
         }
 
         return Response(dashboard_data)

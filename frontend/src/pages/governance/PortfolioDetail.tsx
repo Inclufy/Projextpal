@@ -12,6 +12,7 @@ import { ArrowLeft, Briefcase, Users, Euro, Calendar, Trash2, Plus, Shield, Penc
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
+import AIContextUpload from '@/components/AIContextUpload';
 
 interface Portfolio {
   id: string;
@@ -195,6 +196,17 @@ const PortfolioDetail: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Sprint 3 S3-07 — PortfolioAIContext upload surface. */}
+      {id && (
+        <AIContextUpload
+          endpoint={`/api/v1/governance/portfolios/${id}/ai-context/`}
+          title={pt("Portfolio documents (AI context)")}
+          description={pt(
+            "Upload a strategic multi-year plan, investment framework or governance policy. The AI uses these documents as context for every portfolio-level draft (strategic review, board agendas, funding rationale, programme vision).",
+          )}
+        />
+      )}
 
       {/* Funding ledger — allocations to programs/projects, gated so the sum of
           approved allocations can never exceed the portfolio budget (#44). */}

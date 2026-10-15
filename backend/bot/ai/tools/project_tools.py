@@ -46,17 +46,22 @@ def update_project_form(project_id: str) -> Dict[str, Any]:
         return {"error": f"Project with ID {project_id} not found"}
 
     # Return schema with current values
+    from projects.permissions import can_view_costs_for
     schema = PROJECT_UPDATE_SCHEMA.copy()
     schema["entity_id"] = project.id
-    schema["current_values"] = {
+    current_values = {
         "name": project.name,
         "description": project.description or "",
         "methodology": project.methodology,
         "start_date": str(project.start_date) if project.start_date else "",
         "end_date": str(project.end_date) if project.end_date else "",
-        "budget": float(project.budget) if project.budget else 0,
         "status": project.status,
     }
+    # Only prefill the budget for viewers allowed to see costs (external and
+    # per-member-restricted members must not see the figure).
+    if can_view_costs_for(user, project):
+        current_values["budget"] = float(project.budget) if project.budget else 0
+    schema["current_values"] = current_values
     return schema
 
 

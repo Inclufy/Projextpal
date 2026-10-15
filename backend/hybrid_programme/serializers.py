@@ -6,14 +6,18 @@ class HybridGovernanceConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = HybridGovernanceConfig
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `programme` is injected by the ViewSet from the URL kwarg in
+        # `perform_create` — don't require it in the client payload.
+        read_only_fields = ['id', 'programme', 'created_at', 'updated_at']
 
 
 class HybridAdaptationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HybridAdaptation
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # `programme` is injected by the ViewSet from the URL kwarg in
+        # `perform_create` — don't require it in the client payload.
+        read_only_fields = ['id', 'programme', 'created_at', 'updated_at']
 
 
 class ConstituentAuthorizationSerializer(serializers.ModelSerializer):

@@ -12,7 +12,7 @@ from django.test import TestCase
 
 from accounts.models import Company
 from django.contrib.auth import get_user_model
-from projects.models import Project
+from programs.models import Program
 from pmi.models import PMIComponent, PMIGateDecision
 
 User = get_user_model()
@@ -29,8 +29,11 @@ class PMIGateTests(TestCase):
             email="pm@acme.test", password="x", username="pm@acme.test",
             company=self.company, role="admin",
         )
-        # PMIComponent.program is a FK to projects.Project
-        self.program = Project.objects.create(name="Transformation", company=self.company)
+        # PMIComponent.program is a FK to programs.Program (switched from
+        # projects.Project in migration 0003_switch_program_fk_to_programs).
+        self.program = Program.objects.create(
+            name="Transformation", company=self.company, methodology="pmi"
+        )
         self.component = PMIComponent.objects.create(program=self.program, name="CRM rollout")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -124,8 +127,10 @@ class PMIGateTests(TestCase):
 
     def test_cross_tenant_isolation(self):
         other_co = Company.objects.create(name="Globex")
-        other_proj = Project.objects.create(name="Secret", company=other_co)
-        PMIComponent.objects.create(program=other_proj, name="Hidden component")
+        other_prog = Program.objects.create(
+            name="Secret", company=other_co, methodology="pmi"
+        )
+        PMIComponent.objects.create(program=other_prog, name="Hidden component")
 
         rows = _list(self.client.get("/api/v1/pmi/components/").json())
         self.assertNotIn("Hidden component", [c["name"] for c in rows])

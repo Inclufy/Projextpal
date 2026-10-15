@@ -230,11 +230,12 @@ def _deterministic_narrative(signals: dict, fc: dict) -> dict:
     return {"narrative": narrative, "recommendations": recs}
 
 
-def _llm_narrative(signals, fc, *, api_key, model):
+def _llm_narrative(signals, fc, *, api_key, model, docs_prefix=""):
     client = Anthropic(api_key=api_key)
     user_msg = json.dumps({"signals": signals, "forecast": fc}, default=str)
+    system = (docs_prefix + _SYSTEM_PROMPT) if docs_prefix else _SYSTEM_PROMPT
     resp = client.messages.create(
-        model=model, max_tokens=1200, system=_SYSTEM_PROMPT,
+        model=model, max_tokens=1200, system=system,
         messages=[{"role": "user", "content": user_msg}],
     )
     raw = "".join(
@@ -259,18 +260,35 @@ def forecast(
     api_key: Optional[str] = None,
     model: str = "claude-opus-4-7",
     use_llm: bool = True,
+    user=None,
 ) -> dict:
     """Full forecast. Always returns a populated dict; never raises on a
-    missing/failed LLM — it degrades to the deterministic narrative."""
+    missing/failed LLM — it degrades to the deterministic narrative.
+
+    ``user`` is used to resolve ProjectAIContext (uploaded docs) when the
+    tenant has them for this project — the LLM narrative then also reasons
+    about what the tender/brief says, not just the computed signals.
+    """
     signals = gather_risk_signals(project)
     fc = compute_forecast(signals)
+
+    # Pull ProjectAIContext prefix (same uploaded-docs text Plan with AI reads)
+    # so the forecast narrative can refer to the brief when drawing conclusions.
+    docs_prefix = ""
+    try:
+        from core.ai_context_helpers import get_project_context_prefix
+        docs_prefix = get_project_context_prefix(user, project.id, language="nl", surface="risk_forecast")
+    except Exception:
+        pass
 
     key = api_key or os.environ.get("ANTHROPIC_API_KEY") or ""
     model_used = "deterministic"
     raw = ""
     if use_llm and _ANTHROPIC_OK and key:
         try:
-            narrative = _llm_narrative(signals, fc, api_key=key, model=model)
+            narrative = _llm_narrative(
+                signals, fc, api_key=key, model=model, docs_prefix=docs_prefix,
+            )
             narrative, raw = narrative
             model_used = model
         except Exception:

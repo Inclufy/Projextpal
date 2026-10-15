@@ -49,6 +49,72 @@ class Company(models.Model):
     next_invoice_date = models.DateTimeField(null=True, blank=True)
     last_payment_date = models.DateTimeField(null=True, blank=True)
 
+    # S4-11: Time-entry strictness. True (default) means a user may only log
+    # time on projects where they are an active ProjectTeam member — which
+    # closes the gap where a program-manager/governance-board member who sits
+    # on the Program (not on the Project) could not log any hours. A looser
+    # tenant can turn this off and let any company user log time on any
+    # company-scoped project. Program/governance roles that still should not
+    # log time are gated by `can_log_time=False` on their stakeholder/board-
+    # member row (see governance.GovernanceStakeholder.can_log_time).
+    require_project_membership_for_time_entry = models.BooleanField(
+        default=True,
+        help_text=(
+            "If True: users may only log time on projects where they are on "
+            "ProjectTeam. Default True — individual tenants can turn this off."
+        ),
+    )
+
+    # Per-tenant AI cap overrides. When NULL the global defaults from
+    # settings.AI_USER_DAILY_TOKEN_CAP (100_000) and settings.AI_MONTHLY_
+    # TOKEN_QUOTA (1_000_000) apply — set a value here to raise or lower
+    # the cap for just this tenant without a backend redeploy. The pre-
+    # flight checks in core.ai_usage read company-first and fall back to
+    # settings so this is a safe additive override.
+    ai_user_daily_token_cap = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=(
+            "Override the global per-user daily token cap for this tenant. "
+            "NULL = use settings default (100.000 tokens/day/user). "
+            "Set to 0 to disable the cap entirely for this tenant."
+        ),
+    )
+    ai_monthly_token_quota = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=(
+            "Override the global per-company monthly token quota for this "
+            "tenant. NULL = use settings default (1.000.000 tokens/month). "
+            "Set to 0 to disable the quota entirely for this tenant."
+        ),
+    )
+
+    # Model-tier C: Enterprise-opt-in for premium (Opus) models. When False
+    # (default), all auto-draft calls use the cheaper Sonnet (heavy) /
+    # Haiku (light) ladder. When True, the tenant gets Opus (heavy) /
+    # Sonnet (light) — ~5x more expensive on inkoop but marginally higher
+    # output quality. Only toggled on for Enterprise plans or on request.
+    ai_premium_models = models.BooleanField(
+        default=False,
+        help_text=(
+            "Grant this tenant access to premium (Opus) models for heavy "
+            "auto-drafts. Default False = Sonnet-first ladder, which gives "
+            "us a ~80% bruto marge on pool pricing. True = Opus-first "
+            "ladder, higher inkoop but Enterprise-tier quality guarantee."
+        ),
+    )
+
+    # S7-06: default hourly rate for this tenant. When a ProjectTeam row has
+    # ``hourly_rate=0`` (the "no override" signal), the cost dashboards and
+    # budget calculators fall back to this company-level default. Set 0 for
+    # tenants that always want an explicit per-member override.
+    default_hourly_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text=(
+            "Fallback hourly rate when a ProjectTeam/ProgramTeam row has "
+            "no override (hourly_rate = 0)."
+        ),
+    )
+
     def __str__(self):
         return self.name
 
@@ -64,7 +130,7 @@ class CustomUser(AbstractUser):
         ("admin", "Administrator"),
         ("pm", "Project Manager"),
         ("program_manager", "Program Manager"),
-        ("contibuter", "Contibuter"),
+        ("contributor", "Contributor"),
         ("reviewer", "Reviewer"),
         ("guest", "Guest"),
     ]
@@ -924,3 +990,202 @@ class UserMethodologyProfile(models.Model):
 
     def __str__(self):
         return f"MethodologyProfile<{self.user_id}> {self.pm_experience}"
+
+
+class TenantAIFeatureFlags(models.Model):
+    """Per-tenant on/off switches for every ProjeXtPal AI surface.
+
+    Sprint 6 (enterprise readiness). Replaces the implicit "if it compiles,
+    it's on for everyone" model with a per-Company toggle grid that the
+    tenant admin (and Inclufy superadmin) can flip from Django admin.
+
+    A missing row = everything on by default (fail-open) — see
+    :meth:`is_enabled`. The ``post_save`` signal on ``Company`` eagerly
+    creates a default row so admin screens always have something to show.
+    """
+
+    FEATURE_FIELDS = (
+        "ai_context_enabled",
+        "ai_autodrafts_enabled",
+        "team_match_enabled",
+        "compliance_scan_enabled",
+        "dashboard_narratives_enabled",
+    )
+
+    company = models.OneToOneField(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="ai_feature_flags",
+    )
+    ai_context_enabled = models.BooleanField(
+        default=True,
+        help_text="Master switch for ProjectAIContext / ProgramAIContext / "
+                  "PortfolioAIContext injection into any AI call.",
+    )
+    ai_autodrafts_enabled = models.BooleanField(
+        default=True,
+        help_text="Methodology auto-drafts (PRINCE2 Business Case / Project "
+                  "Brief, Scrum, Waterfall, LSS, status-report).",
+    )
+    team_match_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 team recommender.",
+    )
+    compliance_scan_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 compliance rescan + auto-tag.",
+    )
+    dashboard_narratives_enabled = models.BooleanField(
+        default=True,
+        help_text="Sprint 5 proactive dashboard narrative generator.",
+    )
+    audit_log_retention_days = models.PositiveIntegerField(
+        default=365,
+        help_text="How long AIContextAccessLog rows are kept before the "
+                  "nightly janitor purges them. 0 = keep forever.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Tenant AI Feature Flags"
+        verbose_name_plural = "Tenant AI Feature Flags"
+
+    def __str__(self):
+        return f"AIFlags<{self.company.name}>"
+
+    @classmethod
+    def is_enabled(cls, company, feature_name: str) -> bool:
+        """Fail-open feature check used by every AI endpoint.
+
+        Missing company, missing row, or any exception → True (so a
+        half-migrated tenant does not silently lose access to features).
+        Only an explicit row with the field set to False disables it.
+        """
+        if company is None:
+            return True
+        if feature_name not in cls.FEATURE_FIELDS:
+            # Unknown feature name — fail-open, log a warning upstream.
+            return True
+        try:
+            flags = cls.objects.filter(company=company).first()
+        except Exception:
+            return True
+        if flags is None:
+            return True
+        return bool(getattr(flags, feature_name, True))
+
+
+# ---------------------------------------------------------------------------
+# S9-05 Member-skills catalog
+# Imported here (not inlined above) so the model code lives in its own file
+# but Django's app registry still sees the models under the ``accounts`` label.
+# ---------------------------------------------------------------------------
+from .skills_models import Skill, UserSkill  # noqa: E402, F401
+
+
+# ---------------------------------------------------------------------------
+# AI usage log — per-call persistent record for BYOK-usage dashboards and
+# monthly billing. The Redis cache in ``core.ai_usage`` stays as the fast
+# counter path; this table is the durable audit trail that survives cache
+# resets and powers the per-tenant invoice line-items via
+# ``finance.cross_app.dispatch_cross_app_event``.
+# ---------------------------------------------------------------------------
+
+class AIUsageLog(models.Model):
+    """One row per LLM reply recorded by ``core.ai_usage.record()``.
+
+    - ``tokens`` is the provider's reported total (prompt+completion). We
+      never guess — if the provider doesn't return a usage object the row
+      is skipped (keeps the audit honest).
+    - ``cost_cents`` is a best-effort estimate using ``core.ai_cost``
+      model-cost table at write time. Stored so the invoice reflects
+      prices at the moment of use, not at month-end re-calculation.
+    - ``surface`` names the AI endpoint (``plan-from-documents``,
+      ``business-case-auto-draft``, ``ask-copilot``, …) so the dashboard
+      can show "where did the tokens go".
+    - ``byok`` is True when the call used ``CompanyAIKey`` (customer pays
+      the LLM provider directly); False when it used Inclufy-pool keys
+      (Inclufy pays and bills back via Finance).
+    """
+
+    PROVIDER_CHOICES = [
+        ("openai", "OpenAI"),
+        ("anthropic", "Anthropic"),
+        ("gemini", "Google Gemini"),
+        ("deepseek", "DeepSeek"),
+        ("ollama", "Ollama (local)"),
+        ("other", "Other"),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="ai_usage_logs",
+        null=True, blank=True,
+        help_text="Owning tenant. Nullable for anonymous/system calls.",
+    )
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        related_name="ai_usage_logs",
+        null=True, blank=True,
+    )
+    provider = models.CharField(
+        max_length=20, choices=PROVIDER_CHOICES, db_index=True,
+    )
+    model = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text="e.g. gpt-4o-mini, claude-opus-4-7, gemini-2.5-flash",
+    )
+    surface = models.CharField(
+        max_length=64, blank=True, default="", db_index=True,
+        help_text=(
+            "AI surface that produced the call — e.g. "
+            "'plan-from-documents', 'business-case-auto-draft', "
+            "'ask-copilot'. Powers the per-feature billing breakdown."
+        ),
+    )
+    tokens = models.PositiveIntegerField(
+        default=0,
+        help_text="Total tokens (prompt + completion) reported by provider.",
+    )
+    tokens_prompt = models.PositiveIntegerField(
+        default=0, help_text="Breakdown — prompt tokens (0 if unknown).",
+    )
+    tokens_completion = models.PositiveIntegerField(
+        default=0, help_text="Breakdown — completion tokens (0 if unknown).",
+    )
+    cost_cents = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Best-effort cost in EUR cents at write time (via "
+            "core.ai_cost). 0 for BYOK calls (customer pays provider "
+            "directly, no Inclufy cost to bill back)."
+        ),
+    )
+    byok = models.BooleanField(
+        default=False,
+        help_text=(
+            "True when the call used a CompanyAIKey (customer pays "
+            "provider directly). False when the call used Inclufy-pool "
+            "keys and the cost will land on the next monthly invoice."
+        ),
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "AI usage log"
+        indexes = [
+            models.Index(fields=["company", "created_at"]),
+            models.Index(fields=["company", "byok", "created_at"]),
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["surface", "created_at"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return (
+            f"AIUsageLog<{self.provider} {self.tokens}tok "
+            f"company={self.company_id} user={self.user_id} byok={self.byok}>"
+        )

@@ -17,7 +17,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     // Alleen aanmaken als er ook geüpload wordt, zie de toelichting hierboven.
-    sourcemap: !!sentryAuthToken,
+    // "hidden": de kaarten worden gemaakt (Sentry uploadt ze en houdt zo
+    // leesbare stacktraces), maar er komt GEEN `//# sourceMappingURL`-verwijzing
+    // in de bundels. Anders volgt de browser die verwijzing naar een kaart die
+    // de plug-in na de upload weer verwijdert — 404 bij elke bezoeker met de
+    // console open. Met "hidden" gebeurt dat niet.
+    sourcemap: sentryAuthToken ? "hidden" : false,
     // Bump warning limit; the actual budget is enforced in CI by the
     // bundle-size guard in .github/workflows/ci.yml.
     chunkSizeWarningLimit: 1000,

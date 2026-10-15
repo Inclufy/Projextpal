@@ -41,12 +41,57 @@ export type IssueStatus =
   | "new"
   | "triaging"
   | "needs-info"
+  | "needs-decision"
   | "accepted"
   | "in-progress"
   | "resolved"
   | "wont-fix"
   | "duplicate"
   | "closed";
+
+/* ─── Sprint 12 decision-request flow ─────────────────────────────────────
+ * When the auto-fix pipeline cannot one-shot an issue, the worker posts a
+ * short list of concrete questions and the issue moves to needs-decision.
+ * The reporter / tenant admin answers; the orchestrator re-queues the
+ * worker with the decision context in its prompt.
+ * See docs/backlog/sprint-planning.md and S12-02 endpoints. */
+
+export type DecisionQuestionType = "single_choice" | "multi_choice" | "text";
+
+export interface DecisionQuestion {
+  id: string;
+  text: string;
+  type: DecisionQuestionType;
+  /** Required for single_choice + multi_choice; 2-8 entries. */
+  choices?: string[];
+  /** Optional one-liner the worker ships to help the reporter decide. */
+  help?: string;
+}
+
+/** Mapping question id → the reporter's answer value. For single_choice this
+ * is one of the choice strings; for multi_choice a list of them; for text a
+ * free-form string. */
+export type DecisionAnswers = Record<string, string | string[]>;
+
+export interface DecisionHistoryRow {
+  round_id: string;
+  questions: DecisionQuestion[];
+  answers: DecisionAnswers;
+  requested_at: string | null;
+  answered_at: string | null;
+  answered_by: string | null;
+  answered_free_text?: string | null;
+  worker_run_id: string;
+  reason?: string;
+  outcome:
+    | "awaiting_answer"
+    | "awaiting_worker"
+    | "worker_queued"
+    | "pr_opened"
+    | "no_fix_still_needs_decision"
+    | "superseded";
+  superseded_at?: string;
+}
 
 export interface IssueAttachment {
   name: string;
@@ -81,6 +126,14 @@ export interface ProductIssueRecord {
   resolution_summary: string;
   agent_triage_result?: Record<string, unknown> | null;
   linked_pr_url?: string;
+  /** Sprint 12 — currently-open decision questions, [] when none. */
+  decision_questions?: DecisionQuestion[];
+  /** Sprint 12 — answers for the open round, cleared when a new round opens. */
+  decision_answers?: DecisionAnswers;
+  /** Sprint 12 — append-only audit trail of all rounds. */
+  decision_history?: DecisionHistoryRow[];
+  /** Sprint 12 — timestamp when the current round was opened. */
+  decision_last_requested_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -253,6 +306,35 @@ export async function listRecentIssues(
   return data.results ?? [];
 }
 
+/* ─── Sprint 12 — decision-request flow ──────────────────────────────────── */
+
+export interface AnswerDecisionInput {
+  answers: DecisionAnswers;
+  free_text?: string;
+}
+
+export interface AnswerDecisionResponse {
+  status: IssueStatus;
+  round_id: string;
+  answers: DecisionAnswers;
+  answered_at: string;
+}
+
+/** Submit the reporter's answers for the open decision round.
+ *
+ * Backend validates each answer against the question type and allowed
+ * choices; it returns 400 with `{answers: {q_id: "unknown choice ..."}}`
+ * when something doesn't match. Caller surfaces that per-field. */
+export function answerDecision(
+  issueId: number,
+  input: AnswerDecisionInput,
+): Promise<AnswerDecisionResponse> {
+  return api.post<AnswerDecisionResponse>(
+    `/product-issues/${issueId}/answer-decision/`,
+    input,
+  );
+}
+
 export function addComment(
   issueId: number,
   body: string,
@@ -302,6 +384,8 @@ export function statusBadgeClass(status: IssueStatus | string): string {
     new: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
     triaging: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200",
     "needs-info": "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
+    "needs-decision":
+      "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-200",
     accepted: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200",
     "in-progress": "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200",
     resolved: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200",

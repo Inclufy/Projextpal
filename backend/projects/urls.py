@@ -26,7 +26,9 @@ from .views import (
     BudgetCategoryViewSet,
     BudgetItemViewSet,
     BudgetOverviewViewSet,
-    # Status-report auto-draft
+    # Status-report auto-draft (Sprint-3 deterministic version — still
+    # importable for anyone who wants the pre-LLM baseline; the HTTP
+    # route is now served by Sprint 5's status_report_ai_draft).
     status_report_auto_draft,
 )
 
@@ -45,6 +47,31 @@ from .coach_views import project_coach
 from .ai_plan_views import project_ai_plan, project_ai_plan_apply
 from .ai_from_doc import plan_from_documents
 from .ai_context_views import project_ai_context
+from .methodology_autodraft_views import (
+    prince2_business_case_auto_draft,
+    prince2_project_brief_auto_draft,
+    scrum_auto_draft,
+    kanban_suggest_swimlanes,
+    lss_define_auto_draft,
+    waterfall_suggest_phases,
+)
+from .sprint5_views import (
+    compliance_rescan,
+    project_auto_tag,
+    status_report_ai_draft,
+    risk_sniff,
+    team_match,
+    onboarding_tour,
+    dashboard_narrative,
+    meeting_agenda_auto_draft,
+)
+from .budget_views import (
+    set_team_member_budget as project_set_team_member_budget,
+    project_time_vs_budget,
+)
+from .lessons_budget_views import project_lessons_budget_comparison
+from execution.s7_cost_planner_views import project_time_vs_budget_cost
+from execution.s7_resource_planner_views import project_resource_plan
 
 router = DefaultRouter()
 # CHANGED: Empty prefix because core/urls.py already has "api/v1/projects/"
@@ -108,6 +135,20 @@ urlpatterns = [
     path("plan-from-documents/", plan_from_documents, name="project-plan-from-documents"),
     path("<int:pk>/ai-context/", project_ai_context, name="project-ai-context"),
     path("<int:pk>/ai-plan/apply/", project_ai_plan_apply, name="project-ai-plan-apply"),
+
+    # Sprint 4 — methodology auto-drafts from project documents (S4-01..S4-06).
+    path("<int:pk>/prince2/business-case/auto-draft/",
+         prince2_business_case_auto_draft, name="project-prince2-bc-auto-draft"),
+    path("<int:pk>/prince2/project-brief/auto-draft/",
+         prince2_project_brief_auto_draft, name="project-prince2-brief-auto-draft"),
+    path("<int:pk>/scrum/auto-draft/",
+         scrum_auto_draft, name="project-scrum-auto-draft"),
+    path("<int:pk>/kanban/suggest-swimlanes/",
+         kanban_suggest_swimlanes, name="project-kanban-suggest-swimlanes"),
+    path("<int:pk>/lss/define/auto-draft/",
+         lss_define_auto_draft, name="project-lss-define-auto-draft"),
+    path("<int:pk>/waterfall/suggest-phases/",
+         waterfall_suggest_phases, name="project-waterfall-suggest-phases"),
     path("", include(router.urls)),
     path("", include("projects.document_urls")),
     path("", include("projects.training_material_urls")),
@@ -120,10 +161,55 @@ urlpatterns = [
     path('methodologies/<str:code>/', MethodologyDetailView.as_view(), name='methodology-detail'),
     path('methodologies-templates/', MethodologyTemplateView.as_view(), name='methodology-templates'),
 
-    # Status-report auto-draft (returns a fresh draft, NOT persisted)
+    # Status-report auto-draft (Sprint 5 S5-03 — now AI-powered via
+    # status_report_ai_draft, with the Sprint-3 deterministic version as
+    # the fallback inside the view). Returns a fresh draft, NOT persisted.
     path(
-        '<int:project_id>/status-reports/auto-draft/',
-        status_report_auto_draft,
+        '<int:pk>/status-reports/auto-draft/',
+        status_report_ai_draft,
         name='status-report-auto-draft',
+    ),
+
+    # Sprint 5 — proactive AI (S5-01, S5-02, S5-04, S5-06..S5-09).
+    path("<int:pk>/compliance/rescan/", compliance_rescan,
+         name="project-compliance-rescan"),
+    path("<int:pk>/auto-tag/", project_auto_tag,
+         name="project-auto-tag"),
+    path("<int:pk>/risk-sniff/", risk_sniff,
+         name="project-risk-sniff"),
+    path("<int:pk>/team-match/", team_match,
+         name="project-team-match"),
+    path("<int:pk>/team/<int:user_id>/onboarding-tour/", onboarding_tour,
+         name="project-onboarding-tour"),
+    path("<int:pk>/dashboard/narrative/", dashboard_narrative,
+         name="project-dashboard-narrative"),
+    path("<int:pk>/meetings/auto-draft-agenda/", meeting_agenda_auto_draft,
+         name="project-meeting-agenda-auto-draft"),
+
+    path(
+        "<int:pk>/team/<int:team_member_id>/budget/",
+        project_set_team_member_budget,
+        name="project-team-member-budget",
+    ),
+    path(
+        "<int:pk>/time-vs-budget/",
+        project_time_vs_budget,
+        name="project-time-vs-budget",
+    ),
+    path(
+        "<int:pk>/time-vs-budget-cost/",
+        project_time_vs_budget_cost,
+        name="project-time-vs-budget-cost",
+    ),
+    path(
+        "<int:pk>/resource-plan/",
+        project_resource_plan,
+        name="project-resource-plan",
+    ),
+    # Sprint 9 S9-02 — Lessons-learned budget vs actual rollup.
+    path(
+        "<int:pk>/lessons/budget-comparison/",
+        project_lessons_budget_comparison,
+        name="project-lessons-budget-comparison",
     ),
 ]

@@ -14,11 +14,24 @@ from .serializers import (
     ProgramMilestoneSerializer,
     ProgramTeamSerializer,
 )
+from accounts.permissions import HasRole
+
+# Mirrors projects.views.IsAdminOrPM — lifecycle writes (close/hold/reopen) are
+# restricted to these operational roles; read signals stay IsAuthenticated.
+IsAdminOrPM = HasRole("admin", "pm", "program_manager", "superadmin")
 
 
 class ProgramViewSet(viewsets.ModelViewSet):
     """ViewSet for Program CRUD operations."""
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # Mirror ProjectViewSet.get_permissions: lifecycle writes are PM+;
+        # everything else (incl. the health/attention read signals) stays
+        # IsAuthenticated.
+        if self.action in ["close", "hold", "reopen"]:
+            return [IsAuthenticated(), IsAdminOrPM()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         """Filter programs by membership.
@@ -96,17 +109,167 @@ class ProgramViewSet(viewsets.ModelViewSet):
             created_by=user
         )
 
+    @action(detail=True, methods=["post"], url_path="close")
+    def close(self, request, pk=None):
+        """Close the programme: set status to 'completed' and (by default)
+        complete every linked project + all their activities. Mirrors
+        ProjectViewSet.close at programme scale — it touches only the universal
+        Program.status, the linked projects' status and the Task cascade
+        (milestone__project__program), so it works for every programme type and
+        methodology.
+
+        Body (optional): {"complete_projects": true|false} (default true).
+        """
+        from projects.models import Task
+
+        program = self.get_object()
+        complete_projects = request.data.get("complete_projects", True)
+        projects_completed = 0
+        activities_completed = 0
+        if complete_projects:
+            projects_completed = (
+                program.linked_projects.exclude(status="completed")
+                .update(status="completed")
+            )
+            activities_completed = (
+                Task.objects.filter(milestone__project__program=program)
+                .exclude(status="done")
+                .update(status="done", progress=100)
+            )
+        program.status = "completed"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({
+            "id": program.id,
+            "status": program.status,
+            "projects_completed": projects_completed,
+            "activities_completed": activities_completed,
+        })
+
+    @action(detail=True, methods=["post"], url_path="hold")
+    def hold(self, request, pk=None):
+        """Put the programme on hold (status 'on_hold'). Projects/activities are
+        left as-is. Mirrors ProjectViewSet.hold."""
+        program = self.get_object()
+        program.status = "on_hold"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({"id": program.id, "status": program.status})
+
+    @action(detail=True, methods=["post"], url_path="reopen")
+    def reopen(self, request, pk=None):
+        """Reopen a closed/held programme (status 'active'). Project/activity
+        statuses are left untouched. Mirrors ProjectViewSet.reopen (which uses
+        'in_progress'; Program has no such state, so it reopens to 'active')."""
+        program = self.get_object()
+        program.status = "active"
+        program.save(update_fields=["status", "updated_at"])
+        return Response({"id": program.id, "status": program.status})
+
+    @action(detail=True, methods=["get"], url_path="health")
+    def health(self, request, pk=None):
+        """RAG health signal for a programme from the universal work signals,
+        rolled up over its linked projects: open programme risks, open issues of
+        the linked projects and overdue actions of the linked projects. Mirrors
+        ProjectViewSet.health.
+
+        red   = something needs attention now (overdue actions).
+        amber = open work/issues/risks but nothing overdue.
+        green = nothing open.
+        """
+        from django.utils import timezone
+        from projects.models import Task, Issue
+
+        program = self.get_object()
+        today = timezone.localdate()
+        project_ids = list(program.linked_projects.values_list("id", flat=True))
+
+        task_qs = Task.objects.filter(milestone__project_id__in=project_ids)
+        open_actions = task_qs.exclude(status="done").count()
+        overdue_actions = (
+            task_qs.exclude(status="done")
+            .filter(due_date__isnull=False, due_date__lt=today)
+            .count()
+        )
+        open_issues = (
+            Issue.objects.filter(project_id__in=project_ids)
+            .exclude(status__in=["Resolved", "Closed"])
+            .count()
+        )
+        open_risks = program.risks.filter(status__in=["open", "mitigating"]).count()
+
+        if overdue_actions:
+            rag = "red"
+        elif open_issues or open_risks or open_actions:
+            rag = "amber"
+        else:
+            rag = "green"
+
+        return Response({
+            "id": program.id,
+            "rag": rag,
+            "open_actions": open_actions,
+            "overdue_actions": overdue_actions,
+            "open_issues": open_issues,
+            "open_risks": open_risks,
+        })
+
+    @action(detail=True, methods=["get"], url_path="attention")
+    def attention(self, request, pk=None):
+        """Items that need attention on this programme — open programme risks,
+        linked projects that are overdue or on hold, and open issues across the
+        linked projects — so the dashboard can list them and let the user pick
+        them up. Mirrors ProjectViewSet.attention (which returns
+        actions/issues/risks); at programme scale the 'actions' become the
+        linked 'projects'."""
+        from django.utils import timezone
+        from projects.models import Issue
+
+        program = self.get_object()
+        today = timezone.localdate()
+        project_ids = list(program.linked_projects.values_list("id", flat=True))
+
+        risks = [
+            {"id": r.id, "name": r.name, "level": r.impact, "status": r.status,
+             "owner": getattr(r.owner, "id", None)}
+            for r in program.risks.filter(status__in=["open", "mitigating"])
+            .select_related("owner").order_by("-impact")[:100]
+        ]
+
+        projects = []
+        for p in program.linked_projects.all().order_by("end_date", "name")[:100]:
+            overdue = bool(
+                p.end_date and p.end_date < today and p.status != "completed"
+            )
+            if overdue or p.status == "on_hold":
+                projects.append({
+                    "id": p.id,
+                    "name": p.name,
+                    "status": p.status,
+                    "progress": p.compute_progress_from_work(),
+                    "end_date": p.end_date,
+                    "overdue": overdue,
+                    "methodology": p.methodology,
+                })
+
+        issues = [
+            {"id": i.id, "name": i.name, "severity": i.severity, "status": i.status,
+             "owner": getattr(i.owner, "id", None)}
+            for i in Issue.objects.filter(project_id__in=project_ids)
+            .exclude(status__in=["Resolved", "Closed"])
+            .select_related("owner").order_by("-severity")[:100]
+        ]
+        return Response({"risks": risks, "projects": projects, "issues": issues})
+
     @action(detail=True, methods=['get'], url_path='ai/compound-signals')
     def ai_compound_signals(self, request, pk=None):
         """Programme cross-project compound signals (aggregated over projects)."""
         from .ai_rollup import program_compound_signals
-        return Response(program_compound_signals(self.get_object()))
+        return Response(program_compound_signals(self.get_object(), user=request.user))
 
     @action(detail=True, methods=['get'], url_path='ai/status-report')
     def ai_status_report(self, request, pk=None):
         """Programme AI status report — RAG + narrative rolled up from projects."""
         from .ai_rollup import program_status_narrative
-        return Response(program_status_narrative(self.get_object()))
+        return Response(program_status_narrative(self.get_object(), user=request.user))
 
     @action(detail=True, methods=['get'], url_path='progress')
     def progress(self, request, pk=None):
@@ -203,13 +366,27 @@ class ProgramViewSet(viewsets.ModelViewSet):
         
         projects = program.projects.all()
         total_projects = projects.count()
-        
+
         # Calculate project status distribution
         status_distribution = projects.values('status').annotate(count=Count('id'))
-        
-        # Calculate total budget from projects
-        project_budget = projects.aggregate(total=Sum('budget'))['total'] or 0
-        
+
+        # Budget figures are cost-confidential: only a cost-viewing role sees
+        # them (role gate), and projects where THIS user is restricted
+        # (ProjectTeam.can_view_costs=False) are excluded from the aggregate
+        # (per-member gate). External tenants are already excluded because the
+        # program is company-scoped in get_queryset.
+        from projects.permissions import can_view_costs
+        from projects.models import ProjectTeam
+        can_see_costs = can_view_costs(request.user)
+        if can_see_costs:
+            project_budget = projects.exclude(
+                id__in=ProjectTeam.objects.filter(
+                    user=request.user, can_view_costs=False
+                ).values("project_id")
+            ).aggregate(total=Sum('budget'))['total'] or 0
+        else:
+            project_budget = 0
+
         # Benefits metrics
         benefits = program.benefits.all()
         total_benefits = benefits.count()
@@ -223,8 +400,8 @@ class ProgramViewSet(viewsets.ModelViewSet):
         return Response({
             'total_projects': total_projects,
             'status_distribution': list(status_distribution),
-            'program_budget': float(program.total_budget),
-            'spent_budget': float(program.spent_budget),
+            'program_budget': float(program.total_budget) if can_see_costs else 0,
+            'spent_budget': float(program.spent_budget) if can_see_costs else 0,
             'project_budget_total': float(project_budget),
             'progress': program.progress,
             'total_benefits': total_benefits,
@@ -411,15 +588,46 @@ class ProgramViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Sprint 7 — accept per-member timesheet policy + begrote uren at
+        # add time. Both are optional: timesheet_required defaults to True
+        # (iedereen moet uren loggen tenzij anders), budgeted_hours blijft
+        # NULL (geen cap) tenzij een decimal/int wordt meegegeven.
+        from decimal import Decimal, InvalidOperation
+        ts_req_raw = request.data.get('timesheet_required', True)
+        if isinstance(ts_req_raw, str):
+            timesheet_required = ts_req_raw.lower() not in ('false', '0', 'no')
+        else:
+            timesheet_required = bool(ts_req_raw)
+
+        budgeted_hours = None
+        bh_raw = request.data.get('budgeted_hours', None)
+        if bh_raw not in (None, '', 'null'):
+            try:
+                budgeted_hours = Decimal(str(bh_raw))
+                if budgeted_hours < 0:
+                    return Response(
+                        {'error': 'budgeted_hours must be >= 0 or null.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except (InvalidOperation, TypeError, ValueError):
+                return Response(
+                    {'error': 'budgeted_hours must be a decimal number or null.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         try:
             member = program.team_members.get(user=user, is_active=False)
             member.is_active = True
             member.role = role or member.role
             member.added_by = request.user
+            member.timesheet_required = timesheet_required
+            member.budgeted_hours = budgeted_hours
             member.save()
         except ProgramTeam.DoesNotExist:
             member = ProgramTeam.objects.create(
-                program=program, user=user, role=role, added_by=request.user
+                program=program, user=user, role=role, added_by=request.user,
+                timesheet_required=timesheet_required,
+                budgeted_hours=budgeted_hours,
             )
 
         return Response(ProgramTeamSerializer(member).data, status=status.HTTP_201_CREATED)
@@ -439,6 +647,71 @@ class ProgramViewSet(viewsets.ModelViewSet):
         member.is_active = False
         member.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='team/(?P<team_member_id>[^/.]+)/cascade',
+    )
+    def cascade_team_member(self, request, pk=None, team_member_id=None):
+        """S4-11 — cascade a ProgramTeam member down to constituent projects.
+
+        Body: ``{"project_ids": [1, 2, 3]}`` — list of project ids the admin
+        checked in the "Also add to underlying projects" box when adding the
+        user to the program. Omitting ``project_ids`` (or passing ``null``)
+        means "all projects linked to this program".
+
+        Idempotent: already-existing ProjectTeam rows are reported as
+        ``skipped_duplicates`` and nothing is overwritten. Tenant-safe:
+        projects outside this program are silently dropped from the request.
+
+        Only admin / pm / program-manager / superadmin may trigger this —
+        the same tier that may add a program team member.
+        """
+        program = self.get_object()
+
+        # Permission tier: the same lineup that already gates team add/remove.
+        user = request.user
+        role = getattr(user, 'role', None)
+        if role not in {'admin', 'pm', 'program_manager', 'superadmin'} and not getattr(user, 'is_superuser', False):
+            return Response(
+                {'error': 'Only admins/PMs/program-managers may cascade team members.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            member = program.team_members.get(id=team_member_id)
+        except (ProgramTeam.DoesNotExist, ValueError, TypeError):
+            return Response({'error': 'Team member not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Normalize body — project_ids may be absent, null, [], or a list.
+        payload = request.data if isinstance(request.data, dict) else {}
+        project_ids = payload.get('project_ids', None)
+        if isinstance(project_ids, list):
+            # Keep the explicit list (including empty, which is a no-op).
+            pass
+        elif project_ids is None:
+            project_ids = None  # "all linked projects"
+        else:
+            return Response(
+                {'error': "'project_ids' must be a list of project ids or null."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created, skipped = member.cascade_to_project_teams(
+            project_ids=project_ids, added_by=request.user,
+        )
+
+        return Response(
+            {
+                'created_project_teams': [
+                    {'id': pt.id, 'project_id': pt.project_id, 'user_id': pt.user_id}
+                    for pt in created
+                ],
+                'skipped_duplicates': list(skipped),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProgramBenefitViewSet(viewsets.ModelViewSet):
@@ -518,6 +791,13 @@ class ProgramBudgetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Role gate: only cost-viewing roles may read program budgets. Company
+        # scoping below already keeps external tenants out; per-member cost
+        # restriction is per-project, so the role gate is the relevant check
+        # for the program-level budget object.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudget.objects.none()
         return ProgramBudget.objects.filter(
             program__company=self.request.user.company
         )
@@ -529,6 +809,10 @@ class ProgramBudgetCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Program budget categories are cost data — finance-roles only.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudgetCategory.objects.none()
         queryset = ProgramBudgetCategory.objects.filter(
             program__company=self.request.user.company
         )
@@ -558,10 +842,14 @@ class ProgramBudgetItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Program budget items are cost data — finance-roles only.
+        from projects.permissions import can_view_costs
+        if not can_view_costs(self.request.user):
+            return ProgramBudgetItem.objects.none()
         queryset = ProgramBudgetItem.objects.filter(
             program__company=self.request.user.company
         )
-        
+
         # Filter by program
         program_id = self.request.query_params.get('program_id')
         if program_id:
@@ -622,13 +910,35 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 id=pk,
                 company=request.user.company
             )
-            
+
+            # Cost confidentiality: finance-roles only (program-level).
+            from projects.permissions import can_view_costs
+            from projects.models import ProjectTeam
+            if not can_view_costs(request.user):
+                return Response(
+                    {"detail": "You do not have permission to view costs."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
             # Get or create budget
             budget, created = ProgramBudget.objects.get_or_create(
                 program=program,
                 defaults={'total_budget': 0, 'currency': 'EUR'}
             )
-            
+
+            # Per-member: drop linked projects this member is restricted from
+            # when rolling up the projects_budget figure.
+            _restricted = set(
+                ProjectTeam.objects.filter(
+                    user=request.user, can_view_costs=False
+                ).values_list("project_id", flat=True)
+            )
+            projects_budget = float(sum(
+                (p.budget or 0)
+                for p in program.projects.all()
+                if p.id not in _restricted
+            ))
+
             # Get categories
             categories = ProgramBudgetCategory.objects.filter(program=program)
             
@@ -643,7 +953,7 @@ class ProgramBudgetOverviewViewSet(viewsets.ViewSet):
                 'total_budget': budget.total_budget,
                 'total_spent': budget.total_spent,
                 'total_remaining': budget.total_remaining,
-                'projects_budget': budget.projects_budget,
+                'projects_budget': projects_budget,
                 'currency': budget.currency,
                 'categories': ProgramBudgetCategorySerializer(categories, many=True).data
             }

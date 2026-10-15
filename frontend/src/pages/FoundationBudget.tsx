@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { BudgetOneView } from "@/components/BudgetOneView";
+import TimeVsBudgetWidget from "@/components/TimeVsBudgetWidget";
+import { CostVsBudgetWidget } from "@/components/CostVsBudgetWidget";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatBudgetDetailed, getCurrencyFromLanguage } from '@/lib/currencies';
@@ -146,6 +148,12 @@ const FoundationBudget = () => {
       <div className="p-6 space-y-6">
         {/* One-view financials: Budget × Internal × External × Contingency × Actuals × ETC × Variance — Yanmar HR-04 */}
         {projectId && <BudgetOneView projectId={projectId} />}
+        {projectId && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TimeVsBudgetWidget projectId={projectId} />
+            <CostVsBudgetWidget scope="project" id={projectId} />
+          </div>
+        )}
         <Card className="p-6">
           <div className="mb-6 flex items-center justify-between">
             <div>

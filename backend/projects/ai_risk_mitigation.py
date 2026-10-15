@@ -4,7 +4,7 @@ AI-powered risk mitigation generation using OpenAI GPT.
 
 import logging
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from django.conf import settings
 
 from core.llm_keys import get_langchain_openai_kwargs
@@ -12,7 +12,7 @@ from core.llm_keys import get_langchain_openai_kwargs
 logger = logging.getLogger(__name__)
 
 
-def generate_ai_mitigation(risk_data, company=None):
+def generate_ai_mitigation(risk_data, company=None, user=None, project_id=None):
     """
     Generate AI-powered mitigation plan for a given risk.
 
@@ -109,6 +109,17 @@ Generate a detailed, actionable mitigation plan.""",
                 project_context += (
                     f"- Description: {risk_data['project_description']}\n"
                 )
+
+        # Uploaded tender/brief documents from ProjectAIContext — same source
+        # Plan with AI already reads. The helper does its own tenant check.
+        try:
+            from core.ai_context_helpers import get_project_context_prefix
+            _pid = project_id or risk_data.get("project_id")
+            docs_prefix = get_project_context_prefix(user, _pid, language="nl", surface="risk_mitigation")
+            if docs_prefix:
+                project_context = docs_prefix + project_context
+        except Exception:
+            pass
 
         # Format the prompt
         formatted_prompt = prompt_template.format_messages(

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Columns, Pencil, Trash2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 const KanbanBoardConfiguration = () => {
   const { pt } = usePageTranslations();
@@ -56,7 +57,28 @@ const KanbanBoardConfiguration = () => {
           </CardContent></Card>
         ))}</div>
 
-        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Swimlanes ({swimlanes.length})</h2><Button onClick={openCreateSl} size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add Swimlane</Button></div>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Swimlanes ({swimlanes.length})</h2><div className="flex items-center gap-2"><AutoDraftFromDocsButton
+          endpoint={`/api/v1/projects/${id}/kanban/suggest-swimlanes/`}
+          title={pt("Swimlane suggestions — AI-draft from documents")}
+          description={pt("Review the swimlanes before applying.")}
+          fields={[{ key: "swimlanes", label: pt("Swimlanes"), kind: "swimlanes" }]}
+          onApply={async (suggested) => {
+            const items: any[] = Array.isArray(suggested.swimlanes) ? suggested.swimlanes : [];
+            let order = swimlanes.length + 1;
+            for (const item of items) {
+              if (!item?.name) continue;
+              const body: any = {
+                name: String(item.name).slice(0, 100),
+                order: order++,
+                color: /^#[0-9a-fA-F]{6}$/.test(String(item.color_hex || "")) ? item.color_hex : "#6366f1",
+              };
+              await fetch(`/api/v1/projects/${id}/kanban/swimlanes/`, {
+                method: "POST", headers: jsonHeaders, body: JSON.stringify(body),
+              });
+            }
+            fetchData();
+          }}
+        /><Button onClick={openCreateSl} size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add Swimlane</Button></div></div>
         {swimlanes.length === 0 ? <p className="text-muted-foreground text-sm">No swimlanes configured</p> : (
           <div className="space-y-2">{swimlanes.map(s => (
             <Card key={s.id}><CardContent className="p-3 flex items-center justify-between"><span className="font-medium text-sm">{s.name}</span><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => openEditSl(s)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="sm" onClick={() => deleteSl(s.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button></div></CardContent></Card>

@@ -113,6 +113,7 @@ def _d(scope, budget, duur, politiek, risico, regel):
 SCENARIOS = [
     {"key": "klant", "title": "Klantimplementatie", "desc": "Externe opdrachtgever, vaste scope & budget, oplevering in fasen.", "icon": "users", "color": "blue", "tags": ["PRINCE2", "Medium"], "methodology": "prince2", "project_type": "klant", "dimensions": _d(2, 2, 2, 2, 2, 1)},
     {"key": "compliance", "title": "Compliance / gereguleerd", "desc": "Wettelijke eisen (AVG/ISO), audit-trail, hoog afbreukrisico.", "icon": "shield", "color": "red", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "gereguleerd", "dimensions": _d(2, 2, 2, 2, 3, 3)},
+    {"key": "aanbesteding", "title": "Aanbesteding / tender", "desc": "Vaste eisen uit RFP, strakke indientermijn, compliance + audit-trail.", "icon": "file-check", "color": "indigo", "tags": ["PRINCE2", "Heavy"], "methodology": "prince2", "project_type": "aanbesteding", "dimensions": _d(3, 2, 2, 3, 3, 3)},
     {"key": "product", "title": "Productontwikkeling", "desc": "Nieuw product, onzekere/veranderende eisen. Werken in sprints.", "icon": "rocket", "color": "purple", "tags": ["Scrum", "Light"], "methodology": "scrum", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 3, 1)},
     {"key": "agileops", "title": "Digitale dienst doorontwikkelen", "desc": "Continue waardestroom, lichte ceremonie.", "icon": "sparkles", "color": "pink", "tags": ["Agile", "Light"], "methodology": "agile", "project_type": "product", "dimensions": _d(1, 2, 2, 1, 2, 1)},
     {"key": "intern", "title": "Intern verbeterproject", "desc": "Klein team, laag risico, korte looptijd.", "icon": "wrench", "color": "teal", "tags": ["Inclufy", "Light"], "methodology": "inclufy", "project_type": "intern", "dimensions": _d(1, 1, 1, 1, 1, 1)},
@@ -332,6 +333,13 @@ def classify(description):
     if has("avg", "gdpr", "compliance", "audit", "wettelijk", "accountant", "iso", "patiënt", "patient", "zorg"):
         dims["regel"] = 3
         dims["risico"] = 3
+    if has("aanbesteding", "tender", "rfp", "offerte-traject", "inschrijving", "gunning"):
+        # Publieke/formele aanbesteding — strakke scope uit RFP, hoge politieke
+        # zichtbaarheid, exclusie-risico, aanbestedingswet-plicht.
+        dims["scope"] = 3
+        dims["politiek"] = 3
+        dims["regel"] = 3
+        dims["risico"] = 3
     if has("miljoen", "grootschalig", "programma"):
         dims["budget"] = 3
     if has("jaar", "meerjarig", "langlopend"):
@@ -357,6 +365,8 @@ def classify(description):
         scores["waterfall"] += 2
     if has("governance", "stuurgroep", "business case", "extern", "klant", "formeel", "zorg"):
         scores["prince2"] += 3
+    if has("aanbesteding", "tender", "rfp", "inschrijving", "gunning"):
+        scores["prince2"] += 4  # heavier weight — tender flow fits PRINCE2 stage boundaries + exception reports
     if has("proces", "verspilling", "defect", "kwaliteit", "doorlooptijd", "six sigma", "lean", "optimalis"):
         scores["lean_six_sigma_green"] += 3
     if has("software", "systeem", "platform", "webshop", "e-commerce", "applicatie"):
@@ -381,6 +391,8 @@ def classify(description):
 
 
 def _detect_type(has):
+    if has("aanbesteding", "tender", "rfp", "inschrijving", "gunning"):
+        return "aanbesteding"
     if has("avg", "compliance", "audit", "iso", "wettelijk"):
         return "gereguleerd"
     if has("patiënt", "patient", "zorg", "cliënt", "client"):
@@ -443,11 +455,44 @@ def _rationale(methodology, project_type, dims, text):
     return base
 
 
-def classify_with_llm(description, company=None):
+def classify_with_llm(description, company=None, project_id=None, user=None, language="nl"):
     """Try to refine the classification with the company's configured LLM; on any
-    failure fall back to the deterministic classifier. Never raises."""
-    fallback = classify(description)
-    if not company or not description:
+    failure fall back to the deterministic classifier. Never raises.
+
+    Sprint 2 (S2-01 + S2-06): when ``project_id`` + ``user`` are provided and the
+    project has a ``ProjectAIContext`` row (uploaded tender / brief / spec PDFs),
+    the context text is prepended to the free-text description so the classifier
+    makes a doc-aware recommendation. The deterministic keyword path and the LLM
+    path both benefit — the keyword classifier picks up tender/compliance signals
+    from the document text, and the LLM gets a richer prompt. When no context is
+    available or anything fails, behaviour is identical to the pre-Sprint-2
+    version (safe fallback is always ``classify(description)``).
+    """
+    # S2-06: enrich the free-text with the uploaded-document context, if any.
+    # Even when the LLM path is not taken (no key, no company) this still helps
+    # the deterministic classifier react to tender/compliance keywords from the
+    # documents themselves — the whole point of the context-aware roadmap.
+    doc_prefix = ""
+    if project_id and user is not None:
+        try:
+            from core.ai_context_helpers import get_project_context_prefix
+            doc_prefix = get_project_context_prefix(user, project_id, language=language, surface="tailoring") or ""
+        except Exception:
+            doc_prefix = ""
+
+    # The deterministic classifier gets the enriched text so tender keywords in
+    # the uploaded docs (not only in the free-text) steer the recommendation.
+    enriched = ((doc_prefix + "\n" if doc_prefix else "") + (description or "")).strip()
+    fallback = classify(enriched)
+    if doc_prefix:
+        fallback["source"] = "deterministic+docs"
+        try:
+            fallback["rationale"] = (fallback.get("rationale", "")
+                                     + " (gevoed door projectdocumenten)").strip()
+        except Exception:
+            pass
+
+    if not company or not (description or doc_prefix):
         return fallback
     try:
         from core.llm_keys import get_openai_client
@@ -455,12 +500,20 @@ def classify_with_llm(description, company=None):
         if client is None:
             return fallback
         import json
+        # Keep the LLM prompt lean — doc_prefix already has its own heading &
+        # footer so the LLM sees the context clearly delimited.
+        user_block = (
+            (doc_prefix + "\n\n" if doc_prefix else "")
+            + f"Beschrijving: {description or ''}"
+        )
         prompt = (
             "Je bent een project-management adviseur. Classificeer het project in JSON met velden "
             "methodology (een van: prince2, scrum, agile, kanban, waterfall, lean_six_sigma_green, "
             "lean_six_sigma_black, hybrid, inclufy), project_type, en dimensions "
-            "(scope,budget,duur,politiek,risico,regel elk 1-3). Antwoord ALLEEN met JSON.\n\n"
-            f"Beschrijving: {description}"
+            "(scope,budget,duur,politiek,risico,regel elk 1-3). "
+            "Als er [PROJECT_DOCUMENTEN]/[PROJECT_DOCUMENTS] zijn: baseer je classificatie primair op "
+            "die inhoud, aangevuld met de beschrijving. Antwoord ALLEEN met JSON.\n\n"
+            f"{user_block}"
         )
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -479,10 +532,12 @@ def classify_with_llm(description, company=None):
         for d in DIMENSIONS:
             if d in dims:
                 fallback["dimensions"][d] = _clamp(dims[d])
-        fallback["source"] = "llm"
+        fallback["source"] = "llm+docs" if doc_prefix else "llm"
         fallback["rationale"] = _rationale(
             fallback["methodology"], fallback["project_type"], fallback["dimensions"], description
         )
+        if doc_prefix:
+            fallback["rationale"] = (fallback["rationale"] + " (gevoed door projectdocumenten)").strip()
     except Exception:
         return fallback
     return fallback

@@ -15,9 +15,11 @@ the coach never dead-ends.
   GET  /api/v1/projects/<pk>/coach/   -> context summary + suggested questions
   POST /api/v1/projects/<pk>/coach/   -> {answer, source} for a free-text question
 """
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from core.throttles import AiContextThrottle
 
 from .models import Project
 
@@ -167,6 +169,7 @@ def _context(project, user):
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
+@throttle_classes([AiContextThrottle])
 def project_coach(request, pk):
     from .role_views import accessible_project_ids
     project = Project.objects.filter(id=pk, id__in=accessible_project_ids(request.user)).first()
@@ -196,7 +199,9 @@ def project_coach(request, pk):
         return Response({"detail": "Stel een vraag."}, status=400)
 
     context = (request.data or {}).get("context", "").strip()  # e.g. the screen the user is on
-    answer, source = _answer(project, request.user, methodology, coach, shape, competence, question, context)
+    answer, source, ai_context_used = _answer(
+        project, request.user, methodology, coach, shape, competence, question, context
+    )
     # log the consult (reuses the existing audit helper; never fatal)
     try:
         from accounts.models import audit
@@ -205,15 +210,39 @@ def project_coach(request, pk):
               target_type="project", target_id=project.id, request=request)
     except Exception:
         pass
-    return Response({"answer": answer, "source": source, "methodology": methodology,
-                     "act": _act_links(methodology, project.id)})
+    return Response({
+        "answer": answer,
+        "source": source,
+        "methodology": methodology,
+        "act": _act_links(methodology, project.id),
+        "ai_context_used": ai_context_used,
+    })
 
 
 def _answer(project, user, methodology, coach, shape, competence, question, context=""):
-    """LLM answer grounded in the methodology + project; deterministic fallback."""
+    """LLM answer grounded in the methodology + project; deterministic fallback.
+
+    Returns ``(answer, source, ai_context_used)`` — the last element lets the
+    frontend render the Sprint 6 'AI gebruikte N documenten (M chars)' chip.
+    """
     company = getattr(user, "company", None)
+    # Uploaded project documents (if any) — same ProjectAIContext that
+    # Plan with AI already reads, so the coach can refer to the brief/
+    # tender the user attached to this project.
+    docs_prefix = ""
+    ai_context_used = None
+    try:
+        from core.ai_context_helpers import get_project_context_details
+        details = get_project_context_details(
+            user, project.id, language="nl", surface="coach",
+        )
+        docs_prefix = details.get("prefix", "")
+        ai_context_used = details.get("used")
+    except Exception:
+        pass
     system = (
-        "Je bent de ProjeXtPal project-coach. Je helpt een gebruiker tijdens het "
+        docs_prefix
+        + "Je bent de ProjeXtPal project-coach. Je helpt een gebruiker tijdens het "
         "uitvoeren van een project. Antwoord praktisch, in het Nederlands, kort en "
         "concreet (max ~6 zinnen of een korte lijst). Blijf strikt binnen de "
         f"gekozen methodiek.\n\nMethodiek: {methodology}. {coach['focus']}\n"
@@ -237,7 +266,7 @@ def _answer(project, user, methodology, coach, shape, competence, question, cont
                 )
                 txt = (resp.choices[0].message.content or "").strip()
                 if txt:
-                    return txt, "ai"
+                    return txt, "ai", ai_context_used
         except Exception:
             pass
     # Deterministic fallback — still grounded + actionable.
@@ -247,4 +276,4 @@ def _answer(project, user, methodology, coach, shape, competence, question, cont
         "Wil je hier dieper op in? Bekijk de bijbehorende Academy-les voor deze "
         "methodiek, of stel een gerichtere vraag."
     )
-    return fallback, "fallback"
+    return fallback, "fallback", ai_context_used

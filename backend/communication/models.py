@@ -12,6 +12,9 @@ class StatusReport(models.Model):
     project = models.ForeignKey(
         'projects.Project', on_delete=models.CASCADE, related_name='status_reports'
     )
+    # P2-7: Report row contract (id/title/created_at/project) needs a title.
+    # Blank + default so this additive migration is safe for existing rows.
+    title = models.CharField(max_length=255, blank=True, default='')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
     progress = models.IntegerField(
         default=0,

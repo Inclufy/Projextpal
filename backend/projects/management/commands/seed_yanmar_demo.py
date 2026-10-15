@@ -104,9 +104,9 @@ class Command(BaseCommand):
 
         team_spec = [
             ("maya.okonkwo@yanmar-demo.com", "Maya", "Okonkwo", "pm"),
-            ("tom.devries@yanmar-demo.com", "Tom", "de Vries", "contibuter"),
-            ("lena.fischer@yanmar-demo.com", "Lena", "Fischer", "contibuter"),
-            ("raj.patel@yanmar-demo.com", "Raj", "Patel", "contibuter"),
+            ("tom.devries@yanmar-demo.com", "Tom", "de Vries", "contributor"),
+            ("lena.fischer@yanmar-demo.com", "Lena", "Fischer", "contributor"),
+            ("raj.patel@yanmar-demo.com", "Raj", "Patel", "contributor"),
         ]
         people = {}
         for email, first, last, role in team_spec:

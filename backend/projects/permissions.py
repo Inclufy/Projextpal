@@ -29,6 +29,30 @@ def can_view_costs(user) -> bool:
     return getattr(user, "role", None) in COST_VIEWER_ROLES
 
 
+def can_view_costs_for(user, project) -> bool:
+    """Costs (budgets/expenses/rates) are visible only when ALL hold:
+      1. the user's role may see costs (`can_view_costs`), AND
+      2. the user is NOT an external (cross-tenant) collaborator on this project
+         (role gate alone would leak host financials to a partner PM/admin), AND
+      3. the user is NOT a project member explicitly restricted on THIS project
+         (per-member `ProjectTeam.can_view_costs=False`) — so costs can be masked
+         for specific people even inside the owning company.
+    Superadmin always sees costs."""
+    if getattr(user, "is_superuser", False):
+        return True
+    if not can_view_costs(user) or is_external_member(user, project):
+        return False
+    # Per-member confidentiality: only query when costs would otherwise show.
+    if project is not None and getattr(user, "id", None):
+        from .models import ProjectTeam
+        restricted = ProjectTeam.objects.filter(
+            project=project, user=user, can_view_costs=False
+        ).exists()
+        if restricted:
+            return False
+    return True
+
+
 class CanViewCosts(BasePermission):
     """DRF permission — only finance/management roles may access cost-bearing
     endpoints (budget categories/items/overview). Yanmar SC-05."""
@@ -36,6 +60,112 @@ class CanViewCosts(BasePermission):
 
     def has_permission(self, request, view):
         return can_view_costs(request.user)
+
+
+# ── Cross-tenant CONFIDENTIALITY layer ───────────────────────────────────
+# A collaborator from another company (added to a shared project via explicit
+# membership) may collaborate on the board/events/execution, but must NEVER see
+# the host company's internal financials, hourly rates, or internal tasks.
+
+
+def is_external_member(user, project) -> bool:
+    """True when `user` is an EXTERNAL (cross-tenant) collaborator on `project`.
+
+    External member = authenticated, NOT superadmin, has a company, and belongs
+    to a different company than the project's host company
+    (``user.company_id != project.company_id``). Such a user can only be here
+    through explicit project membership, so they collaborate on the shared
+    project but internal/confidential data must be withheld from them.
+
+    Same-company users and superadmins are never "external".
+    """
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return False
+    company_id = getattr(user, "company_id", None)
+    if not company_id:
+        return False
+    project_company_id = getattr(project, "company_id", None)
+    if project_company_id is None:
+        return False
+    return company_id != project_company_id
+
+
+def exclude_internal_for_external(task_qs, user):
+    """Remove internal-only tasks a user isn't allowed to see from a Task qs.
+
+    A task flagged ``is_internal=True`` stays visible to the task's host company
+    (``milestone.project.company_id == user.company_id``) and to superadmins;
+    for everyone else (external cross-tenant members, or a user with no company)
+    it is excluded. Non-internal tasks are never touched.
+
+    The FK path follows the real relation Task → milestone → project → company.
+    """
+    from django.db.models import Q
+    if user is None or not getattr(user, "is_authenticated", False):
+        return task_qs
+    # Superadmin / is_superuser keep seeing everything.
+    if getattr(user, "role", None) == "superadmin" or getattr(user, "is_superuser", False):
+        return task_qs
+    own_company_id = getattr(user, "company_id", None)
+    return task_qs.exclude(
+        Q(is_internal=True) & ~Q(milestone__project__company_id=own_company_id)
+    )
+
+
+def financial_disclosure_state(project, viewer=None):
+    """Governance flag: is this project's financial data (budget / hourly rates
+    / EVM) deliberately disclosed to its cost-viewing members, and has the PM
+    acknowledged it?
+
+    "Disclosed" = active team members who can actually see this project's costs
+    (role-allowed, not external, not per-member restricted). Returns the set, a
+    stable ``signature`` of it, and whether a PM acknowledged the *current* set.
+    When the set changes the stored signature no longer matches → ``stale`` →
+    the flag re-raises so the PM re-confirms. ``viewer`` is accepted for symmetry
+    but does not change the computation — callers gate who may see this block.
+    """
+    import hashlib
+
+    members = project.team_members.filter(is_active=True).select_related("user")
+    disclosed = [
+        m for m in members if can_view_costs_for(getattr(m, "user", None), project)
+    ]
+    ids = sorted({m.user_id for m in disclosed if m.user_id})
+    signature = (
+        hashlib.sha256(",".join(str(i) for i in ids).encode()).hexdigest()[:40]
+        if ids else ""
+    )
+
+    ack = getattr(project, "financial_disclosure_ack", None)
+    ack_at = getattr(ack, "acknowledged_at", None)
+    ack_sig = getattr(ack, "signature", "") or ""
+    acknowledged = bool(ids and ack_at and ack_sig == signature)
+    stale = bool(ids and ack_at and ack_sig != signature)
+    ack_by = getattr(ack, "acknowledged_by", None)
+
+    def _name(u):
+        if not u:
+            return None
+        return (
+            (getattr(u, "get_full_name", lambda: "")() or "").strip()
+            or getattr(u, "username", "") or getattr(u, "email", "")
+        )
+
+    return {
+        "disclosed_count": len(ids),
+        "disclosed_members": [
+            {"id": m.user_id, "name": _name(m.user)} for m in disclosed if m.user_id
+        ],
+        "signature": signature,
+        "acknowledged": acknowledged,
+        "stale": stale,
+        "needs_ack": bool(ids) and not acknowledged,
+        "acknowledged_by": getattr(ack_by, "id", None),
+        "acknowledged_by_name": _name(ack_by),
+        "acknowledged_at": ack_at,
+    }
 
 
 # URL methodology slugs that participate in isolation enforcement.

@@ -320,14 +320,11 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_role(self, value):
-        # Disallow creating users with superadmin role
         if value == "superadmin":
             raise serializers.ValidationError("Invalid role selection.")
-        # Accept "contributor" (correctly spelled) as an alias for the legacy
-        # stored value "contibuter" until a migration renames the choice.
-        if value == "contributor":
-            value = "contibuter"
-        allowed_roles = {"admin", "pm", "program_manager", "contibuter", "reviewer", "guest"}
+        if value == "contibuter":
+            value = "contributor"
+        allowed_roles = {"admin", "pm", "program_manager", "contributor", "reviewer", "guest"}
         if value not in allowed_roles:
             raise serializers.ValidationError(
                 "Role must be one of admin, program_manager, pm, contributor, reviewer or guest."
@@ -457,10 +454,12 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
     def validate_role(self, value):
         if value == "superadmin":
             raise serializers.ValidationError("Invalid role selection.")
-        allowed_roles = {"admin", "pm", "program_manager", "contibuter", "reviewer", "guest"}
+        if value == "contibuter":
+            value = "contributor"
+        allowed_roles = {"admin", "pm", "program_manager", "contributor", "reviewer", "guest"}
         if value not in allowed_roles:
             raise serializers.ValidationError(
-                "Role must be one of admin, program_manager, pm, contibuter, reviewer or guest."
+                "Role must be one of admin, program_manager, pm, contributor, reviewer or guest."
             )
         return value
 

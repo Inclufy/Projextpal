@@ -369,6 +369,114 @@ def create_practice_assignment(request):
 
 
 # ============================================================================
+# PRACTICE SUBMISSIONS — admin review (B4)
+# ----------------------------------------------------------------------------
+# Without an admin review surface the whole certificate-eligibility gate for
+# practice assignments was unreachable: learners submitted work, nothing could
+# ever flip the submission status to 'approved', so the cert was never minted.
+# These two endpoints give the Admin Training UI a list of pending submissions
+# and a single-row approve/reject action.
+# ============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def list_practice_submissions(request):
+    """GET /academy/admin/practice-submissions/?status=pending
+
+    Filters:
+      status      : pending (default) | approved | needs_work | all
+      assignment  : PracticeAssignment id (optional)
+
+    Returns the queue the admin needs for review — submission text,
+    uploaded file URL, learner email, assignment, submitted_at.
+    """
+    status_filter = request.query_params.get('status', 'pending')
+    submissions = (
+        PracticeSubmission.objects
+        .select_related('assignment', 'user')
+        .order_by('-submitted_at')
+    )
+    if status_filter and status_filter != 'all':
+        submissions = submissions.filter(status=status_filter)
+    assignment_id = request.query_params.get('assignment')
+    if assignment_id:
+        submissions = submissions.filter(assignment_id=assignment_id)
+
+    data = []
+    for s in submissions[:200]:
+        user = s.user
+        data.append({
+            'id': s.id,
+            'assignment_id': s.assignment_id,
+            'assignment_title': s.assignment.title if s.assignment else None,
+            'user_id': user.id if user else None,
+            'user_email': user.email if user else None,
+            'user_name': (
+                f"{user.first_name} {user.last_name}".strip()
+                if user else None
+            ),
+            'submission_text': s.submission_text,
+            'submission_file_url': (
+                s.submission_file.url if s.submission_file else None
+            ),
+            'status': s.status,
+            'score': s.score,
+            'feedback': s.feedback,
+            'submitted_at': s.submitted_at.isoformat(),
+            'reviewed_at': (
+                s.reviewed_at.isoformat() if s.reviewed_at else None
+            ),
+        })
+    return Response(data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def review_practice_submission(request, submission_id):
+    """PATCH /academy/admin/practice-submissions/<id>/
+
+    Body:
+      status    : "approved" | "needs_work" | "pending"  (required)
+      feedback  : string (optional)
+      score     : int (optional)
+
+    Flipping status→approved opens the certificate gate for this learner
+    (certificate_eligibility counts approved submissions).
+    """
+    from django.utils import timezone
+    submission = get_object_or_404(PracticeSubmission, id=submission_id)
+    new_status = request.data.get('status')
+    allowed = {'pending', 'approved', 'needs_work'}
+    # The frontend may send "rejected" as a friendlier label; map it to
+    # needs_work so the learner gets a retry path rather than a dead-end.
+    if new_status == 'rejected':
+        new_status = 'needs_work'
+    if new_status not in allowed:
+        return Response(
+            {'error': 'invalid status',
+             'allowed': sorted(allowed) + ['rejected']},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    submission.status = new_status
+    if 'feedback' in request.data:
+        submission.feedback = request.data.get('feedback', '')
+    if 'score' in request.data:
+        submission.score = request.data.get('score')
+    submission.reviewed_at = timezone.now()
+    submission.reviewed_by = request.user
+    submission.save()
+
+    return Response({
+        'id': submission.id,
+        'status': submission.status,
+        'score': submission.score,
+        'feedback': submission.feedback,
+        'reviewed_at': submission.reviewed_at.isoformat(),
+    })
+
+
+# ============================================================================
 # EXAMS
 # ============================================================================
 

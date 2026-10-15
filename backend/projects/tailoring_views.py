@@ -59,10 +59,28 @@ def intake_analyze(request):
     AI never decides silently: the deterministic classifier always runs and the
     LLM (if configured) only refines it. The frontend presents the result as a
     *proposal* the user confirms.
+
+    Sprint 2 (S2-01): when the request body carries a ``project_id`` and the
+    project has a ``ProjectAIContext``, the uploaded-document text is folded
+    into the classification input so an existing project's tender/brief steers
+    the recommendation.
     """
-    description = (request.data or {}).get("description", "")
+    body = request.data or {}
+    description = body.get("description", "")
+    project_id = body.get("project_id")
     company = getattr(request.user, "company", None)
-    result = classify_with_llm(description, company=company)
+    try:
+        from core.i18n_ai import resolve_ui_language
+        lang = resolve_ui_language(request)
+    except Exception:
+        lang = "nl"
+    result = classify_with_llm(
+        description,
+        company=company,
+        project_id=project_id,
+        user=request.user,
+        language=lang,
+    )
     # attach a recommended module preview for the proposed methodology
     preview = recommend_modules(result["methodology"], result["dimensions"])
     result["preview"] = preview

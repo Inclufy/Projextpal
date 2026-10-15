@@ -121,8 +121,17 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  /* Global readability: lift the root font size so every rem-based Tailwind
+     size (text-xs … text-3xl, spacing in rem, etc.) scales up proportionally
+     across the whole app. 16px → 18px (+12.5%). One line, no per-component
+     churn. Dial the percentage here to taste. */
+  html {
+    font-size: 112.5%;
+  }
+
   body {
     @apply bg-background text-foreground;
+    line-height: 1.6;
   }
 }
 

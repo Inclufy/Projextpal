@@ -87,6 +87,8 @@ import {
   KeyRound,
 } from "lucide-react";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
+import { useAuth } from '@/contexts/AuthContext';
+import FindSkilledMemberButton from '@/components/skills/FindSkilledMemberButton';
 
 // Use relative path - proxy handles the backend URL
 const API_BASE_URL = '/api/v1';
@@ -132,6 +134,14 @@ interface TeamMember {
   email: string;
   phone?: string;
   role: "ADMIN" | "PROGRAM_MANAGER" | "PM" | "MEMBER" | "REVIEWER" | "GUEST";
+  // S8-02: raw backend role ('superadmin'/'admin'/...) kept alongside the UI
+  // role so the client-side tenant-anchor heuristic in S8-03 can prefer an
+  // admin's email domain as the tenant's "home" domain.
+  rawRole?: string;
+  // S8-02: tenant name attached to this user. Rendered as a badge for
+  // superadmin viewers only — non-superadmin viewers get a tenant-scoped
+  // listing and do not see cross-tenant hints.
+  companyName?: string | null;
   department?: string;
   status: "Active" | "Inactive" | "Pending";
   joinedDate: string;
@@ -211,6 +221,12 @@ const fetchTeamMembers = async (): Promise<TeamMember[]> => {
     email: m.email || '',
     phone: m.phone || m.phone_number || '',
     role: mapBackendRole(m.role),
+    // S8-02/S8-03: keep the raw backend role so the tenant-anchor heuristic
+    // can prefer an admin/superadmin as the "home domain" for each tenant.
+    rawRole: m.role || '',
+    // S8-02: company_name already returned by admin_users_list; propagate so
+    // superadmin can see which tenant each row belongs to.
+    companyName: m.company_name ?? null,
     department: m.department || '',
     status: mapBackendStatus(m.status || m.is_active),
     joinedDate: m.date_joined ? new Date(m.date_joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
@@ -296,8 +312,8 @@ const mapBackendRole = (role: string): TeamMember['role'] => {
     'program_manager': 'PROGRAM_MANAGER',
     'project_manager': 'PM',
     'member': 'MEMBER',
-    'contibuter': 'MEMBER',
     'contributor': 'MEMBER',
+    'contibuter': 'MEMBER',
     'reviewer': 'REVIEWER',
     'guest': 'GUEST',
   };
@@ -383,11 +399,53 @@ const getMethodologyBadgeColor = (methodology: string): string => {
 
 const departments = ["IT", "Operations", "Development", "Design", "Finance", "HR", "Marketing", "Sales"];
 
+// S8-03 — Pure-frontend external-collaborator heuristic.
+// Groups the members list by companyName, picks each tenant's "anchor"
+// domain (prefer superadmin/admin, then majority, else first member) and
+// returns a map of companyName → anchor email domain. Members whose domain
+// does not match their tenant's anchor are rendered as "Externe deelnemer".
+// Pure, deterministic over the current fetch — no backend change required.
+function buildTenantDomainAnchors(
+  members: Pick<TeamMember, 'email' | 'companyName' | 'rawRole'>[],
+): Record<string, string> {
+  const byTenant: Record<string, Pick<TeamMember, 'email' | 'companyName' | 'rawRole'>[]> = {};
+  for (const m of members) {
+    const key = m.companyName || '__none__';
+    (byTenant[key] ||= []).push(m);
+  }
+  const anchors: Record<string, string> = {};
+  for (const [tenant, list] of Object.entries(byTenant)) {
+    const admin = list.find((m) => {
+      const r = (m.rawRole || '').toLowerCase();
+      return r === 'superadmin' || r === 'admin' || r === 'administrator';
+    });
+    if (admin?.email?.includes('@')) {
+      anchors[tenant] = admin.email.split('@')[1].toLowerCase();
+      continue;
+    }
+    // Majority domain fallback.
+    const freq: Record<string, number> = {};
+    for (const m of list) {
+      const d = (m.email || '').split('@')[1]?.toLowerCase();
+      if (d) freq[d] = (freq[d] || 0) + 1;
+    }
+    const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (top) anchors[tenant] = top;
+  }
+  return anchors;
+}
+
 export default function Team() {
   const { pt } = usePageTranslations();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  // S8-02/S8-03: current user drives (a) whether tenant badges are shown
+  // (superadmin only) and (b) the fallback anchor for the "external
+  // collaborator" heuristic when no admin row is in the current tenant.
+  const { user: currentUser } = useAuth();
+  const isSuperAdminViewer = currentUser?.isSuperAdmin || currentUser?.role === 'superadmin';
+  const currentUserDomain = currentUser?.email?.split('@')[1]?.toLowerCase() || '';
 
   const tt = {
     title: pt("Team Management"),
@@ -459,6 +517,21 @@ export default function Team() {
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [addingMembers, setAddingMembers] = useState(false);
 
+  // S4-11 — team-membership cascade: when adding a user to a PROGRAM, let the
+  // admin also mirror them onto the program's constituent projects so a
+  // program-manager can actually log hours.
+  const [programProjects, setProgramProjects] = useState<Array<{ id: number; name: string }>>([]);
+  const [cascadeProjectIds, setCascadeProjectIds] = useState<number[]>([]);
+  const [cascadeEnabled, setCascadeEnabled] = useState(true);
+
+  // Sprint 7 — per-member timesheet policy + begrote uren. These apply to the
+  // CURRENT add-user flow (both the assignment dialog and the invite dialog's
+  // existing-member picker). On submit the UI calls the budget endpoint
+  // immediately after a successful team/add/ to persist the two fields.
+  // Non-blocking: a failure on the budget call does not abort the add.
+  const [timesheetRequired, setTimesheetRequired] = useState<boolean>(true);
+  const [budgetedHours, setBudgetedHours] = useState<string>("");  // "" = NULL
+
   // Company members (same endpoint PlanningTasks.tsx uses) — id + name + email
   const { data: companyMembers = [] } = useQuery<{ id: number; name: string; email: string }[]>({
     queryKey: ['company-members'],
@@ -485,6 +558,26 @@ export default function Team() {
   const [aiWorkloadAnalysis, setAiWorkloadAnalysis] = useState<AIWorkloadAnalysis[]>([]);
   const [aiGeneratedMessage, setAiGeneratedMessage] = useState("");
   const [aiOnboardingPlan, setAiOnboardingPlan] = useState<AIOnboardingPlan | null>(null);
+
+  // S8-03: per-tenant domain anchors, recomputed when the member list changes.
+  // Superadmin sees cross-tenant rows and gets a map keyed by companyName.
+  // Non-superadmin sees only their own tenant, in which case the current
+  // user's domain is a safe fallback anchor.
+  const tenantAnchors = buildTenantDomainAnchors(members);
+  const resolveAnchor = (member: TeamMember): string | null => {
+    const key = member.companyName || '__none__';
+    const anchor = tenantAnchors[key];
+    if (anchor) return anchor;
+    // Non-superadmin: fall back to the current user's own email domain.
+    if (!isSuperAdminViewer && currentUserDomain) return currentUserDomain;
+    return null;
+  };
+  const isExternalMember = (member: TeamMember): boolean => {
+    const anchor = resolveAnchor(member);
+    const domain = member.email?.split('@')[1]?.toLowerCase();
+    if (!anchor || !domain) return false;
+    return domain !== anchor;
+  };
 
   // Filter members
   const filteredMembers = members.filter((member) => {
@@ -556,7 +649,7 @@ export default function Team() {
         'ADMIN': 'admin',
         'PROGRAM_MANAGER': 'program_manager',
         'PM': 'pm',
-        'MEMBER': 'contibuter',
+        'MEMBER': 'contributor',
         'REVIEWER': 'reviewer',
         'GUEST': 'guest',
       };
@@ -650,7 +743,7 @@ if (!sendInviteEmail) {
         'ADMIN': 'admin',
         'PROGRAM_MANAGER': 'program_manager',
         'PM': 'pm',
-        'MEMBER': 'contibuter',
+        'MEMBER': 'contributor',
         'REVIEWER': 'reviewer',
         'GUEST': 'guest',
       };
@@ -850,14 +943,62 @@ if (!sendInviteEmail) {
         throw new Error('Assignment failed');
       }
 
+      // Sprint 7 — persist timesheet policy + begrote uren on the row we
+      // just created. Non-fatal: a failure here keeps the assignment but
+      // the budget just stays at its default.
+      try {
+        const row = await response.clone().json().catch(() => null);
+        const teamMemberId = row?.id;
+        if (teamMemberId) {
+          await persistTeamBudget(
+            assignmentType === "project" ? "projects" : "programs",
+            selectedItemId,
+            teamMemberId,
+          );
+        }
+      } catch (_e) {
+        // non-fatal
+      }
+
+      // S4-11 — mirror this user onto the program's constituent projects when
+      // the admin selected the "also add to underlying projects" option on
+      // a program assignment. Response body contains the new ProgramTeam id.
+      let cascadeDescription = "";
+      if (
+        assignmentType === "program"
+        && cascadeEnabled
+        && cascadeProjectIds.length > 0
+      ) {
+        try {
+          const data = await response.clone().json().catch(() => null);
+          const teamMemberId = data?.id;
+          if (teamMemberId) {
+            const result = await cascadeMemberToProjects(
+              selectedItemId,
+              teamMemberId,
+              cascadeProjectIds,
+            );
+            if (result && (result.created > 0 || result.skipped > 0)) {
+              cascadeDescription = ` ${result.created} project(en) gekoppeld, ${result.skipped} overgeslagen.`;
+            }
+          }
+        } catch (_e) {
+          // non-fatal — the program assignment itself succeeded.
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
       setSelectedItemId("");
       setSelectedRole("");
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
+      setTimesheetRequired(true);
+      setBudgetedHours("");
       setIsAssignDialogOpen(false);
 
       toast({
         title: "Toewijzing succesvol",
-        description: `${selectedMember.name} is toegewezen.`,
+        description: `${selectedMember.name} is toegewezen.${cascadeDescription}`,
       });
     } catch (error) {
       toast({
@@ -933,6 +1074,113 @@ if (!sendInviteEmail) {
     }
   };
 
+  // S4-11 — load the projects linked to a programme so the admin can tick
+  // which ones should auto-receive the new team member via the backend
+  // cascade endpoint. All boxes default to CHECKED.
+  const loadProgramProjects = async (programId: string) => {
+    if (!programId) {
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_BASE_URL}/programs/${programId}/projects/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        setProgramProjects([]);
+        setCascadeProjectIds([]);
+        return;
+      }
+      const data = await res.json();
+      const rows = Array.isArray(data) ? data : data.results || [];
+      const normalized = rows
+        .map((p: any) => ({ id: Number(p.id), name: p.name || p.title || `#${p.id}` }))
+        .filter((p: { id: number }) => !Number.isNaN(p.id));
+      setProgramProjects(normalized);
+      setCascadeProjectIds(normalized.map((p: { id: number }) => p.id));
+    } catch {
+      setProgramProjects([]);
+      setCascadeProjectIds([]);
+    }
+  };
+
+  // Sprint 7 — persist timesheet policy + begrote uren immediately after a
+  // ``POST .../team/add/`` succeeded. Separate PATCH endpoint so the cross-
+  // tenant rewrite happening in ProjectViewSet.add_team_member does not
+  // race with our two fields. Silent fallback: a failure here does not
+  // abort the add.
+  const persistTeamBudget = async (
+    base: "projects" | "programs",
+    itemId: string | number,
+    teamMemberId: number | string,
+    overrides?: { timesheet_required?: boolean; budgeted_hours?: number | null },
+  ): Promise<boolean> => {
+    // Only call when the admin actually asked for anything non-default.
+    const tsReq =
+      overrides?.timesheet_required !== undefined
+        ? overrides.timesheet_required
+        : timesheetRequired;
+    const bh =
+      overrides?.budgeted_hours !== undefined
+        ? overrides.budgeted_hours
+        : budgetedHours.trim() === ""
+          ? null
+          : Number(budgetedHours);
+    // Skip the call when nothing changed from defaults.
+    if (tsReq === true && (bh === null || Number.isNaN(bh))) return true;
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(
+        `${API_BASE_URL}/${base}/${itemId}/team/${teamMemberId}/budget/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            timesheet_required: tsReq,
+            budgeted_hours: bh === null || Number.isNaN(bh) ? null : bh,
+          }),
+        },
+      );
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  // S4-11 — fire the backend cascade endpoint for a freshly-added
+  // ProgramTeam row. Silent fallback: a 403/500 does not fail the whole
+  // flow, we just report the cascade separately.
+  const cascadeMemberToProjects = async (
+    programId: string,
+    teamMemberId: number | string,
+    projectIds: number[],
+  ): Promise<{ created: number; skipped: number } | null> => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(
+        `${API_BASE_URL}/programs/${programId}/team/${teamMemberId}/cascade/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ project_ids: projectIds }),
+        },
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return {
+        created: (data.created_project_teams || []).length,
+        skipped: (data.skipped_duplicates || []).length,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   // Load the current team of the selected project/programme so we can hide
   // members that are already on it from the picker.
   const loadExistingTeam = async (type: "project" | "program", itemId: string) => {
@@ -985,7 +1233,12 @@ if (!sendInviteEmail) {
     const token = localStorage.getItem("access_token");
     const base = inviteType === "project" ? "projects" : "programs";
     let added = 0;
+    let cascadedCreated = 0;
+    let cascadedSkipped = 0;
     const failed: string[] = [];
+
+    const shouldCascade =
+      inviteType === "program" && cascadeEnabled && cascadeProjectIds.length > 0;
 
     for (const userId of selectedMemberIds) {
       try {
@@ -996,6 +1249,42 @@ if (!sendInviteEmail) {
         });
         if (res.ok) {
           added += 1;
+          // Sprint 7 — persist timesheet policy + begrote uren for THIS user.
+          // Non-fatal: a failure keeps the row but the two fields stay at
+          // their defaults.
+          try {
+            const row = await res.clone().json().catch(() => null);
+            const teamMemberId = row?.id;
+            if (teamMemberId) {
+              await persistTeamBudget(
+                inviteType === "project" ? "projects" : "programs",
+                inviteItemId,
+                teamMemberId,
+              );
+            }
+          } catch (_e) {
+            // non-fatal
+          }
+          // S4-11 — cascade the new program-team row down to the ticked projects.
+          if (shouldCascade) {
+            try {
+              const row = await res.clone().json().catch(() => null);
+              const teamMemberId = row?.id;
+              if (teamMemberId) {
+                const r = await cascadeMemberToProjects(
+                  inviteItemId,
+                  teamMemberId,
+                  cascadeProjectIds,
+                );
+                if (r) {
+                  cascadedCreated += r.created;
+                  cascadedSkipped += r.skipped;
+                }
+              }
+            } catch (_e) {
+              // non-fatal
+            }
+          }
         } else {
           const data = await res.json().catch(() => ({}));
           failed.push(data.error || data.detail || `ID ${userId}`);
@@ -1013,9 +1302,12 @@ if (!sendInviteEmail) {
     setSelectedMemberIds([]);
 
     if (added > 0) {
+      const cascadeSuffix = shouldCascade && (cascadedCreated > 0 || cascadedSkipped > 0)
+        ? ` ${cascadedCreated} project-lidmaatschap(pen) aangemaakt, ${cascadedSkipped} overgeslagen.`
+        : "";
       toast({
         title: "Leden toegevoegd",
-        description: `${added} bestaand lid/leden toegevoegd aan het team.`,
+        description: `${added} bestaand lid/leden toegevoegd aan het team.${cascadeSuffix}`,
       });
     }
     if (failed.length > 0) {
@@ -1045,6 +1337,11 @@ if (!sendInviteEmail) {
     setMemberSearch("");
     setSelectedMemberIds([]);
     setExistingTeamUserIds([]);
+    setProgramProjects([]);
+    setCascadeProjectIds([]);
+    setCascadeEnabled(true);
+    setTimesheetRequired(true);
+    setBudgetedHours("");
   };
 
   // AI Functions (simplified - would call backend AI endpoints in production)
@@ -1416,7 +1713,7 @@ if (!sendInviteEmail) {
                 </div>
 
                 {/* Status Badges */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-4">
                   <Badge variant="secondary" className={cn("text-xs", getStatusColor(member.status))}>
                     {member.status === "Active" ? pt("Active") : member.status === "Inactive" ? pt("Inactive") : pt("Pending")}
                   </Badge>
@@ -1424,6 +1721,46 @@ if (!sendInviteEmail) {
                     <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                       <Clock className="h-3 w-3 mr-1" />
                       {pt("Time tr.")}
+                    </Badge>
+                  )}
+                  {/* S8-02 — tenant badge. Only superadmin sees cross-tenant
+                      info; non-superadmin viewers get a tenant-scoped list
+                      and no badge, to avoid any info-leak hint. The badge is
+                      yellow when the row belongs to a different tenant than
+                      the superadmin's own, otherwise a neutral tenant chip. */}
+                  {isSuperAdminViewer && member.companyName && (
+                    member.companyName !== currentUser?.companyName ? (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800"
+                        title={pt("Different tenant")}
+                      >
+                        <Building2 className="h-3 w-3 mr-1" />
+                        {member.companyName}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/40 dark:text-gray-300 dark:border-gray-700"
+                        title={pt("Own tenant")}
+                      >
+                        <Building2 className="h-3 w-3 mr-1" />
+                        {member.companyName}
+                      </Badge>
+                    )
+                  )}
+                  {/* S8-03 — external collaborator badge. Visible to every
+                      viewer; computed from the per-tenant domain anchor
+                      (admin/majority) so a user whose email domain differs
+                      from their tenant's home domain is flagged. */}
+                  {isExternalMember(member) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
+                      title={pt("External collaborator")}
+                    >
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      {pt("External")}
                     </Badge>
                   )}
                 </div>
@@ -1769,11 +2106,17 @@ if (!sendInviteEmail) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{assignmentType === "project" ? pt("Project") : pt("Program")}</Label>
-              <Select 
-                value={selectedItemId} 
+              <Select
+                value={selectedItemId}
                 onValueChange={(value) => {
                   setSelectedItemId(value);
                   setSelectedRole("");
+                  if (assignmentType === "program") {
+                    loadProgramProjects(value);
+                  } else {
+                    setProgramProjects([]);
+                    setCascadeProjectIds([]);
+                  }
                 }}
               >
                 <SelectTrigger>
@@ -1837,6 +2180,108 @@ if (!sendInviteEmail) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Sprint 7 — timesheet policy + begrote uren */}
+            {selectedItemId && (
+              <div className="space-y-3 rounded-md border p-3 bg-muted/20">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {pt("Timesheet required")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pt("Whether this person must log hours.")}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={timesheetRequired}
+                    onCheckedChange={setTimesheetRequired}
+                    aria-label={pt("Timesheet required")}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">
+                    <Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                    {pt("Budgeted hours")}
+                  </Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.25"
+                    placeholder={pt("optional, e.g. 40")}
+                    value={budgetedHours}
+                    onChange={(e) => setBudgetedHours(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {pt("Overrun shows a warning on time entry, not a block.")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* S4-11 — cascade panel: only when assigning to a PROGRAM */}
+            {assignmentType === "program" && selectedItemId && programProjects.length > 0 && (
+              <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Ook toevoegen aan onderliggende projecten</p>
+                    <p className="text-xs text-muted-foreground">
+                      Zodat deze persoon ook uren kan loggen op projecten binnen dit programma.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground underline shrink-0"
+                    onClick={() => {
+                      setCascadeEnabled(false);
+                      setCascadeProjectIds([]);
+                    }}
+                  >
+                    Overslaan
+                  </button>
+                </div>
+                {cascadeEnabled && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
+                    {programProjects.map((p) => {
+                      const checked = cascadeProjectIds.includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-accent/50 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-border accent-primary"
+                            checked={checked}
+                            onChange={(e) => {
+                              setCascadeProjectIds((prev) =>
+                                e.target.checked
+                                  ? [...prev, p.id]
+                                  : prev.filter((x) => x !== p.id),
+                              );
+                            }}
+                          />
+                          <span className="truncate">{p.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {!cascadeEnabled && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary underline"
+                    onClick={() => {
+                      setCascadeEnabled(true);
+                      setCascadeProjectIds(programProjects.map((p) => p.id));
+                    }}
+                  >
+                    Toch koppelen aan projecten
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)}>
@@ -1869,6 +2314,9 @@ if (!sendInviteEmail) {
               setInviteRole("");
               setSelectedMemberIds([]);
               setExistingTeamUserIds([]);
+              setProgramProjects([]);
+              setCascadeProjectIds([]);
+              setCascadeEnabled(true);
             }}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="project" className="gap-2">
@@ -1909,6 +2357,12 @@ if (!sendInviteEmail) {
                   setInviteRole("");
                   setSelectedMemberIds([]);
                   loadExistingTeam(inviteType, value);
+                  if (inviteType === "program") {
+                    loadProgramProjects(value);
+                  } else {
+                    setProgramProjects([]);
+                    setCascadeProjectIds([]);
+                  }
                 }}
               >
                 <SelectTrigger>
@@ -1948,6 +2402,108 @@ if (!sendInviteEmail) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Sprint 7 — timesheet policy + begrote uren (invite / existing-member path) */}
+            {inviteItemId && inviteMode === "existing" && (
+              <div className="space-y-3 rounded-md border p-3 bg-muted/20">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {pt("Timesheet required")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pt("Whether these persons must log hours.")}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={timesheetRequired}
+                    onCheckedChange={setTimesheetRequired}
+                    aria-label={pt("Timesheet required")}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">
+                    <Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                    {pt("Budgeted hours (per person)")}
+                  </Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.25"
+                    placeholder={pt("optional, e.g. 40")}
+                    value={budgetedHours}
+                    onChange={(e) => setBudgetedHours(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {pt("Overrun shows a warning on time entry, not a block.")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* S4-11 — cascade panel: only when inviting into a PROGRAM */}
+            {inviteType === "program" && inviteItemId && programProjects.length > 0 && (
+              <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Ook toevoegen aan onderliggende projecten</p>
+                    <p className="text-xs text-muted-foreground">
+                      Zodat uitgenodigde leden ook uren kunnen loggen op projecten binnen dit programma.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground underline shrink-0"
+                    onClick={() => {
+                      setCascadeEnabled(false);
+                      setCascadeProjectIds([]);
+                    }}
+                  >
+                    Overslaan
+                  </button>
+                </div>
+                {cascadeEnabled && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto divide-y">
+                    {programProjects.map((p) => {
+                      const checked = cascadeProjectIds.includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-2 p-2 cursor-pointer hover:bg-accent/50 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-border accent-primary"
+                            checked={checked}
+                            onChange={(e) => {
+                              setCascadeProjectIds((prev) =>
+                                e.target.checked
+                                  ? [...prev, p.id]
+                                  : prev.filter((x) => x !== p.id),
+                              );
+                            }}
+                          />
+                          <span className="truncate">{p.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {!cascadeEnabled && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary underline"
+                    onClick={() => {
+                      setCascadeEnabled(true);
+                      setCascadeProjectIds(programProjects.map((p) => p.id));
+                    }}
+                  >
+                    Toch koppelen aan projecten
+                  </button>
+                )}
+              </div>
+            )}
 
             {inviteMode === "email" && (
               <>
@@ -2093,18 +2649,33 @@ if (!sendInviteEmail) {
               </Button>
             )}
             {inviteMode === "existing" && (
-              <Button
-                onClick={handleAddExistingMembers}
-                disabled={addingMembers || selectedMemberIds.length === 0}
-                className="gap-2"
-              >
-                {addingMembers ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserPlus className="h-4 w-4" />
+              <>
+                {/* S9-05 (B6) — pick a member by required skills via the
+                    Skill DB rather than scrolling the full existing-member
+                    list. Only meaningful once a specific project is picked. */}
+                {inviteType === "project" && inviteItemId && (
+                  <FindSkilledMemberButton
+                    projectId={inviteItemId}
+                    onPick={(userId) => {
+                      setSelectedMemberIds((prev) =>
+                        prev.includes(userId) ? prev : [...prev, userId],
+                      );
+                    }}
+                  />
                 )}
-                Lid toevoegen
-              </Button>
+                <Button
+                  onClick={handleAddExistingMembers}
+                  disabled={addingMembers || selectedMemberIds.length === 0}
+                  className="gap-2"
+                >
+                  {addingMembers ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserPlus className="h-4 w-4" />
+                  )}
+                  Lid toevoegen
+                </Button>
+              </>
             )}
           </DialogFooter>
         </DialogContent>

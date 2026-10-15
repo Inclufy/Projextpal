@@ -1,13 +1,14 @@
 import { LayoutDashboard, MessageSquare, FolderKanban, Users, Inbox,
-  FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare, 
-  GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText, 
-  Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers, 
+  FileCheck, ClipboardList, ChevronRight, Calendar, CheckSquare,
+  GitBranch, Network, ListChecks, LayoutGrid, Euro, FileText,
+  Lightbulb, UserCheck, MessagesSquare, Shield, Rocket, File, Layers,
   GraduationCap, Mail, Activity, CalendarDays, Table, Clock, Target, Sparkles,
-  Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3, 
-  TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag, 
+  Columns, Crown, Award, Repeat, Zap, ArrowDown, GitMerge, BarChart3,
+  TrendingUp, Gauge, FileBarChart, Building, UserCircle, Flag,
   Palette, Code, TestTube, Wrench, FileEdit, Settings, Settings2, CreditCard, Lock, GanttChartSquare,
   Package, Presentation, Briefcase, AlertCircle, CheckCircle,
-  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star
+  BookOpen, Download, FlaskConical, Gavel, AlertOctagon, Compass, Brain, ScrollText, HelpCircle, Star,
+  ArrowLeft
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -387,6 +388,8 @@ const buildFoundationPhases = (projectId: string, foundationTitle: string) => [
       { title: "Business Case", url: `/projects/${projectId}/foundation/business-case`, icon: Briefcase },
       { title: "Team", url: `/projects/${projectId}/foundation/team`, icon: Users },
       { title: "Budget", url: `/projects/${projectId}/foundation/budget`, icon: Euro },
+      // Sprint 7 — resource planner (per-person Gantt per project)
+      { title: "Resource planner", url: `/projects/${projectId}/resource-plan`, icon: Calendar },
     ],
   },
   {
@@ -1166,6 +1169,8 @@ export function AppSidebar() {
     // — Resources —
     if (isPMPlus) {
       baseItems.push({ title: ts.team, url: "/team", icon: Users, feature: 'teams' });
+      // P2-6: capacity dashboard was reachable only by typing the URL
+      baseItems.push({ title: isNL ? 'Capaciteit' : 'Capacity', url: "/team/capacity", icon: BarChart3, feature: 'teams' });
     }
     baseItems.push({ title: ts.timeTracking, url: "/time-tracking", icon: Clock, feature: 'time_tracking' });
 
@@ -1442,7 +1447,52 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className={cn("px-1", roomyNav ? "space-y-1.5 py-2" : "space-y-0.5")}>
-              {menuItems.map((item) => {
+              {/* S8-01 — Contextual sidebar (Jira/Linear/Notion stijl).
+                  Inside a project or programme, the global nav disappears and
+                  is replaced by a "Terug naar Projecten/Programma's" link and
+                  the current entity's title + status chip. The project/
+                  programme phases below render as before. Outside this
+                  context (/dashboard, /projects, /team, …) the global nav
+                  is unchanged. */}
+              {(isProjectContext || isProgramContext) && !isCollapsed && (
+                <div className="px-1 pb-2">
+                  <NavLink
+                    to={isProjectContext ? "/projects" : "/programs"}
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-md hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>
+                      {isProjectContext
+                        ? (isNL ? "Terug naar Projecten" : "Back to Projects")
+                        : (isNL ? "Terug naar Programma's" : "Back to Programs")}
+                    </span>
+                  </NavLink>
+                  <div className="mt-2 px-2">
+                    <h3 className="text-sm font-semibold text-foreground truncate" title={(isProjectContext ? project?.name : program?.name) || ""}>
+                      {(isProjectContext ? project?.name : program?.name) || (isNL ? "Laden…" : "Loading…")}
+                    </h3>
+                    {(isProjectContext ? project?.status : program?.status) && (
+                      <Badge variant="outline" className="text-[10px] mt-1 capitalize">
+                        {(isProjectContext ? project?.status : program?.status)?.toString().replace(/_/g, " ")}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+              {(isProjectContext || isProgramContext) && isCollapsed && (
+                <NavLink
+                  to={isProjectContext ? "/projects" : "/programs"}
+                  title={isProjectContext
+                    ? (isNL ? "Terug naar Projecten" : "Back to Projects")
+                    : (isNL ? "Terug naar Programma's" : "Back to Programs")}
+                  className="mx-auto my-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </NavLink>
+              )}
+
+              {/* Global nav only shown outside project/programme context. */}
+              {!(isProjectContext || isProgramContext) && menuItems.map((item) => {
                 const isLocked = isItemLocked(item.feature);
                 const isActive = location.pathname === item.url || 
                                  (item.isProgramLink && isProgramContext);
@@ -1619,13 +1669,6 @@ export function AppSidebar() {
                 </Collapsible>
               ))}
 
-              {isProjectContext && methodologyBadge && !isCollapsed && (
-                <div className="px-3 py-2">
-                  <Badge className={`${methodologyBadge.color} text-white text-xs`}>
-                    {methodologyBadge.label}
-                  </Badge>
-                </div>
-              )}
               {isProjectContext && roleViewControls}
 
               {isProjectContext && filteredProjectPhases.map((phase) => (
@@ -1808,7 +1851,7 @@ export function AppSidebar() {
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 dark:from-violet-500/20 dark:via-purple-500/20 dark:to-fuchsia-500/20 p-3 border border-purple-200/50 dark:border-purple-800/30">
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
-                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">Current Plan</p>
+                <p className="text-[10px] uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70 font-semibold mb-1">{language === "nl" ? "Huidig abonnement" : language === "fr" ? "Abonnement actuel" : "Current Plan"}</p>
                 <Badge className={cn(getTierColor(userFeatures.tier), "text-xs font-semibold")}>
                   {getTierName(userFeatures.tier)}
                 </Badge>
@@ -1819,7 +1862,7 @@ export function AppSidebar() {
                   onClick={() => window.location.href = '/profile?tab=subscription'}
                 >
                   <CreditCard className="w-3 h-3 mr-1.5" />
-                  Manage Plan
+                  {language === "nl" ? "Abonnement beheren" : language === "fr" ? "Gérer l'abonnement" : "Manage Plan"}
                 </Button>
               </div>
             </div>
@@ -1863,6 +1906,26 @@ export function AppSidebar() {
                   <Settings className="h-4 w-4 text-gray-500" />
                 </div>
                 {!isCollapsed && <span className="text-sm">{ts.settings}</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink
+                to="/settings/ai-billing"
+                className={({ isActive }) =>
+                  cn("rounded-lg transition-all duration-200 flex items-center gap-3",
+                    isActive
+                      ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 text-purple-700 dark:text-purple-300 font-semibold shadow-sm"
+                      : "hover:bg-gray-100/80 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                  )
+                }
+              >
+                <div className={cn("flex items-center justify-center w-7 h-7 rounded-lg", "bg-gray-100 dark:bg-gray-800")}>
+                  <CreditCard className="h-4 w-4 text-gray-500" />
+                </div>
+                {!isCollapsed && <span className="text-sm">AI-verbruik</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>

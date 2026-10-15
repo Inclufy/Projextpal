@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 import uuid
 
+from core.secret_field import EncryptedTextField
+
 
 class Portfolio(models.Model):
     """Strategic Portfolio - highest organizational level"""
@@ -167,9 +169,21 @@ class BoardMember(models.Model):
     board = models.ForeignKey(GovernanceBoard, on_delete=models.CASCADE, related_name='members')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=50, choices=MEMBER_ROLES, default='member')
-    
+
     joined_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    # S4-11: whether this board member is allowed to log hours against the
+    # components under their board. Default False: a board member is an
+    # oversight role, not a delivery role, so they do not clutter the
+    # TimeEntry project picker. A tenant can flip this per member for a
+    # working chair / member who also delivers.
+    can_log_time = models.BooleanField(
+        default=False,
+        help_text=(
+            "Allow this board member to log time on the components under "
+            "their board. Default False — oversight role, not delivery."
+        ),
+    )
 
     class Meta:
         unique_together = ['board', 'user']
@@ -228,6 +242,17 @@ class GovernanceStakeholder(models.Model):
     desired_engagement = models.CharField(max_length=20, choices=ENGAGEMENT_LEVELS, default='supportive')
     notes = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    # S4-11: whether this stakeholder may log hours against the components
+    # they are tied to. Default False: executive sponsors, SROs, business
+    # change managers etc. are governance roles, not delivery roles, and we
+    # keep them out of the TimeEntry project picker unless a tenant opts in.
+    can_log_time = models.BooleanField(
+        default=False,
+        help_text=(
+            "Allow this stakeholder to log time on the components they are "
+            "tied to. Default False — governance role, not delivery."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -652,3 +677,133 @@ class DecisionEvent(models.Model):
 
     def __str__(self):
         return f"{self.event_type} on {self.decision_id} @ {self.created_at:%Y-%m-%d}"
+
+
+class FinancialDisclosureAck(models.Model):
+    """PM acknowledgement that financial data (budget / hourly rates / EVM) on a
+    project is deliberately disclosed to its cost-viewing members.
+
+    Lives in the governance app (not projects) so it adds no field to the
+    projects.Project model. The ``signature`` is a hash of the current set of
+    member ids who can actually see this project's costs; when that set changes
+    (a member gains/loses cost visibility) the stored signature no longer
+    matches and the acknowledgement is treated as STALE — the flag re-raises so
+    the PM re-confirms. One row per project.
+    """
+
+    project = models.OneToOneField(
+        'projects.Project', on_delete=models.CASCADE,
+        related_name='financial_disclosure_ack',
+    )
+    acknowledged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='financial_disclosure_acks',
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+    # Hash of the sorted disclosed-member-id set at the moment of acknowledgement.
+    signature = models.CharField(max_length=64, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Financial Disclosure Acknowledgement'
+
+    def __str__(self):
+        return f"FinancialDisclosureAck(project={self.project_id}, by={self.acknowledged_by_id})"
+
+
+class BoardAIContext(models.Model):
+    """Snapshot of user-uploaded documents treated as background for every
+    AI call tied to this governance board (board papers, mandate, dossier,
+    standing instructions, …).
+
+    Mirrors ``PortfolioAIContext`` but one board scope deeper. Decisions
+    and Meetings do NOT need their own context model: at AI-call time we
+    walk from the Decision/Meeting up to its parent Board and stack this
+    context on top of the board's parent portfolio/program context —
+    board papers are typically what matters at both the decision and the
+    minutes level.
+
+    OneToOne so parallel branches don't collide on ``GovernanceBoard``.
+    """
+
+    MAX_TEXT = 50_000
+
+    board = models.OneToOneField(
+        GovernanceBoard, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    extracted_text = EncryptedTextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "Optional per-document ``enabled`` flag (default True) hides "
+                  "a single document from AI context without removing it.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Board AI Context'
+
+    def __str__(self):
+        return f"AI-context<board={self.board_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)
+
+
+class PortfolioAIContext(models.Model):
+    """Snapshot van door de gebruiker geüploade documenten die als context
+    gelden voor élke AI-call op dit portfolio (Portfolio AI-advisor, portfolio-
+    strategie-draft, Ask Co-pilot bij een portfolio, …).
+
+    Spiegeltje van ``projects.ProjectAIContext`` maar op portfolio-niveau:
+    denk aan een strategisch meerjarenplan, investeringskader of
+    bestuursplan dat alle componenten (programs + projects) in dit portfolio
+    kaderen.
+
+    Opgezet als 1-op-1 met Portfolio (niet als veld op Portfolio zelf) zodat
+    parallelle feature-branches op ``governance/models.py`` niet collider op
+    hetzelfde model.
+
+    ``extracted_text`` wordt op 50_000 tekens geclipt om DB-grootte in de
+    hand te houden."""
+
+    MAX_TEXT = 50_000
+
+    portfolio = models.OneToOneField(
+        Portfolio, on_delete=models.CASCADE, related_name="ai_context",
+    )
+    enabled = models.BooleanField(
+        default=True,
+        help_text="If false, the AI endpoints will ignore this context even "
+                  "though it is stored (soft off-switch).",
+    )
+    # Sprint 6: Fernet-encrypted at rest (same scheme as ProjectAIContext).
+    extracted_text = EncryptedTextField(blank=True, default="")
+    source_files = models.JSONField(
+        default=list, blank=True,
+        help_text="List of {name, size, pages, enabled} dicts for traceability. "
+                  "Optional per-document ``enabled`` flag (default True) hides "
+                  "a single document from AI context without removing it.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Portfolio AI Context'
+
+    def __str__(self):
+        return f"AI-context<portfolio={self.portfolio_id}> enabled={self.enabled}"
+
+    def save(self, *args, **kwargs):
+        if self.extracted_text and len(self.extracted_text) > self.MAX_TEXT:
+            self.extracted_text = self.extracted_text[: self.MAX_TEXT]
+        super().save(*args, **kwargs)

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Image } from 'lucide-react';
+import { BookOpen, Image, ClipboardCheck } from 'lucide-react';
 import EnhancedCourseBuilder from '@/components/course-builder/EnhancedCourseBuilder';
 import VisualManagement from '@/components/admin/VisualManagement';
+import PracticeReviews from '@/components/admin/PracticeReviews';
+import BulkGenerateContentButton from '@/components/admin/BulkGenerateContentButton';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 
 const AdminTrainingManagement = () => {
@@ -11,15 +13,20 @@ const AdminTrainingManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{pt("Training Management")}</h1>
-        <p className="text-muted-foreground">
-          {pt("Manage courses and visual content")}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{pt("Training Management")}</h1>
+          <p className="text-muted-foreground">
+            {pt("Manage courses and visual content")}
+          </p>
+        </div>
+        {/* S9-06 — one-click filler for lessons without quiz questions
+            and Exams with questions=[] (idempotent on the backend). */}
+        <BulkGenerateContentButton type="both" />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-xl grid-cols-3">
           <TabsTrigger value="courses" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             {pt("Courses")}
@@ -27,6 +34,10 @@ const AdminTrainingManagement = () => {
           <TabsTrigger value="visuals" className="flex items-center gap-2">
             <Image className="h-4 w-4" />
             {pt("Visual Management")}
+          </TabsTrigger>
+          <TabsTrigger value="practice-reviews" className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            {pt("Practice Reviews")}
           </TabsTrigger>
         </TabsList>
 
@@ -36,6 +47,10 @@ const AdminTrainingManagement = () => {
 
         <TabsContent value="visuals" className="space-y-4">
           <VisualManagement />
+        </TabsContent>
+
+        <TabsContent value="practice-reviews" className="space-y-4">
+          <PracticeReviews />
         </TabsContent>
       </Tabs>
     </div>

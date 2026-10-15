@@ -1,4 +1,4 @@
-from langchain.tools import Tool, StructuredTool
+from langchain_core.tools import Tool, StructuredTool
 from typing import List, Dict, Callable
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -95,9 +95,14 @@ from . import (
     task_tools,
     milestone_tools,
     project_task_tools,
+    project_lifecycle_tools,
     timeline_adjustment_tools,
     project_analysis_tools,
     program_tools,
+    program_lifecycle_tools,
+    business_case_tools,
+    risk_register_tools,
+    milestone_draft_tools,
 )
 
 import os

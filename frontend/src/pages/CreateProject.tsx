@@ -237,11 +237,31 @@ const CreateProject = () => {
     scope_out: string;
     deliverables: string[];
     suggested_milestones: Array<{ name: string; description: string; due_offset_weeks: number }>;
+    // Sprint 2 S2-03/S2-04: methodology suggestion from the LLM, only present
+    // when source === "ai". null when the LLM path did not run.
+    suggested_methodology?: ProjectMethodology | null;
+    methodology_confidence?: number;
+    methodology_reason?: string;
     extracted_pages: number;
     extracted_text_preview: string;
+    // Full extracted text + per-file breakdown (set by backend) — used to
+    // seed the new project's AI-context after create instead of the
+    // preview-only snippet so Business Case / Project Brief / … auto-drafts
+    // see the whole tender/brief.
+    extracted_text?: string;
+    extracted_files?: Array<{ name: string; size: number; pages: number; enabled: boolean }>;
+    // Auto-fill for the Details step — populated when the LLM path ran.
+    suggested_start_date?: string | null;
+    suggested_end_date?: string | null;
+    suggested_budget_amount?: number | null;
+    suggested_budget_currency?: string;
+    suggested_priority?: "P0" | "P1" | "P2" | "P3" | null;
+    overall_confidence?: number;
     source: string;
     skipped: Array<{ name: string; reason: string }>;
   }>(null);
+  // S2-02: avoid auto-running the AI advisor more than once per docResult.
+  const [autoAdvisorDone, setAutoAdvisorDone] = useState(false);
   // Hergebruik de uploads als persistente AI-context voor élke downstream
   // AI-call op dit project (Plan with AI, Ask Co-pilot, risk-forecast…).
   // Default aan: als Elisa de moeite neemt om tenders te uploaden, wil ze
@@ -327,6 +347,16 @@ const CreateProject = () => {
     if (!projectId || !docResult || !useDocsAsContext) return;
     try {
       const token = localStorage.getItem("access_token");
+      // Prefer the full extracted text + per-file breakdown the backend
+      // returned; fall back to the ingekorte preview + raw file-list so
+      // older backend responses still land something non-empty.
+      const extracted = docResult.extracted_text || docResult.extracted_text_preview || "";
+      const files =
+        docResult.extracted_files && docResult.extracted_files.length > 0
+          ? docResult.extracted_files
+          : docFiles.map((f) => ({
+              name: f.name, size: f.size, pages: 0, enabled: true,
+            }));
       await fetch(`/api/v1/projects/${projectId}/ai-context/`, {
         method: "POST",
         headers: {
@@ -335,8 +365,8 @@ const CreateProject = () => {
         },
         body: JSON.stringify({
           enabled: true,
-          extracted_text: docResult.extracted_text_preview,
-          source_files: docFiles.map((f) => ({ name: f.name, size: f.size, pages: 0 })),
+          extracted_text: extracted,
+          source_files: files,
         }),
       });
     } catch {
@@ -351,6 +381,14 @@ const CreateProject = () => {
       const newId = created?.id ?? created?.data?.id;
       await persistTailoring(newId);
       await persistAIContext(newId);
+      // Flag the project as "needs human review" when it was seeded from
+      // AI-extracted documents. The ProjectHeader shows a warning banner
+      // until the operator confirms the project is ready to activate.
+      if (newId && docResult && docResult.source !== "fallback") {
+        try {
+          localStorage.setItem(`project:${newId}:needsReview`, "1");
+        } catch { /* storage can be blocked — banner just stays off */ }
+      }
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(pt("Project created successfully!"));
       navigate(newId ? `/projects/${newId}/tailoring` : "/projects");
@@ -396,6 +434,32 @@ const CreateProject = () => {
       setAiLoading(false);
     }
   };
+
+  // Sprint 2 S2-02: when the user arrived at step 1 after extracting documents
+  // (common flow: Methodology → Documents → user hits Back → Methodology again,
+  // or the aanbesteding-scenario entrypoint that bootstraps a doc result), auto
+  // pre-fill the AI Methodology Advisor with the extracted description and run
+  // it once so the user sees a doc-grounded suggestion without typing. We gate
+  // on autoAdvisorDone so the user can later Try-Again manually without the
+  // effect clobbering their edit.
+  useEffect(() => {
+    if (
+      currentStep === 1 &&
+      docResult &&
+      !autoAdvisorDone &&
+      !aiLoading &&
+      !aiRecommendation &&
+      !aiPrompt.trim() &&
+      (docResult.description || docResult.extracted_text_preview)
+    ) {
+      const seed = (docResult.description || docResult.extracted_text_preview || "").slice(0, 1200);
+      setAiPrompt(seed);
+      setAutoAdvisorDone(true);
+      // Delay slightly so React commits the aiPrompt before the advisor reads it.
+      setTimeout(() => { handleAIAdvisor(); }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, docResult, autoAdvisorDone]);
 
   // Load scenario presets for the quick-start picker.
   useEffect(() => {
@@ -575,8 +639,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
         return;
       }
       setDocResult(d);
-      // Pre-fill the Details form from the extracted project draft so the
-      // user only has to adjust, not type.
+      // Pre-fill ALL details fields from the extracted project draft so
+      // the user only has to review + confirm, not type. A persistent
+      // "needs review" banner stays on the project detail page until the
+      // operator explicitly confirms the project is ready to activate.
       setFormData((prev) => ({
         ...prev,
         name: prev.name || d.name || "",
@@ -585,6 +651,13 @@ Be specific and professional. Use the context to determine appropriate methodolo
           .filter(Boolean)
           .map((s: string, i: number) => (i === 0 ? `In scope: ${s}` : `Out of scope: ${s}`))
           .join("\n") || "",
+        startDate: prev.startDate || d.suggested_start_date || "",
+        endDate: prev.endDate || d.suggested_end_date || "",
+        budget: prev.budget || (d.suggested_budget_amount
+          ? String(d.suggested_budget_amount) : ""),
+        currency: prev.currency || d.suggested_budget_currency || "EUR",
+        priority: prev.priority || d.suggested_priority || "medium",
+        methodology: prev.methodology || (d.suggested_methodology as ProjectMethodology) || prev.methodology,
       }));
       toast.success(
         d.source === "fallback"
@@ -1029,6 +1102,52 @@ Be specific and professional. Use the context to determine appropriate methodolo
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+                      {/* S2-04: methodology chip from the doc-level LLM suggestion.
+                          Only renders when the AI returned one. */}
+                      {docResult.suggested_methodology && (
+                        <div className="flex items-center flex-wrap gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full border border-primary/30 bg-primary/10 text-primary px-2.5 py-1">
+                            <Sparkles className="h-3 w-3" />
+                            {pt('AI schat methodologie in:')}{' '}
+                            <b className="ml-0.5">
+                              {METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                || docResult.suggested_methodology}
+                            </b>
+                            {typeof docResult.methodology_confidence === 'number' && docResult.methodology_confidence > 0 && (
+                              <span className="opacity-70">· {docResult.methodology_confidence}%</span>
+                            )}
+                          </span>
+                          {formData.methodology !== docResult.suggested_methodology && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                if (docResult.suggested_methodology) {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    methodology: docResult.suggested_methodology as ProjectMethodology,
+                                  }));
+                                  toast.success(
+                                    pt('Methodologie uit documenten toegepast:') + ' ' +
+                                    (METHODOLOGIES.find((m) => m.id === docResult.suggested_methodology)?.shortName
+                                      || docResult.suggested_methodology)
+                                  );
+                                }
+                              }}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              {pt('Pas toe')}
+                            </Button>
+                          )}
+                          {docResult.methodology_reason && (
+                            <div className="basis-full text-xs text-muted-foreground italic">
+                              {docResult.methodology_reason}
+                            </div>
+                          )}
                         </div>
                       )}
                       <p className="text-xs text-muted-foreground">

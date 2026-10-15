@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { methodologyOverviewPath } from "@/lib/methodologyRoutes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DemoControls } from "@/components/DemoControls";
+import { ProgramAttentionPanel } from "@/components/ProgramAttentionPanel";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCopilot } from "@/contexts/CopilotContext";
 import {
   ArrowLeft,
   Edit,
@@ -25,6 +28,10 @@ import {
   Crown,
   GitMerge,
   Sparkles,
+  PauseCircle,
+  RotateCcw,
+  ChevronDown,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +42,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -60,6 +68,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CURRENCIES, type CurrencyCode } from "@/lib/currencies";
 import { toast } from "sonner";
+import AIContextUpload from "@/components/AIContextUpload";
 import { cn } from "@/lib/utils";
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -120,6 +129,20 @@ const deleteProgram = async (id: string) => {
   return true;
 };
 
+const postProgramLifecycle = async ({ id, action }: { id: string; action: "close" | "hold" | "reopen" }) => {
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`/api/v1/programs/${id}/${action}/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) throw new Error(`Failed to ${action} program`);
+  return response.json();
+};
+
 const updateProgram = async ({ id, data }: { id: string; data: any }) => {
   const token = localStorage.getItem("access_token");
   const response = await fetch(`/api/v1/programs/${id}/`, {
@@ -149,7 +172,13 @@ const ProgramDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { openForProgram } = useCopilot();
+  const isPMPlus =
+    ["pm", "program_manager", "admin", "superadmin"].includes(user?.role || "") ||
+    (user as any)?.isSuperAdmin === true;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -201,6 +230,26 @@ const ProgramDetail = () => {
     onError: () => {
       toast.error(pt("Failed to delete program"));
     },
+  });
+
+  // Lifecycle mutation (close / hold / reopen) — mirrors ProjectHeader.
+  const lifecycleMutation = useMutation({
+    mutationFn: postProgramLifecycle,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["program", id] });
+      queryClient.invalidateQueries({ queryKey: ["program-projects", id] });
+      queryClient.invalidateQueries({ queryKey: ["program-health", id] });
+      queryClient.invalidateQueries({ queryKey: ["program-attention", id] });
+      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      const msg =
+        variables.action === "close"
+          ? pt("Program closed — all projects completed")
+          : variables.action === "hold"
+            ? pt("Program put on hold")
+            : pt("Program reopened");
+      toast.success(msg);
+    },
+    onError: () => toast.error(pt("Could not update program status")),
   });
 
   // Fetch all projects for linking
@@ -398,10 +447,53 @@ const ProgramDetail = () => {
               }}
             />
           )}
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => openForProgram({ id: id!, name: program?.name })}
+          >
+            <Bot className="h-4 w-4" />
+            {pt("Ask Co-pilot")}
+          </Button>
           <Button variant="outline" onClick={handleEditClick}>
             <Edit className="h-4 w-4 mr-2" />
             {pt("Edit")}
           </Button>
+          {isPMPlus && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  {pt("Status")}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => lifecycleMutation.mutate({ id: id!, action: "hold" })}
+                  disabled={program?.status === "on_hold"}
+                >
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  {pt("Put on hold")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => lifecycleMutation.mutate({ id: id!, action: "reopen" })}
+                  disabled={program?.status === "active"}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {pt("Reopen")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-emerald-700 focus:text-emerald-700"
+                  onClick={() => setConfirmCloseOpen(true)}
+                  disabled={program?.status === "completed"}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {pt("Close program")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="h-4 w-4 mr-2" />
             {pt("Delete")}
@@ -501,9 +593,11 @@ const ProgramDetail = () => {
           <TabsTrigger value="projects">{pt("Projects")} ({projects.length})</TabsTrigger>
           <TabsTrigger value="timeline">{pt("Timeline")} ({milestones.length})</TabsTrigger>
           <TabsTrigger value="risks">{pt("Risks & Issues")} ({risks.length})</TabsTrigger>
+          <TabsTrigger value="documents">{pt("Documents")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ProgramAttentionPanel />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -794,7 +888,40 @@ const ProgramDetail = () => {
             </Card>
           )}
         </TabsContent>
+
+        {/* Sprint 3 S3-06 — ProgramAIContext upload surface. */}
+        <TabsContent value="documents" className="space-y-4">
+          {id && (
+            <AIContextUpload
+              endpoint={`/api/v1/programs/${id}/ai-context/`}
+              title={pt("Program documents (AI context)")}
+              description={pt(
+                "Upload a programme charter, business-case portfolio, blueprint or multi-year plan. The AI uses these documents as context for every program-level draft (benefits map, programme vision, tranche planning, portfolio advice).",
+              )}
+            />
+          )}
+        </TabsContent>
       </Tabs>
+
+      {/* Confirm close (cascades to all linked projects + their activities) */}
+      <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pt("Close this program?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pt("This marks the program as completed and completes all its projects and activities.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pt("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => lifecycleMutation.mutate({ id: id!, action: "close" })}
+            >
+              {pt("Close program")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

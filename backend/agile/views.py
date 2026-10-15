@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 
 from projects.models import Project
-from projects.permissions import MethodologyMatchesProjectPermission
+from projects.permissions import MethodologyMatchesProjectPermission, can_view_costs_for
 from django.db.models import Q as _DjangoQ
 from .models import (
     AgileTeamMember, AgileProductVision, AgileProductGoal,
@@ -754,11 +754,21 @@ class AgileBudgetViewSet(viewsets.ViewSet):
     
     def retrieve(self, request, project_id=None):
         project = _gated_project_lookup(request.user, project_id)
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {'detail': 'You do not have permission to view project costs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         return Response(AgileBudgetSerializer(budget).data)
-    
+
     def update(self, request, project_id=None):
         project = _gated_project_lookup(request.user, project_id)
+        if not can_view_costs_for(request.user, project):
+            return Response(
+                {'detail': 'You do not have permission to view project costs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer = AgileBudgetSerializer(budget, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -774,13 +784,20 @@ class AgileBudgetItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         project = _gated_project_lookup(self.request.user, project_id)
+        # Per-member / cross-tenant confidentiality: hide budget items from a
+        # viewer not allowed to see this project's costs.
+        if not can_view_costs_for(self.request.user, project):
+            return AgileBudgetItem.objects.none()
         budget = AgileBudget.objects.filter(project=project).first()
         if budget:
             return AgileBudgetItem.objects.filter(budget=budget)
         return AgileBudgetItem.objects.none()
-    
+
     def perform_create(self, serializer):
         project = _gated_project_lookup(self.request.user, self.kwargs.get("project_id"))
+        if not can_view_costs_for(self.request.user, project):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to view project costs.")
         budget, _ = AgileBudget.objects.get_or_create(project=project)
         serializer.save(budget=budget)
 

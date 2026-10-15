@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Briefcase, Plus, Trash2, CheckCircle2, Euro, AlertTriangle, ScrollText } from "lucide-react";
 import { toast } from "sonner";
+import AutoDraftFromDocsButton from "@/components/AutoDraftFromDocsButton";
 
 type BusinessCaseForm = {
   executive_summary: string;
@@ -195,6 +196,35 @@ const Prince2BusinessCase = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate(`/projects/${id}/foundation/charter`)} className="gap-2"><ScrollText className="h-4 w-4" /> {pt("Project Charter")}</Button>
+            <AutoDraftFromDocsButton
+              endpoint={`/api/v1/projects/${id}/prince2/business-case/auto-draft/`}
+              title={pt("Business Case — AI-draft from documents")}
+              description={pt("Review the AI-drafted fields and edit before applying.")}
+              fields={[
+                { key: "executive_summary", label: pt("Executive Summary"), kind: "textarea" },
+                { key: "reasons", label: pt("Reasons"), kind: "textarea" },
+                { key: "business_options", label: pt("Options"), kind: "textarea" },
+                { key: "expected_benefits", label: pt("Expected Benefits"), kind: "textarea" },
+                { key: "expected_dis_benefits", label: pt("Dis-Benefits"), kind: "textarea" },
+                { key: "major_risks", label: pt("Major Risks"), kind: "textarea" },
+              ]}
+              onApply={async (suggested) => {
+                const base = { ...form, ...suggested };
+                setForm((prev) => ({ ...prev, ...suggested }));
+                const url = bc
+                  ? `/api/v1/projects/${id}/prince2/business-case/${bc.id}/`
+                  : `/api/v1/projects/${id}/prince2/business-case/`;
+                const method = bc ? "PATCH" : "POST";
+                const body: any = { ...base };
+                body.development_costs = base.development_costs !== "" && !isNaN(Number(base.development_costs)) ? Number(base.development_costs) : 0;
+                body.ongoing_costs = base.ongoing_costs !== "" && !isNaN(Number(base.ongoing_costs)) ? Number(base.ongoing_costs) : 0;
+                const r = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(body) });
+                if (!r.ok) throw new Error(pt("Save failed"));
+                const data = await r.json();
+                setBc(data);
+                fetchBC();
+              }}
+            />
             {bc && bc.status !== "approved" && (
               <Button variant="outline" onClick={handleApprove} className="gap-2 text-green-600"><CheckCircle2 className="h-4 w-4" /> {pt("Approve")}</Button>
             )}
@@ -207,7 +237,7 @@ const Prince2BusinessCase = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card><CardHeader><CardTitle>{pt("Summary")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label="Executive Summary" field="executive_summary" multiline form={form} setForm={setForm} />
+              <Field label={pt("Executive Summary")} field="executive_summary" multiline form={form} setForm={setForm} />
               <Field label={pt("Reasons")} field="reasons" multiline form={form} setForm={setForm} />
               <Field label={pt("Timescale")} field="timescale" form={form} setForm={setForm} />
             </CardContent>

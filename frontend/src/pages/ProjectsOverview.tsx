@@ -20,6 +20,13 @@ import {
   LayoutGrid,
   List,
   User,
+  Crown,
+  Zap,
+  Repeat,
+  Kanban,
+  Droplets,
+  Award,
+  GitMerge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +63,22 @@ import { formatBudget, getCurrencyFromLanguage } from '@/lib/currencies';
 import { methodologyOverviewPath } from '@/lib/methodologyRoutes';
 import { usePageTranslations } from '@/hooks/usePageTranslations';
 import { aiFetch } from "@/lib/aiFetch";
+
+// Methodology config — compact per-method icon/label/colour map used by the
+// Projects list cards. Originally lived inside the deleted AI-wizard modal;
+// restored here as a minimal, standalone constant after that cleanup
+// accidentally removed it (ProjectsOverview card renderer still references it).
+const METHODOLOGY_CONFIG: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
+  inclufy:              { icon: Sparkles, color: "text-indigo-600", bgColor: "bg-indigo-50",   label: "Inclufy Best Practice" },
+  prince2:              { icon: Crown,    color: "text-amber-600",  bgColor: "bg-amber-50",    label: "PRINCE2" },
+  agile:                { icon: Zap,      color: "text-blue-600",   bgColor: "bg-blue-50",     label: "Agile" },
+  scrum:                { icon: Repeat,   color: "text-green-600",  bgColor: "bg-green-50",    label: "Scrum" },
+  kanban:               { icon: Kanban,   color: "text-purple-600", bgColor: "bg-purple-50",   label: "Kanban" },
+  waterfall:            { icon: Droplets, color: "text-cyan-600",   bgColor: "bg-cyan-50",     label: "Waterfall" },
+  lean_six_sigma_green: { icon: Award,    color: "text-emerald-600",bgColor: "bg-emerald-50",  label: "LSS Green" },
+  lean_six_sigma_black: { icon: Award,    color: "text-gray-800",   bgColor: "bg-gray-100",    label: "LSS Black" },
+  hybrid:               { icon: GitMerge, color: "text-pink-600",   bgColor: "bg-pink-50",     label: "Hybrid" },
+};
 
 // API functions
 const fetchProjects = async () => {

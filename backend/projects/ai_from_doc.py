@@ -34,7 +34,7 @@ from __future__ import annotations
 import io
 import json
 import logging
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
@@ -82,12 +82,115 @@ def _extract_pdf_text(fobj) -> Tuple[str, int]:
         return "", 0
 
 
-def _extract_text_any(filename: str, data: bytes) -> Tuple[str, int]:
+# Hard caps on the Claude-vision fallback: scanned PDFs are the most
+# expensive path (bytes * 1.3 base64 + large context in the LLM), so a
+# single multipart POST with several scans can push gunicorn past its
+# per-worker timeout and SIGKILL mid-request. Keep these conservative;
+# bump them deliberately when the gunicorn --timeout is raised.
+_VISION_MAX_BYTES_PER_PDF = 4_000_000      # ~4 MB raw PDF
+_VISION_MAX_TOKENS_PER_PDF = 2500          # Claude output cap
+_VISION_TIMEOUT_SECONDS = 55               # per-call deadline
+
+
+def _extract_pdf_via_claude(data: bytes, company) -> Tuple[str, int]:
+    """Fallback for scanned/image-only PDFs: ask Claude to OCR + extract text.
+
+    Only called when pdfplumber returned an empty text layer. The Claude
+    document content block accepts base64-encoded PDFs ≤ 32 MB and the
+    model has built-in OCR for scanned pages, so we skip local Tesseract
+    (which would require a separate OS package and a slow model download).
+
+    Caps enforced here keep a single ``plan-from-documents`` request below
+    the 120s gunicorn worker timeout even when several scanned PDFs are
+    uploaded in one go — see ``_VISION_MAX_BYTES_PER_PDF``.
+    """
+    import base64
+
+    if not data or len(data) > _VISION_MAX_BYTES_PER_PDF:
+        return "", 0
+    try:
+        ac = get_anthropic_client(company)
+    except Exception:
+        return "", 0
+    if ac is None:
+        return "", 0
+    try:
+        b64 = base64.b64encode(data).decode("ascii")
+    except Exception:
+        return "", 0
+    try:
+        resp = ac.messages.create(
+            model="claude-opus-4-7",
+            max_tokens=_VISION_MAX_TOKENS_PER_PDF,
+            timeout=_VISION_TIMEOUT_SECONDS,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "application/pdf",
+                            "data": b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            "Extract the plain text content of this PDF. "
+                            "Preserve paragraph breaks. Do NOT summarize, "
+                            "do NOT add commentary — only the extracted text. "
+                            "If the document contains forms or tables, "
+                            "linearise them as plain-text lines."
+                        ),
+                    },
+                ],
+            }],
+        )
+        text = "".join(
+            b.text for b in resp.content if getattr(b, "type", "") == "text"
+        ).strip()
+        if not text:
+            return "", 0
+        # Record token spend so the usage meter stays honest.
+        try:
+            from core import ai_usage
+            ai_usage.record(
+                getattr(company, "id", None),
+                ai_usage.tokens_from_anthropic(resp),
+                provider="anthropic",
+            )
+        except Exception:
+            pass
+        # Pages are unknown from Claude's reply — approximate as 1 so the
+        # downstream code has a sane non-zero.
+        return text, 1
+    except Exception as e:
+        logger.info("plan-from-doc Claude-vision OCR failed: %s", e)
+        return "", 0
+
+
+def _extract_text_any(
+    filename: str, data: bytes, company=None, allow_vision: bool = True,
+) -> Tuple[str, int]:
     """Minimalistische text-extractor voor PDF / plain text. .docx-support
-    kan later via python-docx worden toegevoegd."""
+    kan later via python-docx worden toegevoegd.
+
+    PDFs waarbij pdfplumber geen text-layer vindt (scanned/image-only)
+    worden doorgezet naar Claude vision OCR als er een Anthropic-key is
+    EN ``allow_vision`` True is. De view begrenst het aantal vision-calls
+    per request om de 120s gunicorn worker-timeout te respecteren.
+    """
     lower = (filename or "").lower()
     if lower.endswith(".pdf"):
-        return _extract_pdf_text(io.BytesIO(data))
+        text, pages = _extract_pdf_text(io.BytesIO(data))
+        if text.strip() or company is None or not allow_vision:
+            return text, pages
+        # Local extractor leeg → fallback naar Claude vision OCR.
+        ocr_text, ocr_pages = _extract_pdf_via_claude(data, company)
+        if ocr_text.strip():
+            return ocr_text, (pages or ocr_pages)
+        return "", pages
     if lower.endswith((".txt", ".md", ".csv")):
         try:
             return data.decode("utf-8", errors="ignore"), 1
@@ -97,9 +200,32 @@ def _extract_text_any(filename: str, data: bytes) -> Tuple[str, int]:
 
 
 _SYSTEM_PROMPT = (
-    "Je destilleert uit aanbestedings- en projectdocumenten een beknopt "
-    "projectconcept voor een project-management tool. Houd je strikt aan "
-    "het JSON-contract hieronder — geen prose, geen uitleg, alleen JSON.\n\n"
+    "Je helpt een gebruiker (meestal een projectmanager, bidmanager of "
+    "adviseur) om een nieuw project aan te maken in zijn eigen project-"
+    "managementtool (ProjeXtPal), op basis van documenten die hij "
+    "aanlevert.\n\n"
+    "BELANGRIJK — perspectief: de gebruiker is de PARTIJ die het werk "
+    "uit het document gaat UITVOEREN of op het document gaat INSCHRIJVEN. "
+    "Het aan-te-maken project in ProjeXtPal gaat dus NIET over het "
+    "bouwen van wat een aanbestedende dienst vraagt (bv. 'een "
+    "projectmanagementtool bouwen') — het gaat over het uitvoeren van, "
+    "of inschrijven op, wat in het document staat. Twee concrete "
+    "voorbeelden:\n"
+    "  * Document = 'Offerteaanvraag Open House Begeleiding Wmo "
+    "    (Gemeente Heerenveen)'. Project = 'Inschrijving Open House "
+    "    Begeleiding Wmo — Gemeente Heerenveen', niet 'Projectmanagement "
+    "    Tool voor Wmo'.\n"
+    "  * Document = 'Pakket van eisen nieuw CRM — Gemeente Almere'. "
+    "    Project = 'Inschrijving aanbesteding CRM Gemeente Almere' of "
+    "    'Implementatie CRM Gemeente Almere', afhankelijk van de rol van "
+    "    de gebruiker (inschrijver of leverancier). NOOIT 'CRM-systeem "
+    "    bouwen' tenzij het document letterlijk een intern "
+    "    ontwikkelproject beschrijft.\n\n"
+    "Gebruik de officiële titel bovenaan het document letterlijk als "
+    "basis voor de projectnaam (eventueel ingekort tot 80 tekens). Verzin "
+    "nooit een naam vanuit algemene domein-kennis of de wizard-context.\n\n"
+    "Houd je strikt aan het JSON-contract hieronder — geen prose, geen "
+    "uitleg, alleen JSON.\n\n"
     "Contract:\n"
     "{\n"
     "  \"name\": \"max 80 tekens — kernnaam van het project\",\n"
@@ -110,11 +236,32 @@ _SYSTEM_PROMPT = (
     "  \"suggested_milestones\": [\n"
     "    {\"name\": \"...\", \"description\": \"...\", \"due_offset_weeks\": 4},\n"
     "    ...\n"
-    "  ]\n"
+    "  ],\n"
+    "  \"suggested_methodology\": \"EEN van: prince2, scrum, kanban, waterfall, agile, "
+    "lean_six_sigma_green, lean_six_sigma_black, hybrid, inclufy\",\n"
+    "  \"methodology_confidence\": 0-100 (integer, hoe zeker ben je op basis van de documenten),\n"
+    "  \"methodology_reason\": \"1 zin — waarom deze methodologie bij deze documenten past\",\n"
+    "  \"suggested_start_date\": \"YYYY-MM-DD of null — expliciete startdatum uit documenten of (anders) vandaag\",\n"
+    "  \"suggested_end_date\": \"YYYY-MM-DD of null — expliciete einddatum / deadline / sluitingsdatum uit documenten\",\n"
+    "  \"suggested_budget\": {\"amount\": number of null, \"currency\": \"EUR|USD|GBP|…\"} — alleen vullen als in documenten genoemd,\n"
+    "  \"suggested_priority\": \"EEN van: P0, P1, P2, P3 — op basis van urgentie/deadline/strategisch belang; P2 standaard\",\n"
+    "  \"overall_confidence\": 0-100 (integer, hoe compleet is deze extractie — 90+ = alles direct toepasbaar; 50-80 = draft met review nodig; <50 = sjabloon)\n"
     "}\n\n"
-    "Als het document weinig concreets zegt: wees voorzichtig en laat velden "
-    "leeg in plaats van verzinnen. Beperk tot max 6 milestones."
+    "Datums: lees letterlijk uit de documenten (bijv. 'uiterste reactietermijn 25 augustus 2026 16:00' → "
+    "suggested_end_date='2026-08-25'). Zet suggested_start_date op vandaag als geen expliciete startdatum staat. "
+    "Prioriteit: P0 = direct/kritiek (deadline ≤ 2 weken, grote klant, publieke aanbesteding), P1 = hoog (deadline "
+    "≤ 1 maand of strategisch), P2 = normaal (default), P3 = achtergrond. "
+    "Als het document weinig concreets zegt: wees voorzichtig en laat velden leeg (null) in plaats van verzinnen. "
+    "Beperk tot max 6 milestones. Een aanbesteding/tender wijst doorgaans op PRINCE2 of waterfall; een "
+    "MVP/sprint-tekst op scrum; support/ticket/flow-tekst op kanban; procesoptimalisatie met data op "
+    "lean_six_sigma_green."
 )
+
+# Valid methodology slugs — mirror ``projects.tailoring.PROJECT_MODULES`` keys.
+_VALID_METHODOLOGIES = {
+    "prince2", "scrum", "kanban", "waterfall", "agile",
+    "lean_six_sigma_green", "lean_six_sigma_black", "hybrid", "inclufy",
+}
 
 
 def _fallback_from_text(text: str) -> dict:
@@ -135,7 +282,29 @@ def _fallback_from_text(text: str) -> dict:
     }
 
 
-def _call_llm(company, system: str, user_text: str) -> dict | None:
+def _call_used_byok(company, provider: str) -> bool:
+    """True when the company has an active CompanyAIKey for this provider.
+
+    Mirrors the resolver in core.llm_keys.get_*_client() so the usage log's
+    byok flag matches reality: when a tenant drops in their own key the
+    Inclufy-pool cost drops to zero and so does the invoice line.
+    """
+    if not company:
+        return False
+    try:
+        key = getattr(company, "ai_key", None)
+    except Exception:
+        return False
+    if not key or not getattr(key, "is_active", False):
+        return False
+    if provider == "openai":
+        return bool(getattr(key, "openai_api_key", ""))
+    if provider == "anthropic":
+        return bool(getattr(key, "anthropic_api_key", ""))
+    return False
+
+
+def _call_llm(company, system: str, user_text: str, user_id: Optional[int] = None) -> dict | None:
     """OpenAI eerst (snel + goedkoop), fallback naar Anthropic. Houdt
     verbruik bij via core.ai_usage."""
     from core import ai_usage
@@ -156,9 +325,21 @@ def _call_llm(company, system: str, user_text: str) -> dict | None:
             )
             try:
                 usage = getattr(resp, "usage", None)
-                ai_usage.record(getattr(company, "id", None),
-                                int(getattr(usage, "total_tokens", 0) or 0) if usage else 0,
-                                provider="openai")
+                _total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
+                _prompt = int(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0
+                _completion = int(getattr(usage, "completion_tokens", 0) or 0) if usage else 0
+                _byok = _call_used_byok(company, "openai")
+                ai_usage.record_call(
+                    company_id=getattr(company, "id", None),
+                    user_id=user_id,
+                    provider="openai",
+                    model="gpt-4o-mini",
+                    surface="plan-from-documents",
+                    tokens_total=_total,
+                    tokens_prompt=_prompt,
+                    tokens_completion=_completion,
+                    byok=_byok,
+                )
             except Exception:
                 pass
             content = resp.choices[0].message.content or ""
@@ -180,8 +361,22 @@ def _call_llm(company, system: str, user_text: str) -> dict | None:
                 messages=[{"role": "user", "content": user_text}],
             )
             try:
-                ai_usage.record(getattr(company, "id", None),
-                                ai_usage.tokens_from_anthropic(resp), provider="anthropic")
+                _tot = ai_usage.tokens_from_anthropic(resp)
+                _usage = getattr(resp, "usage", None)
+                _prompt = int(getattr(_usage, "input_tokens", 0) or 0) if _usage else 0
+                _completion = int(getattr(_usage, "output_tokens", 0) or 0) if _usage else 0
+                _byok = _call_used_byok(company, "anthropic")
+                ai_usage.record_call(
+                    company_id=getattr(company, "id", None),
+                    user_id=user_id,
+                    provider="anthropic",
+                    model="claude-opus-4-7",
+                    surface="plan-from-documents",
+                    tokens_total=_tot,
+                    tokens_prompt=_prompt,
+                    tokens_completion=_completion,
+                    byok=_byok,
+                )
             except Exception:
                 pass
             raw = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
@@ -213,9 +408,39 @@ def plan_from_documents(request):
 
     hint = (request.data.get("hint") or "").strip()
 
+    company = getattr(request.user, "company", None)
+
+    # Per-user daily cap guardrail — "de mens moet blijven nadenken".
+    # Returns 429 before any PDF is read so we never kick off an
+    # expensive extraction run that would push the user over their cap.
+    try:
+        from core import ai_usage
+        if ai_usage.user_cap_exceeded(getattr(request.user, "id", None)):
+            lang = resolve_ui_language(request)
+            msg_nl = "Dagelijks AI-tokenlimiet voor jouw account bereikt. Pak dit morgen weer op, of vraag een admin om je limiet te verhogen."
+            msg_en = "Daily AI-token cap for your account reached. Try again tomorrow, or ask an admin to raise your limit."
+            msg_fr = "Plafond quotidien de jetons IA atteint pour votre compte. Réessayez demain, ou demandez à un administrateur de relever la limite."
+            msg = {"nl": msg_nl, "en": msg_en, "fr": msg_fr}.get(lang, msg_nl)
+            return Response({"detail": msg}, status=429)
+    except Exception:
+        pass
+
+    # Per-request Claude-vision budget. If several files hit the OCR path
+    # one HTTP request can easily cross the 120s gunicorn worker-timeout.
+    # Cap at 2 PDFs through Claude per request; the rest get a graceful
+    # "skipped — upload later" so the UI can still move forward with the
+    # text-only subset.
+    _MAX_VISION_FILES_PER_REQUEST = 2
+    vision_calls_remaining = _MAX_VISION_FILES_PER_REQUEST
+
     combined_text_parts: List[str] = []
     total_pages = 0
     skipped: List[dict] = []
+    # Per-file breakdown so the caller can attach each (name, text) to the
+    # new project's AI-context after create. The AI-context endpoint keeps
+    # one encrypted text blob per project, so we also return the merged
+    # ``combined`` text as the canonical blob for immediate upload.
+    extracted_files: List[dict] = []
     for f in files:
         size = getattr(f, "size", 0) or 0
         name = getattr(f, "name", "")
@@ -223,12 +448,30 @@ def plan_from_documents(request):
             skipped.append({"name": name, "reason": f"too large ({size} bytes)"})
             continue
         data = f.read()
-        text, pages = _extract_text_any(name, data)
+        text, pages = _extract_text_any(
+            name, data, company=company,
+            allow_vision=vision_calls_remaining > 0,
+        )
         if not text:
             skipped.append({"name": name, "reason": "no text extracted"})
             continue
+        # Charge the vision budget only when the extractor actually used it
+        # (i.e. pdfplumber returned empty and Claude filled in). We cannot
+        # see that from here, so decrement when the file is a PDF and
+        # pdfplumber-only mode is unlikely to have had a text layer. Safe
+        # heuristic: always decrement for PDF — worst case we skip one more
+        # file than strictly needed, which still leaves the user with a
+        # usable draft.
+        if (name or "").lower().endswith(".pdf"):
+            vision_calls_remaining -= 1
         combined_text_parts.append(f"--- {name} ---\n{text}")
         total_pages += pages
+        extracted_files.append({
+            "name": name,
+            "size": size,
+            "pages": pages,
+            "enabled": True,
+        })
 
     combined = "\n\n".join(combined_text_parts)
     truncated = combined[:MAX_TEXT_CHARS]
@@ -247,8 +490,7 @@ def plan_from_documents(request):
         + truncated
     )
 
-    company = getattr(request.user, "company", None)
-    result = _call_llm(company, system, user_block)
+    result = _call_llm(company, system, user_block, user_id=getattr(request.user, "id", None))
     source = "ai"
     if not result:
         result = _fallback_from_text(truncated)
@@ -272,6 +514,69 @@ def plan_from_documents(request):
         if _s(d)
     ]
 
+    # S2-03: harden the methodology-suggestion fields so the frontend chip can
+    # trust the shape. We only emit a suggestion when:
+    #   - the LLM path ran (fallback would have no basis for an opinion), AND
+    #   - the slug is one we actually surface, AND
+    #   - the confidence is numeric 0..100.
+    suggested_methodology = None
+    methodology_confidence = 0
+    methodology_reason = ""
+    if source == "ai":
+        raw_meth = result.get("suggested_methodology")
+        if isinstance(raw_meth, str) and raw_meth.strip().lower() in _VALID_METHODOLOGIES:
+            suggested_methodology = raw_meth.strip().lower()
+            try:
+                methodology_confidence = max(0, min(100, int(result.get("methodology_confidence") or 0)))
+            except (TypeError, ValueError):
+                methodology_confidence = 0
+            methodology_reason = _s(result.get("methodology_reason"), 400)
+
+    # S?-04: dates, budget, priority, overall confidence — only when the LLM
+    # path actually ran (fallback has no basis for an opinion).
+    import re as _re
+    from datetime import date as _date
+
+    _ISO_DATE = _re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+    def _iso_date_or_none(v):
+        s = _s(v, 10)
+        if not s or s.lower() in {"null", "none"}:
+            return None
+        return s if _ISO_DATE.match(s) else None
+
+    suggested_start_date = None
+    suggested_end_date = None
+    suggested_budget_amount = None
+    suggested_budget_currency = "EUR"
+    suggested_priority = None
+    overall_confidence = 0
+
+    if source == "ai":
+        suggested_start_date = _iso_date_or_none(result.get("suggested_start_date"))
+        suggested_end_date = _iso_date_or_none(result.get("suggested_end_date"))
+        if not suggested_start_date:
+            # Fall back to today so the Details-step datum-veld niet leeg blijft.
+            suggested_start_date = _date.today().isoformat()
+        bud = result.get("suggested_budget") or {}
+        if isinstance(bud, dict):
+            try:
+                amt = bud.get("amount")
+                if amt is not None:
+                    suggested_budget_amount = max(0, float(amt))
+            except (TypeError, ValueError):
+                suggested_budget_amount = None
+            cur = _s(bud.get("currency"), 8).upper() or "EUR"
+            if _re.match(r"^[A-Z]{3}$", cur):
+                suggested_budget_currency = cur
+        raw_prio = _s(result.get("suggested_priority"), 4).upper()
+        if raw_prio in {"P0", "P1", "P2", "P3"}:
+            suggested_priority = raw_prio
+        try:
+            overall_confidence = max(0, min(100, int(result.get("overall_confidence") or 0)))
+        except (TypeError, ValueError):
+            overall_confidence = 0
+
     return Response({
         "name": _s(result.get("name"), 80) or "Nieuw project",
         "description": _s(result.get("description"), 1200),
@@ -279,8 +584,27 @@ def plan_from_documents(request):
         "scope_out": _s(result.get("scope_out"), 1000),
         "deliverables": deliverables,
         "suggested_milestones": milestones,
+        "suggested_methodology": suggested_methodology,
+        "methodology_confidence": methodology_confidence,
+        "methodology_reason": methodology_reason,
         "extracted_pages": total_pages,
         "extracted_text_preview": truncated[:PREVIEW_CHARS],
+        # Full extracted text + file list — the caller passes these to
+        # /api/v1/projects/{id}/ai-context/ right after project create so
+        # the uploaded tender/brief lives on in the project context and
+        # feeds the Business Case / Project Brief / … auto-draft dialogs.
+        "extracted_text": truncated,
+        "extracted_files": extracted_files,
+        # Auto-fill all project-detail fields from the documents when the
+        # LLM extracted them. Frontend uses these to pre-fill the Details
+        # step; a human review-warning stays visible until the operator
+        # confirms the project is ready to be activated.
+        "suggested_start_date": suggested_start_date,
+        "suggested_end_date": suggested_end_date,
+        "suggested_budget_amount": suggested_budget_amount,
+        "suggested_budget_currency": suggested_budget_currency,
+        "suggested_priority": suggested_priority,
+        "overall_confidence": overall_confidence,
         "skipped": skipped,
         "source": source,
     })

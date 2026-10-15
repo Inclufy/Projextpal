@@ -111,7 +111,20 @@ services:
              python3 manage.py collectstatic --noinput &&
              gunicorn core.wsgi:application --bind 0.0.0.0:8001 --workers ${GUNICORN_WORKERS:-4} --timeout 120"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/health/simple/ || exit 1"]
+      # Stond op `curl -fsS http://localhost:8001/health/simple/`. Die check kon niet
+      # slagen en kon ook niet zinvol falen:
+      #
+      #   1. curl zit niet in het image (python:3.11-slim + gcc). De log zei negen dagen
+      #      lang "/bin/sh: 1: curl: not found" en de container stond onafgebroken op
+      #      unhealthy -- terwijl de app gewoon 200 gaf op projextpal.com.
+      #   2. En als curl er wél was geweest, was het erger: SECURE_SSL_REDIRECT stuurt
+      #      elk plain-HTTP-verzoek door met een 301 naar https://projextpal.com/...
+      #      `curl -f` ziet een 301 niet als fout en had exit 0 gegeven. De check was dan
+      #      groen geweest zonder de app ooit te raken.
+      #
+      # Python3 zit wel in het image. X-Forwarded-Proto laat Django de redirect
+      # overslaan, zodat we het echte antwoord meten: 200 + {"status": "ok"}.
+      test: ["CMD", "python3", "-c", "import http.client,sys; c=http.client.HTTPConnection('127.0.0.1',8001,timeout=5); c.request('GET','/health/simple/',headers={'Host':'projextpal.com','X-Forwarded-Proto':'https'}); sys.exit(0 if c.getresponse().status==200 else 1)"]
       interval: 15s
       timeout: 10s
       retries: 5

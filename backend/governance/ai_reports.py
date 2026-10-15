@@ -3,13 +3,38 @@ AI-powered report generation using OpenAI GPT.
 """
 import json
 import logging
+from datetime import date
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from django.conf import settings
 
 from core.llm_keys import get_langchain_openai_kwargs
 
 logger = logging.getLogger(__name__)
+
+# Dutch month names so the "Vandaag is …" directive reads correctly for NL
+# tenants without pulling in Babel/strftime-locale machinery.
+_NL_MONTHS = (
+    "januari", "februari", "maart", "april", "mei", "juni",
+    "juli", "augustus", "september", "oktober", "november", "december",
+)
+
+
+def _today_directive() -> str:
+    """Return a short bilingual system-prompt line stating today's date.
+
+    The LLM has no notion of "now", so without this it hallucinates dates
+    (observed: a governance report dated "24 oktober 2023" generated in
+    2026).  We inject the real date in both ISO form (unambiguous) and
+    NL long form (matches the Dutch headings the model otherwise fabricates).
+    """
+    today = date.today()
+    nl_long = f"{today.day} {_NL_MONTHS[today.month - 1]} {today.year}"
+    return (
+        f"[CURRENT DATE — AUTHORITATIVE] Today is {today.isoformat()} "
+        f"({nl_long}). Use this date verbatim wherever the report asks for "
+        f"\"Current date\" or similar; never fabricate another date."
+    )
 
 REPORT_PROMPTS = {
     "portfolio-analysis": {
@@ -180,11 +205,30 @@ Company: {company_name}
 }
 
 
-def generate_report(report_id, context_data, company=None, language="nl"):
+def generate_report(
+    report_id,
+    context_data,
+    company=None,
+    language="nl",
+    *,
+    user=None,
+    portfolio_id=None,
+    board_id=None,
+    program_id=None,
+    project_id=None,
+    surface: str = "governance-report",
+):
     """Generate an AI report based on report type and context data.
 
     ``language`` is a 2-letter UI language code (nl/en/fr) that forces the
     LLM to answer in the user's chosen language. Falls back to Dutch.
+
+    When any of ``portfolio_id`` / ``board_id`` / ``program_id`` /
+    ``project_id`` are passed we stack their uploaded-document context on
+    top of the system prompt so the report reflects the actual papers of
+    the scope it covers — not just whatever ChatGPT knows about the
+    tenant. Scopes with no uploaded context contribute nothing (empty
+    string), so this is additive and safe for ecosystem-wide reports.
     """
     from core.i18n_ai import prepend_language
 
@@ -210,8 +254,46 @@ def generate_report(report_id, context_data, company=None, language="nl"):
 
         # Prepend the UI-language directive to the EN-hardcoded templates
         # so the model answers in the user's language without rewriting all
-        # 14 REPORT_PROMPTS entries.
+        # 14 REPORT_PROMPTS entries.  Also inject today's real date — the
+        # templates say "date: Current date" but gpt-4o has no clock and
+        # will otherwise invent one (observed hallucination: "24 oktober 2023"
+        # on a 2026 report).
         system_prompt = prepend_language(prompt_config["system"], language)
+        system_prompt = f"{_today_directive()}\n\n{system_prompt}"
+
+        # Stack uploaded-document context from every scope the caller
+        # passed in. Order matters: portfolio (broadest) → programme →
+        # board → project (narrowest) so the LLM sees the hierarchy
+        # from top to bottom and the narrower doc wins when they conflict.
+        # Each prefix is "" when the scope has no uploaded context.
+        try:
+            from core.ai_context_helpers import (
+                get_portfolio_context_prefix,
+                get_program_context_prefix,
+                get_board_context_prefix,
+                get_project_context_prefix,
+            )
+            prefixes = []
+            if portfolio_id:
+                p = get_portfolio_context_prefix(user, portfolio_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if program_id:
+                p = get_program_context_prefix(user, program_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if board_id:
+                p = get_board_context_prefix(user, board_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if project_id:
+                p = get_project_context_prefix(user, project_id, language=language, surface=surface)
+                if p:
+                    prefixes.append(p)
+            if prefixes:
+                system_prompt = "\n\n".join(prefixes) + "\n\n" + system_prompt
+        except Exception:  # context stacking must never crash the report
+            pass
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", prompt_config["human"]),

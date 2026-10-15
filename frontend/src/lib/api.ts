@@ -2,6 +2,23 @@ import type { Project, Program, TimeEntry } from '@/types/api';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001/api/v1';
 
+/**
+ * Thrown on non-OK responses so callers that need the full backend payload
+ * (e.g. DRF per-field validation errors `{answers: {q_id: "msg"}}`) can read
+ * it. Keeps the Error subclass contract — existing callers that just read
+ * `err.message` keep working unchanged.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly data: unknown;
+  constructor(status: number, message: string, data: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -53,7 +70,9 @@ class ApiClient {
       }
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || errorData.message || `API Error: ${response.status}`);
+        const message =
+          errorData?.detail || errorData?.message || `API Error: ${response.status}`;
+        throw new ApiError(response.status, message, errorData);
       }
       if (response.status === 204) return {} as T;
       return response.json();

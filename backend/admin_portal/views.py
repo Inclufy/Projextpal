@@ -486,7 +486,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
         created = 0
         errors = []
-        valid_roles = ['admin', 'pm', 'program_manager', 'contibuter', 'reviewer', 'guest']
+        valid_roles = ['admin', 'pm', 'program_manager', 'contributor', 'contibuter', 'reviewer', 'guest']
 
         for i, row in enumerate(reader, start=2):
             email = (row.get('email') or row.get('e-mail') or '').strip()
@@ -504,7 +504,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
             # Map contributor spelling
             if role in ('contributor', 'medewerker'):
-                role = 'contibuter'
+                role = 'contributor'
             if role not in valid_roles:
                 role = 'pm'
 
@@ -952,14 +952,14 @@ class AdminCompanyViewSet(viewsets.ModelViewSet):
 
         # 4) Additional invites — create inactive users + send each their own
         # verification email so they can pick a password.
-        allowed_invite_roles = {'admin', 'pm', 'program_manager', 'contibuter', 'reviewer', 'guest'}
+        allowed_invite_roles = {'admin', 'pm', 'program_manager', 'contributor', 'reviewer', 'guest'}
         for inv in (data.get('additional_invites') or []):
             email = (inv.get('email') or '').strip().lower()
             if not email or User.objects.filter(email=email).exists():
                 continue
             role = inv.get('role')
-            if role == 'contributor':  # UI stuurt de correcte spelling; model-choice is 'contibuter'
-                role = 'contibuter'
+            if role == 'contributor':  # UI stuurt de correcte spelling; model-choice is 'contributor'
+                role = 'contributor'
             if role not in allowed_invite_roles:
                 role = 'guest'
             invitee = User.objects.create(

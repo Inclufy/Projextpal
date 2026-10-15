@@ -5,6 +5,8 @@ import re
 from bot.ai.utils.session_context import (
     clear_user_session,
     get_user_session,
+    set_active_project,
+    set_active_program,
     set_user_session,
 )
 from rest_framework import status, viewsets
@@ -12,6 +14,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from core.throttles import AiContextThrottle
 
 from bot.ai import ERPAIAgent
 from bot.ai.tools import ToolRegistry
@@ -130,7 +134,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             {"chats": serializer.data, "total": total, "page": page, "size": size}
         )
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AiContextThrottle])
     def send_message(self, request, pk=None):
         chat = self.get_object()
         message = request.data.get("message")
@@ -168,6 +172,13 @@ class ChatViewSet(viewsets.ModelViewSet):
             set_user_session(token, user_details)
         else:
             clear_user_session()
+
+        # Scope this turn to the project the copilot was opened from (if any), so
+        # project tools default to it ("close this project", "add an action", …).
+        set_active_project(request.data.get("project_id"))
+        # Same for a programme the copilot was opened from, so programme tools
+        # default to it ("close this programme", "complete all projects", …).
+        set_active_program(request.data.get("program_id"))
 
         try:
             # Save user message (original, without language instruction)
@@ -209,8 +220,128 @@ class ChatViewSet(viewsets.ModelViewSet):
 
             user_ai_agent = ERPAIAgent(tools=tools, user=user_for_context)
 
+            # Tell the model which project the user is working in, so "this
+            # project" / unspecified actions resolve to it and it never asks for
+            # the id (the tools default to this project via the session context).
+            project_context = ""
+            pid = request.data.get("project_id")
+            if pid and str(pid).isdigit():
+                from projects.models import Project
+                comp = getattr(user_for_context, "company", None)
+                proj = (
+                    Project.objects.filter(id=int(pid), company=comp).first()
+                    if comp else None
+                )
+                if proj:
+                    project_context = (
+                        f"[Context: the user is currently working in project "
+                        f"#{proj.id} \"{proj.name}\". When they say 'this project', "
+                        f"'the project', or refer to actions/tasks/issues/risks "
+                        f"without naming a project, act on project #{proj.id} and "
+                        f"call project tools without a project_id (they default to "
+                        f"this project). Do not ask for the project id.]\n"
+                    )
+
+            # Tell the model which programme the user is working in, so "this
+            # programme" / unspecified actions resolve to it and it never asks
+            # for the id (the programme tools default to it via the session
+            # context).
+            program_context = ""
+            prog_id = request.data.get("program_id")
+            if prog_id and str(prog_id).isdigit():
+                from programs.models import Program
+                comp = getattr(user_for_context, "company", None)
+                prog = (
+                    Program.objects.filter(id=int(prog_id), company=comp).first()
+                    if comp else None
+                )
+                if prog:
+                    program_context = (
+                        f"[Context: the user is currently working in programme "
+                        f"#{prog.id} \"{prog.name}\". When they say 'this programme', "
+                        f"'the program', or refer to the programme's projects/risks "
+                        f"without naming a programme, act on programme #{prog.id} and "
+                        f"call programme tools without a program_id (they default to "
+                        f"this programme). Do not ask for the programme id.]\n"
+                    )
+
+            # Uploaded-documents context from every scope the client passed
+            # in. Each helper does its own tenant check — the caller doesn't
+            # need to pre-filter. Scopes with no uploaded context contribute
+            # nothing. Order mirrors the hierarchy — portfolio (broadest) →
+            # programme → board → project — so the narrower doc appears
+            # closer to the user's message when they overlap.
+            ai_docs_context = ""
+            ai_context_used = None
+            try:
+                from core.ai_context_helpers import (
+                    get_project_context_details,
+                    get_program_context_prefix,
+                    get_portfolio_context_prefix,
+                    get_board_context_prefix,
+                    get_decision_context_prefix,
+                    get_meeting_context_prefix,
+                )
+                _portfolio_id = request.data.get("portfolio_id")
+                _board_id = request.data.get("board_id")
+                _decision_id = request.data.get("decision_id")
+                _meeting_id = request.data.get("meeting_id")
+                _program_id_for_ctx = request.data.get("program_id")
+                _proj_id_for_ctx = request.data.get("project_id")
+                layered = []
+                if _portfolio_id:
+                    p = get_portfolio_context_prefix(
+                        user_for_context, _portfolio_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _program_id_for_ctx:
+                    p = get_program_context_prefix(
+                        user_for_context, _program_id_for_ctx,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _board_id:
+                    p = get_board_context_prefix(
+                        user_for_context, _board_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _decision_id and not _board_id:
+                    p = get_decision_context_prefix(
+                        user_for_context, _decision_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _meeting_id and not _board_id:
+                    p = get_meeting_context_prefix(
+                        user_for_context, _meeting_id,
+                        language=website_language, surface="copilot",
+                    )
+                    if p:
+                        layered.append(p)
+                if _proj_id_for_ctx:
+                    details = get_project_context_details(
+                        user_for_context, _proj_id_for_ctx,
+                        language=website_language, surface="copilot",
+                    )
+                    p = details.get("prefix", "")
+                    if p:
+                        layered.append(p)
+                    # Keep the UI chip wired to the project-level context so
+                    # the existing AIContextUsedChip component stays correct.
+                    ai_context_used = details.get("used")
+                if layered:
+                    ai_docs_context = "\n\n".join(layered) + "\n\n"
+            except Exception:
+                pass
+
             # Add language instruction to the message for AI processing
-            message_with_language = f"{language_instruction}{message}"
+            message_with_language = f"{language_instruction}{ai_docs_context}{project_context}{program_context}{message}"
             
             # Get AI response with language-aware message
             ai_response = user_ai_agent.process_message(message_with_language, chat_history)
@@ -288,6 +419,9 @@ class ChatViewSet(viewsets.ModelViewSet):
                 "user_message": ChatMessageSerializer(user_message).data,
                 "ai_response": ChatMessageSerializer(ai_message).data,
             }
+            if ai_context_used:
+                # Sprint 6 (S6-07) — chip in the chat sidebar.
+                response_data["ai_context_used"] = ai_context_used
 
             return Response(response_data)
 
