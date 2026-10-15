@@ -99,6 +99,62 @@ def user_cap_exceeded(user_id: Optional[int]) -> bool:
     return used >= cap
 
 
+def record_call(
+    *,
+    company_id: Optional[int],
+    user_id: Optional[int],
+    provider: str,
+    model: str = "",
+    surface: str = "",
+    tokens_total: int = 0,
+    tokens_prompt: int = 0,
+    tokens_completion: int = 0,
+    byok: bool = False,
+) -> None:
+    """One-call-per-LLM-reply recorder — writes both the Redis counters
+    (fast path for live meters) AND a persistent AIUsageLog row for the
+    monthly billing + BYOK-usage dashboard.
+
+    Failure here must NEVER kill an AI call: everything wraps in try/except
+    and the request-path continues on best-effort basis.
+    """
+    total = int(tokens_total or (tokens_prompt + tokens_completion) or 0)
+    # 1. Keep the existing Redis counters warm for the UI pill.
+    try:
+        record(company_id, total, provider=provider)
+        record_user(user_id, total)
+    except Exception as e:  # pragma: no cover
+        logger.warning("ai_usage.record_call cache leg failed: %s", e)
+
+    # 2. Persistent audit row — the billable surface.
+    try:
+        from accounts.models import AIUsageLog
+        from .ai_cost import estimate_cost_cents
+        # BYOK calls generate NO Inclufy-billable cost (customer pays the
+        # LLM provider directly). Keep cost_cents=0 so the invoice line
+        # aggregator cleanly separates billable vs non-billable rows.
+        cost_cents = 0 if byok else estimate_cost_cents(
+            model=model,
+            tokens_prompt=tokens_prompt,
+            tokens_completion=tokens_completion,
+            tokens_total=total,
+        )
+        AIUsageLog.objects.create(
+            company_id=company_id,
+            user_id=user_id,
+            provider=(provider or "other")[:20],
+            model=(model or "")[:100],
+            surface=(surface or "")[:64],
+            tokens=max(0, total),
+            tokens_prompt=max(0, int(tokens_prompt or 0)),
+            tokens_completion=max(0, int(tokens_completion or 0)),
+            cost_cents=cost_cents,
+            byok=bool(byok),
+        )
+    except Exception as e:  # pragma: no cover — audit mag nooit laten falen
+        logger.warning("ai_usage.record_call DB leg failed: %s", e)
+
+
 def record(company_id: Optional[int], tokens: int, provider: str = "openai") -> None:
     """Register ``tokens`` tegen de huidige dag. No-op als geen company of 0 tokens."""
     if not company_id or not tokens or tokens <= 0:

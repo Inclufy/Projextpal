@@ -259,6 +259,28 @@ def _fallback_from_text(text: str) -> dict:
     }
 
 
+def _call_used_byok(company, provider: str) -> bool:
+    """True when the company has an active CompanyAIKey for this provider.
+
+    Mirrors the resolver in core.llm_keys.get_*_client() so the usage log's
+    byok flag matches reality: when a tenant drops in their own key the
+    Inclufy-pool cost drops to zero and so does the invoice line.
+    """
+    if not company:
+        return False
+    try:
+        key = getattr(company, "ai_key", None)
+    except Exception:
+        return False
+    if not key or not getattr(key, "is_active", False):
+        return False
+    if provider == "openai":
+        return bool(getattr(key, "openai_api_key", ""))
+    if provider == "anthropic":
+        return bool(getattr(key, "anthropic_api_key", ""))
+    return False
+
+
 def _call_llm(company, system: str, user_text: str, user_id: Optional[int] = None) -> dict | None:
     """OpenAI eerst (snel + goedkoop), fallback naar Anthropic. Houdt
     verbruik bij via core.ai_usage."""
@@ -281,8 +303,20 @@ def _call_llm(company, system: str, user_text: str, user_id: Optional[int] = Non
             try:
                 usage = getattr(resp, "usage", None)
                 _total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
-                ai_usage.record(getattr(company, "id", None), _total, provider="openai")
-                ai_usage.record_user(user_id, _total)
+                _prompt = int(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0
+                _completion = int(getattr(usage, "completion_tokens", 0) or 0) if usage else 0
+                _byok = _call_used_byok(company, "openai")
+                ai_usage.record_call(
+                    company_id=getattr(company, "id", None),
+                    user_id=user_id,
+                    provider="openai",
+                    model="gpt-4o-mini",
+                    surface="plan-from-documents",
+                    tokens_total=_total,
+                    tokens_prompt=_prompt,
+                    tokens_completion=_completion,
+                    byok=_byok,
+                )
             except Exception:
                 pass
             content = resp.choices[0].message.content or ""
@@ -305,8 +339,21 @@ def _call_llm(company, system: str, user_text: str, user_id: Optional[int] = Non
             )
             try:
                 _tot = ai_usage.tokens_from_anthropic(resp)
-                ai_usage.record(getattr(company, "id", None), _tot, provider="anthropic")
-                ai_usage.record_user(user_id, _tot)
+                _usage = getattr(resp, "usage", None)
+                _prompt = int(getattr(_usage, "input_tokens", 0) or 0) if _usage else 0
+                _completion = int(getattr(_usage, "output_tokens", 0) or 0) if _usage else 0
+                _byok = _call_used_byok(company, "anthropic")
+                ai_usage.record_call(
+                    company_id=getattr(company, "id", None),
+                    user_id=user_id,
+                    provider="anthropic",
+                    model="claude-opus-4-7",
+                    surface="plan-from-documents",
+                    tokens_total=_tot,
+                    tokens_prompt=_prompt,
+                    tokens_completion=_completion,
+                    byok=_byok,
+                )
             except Exception:
                 pass
             raw = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")

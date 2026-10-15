@@ -1044,3 +1044,110 @@ class TenantAIFeatureFlags(models.Model):
 # but Django's app registry still sees the models under the ``accounts`` label.
 # ---------------------------------------------------------------------------
 from .skills_models import Skill, UserSkill  # noqa: E402, F401
+
+
+# ---------------------------------------------------------------------------
+# AI usage log — per-call persistent record for BYOK-usage dashboards and
+# monthly billing. The Redis cache in ``core.ai_usage`` stays as the fast
+# counter path; this table is the durable audit trail that survives cache
+# resets and powers the per-tenant invoice line-items via
+# ``finance.cross_app.dispatch_cross_app_event``.
+# ---------------------------------------------------------------------------
+
+class AIUsageLog(models.Model):
+    """One row per LLM reply recorded by ``core.ai_usage.record()``.
+
+    - ``tokens`` is the provider's reported total (prompt+completion). We
+      never guess — if the provider doesn't return a usage object the row
+      is skipped (keeps the audit honest).
+    - ``cost_cents`` is a best-effort estimate using ``core.ai_cost``
+      model-cost table at write time. Stored so the invoice reflects
+      prices at the moment of use, not at month-end re-calculation.
+    - ``surface`` names the AI endpoint (``plan-from-documents``,
+      ``business-case-auto-draft``, ``ask-copilot``, …) so the dashboard
+      can show "where did the tokens go".
+    - ``byok`` is True when the call used ``CompanyAIKey`` (customer pays
+      the LLM provider directly); False when it used Inclufy-pool keys
+      (Inclufy pays and bills back via Finance).
+    """
+
+    PROVIDER_CHOICES = [
+        ("openai", "OpenAI"),
+        ("anthropic", "Anthropic"),
+        ("gemini", "Google Gemini"),
+        ("deepseek", "DeepSeek"),
+        ("ollama", "Ollama (local)"),
+        ("other", "Other"),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="ai_usage_logs",
+        null=True, blank=True,
+        help_text="Owning tenant. Nullable for anonymous/system calls.",
+    )
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        related_name="ai_usage_logs",
+        null=True, blank=True,
+    )
+    provider = models.CharField(
+        max_length=20, choices=PROVIDER_CHOICES, db_index=True,
+    )
+    model = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text="e.g. gpt-4o-mini, claude-opus-4-7, gemini-2.5-flash",
+    )
+    surface = models.CharField(
+        max_length=64, blank=True, default="", db_index=True,
+        help_text=(
+            "AI surface that produced the call — e.g. "
+            "'plan-from-documents', 'business-case-auto-draft', "
+            "'ask-copilot'. Powers the per-feature billing breakdown."
+        ),
+    )
+    tokens = models.PositiveIntegerField(
+        default=0,
+        help_text="Total tokens (prompt + completion) reported by provider.",
+    )
+    tokens_prompt = models.PositiveIntegerField(
+        default=0, help_text="Breakdown — prompt tokens (0 if unknown).",
+    )
+    tokens_completion = models.PositiveIntegerField(
+        default=0, help_text="Breakdown — completion tokens (0 if unknown).",
+    )
+    cost_cents = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Best-effort cost in EUR cents at write time (via "
+            "core.ai_cost). 0 for BYOK calls (customer pays provider "
+            "directly, no Inclufy cost to bill back)."
+        ),
+    )
+    byok = models.BooleanField(
+        default=False,
+        help_text=(
+            "True when the call used a CompanyAIKey (customer pays "
+            "provider directly). False when the call used Inclufy-pool "
+            "keys and the cost will land on the next monthly invoice."
+        ),
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "AI usage log"
+        indexes = [
+            models.Index(fields=["company", "created_at"]),
+            models.Index(fields=["company", "byok", "created_at"]),
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["surface", "created_at"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return (
+            f"AIUsageLog<{self.provider} {self.tokens}tok "
+            f"company={self.company_id} user={self.user_id} byok={self.byok}>"
+        )
