@@ -320,7 +320,7 @@ def draft_business_case(project, user, language: str, doc_prefix: str) -> DraftR
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "business_case")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="prince2-business-case-auto-draft")
     # Keep only the known fields, coerce to str so a mis-typed model reply can
     # still be rendered by the preview dialog.
     if isinstance(parsed, dict):
@@ -368,7 +368,7 @@ def draft_project_brief(project, user, language: str, doc_prefix: str) -> DraftR
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "project_brief")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="prince2-project-brief-auto-draft")
     if isinstance(parsed, dict):
         parsed = {k: str(parsed.get(k) or "") for k in _PB_FIELDS}
         if not any(parsed.values()):
@@ -445,7 +445,7 @@ def draft_scrum(project, user, language: str, doc_prefix: str) -> DraftResult:
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "scrum")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_LARGE)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_LARGE, surface="scrum-auto-draft")
     coerced = _coerce_scrum(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _scrum_fallback(project, lm), warnings, bool(doc_prefix), lm)
 
@@ -517,7 +517,7 @@ def draft_kanban_swimlanes(project, user, language: str, doc_prefix: str) -> Dra
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "kanban")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="kanban-swimlanes-auto-draft")
     coerced = _coerce_kanban(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _kanban_fallback(lm), warnings, bool(doc_prefix), lm)
 
@@ -583,7 +583,7 @@ def draft_lss_define(project, user, language: str, doc_prefix: str) -> DraftResu
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "lss")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="lss-define-auto-draft")
     coerced = _coerce_lss(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _lss_fallback(lm), warnings, bool(doc_prefix), lm)
 
@@ -666,6 +666,6 @@ def draft_waterfall_phases(project, user, language: str, doc_prefix: str) -> Dra
     system = prepend_language(system, language)
     instructions = _draft_instructions(language, "waterfall")
     user_prompt = _wrap(doc_prefix, _project_meta(project), instructions)
-    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL)
+    parsed = _run_llm(user, system, user_prompt, _MAX_TOKENS_SMALL, surface="waterfall-phases-auto-draft")
     coerced = _coerce_waterfall(parsed) if isinstance(parsed, dict) else None
     return _finalize(coerced, _wf_fallback(project, lm), warnings, bool(doc_prefix), lm)
