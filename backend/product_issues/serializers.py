@@ -221,8 +221,18 @@ class NeedsDecisionRequestSerializer(serializers.Serializer):
 # renderDecisionBlock). The CT side re-strips on render too (defence in
 # depth) but doing it at persistence keeps the DB clean and the audit
 # trail legible.
+# De bidi-reeksen staan hier als ESCAPE-SEQUENTIES, niet als letterlijke tekens.
+#
+# Deze regex strijkt juist de bidi-override-familie weg. Om dat bereik te definieren
+# bevatte hij die tekens eerst letterlijk -- en daarmee markeerde SonarQube de VERDEDIGING
+# als kwetsbaarheid (text:S6389, 15 oktober 2026). De makkelijkste manier om die melding
+# kwijt te raken is de tekens weghalen, en dan sloop je precies de bescherming tegen
+# prompt-injectie waar het commentaar hierboven over gaat.
+#
+# Pythons `re` interpreteert \uXXXX binnen een raw string. Nagemeten over 8.448 codepoints:
+# identiek bereik aan de letterlijke vorm. De test ernaast legt dat bereik vast.
 _UNTRUSTED_CTRL_RE = __import__("re").compile(
-    r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F‪-‮⁦-⁩]"
+    r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u202A-\u202E\u2066-\u2069]"
 )
 # Hard cap at the persistence boundary. The CT prompt wraps at 500; we
 # allow a bit more so a multi-paragraph "extra context" from a reporter
