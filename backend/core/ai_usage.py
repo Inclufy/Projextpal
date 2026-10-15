@@ -37,8 +37,66 @@ def _provider_key(company_id: int, day: date) -> str:
     return f"ai_usage:providers:{company_id}:{day.isoformat()}"
 
 
+def _user_day_key(user_id: int, day: date) -> str:
+    """Per-user daily token counter so a single operator can be capped
+    independently of the company-wide quota. 'De mens moet blijven
+    nadenken' — see record_user() + user_cap_exceeded()."""
+    return f"ai_usage:user:{user_id}:{day.isoformat()}"
+
+
 def _quota() -> int:
     return int(getattr(settings, "AI_MONTHLY_TOKEN_QUOTA", 1_000_000))
+
+
+def _user_daily_cap() -> int:
+    """Default: 100k tokens per user per day. At ~15k tokens for a solid
+    BC auto-draft that's ~6 heavy drafts or ~30 Ask Co-pilot turns, which
+    forces the operator to stop and think before another dozen rounds."""
+    return int(getattr(settings, "AI_USER_DAILY_TOKEN_CAP", 100_000))
+
+
+def record_user(user_id: Optional[int], tokens: int) -> None:
+    """Register ``tokens`` tegen de per-user daily counter. No-op als geen
+    user of 0 tokens. Draait altijd NAAST record() — company-wide quota
+    gaat door, per-user cap is een separate guardrail."""
+    if not user_id or not tokens or tokens <= 0:
+        return
+    try:
+        day = date.today()
+        key = _user_day_key(user_id, day)
+        try:
+            cache.incr(key, tokens)
+        except ValueError:
+            cache.add(key, 0, _TTL_SECONDS)
+            try:
+                cache.incr(key, tokens)
+            except ValueError:
+                cache.set(key, tokens, _TTL_SECONDS)
+    except Exception as e:  # pragma: no cover — tracker mag nooit laten falen
+        logger.warning("ai_usage.record_user failed: %s", e)
+
+
+def get_user_day(user_id: int, day: date) -> int:
+    try:
+        return int(cache.get(_user_day_key(user_id, day)) or 0)
+    except Exception:
+        return 0
+
+
+def user_cap_exceeded(user_id: Optional[int]) -> bool:
+    """True when the user has already crossed the daily token cap. Used
+    as a pre-flight check in LLM helpers so we never kick off a long
+    expensive call that would push the user over the ceiling anyway."""
+    if not user_id:
+        return False
+    cap = _user_daily_cap()
+    if cap <= 0:
+        return False
+    try:
+        used = get_user_day(user_id, date.today())
+    except Exception:
+        return False
+    return used >= cap
 
 
 def record(company_id: Optional[int], tokens: int, provider: str = "openai") -> None:

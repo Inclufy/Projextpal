@@ -34,7 +34,7 @@ from __future__ import annotations
 import io
 import json
 import logging
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
@@ -217,12 +217,20 @@ _SYSTEM_PROMPT = (
     "  \"suggested_methodology\": \"EEN van: prince2, scrum, kanban, waterfall, agile, "
     "lean_six_sigma_green, lean_six_sigma_black, hybrid, inclufy\",\n"
     "  \"methodology_confidence\": 0-100 (integer, hoe zeker ben je op basis van de documenten),\n"
-    "  \"methodology_reason\": \"1 zin — waarom deze methodologie bij deze documenten past\"\n"
+    "  \"methodology_reason\": \"1 zin — waarom deze methodologie bij deze documenten past\",\n"
+    "  \"suggested_start_date\": \"YYYY-MM-DD of null — expliciete startdatum uit documenten of (anders) vandaag\",\n"
+    "  \"suggested_end_date\": \"YYYY-MM-DD of null — expliciete einddatum / deadline / sluitingsdatum uit documenten\",\n"
+    "  \"suggested_budget\": {\"amount\": number of null, \"currency\": \"EUR|USD|GBP|…\"} — alleen vullen als in documenten genoemd,\n"
+    "  \"suggested_priority\": \"EEN van: P0, P1, P2, P3 — op basis van urgentie/deadline/strategisch belang; P2 standaard\",\n"
+    "  \"overall_confidence\": 0-100 (integer, hoe compleet is deze extractie — 90+ = alles direct toepasbaar; 50-80 = draft met review nodig; <50 = sjabloon)\n"
     "}\n\n"
-    "Als het document weinig concreets zegt: wees voorzichtig en laat velden "
-    "leeg in plaats van verzinnen. Beperk tot max 6 milestones. Een aanbesteding/"
-    "tender wijst doorgaans op PRINCE2 of waterfall; een MVP/sprint-tekst op scrum; "
-    "support/ticket/flow-tekst op kanban; procesoptimalisatie met data op "
+    "Datums: lees letterlijk uit de documenten (bijv. 'uiterste reactietermijn 25 augustus 2026 16:00' → "
+    "suggested_end_date='2026-08-25'). Zet suggested_start_date op vandaag als geen expliciete startdatum staat. "
+    "Prioriteit: P0 = direct/kritiek (deadline ≤ 2 weken, grote klant, publieke aanbesteding), P1 = hoog (deadline "
+    "≤ 1 maand of strategisch), P2 = normaal (default), P3 = achtergrond. "
+    "Als het document weinig concreets zegt: wees voorzichtig en laat velden leeg (null) in plaats van verzinnen. "
+    "Beperk tot max 6 milestones. Een aanbesteding/tender wijst doorgaans op PRINCE2 of waterfall; een "
+    "MVP/sprint-tekst op scrum; support/ticket/flow-tekst op kanban; procesoptimalisatie met data op "
     "lean_six_sigma_green."
 )
 
@@ -251,7 +259,7 @@ def _fallback_from_text(text: str) -> dict:
     }
 
 
-def _call_llm(company, system: str, user_text: str) -> dict | None:
+def _call_llm(company, system: str, user_text: str, user_id: Optional[int] = None) -> dict | None:
     """OpenAI eerst (snel + goedkoop), fallback naar Anthropic. Houdt
     verbruik bij via core.ai_usage."""
     from core import ai_usage
@@ -272,9 +280,9 @@ def _call_llm(company, system: str, user_text: str) -> dict | None:
             )
             try:
                 usage = getattr(resp, "usage", None)
-                ai_usage.record(getattr(company, "id", None),
-                                int(getattr(usage, "total_tokens", 0) or 0) if usage else 0,
-                                provider="openai")
+                _total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
+                ai_usage.record(getattr(company, "id", None), _total, provider="openai")
+                ai_usage.record_user(user_id, _total)
             except Exception:
                 pass
             content = resp.choices[0].message.content or ""
@@ -296,8 +304,9 @@ def _call_llm(company, system: str, user_text: str) -> dict | None:
                 messages=[{"role": "user", "content": user_text}],
             )
             try:
-                ai_usage.record(getattr(company, "id", None),
-                                ai_usage.tokens_from_anthropic(resp), provider="anthropic")
+                _tot = ai_usage.tokens_from_anthropic(resp)
+                ai_usage.record(getattr(company, "id", None), _tot, provider="anthropic")
+                ai_usage.record_user(user_id, _tot)
             except Exception:
                 pass
             raw = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
@@ -330,6 +339,21 @@ def plan_from_documents(request):
     hint = (request.data.get("hint") or "").strip()
 
     company = getattr(request.user, "company", None)
+
+    # Per-user daily cap guardrail — "de mens moet blijven nadenken".
+    # Returns 429 before any PDF is read so we never kick off an
+    # expensive extraction run that would push the user over their cap.
+    try:
+        from core import ai_usage
+        if ai_usage.user_cap_exceeded(getattr(request.user, "id", None)):
+            lang = resolve_ui_language(request)
+            msg_nl = "Dagelijks AI-tokenlimiet voor jouw account bereikt. Pak dit morgen weer op, of vraag een admin om je limiet te verhogen."
+            msg_en = "Daily AI-token cap for your account reached. Try again tomorrow, or ask an admin to raise your limit."
+            msg_fr = "Plafond quotidien de jetons IA atteint pour votre compte. Réessayez demain, ou demandez à un administrateur de relever la limite."
+            msg = {"nl": msg_nl, "en": msg_en, "fr": msg_fr}.get(lang, msg_nl)
+            return Response({"detail": msg}, status=429)
+    except Exception:
+        pass
 
     # Per-request Claude-vision budget. If several files hit the OCR path
     # one HTTP request can easily cross the 120s gunicorn worker-timeout.
@@ -396,7 +420,7 @@ def plan_from_documents(request):
         + truncated
     )
 
-    result = _call_llm(company, system, user_block)
+    result = _call_llm(company, system, user_block, user_id=getattr(request.user, "id", None))
     source = "ai"
     if not result:
         result = _fallback_from_text(truncated)
@@ -438,6 +462,51 @@ def plan_from_documents(request):
                 methodology_confidence = 0
             methodology_reason = _s(result.get("methodology_reason"), 400)
 
+    # S?-04: dates, budget, priority, overall confidence — only when the LLM
+    # path actually ran (fallback has no basis for an opinion).
+    import re as _re
+    from datetime import date as _date
+
+    _ISO_DATE = _re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+    def _iso_date_or_none(v):
+        s = _s(v, 10)
+        if not s or s.lower() in {"null", "none"}:
+            return None
+        return s if _ISO_DATE.match(s) else None
+
+    suggested_start_date = None
+    suggested_end_date = None
+    suggested_budget_amount = None
+    suggested_budget_currency = "EUR"
+    suggested_priority = None
+    overall_confidence = 0
+
+    if source == "ai":
+        suggested_start_date = _iso_date_or_none(result.get("suggested_start_date"))
+        suggested_end_date = _iso_date_or_none(result.get("suggested_end_date"))
+        if not suggested_start_date:
+            # Fall back to today so the Details-step datum-veld niet leeg blijft.
+            suggested_start_date = _date.today().isoformat()
+        bud = result.get("suggested_budget") or {}
+        if isinstance(bud, dict):
+            try:
+                amt = bud.get("amount")
+                if amt is not None:
+                    suggested_budget_amount = max(0, float(amt))
+            except (TypeError, ValueError):
+                suggested_budget_amount = None
+            cur = _s(bud.get("currency"), 8).upper() or "EUR"
+            if _re.match(r"^[A-Z]{3}$", cur):
+                suggested_budget_currency = cur
+        raw_prio = _s(result.get("suggested_priority"), 4).upper()
+        if raw_prio in {"P0", "P1", "P2", "P3"}:
+            suggested_priority = raw_prio
+        try:
+            overall_confidence = max(0, min(100, int(result.get("overall_confidence") or 0)))
+        except (TypeError, ValueError):
+            overall_confidence = 0
+
     return Response({
         "name": _s(result.get("name"), 80) or "Nieuw project",
         "description": _s(result.get("description"), 1200),
@@ -456,6 +525,16 @@ def plan_from_documents(request):
         # feeds the Business Case / Project Brief / … auto-draft dialogs.
         "extracted_text": truncated,
         "extracted_files": extracted_files,
+        # Auto-fill all project-detail fields from the documents when the
+        # LLM extracted them. Frontend uses these to pre-fill the Details
+        # step; a human review-warning stays visible until the operator
+        # confirms the project is ready to be activated.
+        "suggested_start_date": suggested_start_date,
+        "suggested_end_date": suggested_end_date,
+        "suggested_budget_amount": suggested_budget_amount,
+        "suggested_budget_currency": suggested_budget_currency,
+        "suggested_priority": suggested_priority,
+        "overall_confidence": overall_confidence,
         "skipped": skipped,
         "source": source,
     })

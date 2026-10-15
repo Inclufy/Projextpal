@@ -250,6 +250,13 @@ const CreateProject = () => {
     // see the whole tender/brief.
     extracted_text?: string;
     extracted_files?: Array<{ name: string; size: number; pages: number; enabled: boolean }>;
+    // Auto-fill for the Details step — populated when the LLM path ran.
+    suggested_start_date?: string | null;
+    suggested_end_date?: string | null;
+    suggested_budget_amount?: number | null;
+    suggested_budget_currency?: string;
+    suggested_priority?: "P0" | "P1" | "P2" | "P3" | null;
+    overall_confidence?: number;
     source: string;
     skipped: Array<{ name: string; reason: string }>;
   }>(null);
@@ -374,6 +381,14 @@ const CreateProject = () => {
       const newId = created?.id ?? created?.data?.id;
       await persistTailoring(newId);
       await persistAIContext(newId);
+      // Flag the project as "needs human review" when it was seeded from
+      // AI-extracted documents. The ProjectHeader shows a warning banner
+      // until the operator confirms the project is ready to activate.
+      if (newId && docResult && docResult.source !== "fallback") {
+        try {
+          localStorage.setItem(`project:${newId}:needsReview`, "1");
+        } catch { /* storage can be blocked — banner just stays off */ }
+      }
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success(pt("Project created successfully!"));
       navigate(newId ? `/projects/${newId}/tailoring` : "/projects");
@@ -624,8 +639,10 @@ Be specific and professional. Use the context to determine appropriate methodolo
         return;
       }
       setDocResult(d);
-      // Pre-fill the Details form from the extracted project draft so the
-      // user only has to adjust, not type.
+      // Pre-fill ALL details fields from the extracted project draft so
+      // the user only has to review + confirm, not type. A persistent
+      // "needs review" banner stays on the project detail page until the
+      // operator explicitly confirms the project is ready to activate.
       setFormData((prev) => ({
         ...prev,
         name: prev.name || d.name || "",
@@ -634,6 +651,13 @@ Be specific and professional. Use the context to determine appropriate methodolo
           .filter(Boolean)
           .map((s: string, i: number) => (i === 0 ? `In scope: ${s}` : `Out of scope: ${s}`))
           .join("\n") || "",
+        startDate: prev.startDate || d.suggested_start_date || "",
+        endDate: prev.endDate || d.suggested_end_date || "",
+        budget: prev.budget || (d.suggested_budget_amount
+          ? String(d.suggested_budget_amount) : ""),
+        currency: prev.currency || d.suggested_budget_currency || "EUR",
+        priority: prev.priority || d.suggested_priority || "medium",
+        methodology: prev.methodology || (d.suggested_methodology as ProjectMethodology) || prev.methodology,
       }));
       toast.success(
         d.source === "fallback"
