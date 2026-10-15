@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProjectHeader } from "@/components/ProjectHeader";
 import { AIHealthStrip } from "@/components/AIHealthStrip";
+import { AiOptionsCard } from "@/components/AiOptionsCard";
 import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useProject } from "@/hooks/useApi";
 import { MethodologyDashboard } from "@/components/dashboards";
@@ -147,6 +148,7 @@ const FoundationOverview = () => {
       <ProjectHeader />
       <div className="p-6">
         {id && <div className="mb-6"><AIHealthStrip scope="project" id={id} /></div>}
+        {id && <AiOptionsCard projectId={id} methodology={project?.methodology} />}
         {/* View Toggle & Methodology Badge */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
