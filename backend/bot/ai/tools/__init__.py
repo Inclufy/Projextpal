@@ -100,6 +100,7 @@ from . import (
     project_analysis_tools,
     program_tools,
     program_lifecycle_tools,
+    business_case_tools,
 )
 
 import os
