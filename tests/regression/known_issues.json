@@ -961,10 +961,10 @@
       "regression_check": "Run mobile-app-tester on the academy course list + nested modules/lessons screens.",
       "found": "historic",
       "found_by": "git log",
-      "status": "blocked",
-      "last_tested": "2026-09-03",
-      "last_test_status": "skipped",
-      "notes": "2026-08-13: mobile-only regression (COURSE_MODULES/LESSONS nested 404s), requires mobile-app-tester on-device, not testable via this HTTP sweep. Skipped -- status unchanged (blocked). | 2026-09-03 (Hetzner post-migration sweep): mobile-only regression (COURSE_MODULES/LESSONS nested 404s), requires mobile-app-tester on-device, not testable via this HTTP sweep. Skipped -- status unchanged (blocked)."
+      "status": "open",
+      "last_tested": "2026-10-15",
+      "last_test_status": "reproduced",
+      "notes": "2026-08-13: mobile-only regression (COURSE_MODULES/LESSONS nested 404s), requires mobile-app-tester on-device, not testable via this HTTP sweep. Skipped -- status unchanged (blocked). | 2026-09-03 (Hetzner post-migration sweep): mobile-only regression (COURSE_MODULES/LESSONS nested 404s), requires mobile-app-tester on-device, not testable via this HTTP sweep. Skipped -- status unchanged (blocked).\n\n15-10-2026: niet langer geblokkeerd op een on-device test — reproduceerbaar met gewone GET's tegen productie:\n  GET /api/v1/academy/courses/1/modules/  -> 404\n  GET /api/v1/academy/courses/1/lessons/  -> 404\n  GET /api/v1/academy/modules/            -> 200\n  GET /api/v1/academy/lessons/            -> 200\nOorzaak: backend/academy/urls.py registreert modules en lessons als VLAKKE DRF-routers, zonder courses/<id>/-nesting, terwijl de mobiele client die nesting nog opbouwt in src/services/api.ts:66-67 (COURSE_MODULES, LESSONS) en in coursesService.ts:145,158,253,271. Geen van die bestanden is geraakt door de 40 commits van deze uitrol. Status van 'blocked' naar 'open': de mobiel-only diagnose waar hij op wachtte is gedaan; dit is een route-mismatch, geen raadsel."
     },
     {
       "id": "HISTORIC-012",
@@ -1091,9 +1091,9 @@
       "workaround_applied": "2026-05-18 — admin re-created Sachin's account under a fresh email. New account is visible in /admin/users and Sachin can log in. The ORIGINAL row was never inspected via the diagnostic_query above, so the root cause (is_active flag, Registration-only row, or soft-deleted ghost) is STILL unknown.",
       "next_action": "monitor_for_recurrence — if any future user reports the same 'created but invisible + cannot log in' symptom, run diagnostic_query against THEIR email BEFORE re-creating the account. Once a real DB state is captured (CustomUser is_active=False / Registration-only / deleted+N ghost), this entry can be flipped from open to fix_pending_deploy with a real one-line fix in either AdminUserViewSet.get_queryset OR the email-verification flow that sets is_active back to True.",
       "status": "open",
-      "last_tested": "2026-09-03",
-      "last_test_status": "pass",
-      "notes": "Auth required for admin endpoints. Status unchanged: open. Workaround applied 2026-05-18. | 2026-08-13: now testable with real superadmin auth (previously fully skipped). GET /api/v1/admin/users/ -> 200 with a full user list. The ORIGINAL specific symptom (user 'Sachin' invisible + workaround already applied 2026-05-18) cannot be re-diagnosed without that user's actual email/company, which is not recorded in the catalog. Endpoint itself is healthy. Status unchanged (open) -- per this entry's own next_action, only re-run the diagnostic_query if a NEW user reports the same symptom. | 2026-09-03 (Hetzner post-migration sweep): now-testable GET /api/v1/admin/users/ -> 200 with full user list. Per this entry's own next_action, status remains 'open' -- only re-run the Sachin diagnostic if a NEW user reports the same symptom (none reported this run).",
+      "last_tested": "2026-10-15",
+      "last_test_status": "deels_gediagnosticeerd",
+      "notes": "Auth required for admin endpoints. Status unchanged: open. Workaround applied 2026-05-18. | 2026-08-13: now testable with real superadmin auth (previously fully skipped). GET /api/v1/admin/users/ -> 200 with a full user list. The ORIGINAL specific symptom (user 'Sachin' invisible + workaround already applied 2026-05-18) cannot be re-diagnosed without that user's actual email/company, which is not recorded in the catalog. Endpoint itself is healthy. Status unchanged (open) -- per this entry's own next_action, only re-run the diagnostic_query if a NEW user reports the same symptom. | 2026-09-03 (Hetzner post-migration sweep): now-testable GET /api/v1/admin/users/ -> 200 with full user list. Per this entry's own next_action, status remains 'open' -- only re-run the Sachin diagnostic if a NEW user reports the same symptom (none reported this run).\n\n15-10-2026, read-only op productie (50500cae): de gebruiker bestaat wél — sachin@inclufy.com, id=22, company_id=1, role=admin, maar is_active=False. Dat verklaart de inlogklacht volledig: accounts/two_factor.py:199 weigert elke login met 401 'Account not verified' zodra is_active uit staat. Het TWEEDE deel van de melding -- ontbreekt in /admin/users -- is NIET reproduceerbaar: AdminUserViewSet heeft geen is_active-filter en geen company-scoping, en een gesimuleerde superadmin-GET levert 14 gebruikers op met sachin erbij. Dat deel is dus eerder verholpen of was een sessie-/cache-artefact. Blijft open tot besloten is of dit account geactiveerd moet worden.",
       "last_test_response_status": 200
     },
     {
