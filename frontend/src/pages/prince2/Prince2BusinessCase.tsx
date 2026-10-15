@@ -237,7 +237,7 @@ const Prince2BusinessCase = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card><CardHeader><CardTitle>{pt("Summary")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Field label="Executive Summary" field="executive_summary" multiline form={form} setForm={setForm} />
+              <Field label={pt("Executive Summary")} field="executive_summary" multiline form={form} setForm={setForm} />
               <Field label={pt("Reasons")} field="reasons" multiline form={form} setForm={setForm} />
               <Field label={pt("Timescale")} field="timescale" form={form} setForm={setForm} />
             </CardContent>

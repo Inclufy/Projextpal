@@ -340,8 +340,16 @@ const AutoDraftFromDocsButton: React.FC<AutoDraftFromDocsButtonProps> = ({
           </DialogHeader>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {pt("AI is reading your project context…")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {pt("This typically takes 10–30 seconds — the dialog stays open.")}
+                </p>
+              </div>
             </div>
           ) : !draft ? (
             <p className="text-sm text-muted-foreground py-8 text-center">{pt("No draft yet.")}</p>

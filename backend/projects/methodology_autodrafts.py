@@ -235,9 +235,9 @@ def _lang_meta(language: str) -> dict:
         }
     return {
         "no_context_warning": (
-            "Geen project-documenten geüpload — resultaat is op basis van "
-            "project-metadata only. Upload een tender/brief voor een "
-            "projectspecifiek concept."
+            "Geen project-documenten geüpload — dit concept is alleen op "
+            "basis van de project-metadata. Upload een tender of brief voor "
+            "een projectspecifiek concept."
         ),
         "no_llm_notice": (
             "Er is geen AI-sleutel geconfigureerd; dit is een sjabloonvoorstel. "
