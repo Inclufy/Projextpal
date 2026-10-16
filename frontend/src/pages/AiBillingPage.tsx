@@ -240,7 +240,7 @@ function Tile({
   return (
     <Card className={`p-4 ${emphasis ? emColor : ""}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-2xl font-bold mt-1 ${emphasis ? "" : ""}`}>{value}</div>
+      <div className="text-2xl font-bold mt-1">{value}</div>
       {sublabel && (
         <div className="text-[11px] text-muted-foreground mt-1">{sublabel}</div>
       )}

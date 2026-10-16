@@ -956,8 +956,9 @@ if (!sendInviteEmail) {
             teamMemberId,
           );
         }
-      } catch (_e) {
-        // non-fatal
+      } catch (e) {
+        // non-fatal: team-budget persist is best-effort; the assignment itself succeeded
+        console.debug("Team: team-budget persist after assignment failed (non-fatal)", e);
       }
 
       // S4-11 — mirror this user onto the program's constituent projects when
@@ -982,8 +983,9 @@ if (!sendInviteEmail) {
               cascadeDescription = ` ${result.created} project(en) gekoppeld, ${result.skipped} overgeslagen.`;
             }
           }
-        } catch (_e) {
-          // non-fatal — the program assignment itself succeeded.
+        } catch (e) {
+          // non-fatal: the program assignment itself succeeded; cascade is best-effort
+          console.debug("Team: cascade-to-projects after program assignment failed (non-fatal)", e);
         }
       }
 
@@ -1262,8 +1264,9 @@ if (!sendInviteEmail) {
                 teamMemberId,
               );
             }
-          } catch (_e) {
-            // non-fatal
+          } catch (e) {
+            // non-fatal: team-budget persist is best-effort; the invite itself succeeded
+            console.debug("Team: team-budget persist after invite failed (non-fatal)", e);
           }
           // S4-11 — cascade the new program-team row down to the ticked projects.
           if (shouldCascade) {
@@ -1281,8 +1284,9 @@ if (!sendInviteEmail) {
                   cascadedSkipped += r.skipped;
                 }
               }
-            } catch (_e) {
-              // non-fatal
+            } catch (e) {
+              // non-fatal: the invite itself succeeded; cascade is best-effort
+              console.debug("Team: cascade-to-projects after invite failed (non-fatal)", e);
             }
           }
         } else {
