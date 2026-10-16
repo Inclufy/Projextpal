@@ -178,7 +178,7 @@ const MethodologyReportPage = ({ methodology, accent, titleLabel, reportNoun }: 
                     </div>
                     {r.executive_summary && <p className="text-sm text-muted-foreground line-clamp-2">{r.executive_summary}</p>}
                   </div>
-                  <div className="flex gap-1 ml-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-1 ml-4" onClick={(e) => e.stopPropagation()} role="button" tabIndex={0} onKeyDown={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="sm" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>

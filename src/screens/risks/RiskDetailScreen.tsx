@@ -258,7 +258,7 @@ export const RiskDetailScreen: React.FC = () => {
         {/* Owner & Date */}
         {(risk.owner?.name || risk.identifiedDate) ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{isNL ? 'Details' : 'Details'}</Text>
+            <Text style={styles.sectionTitle}>Details</Text>
             <View style={styles.detailsCard}>
               {risk.owner?.name ? (
                 <View style={styles.detailRow}>
