@@ -507,7 +507,7 @@ const BoardDetail: React.FC = () => {
                 <Badge variant="outline">{meetings.length}</Badge>
               )}
             </CardTitle>
-            {board.program && meetings.length > PREVIEW_LIMIT && (
+            {!!board.program && meetings.length > PREVIEW_LIMIT && (
               <Button size="sm" variant="outline" onClick={goAllMeetingsForProgram}>
                 {pt("View all")}
               </Button>

@@ -3128,7 +3128,7 @@ return (
                       <div className="flex-1">
                         <h4 className="font-bold mb-1">{achievement.title}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{achievement.description}</p>
-                        {achievement.maxProgress && (
+                        {!!achievement.maxProgress && (
                           <div>
                             <Progress value={(achievement.progress || 0) / (achievement.maxProgress || 1) * 100} className="h-2" />
                             <p className="text-xs text-muted-foreground mt-1">
