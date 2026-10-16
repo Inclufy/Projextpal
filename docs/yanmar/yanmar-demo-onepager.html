@@ -18,6 +18,7 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
   table { width: 100%; border-collapse: collapse; }
   td { padding: 1.6px 3px; vertical-align: top; border-bottom: .5px solid #f1eff7; }
+  th { padding: 1.6px 3px; vertical-align: top; text-align: left; border-bottom: 1px solid #ece9f6; color: #6d28d9; font-weight: 700; font-size: 7.6px; text-transform: uppercase; letter-spacing: .3px; }
   .box { display: inline-block; width: 8px; height: 8px; border: 1.2px solid #9ca3af; border-radius: 2px; margin-right: 4px; }
   .id { font-weight: 700; color: #4c1d95; white-space: nowrap; }
   .where { color: #6b7280; }
@@ -46,6 +47,7 @@
     <div>
       <h2>1 · Action Tracker — 5/5 ✅</h2>
       <table>
+        <thead><tr><th>ID</th><th>Omschrijving</th></tr></thead>
         <tr><td><span class="box"></span><span class="id">ATR-01</span></td><td>Category + sub-totalen <span class="where">· PRINCE2 dashboard</span></td></tr>
         <tr><td><span class="box"></span><span class="id">ATR-02</span></td><td>RACI R/A/C/I <span class="where">· Planning → RACI</span></td></tr>
         <tr><td><span class="box"></span><span class="id">ATR-03</span></td><td>Revised due / Completed / Delay</td></tr>
@@ -56,6 +58,7 @@
 
       <h2>2 · Project Plan — 9/9 ✅</h2>
       <table>
+        <thead><tr><th>ID</th><th>Omschrijving</th></tr></thead>
         <tr><td><span class="box"></span><span class="id">PP-01</span></td><td>6 rollen (Owner/PM/Leader/Facilitator/Outside Eyes/Stakeholders)</td></tr>
         <tr><td><span class="box"></span><span class="id">PP-02</span></td><td>Scope IN / OUT apart <span class="where">· Charter</span></td></tr>
         <tr><td><span class="box"></span><span class="id">PP-03</span></td><td>Impact / Solution / ROI</td></tr>
@@ -71,6 +74,7 @@
     <div>
       <h2>3 · Highlight Report — 6/6 ✅</h2>
       <table>
+        <thead><tr><th>ID</th><th>Omschrijving</th></tr></thead>
         <tr><td><span class="box"></span><span class="id">HR-01</span></td><td>Sponsor / PM / Senior Supplier / Objectives</td></tr>
         <tr><td><span class="box"></span><span class="id">HR-02</span></td><td>Maand-fasetijdlijn (Prepare/Renovations/Run)</td></tr>
         <tr><td><span class="box"></span><span class="id">HR-03</span></td><td>4-assige RAG (Budget/Planning/Resources/Overall)</td></tr>
@@ -81,6 +85,7 @@
 
       <h2>4 · Meeting Minutes — 5/5 ✅</h2>
       <table>
+        <thead><tr><th>ID</th><th>Omschrijving</th></tr></thead>
         <tr><td><span class="box"></span><span class="id">MM-01</span></td><td>Invited / Attended / Absent</td></tr>
         <tr><td><span class="box"></span><span class="id">MM-02</span></td><td>Acties met PIC + due + status</td></tr>
         <tr><td><span class="box"></span><span class="id">MM-03</span></td><td>Vorige acties carry-forward</td></tr>
@@ -91,6 +96,7 @@
 
       <h2>5 · Sales / Contract — 5 ✅ · 3 🟡 · 1 🔴</h2>
       <table>
+        <thead><tr><th>ID</th><th>Omschrijving</th></tr></thead>
         <tr><td><span class="box"></span><span class="id">SC-02</span></td><td>BYO LLM-key (encrypted at rest) <span class="ok">✅</span></td></tr>
         <tr><td><span class="box"></span><span class="id">SC-04</span></td><td>Project-isolatie (multi-tenant) <span class="ok">✅</span></td></tr>
         <tr><td><span class="box"></span><span class="id">SC-05</span></td><td>Role-based cost/rate-zichtbaarheid <span class="ok">✅</span></td></tr>

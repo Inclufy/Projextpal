@@ -500,8 +500,7 @@ function drawSparkline(canvas, values, statuses){
   for(let i=0; i<last60.length; i++){
     const x = pad + (i/(last60.length-1)) * (W - pad*2);
     const y = H - pad - ((last60[i]-min)/range) * (H - pad*2);
-    if(i===0) ctx.lineTo(x, y);
-    else ctx.lineTo(x, y);
+    ctx.lineTo(x, y);
   }
   ctx.lineTo(W - pad, H);
   ctx.closePath();

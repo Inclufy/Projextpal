@@ -525,7 +525,7 @@ const AcademyPricing = () => {
                         className="text-xs ml-2 shrink-0"
                         style={{ 
                           backgroundColor: course.badge === 'Bestseller' ? BRAND.orange : 
-                                         course.badge === 'Nieuw' || course.badge === 'New' ? BRAND.green :
+                                         course.badge === 'Nieuw' || course.badge === 'New' ? BRAND.blue :
                                          BRAND.green,
                           color: 'white'
                         }}

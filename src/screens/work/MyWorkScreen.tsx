@@ -54,7 +54,7 @@ export const MyWorkScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       <LinearGradient colors={['#7c3aed', '#a855f7']} style={styles.header}>
         <Text style={styles.headerTitle}>{isNL ? 'Mijn werk' : 'My Work'}</Text>
         <Text style={styles.headerSub}>
-          {totalOpen} {isNL ? 'open' : 'open'} · {counts.overdue} {isNL ? 'te laat' : 'overdue'} · {counts.mentions} @
+          {totalOpen} open · {counts.overdue} {isNL ? 'te laat' : 'overdue'} · {counts.mentions} @
         </Text>
       </LinearGradient>
 
@@ -89,7 +89,7 @@ export const MyWorkScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                         <View style={{ flex: 1 }}>
                           <Text style={styles.cardTitle} numberOfLines={2}>{t.title}</Text>
                           <Text style={styles.cardMeta} numberOfLines={1}>
-                            {t.project_name || (isNL ? 'Project' : 'Project')}{t.due_date ? ` · ${fmtDate(t.due_date)}` : ''}
+                            {t.project_name || 'Project'}{t.due_date ? ` · ${fmtDate(t.due_date)}` : ''}
                           </Text>
                         </View>
                         <Ionicons name="chevron-forward" size={18} color="#c4b5fd" />

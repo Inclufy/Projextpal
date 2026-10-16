@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,13 +39,15 @@
             width: 100%;
             border-collapse: collapse;
         }
-        .invoice-details td {
+        .invoice-details td,
+        .invoice-details th {
             padding: 8px;
             border-bottom: 1px solid #e5e7eb;
         }
-        .invoice-details td:first-child {
+        .invoice-details th {
             font-weight: bold;
             width: 40%;
+            text-align: left;
         }
         .total-amount {
             font-size: 24px;
@@ -106,23 +108,23 @@
         <div class="invoice-details">
             <table>
                 <tr>
-                    <td>Invoice Number:</td>
+                    <th scope="row">Invoice Number:</th>
                     <td>{{ invoice.invoice_number }}</td>
                 </tr>
                 <tr>
-                    <td>Invoice Date:</td>
+                    <th scope="row">Invoice Date:</th>
                     <td>{{ invoice.invoice_date|date:"d F Y" }}</td>
                 </tr>
                 <tr>
-                    <td>Due Date:</td>
+                    <th scope="row">Due Date:</th>
                     <td>{{ invoice.due_date|date:"d F Y" }}</td>
                 </tr>
                 <tr>
-                    <td>Billing Period:</td>
+                    <th scope="row">Billing Period:</th>
                     <td>{{ invoice.period_start|date:"d M Y" }} - {{ invoice.period_end|date:"d M Y" }}</td>
                 </tr>
                 <tr>
-                    <td>Status:</td>
+                    <th scope="row">Status:</th>
                     <td><strong>{{ invoice.get_status_display }}</strong></td>
                 </tr>
             </table>

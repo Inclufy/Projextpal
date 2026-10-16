@@ -165,7 +165,7 @@ export const SettingsScreen: React.FC = () => {
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {language === 'nl' ? 'Account' : 'Account'}
+            Account
           </Text>
           <View style={styles.sectionContent}>
             <SettingItem
@@ -177,7 +177,7 @@ export const SettingsScreen: React.FC = () => {
             <View style={styles.divider} />
             <SettingItem
               icon="shield-checkmark"
-              label={language === 'nl' ? 'Privacy' : 'Privacy'}
+              label="Privacy"
               onPress={() => navigation.navigate('Privacy' as never)}
               iconColor={COLORS.teal}
             />
@@ -206,7 +206,7 @@ export const SettingsScreen: React.FC = () => {
           <View style={styles.sectionContent}>
             <SettingItem
               icon="help-circle"
-              label={language === 'nl' ? 'Help & FAQ' : 'Help & FAQ'}
+              label="Help & FAQ"
               onPress={() => {}}
               iconColor={COLORS.cyan}
             />

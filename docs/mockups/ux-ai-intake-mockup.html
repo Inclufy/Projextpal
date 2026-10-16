@@ -125,10 +125,10 @@
       <p class="sub">Eén of twee zinnen is genoeg. AI leidt hieruit de <b>methodiek</b>, het <b>projecttype</b> en de <b>projectvorm</b> af — je kunt alles daarna bijsturen.</p>
       <textarea id="desc" placeholder="Bijv. We bouwen een klantportaal voor een externe opdrachtgever. Vaste scope en budget, oplevering in drie fasen, oplevering eind Q1."></textarea>
       <div class="chips">
-        <span class="chip" onclick="ex(0)">📦 Klantportaal, vaste scope, extern</span>
-        <span class="chip" onclick="ex(1)">🚀 Nieuw product, veranderende eisen, sprints</span>
-        <span class="chip" onclick="ex(2)">⚖️ Facturatiesysteem, AVG + audit, directie kijkt mee</span>
-        <span class="chip" onclick="ex(3)">🔧 Intern proces sneller maken, klein team</span>
+        <span class="chip" onclick="ex(0)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">📦 Klantportaal, vaste scope, extern</span>
+        <span class="chip" onclick="ex(1)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">🚀 Nieuw product, veranderende eisen, sprints</span>
+        <span class="chip" onclick="ex(2)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">⚖️ Facturatiesysteem, AVG + audit, directie kijkt mee</span>
+        <span class="chip" onclick="ex(3)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">🔧 Intern proces sneller maken, klein team</span>
       </div>
       <div class="ai-think" id="think"><span class="spin"></span> AI leest je beschrijving en bepaalt methodiek, type en vorm…</div>
       <div class="row-actions"><span></span><button class="btn btn-ai" onclick="analyze()">✨ Analyseer met AI</button></div>
@@ -143,7 +143,7 @@
         <span class="ai-tag">✨ Aanbevolen methodiek</span>
         <div class="ai-pick"><span class="big" id="mName">PRINCE2</span><span class="conf">zekerheid <b id="mConf">hoog</b></span></div>
         <div class="ai-reason" id="mReason"></div>
-        <span class="change" onclick="toggle('methGrid')">Andere methodiek kiezen ▾</span>
+        <span class="change" onclick="toggle('methGrid')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">Andere methodiek kiezen ▾</span>
         <div id="methGrid" style="display:none"><div class="opt-grid" id="methOpts"></div></div>
       </div>
 
@@ -151,7 +151,7 @@
         <span class="ai-tag">✨ Projecttype (template)</span>
         <div class="ai-pick"><span class="big" id="tName">Klantimplementatie</span></div>
         <div class="ai-reason" id="tReason"></div>
-        <span class="change" onclick="toggle('typeGrid')">Ander type kiezen ▾</span>
+        <span class="change" onclick="toggle('typeGrid')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">Ander type kiezen ▾</span>
         <div id="typeGrid" style="display:none"><div class="opt-grid" id="typeOpts"></div></div>
       </div>
 

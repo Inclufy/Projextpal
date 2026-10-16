@@ -356,7 +356,7 @@ export const TimeTrackingDetailScreen: React.FC = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.timeEntries}</Text>
-            <Text style={styles.entryCount}>{filteredEntries.length} {isNL ? 'items' : 'items'}</Text>
+            <Text style={styles.entryCount}>{filteredEntries.length} items</Text>
           </View>
 
           {filteredEntries.length === 0 ? (

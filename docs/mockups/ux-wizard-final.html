@@ -201,14 +201,14 @@
         <div class="ptag" id="mTag"></div>
         <div class="pick-row"><span class="itile s44" id="mTile"></span><b id="mName">PRINCE2</b><span class="conf">zekerheid <b id="mConf">hoog</b></span></div>
         <div class="preason" id="mReason"></div>
-        <span class="change" onclick="tg('methGrid')">Andere methodiek ▾</span>
+        <span class="change" onclick="tg('methGrid')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">Andere methodiek ▾</span>
         <div id="methGrid" style="display:none"><div class="opt-grid" id="methOpts"></div></div>
       </div>
       <div class="prop">
         <div class="ptag" id="tTag"></div>
         <div class="pick-row"><span class="itile s44" id="tTile"></span><b id="tName">Klantimplementatie</b></div>
         <div class="preason" id="tReason"></div>
-        <span class="change" onclick="tg('typeGrid')">Ander type ▾</span>
+        <span class="change" onclick="tg('typeGrid')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){this.click()}">Ander type ▾</span>
         <div id="typeGrid" style="display:none"><div class="opt-grid" id="typeOpts"></div></div>
       </div>
       <div class="actions"><button class="btn btn-ghost" onclick="go(0)">← Terug</button><button class="btn btn-primary" onclick="go(2)">Volgende →</button></div>
