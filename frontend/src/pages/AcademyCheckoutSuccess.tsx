@@ -155,7 +155,7 @@ const AcademyCheckoutSuccess = () => {
             title: '',
           });
           try {
-            confetti({
+            await confetti({
               particleCount: 100,
               spread: 70,
               origin: { y: 0.6 },
