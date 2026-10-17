@@ -125,32 +125,36 @@ const SkillsCatalog = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
               <div>
-                <label className="text-xs text-muted-foreground">Code</label>
+                <label htmlFor="code" className="text-xs text-muted-foreground">Code</label>
                 <Input
+                  id="code"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
                   placeholder="prince2"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Name (EN)</label>
+                <label htmlFor="name" className="text-xs text-muted-foreground">Name (EN)</label>
                 <Input
+                  id="name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="PRINCE2"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Name (NL)</label>
+                <label htmlFor="name_nl" className="text-xs text-muted-foreground">Name (NL)</label>
                 <Input
+                  id="name_nl"
                   value={form.name_nl}
                   onChange={(e) => setForm({ ...form, name_nl: e.target.value })}
                   placeholder="PRINCE2"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Category</label>
+                <label htmlFor="category" className="text-xs text-muted-foreground">Category</label>
                 <Select
+                  id="category"
                   value={form.category}
                   onValueChange={(v) => setForm({ ...form, category: v as SkillCategory })}
                 >
