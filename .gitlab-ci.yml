@@ -28,7 +28,7 @@ variables:
 
 build:mobile:
   stage: test
-  image: node:20
+  image: node:24
   cache:
     key: mobile-${CI_COMMIT_REF_SLUG}
     paths:
