@@ -28,7 +28,7 @@ cache:
 
 lint:flake8:
   stage: lint
-  image: python:3.9
+  image: python:3.11
   before_script:
     - cd backend
     - pip install flake8
@@ -42,7 +42,7 @@ lint:flake8:
 
 lint:black:
   stage: lint
-  image: python:3.9
+  image: python:3.11
   before_script:
     - cd backend
     - pip install black
@@ -59,7 +59,7 @@ lint:black:
 
 test:backend:
   stage: test
-  image: python:3.9
+  image: python:3.11
   services:
     - postgres:14
   before_script:
@@ -100,7 +100,7 @@ test:backend:
 # Test by methodology markers
 test:kanban:
   stage: test
-  image: python:3.9
+  image: python:3.11
   services:
     - postgres:14
   before_script:
@@ -116,7 +116,7 @@ test:kanban:
 
 test:prince2:
   stage: test
-  image: python:3.9
+  image: python:3.11
   services:
     - postgres:14
   before_script:
@@ -132,7 +132,7 @@ test:prince2:
 
 test:waterfall:
   stage: test
-  image: python:3.9
+  image: python:3.11
   services:
     - postgres:14
   before_script:
@@ -152,7 +152,7 @@ test:waterfall:
 
 security:bandit:
   stage: security
-  image: python:3.9
+  image: python:3.11
   before_script:
     - cd backend
     - pip install bandit
@@ -170,7 +170,7 @@ security:bandit:
 
 security:safety:
   stage: security
-  image: python:3.9
+  image: python:3.11
   before_script:
     - cd backend
     - pip install safety
